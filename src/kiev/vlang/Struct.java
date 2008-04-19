@@ -24,32 +24,32 @@ import syntax kiev.Syntax;
  */
 
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class KievPackage extends Struct {
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class KievSyntax extends Struct {
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class JavaClass extends Struct {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class JavaAnonymouseClass extends JavaClass {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class JavaInterface extends Struct {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 	public JavaInterface() {
 		this.meta.is_struct_interface = true;
@@ -60,13 +60,13 @@ public class JavaInterface extends Struct {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class KievView extends Struct {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@att public TypeRef						view_of;
+	@nodeAttr public TypeRef						view_of;
 
 	public KievView() {
 		this.meta.is_virtual = true;
@@ -77,7 +77,7 @@ public final class KievView extends Struct {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class JavaAnnotation extends JavaInterface {
 	public JavaAnnotation() {
 		this.meta.is_struct_annotation = true;
@@ -88,14 +88,14 @@ public final class JavaAnnotation extends JavaInterface {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class PizzaCase extends Struct {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
 	public int tag;
-	@ref public DeclGroupCaseFields		group;
+	@nodeData public DeclGroupCaseFields		group;
 
 	public Field[] getCaseFields() {
 		DeclGroupCaseFields cases = this.group;
@@ -106,13 +106,13 @@ public final class PizzaCase extends Struct {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class JavaEnum extends JavaClass {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@ref public DeclGroupEnumFields		group;
+	@nodeData public DeclGroupEnumFields		group;
 
 	public JavaEnum() {
 		this.meta.is_enum = true;
@@ -140,15 +140,15 @@ public final class JavaEnum extends JavaClass {
 
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class Struct extends TypeDecl {
 	
 	@virtual typedef This  = Struct;
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
-	@ref(ext_data=true)		public Struct				typeinfo_clazz;
-	@ref(ext_data=true)		public Struct				iface_impl;
+	@nodeData(ext_data=true)		public Struct				typeinfo_clazz;
+	@nodeData(ext_data=true)		public Struct				iface_impl;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "package_clazz")
@@ -195,7 +195,7 @@ public abstract class Struct extends TypeDecl {
 			this.is_struct_pre_generated = on;
 		}
 	}
-	// a compiler node (@node)	
+	// a compiler node (@ThisIsANode)	
 	public final boolean isCompilerNode() {
 		return this.is_struct_compiler_node;
 	}

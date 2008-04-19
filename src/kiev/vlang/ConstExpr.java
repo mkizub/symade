@@ -39,15 +39,15 @@ enum IntRadix {
 	RADIX_OCT
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstBoolExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstBoolExpr;
 	@virtual typedef JView = JConstBoolExpr;
 
-	@att public boolean value;
+	@nodeAttr public boolean value;
 
 	public ConstBoolExpr() {}
 	public ConstBoolExpr(boolean value) { this.value = value; }
@@ -65,10 +65,10 @@ public final class ConstBoolExpr extends ConstExpr {
 	public String	toString() { return String.valueOf(value); }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstNullExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstNullExpr;
 	@virtual typedef JView = JConstNullExpr;
@@ -88,16 +88,16 @@ public final class ConstNullExpr extends ConstExpr {
 	public String	toString()			{ return "null"; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstByteExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstByteExpr;
 	@virtual typedef JView = JConstByteExpr;
 
-	@att public byte		value;
-	@att public IntRadix	radix;
+	@nodeAttr public byte		value;
+	@nodeAttr public IntRadix	radix;
 
 	public ConstByteExpr() {}
 	public ConstByteExpr(byte value) { this.value = value; }
@@ -121,16 +121,16 @@ public final class ConstByteExpr extends ConstExpr {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstShortExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstShortExpr;
 	@virtual typedef JView = JConstShortExpr;
 
-	@att public short		value;
-	@att public IntRadix	radix;
+	@nodeAttr public short		value;
+	@nodeAttr public IntRadix	radix;
 
 	public ConstShortExpr() {}
 	public ConstShortExpr(short value) { this.value = value; }
@@ -154,16 +154,16 @@ public final class ConstShortExpr extends ConstExpr {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstIntExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstIntExpr;
 	@virtual typedef JView = JConstIntExpr;
 
-	@att public int			value;
-	@att public IntRadix	radix;
+	@nodeAttr public int			value;
+	@nodeAttr public IntRadix	radix;
 
 	public ConstIntExpr() {}
 	public ConstIntExpr(int value) { this.value = value; }
@@ -187,16 +187,16 @@ public final class ConstIntExpr extends ConstExpr {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstLongExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstLongExpr;
 	@virtual typedef JView = JConstLongExpr;
 
-	@att public long		value;
-	@att public IntRadix	radix;
+	@nodeAttr public long		value;
+	@nodeAttr public IntRadix	radix;
 
 	public ConstLongExpr() {}
 	public ConstLongExpr(long value) { this.value = value; }
@@ -220,15 +220,15 @@ public final class ConstLongExpr extends ConstExpr {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstCharExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstCharExpr;
 	@virtual typedef JView = JConstCharExpr;
 
-	@att public char value;
+	@nodeAttr public char value;
 
 	public ConstCharExpr() {}
 	public ConstCharExpr(char value) { this.value = value; }
@@ -247,15 +247,15 @@ public final class ConstCharExpr extends ConstExpr {
 }
 
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstFloatExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstFloatExpr;
 	@virtual typedef JView = JConstFloatExpr;
 
-	@att public float value;
+	@nodeAttr public float value;
 
 	public ConstFloatExpr() {}
 	public ConstFloatExpr(float value) { this.value = value; }
@@ -274,15 +274,15 @@ public final class ConstFloatExpr extends ConstExpr {
 }
 
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstDoubleExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstDoubleExpr;
 	@virtual typedef JView = JConstDoubleExpr;
 
-	@att public double value;
+	@nodeAttr public double value;
 
 	public ConstDoubleExpr() {}
 	public ConstDoubleExpr(double value) { this.value = value; }
@@ -300,17 +300,17 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstStringExpr extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	public static final ConstStringExpr[] emptyArray = new ConstStringExpr[0];
 	
 	@virtual typedef This  = ConstStringExpr;
 	@virtual typedef JView = JConstStringExpr;
 
-	@att public String value;
+	@nodeAttr public String value;
 
 	public ConstStringExpr() {}
 	public ConstStringExpr(String value) { this.value = value; }
@@ -328,15 +328,15 @@ public final class ConstStringExpr extends ConstExpr {
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstEnumExpr;
 	@virtual typedef JView = JConstEnumExpr;
 
-	@att public E value;
+	@nodeAttr public E value;
 
 	public ConstEnumExpr() {}
 	public ConstEnumExpr(E value) { this.value = value; }
@@ -355,7 +355,7 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 }
 
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class ConstExpr extends ENode {
 
 	@virtual typedef This  ≤ ConstExpr;

@@ -19,13 +19,13 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaUUID extends UserMeta {
 	@virtual typedef This  = MetaUUID;
 
 	private static final Hashtable<String,DNode> registeredNodes = new Hashtable<String,DNode>();
 	
-	@att public String				value;
+	@nodeAttr public String				value;
 
 	public MetaUUID() { super("kiev\u001fstdlib\u001fmeta\u001fuuid"); }
 
@@ -87,13 +87,13 @@ public final class MetaUUID extends UserMeta {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaPacked extends UserMeta {
 	@virtual typedef This  = MetaPacked;
 
-	@att public int					size;
-	@att public SymbolRef<Field>	fld;
-	@att public int					offset;
+	@nodeAttr public int					size;
+	@nodeAttr public SymbolRef<Field>	fld;
+	@nodeAttr public int					offset;
 
 	public MetaPacked() { super("kiev\u001fstdlib\u001fmeta\u001fpacked"); fld = new SymbolRef<Field>(); }
 
@@ -129,11 +129,11 @@ public final class MetaPacked extends UserMeta {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaPacker extends UserMeta {
 	@virtual typedef This  = MetaPacker;
 
-	@att public int		 size = -1;
+	@nodeAttr public int		 size = -1;
 
 	public MetaPacker() { super("kiev\u001fstdlib\u001fmeta\u001fpacker"); }
 
@@ -150,11 +150,11 @@ public final class MetaPacker extends UserMeta {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaThrows extends UserMeta {
 	@virtual typedef This  = MetaThrows;
 
-	@ref @abstract public ASTNode[]		 exceptions;
+	@nodeData @abstract public ASTNode[]		 exceptions;
 
 	public MetaThrows() { super("kiev\u001fstdlib\u001fmeta\u001fthrows"); }
 
@@ -190,7 +190,7 @@ public final class MetaThrows extends UserMeta {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class MetaFlag extends MNode {
 	@virtual typedef This  ≤ MetaFlag;
 
@@ -214,12 +214,12 @@ public abstract class MetaFlag extends MNode {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaAccess extends MetaFlag {
 	@virtual typedef This  = MetaAccess;
 
-	@att public String		simple;
-	@att public int			flags;
+	@nodeAttr public String		simple;
+	@nodeAttr public int			flags;
 
 	public @packed:1,flags,7 boolean	r_public;
 	public @packed:1,flags,6 boolean	w_public;
@@ -558,112 +558,112 @@ public final class MetaAccess extends MetaFlag {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaUnerasable extends MetaFlag {
 	@virtual typedef This  = MetaUnerasable;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001funerasable"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_type_unerasable = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaSingleton extends MetaFlag {
 	@virtual typedef This  = MetaSingleton;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsingleton"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_struct_singleton = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaMixin extends MetaFlag {
 	@virtual typedef This  = MetaMixin;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmixin"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_struct_mixin = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaForward extends MetaFlag {
 	@virtual typedef This  = MetaForward;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fforward"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_forward = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaVirtual extends MetaFlag {
 	@virtual typedef This  = MetaVirtual;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvirtual"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_virtual = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaMacro extends MetaFlag {
 	@virtual typedef This  = MetaMacro;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmacro"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_macro = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaStatic extends MetaFlag {
 	@virtual typedef This  = MetaStatic;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fstatic"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_static = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaAbstract extends MetaFlag {
 	@virtual typedef This  = MetaAbstract;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fabstract"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_abstract = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaFinal extends MetaFlag {
 	@virtual typedef This  = MetaFinal;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001ffinal"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_final = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaNative extends MetaFlag {
 	@virtual typedef This  = MetaNative;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fnative"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_native = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaSynchronized extends MetaFlag {
 	@virtual typedef This  = MetaSynchronized;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsynchronized"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_synchronized = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaTransient extends MetaFlag {
 	@virtual typedef This  = MetaTransient;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001ftransient"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Field) dn.is_fld_transient = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaVolatile extends MetaFlag {
 	@virtual typedef This  = MetaVolatile;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvolatile"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Field) dn.is_fld_volatile = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaBridge extends MetaFlag {
 	@virtual typedef This  = MetaBridge;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fbridge"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_bridge = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaVarArgs extends MetaFlag {
 	@virtual typedef This  = MetaVarArgs;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvarargs"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_varargs = on; }
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaSynthetic extends MetaFlag {
 	@virtual typedef This  = MetaSynthetic;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsynthetic"; }

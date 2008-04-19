@@ -17,12 +17,12 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;
 
-	@ref public ANode[]				annotations;
+	@nodeData public ANode[]				annotations;
 
 	public ASTModifiers() {}
 	

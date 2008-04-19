@@ -50,16 +50,16 @@ import syntax kiev.Syntax;
  */
 
 
-@node(name="Shadow", lang=CoreLang)
+@ThisIsANode(name="Shadow", lang=CoreLang)
 public class Shadow extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = Shadow;
 	@virtual typedef JView = JShadow;
 	@virtual typedef RView = RShadow;
 
-	@ref public ASTNode	rnode;
+	@nodeData public ASTNode	rnode;
 
 	public Shadow() {}
 	public Shadow(ASTNode node) {
@@ -79,16 +79,16 @@ public class Shadow extends ENode {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class TypeClassExpr extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeClassExpr;
 	@virtual typedef JView = JTypeClassExpr;
 	@virtual typedef RView = RTypeClassExpr;
 
-	@att public TypeRef		type;
+	@nodeAttr public TypeRef		type;
 
 	public TypeClassExpr() {}
 
@@ -106,18 +106,18 @@ public class TypeClassExpr extends ENode {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class TypeInfoExpr extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeInfoExpr;
 	@virtual typedef JView = JTypeInfoExpr;
 	@virtual typedef RView = RTypeInfoExpr;
 
-	@att public TypeRef				type;
-	@att public ENode				cl_expr;
-	@att public ENode[]				cl_args;
+	@nodeAttr public TypeRef				type;
+	@nodeAttr public ENode				cl_expr;
+	@nodeAttr public ENode[]				cl_args;
 
 	public TypeInfoExpr() {}
 
@@ -140,10 +140,10 @@ public class TypeInfoExpr extends ENode {
 	}
 }
 
-@node(name="AssertEnabled", lang=CoreLang)
+@ThisIsANode(name="AssertEnabled", lang=CoreLang)
 public class AssertEnabledExpr extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = AssertEnabledExpr;
 	@virtual typedef RView = RAssertEnabledExpr;
@@ -162,21 +162,21 @@ public class AssertEnabledExpr extends ENode {
 	}
 }
 
-@node(name="Set", lang=CoreLang)
+@ThisIsANode(name="Set", lang=CoreLang)
 public class AssignExpr extends ENode {
 	
-	@dflow(out="this:out()") private static class DFI {
-	@dflow(in="this:in")	ENode			lval;
-	@dflow(in="lval")		ENode			value;
+	@DataFlowDefinition(out="this:out()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			lval;
+	@DataFlowDefinition(in="lval")		ENode			value;
 	}
 	
 	@virtual typedef This  = AssignExpr;
 	@virtual typedef JView = JAssignExpr;
 	@virtual typedef RView = RAssignExpr;
 
-	@att public Operator		op;
-	@att public ENode			lval;
-	@att public ENode			value;
+	@nodeAttr public Operator		op;
+	@nodeAttr public ENode			lval;
+	@nodeAttr public ENode			value;
 
 	public AssignExpr() {}
 
@@ -280,21 +280,21 @@ public class AssignExpr extends ENode {
 }
 
 
-@node(name="BinOp", lang=CoreLang)
+@ThisIsANode(name="BinOp", lang=CoreLang)
 public class BinaryExpr extends ENode {
 	
-	@dflow(out="expr2") private static class DFI {
-	@dflow(in="this:in")	ENode				expr1;
-	@dflow(in="expr1")		ENode				expr2;
+	@DataFlowDefinition(out="expr2") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode				expr1;
+	@DataFlowDefinition(in="expr1")		ENode				expr2;
 	}
 	
 	@virtual typedef This  = BinaryExpr;
 	@virtual typedef JView = JBinaryExpr;
 	@virtual typedef RView = RBinaryExpr;
 
-	@att public Operator		op;
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@nodeAttr public Operator		op;
+	@nodeAttr public ENode			expr1;
+	@nodeAttr public ENode			expr2;
 
 	public BinaryExpr() {}
 
@@ -374,19 +374,19 @@ public class BinaryExpr extends ENode {
 	}
 }
 
-@node(name="UnaryOp", lang=CoreLang)
+@ThisIsANode(name="UnaryOp", lang=CoreLang)
 public class UnaryExpr extends ENode {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(out="this:in")			ENode		expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(out="this:in")			ENode		expr;
 	}
 
 	@virtual typedef This  = UnaryExpr;
 	@virtual typedef JView = JUnaryExpr;
 	@virtual typedef RView = RUnaryExpr;
 
-	@att public Operator		op;
-	@att public ENode			expr;
+	@nodeAttr public Operator		op;
+	@nodeAttr public ENode			expr;
 
 	public UnaryExpr() {}
 
@@ -467,18 +467,18 @@ public class UnaryExpr extends ENode {
 	}
 }
 
-@node(name="StrConcat", lang=CoreLang)
+@ThisIsANode(name="StrConcat", lang=CoreLang)
 public class StringConcatExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]	args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]	args;
 	}
 
 	@virtual typedef This  = StringConcatExpr;
 	@virtual typedef JView = JStringConcatExpr;
 	@virtual typedef RView = RStringConcatExpr;
 
-	@att public ENode[]				args;
+	@nodeAttr public ENode[]				args;
 
 	public StringConcatExpr() {}
 
@@ -521,18 +521,18 @@ public class StringConcatExpr extends ENode {
 	}
 }
 
-@node(name="Comma", lang=CoreLang)
+@ThisIsANode(name="Comma", lang=CoreLang)
 public class CommaExpr extends ENode {
 	
-	@dflow(out="exprs") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]	exprs;
+	@DataFlowDefinition(out="exprs") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]	exprs;
 	}
 
 	@virtual typedef This  = CommaExpr;
 	@virtual typedef JView = JCommaExpr;
 	@virtual typedef RView = RCommaExpr;
 
-	@att public ENode[]			exprs;
+	@nodeAttr public ENode[]			exprs;
 
 	public CommaExpr() {}
 
@@ -556,19 +556,19 @@ public class CommaExpr extends ENode {
 	}
 }
 
-@node(name="Block", lang=CoreLang)
+@ThisIsANode(name="Block", lang=CoreLang)
 public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
-	@dflow(out="this:out()") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		stats;
+	@DataFlowDefinition(out="this:out()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		stats;
 	}
 
 	@virtual typedef This  ≤ Block;
 	@virtual typedef JView ≤ JBlock;
 	@virtual typedef RView ≤ RBlock;
 
-	@att public ASTNode[]			stats;
-	@att(copyable=false, ext_data=true)
+	@nodeAttr public ASTNode[]			stats;
+	@nodeAttr(copyable=false, ext_data=true)
 	     public Label				lblbrk;
 
 	public Block() {}
@@ -690,19 +690,19 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
-@node(name="IncrOp", lang=CoreLang)
+@ThisIsANode(name="IncrOp", lang=CoreLang)
 public class IncrementExpr extends ENode {
 	
-	@dflow(out="lval") private static class DFI {
-	@dflow(in="this:in")	ENode			lval;
+	@DataFlowDefinition(out="lval") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			lval;
 	}
 
 	@virtual typedef This  = IncrementExpr;
 	@virtual typedef JView = JIncrementExpr;
 	@virtual typedef RView = RIncrementExpr;
 
-	@att public Operator			op;
-	@att public ENode				lval;
+	@nodeAttr public Operator			op;
+	@nodeAttr public ENode				lval;
 
 	public IncrementExpr() {}
 
@@ -739,22 +739,22 @@ public class IncrementExpr extends ENode {
 	}
 }
 
-@node(name="IfOp", lang=CoreLang)
+@ThisIsANode(name="IfOp", lang=CoreLang)
 public class ConditionalExpr extends ENode {
 	
-	@dflow(out="join expr1 expr2") private static class DFI {
-	@dflow(in="this:in")	ENode		cond;
-	@dflow(in="cond:true")	ENode		expr1;
-	@dflow(in="cond:false")	ENode		expr2;
+	@DataFlowDefinition(out="join expr1 expr2") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		cond;
+	@DataFlowDefinition(in="cond:true")	ENode		expr1;
+	@DataFlowDefinition(in="cond:false")	ENode		expr2;
 	}
 
 	@virtual typedef This  = ConditionalExpr;
 	@virtual typedef JView = JConditionalExpr;
 	@virtual typedef RView = RConditionalExpr;
 
-	@att public ENode			cond;
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@nodeAttr public ENode			cond;
+	@nodeAttr public ENode			expr1;
+	@nodeAttr public ENode			expr2;
 
 	public ConditionalExpr() {}
 
@@ -788,19 +788,19 @@ public class ConditionalExpr extends ENode {
 	}
 }
 
-@node(name="Cast", lang=CoreLang)
+@ThisIsANode(name="Cast", lang=CoreLang)
 public class CastExpr extends ENode {
 
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
 	@virtual typedef This  = CastExpr;
 	@virtual typedef JView = JCastExpr;
 	@virtual typedef RView = RCastExpr;
 
-	@att public TypeRef		type;
-	@att public ENode		expr;
+	@nodeAttr public TypeRef		type;
+	@nodeAttr public ENode		expr;
 
 	public CastExpr() {}
 

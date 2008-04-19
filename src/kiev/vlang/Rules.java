@@ -23,19 +23,19 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public class RuleMethod extends Method {
 	
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in")	Var[]			localvars;
-	@dflow(in="this:in")	Block			body;
-	@dflow(in="this:in")	WBCCondition[] 	conditions;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Var[]			localvars;
+	@DataFlowDefinition(in="this:in")	Block			body;
+	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 
 	@virtual typedef This  = RuleMethod;
 	@virtual typedef RView = RRuleMethod;
 
-	@att public Var[]				localvars;
+	@nodeAttr public Var[]				localvars;
 	     public int					base = 1;
 	     public int					max_depth;
 	     public int					state_depth;
@@ -196,31 +196,31 @@ d) if rule is successive, it returns it's own frame
 object, if fails - returns null.
 */
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public abstract class ASTRuleNode extends ENode {
 	public static final ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
 	@virtual typedef This  ≤ ASTRuleNode;
 
 	@virtual @final @abstract
-	@ref public:ro	boolean			more_check;
+	@nodeData public:ro	boolean			more_check;
 	@UnVersioned
-	@ref public		ASTRuleNode		next_check;
+	@nodeData public		ASTRuleNode		next_check;
 	@virtual @final @abstract
-	@ref public:ro	boolean			more_back;
+	@nodeData public:ro	boolean			more_back;
 	@UnVersioned
-	@ref public		ASTRuleNode		next_back;
+	@nodeData public		ASTRuleNode		next_back;
 
 	@UnVersioned
-	@ref public		boolean			jump_to_back;
+	@nodeData public		boolean			jump_to_back;
 	@UnVersioned
-	@ref public		int				depth;
-	@UnVersioned
-	@virtual
-	@ref public		int				base;
+	@nodeData public		int				depth;
 	@UnVersioned
 	@virtual
-	@ref public		int				idx;
+	@nodeData public		int				base;
+	@UnVersioned
+	@virtual
+	@nodeData public		int				idx;
 
 	@getter public final boolean get$more_check() { return this.next_check != null; }
 	@getter public final boolean get$more_back() { return this.next_back != null; }
@@ -238,17 +238,17 @@ public abstract class ASTRuleNode extends ENode {
 }
 
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleBlock extends ENode {
 	
-	@dflow(out="rnode") private static class DFI {
-	@dflow(in="this:in")	ASTRuleNode		rnode;
+	@DataFlowDefinition(out="rnode") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ASTRuleNode		rnode;
 	}
 
 	@virtual typedef This  = RuleBlock;
 	@virtual typedef RView = RRuleBlock;
 
-	@att public ASTRuleNode		rnode;
+	@nodeAttr public ASTRuleNode		rnode;
 
 	public RuleBlock() {}
 
@@ -296,19 +296,19 @@ public final class RuleBlock extends ENode {
 }
 
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleOrExpr extends ASTRuleNode {
 	
-	@dflow(out="rules") private static class DFI {
-	@dflow(in="this:in", seq="false")	ASTRuleNode[]	rules;
+	@DataFlowDefinition(out="rules") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	ASTRuleNode[]	rules;
 	}
 
 	@virtual typedef This  = RuleOrExpr;
 
-	@att public ASTRuleNode[]			rules;
+	@nodeAttr public ASTRuleNode[]			rules;
 
-	@getter @ref public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
-	@getter @ref public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
+	@getter @nodeData public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
+	@getter @nodeData public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
 
 	public RuleOrExpr() {}
 
@@ -357,19 +357,19 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleAndExpr extends ASTRuleNode {
 	
-	@dflow(out="rules") private static class DFI {
-	@dflow(in="this:in", seq="true")	ASTRuleNode[]	rules;
+	@DataFlowDefinition(out="rules") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ASTRuleNode[]	rules;
 	}
 
 	@virtual typedef This  = RuleAndExpr;
 
-	@att public ASTRuleNode[]			rules;
+	@nodeAttr public ASTRuleNode[]			rules;
 
-	@getter @ref public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
-	@getter @ref public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
+	@getter @nodeData public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
+	@getter @nodeData public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
 
 	public RuleAndExpr() {}
 
@@ -440,17 +440,17 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleIstheExpr extends ASTRuleNode {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode	expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
 
 	@virtual typedef This  = RuleIstheExpr;
 
-	@att public LVarExpr	var;		// variable of type PVar<...>
-	@att public ENode		expr;		// expression to check/unify
+	@nodeAttr public LVarExpr	var;		// variable of type PVar<...>
+	@nodeAttr public ENode		expr;		// expression to check/unify
 
 	public RuleIstheExpr() {}
 
@@ -500,22 +500,22 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleIsoneofExpr extends ASTRuleNode {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode	expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
 
 	public enum IsoneofMode { ARRAY, KENUM, JENUM, ELEMS };
 
 	@virtual typedef This  = RuleIsoneofExpr;
 
-	@att public LVarExpr		var;		// variable of type PVar<...>
-	@att public ENode			expr;		// expression to check/unify
-	@att public int				iter_var;	// iterator var
-	@att public IsoneofMode		mode;
-	@att public TypeRef			itype;
+	@nodeAttr public LVarExpr		var;		// variable of type PVar<...>
+	@nodeAttr public ENode			expr;		// expression to check/unify
+	@nodeAttr public int				iter_var;	// iterator var
+	@nodeAttr public IsoneofMode		mode;
+	@nodeAttr public TypeRef			itype;
 
 	public RuleIsoneofExpr() {}
 
@@ -598,10 +598,10 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleCutExpr extends ASTRuleNode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = RuleCutExpr;
 
@@ -634,19 +634,19 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleCallExpr extends ASTRuleNode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in")				ENode		obj;
-	@dflow(in="obj", seq="true")		ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		obj;
+	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
 	
 	@virtual typedef This  = RuleCallExpr;
 
-	@att public ENode				obj;
-	@att public ENode[]				args;
-	@att public int					env_var;
+	@nodeAttr public ENode				obj;
+	@nodeAttr public ENode[]				args;
+	@nodeAttr public int					env_var;
 
 	public RuleCallExpr() {}
 
@@ -708,13 +708,13 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public abstract class RuleExprBase extends ASTRuleNode {
 
 	@virtual typedef This  ≤ RuleExprBase;
 
-	@att public ENode				expr;
-	@att public ENode				bt_expr;
+	@nodeAttr public ENode				expr;
+	@nodeAttr public ENode				bt_expr;
 
 	public RuleExprBase() {}
 	public RuleExprBase(ENode expr, ENode bt_expr) {
@@ -743,12 +743,12 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleWhileExpr extends RuleExprBase {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
-	@dflow(in="this:in")	ENode		bt_expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
+	@DataFlowDefinition(in="this:in")	ENode		bt_expr;
 	}
 	
 	@virtual typedef This  = RuleWhileExpr;
@@ -796,12 +796,12 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 }
 
-@node(lang=LogicLang)
+@ThisIsANode(lang=LogicLang)
 public final class RuleExpr extends RuleExprBase {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
-	@dflow(in="this:in")	ENode		bt_expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
+	@DataFlowDefinition(in="this:in")	ENode		bt_expr;
 	}
 
 	@virtual typedef This  = RuleExpr;

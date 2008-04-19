@@ -16,14 +16,14 @@ import static kiev.fmt.SpaceKind.*;
 import syntax kiev.Syntax;
 
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxExprTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxExprTemplate;
 
-	@att public SyntaxToken		l_paren;
-	@att public SyntaxToken		bad_op;
-	@att public SyntaxToken		r_paren;
-	@att public SyntaxToken[]	operators;
+	@nodeAttr public SyntaxToken		l_paren;
+	@nodeAttr public SyntaxToken		bad_op;
+	@nodeAttr public SyntaxToken		r_paren;
+	@nodeAttr public SyntaxToken[]	operators;
 
 	public SyntaxExprTemplate() {
 		super(new SyntaxNode());
@@ -34,12 +34,12 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 }
 
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpr extends SyntaxElem {
 	@virtual typedef This  = SyntaxExpr;
 
-	@att public SyntaxAttr[]					attrs;
-	@att public SymbolRef<SyntaxExprTemplate>	template;
+	@nodeAttr public SyntaxAttr[]					attrs;
+	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
 
 	public SyntaxExpr() {
 		this.template = new SymbolRef<SyntaxExprTemplate>();
@@ -81,13 +81,13 @@ public class SyntaxExpr extends SyntaxElem {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxAutoParenth extends SyntaxElem {
 	@virtual typedef This  = SyntaxAutoParenth;
 
-	@att public SyntaxAttr						attr;
-	@att public int								priority;
-	@att public SymbolRef<SyntaxExprTemplate>	template;
+	@nodeAttr public SyntaxAttr						attr;
+	@nodeAttr public int								priority;
+	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
 
 	public SyntaxAutoParenth() {}
 	public SyntaxAutoParenth(SyntaxAttr attr, int priority, SyntaxExprTemplate template) {

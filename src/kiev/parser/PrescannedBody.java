@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class PrescannedBody extends ENode {
 	
 	public static final int BlockMode			= 0;
@@ -33,7 +33,7 @@ public final class PrescannedBody extends ENode {
 	public int		lineno;
 	public int		columnno;
 	public int		mode;
-	@ref
+	@nodeData
 	public ASTNode	expected_parent;
 
 	public PrescannedBody() {}

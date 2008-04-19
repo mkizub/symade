@@ -17,10 +17,10 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class TypeDef extends TypeDecl {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final TypeDef[] emptyArray = new TypeDef[0];
 
@@ -61,15 +61,15 @@ public abstract class TypeDef extends TypeDecl {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class TypeAssign extends TypeDef {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeAssign;
 
 	@abstract @virtual
-	@ref public TypeRef type_ref;
+	@nodeData public TypeRef type_ref;
 	
 	@getter public final TypeRef get$type_ref() {
 		if (super_types.length == 0)
@@ -133,16 +133,16 @@ public final class TypeAssign extends TypeDef {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class TypeConstr extends TypeDef {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final TypeConstr[] emptyArray = new TypeConstr[0];
 
 	@virtual typedef This  = TypeConstr;
 
-	@att public TypeRef[]			lower_bound;
+	@nodeAttr public TypeRef[]			lower_bound;
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }
 

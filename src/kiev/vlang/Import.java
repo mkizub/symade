@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
@@ -33,11 +33,11 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 	@virtual typedef This  = Import;
 
-	@att public SymbolRef<DNode>	name;
-	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
-	@att public boolean				star;
-	@att public TypeRef[]			args;
-	@att public boolean				of_method;
+	@nodeAttr public SymbolRef<DNode>	name;
+	@nodeAttr public ImportMode			mode = ImportMode.IMPORT_CLASS;
+	@nodeAttr public boolean				star;
+	@nodeAttr public TypeRef[]			args;
+	@nodeAttr public boolean				of_method;
 
 	public Import() {
 		this.name = new SymbolRef<DNode>();
@@ -209,16 +209,16 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeOpDef;
 
-	@att public TypeDef			arg;
-	@att public String			op;
-	@att public TypeRef			type;
+	@nodeAttr public TypeDef			arg;
+	@nodeAttr public String			op;
+	@nodeAttr public TypeRef			type;
 
 	public TypeOpDef() { super(null); }
 	

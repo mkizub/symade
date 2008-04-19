@@ -27,15 +27,15 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="FileUnit", lang=CoreLang, copyable=false)
+@ThisIsANode(name="FileUnit", lang=CoreLang, copyable=false)
 public final class DirUnit extends SNode {
 
 	@virtual typedef This  = DirUnit;
 
 	public static final DirUnit[] emptyArray = new DirUnit[0];
 
-	@att public String			name;
-	@att public ASTNode[]		members;
+	@nodeAttr public String			name;
+	@nodeAttr public ASTNode[]		members;
 	
 	@setter public void set$name(String value) {
 		this.name = (value == null) ? null : value.intern();
@@ -172,7 +172,7 @@ public final class DirUnit extends SNode {
 
 }
 
-@node(name="FileUnit", lang=CoreLang, copyable=false)
+@ThisIsANode(name="FileUnit", lang=CoreLang, copyable=false)
 public final class FileUnit extends NameSpace {
 
 	@virtual typedef This  = FileUnit;
@@ -181,10 +181,10 @@ public final class FileUnit extends NameSpace {
 
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
-	@att public String						fname;
+	@nodeAttr public String						fname;
 	
-	@ref public PrescannedBody[]			bodies;
-	@ref public boolean						scanned_for_interface_only;
+	@nodeData public PrescannedBody[]			bodies;
+	@nodeData public boolean						scanned_for_interface_only;
 
 	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
 	public String							current_syntax;
@@ -296,7 +296,7 @@ public final class FileUnit extends NameSpace {
 }
 
 
-@node(name="NameSpace", lang=CoreLang)
+@ThisIsANode(name="NameSpace", lang=CoreLang)
 public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  ≤ NameSpace;
@@ -305,8 +305,8 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 
-	@att public SymbolRef<TypeDecl>			srpkg;
-	@att public ASTNode[]					members;
+	@nodeAttr public SymbolRef<TypeDecl>			srpkg;
+	@nodeAttr public ASTNode[]					members;
 	
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
 	@getter public NameSpace get$ctx_name_space() { return this; }

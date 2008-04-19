@@ -131,16 +131,16 @@ public final class RewriteContext {
 	}
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public final class RewriteMatch extends ENode {
 
-	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in", seq="false")	RewriteCase[]		cases;
+	@DataFlowDefinition(out="this:in") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	RewriteCase[]		cases;
 	}
 
 	@virtual typedef This  = RewriteMatch;
 
-	@att public RewriteCase[]		cases;
+	@nodeAttr public RewriteCase[]		cases;
 
 	public RewriteMatch() {}
 
@@ -160,16 +160,16 @@ public final class RewriteMatch extends ENode {
 
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public final class RewritePattern extends Var {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final RewritePattern[] emptyArray = new RewritePattern[0];
 	
 	@virtual typedef This  = RewritePattern;
 
-	@att public RewritePattern[]		vars;
+	@nodeAttr public RewritePattern[]		vars;
 
 	public RewritePattern() { super(REWRITE_PATTERN); }
 	public RewritePattern(String name, TypeRef tp) {
@@ -190,20 +190,20 @@ public final class RewritePattern extends Var {
 
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public final class RewriteCase extends ENode implements ScopeOfNames {
 
-	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in")			RewritePattern		var;
-	@dflow(in="var", seq="true")	ASTNode[]			stats;
+	@DataFlowDefinition(out="this:in") private static class DFI {
+	@DataFlowDefinition(in="this:in")			RewritePattern		var;
+	@DataFlowDefinition(in="var", seq="true")	ASTNode[]			stats;
 	}
 
 	public static final RewriteCase[] emptyArray = new RewriteCase[0];
 	
 	@virtual typedef This  = RewriteCase;
 
-	@att public RewritePattern		var;
-	@att public ASTNode[]			stats;
+	@nodeAttr public RewritePattern		var;
+	@nodeAttr public ASTNode[]			stats;
 
 	public RewriteCase() {}
 
@@ -228,16 +228,16 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public final class RewriteNodeFactory extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in", seq="true")	RewriteNodeArg[]	args;
+	@DataFlowDefinition(out="this:in") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	RewriteNodeArg[]	args;
 	}
 	
 	@virtual typedef This  = RewriteNodeFactory;
 
-	@att public RewriteNodeArg[]		args;
+	@nodeAttr public RewriteNodeArg[]		args;
 	     private Class					node_class;
 
 	public RewriteNodeFactory() {}
@@ -296,19 +296,19 @@ public final class RewriteNodeFactory extends ENode {
 	}
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public final class RewriteNodeArg extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in")	ENode				anode;
+	@DataFlowDefinition(out="this:in") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode				anode;
 	}
 	
 	public static final RewriteNodeArg[] emptyArray = new RewriteNodeArg[0];
 	
 	@virtual typedef This  = RewriteNodeArg;
 
-	@att public ENode		anode;
-	@att public String		attr;
+	@nodeAttr public ENode		anode;
+	@nodeAttr public String		attr;
 
 	@setter
 	public void set$attr(String value) {
@@ -327,16 +327,16 @@ public final class RewriteNodeArg extends ENode {
 	}
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public final class RewriteNodeArgArray extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@virtual typedef This  = RewriteNodeArgArray;
 
-	@att public ASTNode[]				args;
+	@nodeAttr public ASTNode[]				args;
 
 	public RewriteNodeArgArray() {}
 
@@ -353,11 +353,11 @@ public final class RewriteNodeArgArray extends ENode {
 	}
 }
 
-@node(name="BlockRewr", lang=MacroLang)
+@ThisIsANode(name="BlockRewr", lang=MacroLang)
 public class BlockRewr extends Block {
 	
-	@dflow(out="this:out()") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		stats;
+	@DataFlowDefinition(out="this:out()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		stats;
 	}
 
 	@virtual typedef This  ≤ BlockRewr;
@@ -370,22 +370,22 @@ public class BlockRewr extends Block {
 
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public class IfElseRewr extends ENode {
 	
-	@dflow(out="join thenSt elseSt") private static class DFI {
-	@dflow(in="this:in")	ENode		cond;
-	@dflow(in="cond:true")	ENode		thenSt;
-	@dflow(in="cond:false")	ENode		elseSt;
+	@DataFlowDefinition(out="join thenSt elseSt") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		cond;
+	@DataFlowDefinition(in="cond:true")	ENode		thenSt;
+	@DataFlowDefinition(in="cond:false")	ENode		elseSt;
 	}
 
 	@virtual typedef This  = IfElseRewr;
 	@virtual typedef JView = JENode;
 	@virtual typedef RView = RENode;
 
-	@att public ENode			cond;
-	@att public ENode			thenSt;
-	@att public ENode			elseSt;
+	@nodeAttr public ENode			cond;
+	@nodeAttr public ENode			thenSt;
+	@nodeAttr public ENode			elseSt;
 
 	public IfElseRewr() {}
 	
@@ -416,14 +416,14 @@ public class IfElseRewr extends ENode {
 
 }
 
-@node(name="SwitchRewr", lang=MacroLang)
+@ThisIsANode(name="SwitchRewr", lang=MacroLang)
 public class SwitchRewr extends SwitchStat {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")			ENode			sel;
-	@dflow(in="sel", seq="true")	ENode[]			stats;
-	@dflow(in="stats")				Label			lblcnt;
-	@dflow(in="stats")				Label			lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode			sel;
+	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
+	@DataFlowDefinition(in="stats")				Label			lblcnt;
+	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
 	@virtual typedef This  ≤ SwitchRewr;
@@ -487,24 +487,24 @@ public class SwitchRewr extends SwitchStat {
 
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public class ForEachRewr extends ENode implements ScopeOfNames {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")	Var			var;
-	@dflow(in="var")		ASTNode		container;
-	@dflow(in="container")	ASTNode		cond;
-	@dflow(in="cond")		ASTNode		body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Var			var;
+	@DataFlowDefinition(in="var")		ASTNode		container;
+	@DataFlowDefinition(in="container")	ASTNode		cond;
+	@DataFlowDefinition(in="cond")		ASTNode		body;
 	}
 
 	@virtual typedef This  = ForEachRewr;
 	@virtual typedef JView = JENode;
 	@virtual typedef RView = RENode;
 
-	@att public Var			var;
-	@att public ASTNode		container;
-	@att public ASTNode		cond;
-	@att public ASTNode		body;
+	@nodeAttr public Var			var;
+	@nodeAttr public ASTNode		container;
+	@nodeAttr public ASTNode		cond;
+	@nodeAttr public ASTNode		body;
 
 	public ForEachRewr() {}
 	
@@ -548,16 +548,16 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 
 }
 
-@node(name="MacroAccess", lang=MacroLang)
+@ThisIsANode(name="MacroAccess", lang=MacroLang)
 public final class MacroAccessExpr extends ENode {
 	
-	@dflow(out="obj") private static class DFI {
-	@dflow(in="this:in")	ENode			obj;
+	@DataFlowDefinition(out="obj") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
 
 	@virtual typedef This  = MacroAccessExpr;
 
-	@att public ENode			obj;
+	@nodeAttr public ENode			obj;
 
 	public MacroAccessExpr() {}
 
@@ -633,18 +633,18 @@ public final class MacroAccessExpr extends ENode {
 }
 
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public class MacroSubstExpr extends ENode {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode	expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
 
 	@virtual typedef This  = MacroSubstExpr;
 	@virtual typedef JView = JENode;
 	@virtual typedef RView = RENode;
 
-	@att public ENode			expr;
+	@nodeAttr public ENode			expr;
 
 	public MacroSubstExpr() {}
 	
@@ -654,18 +654,18 @@ public class MacroSubstExpr extends ENode {
 
 }
 
-@node(lang=MacroLang)
+@ThisIsANode(lang=MacroLang)
 public class MacroSubstTypeRef extends TypeRef {
 	
-	@dflow(out="type") private static class DFI {
-	@dflow(in="this:in")	ENode		type;
-	@dflow(in="type")		ENode		req_type;
+	@DataFlowDefinition(out="type") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		type;
+	@DataFlowDefinition(in="type")		ENode		req_type;
 	}
 
 	@virtual typedef This  = MacroSubstTypeRef;
 
-	@att public ENode			type;
-	@att public TypeRef			req_type;
+	@nodeAttr public ENode			type;
+	@nodeAttr public TypeRef			req_type;
 
 	public MacroSubstTypeRef() {}
 	
@@ -689,19 +689,19 @@ public class MacroSubstTypeRef extends TypeRef {
 
 }
 
-@node(name="CmpNode", lang=MacroLang)
+@ThisIsANode(name="CmpNode", lang=MacroLang)
 public class MacroBinaryBoolExpr extends ENode {
 	
-	@dflow(out="expr2") private static class DFI {
-	@dflow(in="this:in")		ENode			expr1;
-	@dflow(in="expr1")			ENode			expr2;
+	@DataFlowDefinition(out="expr2") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode			expr1;
+	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
 	
 	@virtual typedef This  = MacroBinaryBoolExpr;
 
-	@att public Operator		op;
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@nodeAttr public Operator		op;
+	@nodeAttr public ENode			expr1;
+	@nodeAttr public ENode			expr2;
 
 	public MacroBinaryBoolExpr() {}
 
@@ -765,18 +765,18 @@ public class MacroBinaryBoolExpr extends ENode {
 }
 
 
-@node(name="HasMeta", lang=MacroLang)
+@ThisIsANode(name="HasMeta", lang=MacroLang)
 public class MacroHasMetaExpr extends ENode {
 	
-	@dflow(out="meta") private static class DFI {
-	@dflow(in="this:in")		ENode			expr;
-	@dflow(in="expr")			MNode			meta;
+	@DataFlowDefinition(out="meta") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode			expr;
+	@DataFlowDefinition(in="expr")			MNode			meta;
 	}
 	
 	@virtual typedef This  = MacroHasMetaExpr;
 
-	@att public ENode			expr;
-	@att public MNode			meta;
+	@nodeAttr public ENode			expr;
+	@nodeAttr public MNode			meta;
 
 	public MacroHasMetaExpr() {}
 

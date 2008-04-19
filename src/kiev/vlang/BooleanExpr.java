@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef This  ≤ BoolExpr;
@@ -80,20 +80,20 @@ public abstract class BoolExpr extends ENode {
 	
 }
 
-@node(name="Or", lang=CoreLang)
+@ThisIsANode(name="Or", lang=CoreLang)
 public class BinaryBooleanOrExpr extends BoolExpr {
 
-	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
-	@dflow(in="this:in")			ENode			expr1;
-	@dflow(in="expr1:false")		ENode			expr2;
+	@DataFlowDefinition(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode			expr1;
+	@DataFlowDefinition(in="expr1:false")		ENode			expr2;
 	}
 	
 	@virtual typedef This  = BinaryBooleanOrExpr;
 	@virtual typedef JView = JBinaryBooleanOrExpr;
 	@virtual typedef RView = RBinaryBooleanOrExpr;
 
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@nodeAttr public ENode			expr1;
+	@nodeAttr public ENode			expr2;
 
 	public BinaryBooleanOrExpr() {}
 
@@ -154,20 +154,20 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 }
 
 
-@node(name="And", lang=CoreLang)
+@ThisIsANode(name="And", lang=CoreLang)
 public class BinaryBooleanAndExpr extends BoolExpr {
 
-	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
-	@dflow(in="this:in")		ENode			expr1;
-	@dflow(in="expr1:true")		ENode			expr2;
+	@DataFlowDefinition(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode			expr1;
+	@DataFlowDefinition(in="expr1:true")		ENode			expr2;
 	}
 	
 	@virtual typedef This  = BinaryBooleanAndExpr;
 	@virtual typedef JView = JBinaryBooleanAndExpr;
 	@virtual typedef RView = RBinaryBooleanAndExpr;
 
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@nodeAttr public ENode			expr1;
+	@nodeAttr public ENode			expr2;
 
 	public BinaryBooleanAndExpr() {}
 
@@ -227,21 +227,21 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 }
 
-@node(name="Cmp", lang=CoreLang)
+@ThisIsANode(name="Cmp", lang=CoreLang)
 public class BinaryBoolExpr extends BoolExpr {
 	
-	@dflow(out="expr2") private static class DFI {
-	@dflow(in="this:in")		ENode			expr1;
-	@dflow(in="expr1")			ENode			expr2;
+	@DataFlowDefinition(out="expr2") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode			expr1;
+	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
 	
 	@virtual typedef This  = BinaryBoolExpr;
 	@virtual typedef JView = JBinaryBoolExpr;
 	@virtual typedef RView = RBinaryBoolExpr;
 
-	@att public Operator		op;
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@nodeAttr public Operator		op;
+	@nodeAttr public ENode			expr1;
+	@nodeAttr public ENode			expr2;
 
 	public BinaryBoolExpr() {}
 
@@ -302,19 +302,19 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 }
 
-@node(name="InstanceOf", lang=CoreLang)
+@ThisIsANode(name="InstanceOf", lang=CoreLang)
 public class InstanceofExpr extends BoolExpr {
 
-	@dflow(tru="this:tru()", fls="expr") private static class DFI {
-	@dflow(in="this:in")		ENode			expr;
+	@DataFlowDefinition(tru="this:tru()", fls="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode			expr;
 	}
 	
 	@virtual typedef This  = InstanceofExpr;
 	@virtual typedef JView = JInstanceofExpr;
 	@virtual typedef RView = RInstanceofExpr;
 
-	@att public ENode		expr;
-	@att public TypeRef		type;
+	@nodeAttr public ENode		expr;
+	@nodeAttr public TypeRef		type;
 
 	public InstanceofExpr() {}
 
@@ -388,18 +388,18 @@ public class InstanceofExpr extends BoolExpr {
 	}
 }
 
-@node(name="Not", lang=CoreLang)
+@ThisIsANode(name="Not", lang=CoreLang)
 public class BooleanNotExpr extends BoolExpr {
 	
-	@dflow(fls="expr:true", tru="expr:false") private static class DFI {
-	@dflow(in="this:in")		ENode			expr;
+	@DataFlowDefinition(fls="expr:true", tru="expr:false") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode			expr;
 	}
 	
 	@virtual typedef This  = BooleanNotExpr;
 	@virtual typedef JView = JBooleanNotExpr;
 	@virtual typedef RView = RBooleanNotExpr;
 
-	@att public ENode		expr;
+	@nodeAttr public ENode		expr;
 
 	public BooleanNotExpr() {}
 

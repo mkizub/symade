@@ -15,7 +15,7 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class TreeSyntax extends ATextSyntax {
 	@virtual typedef This  = TreeSyntax;
 

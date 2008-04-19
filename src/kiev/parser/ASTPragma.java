@@ -12,13 +12,13 @@ package kiev.parser;
 
 import syntax kiev.Syntax;
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class ASTPragma extends DNode {
 
 	@virtual typedef This  = ASTPragma;
 
-	@att public boolean					enable;
-	@att public ConstStringExpr[]		options;
+	@nodeAttr public boolean					enable;
+	@nodeAttr public ConstStringExpr[]		options;
 
 	public void resolve(Type reqType) {}
 }

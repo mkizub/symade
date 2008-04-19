@@ -46,7 +46,7 @@ public enum ProjectFileType {
 	FORMAT
 }
 
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class ProjectFile extends ASTNode {
 
 	@virtual typedef This  = ProjectFile;
@@ -65,7 +65,7 @@ public final class ProjectFile extends ASTNode {
 	static methods and data for kiev compiler
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class Env extends KievPackage {
 
 	/** Hashtable of all defined and loaded classes */
@@ -86,7 +86,7 @@ public class Env extends KievPackage {
 	/** Backend environment */
 	public static JEnv								jenv;
 
-	@att public DirUnit								rdir;
+	@nodeAttr public DirUnit								rdir;
 	
 	public static Env getRoot() { return root; }
 	

@@ -45,12 +45,12 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="Case", lang=CoreLang)
+@ThisIsANode(name="Case", lang=CoreLang)
 public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
-	@dflow(in="this:in()", out="pattern") private static class DFI {
-	@dflow(in="this:in")			ENode		val;
-	@dflow(in="val", seq="true")	Var[]		pattern;
+	@DataFlowDefinition(in="this:in()", out="pattern") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode		val;
+	@DataFlowDefinition(in="val", seq="true")	Var[]		pattern;
 	}
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
@@ -59,9 +59,9 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef JView = JCaseLabel;
 	@virtual typedef RView = RCaseLabel;
 
-	@att public ENode			val;
-	@ref public Type			type;
-	@att public Var[]			pattern;
+	@nodeAttr public ENode			val;
+	@nodeData public Type			type;
+	@nodeAttr public Var[]			pattern;
 	     public CodeLabel		case_label;
 
 	public CaseLabel() {}
@@ -144,25 +144,25 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
-@node(name="Switch", lang=CoreLang)
+@ThisIsANode(name="Switch", lang=CoreLang)
 public class SwitchStat extends Block {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")			ENode			sel;
-	@dflow(in="sel", seq="true")	ENode[]			stats;
-	@dflow(in="stats")				Label			lblcnt;
-	@dflow(in="stats")				Label			lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode			sel;
+	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
+	@DataFlowDefinition(in="stats")				Label			lblcnt;
+	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
 	@virtual typedef This  ≤ SwitchStat;
 	@virtual typedef JView ≤ JSwitchStat;
 	@virtual typedef RView ≤ RSwitchStat;
 
-	@att public ENode					sel;
-	@ref public CaseLabel[]				cases;
-	@ref public CaseLabel				defCase;
-	@att public ENode					sel_to_int;
-	@att(copyable=false, ext_data=true)
+	@nodeAttr public ENode					sel;
+	@nodeData public CaseLabel[]				cases;
+	@nodeData public CaseLabel				defCase;
+	@nodeAttr public ENode					sel_to_int;
+	@nodeAttr(copyable=false, ext_data=true)
 	     public Label					lblcnt;
 	     public CodeSwitch				cosw;
 
@@ -239,14 +239,14 @@ public class SwitchStat extends Block {
 	}
 }
 
-@node(name="SwitchEnum", lang=CoreLang)
+@ThisIsANode(name="SwitchEnum", lang=CoreLang)
 public class SwitchEnumStat extends SwitchStat {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")			ENode			sel;
-	@dflow(in="sel", seq="true")	ENode[]			stats;
-	@dflow(in="stats")				Label			lblcnt;
-	@dflow(in="stats")				Label			lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode			sel;
+	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
+	@DataFlowDefinition(in="stats")				Label			lblcnt;
+	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
 	@virtual typedef This  = SwitchEnumStat;
@@ -270,14 +270,14 @@ public class SwitchEnumStat extends SwitchStat {
 
 }
 
-@node(name="SwitchType", lang=CoreLang)
+@ThisIsANode(name="SwitchType", lang=CoreLang)
 public class SwitchTypeStat extends SwitchStat {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")			ENode			sel;
-	@dflow(in="sel", seq="true")	ENode[]			stats;
-	@dflow(in="stats")				Label			lblcnt;
-	@dflow(in="stats")				Label			lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode			sel;
+	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
+	@DataFlowDefinition(in="stats")				Label			lblcnt;
+	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
 	@virtual typedef This  = SwitchTypeStat;
@@ -297,21 +297,21 @@ public class SwitchTypeStat extends SwitchStat {
 
 }
 
-@node(name="Match", lang=CoreLang)
+@ThisIsANode(name="Match", lang=CoreLang)
 public class MatchStat extends SwitchStat {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")			ENode			sel;
-	@dflow(in="sel", seq="true")	ENode[]			stats;
-	@dflow(in="stats")				Label			lblcnt;
-	@dflow(in="stats")				Label			lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode			sel;
+	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
+	@DataFlowDefinition(in="stats")				Label			lblcnt;
+	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
 	@virtual typedef This  = MatchStat;
 	@virtual typedef JView = JMatchStat;
 	@virtual typedef RView = RMatchStat;
 
-	@att public Var					tmp_var;
+	@nodeAttr public Var					tmp_var;
 
 	public MatchStat() {
 	}
@@ -326,12 +326,12 @@ public class MatchStat extends SwitchStat {
 
 }
 
-@node(name="Catch", lang=CoreLang)
+@ThisIsANode(name="Catch", lang=CoreLang)
 public class CatchInfo extends ENode implements ScopeOfNames {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")	Var				arg;
-	@dflow(in="arg")		ENode			body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Var				arg;
+	@DataFlowDefinition(in="arg")		ENode			body;
 	}
 	
 	public static final CatchInfo[] emptyArray = new CatchInfo[0];
@@ -340,8 +340,8 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	@virtual typedef JView = JCatchInfo;
 	@virtual typedef RView = RCatchInfo;
 
-	@att public Var				arg;
-	@att public ENode			body;
+	@nodeAttr public Var				arg;
+	@nodeAttr public ENode			body;
 	     public CodeLabel		handler;
 	     public CodeCatchInfo	code_catcher;
 
@@ -376,19 +376,19 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 }
 
-@node(name="Finally", lang=CoreLang)
+@ThisIsANode(name="Finally", lang=CoreLang)
 public class FinallyInfo extends ENode {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")	ENode			body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			body;
 	}
 	
 	@virtual typedef This  = FinallyInfo;
 	@virtual typedef JView = JFinallyInfo;
 	@virtual typedef RView = RFinallyInfo;
 
-	@att public ENode			body;
-	@att public Var				ret_arg;
+	@nodeAttr public ENode			body;
+	@nodeAttr public Var				ret_arg;
 	     public CodeLabel		subr_label;
 	     public CodeLabel		handler;
 	     public CodeCatchInfo	code_catcher;
@@ -413,22 +413,22 @@ public class FinallyInfo extends ENode {
 	}
 }
 
-@node(name="Try", lang=CoreLang)
+@ThisIsANode(name="Try", lang=CoreLang)
 public class TryStat extends ENode {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")				ENode			body;
-	@dflow(in="this:in", seq="false")	CatchInfo[]		catchers;
-	@dflow(in="this:in")				FinallyInfo		finally_catcher;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode			body;
+	@DataFlowDefinition(in="this:in", seq="false")	CatchInfo[]		catchers;
+	@DataFlowDefinition(in="this:in")				FinallyInfo		finally_catcher;
 	}
 	
 	@virtual typedef This  = TryStat;
 	@virtual typedef JView = JTryStat;
 	@virtual typedef RView = RTryStat;
 
-	@att public ENode				body;
-	@att public CatchInfo[]			catchers;
-	@att public FinallyInfo			finally_catcher;
+	@nodeAttr public ENode				body;
+	@nodeAttr public CatchInfo[]			catchers;
+	@nodeAttr public FinallyInfo			finally_catcher;
 	     public CodeLabel			end_label;
 
 	public TryStat() {}
@@ -455,21 +455,21 @@ public class TryStat extends ENode {
 	}
 }
 
-@node(name="Synchronized", lang=CoreLang)
+@ThisIsANode(name="Synchronized", lang=CoreLang)
 public class SynchronizedStat extends ENode {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
-	@dflow(in="expr")		ENode		body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
+	@DataFlowDefinition(in="expr")		ENode		body;
 	}
 	
 	@virtual typedef This  = SynchronizedStat;
 	@virtual typedef JView = JSynchronizedStat;
 	@virtual typedef RView = RSynchronizedStat;
 
-	@att public ENode			expr;
-	@att public Var				expr_var;
-	@att public ENode			body;
+	@nodeAttr public ENode			expr;
+	@nodeAttr public Var				expr_var;
+	@nodeAttr public ENode			body;
 	     public CodeLabel		handler;
 	     public CodeCatchInfo	code_catcher;
 	     public CodeLabel		end_label;
@@ -496,21 +496,21 @@ public class SynchronizedStat extends ENode {
 	}
 }
 
-@node(name="With", lang=CoreLang)
+@ThisIsANode(name="With", lang=CoreLang)
 public class WithStat extends ENode {
 
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
-	@dflow(in="expr")		ENode		body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
+	@DataFlowDefinition(in="expr")		ENode		body;
 	}
 	
 	@virtual typedef This  = WithStat;
 	@virtual typedef JView = JWithStat;
 	@virtual typedef RView = RWithStat;
 
-	@att public ENode		expr;
-	@att public ENode		body;
-	@ref public Var			var_or_field;
+	@nodeAttr public ENode		expr;
+	@nodeAttr public ENode		body;
+	@nodeData public Var			var_or_field;
 	     public CodeLabel	end_label;
 
 	public WithStat() {}

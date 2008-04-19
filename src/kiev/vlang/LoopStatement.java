@@ -36,14 +36,14 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class LoopStat extends ENode implements ContinueTarget {
 	@virtual typedef This  ≤ LoopStat;
 	@virtual typedef JView ≤ JLoopStat;
 	@virtual typedef RView ≤ RLoopStat;
 
-	@att(copyable=false)	public Label		lblcnt;
-	@att(copyable=false)	public Label		lblbrk;
+	@nodeAttr(copyable=false)	public Label		lblcnt;
+	@nodeAttr(copyable=false)	public Label		lblbrk;
 
 	protected LoopStat() {
 		lblcnt = new Label();
@@ -53,16 +53,16 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 }
 
 
-@node(name="Label", lang=CoreLang)
+@ThisIsANode(name="Label", lang=CoreLang)
 public final class Label extends DNode {
 	
-	@dflow(out="this:out()") private static class DFI {}
+	@DataFlowDefinition(out="this:out()") private static class DFI {}
 
 	@virtual typedef This  = Label;
 	@virtual typedef JView = JLabel;
 	@virtual typedef RView = RLabel;
 
-	@ref(copyable=false)	public ASTNode[]		links;
+	@nodeData(copyable=false)	public ASTNode[]		links;
 							public CodeLabel		label;
 
 	public boolean preResolveIn() {
@@ -133,22 +133,22 @@ public final class Label extends DNode {
 	}
 }
 
-@node(name="While", lang=CoreLang)
+@ThisIsANode(name="While", lang=CoreLang)
 public class WhileStat extends LoopStat {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in", links="body")		Label		lblcnt;
-	@dflow(in="lblcnt")						ENode		cond;
-	@dflow(in="cond:true")					ENode		body;
-	@dflow(in="cond:false")					Label		lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in", links="body")		Label		lblcnt;
+	@DataFlowDefinition(in="lblcnt")						ENode		cond;
+	@DataFlowDefinition(in="cond:true")					ENode		body;
+	@DataFlowDefinition(in="cond:false")					Label		lblbrk;
 	}
 
 	@virtual typedef This  = WhileStat;
 	@virtual typedef JView = JWhileStat;
 	@virtual typedef RView = RWhileStat;
 
-	@att public ENode		cond;
-	@att public ENode		body;
+	@nodeAttr public ENode		cond;
+	@nodeAttr public ENode		body;
 
 	public WhileStat() {}
 
@@ -171,22 +171,22 @@ public class WhileStat extends LoopStat {
 	}
 }
 
-@node(name="DoWhile", lang=CoreLang)
+@ThisIsANode(name="DoWhile", lang=CoreLang)
 public class DoWhileStat extends LoopStat {
 
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in", links="cond:true")	ENode		body;
-	@dflow(in="body")							Label		lblcnt;
-	@dflow(in="lblcnt")							ENode		cond;
-	@dflow(in="cond:false")						Label		lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in", links="cond:true")	ENode		body;
+	@DataFlowDefinition(in="body")							Label		lblcnt;
+	@DataFlowDefinition(in="lblcnt")							ENode		cond;
+	@DataFlowDefinition(in="cond:false")						Label		lblbrk;
 	}
 
 	@virtual typedef This  = DoWhileStat;
 	@virtual typedef JView = JDoWhileStat;
 	@virtual typedef RView = RDoWhileStat;
 
-	@att public ENode		cond;
-	@att public ENode		body;
+	@nodeAttr public ENode		cond;
+	@nodeAttr public ENode		body;
 
 	public DoWhileStat() {}
 
@@ -209,26 +209,26 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-@node(name="For", lang=CoreLang)
+@ThisIsANode(name="For", lang=CoreLang)
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")				ASTNode		init;
-	@dflow(in="init", links="iter")		ENode		cond;
-	@dflow(in="cond:true")				ENode		body;
-	@dflow(in="body")					Label		lblcnt;
-	@dflow(in="lblcnt")					ENode		iter;
-	@dflow(in="cond:false")				Label		lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ASTNode		init;
+	@DataFlowDefinition(in="init", links="iter")		ENode		cond;
+	@DataFlowDefinition(in="cond:true")				ENode		body;
+	@DataFlowDefinition(in="body")					Label		lblcnt;
+	@DataFlowDefinition(in="lblcnt")					ENode		iter;
+	@DataFlowDefinition(in="cond:false")				Label		lblbrk;
 	}
 	
 	@virtual typedef This  = ForStat;
 	@virtual typedef JView = JForStat;
 	@virtual typedef RView = RForStat;
 
-	@att public ASTNode		init;
-	@att public ENode		cond;
-	@att public ENode		body;
-	@att public ENode		iter;
+	@nodeAttr public ASTNode		init;
+	@nodeAttr public ENode		cond;
+	@nodeAttr public ENode		body;
+	@nodeAttr public ENode		iter;
 
 	public ForStat() {}
 	
@@ -279,22 +279,22 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node(name="ForEach", lang=CoreLang)
+@ThisIsANode(name="ForEach", lang=CoreLang)
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
-	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")						ENode		container;
-	@dflow(in="this:in")						Var			var;
-	@dflow(in="var")							Var			iter;
-	@dflow(in="iter")							Var			iter_array;
-	@dflow(in="iter_array")						ENode		iter_init;
-	@dflow(in="iter_init", links="iter_incr")	ENode		iter_cond;
-	@dflow(in="iter_cond:true")					ENode		var_init;
-	@dflow(in="var_init")						ENode		cond;
-	@dflow(in="cond:true")						ENode		body;
-	@dflow(in="body", links="cond:false")		Label		lblcnt;
-	@dflow(in="lblcnt")							ENode		iter_incr;
-	@dflow(in="iter_cond:false")				Label		lblbrk;
+	@DataFlowDefinition(out="lblbrk") private static class DFI {
+	@DataFlowDefinition(in="this:in")						ENode		container;
+	@DataFlowDefinition(in="this:in")						Var			var;
+	@DataFlowDefinition(in="var")							Var			iter;
+	@DataFlowDefinition(in="iter")							Var			iter_array;
+	@DataFlowDefinition(in="iter_array")						ENode		iter_init;
+	@DataFlowDefinition(in="iter_init", links="iter_incr")	ENode		iter_cond;
+	@DataFlowDefinition(in="iter_cond:true")					ENode		var_init;
+	@DataFlowDefinition(in="var_init")						ENode		cond;
+	@DataFlowDefinition(in="cond:true")						ENode		body;
+	@DataFlowDefinition(in="body", links="cond:false")		Label		lblcnt;
+	@DataFlowDefinition(in="lblcnt")							ENode		iter_incr;
+	@DataFlowDefinition(in="iter_cond:false")				Label		lblbrk;
 	}
 
 	public static final int	ARRAY = 0;
@@ -307,17 +307,17 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	@virtual typedef JView = JForEachStat;
 	@virtual typedef RView = RForEachStat;
 
-	@att public int			mode;
-	@att public ENode		container;
-	@att public Var			var;
-	@att public Var			iter;
-	@att public Var			iter_array;
-	@att public ENode		iter_init;
-	@att public ENode		iter_cond;
-	@att public ENode		var_init;
-	@att public ENode		cond;
-	@att public ENode		body;
-	@att public ENode		iter_incr;
+	@nodeAttr public int			mode;
+	@nodeAttr public ENode		container;
+	@nodeAttr public Var			var;
+	@nodeAttr public Var			iter;
+	@nodeAttr public Var			iter_array;
+	@nodeAttr public ENode		iter_init;
+	@nodeAttr public ENode		iter_cond;
+	@nodeAttr public ENode		var_init;
+	@nodeAttr public ENode		cond;
+	@nodeAttr public ENode		body;
+	@nodeAttr public ENode		iter_incr;
 
 	public ForEachStat() {}
 	

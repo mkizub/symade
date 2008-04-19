@@ -146,7 +146,7 @@ public abstract class ANode implements INode {
 		}
 	}
 	
-	@getter @ref final AttrSlot get$p_slot() {
+	@getter @nodeData final AttrSlot get$p_slot() {
 		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
 			return this.p_slot;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
@@ -154,7 +154,7 @@ public abstract class ANode implements INode {
 		return this.p_slot;
 	}
 	
-	@setter @ref final void set$p_slot(AttrSlot value) {
+	@setter @nodeData final void set$p_slot(AttrSlot value) {
 		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.p_slot = value;
 		else if (Thread.currentThread() == CompilerThread)
@@ -163,7 +163,7 @@ public abstract class ANode implements INode {
 			ASTNode.openEdt((ASTNode)this).p_slot = value;
 	}
 	
-	@getter @ref final ANode get$p_parent() {
+	@getter @nodeData final ANode get$p_parent() {
 		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
 			return this.p_parent;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
@@ -171,7 +171,7 @@ public abstract class ANode implements INode {
 		return this.p_parent;
 	}
 	
-	@setter @ref final void set$p_parent(ANode value) {
+	@setter @nodeData final void set$p_parent(ANode value) {
 		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.p_parent = value;
 		else if (Thread.currentThread() == CompilerThread)
@@ -180,7 +180,7 @@ public abstract class ANode implements INode {
 			ASTNode.openEdt((ASTNode)this).p_parent = value;
 	}
 	
-	@getter @ref final DataAttachInfo[] get$ext_data() {
+	@getter @nodeData final DataAttachInfo[] get$ext_data() {
 		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
 			return this.ext_data;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
@@ -188,7 +188,7 @@ public abstract class ANode implements INode {
 		return this.ext_data;
 	}
 	
-	@setter @ref final void set$ext_data(DataAttachInfo[] value) {
+	@setter @nodeData final void set$ext_data(DataAttachInfo[] value) {
 		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.ext_data = value;
 		else if (Thread.currentThread() == CompilerThread)
@@ -335,10 +335,10 @@ public abstract class ANode implements INode {
 			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == name)
 				return ai.p_data;
 		}
-		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
+		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 	public void setVal(String name, Object val) {
-		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
+		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 
 	public final Object getExtData(AttrSlot attr) {
@@ -548,13 +548,13 @@ public abstract class ANode implements INode {
 	public final AttrPtr getAttrPtr(String name) {
 		foreach (AttrSlot attr; this.values(); attr.name == name)
 			return new AttrPtr(this, attr);
-		throw new RuntimeException("No @att/@ref attribute '"+name+"' in "+getClass());
+		throw new RuntimeException("No @nodeAttr/@nodeData attribute '"+name+"' in "+getClass());
 	}
 	
 	public final SpacePtr getSpacePtr(String name) {
 		foreach (AttrSlot attr; this.values(); attr.name == name && attr.is_space)
 			return new SpacePtr(this, (SpaceAttrSlot<ASTNode>)attr);
-		throw new RuntimeException("No @att/@ref space '"+name+"' in "+getClass());
+		throw new RuntimeException("No @nodeAttr/@nodeData space '"+name+"' in "+getClass());
 	}
 
 	public final <N extends ANode> N replaceWithNode(N node) {
@@ -684,7 +684,7 @@ class CurrentVersionInfo extends VersionInfo {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	@virtual typedef This  ≤ ASTNode;
@@ -695,14 +695,14 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	private static final class RefAttrSlot_this extends RefAttrSlot {
 		RefAttrSlot_this(String name, TypeInfo typeinfo) { super(name, typeinfo); }
-		public final void set(ANode parent, Object value) { throw new RuntimeException("@ref thisis not writeable"); }
+		public final void set(ANode parent, Object value) { throw new RuntimeException("@nodeData thisis not writeable"); }
 		public final Object get(ANode parent) { return parent; }
 	}
 	public static final RefAttrSlot_this nodeattr$this = new RefAttrSlot_this("this", TypeInfo.newTypeInfo(ANode.class,null));
 
 	private static final class RefAttrSlot_parent extends RefAttrSlot {
 		RefAttrSlot_parent(String name, TypeInfo typeinfo) { super(name, typeinfo); }
-		public final void set(ANode parent, Object value) { throw new RuntimeException("@ref parent is not writeable"); }
+		public final void set(ANode parent, Object value) { throw new RuntimeException("@nodeData parent is not writeable"); }
 		public final Object get(ANode parent) { return parent.parent(); }
 	}
 	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", TypeInfo.newTypeInfo(ANode.class,null));
@@ -719,7 +719,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public int						compileflags;	// temporal flags for compilation process
 	
 	public int						nodeflags;		// presistent flags of the node
-	@ref @abstract
+	@nodeData @abstract
 	public:ro ANode					parent;
 	
 	public static class VVV extends ANode.VVV {

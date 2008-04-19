@@ -21,10 +21,10 @@ import syntax kiev.Syntax;
  * A node that may be part of expression: statements, declarations, operators,
  * type reference, and expressions themselves
  */
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class ENode extends ASTNode {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  ≤ ENode;
 	@virtual typedef JView ≤ JENode;
@@ -32,11 +32,11 @@ public abstract class ENode extends ASTNode {
 
 	private Object	ident_or_symbol_or_type;
 	
-	@att @abstract public String			ident;
-	@att @abstract public boolean			qualified; // stored ident may be qualified name
-	@ref @abstract public ISymbol			symbol;
-	@ref @abstract public Type				type_lnk;
-	@ref @abstract public:ro DNode			dnode;
+	@nodeAttr @abstract public String			ident;
+	@nodeAttr @abstract public boolean			qualified; // stored ident may be qualified name
+	@nodeData @abstract public ISymbol			symbol;
+	@nodeData @abstract public Type				type_lnk;
+	@nodeData @abstract public:ro DNode			dnode;
 	
 	@getter public final String get$ident() {
 		Object id = this.ident_or_symbol_or_type;
@@ -325,12 +325,12 @@ public abstract class ENode extends ASTNode {
 	}
 }
 
-@node(name="NoOp", lang=CoreLang)
+@ThisIsANode(name="NoOp", lang=CoreLang)
 public final class NopExpr extends ENode {
 
 	public static final ENode dummyNode = new NopExpr();
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = NopExpr;
 	@virtual typedef RView = RNopExpr;

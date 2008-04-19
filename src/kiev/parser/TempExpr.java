@@ -20,12 +20,12 @@ import syntax kiev.Syntax;
 /**
  * Base class to represent unresolved, temporary created expressions.
  */
-@node(lang=void)
+@ThisIsANode(lang=void)
 public abstract class UnresExpr extends ENode {
 
 	@virtual typedef This  ≤ UnresExpr;
 
-	@ref public Operator				op;
+	@nodeData public Operator				op;
 
 	public UnresExpr() {}
 	
@@ -44,15 +44,15 @@ public abstract class UnresExpr extends ENode {
 /**
  * Represents unresolved, temporary created prefix/postfix/infix expression.
  *
- * 'expr' field is @ref to not change the owner of the expression.
+ * 'expr' field is @nodeData to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class UnresOpExpr extends UnresExpr {
 	
 	@virtual typedef This  = UnresOpExpr;
 
-	@ref public ENode[]				exprs;
+	@nodeData public ENode[]				exprs;
 
 	public UnresOpExpr() {}
 
@@ -164,13 +164,13 @@ public final class UnresOpExpr extends UnresExpr {
 /**
  * Represents unresolved, temporary created list of expression.
  */
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class UnresSeqs extends UnresExpr {
 	
 	@virtual typedef This  = UnresSeqs;
 
-	@ref public String				sep;
-	@ref public ENode[]				exprs;
+	@nodeData public String				sep;
+	@nodeData public ENode[]				exprs;
 
 	public UnresSeqs() {}
 
@@ -205,18 +205,18 @@ public final class UnresSeqs extends UnresExpr {
 /**
  * Represents unresolved, temporary created call expression.
  *
- * 'exprs' field is @ref to not change the owner of the expressions.
+ * 'exprs' field is @nodeData to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef This  = UnresCallExpr;
 
-	@ref public ENode				obj;
-	@ref public SymbolRef<DNode>	func;
-	@ref public TypeRef[]			targs;
-	@ref public ENode[]				args;
+	@nodeData public ENode				obj;
+	@nodeData public SymbolRef<DNode>	func;
+	@nodeData public TypeRef[]			targs;
+	@nodeData public ENode[]				args;
 
 	public UnresCallExpr() {}
 
@@ -277,13 +277,13 @@ public final class UnresCallExpr extends UnresExpr {
 /**
  * Represents unresolved, temporary created access expression.
  */
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class AccFldExpr extends UnresExpr {
 
 	@virtual typedef This  = AccFldExpr;
 
-	@ref public ENode				obj;
-	@ref public Field				fld;
+	@nodeData public ENode				obj;
+	@nodeData public Field				fld;
 
 	public AccFldExpr() {}
 

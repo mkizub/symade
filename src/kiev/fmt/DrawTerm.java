@@ -30,7 +30,7 @@ public class DrawTermLink {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public abstract class DrawTerm extends Drawable {
 	private static String _uninitialized_ = "uninitialized yet";
 
@@ -203,7 +203,7 @@ public abstract class DrawTerm extends Drawable {
 	public final String getText() { return text; }
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawToken extends DrawTerm {
 
 	public DrawToken(ANode node, SyntaxToken syntax, ATextSyntax text_syntax) {
@@ -213,7 +213,7 @@ public final class DrawToken extends DrawTerm {
 	String makeText(Formatter fmt) { return ((SyntaxToken)this.syntax).text; } 
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawPlaceHolder extends DrawTerm {
 
 	public DrawPlaceHolder(ANode node, SyntaxPlaceHolder syntax, ATextSyntax text_syntax) {
@@ -228,7 +228,7 @@ public final class DrawPlaceHolder extends DrawTerm {
 
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawNodeTerm extends DrawTerm {
 
 	String attr;
@@ -255,7 +255,7 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawIdent extends DrawNodeTerm {
 
 	private boolean escaped;
@@ -298,7 +298,7 @@ public class DrawIdent extends DrawNodeTerm {
 	public String getSuffix() { if (escaped) return ((SyntaxIdentAttr)this.syntax).getSuffix(); return ""; }
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawCharTerm extends DrawNodeTerm {
 
 	public DrawCharTerm(ANode node, SyntaxElem syntax, ATextSyntax text_syntax, String attr) {
@@ -322,7 +322,7 @@ public class DrawCharTerm extends DrawNodeTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawStrTerm extends DrawNodeTerm {
 
 	public DrawStrTerm(ANode node, SyntaxElem syntax, ATextSyntax text_syntax, String attr) {
@@ -342,7 +342,7 @@ public class DrawStrTerm extends DrawNodeTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawXmlStrTerm extends DrawNodeTerm {
 
 	public DrawXmlStrTerm(ANode node, SyntaxElem syntax, ATextSyntax text_syntax, String attr) {
@@ -383,7 +383,7 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawXmlTypeTerm extends DrawXmlStrTerm {
 
 	public DrawXmlTypeTerm(ANode node, SyntaxElem syntax, ATextSyntax text_syntax, String attr) {

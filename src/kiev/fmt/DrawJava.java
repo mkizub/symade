@@ -13,7 +13,7 @@ package kiev.fmt;
 import syntax kiev.Syntax;
 
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawJavaAccessExpr extends DrawNonTerm {
 	
 	public DrawJavaAccessExpr(ANode node, SyntaxJavaAccessExpr syntax, ATextSyntax text_syntax) {
@@ -59,7 +59,7 @@ public class DrawJavaAccessExpr extends DrawNonTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawJavaAccess extends DrawTerm {
 
 	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax, ATextSyntax text_syntax) {
@@ -115,7 +115,7 @@ public class DrawJavaAccess extends DrawTerm {
 
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawJavaPackedField extends DrawTerm {
 
 	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax, ATextSyntax text_syntax) {
@@ -132,7 +132,7 @@ public class DrawJavaPackedField extends DrawTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawJavaConstructorName extends DrawTerm {
 
 	public DrawJavaConstructorName(ANode node, SyntaxJavaConstructorName syntax, ATextSyntax text_syntax) {
@@ -147,16 +147,16 @@ public class DrawJavaConstructorName extends DrawTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class JavaComment extends ANode {
-	@ref public String text;
+	@nodeData public String text;
 
 	public JavaComment(String text) {
 		this.text = text;
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawJavaComment extends DrawNonTerm {
 
 	public String old_text;

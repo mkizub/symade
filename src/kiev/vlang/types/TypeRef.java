@@ -22,13 +22,13 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class TypeRef extends ENode {
 
 	public static final TypeRef[] emptyArray = new TypeRef[0];
 	public static final TypeRef dummyNode = new TypeRef();
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  ≤ TypeRef;
 	@virtual typedef JView = JTypeRef;
@@ -161,7 +161,7 @@ public class TypeRef extends ENode {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class TypeDeclRef extends TypeRef {
 	@virtual typedef This  = TypeDeclRef;
 	

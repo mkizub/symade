@@ -13,11 +13,11 @@ package kiev.fmt;
 import syntax kiev.Syntax;
 
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public abstract class DrawNonTerm extends Drawable {
-	@att public Drawable	folded;
-	@att public Drawable[]	args;
-	@att public boolean		draw_folded;
+	@nodeAttr public Drawable	folded;
+	@nodeAttr public Drawable[]	args;
+	@nodeAttr public boolean		draw_folded;
 	     public int			max_layout;
 
 	public DrawNonTerm(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
@@ -86,7 +86,7 @@ public abstract class DrawNonTerm extends Drawable {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawWrapList extends DrawNonTerm {
 
 	public boolean		draw_empty;
@@ -194,7 +194,7 @@ public final class DrawWrapList extends DrawNonTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawNonTermList extends DrawNonTerm {
 
 	private	ANode[] oarr;
@@ -292,7 +292,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawNonTermSet extends DrawNonTerm {
 
 	public DrawNonTermSet(ANode node, SyntaxSet syntax, ATextSyntax text_syntax) {
@@ -326,7 +326,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 }
 
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawSyntaxSwitch extends DrawNonTerm {
 	
 	public DrawSyntaxSwitch(ANode node, SyntaxSwitch syntax, ATextSyntax text_syntax) {

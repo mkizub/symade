@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable,GlobalDNode {
 	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;
@@ -37,16 +37,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	
 	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
-	@att public TypeConstr[]		targs;
-	@att public TypeRef				type_ret;
-	@att public TypeRef				dtype_ret;
-	@att public Var[]				params;
-	@att public Symbol[]			aliases;
-	@att public ENode				body;
-	@att public WBCCondition[]	 	conditions;
-	@att(ext_data=true) public Var	ret_var;
+	@nodeAttr public TypeConstr[]		targs;
+	@nodeAttr public TypeRef				type_ret;
+	@nodeAttr public TypeRef				dtype_ret;
+	@nodeAttr public Var[]				params;
+	@nodeAttr public Symbol[]			aliases;
+	@nodeAttr public ENode				body;
+	@nodeAttr public WBCCondition[]	 	conditions;
+	@nodeAttr(ext_data=true) public Var	ret_var;
 
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public Method		caller_from_inner;
 
 	private				CallType		_type;
@@ -886,11 +886,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 }
 
-@node(name="Method", lang=CoreLang)
+@ThisIsANode(name="Method", lang=CoreLang)
 public final class MethodImpl extends Method {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in")	Block		body;
-	@dflow(in="this:in")	WBCCondition[] 	conditions;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Block		body;
+	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 	
 	@virtual typedef This  = MethodImpl;
@@ -909,19 +909,19 @@ public final class MethodImpl extends Method {
 	}
 }
 
-@node(name="Ctor", lang=CoreLang)
+@ThisIsANode(name="Ctor", lang=CoreLang)
 public final class Constructor extends Method {
 	
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]			addstats;
-	@dflow(in="this:in")				Block			body;
-	@dflow(in="this:in")				WBCCondition[] 	conditions;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]			addstats;
+	@DataFlowDefinition(in="this:in")				Block			body;
+	@DataFlowDefinition(in="this:in")				WBCCondition[] 	conditions;
 	}
 
 	@virtual typedef This  = Constructor;
 	@virtual typedef RView = RConstructor;
 
-	@att public ENode[]				addstats;
+	@nodeAttr public ENode[]				addstats;
 
 	public Constructor() {}
 
@@ -959,18 +959,18 @@ public final class Constructor extends Method {
 
 }
 
-@node(name="InitBlock", lang=CoreLang)
+@ThisIsANode(name="InitBlock", lang=CoreLang)
 public final class Initializer extends DNode implements PreScanneable {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")		ENode		body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode		body;
 	}
 
 	@virtual typedef This  = Initializer;
 	@virtual typedef JView = JInitializer;
 	@virtual typedef RView = RInitializer;
 
-	@att public ENode				body;
+	@nodeAttr public ENode				body;
 
 	@getter public final Block get$block()	{ return (Block)this.body; }
 
@@ -1001,11 +1001,11 @@ public enum WBCType {
 	CondInvariant;
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class WBCCondition extends DNode {
 	
-	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")			ENode		body;
+	@DataFlowDefinition(out="body") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode		body;
 	}
 	
 	public static final WBCCondition[]	emptyArray = new WBCCondition[0];
@@ -1014,9 +1014,9 @@ public final class WBCCondition extends DNode {
 	@virtual typedef JView = JWBCCondition;
 	@virtual typedef RView = RWBCCondition;
 
-	@att public WBCType				cond;
-	@att public ENode				body;
-	@ref public Method				definer;
+	@nodeAttr public WBCType				cond;
+	@nodeAttr public ENode				body;
+	@nodeData public Method				definer;
 	     public CodeAttr			code_attr;
 
 	public WBCCondition() {}

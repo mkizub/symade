@@ -474,10 +474,10 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	private DataFlowInfo(ASTNode node_impl) {
 		this.node_impl = node_impl;
 		Vector<DFSocket> chl_dfs = new Vector<DFSocket>();
-		Hashtable<String,kiev.vlang.dflow> dflows = new Hashtable<String,kiev.vlang.dflow>();
+		Hashtable<String,DataFlowDefinition> dflows = new Hashtable<String,DataFlowDefinition>();
 		int attach_idx = 0;
 		foreach (AttrSlot attr; node_impl.values(); attr.is_attr) {
-			kiev.vlang.dflow dfd = getFieldAnnotation(attr.name);
+			DataFlowDefinition dfd = getFieldAnnotation(attr.name);
 			if (dfd != null) {
 				String seq = dfd.seq().intern();
 				if (ASSERT_MORE) assert (seq=="true" || seq=="false" || seq=="");
@@ -496,7 +496,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		children = chl_dfs.toArray();
 		int lock_idx = 0;
 		foreach (String name; dflows.keys()) {
-			kiev.vlang.dflow dfd = dflows.get(name);
+			DataFlowDefinition dfd = dflows.get(name);
 			DFSocket df = getSocket(name);
 			String fin = dfd.in().intern();
 			String[] flnk = dfd.links();
@@ -508,7 +508,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 			}
 		}
 		{
-			kiev.vlang.dflow dfd = getClassAnnotation();
+			DataFlowDefinition dfd = getClassAnnotation();
 			String fin = dfd.in().intern();
 			String fout = dfd.out().intern();
 			String fjmp = dfd.jmp().intern();
@@ -576,12 +576,12 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		throw new RuntimeException("Bad data flow info slot "+slot);
 	}
 
-	private kiev.vlang.dflow getClassAnnotation() {
+	private DataFlowDefinition getClassAnnotation() {
 		try {
 			java.lang.Class cls = Class.forName(node_impl.getClass().getName()+"$DFI");
-			kiev.vlang.dflow dfd = (kiev.vlang.dflow)cls.getAnnotation(kiev.vlang.dflow.class);
+			DataFlowDefinition dfd = (DataFlowDefinition)cls.getAnnotation(DataFlowDefinition.class);
 			if (dfd == null)
-				throw new Error("Internal error: no @dflow in "+node_impl.getClass()+"$DFI");
+				throw new Error("Internal error: no @DataFlowDefinition in "+node_impl.getClass()+"$DFI");
 			return dfd;
 		} catch (ClassNotFoundException e) {
 			throw new Error("Internal error: no class "+node_impl.getClass()+"$DFI");
@@ -589,11 +589,11 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		
 	}
 
-	private kiev.vlang.dflow getFieldAnnotation(String name) {
+	private DataFlowDefinition getFieldAnnotation(String name) {
 		try {
 			java.lang.Class cls = Class.forName(node_impl.getClass().getName()+"$DFI");
 			java.lang.reflect.Field jf = cls.getDeclaredField(name);
-			return (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
+			return (DataFlowDefinition)jf.getAnnotation(DataFlowDefinition.class);
 		} catch (NoSuchFieldException e) {
 			return null;
 			//throw new Error("Internal error: no field "+name+" in "+getClass()+"$DFI");

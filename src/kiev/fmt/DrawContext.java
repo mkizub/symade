@@ -358,16 +358,16 @@ public final class DrawLinkContext {
 	
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawLayoutBlock extends ANode {
 
 	public static final DrawLayoutBlock[] emptyArray = new DrawLayoutBlock[0];
 
-	@att
+	@nodeAttr
 	public DrawLayoutBlock[]	blocks;
-	@ref
+	@nodeData
 	public AParagraphLayout		par;
-	@ref
+	@nodeData
 	public Drawable				dr;
 	public int					max_layout;		// for block (alternative) layouts
 	public boolean				is_flow;		// for flow blocks

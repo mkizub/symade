@@ -20,14 +20,14 @@ import syntax kiev.Syntax;
 /**
  * A node that is a syntax modifier: import, operator decl, separators, comments, etc.
  */
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class SNode extends ASTNode {
 
 	@virtual typedef This  ≤ SNode;
 	@virtual typedef JView ≤ JSNode;
 	@virtual typedef RView ≤ RSNode;
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final SNode dummyNode = new SNode();
 
@@ -41,7 +41,7 @@ public class SNode extends ASTNode {
 
 }
 
-@node(name="Comment", lang=CoreLang)
+@ThisIsANode(name="Comment", lang=CoreLang)
 public final class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
@@ -49,28 +49,28 @@ public final class Comment extends SNode {
     public static final AttrSlot ATTR_BEFORE = new ExtAttrSlot("comment before", true, false, true, TypeInfo.newTypeInfo(Comment.class,null));
     public static final AttrSlot ATTR_AFTER  = new ExtAttrSlot("comment after",  true, false, true, TypeInfo.newTypeInfo(Comment.class,null));
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@att public boolean eol_form;
-	@att public boolean multiline;
-	@att public boolean doc_form;
-	@att public boolean nl_before;
-	@att public boolean nl_after;
-	@att public String  text;
+	@nodeAttr public boolean eol_form;
+	@nodeAttr public boolean multiline;
+	@nodeAttr public boolean doc_form;
+	@nodeAttr public boolean nl_before;
+	@nodeAttr public boolean nl_after;
+	@nodeAttr public String  text;
 	
 	public Comment() {}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMethods {
 	
 	@virtual typedef This  ≤ DeclGroup;
 	@virtual typedef JView = JDeclGroup;
 	@virtual typedef RView = RDeclGroup;
 
-	@att public final	MetaSet			meta;
-	@att public			TypeRef			dtype;
-	@att public			DNode[]			decls;
+	@nodeAttr public final	MetaSet			meta;
+	@nodeAttr public			TypeRef			dtype;
+	@nodeAttr public			DNode[]			decls;
 
 	@getter public final Type	get$type() { return this.dtype.getType(); }
 
@@ -165,35 +165,35 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class DeclGroupFields extends DeclGroup {
 	@virtual typedef This  = DeclGroupFields;
 
-	@dflow(out="decls") private static class DFI {
-	@dflow(in="", seq="true")	DNode[]		decls;
+	@DataFlowDefinition(out="decls") private static class DFI {
+	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
 	}
 
 	public DeclGroupFields() {}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class DeclGroupVars extends DeclGroup {
 	@virtual typedef This  = DeclGroupVars;
 
-	@dflow(out="decls") private static class DFI {
-	@dflow(in="", seq="true")	DNode[]		decls;
+	@DataFlowDefinition(out="decls") private static class DFI {
+	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
 	}
 
 	public DeclGroupVars() {}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class DeclGroupEnumFields extends DeclGroup {
 	
 	@virtual typedef This  = DeclGroupEnumFields;
 
-	@dflow(out="decls") private static class DFI {
-	@dflow(in="", seq="true")	DNode[]		decls;
+	@DataFlowDefinition(out="decls") private static class DFI {
+	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
 	}
 
 	public DeclGroupEnumFields() {
@@ -212,13 +212,13 @@ public final class DeclGroupEnumFields extends DeclGroup {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class DeclGroupCaseFields extends DeclGroup {
 	
 	@virtual typedef This  = DeclGroupCaseFields;
 
-	@dflow(out="decls") private static class DFI {
-	@dflow(in="", seq="true")	DNode[]		decls;
+	@DataFlowDefinition(out="decls") private static class DFI {
+	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
 	}
 
 	public DeclGroupCaseFields() {}

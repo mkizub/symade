@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=void)
+@ThisIsANode(lang=void)
 public interface ISymbol extends INode {
 	@virtual typedef This  ≤ ISymbol;
 
@@ -27,17 +27,17 @@ public interface ISymbol extends INode {
 	@getter public DNode	get$dnode();
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 @unerasable
 public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  ≤ Symbol;
 
 	public static final Symbol[] emptyArray = new Symbol[0];
 
-	@att public	String		sname; // source code name, may be null for anonymouse symbols
+	@nodeAttr public	String		sname; // source code name, may be null for anonymouse symbols
 	
 	@getter public D get$dnode() {
 		ANode p = parent();
@@ -117,10 +117,10 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class SymbolRef<D extends DNode> extends ASTNode {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SymbolRef;
 
@@ -128,9 +128,9 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	private Object	ident_or_symbol_or_type;
 	
-	@abstract @att public		String		name; // unresolved name
-	@abstract @att public		boolean		qualified; // stored name may be qualified name
-	@abstract @ref public		ISymbol		symbol; // resolved symbol
+	@abstract @nodeAttr public		String		name; // unresolved name
+	@abstract @nodeAttr public		boolean		qualified; // stored name may be qualified name
+	@abstract @nodeData public		ISymbol		symbol; // resolved symbol
 	@abstract      public:ro	D			dnode; // resolved dnode (symbol.parent())
 		 
 	public SymbolRef() {}

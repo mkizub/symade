@@ -47,10 +47,10 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
-	@dflow(in="root()", out="this:out()") private static class DFI {}
+	@DataFlowDefinition(in="root()", out="this:out()") private static class DFI {}
 
 	public static final class ParamRedir {
 		public Var		old_var;
@@ -62,8 +62,8 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	@virtual typedef JView = JInlineMethodStat;
 	@virtual typedef RView = RInlineMethodStat;
 
-	@att public Method			method;
-	@ref public ParamRedir[]	params_redir;
+	@nodeAttr public Method			method;
+	@nodeData public ParamRedir[]	params_redir;
 
 	public InlineMethodStat() {}
 
@@ -128,18 +128,18 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 }
 
-@node(name="ExprSt", lang=CoreLang)
+@ThisIsANode(name="ExprSt", lang=CoreLang)
 public class ExprStat extends ENode {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
 	@virtual typedef This  = ExprStat;
 	@virtual typedef JView = JExprStat;
 	@virtual typedef RView = RExprStat;
 
-	@att public ENode	expr;
+	@nodeAttr public ENode	expr;
 
 	public ExprStat() {}
 
@@ -162,18 +162,18 @@ public class ExprStat extends ENode {
 	}
 }
 
-@node(name="Return", lang=CoreLang)
+@ThisIsANode(name="Return", lang=CoreLang)
 public class ReturnStat extends ENode {
 	
-	@dflow(jmp="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
+	@DataFlowDefinition(jmp="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
 	@virtual typedef This  = ReturnStat;
 	@virtual typedef JView = JReturnStat;
 	@virtual typedef RView = RReturnStat;
 
-	@att public ENode	expr;
+	@nodeAttr public ENode	expr;
 
 	public ReturnStat() {}
 
@@ -198,18 +198,18 @@ public class ReturnStat extends ENode {
 	}
 }
 
-@node(name="Throw", lang=CoreLang)
+@ThisIsANode(name="Throw", lang=CoreLang)
 public class ThrowStat extends ENode {
 	
-	@dflow(jmp="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
+	@DataFlowDefinition(jmp="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
 	@virtual typedef This  = ThrowStat;
 	@virtual typedef JView = JThrowStat;
 	@virtual typedef RView = RThrowStat;
 
-	@att public ENode	expr;
+	@nodeAttr public ENode	expr;
 
 	public ThrowStat() {}
 
@@ -220,22 +220,22 @@ public class ThrowStat extends ENode {
 	}
 }
 
-@node(name="If", lang=CoreLang)
+@ThisIsANode(name="If", lang=CoreLang)
 public class IfElseStat extends ENode {
 	
-	@dflow(out="join thenSt elseSt") private static class DFI {
-	@dflow(in="this:in")	ENode		cond;
-	@dflow(in="cond:true")	ENode		thenSt;
-	@dflow(in="cond:false")	ENode		elseSt;
+	@DataFlowDefinition(out="join thenSt elseSt") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		cond;
+	@DataFlowDefinition(in="cond:true")	ENode		thenSt;
+	@DataFlowDefinition(in="cond:false")	ENode		elseSt;
 	}
 
 	@virtual typedef This  = IfElseStat;
 	@virtual typedef JView = JIfElseStat;
 	@virtual typedef RView = RIfElseStat;
 
-	@att public ENode			cond;
-	@att public ENode			thenSt;
-	@att public ENode			elseSt;
+	@nodeAttr public ENode			cond;
+	@nodeAttr public ENode			thenSt;
+	@nodeAttr public ENode			elseSt;
 
 	public IfElseStat() {}
 	
@@ -267,21 +267,21 @@ public class IfElseStat extends ENode {
 	}
 }
 
-@node(name="CondSt", lang=CoreLang)
+@ThisIsANode(name="CondSt", lang=CoreLang)
 public class CondStat extends ENode {
 	
-	@dflow(out="cond:true") private static class DFI {
-	@dflow(in="this:in")		ENode		cond;
-	@dflow(in="cond:false")		ENode		message;
+	@DataFlowDefinition(out="cond:true") private static class DFI {
+	@DataFlowDefinition(in="this:in")		ENode		cond;
+	@DataFlowDefinition(in="cond:false")		ENode		message;
 	}
 
 	@virtual typedef This  = CondStat;
 	@virtual typedef JView = JCondStat;
 	@virtual typedef RView = RCondStat;
 
-	@att public ENode		enabled;
-	@att public ENode		cond;
-	@att public ENode		message;
+	@nodeAttr public ENode		enabled;
+	@nodeAttr public ENode		cond;
+	@nodeAttr public ENode		message;
 
 	public CondStat() {}
 
@@ -292,12 +292,12 @@ public class CondStat extends ENode {
 	}
 }
 
-@node(name="LblSt", lang=CoreLang)
+@ThisIsANode(name="LblSt", lang=CoreLang)
 public class LabeledStat extends ENode {
 	
-	@dflow(out="stat") private static class DFI {
-	@dflow(in="this:in")	Label			lbl;
-	@dflow(in="lbl")		ENode			stat;
+	@DataFlowDefinition(out="stat") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Label			lbl;
+	@DataFlowDefinition(in="lbl")		ENode			stat;
 	}
 
 	public static final LabeledStat[]	emptyArray = new LabeledStat[0];
@@ -306,24 +306,24 @@ public class LabeledStat extends ENode {
 	@virtual typedef JView = JLabeledStat;
 	@virtual typedef RView = RLabeledStat;
 
-	@att public Label			lbl;
-	@att public ENode			stat;
+	@nodeAttr public Label			lbl;
+	@nodeAttr public ENode			stat;
 
 	public LabeledStat() {
 		this.lbl = new Label();
 	}
 }
 
-@node(name="Break", lang=CoreLang)
+@ThisIsANode(name="Break", lang=CoreLang)
 public class BreakStat extends ENode {
 	
-	@dflow(jmp="this:in") private static class DFI {}
+	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = BreakStat;
 	@virtual typedef JView = JBreakStat;
 	@virtual typedef RView = RBreakStat;
 
-	@ref(copyable=false) public Label		dest;
+	@nodeData(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
 		if (dest != null && dest.ctx_root != this.ctx_root) {
@@ -387,16 +387,16 @@ public class BreakStat extends ENode {
 	}
 }
 
-@node(name="Continue", lang=CoreLang)
+@ThisIsANode(name="Continue", lang=CoreLang)
 public class ContinueStat extends ENode {
 	
-	@dflow(jmp="this:in") private static class DFI {}
+	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = ContinueStat;
 	@virtual typedef JView = JContinueStat;
 	@virtual typedef RView = RContinueStat;
 
-	@ref(copyable=false) public Label		dest;
+	@nodeData(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
 		if (dest != null && dest.ctx_root != this.ctx_root) {
@@ -460,16 +460,16 @@ public class ContinueStat extends ENode {
 	}
 }
 
-@node(name="Goto", lang=CoreLang)
+@ThisIsANode(name="Goto", lang=CoreLang)
 public class GotoStat extends ENode {
 	
-	@dflow(jmp="this:in") private static class DFI {}
+	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = GotoStat;
 	@virtual typedef JView = JGotoStat;
 	@virtual typedef RView = RGotoStat;
 
-	@ref(copyable=false) public Label		dest;
+	@nodeData(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
 		if (dest != null && dest.ctx_root != this.ctx_root) {
@@ -521,19 +521,19 @@ public class GotoStat extends ENode {
 	}
 }
 
-@node(name="GotoCase", lang=CoreLang)
+@ThisIsANode(name="GotoCase", lang=CoreLang)
 public class GotoCaseStat extends ENode {
 	
-	@dflow(jmp="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
+	@DataFlowDefinition(jmp="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
 	@virtual typedef This  = GotoCaseStat;
 	@virtual typedef JView = JGotoCaseStat;
 	@virtual typedef RView = RGotoCaseStat;
 
-	@att public ENode		expr;
-	@ref public SwitchStat	sw;
+	@nodeAttr public ENode		expr;
+	@nodeData public SwitchStat	sw;
 
 	public GotoCaseStat() {}
 }

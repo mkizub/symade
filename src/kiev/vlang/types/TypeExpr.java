@@ -17,18 +17,18 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="TypeExpr", lang=CoreLang)
+@ThisIsANode(name="TypeExpr", lang=CoreLang)
 public class TypeExpr extends TypeRef {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeExpr;
 
 	private Object op_or_name;
 	
-	@att           public TypeRef		arg;
-	@att @abstract public Operator		op;
-	@att @abstract public String		op_name;
+	@nodeAttr           public TypeRef		arg;
+	@nodeAttr @abstract public Operator		op;
+	@nodeAttr @abstract public String		op_name;
 
 	public TypeExpr() {}
 

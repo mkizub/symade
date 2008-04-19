@@ -15,7 +15,7 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxXmlStrAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxXmlStrAttr;
 
@@ -30,7 +30,7 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxXmlTypeAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxXmlTypeAttr;
 
@@ -45,17 +45,17 @@ public class SyntaxXmlTypeAttr extends SyntaxAttr {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class XmlDumpSyntax extends ATextSyntax {
 	@virtual typedef This  = XmlDumpSyntax;
 
-	@ref SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
-	@ref SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
-	@ref SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
-	@ref SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
-	@ref ParagraphLayout plIndented = new ParagraphLayout("par-indented", 1, 10);
+	@nodeData SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
+	@nodeData SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
+	@nodeData SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
+	@nodeData SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
+	@nodeData ParagraphLayout plIndented = new ParagraphLayout("par-indented", 1, 10);
 
-	@att public String dump;
+	@nodeAttr public String dump;
 
 	@setter
 	public void set$dump(String value) {

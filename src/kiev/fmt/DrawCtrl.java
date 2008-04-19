@@ -12,9 +12,9 @@ package kiev.fmt;
 
 import syntax kiev.Syntax;
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawCtrl extends Drawable {
-	@att
+	@nodeAttr
 	public Drawable arg;
 	
 	public DrawCtrl(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
@@ -64,7 +64,7 @@ public class DrawCtrl extends Drawable {
 
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawSpace extends DrawCtrl {
 
 	public DrawSpace(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
@@ -76,7 +76,7 @@ public class DrawSpace extends DrawCtrl {
 
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawSubAttr extends DrawCtrl {
 
 	public DrawSubAttr(ANode node, SyntaxSubAttr syntax, ATextSyntax text_syntax) {
@@ -115,7 +115,7 @@ public class DrawSubAttr extends DrawCtrl {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawNode extends DrawCtrl {
 
 	public DrawNode(ANode node, SyntaxNode syntax, ATextSyntax text_syntax) {
@@ -150,7 +150,7 @@ public class DrawNode extends DrawCtrl {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawOptional extends DrawCtrl {
 
 	private	boolean drawed_as_true;
@@ -191,7 +191,7 @@ public class DrawOptional extends DrawCtrl {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawEnumChoice extends DrawCtrl {
 
 	private Object drawed_en;
@@ -229,10 +229,10 @@ public class DrawEnumChoice extends DrawCtrl {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public final class DrawFolded extends DrawCtrl {
 
-	@att
+	@nodeAttr
 	public	boolean draw_folded;
 	private	boolean drawed_as_folded;
 	

@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public class Opdef extends SNode {
 	@virtual typedef This  = Opdef;
 
@@ -58,11 +58,11 @@ public class Opdef extends SNode {
 		"fxfy"		// FXFY
 	};
 	
-	@att public int					prior;
-	@att public int					opmode;
-	@att public String				image;
-	@att public String				decl;
-	@ref public Operator			resolved;
+	@nodeAttr public int					prior;
+	@nodeAttr public int					opmode;
+	@nodeAttr public String				image;
+	@nodeAttr public String				decl;
+	@nodeData public Operator			resolved;
 
 	@setter
 	public void set$image(String value) {

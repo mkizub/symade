@@ -15,6 +15,7 @@ syntax Syntax extends kiev.stdlib.Syntax {
 import kiev.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
+import kiev.vtree.*;
 import kiev.transf.*;
 import kiev.parser.*;
 import static kiev.stdlib.Debug.*;

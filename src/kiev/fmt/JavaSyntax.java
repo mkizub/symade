@@ -16,25 +16,25 @@ import static kiev.fmt.SpaceKind.*;
 import syntax kiev.Syntax;
 
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxJavaCommentTemplate;
 
-	@att public SyntaxElem		newline;
-	@att public SyntaxElem		lin_beg;
-	@att public SyntaxElem		doc_beg;
-	@att public SyntaxElem		cmt_beg;
-	@att public SyntaxElem		cmt_end;
+	@nodeAttr public SyntaxElem		newline;
+	@nodeAttr public SyntaxElem		lin_beg;
+	@nodeAttr public SyntaxElem		doc_beg;
+	@nodeAttr public SyntaxElem		cmt_beg;
+	@nodeAttr public SyntaxElem		cmt_end;
 
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaAccessExpr extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaAccessExpr;
 
-	@att public SyntaxElem			obj_elem;
-	@att public SyntaxToken			separator;
-	@att public SyntaxElem			fld_elem;
+	@nodeAttr public SyntaxElem			obj_elem;
+	@nodeAttr public SyntaxToken			separator;
+	@nodeAttr public SyntaxElem			fld_elem;
 
 	public SyntaxJavaAccessExpr() {}
 
@@ -44,7 +44,7 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaAccess extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaAccess;
 
@@ -56,7 +56,7 @@ public class SyntaxJavaAccess extends SyntaxElem {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaPackedField extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaPackedField;
 
@@ -69,11 +69,11 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 }
 
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaComment extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaComment;
 
-	@att public SymbolRef<SyntaxJavaCommentTemplate>	template;
+	@nodeAttr public SymbolRef<SyntaxJavaCommentTemplate>	template;
 
 	public SyntaxJavaComment() {
 		this.template = new SymbolRef<SyntaxJavaCommentTemplate>();
@@ -107,7 +107,7 @@ public class SyntaxJavaComment extends SyntaxElem {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaConstructorName extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaConstructorName;
 
@@ -119,7 +119,7 @@ public class SyntaxJavaConstructorName extends SyntaxElem {
 	}
 }
 
-@node(lang=SyntaxLang)
+@ThisIsANode(lang=SyntaxLang)
 public class KievTextSyntax extends ATextSyntax {
 	@virtual typedef This  = KievTextSyntax;
 

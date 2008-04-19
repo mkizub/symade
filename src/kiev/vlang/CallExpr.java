@@ -25,22 +25,22 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@node(name="Call", lang=CoreLang)
+@ThisIsANode(name="Call", lang=CoreLang)
 public class CallExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in")				ENode		obj;
-	@dflow(in="obj", seq="true")		ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		obj;
+	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
 	
 	@virtual typedef This  = CallExpr;
 	@virtual typedef JView = JCallExpr;
 	@virtual typedef RView = RCallExpr;
 
-	@att				public ENode				obj;
-	@att				public TypeRef[]			targs;
-	@att				public ENode[]				args;
-	@att(ext_data=true)	public ENode[]				eargs;
+	@nodeAttr				public ENode				obj;
+	@nodeAttr				public TypeRef[]			targs;
+	@nodeAttr				public ENode[]				args;
+	@nodeAttr(ext_data=true)	public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;
@@ -356,24 +356,24 @@ public class CallExpr extends ENode {
 	}
 }
 
-@node(name="CtorCall", lang=CoreLang)
+@ThisIsANode(name="CtorCall", lang=CoreLang)
 public class CtorCallExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in")				ENode		obj;
-	@dflow(in="obj")					ENode		tpinfo;
-	@dflow(in="tpinfo", seq="true")		ENode[]		args;
-	@dflow(in="args", seq="true")		ENode[]		eargs;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		obj;
+	@DataFlowDefinition(in="obj")					ENode		tpinfo;
+	@DataFlowDefinition(in="tpinfo", seq="true")		ENode[]		args;
+	@DataFlowDefinition(in="args", seq="true")		ENode[]		eargs;
 	}
 	
 	@virtual typedef This  = CtorCallExpr;
 	@virtual typedef JView = JCtorCallExpr;
 	@virtual typedef RView = RCtorCallExpr;
 
-	@att				public ENode				obj;
-	@att(ext_data=true)	public ENode				tpinfo;
-	@att				public ENode[]				args;
-	@att(ext_data=true)	public ENode[]				eargs;
+	@nodeAttr				public ENode				obj;
+	@nodeAttr(ext_data=true)	public ENode				tpinfo;
+	@nodeAttr				public ENode[]				args;
+	@nodeAttr(ext_data=true)	public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;
@@ -455,21 +455,21 @@ public class CtorCallExpr extends ENode {
 	}
 }
 
-@node(name="CallClosure", lang=CoreLang)
+@ThisIsANode(name="CallClosure", lang=CoreLang)
 public class ClosureCallExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in")				ENode		expr;
-	@dflow(in="expr", seq="true")		ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		expr;
+	@DataFlowDefinition(in="expr", seq="true")		ENode[]		args;
 	}
 	
 	@virtual typedef This  = ClosureCallExpr;
 	@virtual typedef JView = JClosureCallExpr;
 	@virtual typedef RView = RClosureCallExpr;
 
-	@att public ENode				expr;
-	@att public ENode[]				args;
-	@att public Boolean				is_a_call;
+	@nodeAttr public ENode				expr;
+	@nodeAttr public ENode[]				args;
+	@nodeAttr public Boolean				is_a_call;
 
 	public ClosureCallExpr() {}
 

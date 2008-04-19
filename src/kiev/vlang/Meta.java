@@ -18,12 +18,12 @@ import syntax kiev.Syntax;
  */
 
 // Meta information about a node
-@node(name="MetaSet", lang=CoreLang)
+@ThisIsANode(name="MetaSet", lang=CoreLang)
 public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
 
-	@att
+	@nodeAttr
 	public MNode[]		metas;
 
 	// public just because of bit-mapped fields implementation
@@ -147,7 +147,7 @@ public final class MetaSet extends ASTNode {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class MNode extends ASTNode {
 	@virtual typedef This  ≤ MNode;
 	
@@ -162,14 +162,14 @@ public abstract class MNode extends ASTNode {
 	public boolean isRuntimeInvisible() { return false; }
 }
 
-@node(name="UserMeta", lang=CoreLang)
+@ThisIsANode(name="UserMeta", lang=CoreLang)
 public class UserMeta extends MNode {
 	@virtual typedef This  ≤ UserMeta;
 
 	@abstract
-	@att public String					qname;
-	@att public SymbolRef<Struct>		decl;
-	@att public MetaValue[]				values;
+	@nodeAttr public String					qname;
+	@nodeAttr public SymbolRef<Struct>		decl;
+	@nodeAttr public MetaValue[]				values;
 
 	public boolean equals(Object o) {
 		if!(o instanceof UserMeta)
@@ -564,7 +564,7 @@ public class UserMeta extends MNode {
 	}
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class MetaValue extends ENode {
 	public static final MetaValue[] emptyArray = new MetaValue[0];
 
@@ -625,12 +625,12 @@ public abstract class MetaValue extends ENode {
 	}
 }
 
-@node(name="MetaVal", lang=CoreLang)
+@ThisIsANode(name="MetaVal", lang=CoreLang)
 public final class MetaValueScalar extends MetaValue {
 
 	@virtual typedef This  = MetaValueScalar;
 
-	@att public ASTNode			value;
+	@nodeAttr public ASTNode			value;
 
 	public MetaValueScalar() {}
 
@@ -670,12 +670,12 @@ public final class MetaValueScalar extends MetaValue {
 	}
 }
 
-@node(name="MetaArr", lang=CoreLang)
+@ThisIsANode(name="MetaArr", lang=CoreLang)
 public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef This  = MetaValueArray;
 
-	@att public ASTNode[]				values;
+	@nodeAttr public ASTNode[]				values;
 
 	public MetaValueArray() {}
 

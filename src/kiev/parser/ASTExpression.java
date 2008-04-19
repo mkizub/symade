@@ -20,16 +20,16 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  *
  */
 
-@node(name="Expr", lang=CoreLang)
+@ThisIsANode(name="Expr", lang=CoreLang)
 public class ASTExpression extends ENode {
 
-	@dflow(out="nodes") private static class DFI {
-	@dflow(in="this:in", seq="true")		ENode[]		nodes;
+	@DataFlowDefinition(out="nodes") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")		ENode[]		nodes;
 	}
 	
 	@virtual typedef This  = ASTExpression;
 
-	@att public ENode[]				nodes;
+	@nodeAttr public ENode[]				nodes;
 
 	private int cur_pos;
 

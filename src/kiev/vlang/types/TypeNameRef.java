@@ -17,15 +17,15 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class TypeNameRef extends TypeRef {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeNameRef;
 
-	@att public TypeNameRef			outer;
-	@att public TypeRef[]			args;
+	@nodeAttr public TypeNameRef			outer;
+	@nodeAttr public TypeRef[]			args;
 
 	public TypeNameRef() {}
 

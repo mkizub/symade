@@ -22,39 +22,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface dflow {
-	String in() default "";
-	String tru() default "";
-	String fls() default "";
-	String out() default "";
-	String jmp() default "";
-	String seq() default "";
-	String[] links() default {};
-}
-
-// syntax-tree node
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface node {
-	String name() default "";
-	Class lang() default void;
-	boolean copyable() default true;
-}
-// syntax-tree attribute field
-public @interface att {
-	boolean copyable() default true;
-	boolean ext_data() default false;
-}
-// syntax-tree reference field
-public @interface ref {
-	boolean copyable() default true;
-	boolean ext_data() default false;
-}
-// the field of a node is not versioned and is present in compiler version only
-public @interface UnVersioned {}
-
-
 public final class AttrPtr {
 	public final ANode node;
 	public final AttrSlot slot;
@@ -105,9 +72,9 @@ public abstract class AttrSlot {
 	public static final AttrSlot[] emptyArray = new AttrSlot[0];
 	
 	public final String   name; // field (property) name
-	public final boolean  is_attr; // @att or @ref
+	public final boolean  is_attr; // @nodeAttr or @nodeData
 	public final boolean  is_space; // if Node[]
-	public final boolean  is_child; // @att and Node
+	public final boolean  is_child; // @nodeAttr and Node
 	public final boolean  is_external; // not declared within the node (i.e., not listed in values())
 	public final Class    clazz; // type of the fields
 	public final TypeInfo typeinfo; // type of the fields

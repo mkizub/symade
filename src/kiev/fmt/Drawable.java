@@ -13,7 +13,7 @@ package kiev.fmt;
 import syntax kiev.Syntax;
 
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public abstract class Drawable extends ANode {
 
 	public static final Drawable[] emptyArray = new Drawable[0];

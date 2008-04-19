@@ -970,13 +970,13 @@ INTERFACE kievvlangPreScanneable kiev/vlang/PreScanneable kiev/vlang/AST.java
 INTERFACE kievvlangScope kiev/vlang/Scope kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfMethods kiev/vlang/ScopeOfMethods kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfNames kiev/vlang/ScopeOfNames kiev/vlang/Resolving.java
-INTERFACE kievvlangUnVersioned kiev/vlang/UnVersioned kiev/vlang/Tree.java
-INTERFACE kievvlangatt kiev/vlang/att kiev/vlang/Tree.java
-INTERFACE kievvlangdflow kiev/vlang/dflow kiev/vlang/Tree.java
-INTERFACE kievvlangnode kiev/vlang/node kiev/vlang/Tree.java
-INTERFACE kievvlangref kiev/vlang/ref kiev/vlang/Tree.java
 INTERFACE kievvlangtypesStdTypes kiev/vlang/types/StdTypes kiev/vlang/types/StdTypes.java
 INTERFACE kievvlangtypesTVSet kiev/vlang/types/TVSet kiev/vlang/types/TVarBld.java
+INTERFACE kievvtreeDataFlowDefinition kiev/vtree/DataFlowDefinition kiev/vtree/metas.java
+INTERFACE kievvtreeThisIsANode kiev/vtree/ThisIsANode kiev/vtree/metas.java
+INTERFACE kievvtreeUnVersioned kiev/vtree/UnVersioned kiev/vtree/metas.java
+INTERFACE kievvtreenodeAttr kiev/vtree/nodeAttr kiev/vtree/metas.java
+INTERFACE kievvtreenodeData kiev/vtree/nodeData kiev/vtree/metas.java
 METATYPE kievirRuleTemplates kiev/ir/RuleTemplates.xml bad
 METATYPE kievstdlibGString kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlib_array_ kiev/stdlib/MetaTypesInternal.java bad

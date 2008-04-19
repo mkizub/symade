@@ -25,7 +25,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="Var", lang=CoreLang)
+@ThisIsANode(name="Var", lang=CoreLang)
 public abstract class Var extends DNode implements GlobalDNode {
 	
 	@virtual typedef This  ≤ Var;
@@ -48,19 +48,19 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final int PARAM_LVAR_PROXY   = 13;
 	public static final int PARAM_TYPEINFO_N   = 128;
 
-	@att
+	@nodeAttr
 	public int			kind;
-	@att
+	@nodeAttr
 	public TypeRef		vtype;
-	@att(ext_data=true)
+	@nodeAttr(ext_data=true)
 	public TypeRef		stype;
-	@att
+	@nodeAttr
 	public ENode		init;
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public Method		getter;
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public Method		setter;
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public ConstExpr	const_value;
 
 	public int bcpos;
@@ -286,10 +286,10 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 }
 
-@node(name="LVar", lang=CoreLang)
+@ThisIsANode(name="LVar", lang=CoreLang)
 public class LVar extends Var {
-	@dflow(out="this:out()") private static class DFI {
-	@dflow(in="this:in")	ENode			init;
+	@DataFlowDefinition(out="this:out()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			init;
 	}
 
 	@virtual typedef This  = LVar;
@@ -319,13 +319,13 @@ public class LVar extends Var {
 	}
 }
 
-@node(name="Field", lang=CoreLang)
+@ThisIsANode(name="Field", lang=CoreLang)
 public class Field extends Var {
 	public static final Field[]	emptyArray = new Field[0];
 	static final Field dummyNode = new Field();
 
-	@dflow(out="init") private static class DFI {
-	@dflow(in="this:in")	ENode			init;
+	@DataFlowDefinition(out="init") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			init;
 	}
 
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
@@ -335,9 +335,9 @@ public class Field extends Var {
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public Method		getter_from_inner;
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public Method		setter_from_inner;
 
 	public Field() { super(FIELD_NORMAL); }

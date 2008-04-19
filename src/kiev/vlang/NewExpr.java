@@ -31,25 +31,25 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="New", lang=CoreLang)
+@ThisIsANode(name="New", lang=CoreLang)
 public final class NewExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in")			ENode		outer;
-	@dflow(in="outer")				TypeRef		type;
-	@dflow(in="type")				ENode		tpinfo;
-	@dflow(in="tpinfo", seq="true")	ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")			ENode		outer;
+	@DataFlowDefinition(in="outer")				TypeRef		type;
+	@DataFlowDefinition(in="type")				ENode		tpinfo;
+	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
 	}
 
 	@virtual typedef This  = NewExpr;
 	@virtual typedef JView = JNewExpr;
 	@virtual typedef RView = RNewExpr;
 
-	@att				public TypeRef				type;
-	@att				public ENode				outer;
-	@att(ext_data=true)	public ENode				tpinfo;
-	@att				public ENode[]				args;
-	@att				public Struct				clazz; // if this new expression defines new class
+	@nodeAttr				public TypeRef				type;
+	@nodeAttr				public ENode				outer;
+	@nodeAttr(ext_data=true)	public ENode				tpinfo;
+	@nodeAttr				public ENode[]				args;
+	@nodeAttr				public Struct				clazz; // if this new expression defines new class
 
 	@getter public Method get$func() {
 		DNode sym = this.dnode;
@@ -223,18 +223,18 @@ public final class NewExpr extends ENode {
 	}
 }
 
-@node(name="NewEnum", lang=CoreLang)
+@ThisIsANode(name="NewEnum", lang=CoreLang)
 public final class NewEnumExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@virtual typedef This  = NewEnumExpr;
 	@virtual typedef JView = JNewEnumExpr;
 	@virtual typedef RView = RNewEnumExpr;
 
-	@att public ENode[]				args;
+	@nodeAttr public ENode[]				args;
 
 	@getter public Method get$func() {
 		DNode sym = this.dnode;
@@ -290,19 +290,19 @@ public final class NewEnumExpr extends ENode {
 	}
 }
 
-@node(name="NewArr", lang=CoreLang)
+@ThisIsANode(name="NewArr", lang=CoreLang)
 public final class NewArrayExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@virtual typedef This  = NewArrayExpr;
 	@virtual typedef JView = JNewArrayExpr;
 	@virtual typedef RView = RNewArrayExpr;
 
-	@att public TypeRef				type;
-	@att public ENode[]				args;
+	@nodeAttr public TypeRef				type;
+	@nodeAttr public ENode[]				args;
 	     public ArrayType			arrtype;
 
 	public NewArrayExpr() {}
@@ -341,20 +341,20 @@ public final class NewArrayExpr extends ENode {
 	}
 }
 
-@node(name="NewArrInitialized", lang=CoreLang)
+@ThisIsANode(name="NewArrInitialized", lang=CoreLang)
 public final class NewInitializedArrayExpr extends ENode {
 	
-	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		args;
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@virtual typedef This  = NewInitializedArrayExpr;
 	@virtual typedef JView = JNewInitializedArrayExpr;
 	@virtual typedef RView = RNewInitializedArrayExpr;
 
-	@att public TypeExpr			type;
-	@att public ENode[]				args;
-	@ref public int[]				dims;
+	@nodeAttr public TypeExpr			type;
+	@nodeAttr public ENode[]				args;
+	@nodeData public int[]				dims;
 
 	public NewInitializedArrayExpr() {}
 
@@ -427,11 +427,11 @@ public final class NewInitializedArrayExpr extends ENode {
 	public int getElementsNumber(int i) { return dims[i]; }
 }
 
-@node(name="NewClosure", lang=CoreLang)
+@ThisIsANode(name="NewClosure", lang=CoreLang)
 public final class NewClosure extends ENode implements ScopeOfNames {
 	
-	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in")	ENode		body;
+	@DataFlowDefinition(out="this:in") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		body;
 	}
 
 
@@ -439,11 +439,11 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@virtual typedef JView = JNewClosure;
 	@virtual typedef RView = RNewClosure;
 
-	@att public TypeRef				type_ret;
-	@att public Var[]				params;
-	@att public ENode				body;
-	@att public Struct				clazz;
-	@ref public CallType			xtype;
+	@nodeAttr public TypeRef				type_ret;
+	@nodeAttr public Var[]				params;
+	@nodeAttr public ENode				body;
+	@nodeAttr public Struct				clazz;
+	@nodeData public CallType			xtype;
 
 	public NewClosure() {}
 

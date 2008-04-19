@@ -13,7 +13,7 @@ package kiev.fmt;
 import syntax kiev.Syntax;
 
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawAutoParenth extends DrawNonTerm {
 	
 	public DrawAutoParenth(ANode node, SyntaxAutoParenth syntax, ATextSyntax text_syntax) {
@@ -42,7 +42,7 @@ public class DrawAutoParenth extends DrawNonTerm {
 	}
 }
 
-@node(copyable=false)
+@ThisIsANode(copyable=false)
 public class DrawLispExpr extends DrawNonTerm {
 	
 	public DrawLispExpr(ANode node, SyntaxExpr syntax, ATextSyntax text_syntax) {

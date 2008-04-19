@@ -41,7 +41,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef This  ≤ LvalueExpr;
@@ -51,18 +51,18 @@ public abstract class LvalueExpr extends ENode {
 	public LvalueExpr() {}
 }
 
-@node(name="Access", lang=CoreLang)
+@ThisIsANode(name="Access", lang=CoreLang)
 public final class AccessExpr extends LvalueExpr {
 	
-	@dflow(out="obj") private static class DFI {
-	@dflow(in="this:in")	ENode			obj;
+	@DataFlowDefinition(out="obj") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
 
 	@virtual typedef This  = AccessExpr;
 	@virtual typedef JView = JAccessExpr;
 	@virtual typedef RView = RAccessExpr;
 
-	@att public ENode			obj;
+	@nodeAttr public ENode			obj;
 
 	public AccessExpr() {}
 
@@ -192,20 +192,20 @@ public final class AccessExpr extends LvalueExpr {
 	}
 }
 
-@node(name="IFld", lang=CoreLang)
+@ThisIsANode(name="IFld", lang=CoreLang)
 public final class IFldExpr extends LvalueExpr {
 	
-	@dflow(out="obj") private static class DFI {
-	@dflow(in="this:in")	ENode			obj;
+	@DataFlowDefinition(out="obj") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
 
 	@virtual typedef This  = IFldExpr;
 	@virtual typedef JView = JIFldExpr;
 	@virtual typedef RView = RIFldExpr;
 
-	@att public ENode			obj;
+	@nodeAttr public ENode			obj;
 	@abstract
-	@ref public:ro Field		var;
+	@nodeData public:ro Field		var;
 
 	@getter public Field get$var() {
 		DNode sym = this.dnode;
@@ -396,20 +396,20 @@ public final class IFldExpr extends LvalueExpr {
 	}
 }
 
-@node(name="SetAccess", lang=CoreLang)
+@ThisIsANode(name="SetAccess", lang=CoreLang)
 public final class ContainerAccessExpr extends LvalueExpr {
 	
-	@dflow(out="index") private static class DFI {
-	@dflow(in="this:in")	ENode		obj;
-	@dflow(in="obj")		ENode		index;
+	@DataFlowDefinition(out="index") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		obj;
+	@DataFlowDefinition(in="obj")		ENode		index;
 	}
 
 	@virtual typedef This  = ContainerAccessExpr;
 	@virtual typedef JView = JContainerAccessExpr;
 	@virtual typedef RView = RContainerAccessExpr;
 
-	@att public ENode		obj;
-	@att public ENode		index;
+	@nodeAttr public ENode		obj;
+	@nodeAttr public ENode		index;
 
 	public ContainerAccessExpr() {}
 
@@ -461,10 +461,10 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 }
 
-@node(name="This", lang=CoreLang)
+@ThisIsANode(name="This", lang=CoreLang)
 public final class ThisExpr extends LvalueExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	static public final LVar thisPar = new LVar(0,Constants.nameThis,Type.tpVoid,Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 	
@@ -506,10 +506,10 @@ public final class ThisExpr extends LvalueExpr {
 	}
 }
 
-@node(name="Super", lang=CoreLang)
+@ThisIsANode(name="Super", lang=CoreLang)
 public final class SuperExpr extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SuperExpr;
 	@virtual typedef JView = JSuperExpr;
@@ -537,10 +537,10 @@ public final class SuperExpr extends ENode {
 	public String toString() { return "super"; }
 }
 
-@node(name="LVar", lang=CoreLang)
+@ThisIsANode(name="LVar", lang=CoreLang)
 public final class LVarExpr extends LvalueExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = LVarExpr;
 	@virtual typedef JView = JLVarExpr;
@@ -630,16 +630,16 @@ public final class LVarExpr extends LvalueExpr {
 	}
 }
 
-@node(name="SFld", lang=CoreLang)
+@ThisIsANode(name="SFld", lang=CoreLang)
 public final class SFldExpr extends LvalueExpr {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SFldExpr;
 	@virtual typedef JView = JSFldExpr;
 	@virtual typedef RView = RSFldExpr;
 
-	@att public TypeRef			obj;
+	@nodeAttr public TypeRef			obj;
 
 	@getter public Field get$var() {
 		DNode sym = this.dnode;
@@ -767,17 +767,17 @@ public final class SFldExpr extends LvalueExpr {
 	}
 }
 
-@node(name="OuterThis", lang=CoreLang)
+@ThisIsANode(name="OuterThis", lang=CoreLang)
 public final class OuterThisAccessExpr extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = OuterThisAccessExpr;
 	@virtual typedef JView = JOuterThisAccessExpr;
 	@virtual typedef RView = ROuterThisAccessExpr;
 
-	@att public TypeRef			outer;
-	@ref public Var[]			outer_refs;
+	@nodeAttr public TypeRef			outer;
+	@nodeData public Var[]			outer_refs;
 
 	public OuterThisAccessExpr() {}
 
@@ -832,19 +832,19 @@ public final class OuterThisAccessExpr extends ENode {
 	}
 }
 
-@node(name="Reinterp", lang=CoreLang)
+@ThisIsANode(name="Reinterp", lang=CoreLang)
 public final class ReinterpExpr extends LvalueExpr {
 	
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode		expr;
+	@DataFlowDefinition(out="expr") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
 	@virtual typedef This  = ReinterpExpr;
 	@virtual typedef JView = JReinterpExpr;
 	@virtual typedef RView = RReinterpExpr;
 
-	@att public TypeRef		type;
-	@att public ENode		expr;
+	@nodeAttr public TypeRef		type;
+	@nodeAttr public ENode		expr;
 
 	public ReinterpExpr() {}
 

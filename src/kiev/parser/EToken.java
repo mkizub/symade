@@ -37,10 +37,10 @@ import syntax kiev.Syntax;
 
 public static enum ETokenKind { UNKNOWN, IDENTIFIER, TYPE_DECL, OPERATOR, EXPR_IDENT, EXPR_NUMBER, EXPR_STRING, EXPR_CHAR };
 	
-@node(name="EToken", lang=CoreLang)
+@ThisIsANode(name="EToken", lang=CoreLang)
 public final class EToken extends ENode {
 
-	@dflow(out="this:in") private static class DFI {}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = EToken;
 	
@@ -49,10 +49,10 @@ public final class EToken extends ENode {
 	public static final Pattern patternIntConst = Pattern.compile("\\p{Digit}+");
 	public static final Pattern patternFloatConst = Pattern.compile("\\p{Digit}+\\.\\p{Digit}*(?:[Ee][\\+\\-]?\\p{Digit}+)?");
 
-	@att public ETokenKind	base_kind;
-	@ref public ANode		value;
+	@nodeAttr public ETokenKind	base_kind;
+	@nodeData public ANode		value;
 	@abstract
-	@att public boolean		explicit;		// if the base type if explicitly set
+	@nodeAttr public boolean		explicit;		// if the base type if explicitly set
 	
 	@getter public final boolean get$explicit() { is_explicit }
 	@setter public final void set$explicit(boolean val) { is_explicit = val; }

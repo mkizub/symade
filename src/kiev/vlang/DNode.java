@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 /**
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class DNode extends ASTNode implements ISymbol {
 
 	@virtual typedef This  ≤ DNode;
@@ -34,13 +34,13 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
 	public static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
 
-	@att public final			MetaSet			meta;
-	@att public					String			sname; // source code name, may be null for anonymouse symbols
-	@ref public					DeclGroup		group;
+	@nodeAttr public final			MetaSet			meta;
+	@nodeAttr public					String			sname; // source code name, may be null for anonymouse symbols
+	@nodeData public					DeclGroup		group;
 
-	@ref(ext_data=true, copyable=false)
+	@nodeData(ext_data=true, copyable=false)
 	public KString								bytecode_name; // used by backend for anonymouse and inner declarations
-	@ref(ext_data=true)
+	@nodeData(ext_data=true)
 	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
 
 	public final MetaAccess getMetaAccess() {
@@ -319,7 +319,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 }
 
-@node(lang=void)
+@ThisIsANode(lang=void)
 public final class DummyDNode extends DNode {
 	public static final DummyDNode dummyNode = new DummyDNode();
 
@@ -335,11 +335,11 @@ public interface GlobalDNode {
 }
 
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, GlobalDNode {
 
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
 	@virtual typedef This  ≤ TypeDecl;
@@ -348,22 +348,22 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@ref public SymbolRef<TypeDecl>			package_clazz;
-	@att public TypeConstr[]				args;
-	@att public TypeRef[]					super_types;
-	@att public ASTNode[]					members;
-	@ref public DNode[]						sub_decls;
-	@ref public int							prefix_counter;	// for name_prefix auto-generation
+	@nodeData public SymbolRef<TypeDecl>			package_clazz;
+	@nodeAttr public TypeConstr[]				args;
+	@nodeAttr public TypeRef[]					super_types;
+	@nodeAttr public ASTNode[]					members;
+	@nodeData public DNode[]						sub_decls;
+	@nodeData public int							prefix_counter;	// for name_prefix auto-generation
 		 private MetaType[]					super_meta_types;
-	@ref private TypeDecl[]					direct_extenders;
+	@nodeData private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
 		 public String						q_name;	// qualified name
 		 public MetaType					xmeta_type;
 		 public Type						xtype;
 
-	@ref(ext_data=true, copyable=false) public WrapperMetaType		wmeta_type;
-	@ref(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
-	@ref(ext_data=true, copyable=false) public Integer				inner_counter;
+	@nodeData(ext_data=true, copyable=false) public WrapperMetaType		wmeta_type;
+	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
+	@nodeData(ext_data=true, copyable=false) public Integer				inner_counter;
 
 	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
 
@@ -870,10 +870,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 }
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 public final class MetaTypeDecl extends TypeDecl {
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
 	@virtual typedef This  = MetaTypeDecl;

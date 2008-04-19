@@ -18,15 +18,15 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(lang=CoreLang)
+@ThisIsANode(lang=CoreLang)
 @unerasable
 public final class ASTOperatorAlias extends Symbol<Method> {
 
 	@virtual typedef This  = ASTOperatorAlias;
 
-	@att public int					prior;
-	@att public int					opmode;
-	@att public String				image;
+	@nodeAttr public int					prior;
+	@nodeAttr public int					opmode;
+	@nodeAttr public String				image;
 
 	public ASTOperatorAlias() {
 		super("operator ???");
