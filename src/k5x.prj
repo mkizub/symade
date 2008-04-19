@@ -596,7 +596,6 @@ CLASS kievvlangNewClosure kiev/vlang/NewClosure kiev/vlang/NewExpr.java
 CLASS kievvlangNewEnumExpr kiev/vlang/NewEnumExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNewExpr kiev/vlang/NewExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev/vlang/NewExpr.java
-CLASS kievvlangNodeSpaceEnumerator kiev/vlang/NodeSpaceEnumerator kiev/vlang/MetaTypes.java
 CLASS kievvlangNopExpr kiev/vlang/NopExpr kiev/vlang/ENode.java
 CLASS kievvlangObjectAssign kiev/vlang/ObjectAssign kiev/vlang/CoreMethod.java
 CLASS kievvlangObjectAssign2 kiev/vlang/ObjectAssign2 kiev/vlang/CoreMethod.java
@@ -713,6 +712,7 @@ CLASS kievvtreeDataAttachInfo kiev/vtree/DataAttachInfo kiev/vtree/AST.java
 CLASS kievvtreeExtAttAttrSlot kiev/vtree/ExtAttAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeExtAttrSlot kiev/vtree/ExtAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeExtRefAttrSlot kiev/vtree/ExtRefAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeNodeSpaceEnumerator kiev/vtree/NodeSpaceEnumerator kiev/vtree/MetaTypes.java
 CLASS kievvtreeReWalkNodeException kiev/vtree/ReWalkNodeException kiev/vtree/AST.java
 CLASS kievvtreeRefAttrSlot kiev/vtree/RefAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeSpaceAttAttrSlot kiev/vtree/SpaceAttAttrSlot kiev/vtree/Tree.java
@@ -997,6 +997,6 @@ METATYPE kievstdlibshort kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibvoid kiev/stdlib/MetaTypes.java bad
 METATYPE kievtransfTemplateVNode kiev/transf/TemplatVNode.xml bad
 METATYPE kievvlangGlobals kiev/vlang/Globals.java bad
-METATYPE kievvlangNodeSpace kiev/vlang/MetaTypes.java bad
+METATYPE kievvtreeNodeSpace kiev/vtree/MetaTypes.java bad
 SYNTAX kievSyntax kiev/Syntax kiev/Syntax.java
 SYNTAX kievstdlibSyntax kiev/stdlib/Syntax kiev/stdlib/Syntax.java

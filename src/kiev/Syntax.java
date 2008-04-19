@@ -20,7 +20,7 @@ import kiev.transf.*;
 import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 
-typedef type∅ kiev.vlang.NodeSpace<type>;
+typedef type∅ kiev.vtree.NodeSpace<type>;
 
 operator ≡ , xfx, 60;	// == equiv
 operator ≢ , xfx, 60;	// !=
