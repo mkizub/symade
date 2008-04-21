@@ -46,8 +46,8 @@ public final class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
 
-    public static final AttrSlot ATTR_BEFORE = new ExtAttrSlot("comment before", true, false, true, TypeInfo.newTypeInfo(Comment.class,null));
-    public static final AttrSlot ATTR_AFTER  = new ExtAttrSlot("comment after",  true, false, true, TypeInfo.newTypeInfo(Comment.class,null));
+    public static final AttrSlot ATTR_BEFORE = new ExtAttrSlot("comment before", ANode.nodeattr$parent, false, TypeInfo.newTypeInfo(Comment.class,null));
+    public static final AttrSlot ATTR_AFTER  = new ExtAttrSlot("comment after",  ANode.nodeattr$parent, false, TypeInfo.newTypeInfo(Comment.class,null));
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
@@ -68,9 +68,17 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 	@virtual typedef JView = JDeclGroup;
 	@virtual typedef RView = RDeclGroup;
 
+	//static final class NodeAttr_decls extends SpaceAttAttrSlot {
+	//	public final ANode[] get(ANode parent) { return ((DeclGroup)parent).decls; }
+	//	public final void set(ANode parent, Object narr) { ((DeclGroup)parent).decls = (DNode[])narr; }
+	//	NodeAttr_decls(String name, TypeInfo typeinfo) {
+	//		super(name, ANode.nodeattr$syntax_parent, typeinfo);
+	//	}
+	//}
+
 	@nodeAttr public final	MetaSet			meta;
-	@nodeAttr public			TypeRef			dtype;
-	@nodeAttr public			DNode[]			decls;
+	@nodeAttr public		TypeRef			dtype;
+	@nodeAttr public		DNode[]			decls;
 
 	@getter public final Type	get$type() { return this.dtype.getType(); }
 
@@ -203,12 +211,15 @@ public final class DeclGroupEnumFields extends DeclGroup {
 		setFinal(true);
 	}
 
-	public void callbackAttached() {
-		ANode p = parent();
-		if (p instanceof Struct) {
-			this.dtype = new TypeRef(p.xtype);
-			((JavaEnum)p).group = this;
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			ANode p = parent();
+			if (p instanceof Struct) {
+				this.dtype = new TypeRef(p.xtype);
+				((JavaEnum)p).group = this;
+			}
 		}
+		super.callbackAttached(pi);
 	}
 }
 
@@ -223,10 +234,13 @@ public final class DeclGroupCaseFields extends DeclGroup {
 
 	public DeclGroupCaseFields() {}
 
-	public void callbackAttached() {
-		ANode p = parent();
-		if (p instanceof Struct)
-			((PizzaCase)p).group = this;
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			ANode p = parent();
+			if (p instanceof Struct)
+				((PizzaCase)p).group = this;
+		}
+		super.callbackAttached(pi);
 	}
 }
 

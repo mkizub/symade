@@ -122,11 +122,13 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return (MetaPacker)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacker");
 	}
 
-	public void callbackAttached() {
-		ANode p = parent();
-		if (p instanceof DeclGroup)
-			this.group = (DeclGroup)p;
-		super.callbackAttached();
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			ANode p = parent();
+			if (p instanceof DeclGroup)
+				this.group = (DeclGroup)p;
+		}
+		super.callbackAttached(pi);
 	}
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -329,7 +331,7 @@ public class Field extends Var {
 	}
 
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
-	public static final AttrSlot ALT_ENUM_ID_ATTR = new ExtAttrSlot("alt enum id",true,false,true,TypeInfo.newTypeInfo(ConstStringExpr.class,null));
+	public static final AttrSlot ALT_ENUM_ID_ATTR = new ExtAttrSlot("alt enum id",ANode.nodeattr$parent,false,TypeInfo.newTypeInfo(ConstStringExpr.class,null));
 
 	@virtual typedef This  ≤ Field;
 	@virtual typedef JView = JField;

@@ -35,8 +35,18 @@ public final class MetaUUID extends UserMeta {
 			value = java.util.UUID.randomUUID().toString();
 	}
 
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			setFlag(true);
+		}
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			setFlag(false);
+		}
+		super.callbackDetached(parent, slot);
+	}
 	private void setFlag(boolean on) {
 		MetaSet ms = (MetaSet)parent();
 		ANode p = null;
@@ -97,8 +107,18 @@ public final class MetaPacked extends UserMeta {
 
 	public MetaPacked() { super("kiev\u001fstdlib\u001fmeta\u001fpacked"); fld = new SymbolRef<Field>(); }
 
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			setFlag(true);
+		}
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			setFlag(false);
+		}
+		super.callbackDetached(parent, slot);
+	}
 	private void setFlag(boolean on) {
 		ANode p = ((MetaSet)parent()).parent();
 		if (p instanceof Field) p.is_fld_packed = on;
@@ -137,8 +157,18 @@ public final class MetaPacker extends UserMeta {
 
 	public MetaPacker() { super("kiev\u001fstdlib\u001fmeta\u001fpacker"); }
 
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			setFlag(true);
+		}
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			setFlag(false);
+		}
+		super.callbackDetached(parent, slot);
+	}
 	private void setFlag(boolean on) {
 		ANode p = ((MetaSet)parent()).parent();
 		if (p instanceof Field) p.is_fld_packer = on;
@@ -158,8 +188,18 @@ public final class MetaThrows extends UserMeta {
 
 	public MetaThrows() { super("kiev\u001fstdlib\u001fmeta\u001fthrows"); }
 
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			setFlag(true);
+		}
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			setFlag(false);
+		}
+		super.callbackDetached(parent, slot);
+	}
 	private void setFlag(boolean on) {
 		ANode p = ((MetaSet)parent()).parent();
 		if (p instanceof Method) p.meta.is_has_throws = on;
@@ -198,8 +238,18 @@ public abstract class MetaFlag extends MNode {
 
 	public final TypeDecl getTypeDecl() { return (TypeDecl)Env.resolveGlobalDNode(this.qname); }
 
-	public final void callbackAttached() { setFlag(getMetaSet(), true); super.callbackAttached(); }
-	public final void callbackDetached() { setFlag(getMetaSet(), false); super.callbackDetached(); }
+	public final void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			setFlag(getMetaSet(), true);
+		}
+		super.callbackAttached(pi);
+	}
+	public final void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			setFlag(getMetaSet(), false);
+		}
+		super.callbackDetached(parent, slot);
+	}
 	private MetaSet getMetaSet() {
 		ANode p = parent();
 		if (p instanceof MetaSet) return (MetaSet)p;

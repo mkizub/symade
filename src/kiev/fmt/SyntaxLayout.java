@@ -56,25 +56,29 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		else
 			super.callbackChildChanged(attr);
 	}
-	public void callbackAttached() {
-		resetNames();
-		if (parent() instanceof NameSpace) {
-			NameSpace fu = (NameSpace)parent();
-			int idx = fu.getPackage().sub_decls.indexOf(this);
-			if (idx < 0)
-				fu.getPackage().sub_decls.add(this);
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			resetNames();
+			if (parent() instanceof NameSpace) {
+				NameSpace fu = (NameSpace)parent();
+				int idx = fu.getPackage().sub_decls.indexOf(this);
+				if (idx < 0)
+					fu.getPackage().sub_decls.add(this);
+			}
 		}
-		super.callbackAttached();
+		super.callbackAttached(pi);
 	}
-	public void callbackDetached() {
-		resetNames();
-		if (parent() instanceof NameSpace) {
-			NameSpace fu = (NameSpace)parent();
-			int idx = fu.getPackage().sub_decls.indexOf(this);
-			if (idx >= 0)
-				fu.getPackage().sub_decls.del(idx);
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			resetNames();
+			if (parent() instanceof NameSpace) {
+				NameSpace fu = (NameSpace)parent();
+				int idx = fu.getPackage().sub_decls.indexOf(this);
+				if (idx >= 0)
+					fu.getPackage().sub_decls.del(idx);
+			}
 		}
-		super.callbackDetached();
+		super.callbackDetached(parent, slot);
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

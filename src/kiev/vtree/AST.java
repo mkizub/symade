@@ -34,8 +34,8 @@ public interface INode {
 
 	public boolean isAttached();
 	public void callbackAttached(ANode parent, AttrSlot slot);
-	public void callbackAttached();
-	public void callbackDetached();
+	public void callbackAttached(ParentInfo pi);
+	public void callbackDetached(ANode parent, AttrSlot slot);
 	public void callbackChildChanged(AttrSlot attr);
 	public ANode parent();
 	public AttrSlot pslot();
@@ -57,8 +57,23 @@ public abstract class ANode implements INode {
 	public static final boolean USE_COPY_CONTEXT = Boolean.valueOf(System.getProperty("symade.vlang.anode.useCopyContext","false").trim()).booleanValue();
 
 	public static final ANode[] emptyArray = new ANode[0];
-	private static final AttrSlot[] $values = AttrSlot.emptyArray;
+	
+	static final class RefAttrSlot_this extends RefAttrSlot {
+		RefAttrSlot_this(String name, TypeInfo typeinfo) { super(name, typeinfo); }
+		public final void set(ANode parent, Object value) { throw new RuntimeException("@nodeData 'this' is not writeable"); }
+		public final Object get(ANode parent) { return parent; }
+	}
+	public static final RefAttrSlot_this nodeattr$this = new RefAttrSlot_this("this", TypeInfo.newTypeInfo(ANode.class,null));
 
+	public static final ParentAttrSlot nodeattr$parent =
+			new ParentAttrSlot("parent", false, TypeInfo.newTypeInfo(ANode.class,null));
+
+	public static final ParentAttrSlot nodeattr$syntax_parent =
+			new ParentAttrSlot("syntax_parent", true, TypeInfo.newTypeInfo(ANode.class,null));
+
+	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
+
+	
 	public:ro @virtual @abstract ANode			ctx_root;
 	public:ro @virtual @abstract FileUnit		ctx_file_unit;
 	public:ro @virtual @abstract NameSpace		ctx_name_space;
@@ -68,6 +83,7 @@ public abstract class ANode implements INode {
 	AttrSlot				p_slot;
 	ANode					p_parent;
 	DataAttachInfo[]		ext_data;
+	ParentInfo[]			ext_parent;
 
 	public static class VVV implements Cloneable {
 		public static final int IS_LOCKED    = 1;
@@ -79,11 +95,13 @@ public abstract class ANode implements INode {
 		AttrSlot				p_slot;
 		ANode					p_parent;
 		DataAttachInfo[]		ext_data;
+		ParentInfo[]			ext_parent;
 		
 		public VVV(ANode node) {
 			this.p_slot = node.p_slot;
 			this.p_parent = node.p_parent;
 			this.ext_data = node.ext_data;
+			this.ext_parent = node.ext_parent;
 		}
 		public Object clone() { super.clone() }
 	}
@@ -211,27 +229,74 @@ public abstract class ANode implements INode {
 		return node;
 	}
 
+	// attach to parent node 'parent' to parent's slot 'slot'
 	public final void callbackAttached(ANode parent, AttrSlot slot) {
 		assert (slot.is_attr);
-		assert(!isAttached());
-		assert(parent != null && parent != this);
-		this.p_slot = slot;
-		this.p_parent = parent;
-		this.callbackAttached();
+		if (slot.parent_attr_slot == ANode.nodeattr$parent) {
+			assert(!isAttached());
+			assert(parent != null && parent != this);
+			this.p_slot = slot;
+			this.p_parent = parent;
+			this.callbackAttached(new ParentInfo(parent,slot));
+		} else {
+			if (ext_parent != null) {
+				ParentInfo[] data = this.ext_parent;
+				int sz = data.length;
+				for (int i=0; i < sz; i++) {
+					ParentInfo pi = data[i];
+					if (pi.p_parent == parent && pi.p_slot == slot)
+						return;
+				}
+				ParentInfo[] tmp = new ParentInfo[sz+1];
+				for (int i=0; i < sz; i++)
+					tmp[i] = data[i];
+				tmp[sz] = new ParentInfo(parent,slot);
+				ext_data = tmp;
+				this.callbackAttached(tmp[sz]);
+			} else {
+				ParentInfo pi = new ParentInfo(parent,slot);
+				ext_parent = new ParentInfo[]{pi};
+				this.callbackAttached(pi);
+			}
+		}
 	}
-	public void callbackAttached() {
+	public void callbackAttached(ParentInfo pi) {
 		// notify parent about the changed slot
-		parent().callbackChildChanged(this.p_slot);
+		pi.p_parent.callbackChildChanged(pi.p_slot);
 	}
-	public void callbackDetached() {
-		assert(isAttached());
-		// do detcah
-		AttrSlot slot = this.p_slot;
-		this.p_slot = null;
-		ANode parent = this.p_parent;
-		this.p_parent = null;
-		// notify parent about the changed slot
-		parent.callbackChildChanged(slot);
+	
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		assert (slot.is_attr);
+		if (slot.parent_attr_slot == ANode.nodeattr$parent) {
+			assert(isAttached());
+			assert(p_parent == parent);
+			assert(p_slot == slot);
+			this.p_slot = null;
+			this.p_parent = null;
+			// notify parent about the changed slot
+			parent.callbackChildChanged(slot);
+		} else {
+			ParentInfo[] data = this.ext_parent;
+			if (data == null)
+				return;
+			int sz = data.length-1;
+			for (int idx=0; idx <= sz; idx++) {
+				ParentInfo pi = data[idx];
+				if (pi.p_parent == parent && pi.p_slot == slot) {
+					if (sz == 0) {
+						this.ext_parent = null;
+					} else {
+						ParentInfo[] tmp = new ParentInfo[sz];
+						int i;
+						for (i=0; i < idx; i++) tmp[i] = data[i];
+						for (   ; i <  sz; i++) tmp[i] = data[i+1];
+						this.ext_parent = tmp;
+					}
+					pi.p_parent.callbackChildChanged(slot);
+					return;
+				}
+			}
+		}
 	}
 
 
@@ -363,7 +428,7 @@ public abstract class ANode implements INode {
 					ext_data[i] = new DataAttachInfo(d,attr);
 					if (attr.is_attr) {
 						if (ai.p_data instanceof ANode)
-							((ANode)ai.p_data).callbackDetached();
+							((ANode)ai.p_data).callbackDetached(this, attr);
 						if (d instanceof ANode)
 							d.callbackAttached(this, attr);
 					}
@@ -402,7 +467,7 @@ public abstract class ANode implements INode {
 						this.ext_data = tmp;
 					}
 					if (attr.is_attr && ai.p_data instanceof ANode)
-						((ANode)ai.p_data).callbackDetached();
+						((ANode)ai.p_data).callbackDetached(this, attr);
 					return;
 				}
 			}
@@ -658,6 +723,18 @@ final class DataAttachInfo {
 	}
 }
 
+public final class ParentInfo {
+	public final   ANode			p_parent;
+	public final   AttrSlot			p_slot;
+	ParentInfo(ANode parent, AttrSlot slot) {
+		this.p_parent = parent;
+		this.p_slot = slot;
+	}
+	public boolean isSemantic() {
+		return this.p_slot.isSemantic();
+	}
+}
+
 class VersionInfo {
 	final CurrentVersionInfo	cur_info;
 	final ANode					node;
@@ -693,21 +770,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	
 	public static final ASTNode[] emptyArray = new ASTNode[0];
 
-	private static final class RefAttrSlot_this extends RefAttrSlot {
-		RefAttrSlot_this(String name, TypeInfo typeinfo) { super(name, typeinfo); }
-		public final void set(ANode parent, Object value) { throw new RuntimeException("@nodeData thisis not writeable"); }
-		public final Object get(ANode parent) { return parent; }
-	}
-	public static final RefAttrSlot_this nodeattr$this = new RefAttrSlot_this("this", TypeInfo.newTypeInfo(ANode.class,null));
-
-	private static final class RefAttrSlot_parent extends RefAttrSlot {
-		RefAttrSlot_parent(String name, TypeInfo typeinfo) { super(name, typeinfo); }
-		public final void set(ANode parent, Object value) { throw new RuntimeException("@nodeData parent is not writeable"); }
-		public final Object get(ANode parent) { return parent.parent(); }
-	}
-	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", TypeInfo.newTypeInfo(ANode.class,null));
-
-	private static final AttrSlot[] $values = {/*nodeattr$this,*/nodeattr$parent};
+	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
 	@UnVersioned
 	public VVV						v_editor;

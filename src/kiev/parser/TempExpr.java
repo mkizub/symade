@@ -31,7 +31,7 @@ public abstract class UnresExpr extends ENode {
 	
 	public Operator getOp() { return op; }
 	
-	public final void callbackAttached() {
+	public final void callbackAttached(ParentInfo pi) {
 		throw new Error("Internal error: "+this.getClass()+" attached to "+parent().getClass()+" to slot "+pslot().name);
 	}
 	

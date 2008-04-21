@@ -713,6 +713,8 @@ CLASS kievvtreeExtAttAttrSlot kiev/vtree/ExtAttAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeExtAttrSlot kiev/vtree/ExtAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeExtRefAttrSlot kiev/vtree/ExtRefAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeNodeSpaceEnumerator kiev/vtree/NodeSpaceEnumerator kiev/vtree/MetaTypes.java
+CLASS kievvtreeParentAttrSlot kiev/vtree/ParentAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeParentInfo kiev/vtree/ParentInfo kiev/vtree/AST.java
 CLASS kievvtreeReWalkNodeException kiev/vtree/ReWalkNodeException kiev/vtree/AST.java
 CLASS kievvtreeRefAttrSlot kiev/vtree/RefAttrSlot kiev/vtree/Tree.java
 CLASS kievvtreeSpaceAttAttrSlot kiev/vtree/SpaceAttAttrSlot kiev/vtree/Tree.java

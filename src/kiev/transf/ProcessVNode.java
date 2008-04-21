@@ -197,7 +197,12 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		boolean isExtData = isAtt ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
-		Struct s = Env.newStruct(("NodeAttr_"+f.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
+		String sname = ("NodeAttr_"+f.sname).intern();
+		foreach (TypeDecl td; snode.members; td.sname == sname) {
+			Kiev.reportWarning(td,"Class "+snode+"."+sname+" already exists and will not be generated");
+			return td.xtype;
+		}
+		Struct s = Env.newStruct(sname,true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
 		snode.members.add(s);
 		if (isArr) {
 			if (isAtt) {
@@ -387,7 +392,16 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			boolean isAtt = (f.getMeta(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArray);
 			Type tpa = makeNodeAttrClass(s,f);
-			s.addField(new Field("nodeattr$"+f.sname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
+			String fname = ("nodeattr$"+f.sname).intern();
+			Field f_attr = null;
+			foreach (Field ff; s.members; ff.sname == fname) {
+				f_attr = ff;
+				break;
+			}
+			if (f_attr != null)
+				Kiev.reportWarning(f_attr,"Field "+s+"."+fname+" already exists and will not be generated");
+			else
+				s.addField(new Field(fname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			if (isArr && !f.isAbstract()) {
 				TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
 				Field emptyArray = N.resolveField("emptyArray", false);
@@ -1016,7 +1030,10 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 									new IFldExpr(0,new ThisExpr(),f),
 									new SymbolRef<Method>("callbackDetached"),
 									null,
-									ENode.emptyArray
+									new ENode[] {
+										new ThisExpr(),
+										new SFldExpr(f.pos, fatt)
+									}
 								)
 							)
 						}),

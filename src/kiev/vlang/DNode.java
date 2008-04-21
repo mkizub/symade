@@ -248,9 +248,11 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return DummyDNode.dummyNode;
 	}
 	
-	public void callbackDetached() {
-		this.group = null;
-		super.callbackDetached();
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			this.group = null;
+		}
+		super.callbackDetached(parent, slot);
 	}
 
 	public String toString() { return sname; }
@@ -542,18 +544,22 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 	}
 
-	public void callbackAttached() {
-		updatePackageClazz();
-		super.callbackAttached();
-	}
-	public void callbackDetached() {
-		if (package_clazz.dnode != null) {
-			int idx = package_clazz.dnode.sub_decls.indexOf(this);
-			if (idx >= 0)
-				package_clazz.dnode.sub_decls.del(idx);
-			package_clazz.symbol = null;
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			updatePackageClazz();
 		}
-		super.callbackDetached();
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			if (package_clazz.dnode != null) {
+				int idx = package_clazz.dnode.sub_decls.indexOf(this);
+				if (idx >= 0)
+					package_clazz.dnode.sub_decls.del(idx);
+				package_clazz.symbol = null;
+			}
+		}
+		super.callbackDetached(parent, slot);
 	}
 	public void callbackCopied() {
 		super.callbackCopied();

@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
 
 public final view RStruct of Struct extends RTypeDecl {
 
-	static final AttrSlot TI_ATTR = new ExtAttrSlot("rstruct ti field temp expr",true,false,true,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
+	static final AttrSlot TI_ATTR = new ExtAttrSlot("rstruct ti field temp expr",ANode.nodeattr$parent,false,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			WrapperMetaType			wmeta_type;
 	public:ro			SymbolRef<TypeDecl>		package_clazz;
