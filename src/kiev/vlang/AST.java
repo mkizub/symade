@@ -35,6 +35,7 @@ public interface INode {
 	public boolean isAttached();
 	public void callbackAttached(ANode parent, AttrSlot slot);
 	public void callbackAttached();
+	public void callbackDetached(ANode parent, AttrSlot slot);
 	public void callbackDetached();
 	public void callbackChildChanged(AttrSlot attr);
 	public ANode parent();
@@ -222,6 +223,11 @@ public abstract class ANode implements INode {
 	public void callbackAttached() {
 		// notify parent about the changed slot
 		parent().callbackChildChanged(this.p_slot);
+	}
+
+	public final void callbackDetached(ANode parent, AttrSlot slot) {
+		assert(this.p_parent == parent && this.p_slot == slot);
+		this.callbackDetached();
 	}
 	public void callbackDetached() {
 		assert(isAttached());

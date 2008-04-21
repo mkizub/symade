@@ -1016,7 +1016,10 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 									new IFldExpr(0,new ThisExpr(),f),
 									new SymbolRef<Method>("callbackDetached"),
 									null,
-									ENode.emptyArray
+									new ENode[] {
+										new ThisExpr(),
+										new SFldExpr(f.pos, fatt)
+									}
 								)
 							)
 						}),
