@@ -62,8 +62,6 @@ public abstract class ANode implements INode {
 
 	@virtual typedef This  ≤ ANode;
 	
-	public static final boolean USE_COPY_CONTEXT = Boolean.valueOf(System.getProperty("symade.vlang.anode.useCopyContext","false").trim()).booleanValue();
-
 	public static final ANode[] emptyArray = new ANode[0];
 	
 	static final class RefAttrSlot_this extends RefAttrSlot {
@@ -151,6 +149,13 @@ public abstract class ANode implements INode {
 				return;
 			}
 			infos.append(new SymbolInfo(sold, sref));
+		}
+		public ANode hasCopyOf(ANode node) {
+			if (infos == null)
+				return null;
+			foreach (SymbolInfo si; infos; si.sold == node)
+				return (ANode)si.snew;
+			return null;
 		}
 		public void updateLinks() {
 			if (infos == null)
@@ -568,50 +573,23 @@ public abstract class ANode implements INode {
 	
 
 	public final This ncopy() {
-		if (USE_COPY_CONTEXT) {
-			CopyContext cc = new CopyContext();
-			This t = (This)this.copy(cc);
-			cc.updateLinks();
-			t.callbackCopied();
-			return t;
-		} else {
-			This t = (This)this.copy(null);
-			t.callbackCopied();
-			return t;
-		}
-	}
-	public final This ncopy(CopyContext cc) {
+		CopyContext cc = new CopyContext();
 		This t = (This)this.copy(cc);
-		t.callbackCopied();
+		cc.updateLinks();
 		return t;
 	}
-	public void callbackCopied() {}
-	public Object copy() {
-		if (USE_COPY_CONTEXT)
-			throw new Error();
-		return this.copy(null);
-	}
-	public final Object copy(CopyContext cc) {
-		if (cc != null) {
-			if (this instanceof TypeInfoInterface)
-				return this.copyTo(((TypeInfoInterface)this).getTypeInfoField().newInstance(), cc);
-			else
-				return this.copyTo(this.getClass().newInstance(), cc);
-		} else {
-			if (USE_COPY_CONTEXT)
-				throw new Error();
-			if (this instanceof TypeInfoInterface)
-				return this.copyTo(((TypeInfoInterface)this).getTypeInfoField().newInstance());
-			else
-				return this.copyTo(this.getClass().newInstance());
-		}
+	public final This ncopy(CopyContext cc) {
+		return (This)this.copy(cc);
 	}
 
-	public Object copyTo(Object to$node) {
-		return copyTo(to$node, null);
+	public Object copy(CopyContext cc) {
+		if (this instanceof TypeInfoInterface)
+			return this.copyTo(((TypeInfoInterface)this).getTypeInfoField().newInstance(), cc);
+		else
+			return this.copyTo(this.getClass().newInstance(), cc);
 	}
-	
-	public Object copyTo(Object to$node, CopyContext cc) {
+
+	public Object copyTo(Object to$node, CopyContext in$context) {
 		ANode node = (ANode)to$node;
 		if (this.ext_data != null) {
 			int N = this.ext_data.length;
@@ -619,7 +597,7 @@ public abstract class ANode implements INode {
 			for (int i=0; i < N; i++) {
 				DataAttachInfo ai = this.ext_data[i];
 				if (ai.p_slot.is_attr && ai.p_data instanceof ASTNode) {
-					ASTNode nd = ((ASTNode)ai.p_data).ncopy(cc);
+					ASTNode nd = ((ASTNode)ai.p_data).ncopy(in$context);
 					node.ext_data[i] = new DataAttachInfo(nd,ai.p_slot);
 					nd.callbackAttached(node, ai.p_slot);
 				} else {
@@ -627,14 +605,12 @@ public abstract class ANode implements INode {
 				}
 			}
 		}
-		if (cc != null) {
-			if (this instanceof ISymbol)
-				cc.addSymbol((ISymbol)this,(ISymbol)node);
-			else if (this instanceof SymbolRef)
-				cc.addSymbolRef((SymbolRef)node, ((SymbolRef)this).symbol);
-			else if (this instanceof ENode)
-				cc.addSymbolRef((ENode)node, ((ENode)this).symbol);
-		}
+		if (this instanceof ISymbol)
+			in$context.addSymbol((ISymbol)this,(ISymbol)node);
+		else if (this instanceof SymbolRef)
+			in$context.addSymbolRef((SymbolRef)node, ((SymbolRef)this).symbol);
+		else if (this instanceof ENode)
+			in$context.addSymbolRef((ENode)node, ((ENode)this).symbol);
 		return node;
 	}
 	
@@ -942,13 +918,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		this.compileflags = from.compileflags & ~3;
 		this.nodeflags = from.nodeflags;
 		super.nodeRestore(from);
-	}
-
-	public Object copyTo(Object to$node) {
-		ASTNode node = (ASTNode)super.copyTo(to$node);
-		node.compileflags	= 0;
-		node.nodeflags		= this.nodeflags;
-		return node;
 	}
 
 	public Object copyTo(Object to$node, CopyContext in$context) {

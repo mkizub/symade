@@ -255,6 +255,13 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		super.callbackDetached(parent, slot);
 	}
 
+	public Object copy(CopyContext cc) {
+		ANode obj = cc.hasCopyOf(this);
+		if (obj != null)
+			return obj;
+		return super.copy(cc);
+	}
+
 	public String toString() { return sname; }
 
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
@@ -559,16 +566,19 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 		super.callbackDetached(parent, slot);
 	}
-	public void callbackCopied() {
-		super.callbackCopied();
-		if (package_clazz.symbol != null)
-			package_clazz.symbol = null;
-		super_meta_types = null;
-		direct_extenders.delAll();
-		type_decl_version = 1;
-		q_name = null;
-		xmeta_type = null;
-		xtype = null;
+	public Object copy(CopyContext cc) {
+		TypeDecl obj = (TypeDecl)super.copy(cc);
+		if (this == obj)
+			return this;
+		if (obj.package_clazz.symbol != null)
+			obj.package_clazz.symbol = null;
+		obj.super_meta_types = null;
+		obj.direct_extenders.delAll();
+		obj.type_decl_version = 1;
+		obj.q_name = null;
+		obj.xmeta_type = null;
+		obj.xtype = null;
+		return obj;
 	}
 
 
@@ -863,9 +873,12 @@ public final class MetaTypeDecl extends TypeDecl {
 			this.xtype = meta_type.make(TVarBld.emptySet);
 		}
 	}
-	public void callbackCopied() {
-		super.callbackCopied();
-		this.xmeta_type = new MetaType(this);
-		this.xtype = this.xmeta_type.make(TVarBld.emptySet);
+	public Object copy(CopyContext cc) {
+		Struct obj = (Struct)super.copy(cc);
+		if (this == obj)
+			return this;
+		obj.xmeta_type = new MetaType(obj);
+		obj.xtype = this.xmeta_type.make(TVarBld.emptySet);
+		return obj;
 	}
 }

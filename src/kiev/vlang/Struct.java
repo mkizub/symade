@@ -184,12 +184,15 @@ public abstract class Struct extends TypeDecl {
 			resetNames();
 		super.callbackChildChanged(ct, attr, data);
 	}
-	public void callbackCopied() {
-		super.callbackCopied();
-		if !(this instanceof Env) {
-			this.xmeta_type = new CompaundMetaType(this);
-			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
+	public Object copy(CopyContext cc) {
+		Struct obj = (Struct)super.copy(cc);
+		if (this == obj)
+			return this;
+		if !(obj instanceof Env) {
+			obj.xmeta_type = new CompaundMetaType(obj);
+			obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, TVarBld.emptySet);
 		}
+		return obj;
 	}
 
 	private void resetNames() {
