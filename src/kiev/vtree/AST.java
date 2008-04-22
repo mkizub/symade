@@ -37,6 +37,7 @@ public interface INode {
 	public void callbackAttached(ParentInfo pi);
 	public void callbackDetached(ANode parent, AttrSlot slot);
 	public void callbackChildChanged(AttrSlot attr);
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data);
 	public ANode parent();
 	public AttrSlot pslot();
 	public AttrSlot[] values();
@@ -48,6 +49,13 @@ public interface INode {
 	public This detach() alias fy operator ~ ;
 	public <N extends ANode> N replaceWithNode(N node);
 	public void initForEditor();
+}
+
+public enum ChildChangeType {
+	UNKNOWN,
+	ATTACHED,
+	DETACHED,
+	MODIFIED
 }
 
 public abstract class ANode implements INode {
@@ -262,7 +270,7 @@ public abstract class ANode implements INode {
 	}
 	public void callbackAttached(ParentInfo pi) {
 		// notify parent about the changed slot
-		pi.p_parent.callbackChildChanged(pi.p_slot);
+		pi.p_parent.callbackChildAttached(this,pi.p_slot);
 	}
 	
 	public void callbackDetached(ANode parent, AttrSlot slot) {
@@ -274,7 +282,7 @@ public abstract class ANode implements INode {
 			this.p_slot = null;
 			this.p_parent = null;
 			// notify parent about the changed slot
-			parent.callbackChildChanged(slot);
+			parent.callbackChildDetached(this,slot);
 		} else {
 			ParentInfo[] data = this.ext_parent;
 			if (data == null)
@@ -292,7 +300,7 @@ public abstract class ANode implements INode {
 						for (   ; i <  sz; i++) tmp[i] = data[i+1];
 						this.ext_parent = tmp;
 					}
-					pi.p_parent.callbackChildChanged(slot);
+					pi.p_parent.callbackChildDetached(this,slot);
 					return;
 				}
 			}
@@ -306,7 +314,8 @@ public abstract class ANode implements INode {
 			n = n.parent();
 		return n;
 	}
-	public void callbackChildChanged(AttrSlot attr) { /* do nothing */ }
+	public final void callbackChildChanged(AttrSlot attr) { callbackChildChanged(ChildChangeType.UNKNOWN, attr, null); }
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) { /* do nothing */ }
 
 	public final ANode parent() { return this.p_parent; }
 	public final AttrSlot pslot() { return this.p_slot; }

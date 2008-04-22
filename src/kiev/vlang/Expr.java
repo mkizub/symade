@@ -606,7 +606,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof DeclGroup,
-			dn @= ((DeclGroup)n).decls,
+			dn @= ((DeclGroup)n).getDecls(),
 			info.checkNodeName(dn),
 			info.check(dn),
 			node ?= dn
@@ -668,7 +668,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 					continue;
 				}
 				if (dn instanceof DeclGroup) {
-					foreach (Var v; ((DeclGroup)dn).decls)
+					foreach (Var v; ((DeclGroup)dn).getDecls())
 						vars.append(v);
 				}
 			}

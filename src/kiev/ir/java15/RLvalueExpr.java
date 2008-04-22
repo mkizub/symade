@@ -186,7 +186,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 		lookup_penv:
 			foreach (ASTNode dn; rm.block.stats) {
 				if (dn instanceof DeclGroup) {
-					foreach (Var vd; dn.decls; vd.sname == namePEnv) {
+					foreach (Var vd; dn.getDecls(); vd.sname == namePEnv) {
 						pEnv = vd;
 						break lookup_penv;
 					}

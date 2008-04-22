@@ -198,7 +198,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				for(TypeDecl p=pkg; p.isStructInner() && !p.isStatic(); p=p.package_clazz.dnode) n++;
 				String fldName = (nameThisDollar+n).intern();
 				boolean found = false;
-				foreach (Field f; me.getAllFields(); f.sname == fldName)
+				foreach (Field f; me.members; f.sname == fldName)
 					found = true;
 				if (!found) {
 					TypeAssign td = new TypeAssign(	"outer$"+n+"$type", new TypeRef(pkg.xtype));
@@ -276,7 +276,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				dn.meta.verify();
 			foreach (DeclGroup dn; td.members) {
 				dn.meta.verify();
-				foreach (DNode d; dn.decls)
+				foreach (DNode d; dn.getDecls())
 					d.meta.verify();
 			}
 			getStructType(td, new Stack<TypeDecl>());
@@ -526,7 +526,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 						dg.setPublic();
 					}
 				}
-				foreach (Field f; dg.decls)
+				foreach (Field f; dg.getDecls())
 					f.meta.verify();
 			}
 			else if( me.members[i] instanceof Field ) {

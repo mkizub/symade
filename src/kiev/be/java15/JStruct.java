@@ -56,7 +56,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public JField resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (JField f; this.getAllFields(); f.sname == name)
+		foreach (JField f; this.members; f.sname == name)
 			return f;
 		foreach (JType jt; this.super_types) {
 			JField f = jt.getJStruct().resolveField(name, false);
@@ -166,7 +166,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		
 		for(int i=0; jattrs!=null && i < jattrs.length; i++)
 			jattrs[i].generate(constPool);
-		foreach (JField f; getAllFields()) {
+		foreach (JField f; this.members) {
 			constPool.addAsciiCP(f.sname);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 

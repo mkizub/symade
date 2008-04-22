@@ -126,23 +126,26 @@ public view JSNode of SNode extends JNode {
 }
 
 public final view JDeclGroup of DeclGroup extends JSNode {
-	public:ro	JDNode[]	decls;
+
+	public DNode[] getDecls();
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating DeclGroup");
 		code.setLinePos(this);
 		try {
-			foreach (JDNode dn; decls)
-				dn.generate(code,Type.tpVoid);
+			foreach (DNode dn; getDecls())
+				((JDNode)dn).generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
 	}
 	public void removeVars(Code code) {
-		JDNode[] decls = decls;
+		DNode[] decls = getDecls();
 		for(int i=decls.length-1; i >= 0; i--) {
-			if (decls[i] instanceof JVar)
-				code.removeVar((JVar)decls[i]);
+			if (decls[i] instanceof LVar) {
+				LVar v = (LVar)decls[i];
+				code.removeVar((JVar)v);
+			}
 		}
 	}
 }
@@ -221,14 +224,6 @@ public view JTypeDecl of TypeDecl extends JDNode {
 		foreach (JType jt; super_types; jt.getJTypeDecl().instanceOf(cl))
 			return true;
 		return false;
-	}
-
-	public final JField[] getAllFields() {
-		Field[] flds = ((TypeDecl)this).getAllFields();
-		JField[] jflds = new JField[flds.length];
-		for (int i=0; i < flds.length; i++)
-			jflds[i] = (JField)flds[i];
-		return jflds;
 	}
 }
 

@@ -71,10 +71,10 @@ public final class MetaSet extends ASTNode {
 		return null;
 	}
 
-	public void callbackChildChanged(AttrSlot attr) {
-		if (isAttached()) {
-			if (attr.name == "metas") parent().callbackChildChanged(pslot());
-		}
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "metas" && isAttached())
+			parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	public MetaSet() {}
@@ -169,7 +169,7 @@ public class UserMeta extends MNode {
 	@abstract
 	@nodeAttr public String					qname;
 	@nodeAttr public SymbolRef<Struct>		decl;
-	@nodeAttr public MetaValue[]				values;
+	@nodeAttr public MetaValue[]			values;
 
 	public boolean equals(Object o) {
 		if!(o instanceof UserMeta)
@@ -200,13 +200,14 @@ public class UserMeta extends MNode {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (isAttached()) {
 			if      (attr.name == "decl")
-				parent().callbackChildChanged(pslot());
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 			else if (attr.name == "values")
-				parent().callbackChildChanged(pslot());
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	public UserMeta() {

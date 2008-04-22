@@ -225,9 +225,9 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
-		foreach(Field f; s.getAllFields())
+		foreach(Field f; s.members)
 			addMethodsForVirtualField(s, f);
-		foreach(Field f; s.getAllFields()) {
+		foreach(Field f; s.members) {
 			if (!f.isVirtual())
 				continue;
 			if (s.isInterface() && !f.isAbstract())

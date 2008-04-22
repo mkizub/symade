@@ -512,12 +512,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			td.callbackSuperTypeChanged(chg);
 	}
 	
-	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "args" || attr.name == "super_types") {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "args" || attr.name == "super_types")
 			this.callbackSuperTypeChanged(this);
-		} else {
-			super.callbackChildChanged(attr);
-		}
+		super.callbackChildChanged(ct, attr, data);
 	}
 	
 	public void updatePackageClazz() {
@@ -688,7 +686,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			if (n instanceof DeclGroup) {
 				DeclGroup dn = (DeclGroup)n;
 				dn.meta.resolve();
-				foreach (DNode d; dn.decls)
+				foreach (DNode d; dn.getDecls())
 					d.meta.resolve();
 			}
 		}
@@ -738,7 +736,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public Field resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (Field f; this.getAllFields(); f.sname == name)
+		foreach (Field f; this.members; f.sname == name)
 			return f;
 		foreach (TypeRef tr; this.super_types; tr.getTypeDecl() != null) {
 			Field f = tr.getTypeDecl().resolveField(name, false);
@@ -791,7 +789,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		;	n @= members,
 			{
 				n instanceof DeclGroup,
-				dn @= ((DeclGroup)n).decls,
+				dn @= ((DeclGroup)n).getDecls(),
 				info.checkNodeName(dn),
 				info.check(dn),
 				node ?= dn
@@ -845,20 +843,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			info.enterSuper() : info.leaveSuper(),
 			supref.getType().meta_type.tdecl.resolveMethodR(node,info,mt)
 		}
-	}
-	
-	public final Field[] getAllFields() {
-		Vector<Field> v = new Vector<Field>();
-		foreach (ASTNode dn; members) {
-			if (dn instanceof Field) {
-				v.append((Field)dn);
-			}
-			else if (dn instanceof DeclGroup) {
-				foreach (Field f; dn.decls)
-					v.append(f);
-			}
-		}
-		return v.toArray();
 	}
 	
 	public String allocateAccessName() {

@@ -1105,14 +1105,13 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 	"{"
 	(
 		LOOKAHEAD({ clazz.isEnum() })
-		{ enums = new DeclGroupEnumFields(); }
+		{ enums = new DeclGroupEnumFields(); clazz.members.insert(0,enums); }
 		modifiers = Modifiers()
 		enums.decls += EnumFieldDeclaration(modifiers)
 		(	","
 			modifiers = Modifiers()
 			enums.decls += EnumFieldDeclaration(modifiers)
 		)*
-		{ clazz.members.insert(0,enums); }
 		[ ";" ]
 	)?
 	(

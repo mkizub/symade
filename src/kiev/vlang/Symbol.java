@@ -56,12 +56,12 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 		this.sname = sname;
 	}
 	
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (isAttached()) {
 			if (attr.name == "sname")
-				parent().callbackChildChanged(pslot());
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
-		super.callbackChildChanged(attr);
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	public void set(Token t) {

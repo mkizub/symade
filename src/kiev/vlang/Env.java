@@ -290,7 +290,7 @@ public class Env extends KievPackage {
 	}
 	
 	private void addSpecialField(String name, Type tp, ENode init) {
-		foreach (Field f; getAllFields(); f.hasName(name,true)) {
+		foreach (Field f; this.members; f.hasName(name,true)) {
 			f.init = init;
 			return;
 		}

@@ -330,6 +330,7 @@ CLASS kievtransfViewME_PreGenerate kiev/transf/ViewME_PreGenerate kiev/transf/
 CLASS kievtransfVirtFldBE_Rewrite kiev/transf/VirtFldBE_Rewrite kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldFE_GenMembers kiev/transf/VirtFldFE_GenMembers kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldME_PreGenerate kiev/transf/VirtFldME_PreGenerate kiev/transf/ProcessVirtFld.java
+CLASS kievvlangADeclGroupFields kiev/vlang/ADeclGroupFields kiev/vlang/SNode.java
 CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
 CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java

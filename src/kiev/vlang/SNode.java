@@ -68,19 +68,12 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 	@virtual typedef JView = JDeclGroup;
 	@virtual typedef RView = RDeclGroup;
 
-	//static final class NodeAttr_decls extends SpaceAttAttrSlot {
-	//	public final ANode[] get(ANode parent) { return ((DeclGroup)parent).decls; }
-	//	public final void set(ANode parent, Object narr) { ((DeclGroup)parent).decls = (DNode[])narr; }
-	//	NodeAttr_decls(String name, TypeInfo typeinfo) {
-	//		super(name, ANode.nodeattr$syntax_parent, typeinfo);
-	//	}
-	//}
-
 	@nodeAttr public final	MetaSet			meta;
 	@nodeAttr public		TypeRef			dtype;
-	@nodeAttr public		DNode[]			decls;
 
 	@getter public final Type	get$type() { return this.dtype.getType(); }
+
+	public abstract DNode[] getDecls();
 
 	public DeclGroup() {
 		this.meta = new MetaSet();
@@ -103,7 +96,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 	{
-		n @= new SymbolIterator(this.decls, info.space_prev),
+		n @= new SymbolIterator(this.getDecls(), info.space_prev),
 		{
 			info.checkNodeName(n),
 			node ?= n
@@ -118,7 +111,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 		DNode@ dn;
 	{
 		info.isForwardsAllowed(),
-		dn @= decls,
+		dn @= getDecls(),
 		dn.isForward(),
 		info.enterForward(dn) : info.leaveForward(dn),
 		dn.getType().resolveCallAccessR(node,info,mt)
@@ -174,17 +167,6 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class DeclGroupFields extends DeclGroup {
-	@virtual typedef This  = DeclGroupFields;
-
-	@DataFlowDefinition(out="decls") private static class DFI {
-	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
-	}
-
-	public DeclGroupFields() {}
-}
-
-@ThisIsANode(lang=CoreLang)
 public final class DeclGroupVars extends DeclGroup {
 	@virtual typedef This  = DeclGroupVars;
 
@@ -192,17 +174,89 @@ public final class DeclGroupVars extends DeclGroup {
 	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
 	}
 
+	@nodeAttr public		DNode[]			decls;
+
+	public DNode[] getDecls() { return decls; }
+
 	public DeclGroupVars() {}
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class DeclGroupEnumFields extends DeclGroup {
+public abstract class ADeclGroupFields extends DeclGroup {
+	@virtual typedef This  ≤ ADeclGroupFields;
+
+	// declare NodeAttr_decls to be an attribute for ANode.nodeattr$syntax_parent
+	static final class NodeAttr_decls extends SpaceAttAttrSlot<Field> {
+		public final ANode[] get(ANode parent) { return ((ADeclGroupFields)parent).decls; }
+		public final void set(ANode parent, Object narr) { ((ADeclGroupFields)parent).decls = (Field[])narr; }
+		NodeAttr_decls(String name, TypeInfo typeinfo) {
+			super(name, ANode.nodeattr$syntax_parent, typeinfo);
+		}
+	}
+
+	// is a syntax_parent
+	@nodeAttr public		Field[]			decls;
+
+	public DNode[] getDecls() { return decls; }
+
+	public ADeclGroupFields() {}
+
+	private void checkFieldsAreAttached() {
+		ANode p = parent();
+		if (p instanceof TypeDecl) {
+			// attach all my fields to the parent TypeDecl
+			TypeDecl td = (TypeDecl)p;
+			foreach (Field f; decls) {
+				if (f.parent() == null)
+					td.members += f;
+				assert (f.parent() == td);
+			}
+		}
+	}
+
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic())
+			checkFieldsAreAttached();
+		super.callbackAttached(pi);
+	}
+
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			if (parent instanceof TypeDecl) {
+				// detach all my fields from the parent TypeDecl
+				TypeDecl td = (TypeDecl)parent;
+				foreach (Field f; decls) {
+					if (f.parent() == td)
+						~f;
+					assert (f.parent() == null);
+				}
+			}
+		}
+	}
+
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "decls")
+			checkFieldsAreAttached();
+		super.callbackChildChanged(ct, attr, data);
+	}
+	
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class DeclGroupFields extends ADeclGroupFields {
+	@virtual typedef This  = DeclGroupFields;
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
+
+	public DeclGroupFields() {}
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class DeclGroupEnumFields extends ADeclGroupFields {
 	
 	@virtual typedef This  = DeclGroupEnumFields;
 
-	@DataFlowDefinition(out="decls") private static class DFI {
-	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
-	}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public DeclGroupEnumFields() {
 		this.meta.is_enum = true;
@@ -224,13 +278,11 @@ public final class DeclGroupEnumFields extends DeclGroup {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class DeclGroupCaseFields extends DeclGroup {
+public final class DeclGroupCaseFields extends ADeclGroupFields {
 	
 	@virtual typedef This  = DeclGroupCaseFields;
 
-	@DataFlowDefinition(out="decls") private static class DFI {
-	@DataFlowDefinition(in="", seq="true")	DNode[]		decls;
-	}
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public DeclGroupCaseFields() {}
 

@@ -191,10 +191,11 @@ public final class CoreLang implements Language {
 				FileUnit.class,	// file/compilation unit, also acts as a namespace
 			Opdef.class,		// operator declaration
 			DeclGroup.class,	// group of nodes, which share a base type and meta-data
-				DeclGroupFields.class,
 				DeclGroupVars.class,
-				DeclGroupEnumFields.class,
-				DeclGroupCaseFields.class,
+				ADeclGroupFields.class,
+					DeclGroupFields.class,
+					DeclGroupEnumFields.class,
+					DeclGroupCaseFields.class,
 			Import.class,
 			Comment.class,		// comments
 		// in parser

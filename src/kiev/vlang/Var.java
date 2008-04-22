@@ -123,25 +123,24 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 
 	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
-			ANode p = parent();
-			if (p instanceof DeclGroup)
-				this.group = (DeclGroup)p;
-		}
+		if (pi.p_parent instanceof DeclGroup && pi.p_slot.name == "decls")
+			this.group = (DeclGroup)pi.p_parent;
 		super.callbackAttached(pi);
 	}
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (parent instanceof DeclGroup && slot.name == "decls")
+			this.group = null;
+		super.callbackDetached(parent, slot);
+	}
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (isAttached()) {
 			if      (attr.name == "vtype" || attr.name == "stype")
-				parent().callbackChildChanged(pslot());
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 			else if (attr.name == "meta")
-				parent().callbackChildChanged(pslot());
-			else
-				super.callbackChildChanged(attr);
-		} else {
-			super.callbackChildChanged(attr);
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
-	}	
+		super.callbackChildChanged(ct, attr, data);
+	}
 
 	public static final Var[]	emptyArray = new Var[0];
 

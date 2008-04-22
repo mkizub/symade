@@ -50,11 +50,10 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		return q_name;
 	}
 
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "sname")
 			resetNames();
-		else
-			super.callbackChildChanged(attr);
+		super.callbackChildChanged(ct, attr, data);
 	}
 	public void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {

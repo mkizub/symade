@@ -132,7 +132,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 		
 		// Lookup and create if need as $typeinfo$N
-		foreach(Field f; getAllFields(); f.isStatic()) {
+		foreach(Field f; this.members; f.isStatic()) {
 			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
 				continue;
 			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
@@ -151,7 +151,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		if (from_gen)
 			throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
 		int i = 0;
-		foreach(Field f; getAllFields(); f.isStatic()) {
+		foreach(Field f; this.members; f.isStatic()) {
 			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
 				continue;
 			i++;
@@ -1388,7 +1388,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (n == agi.instance_init)
 				continue;
 			if (n instanceof DeclGroup) {
-				foreach (Field f; n.decls)
+				foreach (Field f; n.getDecls())
 					autoGenerateStatementsForDecl(f, agi);
 			}
 			else if (n instanceof Field) {
@@ -1554,7 +1554,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		long diff_time = curr_time = System.currentTimeMillis();
 		try {
 			// Verify access
-			foreach(Field f; getAllFields()) {
+			foreach(Field f; this.members) {
 				try {
 					f.type.checkResolved();
 					if (f.type.getStruct()!=null)
@@ -1596,7 +1596,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			// Autogenerate hidden args for initializers of local class
 			if( isLocal() ) {
 				Field[] proxy_fields = Field.emptyArray;
-				foreach(Field f; getAllFields()) {
+				foreach(Field f; this.members) {
 					if( f.isNeedProxy() )
 						proxy_fields = (Field[])Arrays.append(proxy_fields,f);
 				}

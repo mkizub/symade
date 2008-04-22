@@ -123,13 +123,13 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			if (nameNode.equals(s.qname()))
 				return;
 			// Check fields of the @ThisIsANode
-			foreach (Field n; s.getAllFields())
+			foreach (Field n; s.members)
 				doProcess(n);
 			return;
 		}
 		
 		// Check fields to not have @nodeAttr and @nodeData
-		foreach (Field f; s.getAllFields()) {
+		foreach (Field f; s.members) {
 			UserMeta fmatt = f.getMeta(mnAtt);
 			UserMeta fmref = f.getMeta(mnRef);
 			if (fmatt != null || fmref != null) {
@@ -379,14 +379,14 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			return;
 		if (s.isInterface() || !isNodeImpl(s))
 			return;
-		foreach (Field f; s.getAllFields(); f.sname == nameEnumValuesFld)
+		foreach (Field f; s.members; f.sname == nameEnumValuesFld)
 			return; // already generated
 
 		foreach (TypeRef st; s.super_types; isNodeKind(st.getStruct()))
 			this.doProcess(st.getStruct());
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
-		foreach (Field f; s.getAllFields(); !f.isStatic() && (f.getMeta(mnAtt) != null || f.getMeta(mnRef) != null))
+		foreach (Field f; s.members; !f.isStatic() && (f.getMeta(mnAtt) != null || f.getMeta(mnRef) != null))
 			aflds.append(f);
 		foreach (Field f; aflds) {
 			boolean isAtt = (f.getMeta(mnAtt) != null);
@@ -599,7 +599,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			this.doProcess(st.getStruct());
 
 		Field vals = null;
-		foreach (Field f; iface.getAllFields(); f.sname == nameEnumValuesFld) {
+		foreach (Field f; iface.members; f.sname == nameEnumValuesFld) {
 			vals = f;
 			break;
 		}
@@ -617,7 +617,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		//{
 		//	Struct ss = iface;
 		//	while (ss != null && isNodeKind(ss)) {
-		//		foreach (Field f; ss.getAllFields(); !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {
+		//		foreach (Field f; ss.members; !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {
 		//			aflds.append(f);
 		//		}
 		//		ss = ss.super_types[0].getStruct();
@@ -682,7 +682,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				v.init = new CastExpr(0,impl.xtype,new EToken(0,"to$node",ETokenKind.IDENTIFIER,true));
 				copyV.block.addSymbol(v);
 			}
-			foreach (Field f; impl.getAllFields()) {
+			foreach (Field f; impl.members) {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
 					continue;
 				{	// check if we may not copy the field
@@ -772,7 +772,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Var v = new LVar(0,"from",sVVV.xtype,Var.VAR_LOCAL,0);
 			v.init = new CastExpr(0,sVVV.xtype,new LVarExpr(0,mkRstr.params[0]));
 			mkRstr.block.stats += v;
-			foreach (Field f; impl.getAllFields()) {
+			foreach (Field f; impl.members) {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
 					continue;
 				Field vf = null;
@@ -811,7 +811,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		}
 
 		// fix methods
-		foreach(Field f; impl.getAllFields(); !f.isStatic()) {
+		foreach(Field f; impl.members; !f.isStatic()) {
 			UserMeta fmatt = f.getMeta(VNode_Base.mnAtt);
 			UserMeta fmref = f.getMeta(VNode_Base.mnRef);
 			if (fmatt != null || fmref != null) {
@@ -849,7 +849,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		ctor.block.stats += new ExprStat(new CtorCallExpr(0,new SuperExpr(),new ENode[]{new LVarExpr(0,ctor.params[0])}));
 		s.members += ctor;
 
-		foreach (Field f; impl.getAllFields(); !f.isStatic() && !f.isAbstract() && !f.isPackedField() && !f.isFinal() && f.getMeta(VNode_Base.mnUnVersioned) == null) {
+		foreach (Field f; impl.members; !f.isStatic() && !f.isAbstract() && !f.isPackedField() && !f.isFinal() && f.getMeta(VNode_Base.mnUnVersioned) == null) {
 			Field sf = new Field(f.sname,f.type,ACC_SYNTHETIC);
 			s.members += sf;
 			ctor.block.stats += new ExprStat(new AssignExpr(0,Operator.Assign,new IFldExpr(0,new ThisExpr(),sf),new IFldExpr(0,new LVarExpr(0,ctor.params[0]),f,true)));
@@ -863,7 +863,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (iface == null || !isNodeKind(iface))
 			return;
 	next_fld:
-		foreach (Field f; iface.getAllFields(); !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {
+		foreach (Field f; iface.members; !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {
 			foreach (Field af; aflds; f == af)
 				continue next_fld;
 			aflds.append(f);
@@ -873,7 +873,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 
 	private Field getField(Struct s, String name) {
-		foreach (Field f; s.getAllFields(); f.sname == name)
+		foreach (Field f; s.members; f.sname == name)
 			return f;
 		throw new CompilerException(s,"Auto-generated field with name "+name+" is not found");
 	}

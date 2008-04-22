@@ -115,7 +115,7 @@ public class MetaType implements Constants {
 		n @= tdecl.members,
 		{
 			n instanceof DeclGroup,
-			dn @= ((DeclGroup)n).decls,
+			dn @= ((DeclGroup)n).getDecls(),
 			info.checkNodeName(dn),
 			info.check(dn),
 			node ?= dn
@@ -630,7 +630,7 @@ public class WrapperMetaType extends MetaType {
 				return wf;
 		}
 		Field wf = null;
-		foreach(Field n; td.getAllFields(); n.isForward()) {
+		foreach(Field n; td.members; n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else

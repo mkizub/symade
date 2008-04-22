@@ -58,21 +58,18 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@abstract @virtual
 	public:ro			CallType		etype;
 
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (isAttached()) {
 			if      (attr.name == "params")
-				parent().callbackChildChanged(pslot());
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 			else if (attr.name == "conditions")
-				parent().callbackChildChanged(pslot());
-			else
-				super.callbackChildChanged(attr);
-		} else {
-			super.callbackChildChanged(attr);
+				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
 		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "dtype_ret" || attr.name == "meta") {
 			_type = null;
 			_dtype = null;
 		}
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	@getter public final CallType				get$type()	{ if (this._type == null) rebuildTypes(); return this._type; }
@@ -929,13 +926,13 @@ public final class Constructor extends Method {
 		super(null, new TypeRef(Type.tpVoid), fl);
 	}
 	
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "sname") {
 			assert(this.sname == null);
 			if (this.sname != null)
 				this.sname = null; // constructors are anonymouse
-		} else
-			super.callbackChildChanged(attr);
+		}
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	public Method makeAccessor() {

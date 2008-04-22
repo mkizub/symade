@@ -220,7 +220,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					dg.setPublic();
 				}
 				DeclGroup d = dg.ncopy();
-				foreach (Field f; dg.decls)
+				foreach (Field f; dg.getDecls())
 					f.init = null;
 				dg.setPublic();
 				dg.setAbstract(true);
@@ -282,7 +282,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		
 		// generate getter/setter methods
-		foreach (Field f; impl.getAllFields()) {
+		foreach (Field f; impl.members) {
 			Method mv_set = f.setter;
 			foreach (Pair<Method,Method> p; moved_methods; p.fst == mv_set) {
 				mv_set = p.snd;

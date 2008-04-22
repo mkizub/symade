@@ -87,12 +87,12 @@ public class TypeExpr extends TypeRef {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "arg" || attr.name == "op" || attr.name == "op_name") {
 			if (this.type_lnk != null)
 				this.type_lnk = null;
 		}
-		super.callbackChildChanged(attr);
+		super.callbackChildChanged(ct, attr, data);
 	}
 	
 	public Operator getOp() { return op; }

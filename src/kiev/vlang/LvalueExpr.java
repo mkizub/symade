@@ -806,7 +806,7 @@ public final class OuterThisAccessExpr extends ENode {
 	public String toString() { return getType().meta_type.tdecl.qname().replace('\u001f','.')+".this"; }
 
 	public static Field outerOf(TypeDecl clazz) {
-		foreach (Field f; clazz.getAllFields()) {
+		foreach (Field f; clazz.members) {
 			if( f.sname.startsWith(nameThisDollar) ) {
 				trace(Kiev.debug && Kiev.debugResolve,"Name of field "+f+" starts with this$");
 				return f;

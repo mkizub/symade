@@ -150,13 +150,12 @@ public abstract class Struct extends TypeDecl {
 	@nodeData(ext_data=true)		public Struct				typeinfo_clazz;
 	@nodeData(ext_data=true)		public Struct				iface_impl;
 
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "package_clazz")
 			this.callbackSuperTypeChanged(this);
 		else if (attr.name == "sname")
 			resetNames();
-		else
-			super.callbackChildChanged(attr);
+		super.callbackChildChanged(ct, attr, data);
 	}
 	public void callbackCopied() {
 		super.callbackCopied();
@@ -253,7 +252,7 @@ public abstract class Struct extends TypeDecl {
 	/** Add information about new field that belongs to this class */
 	public Field addField(Field f) {
 		// Check we already have this field
-		foreach (Field ff; getAllFields()) {
+		foreach (Field ff; this.members) {
 			if( ff.equals(f) ) {
 				throw new RuntimeException("Field "+f+" already exists in class "+this);
 			}
@@ -369,7 +368,7 @@ public abstract class Struct extends TypeDecl {
 		if (isInterface() && !isStructView() && !isMixin()) {
 			foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer || n instanceof DeclGroup) {
 				if (n instanceof DeclGroup) {
-					foreach (Field f; n.decls; !f.isAbstract())
+					foreach (Field f; n.getDecls(); !f.isAbstract())
 						verifyFieldInIface(f);
 				}
 				else if (n instanceof Field && !n.isAbstract()) {

@@ -256,7 +256,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		DNode@ dn;
 	{
 		init instanceof DeclGroup,
-		dn @= ((DeclGroup)init).decls,
+		dn @= ((DeclGroup)init).getDecls(),
 		info.checkNodeName(dn),
 		info.check(dn),
 		node ?= dn

@@ -31,7 +31,6 @@ public view RNode of ASTNode implements Constants {
 
 	public final ANode parent();
 	public AttrSlot[] values();
-	public final void callbackChildChanged(AttrSlot attr);
 	public final <N extends ANode> N replaceWithNode(N node);
 	public final ASTNode replaceWith(()->ASTNode fnode);
 	public final boolean isAttached();
@@ -56,11 +55,12 @@ public static view RSNode of SNode extends RNode {
 
 public static final view RDeclGroup of DeclGroup extends RSNode {
 	public:ro MetaSet	meta;
-	public:ro	DNode[]		decls;
+
+	public DNode[] getDecls();
 
 	public void resolveDecl() {
 		if( isResolved() ) return;
-		foreach (DNode dn; decls)
+		foreach (DNode dn; getDecls())
 			dn.resolveDecl();
 		DataFlowInfo.getDFlow((DeclGroup)this).out();
 		setResolved(true);
@@ -205,7 +205,6 @@ public view RTypeDecl of TypeDecl extends RDNode {
 	public MetaType[] getAllSuperTypes();
 	public final String qname();
 	public boolean isClazz();
-	public final Field[] getAllFields();
 	public final boolean isStructInner();
 }
 

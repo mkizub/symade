@@ -160,10 +160,9 @@ public class Bytecoder implements JConstants {
 			f.setMeta(mpr);
 		}
 		f.init = f_init;
+		cl.members.append(f);
 		if ((f_flags & ACC_ENUM)!=0)
-			((DeclGroupEnumFields)cl.members[0]).decls.append(f);
-		else
-			cl.members.append(f);
+			((JavaEnum)cl).group.decls.append(f);
 		return f;
 	}
 
@@ -601,7 +600,7 @@ public class Bytecoder implements JConstants {
 
 		{
 			Vector<kiev.bytecode.Field> flds = new Vector<kiev.bytecode.Field>(); 
-			foreach (Field f; cl.getAllFields()) {
+			foreach (Field f; cl.members) {
 				if( f.isPackedField() ) continue;
 				if (/*!kievmode &&*/ f.isAbstract()) continue;
 				flds.append(writeField(f));

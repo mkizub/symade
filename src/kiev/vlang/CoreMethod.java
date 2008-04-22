@@ -31,7 +31,7 @@ public final class CoreExpr extends ENode {
 	
 	public CoreExpr() {}
 	
-	public void callbackChildChanged(AttrSlot attr) {
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "ident") {
 			String id = this.ident;
 			if (id != null) {
@@ -42,6 +42,7 @@ public final class CoreExpr extends ENode {
 				this.bend_func = null;
 			}
 		}
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	public Method getMethod() {

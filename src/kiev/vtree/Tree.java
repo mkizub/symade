@@ -335,7 +335,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final N set(ANode parent, int idx, N node) {
-		assert(!node.isAttached());
+		assert(!this.isSemantic() || !node.isAttached());
 		N[] narr = (N[])get(parent).clone();
 		narr[idx].callbackDetached(parent, this);
 		narr[idx] = node;
@@ -345,7 +345,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final N add(ANode parent, N node) {
-		assert(!node.isAttached());
+		assert(!this.isSemantic() || !node.isAttached());
 		assert(indexOf(parent,node) < 0);
 		N[] narr = get(parent);
 		int sz = narr.length;
@@ -372,7 +372,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void insert(ANode parent, int idx, N node) {
-		assert(!node.isAttached());
+		assert(!this.isSemantic() || !node.isAttached());
 		assert(indexOf(parent,node) < 0);
 		N[] narr = get(parent);
 		int sz = narr.length;
