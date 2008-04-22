@@ -675,11 +675,9 @@ public final view RStruct of Struct extends RTypeDecl {
 			Struct ss = tr.getStruct();
 			if (ss == null || !ss.isInterface() || !ss.isMixin() || ss.iface_impl == me)
 				continue;
-			foreach (DNode dn; ss.members) {
-				if (dn instanceof DeclGroup || dn instanceof Field) {
-					if !(dn.isFinal() && dn.isStatic())
-						to_copy.append(dn.ncopy(cc));
-				}
+			foreach (Field f; ss.members) {
+				if !(f.isFinal() && f.isStatic())
+					to_copy.append(f.ncopy(cc));
 			}
 		}
 	next_entry:
@@ -920,7 +918,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					to_copy.append(m);
 				}
 			}
-			else if (self.isMixin() && (dn instanceof DeclGroup || dn instanceof Field)) {
+			else if (self.isMixin() && dn instanceof Field) {
 				if !(dn.isFinal() && dn.isStatic())
 					to_copy.append(dn);
 			}
@@ -940,7 +938,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			else if (dn instanceof Method) {
 				defaults.members += dn.ncopy(cc);
 			}
-			else if (dn instanceof DeclGroup || dn instanceof Field) {
+			else if (dn instanceof Field) {
 				defaults.members += dn.ncopy(cc);
 			}
 		}
@@ -1387,11 +1385,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		foreach (ASTNode n; members) {
 			if (n == agi.instance_init)
 				continue;
-			if (n instanceof DeclGroup) {
-				foreach (Field f; n.getDecls())
-					autoGenerateStatementsForDecl(f, agi);
-			}
-			else if (n instanceof Field) {
+			if (n instanceof Field) {
 				autoGenerateStatementsForDecl((Field)n, agi);
 			}
 			else if (n instanceof Initializer) {
@@ -1578,8 +1572,6 @@ public final view RStruct of Struct extends RTypeDecl {
 			for(int i=0; i < members.length; i++) {
 				ASTNode n = members[i];
 				if (n instanceof Field)
-					n.resolveDecl();
-				else if (n instanceof DeclGroup)
 					n.resolveDecl();
 			}
 			for(int i=0; i < members.length; i++) {

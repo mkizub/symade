@@ -110,19 +110,10 @@ public class MetaType implements Constants {
 	}
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
-		DNode@ dn;
 	{
 		n @= tdecl.members,
-		{
-			n instanceof DeclGroup,
-			dn @= ((DeclGroup)n).getDecls(),
-			info.checkNodeName(dn),
-			info.check(dn),
-			node ?= dn
-		;
-			n instanceof Field && info.checkNodeName(n) && info.check(n),
-			node ?= n
-		}
+		n instanceof Field && info.checkNodeName(n) && info.check(n),
+		node ?= n
 	}
 	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info)
 		MetaType@ sup;

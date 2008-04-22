@@ -274,11 +274,6 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				td.meta.verify();
 			foreach (DNode dn; td.members)
 				dn.meta.verify();
-			foreach (DeclGroup dn; td.members) {
-				dn.meta.verify();
-				foreach (DNode d; dn.getDecls())
-					d.meta.verify();
-			}
 			getStructType(td, new Stack<TypeDecl>());
 			foreach (TypeDecl s; td.members)
 				doProcess(s);
@@ -497,37 +492,6 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					m.setFinal(false);
 				}
 				MetaAccess.verifyDecl(m);
-			}
-			else if (me.members[i] instanceof DeclGroup) {
-				DeclGroup dg = (DeclGroup)me.members[i];
-				dg.meta.verify();
-				if( me.isStructView() && !dg.meta.is_static) {
-					//dg.setFinal(true);
-					dg.setAbstract(true);
-					dg.setVirtual(true);
-				}
-				if( me.isInterface() ) {
-					if (dg.meta.is_virtual) {
-						dg.setAbstract(true);
-					} else {
-						if (me.isMixin()) {
-							if !(dg.isPrivate())
-								dg.setVirtual(true);
-						} else {
-							dg.setStatic(true);
-							dg.setFinal(true);
-						}
-					}
-					if (!me.isMixin()) {
-						dg.setPublic();
-					}
-					else if !(dg.isPublic() || dg.isPrivate()) {
-						Kiev.reportWarning(dg,"Mixin fields must be either public or private");
-						dg.setPublic();
-					}
-				}
-				foreach (Field f; dg.getDecls())
-					f.meta.verify();
 			}
 			else if( me.members[i] instanceof Field ) {
 				Field fdecl = (Field)me.members[i];
@@ -1010,7 +974,7 @@ public final class KievME_PostGenerate extends BackendProcessor {
 					dn.setAbstract(true);
 					((Method)dn).body = null;
 				}
-				else if (dn instanceof DeclGroup || dn instanceof Field) {
+				else if (dn instanceof Field) {
 					if !(dn.isStatic() && dn.isFinal())
 						dn.setAbstract(true);
 				}

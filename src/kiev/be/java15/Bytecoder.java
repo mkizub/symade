@@ -107,10 +107,6 @@ public class Bytecoder implements JConstants {
 
 		cl.members.delAll();
 
-		if (cl.isEnum()) {
-			cl.members.insert(0,new DeclGroupEnumFields());
-		}
-		
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);
 		}

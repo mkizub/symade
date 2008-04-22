@@ -94,16 +94,45 @@ public final class PizzaCase extends Struct {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	public int tag;
-	@nodeData public DeclGroupCaseFields		group;
-
-	public Field[] getCaseFields() {
-		DeclGroupCaseFields cases = this.group;
-		Field[] cflds = new Field[cases.decls.length];
-		for (int i=0; i < cflds.length; i++)
-			cflds[i] = (Field)cases.decls[i];
-		return cflds;
+	// declare NodeAttr_case_fields to be an attribute for ANode.nodeattr$syntax_parent
+	static final class NodeAttr_case_fields extends SpaceAttAttrSlot<Field> {
+		public final ANode[] get(ANode parent) { return ((PizzaCase)parent).case_fields; }
+		public final void set(ANode parent, Object narr) { ((PizzaCase)parent).case_fields = (Field[])narr; }
+		NodeAttr_case_fields(String name, TypeInfo typeinfo) {
+			super(name, ANode.nodeattr$syntax_parent, typeinfo);
+		}
 	}
+
+	@nodeAttr public Field[]	case_fields;
+
+	public int tag;
+
+	public PizzaCase() {}
+	
+	public Field[] getCaseFields() {
+		return this.case_fields;
+	}
+
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (ct == ChildChangeType.ATTACHED) {
+			if (attr.name == "case_fields") {
+				Field f = (Field)data;
+				if (f.parent() == null)
+					this.members += f;
+				assert (f.parent() == this);
+			}
+		}
+		else if (ct == ChildChangeType.DETACHED) {
+			if (attr.name == "case_fields") {
+				Field f = (Field)data;
+				if (f.parent() == this)
+					~f;
+				assert (f.parent() == null);
+			}
+		}
+		super.callbackChildChanged(ct, attr, data);
+	}
+
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -112,21 +141,19 @@ public final class JavaEnum extends JavaClass {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@nodeData public DeclGroupEnumFields		group;
+	@nodeAttr public final DeclGroupEnumFields		group;
 
 	public JavaEnum() {
 		this.meta.is_enum = true;
+		this.group = new DeclGroupEnumFields();
+		this.group.dtype = new TypeRef(this.xtype);
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
 		this.meta.is_enum = true;
 	}
 	public Field[] getEnumFields() {
-		DeclGroupEnumFields enums = this.group;
-		Field[] eflds = new Field[enums.decls.length];
-		for (int i=0; i < eflds.length; i++)
-			eflds[i] = (Field)enums.decls[i];
-		return eflds;
+		return group.decls;
 	}
 
 	public int getIndexOfEnumField(Field f) {
@@ -366,12 +393,8 @@ public abstract class Struct extends TypeDecl {
 				Kiev.reportError(this, "Struct "+this+" extends final type "+tr);
 		}
 		if (isInterface() && !isStructView() && !isMixin()) {
-			foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer || n instanceof DeclGroup) {
-				if (n instanceof DeclGroup) {
-					foreach (Field f; n.getDecls(); !f.isAbstract())
-						verifyFieldInIface(f);
-				}
-				else if (n instanceof Field && !n.isAbstract()) {
+			foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer) {
+				if (n instanceof Field && !n.isAbstract()) {
 					verifyFieldInIface((Field)n);
 				}
 				else if (n instanceof Initializer) {

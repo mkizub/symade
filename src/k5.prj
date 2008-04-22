@@ -117,6 +117,7 @@ CLASS kievfmtCalcOption kiev/fmt/CalcOption kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionAnd kiev/fmt/CalcOptionAnd kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionClass kiev/fmt/CalcOptionClass kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionHasMeta kiev/fmt/CalcOptionHasMeta kiev/fmt/SyntaxLayout.java
+CLASS kievfmtCalcOptionHasNoSyntaxParent kiev/fmt/CalcOptionHasNoSyntaxParent kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionIncludeInDump kiev/fmt/CalcOptionIncludeInDump kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionIsHidden kiev/fmt/CalcOptionIsHidden kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionNot kiev/fmt/CalcOptionNot kiev/fmt/SyntaxLayout.java
@@ -330,7 +331,6 @@ CLASS kievtransfViewME_PreGenerate kiev/transf/ViewME_PreGenerate kiev/transf/
 CLASS kievtransfVirtFldBE_Rewrite kiev/transf/VirtFldBE_Rewrite kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldFE_GenMembers kiev/transf/VirtFldFE_GenMembers kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldME_PreGenerate kiev/transf/VirtFldME_PreGenerate kiev/transf/ProcessVirtFld.java
-CLASS kievvlangADeclGroupFields kiev/vlang/ADeclGroupFields kiev/vlang/SNode.java
 CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
 CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java
@@ -403,9 +403,7 @@ CLASS kievvlangDFState kiev/vlang/DFState kiev/vlang/DataFlow.java
 CLASS kievvlangDNode kiev/vlang/DNode kiev/vlang/DNode.java
 CLASS kievvlangDataFlowInfo kiev/vlang/DataFlowInfo kiev/vlang/DataFlow.java
 CLASS kievvlangDeclGroup kiev/vlang/DeclGroup kiev/vlang/SNode.java
-CLASS kievvlangDeclGroupCaseFields kiev/vlang/DeclGroupCaseFields kiev/vlang/SNode.java
 CLASS kievvlangDeclGroupEnumFields kiev/vlang/DeclGroupEnumFields kiev/vlang/SNode.java
-CLASS kievvlangDeclGroupFields kiev/vlang/DeclGroupFields kiev/vlang/SNode.java
 CLASS kievvlangDeclGroupVars kiev/vlang/DeclGroupVars kiev/vlang/SNode.java
 CLASS kievvlangDirUnit kiev/vlang/DirUnit kiev/vlang/FileUnit.java
 CLASS kievvlangDoWhileStat kiev/vlang/DoWhileStat kiev/vlang/LoopStatement.java
@@ -736,11 +734,7 @@ ENUM kievparserETokenKind kiev/parser/ETokenKind kiev/parser/EToken.java
 ENUM kievvlangIntRadix kiev/vlang/IntRadix kiev/vlang/ConstExpr.java
 ENUM kievvlangProjectFileType kiev/vlang/ProjectFileType kiev/vlang/Env.java
 ENUM kievvlangWBCType kiev/vlang/WBCType kiev/vlang/Method.java
-FORMAT stx-fmtsyntax-dump-api stx-fmt/syntax-dump-api.xml bad
-FORMAT stx-fmtsyntax-dump-full stx-fmt/syntax-dump-full.xml bad
-FORMAT stx-fmtsyntax-for-java stx-fmt/syntax-for-java.xml bad
-FORMAT stx-fmtsyntax-for-project-tree stx-fmt/syntax-for-project-tree.xml bad
-FORMAT stx-fmtsyntax-for-syntax stx-fmt/syntax-for-syntax.xml bad
+ENUM kievvtreeChildChangeType kiev/vtree/ChildChangeType kiev/vtree/AST.java
 INTERFACE kievbejava15IBoolExpr kiev/be/java15/IBoolExpr kiev/be/java15/JBoolExpr.java
 INTERFACE kievbejava15JAccessExpr kiev/be/java15/JAccessExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JAssignExpr kiev/be/java15/JAssignExpr kiev/be/java15/JExpr.java

@@ -74,10 +74,10 @@ public abstract class ANode implements INode {
 	public static final RefAttrSlot_this nodeattr$this = new RefAttrSlot_this("this", TypeInfo.newTypeInfo(ANode.class,null));
 
 	public static final ParentAttrSlot nodeattr$parent =
-			new ParentAttrSlot("parent", false, TypeInfo.newTypeInfo(ANode.class,null));
+			new ParentAttrSlot("parent", false, true, TypeInfo.newTypeInfo(ANode.class,null));
 
 	public static final ParentAttrSlot nodeattr$syntax_parent =
-			new ParentAttrSlot("syntax_parent", true, TypeInfo.newTypeInfo(ANode.class,null));
+			new ParentAttrSlot("syntax_parent", true, true, TypeInfo.newTypeInfo(ANode.class,null));
 
 	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
@@ -254,6 +254,7 @@ public abstract class ANode implements INode {
 					ParentInfo pi = data[i];
 					if (pi.p_parent == parent && pi.p_slot == slot)
 						return;
+					assert (!pi.p_slot.parent_attr_slot.is_unique || pi.p_slot.parent_attr_slot != slot.parent_attr_slot);
 				}
 				ParentInfo[] tmp = new ParentInfo[sz+1];
 				for (int i=0; i < sz; i++)
@@ -270,7 +271,7 @@ public abstract class ANode implements INode {
 	}
 	public void callbackAttached(ParentInfo pi) {
 		// notify parent about the changed slot
-		pi.p_parent.callbackChildAttached(this,pi.p_slot);
+		pi.p_parent.callbackChildChanged(ChildChangeType.ATTACHED,pi.p_slot,this);
 	}
 	
 	public void callbackDetached(ANode parent, AttrSlot slot) {
@@ -282,7 +283,7 @@ public abstract class ANode implements INode {
 			this.p_slot = null;
 			this.p_parent = null;
 			// notify parent about the changed slot
-			parent.callbackChildDetached(this,slot);
+			parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
 		} else {
 			ParentInfo[] data = this.ext_parent;
 			if (data == null)
@@ -300,7 +301,7 @@ public abstract class ANode implements INode {
 						for (   ; i <  sz; i++) tmp[i] = data[i+1];
 						this.ext_parent = tmp;
 					}
-					pi.p_parent.callbackChildDetached(this,slot);
+					pi.p_parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
 					return;
 				}
 			}
@@ -423,6 +424,15 @@ public abstract class ANode implements INode {
 		return null;
 	}
 	
+	public final ANode getExtParent(ParentAttrSlot attr) {
+		assert (attr.is_unique);
+		if (ext_parent != null) {
+			foreach (ParentInfo pi; ext_parent; pi.p_slot.parent_attr_slot == attr)
+				return pi.p_parent;
+		}
+		return null;
+	}
+	
 	public final void setExtData(Object d, AttrSlot attr) {
 		if (ext_data != null) {
 			DataAttachInfo[] data = this.ext_data;
@@ -477,6 +487,30 @@ public abstract class ANode implements INode {
 					}
 					if (attr.is_attr && ai.p_data instanceof ANode)
 						((ANode)ai.p_data).callbackDetached(this, attr);
+					return;
+				}
+			}
+		}
+	}
+
+	public final void delExtParent(ParentAttrSlot attr) {
+		assert (attr.is_unique);
+		ParentInfo[] data = this.ext_parent;
+		if (data != null) {
+			int sz = data.length-1;
+			for (int idx=0; idx <= sz; idx++) {
+				ParentInfo pi = data[idx];
+				if (pi.p_slot.parent_attr_slot == attr) {
+					if (sz == 0) {
+						this.ext_parent = null;
+					} else {
+						ParentInfo[] tmp = new ParentInfo[sz];
+						int i;
+						for (i=0; i < idx; i++) tmp[i] = data[i];
+						for (   ; i <  sz; i++) tmp[i] = data[i+1];
+						this.ext_parent = tmp;
+					}
+					pi.p_parent.callbackDetached(this, pi.p_slot);
 					return;
 				}
 			}

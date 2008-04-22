@@ -80,8 +80,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public String qname() {
 		ANode p = parent();
-		while (p instanceof DeclGroup)
-			p = p.parent();
 		if (p == null || p instanceof Env)
 			return sname;
 		if (p instanceof GlobalDNode)

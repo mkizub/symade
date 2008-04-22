@@ -37,7 +37,10 @@ public class Token implements ParserConstants {
    * of this token; endLine and endColumn describe the position of the
    * last character of this token.
    */
-  public int beginLine, beginColumn, endLine, endColumn;
+  public int beginLine;
+  public int beginColumn;
+  public int endLine;
+  public int endColumn;
 
   /**
    * The string image of the token.

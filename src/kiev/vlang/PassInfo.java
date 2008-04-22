@@ -29,7 +29,8 @@ public interface ContinueTarget {
 }
 
 public final class ParentEnumerator implements Enumeration<ASTNode> {
-	ASTNode n, r;
+	ASTNode n;
+	ASTNode r;
 	public ParentEnumerator(ASTNode n) {
 		this.n = n;
 	}

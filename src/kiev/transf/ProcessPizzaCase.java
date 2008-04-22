@@ -49,11 +49,11 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 		PizzaCase pcase = (PizzaCase)clazz;
 		// Create constructor for pizza case
 		Constructor init = new Constructor(ACC_PUBLIC|ACC_SYNTHETIC);
-		foreach (Field f; pcase.group.decls)
+		foreach (Field f; pcase.case_fields)
 			init.params.add(new LVar(f.pos,f.sname,f.type,Var.PARAM_NORMAL,0));
 		init.body = new Block(clazz.pos);
 		int p = 0;
-		foreach (Field f; pcase.group.decls) {
+		foreach (Field f; pcase.case_fields) {
 			Var v = null;
 			foreach (Var fp; init.params; fp.sname == f.sname) {
 				init.block.stats.insert(

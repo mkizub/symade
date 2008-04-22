@@ -4001,6 +4001,9 @@
        <name>CalcOptionIncludeInDump</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>CalcOptionHasNoSyntaxParent</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>CalcOptionIsHidden</name>
       </a-node>
      </expected_types>
@@ -4178,6 +4181,28 @@
       </a-node>
      </elem>
      <sname>stx-calc-option-api</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>CalcOptionHasNoSyntaxParent</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>no-syntax-parent:</text>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>name</name>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
+      </a-node>
+     </elem>
+     <sname>stx-calc-option-no-syntax-parent</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>

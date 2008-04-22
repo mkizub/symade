@@ -137,7 +137,7 @@ public class TypeRef extends ENode {
 			Type tp = Type.getRealType(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
 				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
-			if (pcase.group.decls.length != 0)
+			if (pcase.case_fields.length != 0)
 				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
 				ENode expr = new ConstIntExpr(pcase.tag);

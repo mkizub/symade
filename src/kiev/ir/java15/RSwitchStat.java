@@ -39,13 +39,13 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						val = new ConstIntExpr(pcase.tag);
 						if( pattern.length > 0 ) {
 							PizzaCase pcase = (PizzaCase)cas;
-							if( pattern.length != pcase.group.decls.length )
-								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+pcase.group.decls.length+" fields");
+							if( pattern.length != pcase.case_fields.length )
+								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+pcase.case_fields.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
 								if( p.type == Type.tpVoid || p.sname == nameUnderscore)
 									continue;
-								Field f = (Field)pcase.group.decls[i];
+								Field f = pcase.case_fields[i];
 								Type tp = Type.getRealType(sw.sel.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.sname+" has type "+p.type+" but type "+tp+" is expected");
@@ -76,7 +76,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 							throw new CompilerException(this,"Wrong case in enum switch");
 						SFldExpr f = (SFldExpr)val;
 						Type et = sw.sel.getType();
-						if( f.var.getType() ≢ et )
+						if( f.var.getType() ≉ et )
 							throw new CompilerException(this,"Case of type "+f.var.getType()+" do not match switch expression of type "+et);
 						if (et.getStruct() != null && et.getStruct().isEnum())
 							val = new ConstIntExpr(((JavaEnum)et.getStruct()).getIndexOfEnumField((Field)f.var));

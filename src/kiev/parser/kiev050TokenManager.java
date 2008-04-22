@@ -2340,14 +2340,12 @@ StringBuffer image;
 int jjimageLen;
 int lengthOfMatch;
 protected char curChar;
-public kiev050TokenManager(SimpleCharStream stream)
-{
+public kiev050TokenManager(SimpleCharStream stream){
    if (SimpleCharStream.staticFlag)
       throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");
    input_stream = stream;
 }
-public kiev050TokenManager(SimpleCharStream stream, int lexState)
-{
+public kiev050TokenManager(SimpleCharStream stream, int lexState){
    this(stream);
    SwitchTo(lexState);
 }
@@ -2381,7 +2379,7 @@ public void SwitchTo(int lexState)
 protected Token jjFillToken()
 {
    Token t = Token.newToken(jjmatchedKind);
-   if( t.kind == 0 ) t.kind = jjmatchedKind;
+   t.kind = jjmatchedKind;
    String im = jjstrLiteralImages[jjmatchedKind];
    t.image = (im == null) ? input_stream.GetImage() : im;
    t.beginLine = input_stream.getBeginLine();
@@ -2562,9 +2560,8 @@ void MoreLexicalActions()
    {
       case 9 :
          if (image == null)
-              image = new StringBuffer(new String(input_stream.GetSuffix(jjimageLen)));
-         else
-            image.append(new String(input_stream.GetSuffix(jjimageLen)));
+            image = new StringBuffer();
+         image.append(input_stream.GetSuffix(jjimageLen));
          jjimageLen = 0;
                    input_stream.backup(1);
          break;
@@ -2578,22 +2575,19 @@ void TokenLexicalActions(Token matchedToken)
    {
       case 95 :
         if (image == null)
-            image = new StringBuffer(jjstrLiteralImages[95]);
-         else
+            image = new StringBuffer();
             image.append(jjstrLiteralImages[95]);
                        if(!parser.declMode) matchedToken.kind=IDENTIFIER;
          break;
       case 96 :
         if (image == null)
-            image = new StringBuffer(jjstrLiteralImages[96]);
-         else
+            image = new StringBuffer();
             image.append(jjstrLiteralImages[96]);
                                   if(!parser.declMode) matchedToken.kind=IDENTIFIER;
          break;
       case 97 :
         if (image == null)
-            image = new StringBuffer(jjstrLiteralImages[97]);
-         else
+            image = new StringBuffer();
             image.append(jjstrLiteralImages[97]);
                                   if(!parser.declMode) matchedToken.kind=IDENTIFIER;
          break;

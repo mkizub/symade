@@ -35,8 +35,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
 
 	@nodeAttr public final			MetaSet			meta;
-	@nodeAttr public					String			sname; // source code name, may be null for anonymouse symbols
-	@nodeData public					DeclGroup		group;
+	@nodeAttr public				String			sname; // source code name, may be null for anonymouse symbols
+	@nodeData public				DeclGroup		group;
 
 	@nodeData(ext_data=true, copyable=false)
 	public KString								bytecode_name; // used by backend for anonymouse and inner declarations
@@ -675,20 +675,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public void resolveMetaValues() {
 		this.meta.resolve();
-		foreach(ASTNode n; members) {
-			if (n instanceof DNode) {
-				DNode dn = (DNode)n;
-				dn.meta.resolve();
-				if (dn instanceof Method)
-					foreach (Var p; dn.params)
-						p.meta.resolve();
-			}
-			if (n instanceof DeclGroup) {
-				DeclGroup dn = (DeclGroup)n;
-				dn.meta.resolve();
-				foreach (DNode d; dn.getDecls())
-					d.meta.resolve();
-			}
+		foreach(DNode dn; members) {
+			dn.meta.resolve();
+			if (dn instanceof Method)
+				foreach (Var p; dn.params)
+					p.meta.resolve();
 		}
 		
 		if( this instanceof Struct && !isPackage() ) {
@@ -780,24 +771,15 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 	protected rule resolveNameR_1(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
-		DNode@ dn;
 	{
 			info.checkNodeName(this),
 			node ?= this
 		;	node @= args,
 			info.checkNodeName(node)
 		;	n @= members,
-			{
-				n instanceof DeclGroup,
-				dn @= ((DeclGroup)n).getDecls(),
-				info.checkNodeName(dn),
-				info.check(dn),
-				node ?= dn
-			;
-				info.checkNodeName(n),
-				info.check(n),
-				node ?= n
-			}
+			info.checkNodeName(n),
+			info.check(n),
+			node ?= n
 	}
 	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info)
 		ASTNode@ syn;

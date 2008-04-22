@@ -213,20 +213,6 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				moved_methods.append(new Pair<Method,Method>(cm,im));
 				continue;
 			}
-			else if (dn instanceof DeclGroup && !(dn.meta.is_static && dn.meta.is_final)) {
-				DeclGroup dg = dn;
-				if (dg.meta.is_access != DNode.MASK_ACC_PUBLIC) {
-					Kiev.reportWarning(dg, "Fields in "+clazz+" must be public");
-					dg.setPublic();
-				}
-				DeclGroup d = dg.ncopy();
-				foreach (Field f; dg.getDecls())
-					f.init = null;
-				dg.setPublic();
-				dg.setAbstract(true);
-				impl.members.add(d);
-				continue;
-			}
 			else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
 				Field cf = dn;
 				if (!cf.isPublic()) {

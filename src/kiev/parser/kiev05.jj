@@ -1100,12 +1100,12 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 void TypeBodyDeclaration(TypeDecl clazz) :
-{ ASTModifiers modifiers; DeclGroupEnumFields enums; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
+{ ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
 {
 	"{"
 	(
 		LOOKAHEAD({ clazz.isEnum() })
-		{ enums = new DeclGroupEnumFields(); clazz.members.insert(0,enums); }
+		{ DeclGroupEnumFields enums = ((JavaEnum)clazz).group; }
 		modifiers = Modifiers()
 		enums.decls += EnumFieldDeclaration(modifiers)
 		(	","
@@ -1135,7 +1135,7 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 			clazz.members += MethodDeclaration(modifiers)
 		|
 			LOOKAHEAD(0) // LOOKAHEAD( Type() <IDENTIFIER> ("=" | "," | ";") )
-			clazz_members += FieldDecls(modifiers)
+			clazz_members += FieldDecl(modifiers)
 		)
 	)*
 	{ comments_alone(clazz_members); }
@@ -1165,28 +1165,24 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
-{ Symbol name; Struct clazz; TypeConstr[] args; DeclGroupCaseFields cases; }
+{ Symbol name; PizzaCase clazz; TypeConstr[] args; }
 {
 	"case"
 	name = Name()
 	{
-		clazz = mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
-		//clazz.super_types.insert(0, new TypeRef(parent.xtype));
-		//clazz.setPizzaCase();
+		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
 		clazz.setSingleton(true);
-		cases = new DeclGroupCaseFields();
-		clazz.members.insert(0, cases);
 	}
 	args = ClazzArguments() { clazz.args.addAll(args); }
 	[
 	"(" { clazz.setSingleton(false); }
 		[
 			modifiers = Modifiers()
-			cases.decls += CaseTypeField(modifiers)
+			clazz.case_fields += CaseTypeField(modifiers)
 			(
 				","
 				modifiers = Modifiers()
-				cases.decls += CaseTypeField(modifiers)
+				clazz.case_fields += CaseTypeField(modifiers)
 			)*
 		]
 	")"
@@ -1493,49 +1489,23 @@ MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
 }
 
 
-ASTNode FieldDecls(ASTModifiers modifiers) :
-{ boolean old_declMode; TypeRef type; Symbol id; ENode init; Field f; DeclGroupFields decl; DNode ret; }
+Field FieldDecl(ASTModifiers modifiers) :
+{ boolean old_declMode; TypeRef type; Symbol id; ENode init; Field fld; }
 {
 	{
 		old_declMode = declMode;
 		declMode = false;
 		init = null;
-		decl = null;
-		f = null;
 	}
 	try {
 		type = Type()
 		id = Name()
 		[	"="	init = VariableInitializer()	]
-		(
-			{
-				decl = new DeclGroupFields();
-				modifiers.copyToNode(decl.meta);
-				decl.dtype = type;
-				f = mkField(id, new ASTModifiers(), null, init);
-				init = null;
-				decl.decls += f;
-				ret = decl;
-			}
-			(
-				","
-				id = Name()
-				[	"="	init = VariableInitializer()	]
-				{
-					f = mkField(id, new ASTModifiers(), null, init);
-					init = null;
-					decl.decls += f;
-				}
-			)+
-		|
-			{
-				f = mkField(id, modifiers, type, init);
-				init = null;
-				ret = f;
-			}
-		)
+		{
+			fld = mkField(id, modifiers, type, init);
+		}
 		";"
-		{	return ret;	}
+		{	return fld;	}
 	} finally { declMode = old_declMode; }
 }
 

@@ -93,6 +93,22 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 		return this.meta.setMeta(meta);
 	}
 
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (ct == ChildChangeType.ATTACHED) {
+			if (attr.name == "decls" && data instanceof Var) {
+				Var v = (Var)data;
+				v.group = this;
+			}
+		}
+		else if (ct == ChildChangeType.DETACHED) {
+			if (attr.name == "decls" && data instanceof Var) {
+				Var v = (Var)data;
+				v.group = null;
+			}
+		}
+		super.callbackChildChanged(ct, attr, data);
+	}
+
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 	{
@@ -182,13 +198,15 @@ public final class DeclGroupVars extends DeclGroup {
 }
 
 @ThisIsANode(lang=CoreLang)
-public abstract class ADeclGroupFields extends DeclGroup {
-	@virtual typedef This  ≤ ADeclGroupFields;
+public final class DeclGroupEnumFields extends DeclGroup {
+	@virtual typedef This  = DeclGroupEnumFields;
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	// declare NodeAttr_decls to be an attribute for ANode.nodeattr$syntax_parent
 	static final class NodeAttr_decls extends SpaceAttAttrSlot<Field> {
-		public final ANode[] get(ANode parent) { return ((ADeclGroupFields)parent).decls; }
-		public final void set(ANode parent, Object narr) { ((ADeclGroupFields)parent).decls = (Field[])narr; }
+		public final ANode[] get(ANode parent) { return ((DeclGroupEnumFields)parent).decls; }
+		public final void set(ANode parent, Object narr) { ((DeclGroupEnumFields)parent).decls = (Field[])narr; }
 		NodeAttr_decls(String name, TypeInfo typeinfo) {
 			super(name, ANode.nodeattr$syntax_parent, typeinfo);
 		}
@@ -199,65 +217,6 @@ public abstract class ADeclGroupFields extends DeclGroup {
 
 	public DNode[] getDecls() { return decls; }
 
-	public ADeclGroupFields() {}
-
-	private void checkFieldsAreAttached() {
-		ANode p = parent();
-		if (p instanceof TypeDecl) {
-			// attach all my fields to the parent TypeDecl
-			TypeDecl td = (TypeDecl)p;
-			foreach (Field f; decls) {
-				if (f.parent() == null)
-					td.members += f;
-				assert (f.parent() == td);
-			}
-		}
-	}
-
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic())
-			checkFieldsAreAttached();
-		super.callbackAttached(pi);
-	}
-
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic()) {
-			if (parent instanceof TypeDecl) {
-				// detach all my fields from the parent TypeDecl
-				TypeDecl td = (TypeDecl)parent;
-				foreach (Field f; decls) {
-					if (f.parent() == td)
-						~f;
-					assert (f.parent() == null);
-				}
-			}
-		}
-	}
-
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "decls")
-			checkFieldsAreAttached();
-		super.callbackChildChanged(ct, attr, data);
-	}
-	
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class DeclGroupFields extends ADeclGroupFields {
-	@virtual typedef This  = DeclGroupFields;
-
-	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	public DeclGroupFields() {}
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class DeclGroupEnumFields extends ADeclGroupFields {
-	
-	@virtual typedef This  = DeclGroupEnumFields;
-
-	@DataFlowDefinition(out="this:in") private static class DFI {}
-
 	public DeclGroupEnumFields() {
 		this.meta.is_enum = true;
 		setPublic();
@@ -265,34 +224,27 @@ public final class DeclGroupEnumFields extends ADeclGroupFields {
 		setFinal(true);
 	}
 
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
-			ANode p = parent();
-			if (p instanceof Struct) {
-				this.dtype = new TypeRef(p.xtype);
-				((JavaEnum)p).group = this;
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (ct == ChildChangeType.ATTACHED) {
+			if (attr.name == "decls" && data instanceof Field && this.parent() instanceof TypeDecl) {
+				TypeDecl td = (TypeDecl)parent();
+				Field f = (Field)data;
+				if (f.parent() == null)
+					td.members += f;
+				assert (f.parent() == td);
 			}
 		}
-		super.callbackAttached(pi);
-	}
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class DeclGroupCaseFields extends ADeclGroupFields {
-	
-	@virtual typedef This  = DeclGroupCaseFields;
-
-	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	public DeclGroupCaseFields() {}
-
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
-			ANode p = parent();
-			if (p instanceof Struct)
-				((PizzaCase)p).group = this;
+		else if (ct == ChildChangeType.DETACHED) {
+			if (attr.name == "decls" && data instanceof Field && this.parent() instanceof TypeDecl) {
+				TypeDecl td = (TypeDecl)parent();
+				Field f = (Field)data;
+				if (f.parent() == td)
+					~f;
+				assert (f.parent() == null);
+			}
 		}
-		super.callbackAttached(pi);
+		super.callbackChildChanged(ct, attr, data);
 	}
+
 }
 

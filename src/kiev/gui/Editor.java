@@ -375,7 +375,8 @@ public class Editor extends InfoView implements KeyListener {
 	final class CurElem {
 		DrawTerm		dr;
 		ANode			node;
-		int				x, y;
+		int				x;
+		int				y;
 		Drawable[]		path = Drawable.emptyArray;
 	
 		void set(DrawTerm dr) {
@@ -437,7 +438,8 @@ public class ActionPoint {
 	public final Drawable	dr;
 	public final ANode		node;
 	public final AttrSlot	slot;
-	public final int		index, length;
+	public final int		index;
+	public final int		length;
 	public ActionPoint(Drawable dr, AttrSlot slot) {
 		this.dr = dr;
 		this.node = dr.drnode;

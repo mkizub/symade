@@ -122,16 +122,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return (MetaPacker)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacker");
 	}
 
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.p_parent instanceof DeclGroup && pi.p_slot.name == "decls")
-			this.group = (DeclGroup)pi.p_parent;
-		super.callbackAttached(pi);
-	}
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (parent instanceof DeclGroup && slot.name == "decls")
-			this.group = null;
-		super.callbackDetached(parent, slot);
-	}
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (isAttached()) {
 			if      (attr.name == "vtype" || attr.name == "stype")
@@ -191,8 +181,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 
 	public String qname() {
 		ANode p = parent();
-		while (p instanceof DeclGroup)
-			p = p.parent();
 		if (p == null || p instanceof Env)
 			return sname;
 		if (p instanceof GlobalDNode)

@@ -79,6 +79,7 @@ public final class SyntaxLang implements Language {
 				CalcOptionClass.class,
 				CalcOptionHasMeta.class,
 				CalcOptionIsHidden.class,
+				CalcOptionHasNoSyntaxParent.class,
 				CalcOptionIncludeInDump.class,
 			SyntaxOptional.class,
 			SyntaxEnumChoice.class,

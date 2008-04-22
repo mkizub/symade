@@ -192,10 +192,7 @@ public final class CoreLang implements Language {
 			Opdef.class,		// operator declaration
 			DeclGroup.class,	// group of nodes, which share a base type and meta-data
 				DeclGroupVars.class,
-				ADeclGroupFields.class,
-					DeclGroupFields.class,
-					DeclGroupEnumFields.class,
-					DeclGroupCaseFields.class,
+				DeclGroupEnumFields.class,
 			Import.class,
 			Comment.class,		// comments
 		// in parser

@@ -119,20 +119,28 @@ public abstract class AttrSlot {
 }
 
 public final class ParentAttrSlot extends AttrSlot {
-	public ParentAttrSlot(String name, boolean is_external, TypeInfo typeinfo) {
+	
+	public final boolean is_unique;
+	
+	public ParentAttrSlot(String name, boolean is_external, boolean is_unique, TypeInfo typeinfo) {
 		super(name, null, false, is_external, typeinfo);
+		this.is_unique = is_unique;
 	}
-	public void set(ANode parent, Object value) {
+	public void set(ANode node, Object value) {
 		throw new RuntimeException("@nodeParent '"+name+"' is not writeable"); 
 	}
-	public ANode get(ANode parent) {
+	public ANode get(ANode node) {
 		if (this == ANode.nodeattr$parent)
-			return parent.parent();
+			return node.parent();
+		if (this.is_unique)
+			return node.getExtParent(this);
 		throw new RuntimeException("@nodeParent '"+name+"' is not readable"); 
 	}
-	public void clear(ANode parent) {
+	public void clear(ANode node) {
 		if (this == ANode.nodeattr$parent)
-			parent.callbackDetached(parent.p_parent, parent.p_slot);
+			node.callbackDetached(node.p_parent, node.p_slot);
+		else if (this.is_unique)
+			node.delExtParent(this);
 		else
 			throw new RuntimeException("@nodeParent '"+name+"' is not cleanable"); 
 	}

@@ -1446,6 +1446,25 @@ public class CalcOptionIsHidden implements CalcOption {
 }
 
 @ThisIsANode(lang=SyntaxLang)
+public class CalcOptionHasNoSyntaxParent implements CalcOption {
+	@virtual typedef This  = CalcOptionHasNoSyntaxParent;
+
+	public CalcOptionHasNoSyntaxParent() {}
+
+	public boolean calc(ANode node) {
+		if (node == null)
+			return true;
+		Object val = node;
+		if !(name == null || name == "" || name == "this")
+			val = node.getVal(name);
+		if !(val instanceof ANode)
+			return true;
+		ANode syntax_parent = ANode.nodeattr$syntax_parent.get((ANode)val);
+		return (syntax_parent == null);
+	}
+}
+
+@ThisIsANode(lang=SyntaxLang)
 public class CalcOptionIncludeInDump implements CalcOption {
 	@virtual typedef This  = CalcOptionIncludeInDump;
 

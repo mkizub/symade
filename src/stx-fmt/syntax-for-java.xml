@@ -155,6 +155,12 @@
      <next_indent_text_size>4</next_indent_text_size>
      <next_indent_pixel_size>40</next_indent_pixel_size>
      <flow>true</flow>
+     <sname>par-flow-indented</sname>
+    </a-node>
+    <a-node class='kiev.fmt.ParagraphLayout'>
+     <indent_text_size>4</indent_text_size>
+     <indent_pixel_size>40</indent_pixel_size>
+     <flow>true</flow>
      <sname>par-indented-flow</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
@@ -178,6 +184,9 @@
      <indent_text_size>-2</indent_text_size>
      <indent_pixel_size>-20</indent_pixel_size>
      <sname>par-unindented</sname>
+    </a-node>
+    <a-node class='kiev.fmt.ParagraphLayout'>
+     <sname>par-block</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>0</rgb_color>
@@ -1423,6 +1432,21 @@
       </a-node>
      </spaces>
      <sname>fmt-space-nl++1</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl</name>
+        </a-node>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>1</from_attempt>
+      </a-node>
+     </spaces>
+     <sname>fmt-space-nl+1</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -3263,12 +3287,19 @@
           </a-node>
          </element>
          <filter>
-          <a-node class='kiev.fmt.CalcOptionNot'>
-           <opt>
-            <a-node class='kiev.fmt.CalcOptionHasMeta'>
-             <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+          <a-node class='kiev.fmt.CalcOptionAnd'>
+           <opts>
+            <a-node class='kiev.fmt.CalcOptionHasNoSyntaxParent'>
+             <name>this</name>
             </a-node>
-           </opt>
+            <a-node class='kiev.fmt.CalcOptionNot'>
+             <opt>
+              <a-node class='kiev.fmt.CalcOptionHasMeta'>
+               <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+              </a-node>
+             </opt>
+            </a-node>
+           </opts>
           </a-node>
          </filter>
          <elpar>
@@ -3321,13 +3352,29 @@
          <separator>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>,</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-space-nl</name>
+            </a-node>
+           </fmt>
           </a-node>
          </separator>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>;</text>
+           <kind>SEPARATOR</kind>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator-eat-left</name>
+            </a-node>
+           </fmt>
           </a-node>
          </sufix>
+         <elpar>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-indented</name>
+          </a-node>
+         </elpar>
          <folded_by_default>false</folded_by_default>
          <name>decls</name>
         </a-node>
@@ -3424,6 +3471,11 @@
            </elements>
            <folded_by_default>false</folded_by_default>
            <nested_function_lookup>false</nested_function_lookup>
+           <par>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>par-block</name>
+            </a-node>
+           </par>
           </a-node>
          </elem>
          <sname>stx-decl-field-enum</sname>
@@ -3552,13 +3604,43 @@
           </a-node>
          </calculator>
          <opt_true>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>group</name>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-java-case</name>
+          <a-node class='kiev.fmt.SyntaxList'>
+           <element>
+            <a-node class='kiev.fmt.SyntaxNode'>
             </a-node>
-           </in_syntax>
+           </element>
+           <separator>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>,</text>
+            </a-node>
+           </separator>
+           <prefix>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>(</text>
+             <fmt>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>fmt-separator-eat-all</name>
+              </a-node>
+             </fmt>
+            </a-node>
+           </prefix>
+           <sufix>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>)</text>
+             <fmt>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>fmt-separator-eat-left</name>
+              </a-node>
+             </fmt>
+            </a-node>
+           </sufix>
+           <folded_by_default>false</folded_by_default>
+           <name>case_fields</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>Field</name>
+            </a-node>
+           </expected_types>
           </a-node>
          </opt_true>
         </a-node>
@@ -3576,110 +3658,6 @@
       </a-node>
      </elem>
      <sname>stx-decl-struct-case</sname>
-    </a-node>
-    <a-node class='kiev.fmt.TextSyntax'>
-     <members>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>DeclGroupCaseFields</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxList'>
-         <element>
-          <a-node class='kiev.fmt.SyntaxNode'>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-java-case</name>
-            </a-node>
-           </in_syntax>
-          </a-node>
-         </element>
-         <separator>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>,</text>
-          </a-node>
-         </separator>
-         <prefix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>(</text>
-           <fmt>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>fmt-separator-eat-all</name>
-            </a-node>
-           </fmt>
-          </a-node>
-         </prefix>
-         <sufix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>)</text>
-           <fmt>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>fmt-separator-eat-left</name>
-            </a-node>
-           </fmt>
-          </a-node>
-         </sufix>
-         <folded_by_default>false</folded_by_default>
-         <name>decls</name>
-         <expected_types>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>Field</name>
-          </a-node>
-         </expected_types>
-        </a-node>
-       </elem>
-       <sname>stx-decl-group-case-fields</sname>
-      </a-node>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>Field</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>meta</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>vtype</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-           <fmt>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>fmt-symbol</name>
-            </a-node>
-           </fmt>
-           <funcs>
-            <a-node class='kiev.fmt.SyntaxFunctions'>
-             <funcs>
-              <a-node class='kiev.fmt.SyntaxFunction'>
-               <title>Edit name</title>
-               <act>kiev.gui.TextEditor$Factory</act>
-               <attr>sname</attr>
-              </a-node>
-             </funcs>
-            </a-node>
-           </funcs>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-         <nested_function_lookup>false</nested_function_lookup>
-        </a-node>
-       </elem>
-       <sname>stx-decl-field</sname>
-      </a-node>
-     </members>
-     <sname>syntax-java-case</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -9652,49 +9630,6 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>DeclGroupCaseFields</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSpace'>
-      </a-node>
-     </elem>
-     <sname>stx-decl-group-case-fields</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>DeclGroupFields</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxNode'>
-         <in_syntax>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>syntax-java-decl-group</name>
-          </a-node>
-         </in_syntax>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>;</text>
-         <fmt>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-separator-eat-left</name>
-          </a-node>
-         </fmt>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-       <nested_function_lookup>false</nested_function_lookup>
-      </a-node>
-     </elem>
-     <sname>stx-decl-group</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
        <name>DeclGroupVars</name>
       </a-node>
      </rnode>
@@ -9929,61 +9864,6 @@
         </a-node>
        </elem>
        <sname>stx-decl-field</sname>
-      </a-node>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>DeclGroupFields</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>meta</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>dtype</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxList'>
-           <element>
-            <a-node class='kiev.fmt.SyntaxNode'>
-             <in_syntax>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>syntax-java-decl-group-vars</name>
-              </a-node>
-             </in_syntax>
-            </a-node>
-           </element>
-           <separator>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>,</text>
-             <fmt>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>fmt-separator-eat-left</name>
-              </a-node>
-             </fmt>
-            </a-node>
-           </separator>
-           <folded_by_default>false</folded_by_default>
-           <name>decls</name>
-           <expected_types>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>Field</name>
-            </a-node>
-           </expected_types>
-           <empty>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>&lt;?decls?&gt;</text>
-            </a-node>
-           </empty>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-         <nested_function_lookup>false</nested_function_lookup>
-        </a-node>
-       </elem>
-       <sname>stx-decl-group</sname>
       </a-node>
       <a-node class='kiev.fmt.SyntaxElemDecl'>
        <rnode>
@@ -10310,7 +10190,7 @@
          </empty>
          <par>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>par-indented-flow</name>
+           <name>par-flow-indented</name>
           </a-node>
          </par>
         </a-node>
@@ -10381,7 +10261,7 @@
          </empty>
          <par>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>par-indented-flow</name>
+           <name>par-flow-indented</name>
           </a-node>
          </par>
         </a-node>

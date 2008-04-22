@@ -230,7 +230,8 @@ changed:;
 
 public abstract class ScopeNodeInfo implements Cloneable {
 	private Type[]	types;
-	private ScopeNodeInfo j1, j2;
+	private ScopeNodeInfo j1;
+	private ScopeNodeInfo j2;
 	public abstract Type getDeclType();
 	public abstract boolean match(Var[] path);
 	public abstract Var[] getPath();
