@@ -1311,6 +1311,11 @@
        </elements>
        <folded_by_default>false</folded_by_default>
        <nested_function_lookup>false</nested_function_lookup>
+       <par>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>par-indent</name>
+        </a-node>
+       </par>
       </a-node>
      </elem>
      <sname>stx-def-space-cmd</sname>
@@ -1403,6 +1408,11 @@
            <text>}</text>
           </a-node>
          </sufix>
+         <elpar>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-flow</name>
+          </a-node>
+         </elpar>
          <folded_by_default>false</folded_by_default>
          <name>spaces</name>
          <expected_types>
@@ -1972,6 +1982,11 @@
              <name>SymbolRef</name>
             </a-node>
            </expected_types>
+           <par>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>par-flow</name>
+            </a-node>
+           </par>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>&gt;</text>
@@ -2097,6 +2112,11 @@
              <name>SymbolRef</name>
             </a-node>
            </expected_types>
+           <par>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>par-flow</name>
+            </a-node>
+           </par>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>&gt;</text>
@@ -2487,7 +2507,7 @@
            </sufix>
            <elpar>
             <a-node class='kiev.vlang.SymbolRef'>
-             <name>par-indent</name>
+             <name>par-flow</name>
             </a-node>
            </elpar>
            <folded_by_default>false</folded_by_default>
@@ -2506,6 +2526,11 @@
          </elements>
          <folded_by_default>false</folded_by_default>
          <nested_function_lookup>false</nested_function_lookup>
+         <par>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-flow</name>
+          </a-node>
+         </par>
         </a-node>
        </unfolded>
       </a-node>
@@ -3121,7 +3146,7 @@
          </sufix>
          <elpar>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>par-indent</name>
+           <name>par-flow</name>
           </a-node>
          </elpar>
          <folded_by_default>false</folded_by_default>

@@ -106,11 +106,11 @@ public class DrawSubAttr extends DrawCtrl {
 		}
 		if (arg != null) {
 			if (obj instanceof ANode)
-				arg.preFormat(cont);
+				arg.preFormat(cont, text_syntax.getSyntaxElem((ANode)obj), (ANode)obj);
 			else if (obj == null && sn.empty != null)
-				arg.preFormat(cont, sn.empty, text_syntax);
+				arg.preFormat(cont, sn.empty, node);
 			else
-				arg.preFormat(cont);
+				arg.preFormat(cont, sn, node);
 		}
 	}
 }
@@ -136,16 +136,16 @@ public class DrawNode extends DrawCtrl {
 					arg.preFormat(cont);
 			}
 			else if (sn.empty != null) {
-				arg = sn.empty.makeDrawable(cont.fmt, node, text_syntax);
+				arg = sn.empty.makeDrawable(cont.fmt, null, text_syntax);
 				if (arg != null)
 					arg.preFormat(cont, sn.empty, text_syntax);
 			}
 		}
 		if (arg != null) {
 			if (node != null)
-				arg.preFormat(cont);
+				arg.preFormat(cont, text_syntax.getSyntaxElem(node), node);
 			else if (sn.empty != null)
-				arg.preFormat(cont, sn.empty, text_syntax);
+				arg.preFormat(cont, sn.empty, null);
 		}
 	}
 }

@@ -1005,7 +1005,15 @@ public final class ExprEditActions implements Runnable, KeyListener {
 	public void run() {
 		if (action == "split") {
 			ENode en = context.node;
-			DrawNonTerm nt = (DrawNonTerm)context.dr.parent();
+			DrawNonTerm nt = null;
+			{
+				Drawable d = context.dr;
+				while (d != null && !(d instanceof DrawNonTerm))
+					d = (Drawable)d.parent();
+				if !(d instanceof DrawNonTerm)
+					return;
+				nt = (DrawNonTerm)d;
+			}
 			DrawTerm first = nt.getFirstLeaf();
 			DrawTerm last = nt.getLastLeaf().getNextLeaf();
 			expr = new ASTExpression();
@@ -1124,6 +1132,8 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			editor.stopItemEditor(true);
 			return;
 		}
+		if (code == KeyEvent.VK_SHIFT || code == KeyEvent.VK_ALT || code == KeyEvent.VK_CONTROL)
+			return;
 		DrawTerm dt = editor.cur_elem.dr;
 		ANode n = editor.cur_elem.node;
 		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n) {
@@ -1140,11 +1150,20 @@ public final class ExprEditActions implements Runnable, KeyListener {
 		text = text.substring(prefix_offset, text.length() - suffix_offset);
 		int edit_offset = editor.view_canvas.cursor_offset - prefix_offset;
 		if (edit_offset < 0 || edit_offset > text.length()) {
+			char ch = evt.getKeyChar();
+			if (ch != KeyEvent.CHAR_UNDEFINED) {
+				if (edit_offset < 0) {
+					prependNode(dt,et,ch);
+					return;
+				}
+				else if (edit_offset > text.length()) {
+					appendNode(dt,et,ch);
+					return;
+				}
+			}
 			java.awt.Toolkit.getDefaultToolkit().beep();
 			return;
 		}
-		if (code == KeyEvent.VK_SHIFT || code == KeyEvent.VK_ALT || code == KeyEvent.VK_CONTROL)
-			return;
 		switch (code) {
 		case KeyEvent.VK_DELETE:
 			if (text.length() == 0) {

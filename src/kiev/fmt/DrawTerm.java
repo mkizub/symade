@@ -57,8 +57,8 @@ public abstract class DrawTerm extends Drawable {
 	}
 	
 	@getter public final boolean get$do_newline() {
-		if (lnk_prev != null)
-			return lnk_prev.do_newline;
+		if (lnk_next != null)
+			return lnk_next.do_newline;
 		return false;
 	}
 	

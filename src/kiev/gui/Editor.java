@@ -160,9 +160,7 @@ public class Editor extends InfoView implements KeyListener {
 			cur_elem.restore();
 		}
 		view_canvas.repaint();
-		ANode src = cur_elem.node;
-		parent_window.info_view.the_root = src;
-		parent_window.info_view.formatAndPaint(true);
+		parent_window.info_view.formatAndPaintLater(cur_elem.node);
 	}
 	
 	public ActionPoint getActionPoint(boolean next) {

@@ -51,8 +51,33 @@ import java.io.IOException;
 
 public class InfoView extends UIView implements KeyListener, MouseWheelListener {
 
+	class BgFormatter extends Thread {
+		private boolean do_format;
+		BgFormatter() {
+			this.setDaemon(true);
+			this.setPriority(Thread.NORM_PRIORITY - 1);
+		}
+		public void run() {
+			for (;;) {
+				while (!do_format) {
+					synchronized(this) { this.wait(); }
+					continue;
+				}
+				this.do_format = false;
+				InfoView.this.formatAndPaint(true);
+			}
+		}
+		synchronized void schedule_run() {
+			this.do_format = true;
+			this.notify();
+		}
+	}
+	
 	/** The canvas to show definition of current node */
 	protected Canvas		view_canvas;
+	
+	/** A background thread to format and paint */
+	protected BgFormatter	bg_formatter;
                                                    
 	protected final Hashtable<InputEventInfo,UIActionFactory> naviMap;
 
@@ -80,12 +105,14 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 
 	public InfoView(Window window, ATextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax);
+		this.bg_formatter = new BgFormatter();
 		this.view_canvas = view_canvas;
 		this.formatter = new GfxFormatter((Graphics2D)view_canvas.getGraphics());
 		view_canvas.addMouseListener(this);
 		view_canvas.addComponentListener(this);
 		view_canvas.addKeyListener(this);
 		view_canvas.addMouseWheelListener(this);
+		this.bg_formatter.start();
 	}
 
 	public void setRoot(ANode root) {
@@ -112,6 +139,11 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 			view_canvas.dlb_root = formatter.getRootDrawLayoutBlock();
 		}
 		view_canvas.repaint();
+	}
+	
+	public void formatAndPaintLater(ANode the_root) {
+		this.the_root = the_root;
+		this.bg_formatter.schedule_run();
 	}
 
 	public void mouseClicked(MouseEvent e) {
