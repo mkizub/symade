@@ -32,12 +32,12 @@ public final class CoreLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
 		return defaultEditorSyntax;
 	}
 	public ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
 		return defaultInfoSyntax;
 	}
 	private static ATextSyntax defaultEditorSyntax;
@@ -211,12 +211,12 @@ public final class LogicLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
 		return defaultEditorSyntax;
 	}
 	public ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
 		return defaultInfoSyntax;
 	}
 	private static ATextSyntax defaultEditorSyntax;
@@ -244,12 +244,12 @@ public final class MacroLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
 		return defaultEditorSyntax;
 	}
 	public ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
 		return defaultInfoSyntax;
 	}
 	private static ATextSyntax defaultEditorSyntax;

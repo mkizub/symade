@@ -116,6 +116,7 @@ public abstract class AttrSlot {
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
 	public void clear(ANode parent) { this.set(parent, defaultValue); }
+	public boolean isWrittable() { return true; }
 }
 
 public final class ParentAttrSlot extends AttrSlot {

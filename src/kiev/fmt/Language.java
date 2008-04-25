@@ -23,12 +23,12 @@ public final class SyntaxLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-syntax");
+			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-syntax");
 		return defaultEditorSyntax;
 	}
 	public ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-syntax");
+			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-syntax");
 		return defaultInfoSyntax;
 	}
 	private static ATextSyntax defaultEditorSyntax;

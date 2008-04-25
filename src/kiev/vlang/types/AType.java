@@ -398,12 +398,12 @@ public abstract class AType implements StdTypes, TVSet {
 		return str.toString();
 	}
 	
-	public static Type fromSignature(String sign) {
+	public static Type fromSignature(String sign, boolean full) {
 		StringTokenizer st = new StringTokenizer(sign,"=,()",true);
 		String[] sep = {""};
-		return fromSignature(st,sep);
+		return fromSignature(st,sep,full);
 	}
-	private static Type fromSignature(StringTokenizer st, String[] sep) {
+	private static Type fromSignature(StringTokenizer st, String[] sep, boolean full) {
 		String name = st.nextToken();
 		String uuid = null;
 		int p = name.indexOf('@');
@@ -442,7 +442,7 @@ public abstract class AType implements StdTypes, TVSet {
 			String aname = st.nextToken();
 			sep[0] = st.nextToken();
 			assert (sep[0].equals("="));
-			Type tp = fromSignature(st,sep);
+			Type tp = fromSignature(st,sep,full);
 			ArgType a = null;
 			foreach (TVar t; tdecl.xtype.bindings().tvars; t.var.name.equals(aname)) {
 				a = t.var;

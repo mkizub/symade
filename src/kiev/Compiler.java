@@ -36,6 +36,27 @@ public class EditorThread extends WorkerThread {
 	private EditorThread() { super("editor"); }
 }
 
+public final class CompilerParseInfo {
+	// either of file or fname (with optional fdata) must be specified
+	final String	fname;
+	final byte[]	fdata;
+	// add or not add to the project file
+	final boolean	add_to_project;
+	// resulting FileUnit
+	public FileUnit	fu;
+	
+	public CompilerParseInfo(File file, boolean add_to_project) {
+		this.fname = file.getPath().replace('/', File.separatorChar).intern();
+		this.fdata = null;
+		this.add_to_project = add_to_project;
+	}
+	public CompilerParseInfo(String fname, byte[] fdata, boolean add_to_project) {
+		this.fname = fname.intern();
+		this.fdata = fdata;
+		this.add_to_project = add_to_project;
+	}
+}
+
 public abstract class WorkerThread extends Thread {
 	// Error section
 	public long		programm_start;
@@ -49,11 +70,11 @@ public abstract class WorkerThread extends Thread {
 
 	public IdentityHashMap			dataFlowInfos = new IdentityHashMap(16*1024);
 
-	private boolean			busy;
-	private boolean			run_fe;
-	private boolean			run_be;
-	private String[]		args;
-	private ANode			root;
+	private boolean					busy;
+	private boolean					run_fe;
+	private boolean					run_be;
+	private CompilerParseInfo[]		args;
+	private ANode					root;
 
 	WorkerThread(String name) {
 		super(name);
@@ -96,7 +117,7 @@ public abstract class WorkerThread extends Thread {
 	public boolean isBusy() {
 		return busy;
 	}
-	public boolean setTask(boolean run_fe, boolean run_be, String[] args, ANode root) {
+	public boolean setTask(boolean run_fe, boolean run_be, CompilerParseInfo[] args, ANode root) {
 		if (busy) return false;
 		synchronized(this) {
 			//System.out.println("task set: "+run_fe+" "+run_be);
@@ -109,7 +130,7 @@ public abstract class WorkerThread extends Thread {
 		}
 		return true;
 	}
-	private void runFrontEnd(String[] args) {
+	private void runFrontEnd(CompilerParseInfo[] args) {
 		this.programm_start = this.programm_end = System.currentTimeMillis();
 		long curr_time = 0L, diff_time = 0L;
 		try {
@@ -137,21 +158,27 @@ public abstract class WorkerThread extends Thread {
 			
 			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {
+				CompilerParseInfo cpi = args[i];
 				try {
-					this.curFile = args[i].intern();
+					this.curFile = cpi.fname;
 					if (this.curFile.toLowerCase().endsWith(".xml")) {
-						FileUnit fu = Env.loadFromXmlFile(new File(this.curFile));
-						Kiev.runProcessorsOn(fu);
-						foreach (ATextSyntax ts; fu.members)
-							Env.createProjectInfo(ts,this.curFile);
-						foreach (TypeDecl td; fu.members)
-							Env.createProjectInfo(td,this.curFile);
+						cpi.fu = Env.loadFromXmlFile(new File(this.curFile), cpi.fdata);
+						Kiev.runProcessorsOn(cpi.fu);
+						if (cpi.add_to_project) {
+							foreach (ATextSyntax ts; cpi.fu.members)
+								Env.createProjectInfo(ts,this.curFile);
+							foreach (TypeDecl td; cpi.fu.members)
+								Env.createProjectInfo(td,this.curFile);
+						}
 					} else {
 						java.io.InputStreamReader file_reader = null;
 						char[] file_chars = new char[8196];
 						int file_sz = 0;
 						try {
-							file_reader = new InputStreamReader(new FileInputStream(args[i]), "UTF-8");
+							if (cpi.fdata != null)
+								file_reader = new InputStreamReader(new ByteArrayInputStream(cpi.fdata), "UTF-8");
+							else
+								file_reader = new InputStreamReader(new FileInputStream(cpi.fname), "UTF-8");
 							for (;;) {
 								int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
 								if (r < 0)
@@ -171,15 +198,15 @@ public abstract class WorkerThread extends Thread {
 						Compiler.runGC(this);
 						diff_time = curr_time = System.currentTimeMillis();
 						Kiev.k.ReInit(bis);
-						FileUnit fu = Kiev.k.FileUnit(args[i]);
-						fu.current_syntax = "stx-fmt\u001fsyntax-for-java";
+						cpi.fu = Kiev.k.FileUnit(cpi.fname);
+						cpi.fu.current_syntax = "stx-fmt\u001fsyntax-for-java";
 						diff_time = System.currentTimeMillis() - curr_time;
 						bis.close();
 					}
 					Compiler.runGC(this);
 					this.curFile = "";
 					if( Kiev.verbose )
-						Kiev.reportInfo("Scanned file   "+args[i],diff_time);
+						Kiev.reportInfo("Scanned file   "+cpi.fname,diff_time);
 					System.out.flush();
 				} catch (Exception e) {
 					Kiev.reportParserError(0,e);
@@ -833,7 +860,10 @@ public class Compiler {
 		}
 		
 		CompilerThread thr = CompilerThread;
-		runFrontEnd(thr, args, null, true);
+		Vector cargs = new Vector();
+		foreach (String arg; args)
+			cargs.add(new CompilerParseInfo(arg, null, true));
+		runFrontEnd(thr, (CompilerParseInfo[])cargs.toArray(new CompilerParseInfo[cargs.size()]), null, true);
 
 		if (Kiev.run_gui) {
 			kiev.gui.Window wnd = new kiev.gui.Window();
@@ -847,7 +877,7 @@ public class Compiler {
 		}
 	}
 	
-	public static void runFrontEnd(WorkerThread thr, String[] args, ANode root, boolean sync) {
+	public static void runFrontEnd(WorkerThread thr, CompilerParseInfo[] args, ANode root, boolean sync) {
 		if (!thr.isAlive())
 			thr.start();
 		
@@ -1053,25 +1083,32 @@ public class Compiler {
 		return args;
 	}
 
+	
+	private static boolean containsFileName(CompilerParseInfo[] args, String fname) {
+		foreach (CompilerParseInfo cpi; args; cpi.fname.equals(fname))
+			return true;
+		return false;
+	}
+	
 	/** add all files from project file if need to rebuild
 	*/
-	static String[] addRequaredToMake(String[] args) {
+	static CompilerParseInfo[] addRequaredToMake(CompilerParseInfo[] args) {
 		foreach (String key; Env.projectHash.keys()) {
 			try {
 				ProjectFile value = Env.projectHash.get(key);
 				if (value.type == ProjectFileType.FORMAT) {
 					String nm = value.file.toString().replace('/', File.separatorChar);
-					if( !Arrays.contains(args,nm) ) {
+					if( !containsFileName(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - format");
-						args = (String[])Arrays.appendUniq(args,nm);
+						args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(nm,null,true));
 					}
 					continue;
 				}
 				if (value.type == ProjectFileType.METATYPE) {
 					String nm = value.file.toString().replace('/', File.separatorChar);
-					if( !Arrays.contains(args,nm) ) {
+					if( !containsFileName(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - metatype");
-						args = (String[])Arrays.appendUniq(args,nm);
+						args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(nm,null,true));
 					}
 					continue;
 				}
@@ -1086,17 +1123,19 @@ public class Compiler {
 				if( !fjava.exists() ) continue;
 				if( value.bad || !fclass.exists() ) {
 					String nm = fjava.toString();
-					if( Kiev.verbose ) System.out.println("File "+nm+" - "+vbn+" "+(value.bad?"is bad":"does not exists"));
-					args = (String[])Arrays.appendUniq(args,nm);
+					if( !containsFileName(args,nm) ) {
+						if( Kiev.verbose ) System.out.println("File "+nm+" - "+vbn+" "+(value.bad?"is bad":"does not exists"));
+						args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(nm,null,true));
+					}
 					continue;
 				}
 				long fclass_modified = fclass.lastModified();
 				long fjava_modified = fjava.lastModified();
 				if( fclass_modified < fjava_modified || Compiler.makeall_project ) {
 					String nm = fjava.toString();
-					if( !Arrays.contains(args,nm) ) {
+					if( !containsFileName(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - outdated");
-						args = (String[])Arrays.appendUniq(args,nm);
+						args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(nm,null,true));
 					}
 				}
 			} catch ( IOException exc ) {

@@ -83,10 +83,17 @@ public abstract class ENode extends ASTNode {
 	
 	@getter public final Type get$type_lnk() {
 		Object id = this.ident_or_symbol_or_type;
-		if (id == null)
-			return null;
 		if (id instanceof Type)
 			return (Type)id;
+		if (this instanceof TypeRef) {
+			TypeRef tr = (TypeRef)this;
+			if (tr.signature != null) {
+				Type tp = AType.fromSignature(tr.signature,true);
+				tr.type_lnk = tp;
+				tr.signature = null;
+				return tp;
+			}
+		}
 		return null;
 	}
 	

@@ -32,6 +32,8 @@ public class TypeRef extends ENode {
 
 	@virtual typedef This  ≤ TypeRef;
 	@virtual typedef JView = JTypeRef;
+	
+	@nodeAttr public String signature;
 
 	public TypeRef() {}
 	

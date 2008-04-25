@@ -1,4 +1,5 @@
 CLASS kievCompiler kiev/Compiler kiev/Compiler.java
+CLASS kievCompilerParseInfo kiev/CompilerParseInfo kiev/Compiler.java
 CLASS kievCompilerThread kiev/CompilerThread kiev/Compiler.java
 CLASS kievEditorThread kiev/EditorThread kiev/Compiler.java
 CLASS kievKiev kiev/Kiev kiev/Kiev.java

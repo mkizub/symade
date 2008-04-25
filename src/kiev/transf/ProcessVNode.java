@@ -307,6 +307,13 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						);
 					}
 				}
+				// add public boolean isWrittable()
+				if (f.isFinal() || !MetaAccess.writeable(f)) {
+					Method isWrittable = new MethodImpl("isWrittable",Type.tpBoolean,ACC_PUBLIC | ACC_SYNTHETIC);
+					s.addMethod(isWrittable);
+					isWrittable.body = new Block(0);
+					isWrittable.block.stats.add(new ReturnStat(f.pos,new ConstBoolExpr(false)));
+				}
 			}
 		} else {
 			if (isArr) {
@@ -459,7 +466,7 @@ public final class VNodeFE_Verify extends VNode_Base {
 		}
 		Field nodeClasses = td.resolveField("nodeClasses", false);
 		if (nodeClasses == null) {
-			Kiev.reportError(m,"Language '"+td+"' has no field 'nodeClasses'");
+			Kiev.reportWarning(m,"Language '"+td+"' has no field 'nodeClasses'");
 			return;
 		}
 		if!(nodeClasses.init instanceof NewInitializedArrayExpr) {

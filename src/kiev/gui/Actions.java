@@ -503,7 +503,7 @@ public final class FileActions implements Runnable {
 				return;
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
-				ATextSyntax stx = (ATextSyntax)Env.resolveGlobalDNode(dff.syntax_qname);
+				ATextSyntax stx = (ATextSyntax)Env.loadDNodeFromXML(dff.syntax_qname);
 				Env.dumpTextFile(fu, jfc.getSelectedFile(), stx.ncopy());
 				fu.current_syntax = stx.qname();
 			} catch( IOException e ) {
@@ -531,7 +531,7 @@ public final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
 			ATextSyntax stx = null;
 			if (fu.current_syntax != null) {
-				DNode d = Env.resolveGlobalDNode(fu.current_syntax);
+				DNode d = Env.loadDNodeFromXML(fu.current_syntax);
 				if (d instanceof ATextSyntax)
 					stx = (ATextSyntax)d;
 			}
@@ -551,7 +551,7 @@ public final class FileActions implements Runnable {
 				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
 					return;
 				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
-				stx = (ATextSyntax)Env.resolveGlobalDNode(dff.syntax_qname);
+				stx = (ATextSyntax)Env.loadDNodeFromXML(dff.syntax_qname);
 				f = jfc.getSelectedFile();
 			}
 			try {
@@ -569,23 +569,17 @@ public final class FileActions implements Runnable {
 			});
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
-			FileUnit fu = null;
+			CompilerParseInfo cpi = new CompilerParseInfo(jfc.getSelectedFile(), false);
 			Transaction tr = Transaction.open("Actions.java:load-as");
 			try {
 				EditorThread thr = EditorThread;
-				fu = Env.loadFromXmlFile(jfc.getSelectedFile());
-				try {
-					thr.errCount = 0;
-					thr.warnCount = 0;
-					Compiler.runFrontEnd(thr,null,fu,true);
-				} catch (Throwable t) { t.printStackTrace(); }
+				Compiler.runFrontEnd(thr,new CompilerParseInfo[]{cpi},null,true);
 				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
-				Kiev.lockNodeTree(fu);
 			} catch( IOException e ) {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
 			} finally { tr.close(); }
-			if (fu != null)
-				wnd.openEditor(fu);
+			if (cpi.fu != null)
+				wnd.openEditor(cpi.fu);
 		}
 		else if (action == "merge-all") {
 			Env.getRoot().mergeTree();
@@ -609,19 +603,18 @@ public final class FileActions implements Runnable {
 	private void runFrontEndCompiler(Editor editor, ANode root) {
 		System.out.println("Running frontend compiler...");
 		Transaction tr = Transaction.open("Actions.java:runFrontEndCompiler()");
-		editor.changes.push(tr);
-		EditorThread thr = EditorThread;
 		try {
-			thr.errCount = 0;
-			thr.warnCount = 0;
+			editor.changes.push(tr);
+			EditorThread thr = EditorThread;
 			Compiler.runFrontEnd(thr,null,root,true);
-		} catch (Throwable t) { t.printStackTrace(); }
-		System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
-		if (tr.isEmpty()) {
-			tr.close();
-			editor.changes.pop();
-		} else {
-			tr.close();
+			System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
+		} finally {
+			if (tr.isEmpty()) {
+				tr.close();
+				editor.changes.pop();
+			} else {
+				tr.close();
+			}
 		}
 		editor.formatAndPaint(true);
 	}
@@ -887,7 +880,7 @@ public final class RenderActions implements Runnable {
 				this.uiv.setSyntax(stx);
 				return;
 			}
-			ATextSyntax stx = Env.resolveGlobalDNode(qname);
+			ATextSyntax stx = Env.loadDNodeFromXML(qname);
 			this.uiv.setSyntax(stx);
 		}
 	}
@@ -907,7 +900,7 @@ public final class RenderActions implements Runnable {
 			Transaction tr = Transaction.open("Actions.java:LoadSyntaxAction()");
 			try {
 				EditorThread thr = EditorThread;
-				fu = Env.loadFromXmlFile(new File(this.file));
+				fu = Env.loadFromXmlFile(new File(this.file), null);
 				try {
 					thr.errCount = 0;
 					thr.warnCount = 0;

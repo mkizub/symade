@@ -407,8 +407,6 @@ public class Env extends KievPackage {
 		// Try to load from project file (scan sources) or from .xml API dump
 		if (cl == null && !Compiler.makeall_project && Env.projectHash.get(qname) != null)
 			cl = loadTypeDeclFromProject(qname);
-		//if (cl == null)
-		//	cl = loadTypeDeclFromAPIDump(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
@@ -421,6 +419,48 @@ public class Env extends KievPackage {
 		if (cl == null)
 			classHashOfFails.put(qname);
 		return cl;
+	}
+
+	public static DNode loadDNodeFromXML(String qname) {
+		if (qname == "") return Env.getRoot();
+		// Check class is already loaded
+		if (classHashOfFails.get(qname) != null) return null;
+		DNode dn = resolveGlobalDNode(qname);
+		// Try to load from project file (scan sources) or from .xml API dump
+		if (dn == null && !Compiler.makeall_project && Env.projectHash.get(qname) != null)
+			dn = loadTypeDeclFromProject(qname);
+		// Load if not loaded or not resolved
+		if (dn == null) {
+			byte[] data = Env.classpath.read(qname.replace('\u001f','/'));
+			if (data != null && data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
+				if (Thread.currentThread() instanceof WorkerThread) {
+					FileUnit fu = loadFromXmlData(data, qname.replace('\u001f','/')+".xml", null);
+					//Kiev.runProcessorsOn(fu);
+				} else {
+					CompilerParseInfo carg = new CompilerParseInfo(qname.replace('\u001f','/')+".xml", data, false);
+					Transaction tr = Transaction.open("Env.java:loadDNodeFromXML");
+					try {
+						EditorThread thr = EditorThread;
+						Compiler.runFrontEnd(thr,new CompilerParseInfo[]{carg},null,true);
+					} finally { tr.close(); }
+				}
+				dn = Env.resolveGlobalDNode(qname);
+				if (dn != null)
+					return dn;
+			}
+		}
+		if (dn instanceof TypeDecl) {
+			TypeDecl cl = (TypeDecl)dn;
+			if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
+				if (cl instanceof Struct)
+					dn = jenv.loadClazz((Struct)cl);
+				else
+					dn = jenv.loadClazz(cl.qname());
+			}
+		}
+		if (dn == null)
+			classHashOfFails.put(qname);
+		return dn;
 	}
 
 	public static TypeDecl loadTypeDecl(TypeDecl cl) {
@@ -542,33 +582,62 @@ public class Env extends KievPackage {
 		}
 	}
 	
-	public static FileUnit loadFromXmlFile(File f) {
+	public static FileUnit loadFromXmlFile(File f, byte[] data) {
+		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 		SAXHandler handler = new SAXHandler();
 		handler.file = f;
-		saxParser.parse(f, handler);
+		if (data != null)
+			saxParser.parse(new ByteArrayInputStream(data), handler);
+		else
+			saxParser.parse(f, handler);
+		foreach (DelayedTypeInfo dti; handler.delayed_types)
+			dti.applay();
 		ANode root = handler.root;
 		if!(root instanceof FileUnit) {
 			root = FileUnit.makeFile(getRelativePath(f));
 			root.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 			root.members += handler.root;
 		}
+		//Kiev.runProcessorsOn((ASTNode)root);
 		return (FileUnit)root;
 	}
-	
+
 	public static FileUnit loadFromXmlData(byte[] data, String tdname, TypeDecl pkg) {
+		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 		SAXHandler handler = new SAXHandler();
 		handler.tdname = tdname;
 		handler.pkg = pkg;
 		saxParser.parse(new ByteArrayInputStream(data), handler);
+		foreach (DelayedTypeInfo dti; handler.delayed_types)
+			dti.applay();
 		FileUnit root = (FileUnit)handler.root;
 		Kiev.runProcessorsOn(root);
 		return root;
 	}
 	
+	final static class DelayedTypeInfo {
+		final ANode node;
+		final AttrSlot attr;
+		final String signature;
+		DelayedTypeInfo(ANode node, AttrSlot attr, String signature) {
+			this.node = node;
+			this.attr = attr;
+			this.signature = signature;
+		}
+		void applay() {
+			AType tp = AType.fromSignature(signature,false);
+			if (tp != null) {
+				attr.set(node,tp);
+			} else {
+				((TypeRef)node).signature = signature;
+			}
+		}
+	}
+		
 	final static class SAXHandler extends DefaultHandler {
 		ASTNode root;
 		File file;
@@ -579,6 +648,8 @@ public class Env extends KievPackage {
 		Stack<ANode> nodes = new Stack<ANode>();
 		Stack<AttrSlot> attrs = new Stack<AttrSlot>();
 		String text;
+		Vector<DelayedTypeInfo> delayed_types = new Vector<DelayedTypeInfo>();
+		
 		public void startElement(String uri, String sName, String qName, Attributes attributes)
 			throws SAXException
 		{
@@ -620,6 +691,8 @@ public class Env extends KievPackage {
 					nodes.push(td);
 				}
 				else if (cl_name.equals("kiev.vlang.FileUnit")) {
+					if (file == null)
+						file = new File(tdname.replace('\u001f','/')+".xml");
 					FileUnit fu = FileUnit.makeFile(getRelativePath(file));
 					root = fu;
 					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
@@ -637,7 +710,8 @@ public class Env extends KievPackage {
 				assert (!expect_attr);
 				String cl_name = attributes.getValue("class");
 				ANode n;
-				if (cl_name.equals("kiev.vlang.SymbolRef") || cl_name.equals("kiev.vlang.Symbol") || cl_name.equals("kiev.vlang.MetaSet")) {
+				AttrSlot attr = attrs.peek();
+				if (!attr.isWrittable() || cl_name.equals("kiev.vlang.SymbolRef") || cl_name.equals("kiev.vlang.Symbol") || cl_name.equals("kiev.vlang.MetaSet")) {
 					AttrSlot attr = attrs.peek();
 					if (attr.is_space) {
 						n = (ANode)attr.typeinfo.newInstance();
@@ -738,8 +812,15 @@ public class Env extends KievPackage {
 						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
 					else if (attr.clazz == Operator.class)
 						attr.set(nodes.peek(),Operator.getOperatorByName(text.trim()));
-					else if (Type.class.isAssignableFrom(attr.clazz))
-						attr.set(nodes.peek(),AType.fromSignature(text.trim()));
+					else if (Type.class.isAssignableFrom(attr.clazz)) {
+						//attr.set(nodes.peek(),AType.fromSignature(text.trim()));
+						ANode node = nodes.peek();
+						if (node instanceof TypeRef && attr.name == "type_lnk") {
+							((TypeRef)node).signature = text.trim();
+						} else {
+							delayed_types.append(new DelayedTypeInfo(nodes.peek(), attr, text.trim()));
+						}
+					}
 					else
 						//throw new SAXException("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
 						System.out.println("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);

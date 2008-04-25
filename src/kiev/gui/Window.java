@@ -221,9 +221,9 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		this.setSize(screenSize.width, (screenSize.height*3)/4);
 		this.show();
 		editor_views = new Editor[0];
-		info_view   = new InfoView(this, (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java"), info_canvas);
-		clip_view   = new InfoView(this, (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java"), clip_canvas);
-		expl_view   = new TreeView(this, (TreeSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
+		info_view   = new InfoView(this, (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java"), info_canvas);
+		clip_view   = new InfoView(this, (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java"), clip_canvas);
+		expl_view   = new TreeView(this, (TreeSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
 		expl_view.setRoot(Env.getRoot().rdir);
 		expl_view.formatAndPaint(true);
 		expl_tree.requestFocus();
@@ -287,7 +287,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		edit_canvas.addFocusListener(this);
 		editors.addTab(fu.fname, edit_canvas);
 		editors.setSelectedComponent(edit_canvas);
-		Editor editor_view = new Editor  (this, (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java"), edit_canvas);
+		Editor editor_view = new Editor  (this, (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java"), edit_canvas);
 		editor_views = (Editor[])Arrays.append(editor_views, editor_view);
 		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);
