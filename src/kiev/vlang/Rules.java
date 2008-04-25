@@ -285,7 +285,7 @@ public final class RuleBlock extends ENode {
 				frame.members += new Field(v.sname, v.type, 0);
 			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
 			if (Kiev.debug && Kiev.debugRules)
-				Env.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java"));
+				Env.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java")).getCompiled());
 			this.replaceWithNode(rn);
 			frame.updatePackageClazz(); 
 		} catch (Throwable t) {

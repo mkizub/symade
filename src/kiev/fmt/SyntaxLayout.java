@@ -24,14 +24,12 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
 	@virtual typedef This  ≤ ATextSyntax;
 	
-	protected Hashtable<String,SyntaxElem>		badSyntax = new Hashtable<Class,SyntaxElem>();
-	protected Hashtable<String,SyntaxElemDecl>	allSyntax = new Hashtable<String,SyntaxElemDecl>();
-	protected Hashtable<Pair<Operator,Class>, SyntaxElem> allSyntaxExprs = new Hashtable<Pair<Operator,Class>, SyntaxElem>();
-
 	@nodeAttr public SymbolRef<ATextSyntax>	parent_syntax;
-	@nodeAttr public ASTNode[]				members;
-	@nodeAttr public ASTNode[]				auto_generated_members;
-		 public String					q_name;	// qualified name
+	@nodeAttr public ASTNode[]					members;
+	          public String						q_name;	// qualified name
+			  
+	@UnVersioned
+	protected Draw_ATextSyntax compiled;
 
 	public ATextSyntax() {
 		this.parent_syntax = new SymbolRef<ATextSyntax>();
@@ -111,13 +109,6 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		syn.resolveNameR(node,path)
 	}
 	
-	protected void cleanup() {
-		auto_generated_members.delAll();
-		allSyntax.clear();
-		badSyntax.clear();
-		allSyntaxExprs.clear();
-	}
-
 	public boolean preResolveIn() {
 		if (parent_syntax.name != null && parent_syntax.name != "") {
 			ATextSyntax@ ts;
@@ -127,20 +118,6 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 				parent_syntax.symbol = ts;
 		}
 		return true;
-	}
-	
-	public void mainResolveOut() {
-		this.cleanup();
-		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
-			if !(sed.rnode.dnode instanceof Struct)
-				continue;
-			if (sed.elem == null)
-				continue;
-			Struct s = (Struct)sed.rnode.dnode;
-			if !(s.isCompilerNode())
-				continue;
-			allSyntax.put(s.qname().replace('\u001f','.'), sed);
-		}
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
@@ -154,104 +131,27 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		}
 		return super.findForResolve(name,slot,by_equals);
 	}
-
-
-	protected SyntaxSet expr(Operator op, SyntaxExpr sexpr)
-	{
-		SyntaxElem[] elems = new SyntaxElem[op.args.length];
-		int earg = 0;
-		for (int i=0; i < elems.length; i++) {
-			OpArg arg = op.args[i];
-			switch (arg) {
-			case OpArg.EXPR(int priority):
-				elems[i] = new SyntaxAutoParenth(sexpr.attrs[earg].ncopy(), priority, sexpr.template.dnode);
-				earg++;
+	
+	public abstract Draw_ATextSyntax getCompiled();
+	
+	public void fillCompiled(Draw_ATextSyntax ts) {
+		Vector<Draw_ATextSyntax> sub_syntax = new Vector<Draw_ATextSyntax>();
+		foreach(ATextSyntax stx; this.members)
+			sub_syntax.append(stx.getCompiled());
+		ts.sub_syntax = sub_syntax.toArray();
+		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
+			if !(sed.rnode.dnode instanceof Struct)
 				continue;
-			case OpArg.TYPE():
-				elems[i] = new SyntaxAutoParenth(sexpr.attrs[earg].ncopy(), 255, sexpr.template.dnode);
-				earg++;
+			if (sed.elem == null)
 				continue;
-			case OpArg.OPER(String text):
-				if (sexpr.template.dnode != null) {
-					foreach (SyntaxToken t; sexpr.template.dnode.operators) {
-						if (t.text == text) {
-							elems[i] = t.ncopy();
-							break;
-						}
-						if (t.text == "DEFAULT") {
-							SyntaxToken st = t.ncopy();
-							st.text = text;
-							elems[i] = st;
-						}
-					}
-				}
-				if (elems[i] == null) {
-					SyntaxToken st = new SyntaxToken(text);
-					st.kind = SyntaxToken.TokenKind.OPERATOR;
-					elems[i] = st;
-				}
+			Struct s = (Struct)sed.rnode.dnode;
+			if !(s.isCompilerNode())
 				continue;
-			}
+			ts.allSyntax.put(s.qname().replace('\u001f','.'), sed.getCompiled());
 		}
-		SyntaxSet set = new SyntaxSet();
-		set.elements.addAll(elems);
-		auto_generated_members.add(set);
-		return set;
-	}
-
-	public SyntaxElem getSyntaxElem(ANode for_node) {
-		if (for_node != null) {
-			String cl_name = for_node.getClass().getName();
-			SyntaxElemDecl sed = allSyntax.get(cl_name);
-			if (sed != null)
-				return sed.elem;
-		}
-		if (parent_syntax.dnode != null)
-			return ((ATextSyntax)parent_syntax.dnode).getSyntaxElem(for_node);
-		if (parent() instanceof ATextSyntax)
-			return ((ATextSyntax)parent()).getSyntaxElem(for_node);
-		SyntaxElem se;
-		if (for_node == null) {
-			se = badSyntax.get("<null>");
-			if (se == null) {
-				se = new SyntaxToken("(?null?)");
-				auto_generated_members.add(se);
-				badSyntax.put("<null>", se);
-			}
-		} else {
-			ThisIsANode node_data = (ThisIsANode)for_node.getClass().getAnnotation(ThisIsANode.class);
-			if (node_data != null) {
-				Class lng_class = node_data.lang();
-				if (lng_class != null && Language.class.isAssignableFrom(lng_class)) {
-					Language lng = (Language)lng_class.getField(nameInstance).get(null);
-					ATextSyntax stx = lng.getDefaultEditorSyntax();
-					if (stx != this) {
-						String text = lng.getClass().getName();
-						SyntaxSwitch ssw = (SyntaxSwitch)badSyntax.get(text);
-						if (ssw != null)
-							return ssw;
-						ssw = new SyntaxSwitch(
-							new SyntaxToken("#lang\""+text+"\"{"),
-							new SyntaxToken("}#"),
-							stx
-							);
-						badSyntax.put(text, ssw);
-						auto_generated_members.add(ssw);
-						return ssw;
-					}
-				}
-			}
-			String cl_name = for_node.getClass().getName();
-			se = badSyntax.get(cl_name);
-			if (se == null) {
-				se = new SyntaxToken("(?"+cl_name+"?)");
-				auto_generated_members.add(se);
-				badSyntax.put(cl_name, se);
-			}
-		}
-		return se;
 	}
 }
+
 @ThisIsANode(lang=SyntaxLang)
 public final class TextSyntax extends ATextSyntax {
 	@virtual typedef This  = TextSyntax;
@@ -260,6 +160,14 @@ public final class TextSyntax extends ATextSyntax {
 		this.sname = "<text-syntax>";
 	}
 
+	public Draw_ATextSyntax getCompiled() {
+		if (compiled != null)
+			return compiled;
+		compiled = new Draw_TextSyntax();
+		fillCompiled(compiled);
+		return compiled;
+	}
+	
 }
 
 public enum SpaceKind {
@@ -354,8 +262,6 @@ public abstract class AParagraphLayout extends DNode {
 	
 	public AParagraphLayout() {}
 
-	public boolean enabled(Drawable dr) { return true; }
-
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "indent_text_size" ||
 			attr.name == "indent_pixel_size" ||
@@ -374,6 +280,8 @@ public abstract class AParagraphLayout extends DNode {
 		}
 		return super.includeInDump(dump, attr, val);
 	}
+	
+	public abstract Draw_Paragraph getCompiled();
 
 }
 
@@ -387,39 +295,42 @@ public final class ParagraphLayout extends AParagraphLayout {
 		this.indent_text_size = ind_txt;
 		this.indent_pixel_size = ind_pix;
 	}
+
+	public Draw_Paragraph getCompiled() {
+		Draw_Paragraph p = new Draw_Paragraph();
+		p.indent_text_size = indent_text_size;
+		p.indent_pixel_size = indent_pixel_size;
+		p.next_indent_text_size = next_indent_text_size;
+		p.next_indent_pixel_size = next_indent_pixel_size;
+		p.indent_from_current_position = indent_from_current_position;
+		p.flow = flow;
+		return p;
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
-public class ParagraphLayoutBlock extends AParagraphLayout {
+public final class ParagraphLayoutBlock extends AParagraphLayout {
 	@virtual typedef This  = ParagraphLayoutBlock;
 
 	@nodeAttr public String token_text;
-	private String[] tokens;
 
-	@setter
-	public void set$token_text(String value) {
-		if (value == null) {
-			this.token_text = null;
-			this.tokens = new String[0];
-		} else {
-			this.token_text = value.intern();
-			this.tokens = value.split("\\s+");
-			for (int i=0; i < this.tokens.length; i++)
-				this.tokens[i] = this.tokens[i].intern();
+	public Draw_Paragraph getCompiled() {
+		Draw_ParagraphBlock p = new Draw_ParagraphBlock();
+		p.indent_text_size = indent_text_size;
+		p.indent_pixel_size = indent_pixel_size;
+		p.next_indent_text_size = next_indent_text_size;
+		p.next_indent_pixel_size = next_indent_pixel_size;
+		p.indent_from_current_position = indent_from_current_position;
+		p.flow = flow;
+		if (this.token_text != null) {
+			p.tokens = token_text.split("\\s+");
+			for (int i=0; i < p.tokens.length; i++)
+				p.tokens[i] = p.tokens[i].intern();
 		}
+		return p;
 	}
-	
-	public boolean enabled(Drawable dr) {
-		if (dr == null)
-			return true;
-		DrawTerm t = dr.getFirstLeaf();
-		if (t instanceof DrawToken) {
-			String str = ((SyntaxToken)t.syntax).text;
-			foreach (String s; this.tokens; s == str)
-				return false;
-		}
-		return true;
-	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -447,40 +358,6 @@ public final class DrawFont extends DNode {
 	public DrawFont(String font_name) {
 		this.sname = font_name;
 		this.font_name = font_name;
-	}
-}
-
-public final class LayoutSpace implements Cloneable {
-	public static final LayoutSpace[] emptyArray = new LayoutSpace[0];
-	public String		name;
-	public int			from_attempt;
-	public boolean		new_line;
-	public boolean		eat;
-	public int			text_size;
-	public int			pixel_size;
-	LayoutSpace setEat() {
-		LayoutSpace ls = this.clone();
-		ls.eat = true;
-		return ls;
-	}
-}
-
-public final class DrawLayout {
-
-	private static final Font default_font = Font.decode("Dialog-PLAIN-12");
-	
-	public int				count;
-	public Color 			color;
-	public Font				font;
-	public LayoutSpace[]	spaces_before;
-	public LayoutSpace[]	spaces_after;
-
-	public DrawLayout() {
-		this.count = 0;
-		this.color = Color.BLACK;
-		this.font = default_font;
-		this.spaces_before = LayoutSpace.emptyArray;
-		this.spaces_after = LayoutSpace.emptyArray;
 	}
 }
 
@@ -540,6 +417,13 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 		}
 		return super.findForResolve(name,slot,by_equals);
 	}
+
+	public Draw_SyntaxElemDecl getCompiled() {
+		Draw_SyntaxElemDecl dr_decl = new Draw_SyntaxElemDecl();
+		dr_decl.elem = this.elem.getCompiled();
+		dr_decl.clazz_name = this.rnode.dnode.qname().replace('\u001f','.').intern();
+		return dr_decl;
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -551,8 +435,6 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	@nodeAttr public String				esc_suffix;
 	@nodeAttr public ConstStringExpr[]	keywords;
 	
-	Pattern	pattern;
-
 	@setter
 	public void set$esc_prefix(String value) {
 		this.esc_prefix = (value != null) ? value.intern() : null;
@@ -570,9 +452,8 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 		if (regexp_ok == null)
 			regexp_ok = ".*";
 		try {
-			pattern = Pattern.compile(regexp_ok);
+			Pattern.compile(regexp_ok);
 		} catch (PatternSyntaxException e) {
-			pattern = null;
 			Kiev.reportError(this,"Syntax error in ident template pattern: "+regexp_ok);
 		}
 		foreach (ConstStringExpr cs; keywords; cs.value != null) {
@@ -581,13 +462,24 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 				cs.value = interned;
 		}
 	}
+
+	public Draw_SyntaxIdentTemplate getCompiled() {
+		Draw_SyntaxIdentTemplate dr_decl = new Draw_SyntaxIdentTemplate();
+		dr_decl.regexp_ok = this.regexp_ok;
+		dr_decl.esc_prefix = this.esc_prefix;
+		dr_decl.esc_suffix = this.esc_suffix;
+		dr_decl.keywords = new String[this.keywords.length];
+		for (int i=0; i < dr_decl.keywords.length; i++)
+			dr_decl.keywords[i] = this.keywords[i].value;
+		return dr_decl;
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxExpectedTemplate;
 
-	@nodeAttr public String			title;
+	@nodeAttr public String				title;
 	@nodeAttr public SymbolRef[]		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
 
 	public SyntaxExpectedTemplate() {
@@ -626,7 +518,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 
 	@nodeAttr public SpaceCmd[]				spaces;
 	@nodeAttr public SymbolRef<DrawColor>	color;
-	@nodeAttr public SymbolRef<DrawFont>		font;
+	@nodeAttr public SymbolRef<DrawFont>	font;
 	
 	public SyntaxElemFormatDecl() {
 		this.sname = "fmt-";
@@ -673,6 +565,42 @@ public final class SyntaxElemFormatDecl extends DNode {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
+	public Draw_Layout compile() {
+		Draw_Layout lout = new Draw_Layout();
+		SpaceCmd[] spaces = this.spaces;
+		for (int i=0; i < spaces.length; i++) {
+			SpaceCmd sc = spaces[i];
+			LayoutSpace ls = new LayoutSpace();
+			if (sc.si.dnode != null) {
+				SpaceInfo si = (SpaceInfo)sc.si.dnode;
+				ls.name = si.sname;
+				if (si.kind == SP_NEW_LINE) ls.new_line = true;
+				ls.text_size = si.text_size;
+				ls.pixel_size = si.pixel_size;
+			} else {
+				ls.name = sc.si.name;
+				ls.text_size = 1;
+				ls.pixel_size = 4;
+			}
+			ls.from_attempt = sc.from_attempt;
+			switch (sc.action_before) {
+			case SP_NOP: break;
+			case SP_ADD: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls); break;
+			case SP_EAT: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls.setEat()); break;
+			}
+			switch (sc.action_after) {
+			case SP_NOP: break;
+			case SP_ADD: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls); break;
+			case SP_EAT: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls.setEat()); break;
+			}
+			lout.count = Math.max(lout.count, sc.from_attempt);
+		}
+		if (this.color != null && this.color.dnode != null)
+			lout.color = new Color(this.color.dnode.rgb_color);
+		if (this.font != null && this.font.dnode != null)
+			lout.font = Font.decode(this.font.dnode.font_name);
+		return lout;
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -697,6 +625,19 @@ public final class SyntaxFunctions extends ASTNode {
 	@nodeAttr public SyntaxFunction[]	funcs;
 
 	public SyntaxFunctions() {}
+	
+	public Draw_SyntaxFunction[] getCompiled() {
+		Draw_SyntaxFunction[] funcs = new Draw_SyntaxFunction[this.funcs.length];
+		for (int i=0; i < funcs.length; i++) {
+			SyntaxFunction sf = this.funcs[i];
+			Draw_SyntaxFunction f = new Draw_SyntaxFunction();
+			f.title = sf.title;
+			f.act = sf.act;
+			f.attr = sf.attr;
+			funcs[i] = f;
+		}
+		return funcs;
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -713,13 +654,8 @@ public abstract class SyntaxElem extends ASTNode {
 	public SyntaxFunctions						funcs;
 	
 
-	@UnVersioned
-	public:r,r,r,rw DrawLayout		lout;
-
 	public SyntaxElem() {}
 
-	public abstract Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax);
-	
 	public void preResolveOut() {
 		if (fmt != null && fmt.name != null && fmt.name != "") {
 			SyntaxElemFormatDecl@ d;
@@ -757,69 +693,27 @@ public abstract class SyntaxElem extends ASTNode {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
-	public void postVerify() {
-		lout = null;
+	public abstract Draw_SyntaxElem getCompiled();
+
+	public void fillCompiled(Draw_SyntaxElem dr_elem) {
+		if (this.par != null && this.par.dnode != null)
+			dr_elem.par = this.par.dnode.getCompiled();
+		if (this.funcs != null)
+			dr_elem.funcs = this.funcs.getCompiled();
+		dr_elem.lout = compile();
 	}
-	
-	@getter
-	public DrawLayout get$lout() {
-		if (lout == null) {
-			lout = new DrawLayout();
-			compile();
-		}
-		return lout;
-	}
-	
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		if (curr_dr.syntax != this || expected_node != curr_dr.drnode)
-			return false;
-		return true;
-	}
-	
-	private void compile() {
-		DrawLayout lout = this.lout;
-		lout.count = 0;
+
+	private Draw_Layout compile() {
 		SyntaxElemFormatDecl fmt = null;
 		if (this.fmt != null)
 			fmt = this.fmt.dnode;
 		if (fmt == null) {
 			SyntaxElemFormatDecl@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,"fmt-default")))
-				return;
+				return new Draw_Layout();
 			fmt = d;
 		}
-		SpaceCmd[] spaces = fmt.spaces;
-		for (int i=0; i < spaces.length; i++) {
-			SpaceCmd sc = spaces[i];
-			LayoutSpace ls = new LayoutSpace();
-			if (sc.si.dnode != null) {
-				SpaceInfo si = (SpaceInfo)sc.si.dnode;
-				ls.name = si.sname;
-				if (si.kind == SP_NEW_LINE) ls.new_line = true;
-				ls.text_size = si.text_size;
-				ls.pixel_size = si.pixel_size;
-			} else {
-				ls.name = sc.si.name;
-				ls.text_size = 1;
-				ls.pixel_size = 4;
-			}
-			ls.from_attempt = sc.from_attempt;
-			switch (sc.action_before) {
-			case SP_NOP: break;
-			case SP_ADD: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls); break;
-			case SP_EAT: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls.setEat()); break;
-			}
-			switch (sc.action_after) {
-			case SP_NOP: break;
-			case SP_ADD: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls); break;
-			case SP_EAT: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls.setEat()); break;
-			}
-			lout.count = Math.max(lout.count, sc.from_attempt);
-		}
-		if (fmt.color != null && fmt.color.dnode != null)
-			lout.color = new Color(fmt.color.dnode.rgb_color);
-		if (fmt.font != null && fmt.font.dnode != null)
-			lout.font = Font.decode(fmt.font.dnode.font_name);
+		return fmt.compile();
 	}
 }
 
@@ -827,7 +721,7 @@ public abstract class SyntaxElem extends ASTNode {
 public final class SyntaxElemRef extends SyntaxElem {
 	@virtual typedef This  = SyntaxElemRef;
 
-	@nodeAttr public SymbolRef<ASyntaxElemDecl>		decl;
+	@nodeAttr public SymbolRef<ASyntaxElemDecl>	decl;
 	@nodeAttr public String							text;
 
 	public SyntaxElemRef() {
@@ -837,13 +731,17 @@ public final class SyntaxElemRef extends SyntaxElem {
 		this.decl = new SymbolRef<ASyntaxElemDecl>(decl);
 	}
 	
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		return ((ASyntaxElemDecl)decl.dnode).elem.check(cont, curr_dr, expected_node);
+	public Draw_SyntaxElem getCompiled() {
+		return ((ASyntaxElemDecl)decl.dnode).elem.getCompiled();
 	}
-	
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node,text_syntax);
-	}
+
+//	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
+//		return ((ASyntaxElemDecl)decl.dnode).elem.check(cont, curr_dr, expected_node);
+//	}
+//	
+//	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+//		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node,text_syntax);
+//	}
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -894,15 +792,25 @@ public final class SyntaxToken extends SyntaxElem {
 		this.text = text;
 		this.kind = TokenKind.UNKNOWN;
 	}
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawToken(node, this, text_syntax);
-		return dr;
-	}
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "kind" && kind == TokenKind.UNKNOWN)
 			return false;
 		return super.includeInDump(dump, attr, val);
 	}
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxToken dr_elem = new Draw_SyntaxToken();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxToken dr_elem = (Draw_SyntaxToken)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.text = this.text;
+		dr_elem.kind = this.kind;
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -917,10 +825,19 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 	}
 	
 	public SyntaxPlaceHolder() {}
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawPlaceHolder(node, this, text_syntax);
-		return dr;
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxPlaceHolder dr_elem = new Draw_SyntaxPlaceHolder();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxPlaceHolder dr_elem = (Draw_SyntaxPlaceHolder)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.text = this.text;
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -930,8 +847,8 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	public static final SyntaxAttr[] emptyArray = new SyntaxAttr[0];
 
 	@nodeAttr public String							name;
-	@nodeAttr public SymbolRef<ATextSyntax>			in_syntax;
-	@nodeAttr public SymbolRef[]						expected_types;
+	@nodeAttr public SymbolRef<ATextSyntax>		in_syntax;
+	@nodeAttr public SymbolRef[]					expected_types;
 	@nodeAttr public SyntaxElem						empty;
 
 	@setter
@@ -996,10 +913,21 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxAttr dr_elem = (Draw_SyntaxAttr)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.name = this.name;
+		if (this.in_syntax.dnode != null)
+			dr_elem.in_syntax = this.in_syntax.dnode.getCompiled();
+		dr_elem.expected_types = this.expected_types;
+		if (this.empty != null)
+			dr_elem.empty = this.empty.getCompiled();
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
-public class SyntaxSubAttr extends SyntaxAttr {
+public final class SyntaxSubAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxSubAttr;
 
 	public SyntaxSubAttr() {}
@@ -1010,9 +938,12 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		super(name,stx);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		return new DrawSubAttr(node, this, text_syntax);
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxSubAttr dr_elem = new Draw_SyntaxSubAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -1026,24 +957,13 @@ public class SyntaxList extends SyntaxAttr {
 	@nodeAttr public SyntaxElem						sufix;
 	@nodeAttr public CalcOption						filter;
 	@nodeAttr public SymbolRef<AParagraphLayout>	elpar;
-	@nodeAttr public boolean							folded_by_default;
+	@nodeAttr public boolean						folded_by_default;
 
 	public SyntaxList() {}
 	public SyntaxList(String name) {
 		super(name);
 		this.element = new SyntaxNode();
 		this.folded = new SyntaxToken("{?"+name+"?}");
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		if (in_syntax.dnode != null)
-			text_syntax = in_syntax.dnode;
-		Drawable dr;
-		if (text_syntax instanceof TreeSyntax || prefix == null && sufix == null && empty == null)
-			dr = new DrawNonTermList(node, this, text_syntax);
-		else
-			dr = new DrawWrapList(node, this, text_syntax);
-		return dr;
 	}
 
 	public void preResolveOut() {
@@ -1056,6 +976,33 @@ public class SyntaxList extends SyntaxAttr {
 				elpar.symbol = d;
 		}
 	}	
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxList dr_elem = new Draw_SyntaxList();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxList dr_elem = (Draw_SyntaxList)_dr_elem;
+		super.fillCompiled(dr_elem);
+		if (this.folded != null)
+			dr_elem.folded = this.folded.getCompiled();
+		if (this.element != null)
+			dr_elem.element = this.element.getCompiled();
+		if (this.separator != null)
+			dr_elem.separator = this.separator.getCompiled();
+		if (this.prefix != null)
+			dr_elem.prefix = this.prefix.getCompiled();
+		if (this.sufix != null)
+			dr_elem.sufix = this.sufix.getCompiled();
+		if (this.filter != null)
+			dr_elem.filter = this.filter.getCompiled();
+		if (this.elpar != null && this.elpar.dnode != null)
+			dr_elem.elpar = this.elpar.dnode.getCompiled();
+		dr_elem.folded_by_default = this.folded_by_default;
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -1071,36 +1018,6 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		super(name);
 		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
 	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawIdent(node, this, text_syntax, name);
-		return dr;
-	}
-
-	public boolean isOk(String text) {
-		SyntaxIdentTemplate t = getTemplate();
-		if (t == null) return true;
-		if (t.pattern != null && !t.pattern.matcher(text).matches())
-			return false;
-		foreach (ConstStringExpr cs; t.keywords; cs.value == text)
-			return false;
-		return true;
-	}
-	
-	public SyntaxIdentTemplate getTemplate() {
-		return (SyntaxIdentTemplate)decl.dnode;
-	}
-	
-	public String getPrefix() {
-		SyntaxIdentTemplate t = getTemplate();
-		if (t == null || t.esc_prefix == null) return "";
-		return t.esc_prefix;
-	}	
-	public String getSuffix() {
-		SyntaxIdentTemplate t = getTemplate();
-		if (t == null || t.esc_suffix == null) return "";
-		return t.esc_suffix;
-	}	
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -1124,6 +1041,19 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		}
 		return super.findForResolve(name,slot,by_equals);
 	}
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxIdentAttr dr_elem = new Draw_SyntaxIdentAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxIdentAttr dr_elem = (Draw_SyntaxIdentAttr)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.template = this.decl.dnode.getCompiled();
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -1135,9 +1065,10 @@ public class SyntaxCharAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawCharTerm(node, this, text_syntax, name);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxCharAttr dr_elem = new Draw_SyntaxCharAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -1150,9 +1081,10 @@ public class SyntaxStrAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawStrTerm(node, this, text_syntax, name);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxStrAttr dr_elem = new Draw_SyntaxStrAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -1162,12 +1094,25 @@ public class SyntaxSet extends SyntaxElem {
 
 	@nodeAttr public SyntaxElem		folded;
 	@nodeAttr public SyntaxElem[]	elements;
-	@nodeAttr public boolean			folded_by_default;
-	@nodeAttr public boolean			nested_function_lookup;
+	@nodeAttr public boolean		folded_by_default;
+	@nodeAttr public boolean		nested_function_lookup;
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawNonTermSet(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxSet dr_elem = new Draw_SyntaxSet();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxSet dr_elem = (Draw_SyntaxSet)_dr_elem;
+		super.fillCompiled(dr_elem);
+		if (this.folded != null)
+			dr_elem.folded = this.folded.getCompiled();
+		dr_elem.elements = new Draw_SyntaxElem[this.elements.length];
+		for (int i=0; i < dr_elem.elements.length; i++)
+			dr_elem.elements[i] = this.elements[i].getCompiled();
+		dr_elem.folded_by_default = this.folded_by_default;
+		dr_elem.nested_function_lookup = this.nested_function_lookup;
 	}
 }
 
@@ -1183,8 +1128,10 @@ public class SyntaxNode extends SyntaxAttr {
 		this.in_syntax.symbol = stx;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		return new DrawNode(node, this, text_syntax);
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxNode dr_elem = new Draw_SyntaxNode();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -1201,36 +1148,6 @@ public class SyntaxSwitch extends SyntaxElem {
 		this.suffix = sf;
 		this.target_syntax = stx;
 	}
-
-	private ATextSyntax getTargetSyntax(ANode for_node) {
-		ThisIsANode node_data = (ThisIsANode)for_node.getClass().getAnnotation(ThisIsANode.class);
-		Class lng_class = node_data.lang();
-		Language lng = (Language)lng_class.getField(nameInstance).get(null);
-		return lng.getDefaultEditorSyntax();
-	}
-	
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		if (expected_node != curr_dr.drnode)
-			return false;
-		if!(curr_dr instanceof DrawSyntaxSwitch)
-			return false;
-		DrawSyntaxSwitch curr_dss = (DrawSyntaxSwitch)curr_dr;
-		if (getTargetSyntax(expected_node) != target_syntax)
-			return false;
-		if (curr_dss.args.length == 0)
-			return true;
-		if (curr_dss.args.length != 3)
-			return false;
-		Drawable sub_dr = curr_dss.args[1];
-		if (sub_dr.text_syntax != target_syntax)
-			return false;
-		SyntaxElem expected_stx = target_syntax.getSyntaxElem(expected_node);
-		return expected_stx.check(cont,sub_dr,expected_node);
-	}
-	
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		return new DrawSyntaxSwitch(node,this,text_syntax);
-	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -1239,9 +1156,10 @@ public class SyntaxSpace extends SyntaxElem {
 
 	public SyntaxSpace() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawSpace(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxSpace dr_elem = new Draw_SyntaxSpace();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -1264,7 +1182,7 @@ public abstract class CalcOption extends ASTNode {
 			this.name = name.intern();
 	}
 	
-	public abstract boolean calc(ANode node);
+	public abstract Draw_CalcOption getCompiled();
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -1275,10 +1193,12 @@ public final class CalcOptionAnd extends CalcOption {
 	
 	public CalcOptionAnd() {}
 
-	public boolean calc(ANode node) {
-		foreach (CalcOption opt; opts; !opt.calc(node))
-			return false;
-		return true;
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionAnd c = new Draw_CalcOptionAnd();
+		c.opts = new Draw_CalcOption[this.opts.length];
+		for (int i=0; i < c.opts.length; i++)
+			c.opts[i] = this.opts[i].getCompiled();
+		return c;
 	}
 }
 
@@ -1290,10 +1210,12 @@ public final class CalcOptionOr extends CalcOption {
 	
 	public CalcOptionOr() {}
 
-	public boolean calc(ANode node) {
-		foreach (CalcOption opt; opts; opt.calc(node))
-			return true;
-		return false;
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionOr c = new Draw_CalcOptionOr();
+		c.opts = new Draw_CalcOption[this.opts.length];
+		for (int i=0; i < c.opts.length; i++)
+			c.opts[i] = this.opts[i].getCompiled();
+		return c;
 	}
 }
 
@@ -1305,10 +1227,10 @@ public final class CalcOptionNot extends CalcOption {
 	
 	public CalcOptionNot() {}
 
-	public boolean calc(ANode node) {
-		if (opt == null)
-			return true;
-		return !opt.calc(node);
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionNot c = new Draw_CalcOptionNot();
+		c.opt = this.opt.getCompiled();
+		return c;
 	}
 }
 
@@ -1321,16 +1243,10 @@ public final class CalcOptionNotNull extends CalcOption {
 		super(name);
 	}
 
-	public boolean calc(ANode node) {
-		if (node == null)
-			return false;
-		Object obj = null;
-		try { obj = node.getVal(name); } catch (RuntimeException e) {}
-		if (obj == null)
-			return false;
-		if (obj instanceof SymbolRef && obj.name == null)
-			return false;
-		return true;
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionNotNull c = new Draw_CalcOptionNotNull();
+		c.name = this.name;
+		return c;
 	}
 }
 
@@ -1343,13 +1259,10 @@ public final class CalcOptionNotEmpty implements CalcOption {
 		super(name);
 	}
 
-	public boolean calc(ANode node) {
-		if (node == null)
-			return false;
-		Object obj = node.getVal(name);
-		if (obj instanceof ANode[])
-			return ((ANode[])obj).length > 0;
-		return false;
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionNotEmpty c = new Draw_CalcOptionNotEmpty();
+		c.name = this.name;
+		return c;
 	}
 }
 
@@ -1362,11 +1275,10 @@ public class CalcOptionTrue implements CalcOption {
 		super(name);
 	}
 
-	public boolean calc(ANode node) {
-		if (node == null) return false;
-		Object val = node.getVal(name);
-		if (val == null || !(val instanceof Boolean)) return false;
-		return ((Boolean)val).booleanValue();
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionTrue c = new Draw_CalcOptionTrue();
+		c.name = this.name;
+		return c;
 	}
 }
 
@@ -1381,17 +1293,18 @@ public class CalcOptionClass implements CalcOption {
 		super(name);
 	}
 
-	public boolean calc(ANode node) {
-		if (clazz == null) return true;
-		return clazz.isInstance(node);
-	}
-
 	public void mainResolveOut() {
 		try {
 			clazz = Class.forName(name);
 		} catch (Throwable t) {
 			Kiev.reportError(this, "Class '"+name+"' not found");
 		}
+	}
+
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionClass c = new Draw_CalcOptionClass();
+		c.clazz = this.clazz;
+		return c;
 	}
 }
 
@@ -1410,17 +1323,11 @@ public class CalcOptionHasMeta implements CalcOption {
 			value = value.replace('.','\u001f');
 		this.name = (value != null) ? value.intern() : null;
 	}
-	
-	public boolean calc(ANode node) {
-		if (node instanceof DNode) {
-			DNode dn = (DNode)node;
-			return (dn.getMeta(name) != null);
-		}
-		if (node instanceof DeclGroup) {
-			DeclGroup dn = (DeclGroup)node;
-			return (dn.getMeta(name) != null);
-		}
-		return false;
+
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionHasMeta c = new Draw_CalcOptionHasMeta();
+		c.name = this.name;
+		return c;
 	}
 }
 
@@ -1433,15 +1340,10 @@ public class CalcOptionIsHidden implements CalcOption {
 		super(name);
 	}
 
-	public boolean calc(ANode node) {
-		if (node == null)
-			return false;
-		Object val = node;
-		if !(name == null || name == "" || name == "this")
-			val = node.getVal(name);
-		if !(val instanceof ASTNode)
-			return false;
-		return ((ASTNode)val).isAutoGenerated();
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionIsHidden c = new Draw_CalcOptionIsHidden();
+		c.name = this.name;
+		return c;
 	}
 }
 
@@ -1451,16 +1353,10 @@ public class CalcOptionHasNoSyntaxParent implements CalcOption {
 
 	public CalcOptionHasNoSyntaxParent() {}
 
-	public boolean calc(ANode node) {
-		if (node == null)
-			return true;
-		Object val = node;
-		if !(name == null || name == "" || name == "this")
-			val = node.getVal(name);
-		if !(val instanceof ANode)
-			return true;
-		ANode syntax_parent = ANode.nodeattr$syntax_parent.get((ANode)val);
-		return (syntax_parent == null);
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionHasNoSyntaxParent c = new Draw_CalcOptionHasNoSyntaxParent();
+		c.name = this.name;
+		return c;
 	}
 }
 
@@ -1481,26 +1377,11 @@ public class CalcOptionIncludeInDump implements CalcOption {
 		this.dump = dump;
 	}
 
-	public boolean calc(ANode node) {
-		if (node == null)
-			return false;
-		String name = this.name;
-		if (name == null || name == "" || name == "this") {
-			return node.includeInDump(dump, ASTNode.nodeattr$this, node);
-		}
-		AttrSlot attr = null;
-		foreach (AttrSlot a; node.values(); a.name == name) {
-			attr = a;
-			break;
-		}
-		if (attr == null)
-			return false;
-		Object val = attr.get(node);
-		if (val == null)
-			return false;
-		if (attr.is_space && ((Object[])val).length == 0)
-			return false;
-		return node.includeInDump(dump, attr, val);
+	public Draw_CalcOption getCompiled() {
+		Draw_CalcOptionIncludeInDump c = new Draw_CalcOptionIncludeInDump();
+		c.name = this.name;
+		c.dump = this.dump;
+		return c;
 	}
 }
 
@@ -1508,9 +1389,9 @@ public class CalcOptionIncludeInDump implements CalcOption {
 public class SyntaxOptional extends SyntaxElem {
 	@virtual typedef This  = SyntaxOptional;
 
-	@nodeAttr public CalcOption	calculator;
-	@nodeAttr public SyntaxElem	opt_true;
-	@nodeAttr public SyntaxElem	opt_false;
+	@nodeAttr public CalcOption			calculator;
+	@nodeAttr public SyntaxElem			opt_true;
+	@nodeAttr public SyntaxElem			opt_false;
 
 	public SyntaxOptional() {}
 	public SyntaxOptional(CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false) {
@@ -1519,9 +1400,20 @@ public class SyntaxOptional extends SyntaxElem {
 		this.opt_false = opt_false;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawOptional(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxOptional dr_elem = new Draw_SyntaxOptional();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxOptional dr_elem = (Draw_SyntaxOptional)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.calculator = this.calculator.getCompiled();
+		if (this.opt_true != null)
+			dr_elem.opt_true = this.opt_true.getCompiled();
+		if (this.opt_false != null)
+			dr_elem.opt_false = this.opt_false.getCompiled();
 	}
 }
 
@@ -1536,9 +1428,18 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawEnumChoice(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxEnumChoice dr_elem = new Draw_SyntaxEnumChoice();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxEnumChoice dr_elem = (Draw_SyntaxEnumChoice)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.elements = new Draw_SyntaxElem[this.elements.length];
+		for (int i=0; i < dr_elem.elements.length; i++)
+			dr_elem.elements[i] = this.elements[i].getCompiled();
 	}
 }
 
@@ -1557,9 +1458,18 @@ public class SyntaxFolder extends SyntaxElem {
 		this.unfolded = unfolded;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawFolded(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxFolder dr_elem = new Draw_SyntaxFolder();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxFolder dr_elem = (Draw_SyntaxFolder)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.folded = this.folded.getCompiled();
+		dr_elem.unfolded = this.unfolded.getCompiled();
+		dr_elem.folded_by_default = this.folded_by_default;
 	}
 }
 

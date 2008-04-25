@@ -24,9 +24,10 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawXmlStrTerm(node, this, text_syntax, name);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxXmlStrAttr dr_elem = new Draw_SyntaxXmlStrAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -39,21 +40,16 @@ public class SyntaxXmlTypeAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawXmlTypeTerm(node, this, text_syntax, name);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxXmlTypeAttr dr_elem = new Draw_SyntaxXmlTypeAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
 public class XmlDumpSyntax extends ATextSyntax {
 	@virtual typedef This  = XmlDumpSyntax;
-
-	@nodeData SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
-	@nodeData SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
-	@nodeData SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
-	@nodeData SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
-	@nodeData ParagraphLayout plIndented = new ParagraphLayout("par-indented", 1, 10);
 
 	@nodeAttr public String dump;
 
@@ -63,13 +59,6 @@ public class XmlDumpSyntax extends ATextSyntax {
 	}
 	
 	public XmlDumpSyntax() {
-		sefdNlNl.spaces += new SpaceCmd(siNl, SP_ADD, SP_ADD, 0);
-		sefdNoNl.spaces += new SpaceCmd(siNl, SP_NOP, SP_ADD, 0);
-		this.members += siNl;
-		this.members += sefdNoNo;
-		this.members += sefdNlNl;
-		this.members += sefdNoNl;
-		this.members += plIndented;
 		this.dump = "full";
 	}
 	public XmlDumpSyntax(String dump) {
@@ -77,109 +66,12 @@ public class XmlDumpSyntax extends ATextSyntax {
 		this.dump = dump;
 	}
 
-	private SyntaxElem open(String name) {
-		SyntaxToken st = new SyntaxToken("<"+name+">");
-		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
-		return st;
-	}
-	private SyntaxElem close(String name) {
-		SyntaxToken st = new SyntaxToken("</"+name+">");
-		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
-		return st;
-	}
-	private SyntaxElem open0(String name) {
-		SyntaxToken st = new SyntaxToken("<"+name+">");
-		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNo);
-		return st;
-	}
-	private SyntaxElem close0(String name) {
-		SyntaxToken st = new SyntaxToken("</"+name+">");
-		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-		return st;
-	}
-	protected SyntaxAttr attr(String slot) {
-		return new SyntaxSubAttr(slot);
-	}
-	protected SyntaxElem par(SyntaxElem elem) {
-		elem.par = new SymbolRef<AParagraphLayout>(plIndented);
-		return elem;
-	}
-	protected SyntaxSet set(SyntaxElem... elems) {
-		SyntaxSet set = new SyntaxSet();
-		set.elements.addAll(elems);
-		return set;
-	}
-	protected SyntaxSet setl(SyntaxElemFormatDecl sefd, SyntaxElem... elems) {
-		SyntaxSet set = new SyntaxSet();
-		set.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefd);
-		set.elements.addAll(elems);
-		return set;
-	}
-	protected SyntaxOptional opt(CalcOption calc, SyntaxElem opt_true)
-	{
-		return new SyntaxOptional(calc,opt_true,null);
-	}
-
-	public SyntaxElem getSyntaxElem(ANode node) {
-		String cl_name = node.getClass().getName();
-		SyntaxElemDecl sed = allSyntax.get(cl_name);
-		if (sed != null)
-			return sed.elem;
-		SpaceCmd[] lout_nl = new SpaceCmd[] { new SpaceCmd(siNl, SP_NOP, SP_ADD, 0) };
-		SpaceCmd[] lout_nl_ba = new SpaceCmd[] { new SpaceCmd(siNl, SP_ADD, SP_ADD, 0) };
-		SyntaxSet ss = new SyntaxSet();
-		ss.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
-			SyntaxElem se = null;
-			if (attr.is_space) {
-				SyntaxList sl = new SyntaxList(attr.name);
-				sl.filter = new CalcOptionIncludeInDump(this.dump,"this");
-				sl.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-				sl.elpar = new SymbolRef<AParagraphLayout>(plIndented);
-				se = setl(sefdNoNl, open(attr.name), sl, close(attr.name));
-			} else {
-				if (ANode.class.isAssignableFrom(attr.clazz))
-					se = setl(sefdNoNl, open(attr.name), par(attr(attr.name)), close(attr.name));
-				else if (Enum.class.isAssignableFrom(attr.clazz))
-					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
-				else if (attr.clazz == String.class)
-					se = set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
-				else if (attr.clazz == Operator.class)
-					se = set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
-				else if (Type.class.isAssignableFrom(attr.clazz))
-					se = set(open0(attr.name), new SyntaxXmlTypeAttr(attr.name), close0(attr.name));
-				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
-					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
-					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
-					)
-					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
-				else if (attr.is_attr) {
-					SyntaxToken st = new SyntaxToken("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />");
-					st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
-					se = st;
-				}
-			}
-			if (se != null)
-				ss.elements += opt(new CalcOptionIncludeInDump(this.dump,attr.name),se);
-		}
-		{
-			SyntaxToken st;
-			SyntaxSet sn = new SyntaxSet();
-			ss.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-			st = new SyntaxToken("<a-node class='"+cl_name+"'>");
-			st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
-			sn.elements += st;
-			sn.elements += par(ss);
-			st = new SyntaxToken("</a-node>");
-			st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
-			sn.elements += st;
-			ss = sn;
-		}
-		SyntaxElemDecl sed = new SyntaxElemDecl();
-		sed.elem = ss;
-		allSyntax.put(cl_name,sed);
-		members += sed;
-		return ss;
+	public Draw_ATextSyntax getCompiled() {
+		if (compiled != null)
+			return compiled;
+		compiled = new Draw_XmlDumpSyntax(this.dump);
+		fillCompiled(compiled);
+		return compiled;
 	}
 }
 

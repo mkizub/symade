@@ -21,15 +21,15 @@ import syntax kiev.Syntax;
 public final class SyntaxLang implements Language {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public ATextSyntax getDefaultEditorSyntax() {
+	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
 			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-syntax");
-		return defaultEditorSyntax;
+		return defaultEditorSyntax.getCompiled();
 	}
-	public ATextSyntax getDefaultInfoSyntax() {
+	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
 			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-syntax");
-		return defaultInfoSyntax;
+		return defaultInfoSyntax.getCompiled();
 	}
 	private static ATextSyntax defaultEditorSyntax;
 	private static ATextSyntax defaultInfoSyntax;

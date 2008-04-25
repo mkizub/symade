@@ -23,13 +23,25 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 	@nodeAttr public SyntaxToken		l_paren;
 	@nodeAttr public SyntaxToken		bad_op;
 	@nodeAttr public SyntaxToken		r_paren;
-	@nodeAttr public SyntaxToken[]	operators;
+	@nodeAttr public SyntaxToken[]		operators;
 
 	public SyntaxExprTemplate() {
 		super(new SyntaxNode());
 		this.l_paren = new SyntaxToken("(");
 		this.bad_op = new SyntaxToken("\u25d9");
 		this.r_paren = new SyntaxToken(")");
+	}
+
+	public Draw_SyntaxExprTemplate getCompiled() {
+		Draw_SyntaxExprTemplate dr_decl = new Draw_SyntaxExprTemplate();
+		dr_decl.elem = this.elem.getCompiled();
+		dr_decl.l_paren = (Draw_SyntaxToken)this.l_paren.getCompiled();
+		dr_decl.bad_op = (Draw_SyntaxToken)this.bad_op.getCompiled();
+		dr_decl.r_paren = (Draw_SyntaxToken)this.r_paren.getCompiled();
+		dr_decl.operators = new Draw_SyntaxToken[this.operators.length];
+		for (int i=0; i < dr_decl.operators.length; i++)
+			dr_decl.operators[i] = (Draw_SyntaxToken)this.operators[i].getCompiled();
+		return dr_decl;
 	}
 }
 
@@ -45,19 +57,6 @@ public class SyntaxExpr extends SyntaxElem {
 		this.template = new SymbolRef<SyntaxExprTemplate>();
 	}
 
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		if (expected_node != curr_dr.drnode)
-			return false;
-		if (expected_node instanceof ENode && expected_node.getOp() == null)
-			return true;
-		return false;
-	}
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		if (node instanceof ENode && node.getOp() != null)
-			return fmt.getDrawable(node, null, text_syntax);
-		return new DrawLispExpr(node, this, text_syntax);
-	}
-
 	public void preResolveOut() {
 		if (template.name != null && template.name != "") {
 			SyntaxExprTemplate@ d;
@@ -78,6 +77,21 @@ public class SyntaxExpr extends SyntaxElem {
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
+	}
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxExpr dr_elem = new Draw_SyntaxExpr();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxExpr dr_elem = (Draw_SyntaxExpr)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.template = (Draw_SyntaxExprTemplate)this.template.dnode.getCompiled();
+		dr_elem.attrs = new Draw_SyntaxAttr[this.attrs.length];
+		for (int i=0; i < dr_elem.attrs.length; i++)
+			dr_elem.attrs[i] = (Draw_SyntaxAttr)this.attrs[i].getCompiled();
 	}
 }
 
@@ -86,47 +100,10 @@ public class SyntaxAutoParenth extends SyntaxElem {
 	@virtual typedef This  = SyntaxAutoParenth;
 
 	@nodeAttr public SyntaxAttr						attr;
-	@nodeAttr public int								priority;
+	@nodeAttr public int							priority;
 	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
 
 	public SyntaxAutoParenth() {}
-	public SyntaxAutoParenth(SyntaxAttr attr, int priority, SyntaxExprTemplate template) {
-		this.attr = attr;
-		this.priority = priority;
-		this.template = new SymbolRef<SyntaxExprTemplate>(template);
-	}
-
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		Object obj;
-		if (attr instanceof SyntaxNode) {
-			obj = expected_node;
-		} else try {
-			obj = expected_node.getVal(attr.name);
-		} catch (RuntimeException e) {
-			obj = "";
-		}
-		if (obj instanceof ENode) {
-			if (obj.isPrimaryExpr() || obj.getPriority() < this.priority)
-				return expected_node == curr_dr.drnode;
-		}
-		return attr.check(cont, curr_dr, expected_node);
-	}
-	
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Object obj;
-		if (attr instanceof SyntaxNode) {
-			obj = node;
-		} else try {
-			obj = node.getVal(attr.name);
-		} catch (RuntimeException e) {
-			obj = "";
-		}
-		if (obj instanceof ENode) {
-			if (obj.isPrimaryExpr() || obj.getPriority() < this.priority)
-				return new DrawAutoParenth(node, this, text_syntax);
-		}
-		return attr.makeDrawable(fmt, node, text_syntax);
-	}
 
 	public void preResolveOut() {
 		if (template.name != null && template.name != "") {
@@ -148,6 +125,21 @@ public class SyntaxAutoParenth extends SyntaxElem {
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
+	}
+
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxAutoParenth dr_elem = new Draw_SyntaxAutoParenth();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxAutoParenth dr_elem = (Draw_SyntaxAutoParenth)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.template = (Draw_SyntaxExprTemplate)this.template.dnode.getCompiled();
+		dr_elem.attr = (Draw_SyntaxAttr)this.attr.getCompiled();
+		dr_elem.priority = this.priority;
 	}
 }
 

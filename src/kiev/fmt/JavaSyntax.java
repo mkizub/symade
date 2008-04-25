@@ -26,6 +26,16 @@ public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 	@nodeAttr public SyntaxElem		cmt_beg;
 	@nodeAttr public SyntaxElem		cmt_end;
 
+	public Draw_SyntaxJavaCommentTemplate getCompiled() {
+		Draw_SyntaxJavaCommentTemplate dr_decl = new Draw_SyntaxJavaCommentTemplate();
+		dr_decl.elem = this.elem.getCompiled();
+		dr_decl.newline = this.newline.getCompiled();
+		dr_decl.lin_beg = this.lin_beg.getCompiled();
+		dr_decl.doc_beg = this.doc_beg.getCompiled();
+		dr_decl.cmt_beg = this.cmt_beg.getCompiled();
+		dr_decl.cmt_end = this.cmt_end.getCompiled();
+		return dr_decl;
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -33,14 +43,22 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaAccessExpr;
 
 	@nodeAttr public SyntaxElem			obj_elem;
-	@nodeAttr public SyntaxToken			separator;
+	@nodeAttr public SyntaxToken		separator;
 	@nodeAttr public SyntaxElem			fld_elem;
 
 	public SyntaxJavaAccessExpr() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaAccessExpr(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxJavaAccessExpr dr_elem = new Draw_SyntaxJavaAccessExpr();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxJavaAccessExpr dr_elem = (Draw_SyntaxJavaAccessExpr)_dr_elem;
+		dr_elem.obj_elem = this.obj_elem.getCompiled();
+		dr_elem.separator = (Draw_SyntaxToken)this.separator.getCompiled();
+		dr_elem.fld_elem = this.fld_elem.getCompiled();
 	}
 }
 
@@ -50,9 +68,10 @@ public class SyntaxJavaAccess extends SyntaxElem {
 
 	public SyntaxJavaAccess() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaAccess(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxJavaAccess dr_elem = new Draw_SyntaxJavaAccess();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -62,9 +81,10 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 
 	public SyntaxJavaPackedField() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaPackedField(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxJavaPackedField dr_elem = new Draw_SyntaxJavaPackedField();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -77,11 +97,6 @@ public class SyntaxJavaComment extends SyntaxElem {
 
 	public SyntaxJavaComment() {
 		this.template = new SymbolRef<SyntaxJavaCommentTemplate>();
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaComment(node, this, text_syntax);
-		return dr;
 	}
 
 	public void preResolveOut() {
@@ -105,6 +120,18 @@ public class SyntaxJavaComment extends SyntaxElem {
 		}
 		return super.findForResolve(name,slot,by_equals);
 	}
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxJavaComment dr_elem = new Draw_SyntaxJavaComment();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxJavaComment dr_elem = (Draw_SyntaxJavaComment)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.template = this.template.dnode.getCompiled();
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -113,9 +140,10 @@ public class SyntaxJavaConstructorName extends SyntaxElem {
 
 	public SyntaxJavaConstructorName() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaConstructorName(node, this, text_syntax);
-		return dr;
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxJavaConstructorName dr_elem = new Draw_SyntaxJavaConstructorName();
+		fillCompiled(dr_elem);
+		return dr_elem;
 	}
 }
 
@@ -125,28 +153,13 @@ public class KievTextSyntax extends ATextSyntax {
 
 	public KievTextSyntax() {}
 
-	public SyntaxElem getSyntaxElem(ANode node) {
-		if (node != null) {
-			String cl_name = node.getClass().getName();
-			SyntaxElemDecl sed = allSyntax.get(cl_name);
-			if (sed != null) {
-				SyntaxElem se = sed.elem;
-				if (node instanceof ENode && se instanceof SyntaxExpr) {
-					ENode e = (ENode)node;
-					Operator op = e.getOp();
-					if (op == null)
-						return se;
-					se = allSyntaxExprs.get(new Pair<Operator,Class>(op,node.getClass()));
-					if (se == null) {
-						se = expr(op, (SyntaxExpr)sed.elem);
-						allSyntaxExprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
-					}
-					return se;
-				}
-				return se;
-			}
-		}
-		return super.getSyntaxElem(node);
+	public Draw_ATextSyntax getCompiled() {
+		if (compiled != null)
+			return compiled;
+		compiled = new Draw_KievTextSyntax();
+		fillCompiled(compiled);
+		return compiled;
 	}
+	
 }
 

@@ -16,16 +16,16 @@ import syntax kiev.Syntax;
 @ThisIsANode(copyable=false)
 public class DrawAutoParenth extends DrawNonTerm {
 	
-	public DrawAutoParenth(ANode node, SyntaxAutoParenth syntax, ATextSyntax text_syntax) {
+	public DrawAutoParenth(ANode node, Draw_SyntaxAutoParenth syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxAutoParenth sp = (SyntaxAutoParenth)this.syntax;
-		SyntaxExprTemplate template = sp.template.dnode;
+		Draw_SyntaxAutoParenth sp = (Draw_SyntaxAutoParenth)this.syntax;
+		Draw_SyntaxExprTemplate template = sp.template;
 		ENode node;
-		if (sp.attr instanceof SyntaxNode)
+		if (sp.attr instanceof Draw_SyntaxNode)
 			node = this.drnode;
 		else
 			node = (ENode)this.drnode.getVal(sp.attr.name);
@@ -45,14 +45,14 @@ public class DrawAutoParenth extends DrawNonTerm {
 @ThisIsANode(copyable=false)
 public class DrawLispExpr extends DrawNonTerm {
 	
-	public DrawLispExpr(ANode node, SyntaxExpr syntax, ATextSyntax text_syntax) {
+	public DrawLispExpr(ANode node, Draw_SyntaxExpr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxExpr se = (SyntaxExpr)this.syntax;
-		SyntaxExprTemplate st = (SyntaxExprTemplate)se.template.dnode;
+		Draw_SyntaxExpr se = (Draw_SyntaxExpr)this.syntax;
+		Draw_SyntaxExprTemplate st = (Draw_SyntaxExprTemplate)se.template;
 		ENode node = (ENode)this.drnode;
 		ENode[] eargs = node.getArgs();
 		if (args.length != eargs.length + 3) {

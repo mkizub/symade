@@ -15,12 +15,12 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(copyable=false)
 public abstract class DrawNonTerm extends Drawable {
-	@nodeAttr public Drawable	folded;
-	@nodeAttr public Drawable[]	args;
+	@nodeAttr public Drawable		folded;
+	@nodeAttr public Drawable[]		args;
 	@nodeAttr public boolean		draw_folded;
-	     public int			max_layout;
+	          public int			max_layout;
 
-	public DrawNonTerm(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
+	public DrawNonTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 	
@@ -92,7 +92,7 @@ public final class DrawWrapList extends DrawNonTerm {
 	public boolean		draw_empty;
 	public AttrSlot		slst_attr;
 
-	public DrawWrapList(ANode node, SyntaxList syntax, ATextSyntax text_syntax) {
+	public DrawWrapList(ANode node, Draw_SyntaxList syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
@@ -107,7 +107,7 @@ public final class DrawWrapList extends DrawNonTerm {
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxList slst = (SyntaxList)this.syntax;
+		Draw_SyntaxList slst = (Draw_SyntaxList)this.syntax;
 		ANode node = this.drnode;
 		
 		if (folded == null && slst.folded != null) {
@@ -152,7 +152,7 @@ public final class DrawWrapList extends DrawNonTerm {
 				args.delAll();
 				if (slst.prefix != null)
 					args.append(slst.prefix.makeDrawable(cont.fmt, node, text_syntax));
-				args.append(new DrawNonTermList(this.drnode,(SyntaxList)this.syntax,this.text_syntax));
+				args.append(new DrawNonTermList(this.drnode,(Draw_SyntaxList)this.syntax,this.text_syntax));
 				if (slst.sufix != null)
 					args.append(slst.sufix.makeDrawable(cont.fmt, node, text_syntax));
 				draw_empty = false;
@@ -183,7 +183,7 @@ public final class DrawWrapList extends DrawNonTerm {
 	
 	public int getInsertIndex(Drawable dr, boolean next) {
 		assert (dr.parent() == this);
-		SyntaxList slst = (SyntaxList)this.syntax;
+		Draw_SyntaxList slst = (Draw_SyntaxList)this.syntax;
 		boolean first = (slst.prefix != null && args[0] == dr);
 		if (first && !next)
 			return 0;
@@ -201,7 +201,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 	private boolean show_ag;
 	public AttrSlot slst_attr;
 
-	public DrawNonTermList(ANode node, SyntaxList syntax, ATextSyntax text_syntax) {
+	public DrawNonTermList(ANode node, Draw_SyntaxList syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
@@ -212,7 +212,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxList slst = (SyntaxList)this.syntax;
+		Draw_SyntaxList slst = (Draw_SyntaxList)this.syntax;
 		ANode node = this.drnode;
 		
 		if (folded == null && slst.folded != null) {
@@ -272,7 +272,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 	
 	public int getInsertIndex(Drawable dr, boolean next) {
 		assert (dr.parent() == this);
-		SyntaxList slst = (SyntaxList)this.syntax;
+		Draw_SyntaxList slst = (Draw_SyntaxList)this.syntax;
 		if (slst.separator != null) {
 			for (int i=0; i < args.length; i++) {
 				if (args[i] == dr)
@@ -295,14 +295,14 @@ public final class DrawNonTermList extends DrawNonTerm {
 @ThisIsANode(copyable=false)
 public final class DrawNonTermSet extends DrawNonTerm {
 
-	public DrawNonTermSet(ANode node, SyntaxSet syntax, ATextSyntax text_syntax) {
+	public DrawNonTermSet(ANode node, Draw_SyntaxSet syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxSet sset = (SyntaxSet)this.syntax;
+		Draw_SyntaxSet sset = (Draw_SyntaxSet)this.syntax;
 		ANode node = this.drnode;
 
 		if (folded == null && sset.folded != null)
@@ -313,7 +313,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 		if (!draw_folded || folded == null) {
 			if (args.length != sset.elements.length) {
 				args.delAll();
-				foreach (SyntaxElem se; sset.elements)
+				foreach (Draw_SyntaxElem se; sset.elements)
 					args.append(se.makeDrawable(cont.fmt, node, text_syntax));
 			}
 			for (int i=0; i < args.length; i++) {
@@ -329,13 +329,13 @@ public final class DrawNonTermSet extends DrawNonTerm {
 @ThisIsANode(copyable=false)
 public class DrawSyntaxSwitch extends DrawNonTerm {
 	
-	public DrawSyntaxSwitch(ANode node, SyntaxSwitch syntax, ATextSyntax text_syntax) {
+	public DrawSyntaxSwitch(ANode node, Draw_SyntaxSwitch syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxSwitch ssw = (SyntaxSwitch)this.syntax;
+		Draw_SyntaxSwitch ssw = (Draw_SyntaxSwitch)this.syntax;
 		ANode node = this.drnode;
 		if (args.length == 0) {
 			args.append(ssw.prefix.makeDrawable(cont.fmt, node, text_syntax));

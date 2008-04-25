@@ -11,6 +11,7 @@
 package kiev.vlang;
 
 import kiev.fmt.ATextSyntax;
+import kiev.fmt.Draw_ATextSyntax;
 
 import syntax kiev.Syntax;
 
@@ -22,23 +23,23 @@ import syntax kiev.Syntax;
 public interface Language {
 	public Class[] getSuperLanguages();
 	public Class[] getNodeClasses();
-	public ATextSyntax getDefaultEditorSyntax();
-	public ATextSyntax getDefaultInfoSyntax();
+	public Draw_ATextSyntax getDefaultEditorSyntax();
+	public Draw_ATextSyntax getDefaultInfoSyntax();
 }
 
 @singleton
 public final class CoreLang implements Language {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public ATextSyntax getDefaultEditorSyntax() {
+	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
 			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax;
+		return defaultEditorSyntax.getCompiled();
 	}
-	public ATextSyntax getDefaultInfoSyntax() {
+	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
 			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax;
+		return defaultInfoSyntax.getCompiled();
 	}
 	private static ATextSyntax defaultEditorSyntax;
 	private static ATextSyntax defaultInfoSyntax;
@@ -209,15 +210,15 @@ public final class CoreLang implements Language {
 public final class LogicLang implements Language {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public ATextSyntax getDefaultEditorSyntax() {
+	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
 			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax;
+		return defaultEditorSyntax.getCompiled();
 	}
-	public ATextSyntax getDefaultInfoSyntax() {
+	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
 			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax;
+		return defaultInfoSyntax.getCompiled();
 	}
 	private static ATextSyntax defaultEditorSyntax;
 	private static ATextSyntax defaultInfoSyntax;
@@ -242,15 +243,15 @@ public final class LogicLang implements Language {
 public final class MacroLang implements Language {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public ATextSyntax getDefaultEditorSyntax() {
+	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
 			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax;
+		return defaultEditorSyntax.getCompiled();
 	}
-	public ATextSyntax getDefaultInfoSyntax() {
+	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
 			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax;
+		return defaultInfoSyntax.getCompiled();
 	}
 	private static ATextSyntax defaultEditorSyntax;
 	private static ATextSyntax defaultInfoSyntax;

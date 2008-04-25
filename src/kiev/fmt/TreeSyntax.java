@@ -21,48 +21,12 @@ public class TreeSyntax extends ATextSyntax {
 
 	public TreeSyntax() {}
 
-	public SyntaxElem getSyntaxElem(ANode node) {
-		if (node == null)
-			return super.getSyntaxElem(node);
-		String cl_name = node.getClass().getName();
-		SyntaxElemDecl sed = allSyntax.get(cl_name);
-		if (sed != null) {
-			SyntaxElem se = sed.elem;
-			if (node instanceof ENode && se instanceof SyntaxExpr) {
-				ENode e = (ENode)node;
-				Operator op = e.getOp();
-				if (op == null)
-					return se;
-				se = allSyntaxExprs.get(new Pair<Operator,Class>(op,node.getClass()));
-				if (se == null) {
-					se = expr(op, (SyntaxExpr)sed.elem);
-					allSyntaxExprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
-				}
-			}
-			return se;
-		}
-		SyntaxSet ss = new SyntaxSet();
-		ss.folded_by_default = true;
-		{
-			String name = node.getClass().getName();
-			int idx = name.lastIndexOf('.');
-			if (idx >= 0)
-				name = name.substring(idx+1);
-			ss.folded = new SyntaxToken(name);
-		}
-		foreach (AttrSlot attr; node.values(); attr.is_attr) {
-			if (attr.is_space) {
-				SyntaxList lst = new SyntaxList(attr.name);
-				lst.folded_by_default = true;
-				ss.elements += lst;
-			} else {
-				ss.elements += new SyntaxSubAttr(attr.name);
-			}
-		}
-		SyntaxElemDecl sed = new SyntaxElemDecl();
-		sed.elem = ss;
-		allSyntax.put(cl_name,sed);
-		return ss;
+	public Draw_ATextSyntax getCompiled() {
+		if (compiled != null)
+			return compiled;
+		compiled = new Draw_TreeSyntax();
+		fillCompiled(compiled);
+		return compiled;
 	}
 }
 

@@ -38,30 +38,30 @@ import javax.swing.text.TextAction;
 public abstract class UIView extends ANode implements MouseListener, ComponentListener  {
 
 	/** The workplace window */
-	protected Window		parent_window;
+	protected Window			parent_window;
 	/** The formatter of the current view */
-	protected GfxFormatter	formatter;
+	protected GfxFormatter		formatter;
 	/** The root node to display */
-	public ANode		the_root;
+	public ANode				the_root;
 	/** The root node of document we edit - the whole program */
-	public Drawable	view_root;
+	public Drawable				view_root;
 	/** The syntax in use */
-	public ATextSyntax	syntax;
+	public Draw_ATextSyntax		syntax;
 	/** A flag to show auto-generated nodes */
-	public boolean		show_auto_generated;
+	public boolean				show_auto_generated;
 	/** A hint to show placeholders */
-	public boolean		show_placeholders;
+	public boolean				show_placeholders;
 	/** A hint to show escaped idents and strings */
-	public boolean		show_hint_escapes;
+	public boolean				show_hint_escapes;
 
-	public UIView(Window window, ATextSyntax syntax) {
+	public UIView(Window window, Draw_ATextSyntax syntax) {
 		this.parent_window = window;
 		this.syntax        = syntax;
 	}
 	
-	public ATextSyntax getSyntax() { return syntax; }
+	public Draw_ATextSyntax getSyntax() { return syntax; }
 
-	public void setSyntax(ATextSyntax syntax) {
+	public void setSyntax(Draw_ATextSyntax syntax) {
 		this.syntax = syntax;
 		view_root = null;
 		formatAndPaint(true);

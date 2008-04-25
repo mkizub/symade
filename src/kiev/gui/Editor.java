@@ -119,7 +119,7 @@ public class Editor extends InfoView implements KeyListener {
 		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_A), new String[]{"kiev.gui.NewElemNext$Factory"});
 	}
 	
-	public Editor(Window window, ATextSyntax syntax, Canvas view_canvas) {
+	public Editor(Window window, Draw_ATextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
 		this.show_placeholders = true;
 		cur_elem = new CurElem();
@@ -130,7 +130,7 @@ public class Editor extends InfoView implements KeyListener {
 		cur_elem.set(view_root.getFirstLeaf());
 	}
 	
-	public void setSyntax(ATextSyntax syntax) {
+	public void setSyntax(Draw_ATextSyntax syntax) {
 		super.setSyntax(syntax);
 		cur_elem.restore();
 	}
@@ -206,7 +206,7 @@ public class Editor extends InfoView implements KeyListener {
 			String[] actions = keyActionMap.get(new InputEventInfo(mask, code));
 			if (actions != null && cur_elem.dr != null && cur_elem.dr.syntax.funcs != null) {
 				Drawable dr;
-				foreach (SyntaxFunction f; cur_elem.dr.syntax.funcs.funcs; (dr=getFunctionTarget(f)) != null) {
+				foreach (Draw_SyntaxFunction f; cur_elem.dr.syntax.funcs; (dr=getFunctionTarget(f)) != null) {
 					foreach (String act; actions; act != null && act.equals(f.act)) {
 						try {
 							Class c = Class.forName(f.act);
@@ -229,7 +229,7 @@ public class Editor extends InfoView implements KeyListener {
 		}
 	}
 	
-	public Drawable getFunctionTarget(SyntaxFunction sf) {
+	public Drawable getFunctionTarget(Draw_SyntaxFunction sf) {
 		Drawable dr = this.cur_elem.dr;
 		if (sf.attr == null)
 			return dr;
@@ -254,11 +254,11 @@ public class Editor extends InfoView implements KeyListener {
 	private Drawable checkFunctionTarget(String attr, Drawable dr) {
 		if (dr == null)
 			return null;
-		SyntaxElem stx0 = dr.syntax;
+		Draw_SyntaxElem stx0 = dr.syntax;
 		Drawable x;
-		if (stx0 instanceof SyntaxAttr && attr.equals(stx0.name))
+		if (stx0 instanceof Draw_SyntaxAttr && attr.equals(stx0.name))
 			return dr;
-		if (stx0 instanceof SyntaxSet && stx0.nested_function_lookup) {
+		if (stx0 instanceof Draw_SyntaxSet && stx0.nested_function_lookup) {
 			foreach (Drawable d; ((DrawNonTerm)dr).args; (x=checkFunctionTarget(attr, d)) != null)
 				return x;
 		}
@@ -528,7 +528,7 @@ final class ChooseItemEditor implements UIActionFactory {
 		}
 		else if (dr instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr;
-			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
+			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
 			DrawTerm dt = dr.getFirstLeaf();
 			if (dt == null) {
 				dt = editor.cur_elem.dr.getFirstLeaf();
@@ -539,10 +539,10 @@ final class ChooseItemEditor implements UIActionFactory {
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
-			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
+			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
 			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getAttrPtr(stx.name));
 		}
-		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((SyntaxToken)dr.syntax).kind == SyntaxToken.TokenKind.OPERATOR) {
+		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxToken.TokenKind.OPERATOR) {
 			return new OperatorEditor(editor, (DrawToken)dr);
 		}
 		return null;
@@ -610,38 +610,38 @@ final class FunctionExecuter implements Runnable {
 				return null;
 			if (dr.drnode != context.node)
 				return null;
-			SyntaxFunctions sfs = dr.syntax.funcs;
-			if (sfs == null || sfs.funcs.length == 0)
+			Draw_SyntaxFunction[] sfs_funcs = dr.syntax.funcs;
+			if (sfs_funcs == null || sfs_funcs.length == 0)
 				return null;
 			FunctionExecuter fe = new FunctionExecuter(editor);
-			foreach (SyntaxFunction sf; sfs.funcs; sf.act != null) {
+			foreach (Draw_SyntaxFunction sf; sfs_funcs; sf.act != null) {
 				try {
 					dr = editor.getFunctionTarget(sf);
 					if (dr == null)
 						continue;
 					if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
-						if (dr.syntax instanceof SyntaxList) {
-							SyntaxList slst = (SyntaxList)dr.syntax;
+						if (dr.syntax instanceof Draw_SyntaxList) {
+							Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
 							if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
 								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, slst));
 						}
 					}
 					else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
-						if (dr.syntax instanceof SyntaxAttr) {
-							SyntaxAttr satr = (SyntaxAttr)dr.syntax;
+						if (dr.syntax instanceof Draw_SyntaxAttr) {
+							Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
 							if (dr.drnode.getVal(satr.name) == null)
 								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
 						}
 					}
 					else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
-						if (dr.syntax instanceof SyntaxToken) {
+						if (dr.syntax instanceof Draw_SyntaxToken) {
 							if (dr.drnode instanceof ENode)
 								fe.actions.append(fe.new EditElemAction(sf.title, dr));
 						}
 					}
 					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
-						if (dr.syntax instanceof SyntaxAttr) {
-							SyntaxAttr satr = (SyntaxAttr)dr.syntax;
+						if (dr.syntax instanceof Draw_SyntaxAttr) {
+							Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
 							fe.actions.append(fe.new EditElemAction(sf.title, dr));
 						}
 					}
@@ -672,10 +672,10 @@ final class FunctionExecuter implements Runnable {
 	}
 	
 	class NewElemAction extends TextAction {
-		private String		text;
-		private ANode		node;
-		private SyntaxAttr	stx;
-		NewElemAction(String text, ANode node, SyntaxAttr stx) {
+		private String				text;
+		private ANode				node;
+		private Draw_SyntaxAttr		stx;
+		NewElemAction(String text, ANode node, Draw_SyntaxAttr stx) {
 			super(text);
 			this.text = text;
 			this.node = node;
@@ -796,7 +796,7 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		return jp;
 	}
 
-	public void makeMenu(String title, ANode n, SyntaxAttr satt) {
+	public void makeMenu(String title, ANode n, Draw_SyntaxAttr satt) {
 		Menu m = new Menu(title);
 		addItems(m, satt.expected_types, n, satt.name);
 		this.menu = makePopupMenu(m);
@@ -864,25 +864,25 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 	NewElemHere(Editor editor) { super(editor); }
 	public void run() {
 		Drawable dr = editor.cur_elem.dr;
-		if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent() instanceof SyntaxAttr) {
-			ANode n = dr.drnode;
-			SyntaxAttr satt = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent();
-			makeMenu("Set new item", n, satt);
-			return;
-		}
+//		if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent() instanceof Draw_SyntaxAttr) {
+//			ANode n = dr.drnode;
+//			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)((Draw_SyntaxPlaceHolder)dr.syntax).parent();
+//			makeMenu("Set new item", n, satt);
+//			return;
+//		}
 		if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
 			ANode n = dr.drnode;
 			while (n == null) {
 				dr = (Drawable)dr.parent();
 				n = dr.drnode;
 			}
-			SyntaxAttr satt = (SyntaxAttr)dr.syntax;
+			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
 			makeMenu("Set new item", n, satt);
 			return;
 		}
 		ActionPoint ap = editor.getActionPoint(false);
 		if (ap != null && ap.length >= 0) {
-			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
 			this.idx = ap.index;
 			makeMenu("Insert new item", ap.node, slst);
 			return;
@@ -896,20 +896,20 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 				return null;
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
-			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent() instanceof SyntaxAttr) {
-				ANode n = dr.drnode;
-				SyntaxAttr satt = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent();
-				if (satt.expected_types.length == 0)
-					return null;
-				return new NewElemHere(editor);
-			}
+//			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent() instanceof Draw_SyntaxAttr) {
+//				ANode n = dr.drnode;
+//				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)((Draw_SyntaxPlaceHolder)dr.syntax).parent();
+//				if (satt.expected_types.length == 0)
+//					return null;
+//				return new NewElemHere(editor);
+//			}
 			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
 				ANode n = dr.drnode;
 				while (n == null) {
 					dr = (Drawable)dr.parent();
 					n = dr.drnode;
 				}
-				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
+				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
 				if (satt.expected_types.length == 0)
 					return null;
 				return new NewElemHere(editor);
@@ -917,7 +917,7 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 			ActionPoint ap = editor.getActionPoint(false);
 			if (ap == null || ap.length < 0)
 				return null;
-			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
 			if (slst.expected_types.length == 0)
 				return null;
 			return new NewElemHere(editor);
@@ -930,7 +930,7 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 	public void run() {
 		ActionPoint ap = editor.getActionPoint(true);
 		if (ap != null && ap.length >= 0) {
-			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
 			this.idx = ap.index;
 			makeMenu("Append new item", ap.node, slst);
 			return;
@@ -946,7 +946,7 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 			ActionPoint ap = editor.getActionPoint(true);
 			if (ap == null || ap.length < 0)
 				return null;
-			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
 			if (slst.expected_types.length == 0)
 				return null;
 			return new NewElemNext(editor);
@@ -1008,14 +1008,14 @@ final class PasteElemHere implements Runnable {
 					return new PasteElemHere(node, editor, pattr);
 			}
 			// try paste as a node into placeholder
-			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent() instanceof SyntaxAttr) {
-				SyntaxAttr sa = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent();
-				AttrPtr pattr = dr.drnode.getAttrPtr(sa.name);
-				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
-					return new PasteElemHere(node, editor, pattr);
-				else if (pattr.slot.is_space && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
-					return new PasteElemHere(node, editor, pattr);
-			}
+//			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent() instanceof Draw_SyntaxAttr) {
+//				Draw_SyntaxAttr sa = (Draw_SyntaxAttr)((Draw_SyntaxPlaceHolder)dr.syntax).parent();
+//				AttrPtr pattr = dr.drnode.getAttrPtr(sa.name);
+//				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
+//					return new PasteElemHere(node, editor, pattr);
+//				else if (pattr.slot.is_space && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
+//					return new PasteElemHere(node, editor, pattr);
+//			}
 			// try paste as an element of list
 			ActionPoint ap = editor.getActionPoint(false);
 			if (ap != null && ap.length >= 0 && ap.slot.typeinfo.$instanceof(node)) {
@@ -1083,11 +1083,11 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt.syntax instanceof SyntaxAttr)
+			if !(dt.syntax instanceof Draw_SyntaxAttr)
 				return null;
 			if (dt.drnode != context.node)
 				return null;
-			AttrPtr pattr = dt.drnode.getAttrPtr(((SyntaxAttr)dt.syntax).name);
+			AttrPtr pattr = dt.drnode.getAttrPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new TextEditor(editor, dt, pattr);
 		}
 	}
@@ -1324,11 +1324,11 @@ final class IntEditor extends TextEditor {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt.syntax instanceof SyntaxAttr)
+			if !(dt.syntax instanceof Draw_SyntaxAttr)
 				return null;
 			if (dt.drnode != context.node)
 				return null;
-			AttrPtr pattr = dt.drnode.getAttrPtr(((SyntaxAttr)dt.syntax).name);
+			AttrPtr pattr = dt.drnode.getAttrPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new IntEditor(editor, dt, pattr);
 		}
 	}
@@ -1374,11 +1374,11 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt.syntax instanceof SyntaxAttr)
+			if !(dt.syntax instanceof Draw_SyntaxAttr)
 				return null;
 			if (dt.drnode != context.node)
 				return null;
-			AttrPtr pattr = dt.drnode.getAttrPtr(((SyntaxAttr)dt.syntax).name);
+			AttrPtr pattr = dt.drnode.getAttrPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new EnumEditor(editor, dt, pattr);
 		}
 	}
@@ -1583,7 +1583,7 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 			DrawTerm dt = context.dt;
 			if (dt.drnode != context.node)
 				return null;
-			if !(dt instanceof DrawToken && dt.drnode instanceof ENode && ((SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.OPERATOR)
+			if !(dt instanceof DrawToken && dt.drnode instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.OPERATOR)
 				return null;
 			return new OperatorEditor(editor, dt);
 		}

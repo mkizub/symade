@@ -504,7 +504,7 @@ public final class FileActions implements Runnable {
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
 				ATextSyntax stx = (ATextSyntax)Env.loadDNodeFromXML(dff.syntax_qname);
-				Env.dumpTextFile(fu, jfc.getSelectedFile(), stx.ncopy());
+				Env.dumpTextFile(fu, jfc.getSelectedFile(), stx.getCompiled());
 				fu.current_syntax = stx.qname();
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
@@ -518,7 +518,7 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			try {
-				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api"));
+				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled());
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml API exporting: "+e);
 			}
@@ -555,7 +555,7 @@ public final class FileActions implements Runnable {
 				f = jfc.getSelectedFile();
 			}
 			try {
-				Env.dumpTextFile(fu, f, stx.ncopy());
+				Env.dumpTextFile(fu, f, stx.getCompiled());
 				fu.current_syntax = stx.qname();
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
@@ -877,11 +877,11 @@ public final class RenderActions implements Runnable {
 				ATextSyntax stx = (ATextSyntax)clazz.newInstance();
 				if (stx instanceof XmlDumpSyntax)
 					stx.dump = qname;
-				this.uiv.setSyntax(stx);
+				this.uiv.setSyntax(stx.getCompiled());
 				return;
 			}
 			ATextSyntax stx = Env.loadDNodeFromXML(qname);
-			this.uiv.setSyntax(stx);
+			this.uiv.setSyntax(stx.getCompiled());
 		}
 	}
 	
@@ -913,7 +913,7 @@ public final class RenderActions implements Runnable {
 			} finally { tr.close(); }
 
 			foreach (ATextSyntax stx; fu.members; stx.sname == name) {
-				this.uiv.setSyntax(stx);
+				this.uiv.setSyntax(stx.getCompiled());
 				return;
 			}
 		}
@@ -1014,7 +1014,7 @@ public final class ExprEditActions implements Runnable, KeyListener {
 				if (dt.isUnvisible())
 					continue;
 				if (dt instanceof DrawToken) {
-					if (((SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.UNKNOWN)
+					if (((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.UNKNOWN)
 						expr.nodes += new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false);
 					else
 						expr.nodes += new EToken(0,dt.getText(),ETokenKind.OPERATOR,true);

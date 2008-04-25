@@ -37,7 +37,7 @@ public final class DrawContext implements Cloneable {
 		int cur_indent;
 		int next_indent;
 		
-		Indents makeIndents(AParagraphLayout pl, int cur_x, boolean is_text) {
+		Indents makeIndents(Draw_Paragraph pl, int cur_x, boolean is_text) {
 			if (pl != null) {
 				Indents i = new Indents();
 				int pl_indent = is_text ? pl.indent_text_size : pl.indent_pixel_size;
@@ -366,46 +366,46 @@ public final class DrawLayoutBlock extends ANode {
 	@nodeAttr
 	public DrawLayoutBlock[]	blocks;
 	@nodeData
-	public AParagraphLayout		par;
+	public Draw_Paragraph		par;
 	@nodeData
 	public Drawable				dr;
 	public int					max_layout;		// for block (alternative) layouts
 	public boolean				is_flow;		// for flow blocks
 	
 	public DrawLayoutBlock pushDrawable(Drawable dr) {
-		SymbolRef<AParagraphLayout> pl = null;
+		Draw_Paragraph pl = null;
 		if (dr.syntax != null) {
-			if (dr.syntax instanceof SyntaxList) {
+			if (dr.syntax instanceof Draw_SyntaxList) {
 				if (dr instanceof DrawWrapList)
 					pl = dr.syntax.par;
 				else
-					pl = ((SyntaxList)dr.syntax).elpar;
+					pl = ((Draw_SyntaxList)dr.syntax).elpar;
 			} else {
 				pl = dr.syntax.par;
 			}
-			if (pl != null && pl.dnode != null)
-				this = pushParagraph(dr, pl.dnode);
+			if (pl != null)
+				this = pushParagraph(dr, pl);
 		}
 		return this;
 	}
 	public DrawLayoutBlock popDrawable(Drawable dr) {
-		SymbolRef<AParagraphLayout> pl = null;
+		Draw_Paragraph pl = null;
 		if (dr.syntax != null) {
-			if (dr.syntax instanceof SyntaxList) {
+			if (dr.syntax instanceof Draw_SyntaxList) {
 				if (dr instanceof DrawWrapList)
 					pl = dr.syntax.par;
 				else
-					pl = ((SyntaxList)dr.syntax).elpar;
+					pl = ((Draw_SyntaxList)dr.syntax).elpar;
 			} else {
 				pl = dr.syntax.par;
 			}
-			if (pl != null && pl.dnode != null)
-				this = popParagraph(dr, pl.dnode);
+			if (pl != null)
+				this = popParagraph(dr, pl);
 		}
 		return this;
 	}
 	
-	private DrawLayoutBlock pushParagraph(Drawable dp, AParagraphLayout pl) {
+	private DrawLayoutBlock pushParagraph(Drawable dp, Draw_Paragraph pl) {
 		if (pl.enabled(dp)) {
 			DrawLayoutBlock dlb = new DrawLayoutBlock();
 			this.blocks += dlb;
@@ -416,7 +416,7 @@ public final class DrawLayoutBlock extends ANode {
 		}
 		return this;
 	}
-	private DrawLayoutBlock popParagraph(Drawable dp, AParagraphLayout pl) {
+	private DrawLayoutBlock popParagraph(Drawable dp, Draw_Paragraph pl) {
 		if (this.dr == dp) {
 			assert (pl.enabled(dp));
 			if (!this.is_flow) {
@@ -435,8 +435,8 @@ public final class DrawLayoutBlock extends ANode {
 		DrawLayoutBlock dlb = new DrawLayoutBlock();
 		this.blocks += dlb;
 		dlb.dr = leaf;
-		if (leaf.syntax != null && leaf.syntax.par != null && leaf.syntax.par.dnode != null)
-			dlb.par = leaf.syntax.par.dnode;
+		if (leaf.syntax != null && leaf.syntax.par != null)
+			dlb.par = leaf.syntax.par;
 		dlb.max_layout = leaf.syntax.lout.count;
 	}
 	

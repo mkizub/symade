@@ -19,19 +19,19 @@ public abstract class Drawable extends ANode {
 	public static final Drawable[] emptyArray = new Drawable[0];
 
 	// the node we draw
-	private final ANode			_node;
+	private final ANode					_node;
 	// syntax kind & draw layout
-	public final SyntaxElem		syntax;
+	public final Draw_SyntaxElem		syntax;
 	// syntax, which has produced this drawable, to get
 	// sub-nodes in the same syntax
-	public final ATextSyntax	text_syntax;
+	public final Draw_ATextSyntax		text_syntax;
 	
 	@getter
 	public final ANode get$drnode() {
 		return _node;
 	}
 	
-	public Drawable(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
+	public Drawable(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		this._node = node;
 		this.syntax = syntax;
 		this.text_syntax = text_syntax;
@@ -46,7 +46,7 @@ public abstract class Drawable extends ANode {
 	public abstract DrawTerm getLastLeaf();
 	public abstract int getMaxLayout();
 
-	public final void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+	public final void preFormat(DrawContext cont, Draw_SyntaxElem expected_stx, ANode expected_node) {
 		if (!expected_stx.check(cont, this, expected_node)) {
 			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node, text_syntax);
 			if (!this.isAttached())

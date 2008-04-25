@@ -847,7 +847,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		try {
 			String out_file = td.qname().replace('\u001f',File.separatorChar)+".xml";
 			File f = new File(output_dir,out_file);
-			Env.dumpTextFile(td, f, stx);
+			Env.dumpTextFile(td, f, stx.getCompiled());
 		} catch (IOException e) {
 			System.out.println("Create/write error while API dump: "+e);
 		}
@@ -1063,7 +1063,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 				stx = new XmlDumpSyntax("full");
 			else
 				stx = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
-			Env.dumpTextFile(fu, f, stx);
+			Env.dumpTextFile(fu, f, stx.getCompiled());
 		} catch (IOException e) {
 			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
 		}

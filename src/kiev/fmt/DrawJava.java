@@ -16,12 +16,12 @@ import syntax kiev.Syntax;
 @ThisIsANode(copyable=false)
 public class DrawJavaAccessExpr extends DrawNonTerm {
 	
-	public DrawJavaAccessExpr(ANode node, SyntaxJavaAccessExpr syntax, ATextSyntax text_syntax) {
+	public DrawJavaAccessExpr(ANode node, Draw_SyntaxJavaAccessExpr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
-		SyntaxJavaAccessExpr st = (SyntaxJavaAccessExpr)this.syntax;
+		Draw_SyntaxJavaAccessExpr st = (Draw_SyntaxJavaAccessExpr)this.syntax;
 		ANode node = this.drnode;
 		if (args.length == 0) {
 			args.append(st.obj_elem.makeDrawable(cont.fmt, node, text_syntax));
@@ -62,7 +62,7 @@ public class DrawJavaAccessExpr extends DrawNonTerm {
 @ThisIsANode(copyable=false)
 public class DrawJavaAccess extends DrawTerm {
 
-	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax, ATextSyntax text_syntax) {
+	public DrawJavaAccess(ANode node, Draw_SyntaxJavaAccess syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
@@ -118,7 +118,7 @@ public class DrawJavaAccess extends DrawTerm {
 @ThisIsANode(copyable=false)
 public class DrawJavaPackedField extends DrawTerm {
 
-	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax, ATextSyntax text_syntax) {
+	public DrawJavaPackedField(ANode node, Draw_SyntaxJavaPackedField syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
@@ -135,7 +135,7 @@ public class DrawJavaPackedField extends DrawTerm {
 @ThisIsANode(copyable=false)
 public class DrawJavaConstructorName extends DrawTerm {
 
-	public DrawJavaConstructorName(ANode node, SyntaxJavaConstructorName syntax, ATextSyntax text_syntax) {
+	public DrawJavaConstructorName(ANode node, Draw_SyntaxJavaConstructorName syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
@@ -161,14 +161,14 @@ public class DrawJavaComment extends DrawNonTerm {
 
 	public String old_text;
 	
-	public DrawJavaComment(ANode node, SyntaxJavaComment syntax, ATextSyntax text_syntax) {
+	public DrawJavaComment(ANode node, Draw_SyntaxJavaComment syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxJavaComment se = (SyntaxJavaComment)this.syntax;
-		SyntaxJavaCommentTemplate st = (SyntaxJavaCommentTemplate)se.template.dnode;
+		Draw_SyntaxJavaComment se = (Draw_SyntaxJavaComment)this.syntax;
+		Draw_SyntaxJavaCommentTemplate st = (Draw_SyntaxJavaCommentTemplate)se.template;
 		ANode node = this.drnode;
 		Comment c = (Comment)node;
 		String text = c.text;
@@ -213,7 +213,7 @@ public class DrawJavaComment extends DrawNonTerm {
 		}
 		calcMaxLayout();
 	}
-	private void append(DrawContext cont, SyntaxElem se, ANode node) {
+	private void append(DrawContext cont, Draw_SyntaxElem se, ANode node) {
 		Drawable dr = se.makeDrawable(cont.fmt, node, text_syntax);
 		args.append(dr);
 		dr.preFormat(cont, se, node);

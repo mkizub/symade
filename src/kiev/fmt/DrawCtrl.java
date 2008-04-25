@@ -17,7 +17,7 @@ public class DrawCtrl extends Drawable {
 	@nodeAttr
 	public Drawable arg;
 	
-	public DrawCtrl(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
+	public DrawCtrl(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
@@ -67,7 +67,7 @@ public class DrawCtrl extends Drawable {
 @ThisIsANode(copyable=false)
 public class DrawSpace extends DrawCtrl {
 
-	public DrawSpace(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
+	public DrawSpace(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
@@ -79,17 +79,17 @@ public class DrawSpace extends DrawCtrl {
 @ThisIsANode(copyable=false)
 public class DrawSubAttr extends DrawCtrl {
 
-	public DrawSubAttr(ANode node, SyntaxSubAttr syntax, ATextSyntax text_syntax) {
+	public DrawSubAttr(ANode node, Draw_SyntaxSubAttr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxSubAttr sn = (SyntaxSubAttr)syntax;
+		Draw_SyntaxSubAttr sn = (Draw_SyntaxSubAttr)syntax;
 		ANode node = this.drnode;
-		ATextSyntax text_syntax = this.text_syntax;
-		if (sn.in_syntax.dnode != null)
-			text_syntax = sn.in_syntax.dnode;
+		Draw_ATextSyntax text_syntax = this.text_syntax;
+		if (sn.in_syntax != null)
+			text_syntax = sn.in_syntax;
 		Object obj;
 		try {
 			obj = node.getVal(sn.name);
@@ -118,17 +118,17 @@ public class DrawSubAttr extends DrawCtrl {
 @ThisIsANode(copyable=false)
 public class DrawNode extends DrawCtrl {
 
-	public DrawNode(ANode node, SyntaxNode syntax, ATextSyntax text_syntax) {
+	public DrawNode(ANode node, Draw_SyntaxNode syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxNode sn = (SyntaxNode)syntax;
+		Draw_SyntaxNode sn = (Draw_SyntaxNode)syntax;
 		ANode node = this.drnode;
-		ATextSyntax text_syntax = this.text_syntax;
-		if (sn.in_syntax.dnode != null)
-			text_syntax = sn.in_syntax.dnode;
+		Draw_ATextSyntax text_syntax = this.text_syntax;
+		if (sn.in_syntax != null)
+			text_syntax = sn.in_syntax;
 		if (arg == null) {
 			if (node != null) {
 				arg = cont.fmt.getDrawable(node, null, text_syntax);
@@ -138,7 +138,7 @@ public class DrawNode extends DrawCtrl {
 			else if (sn.empty != null) {
 				arg = sn.empty.makeDrawable(cont.fmt, null, text_syntax);
 				if (arg != null)
-					arg.preFormat(cont, sn.empty, text_syntax);
+					arg.preFormat(cont, sn.empty, null);
 			}
 		}
 		if (arg != null) {
@@ -155,13 +155,13 @@ public class DrawOptional extends DrawCtrl {
 
 	private	boolean drawed_as_true;
 	
-	public DrawOptional(ANode node, SyntaxOptional syntax, ATextSyntax text_syntax) {
+	public DrawOptional(ANode node, Draw_SyntaxOptional syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxOptional sc = (SyntaxOptional)syntax;
+		Draw_SyntaxOptional sc = (Draw_SyntaxOptional)syntax;
 		ANode node = this.drnode;
 		if (sc.calculator == null || sc.calculator.calc(node)) {
 			if (!drawed_as_true || arg == null) {
@@ -197,7 +197,7 @@ public class DrawEnumChoice extends DrawCtrl {
 	private Object drawed_en;
 	private AttrSlot attr;
 
-	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax, ATextSyntax text_syntax) {
+	public DrawEnumChoice(ANode node, Draw_SyntaxEnumChoice syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
 			attr = a;
@@ -207,7 +207,7 @@ public class DrawEnumChoice extends DrawCtrl {
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxEnumChoice se = (SyntaxEnumChoice)syntax;
+		Draw_SyntaxEnumChoice se = (Draw_SyntaxEnumChoice)syntax;
 		ANode node = this.drnode;
 		Object en = attr.get(node);
 		int ord = -1;
@@ -236,14 +236,14 @@ public final class DrawFolded extends DrawCtrl {
 	public	boolean draw_folded;
 	private	boolean drawed_as_folded;
 	
-	public DrawFolded(ANode node, SyntaxFolder syntax, ATextSyntax text_syntax) {
+	public DrawFolded(ANode node, Draw_SyntaxFolder syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
-		SyntaxFolder sc = (SyntaxFolder)syntax;
+		Draw_SyntaxFolder sc = (Draw_SyntaxFolder)syntax;
 		ANode node = this.drnode;
 		if (draw_folded) {
 			if (!drawed_as_folded || arg == null) {

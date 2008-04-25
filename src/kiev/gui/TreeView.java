@@ -48,7 +48,7 @@ public class TreeView extends UIView implements KeyListener {
 		
 	protected final ANodeTree the_tree;
 	
-	public TreeView(Window window, ATextSyntax syntax, ANodeTree the_tree) {
+	public TreeView(Window window, Draw_ATextSyntax syntax, ANodeTree the_tree) {
 		super(window, syntax);
 		this.the_tree = the_tree;
 		this.formatter = new GfxFormatter((Graphics2D)the_tree.getGraphics());

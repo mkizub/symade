@@ -103,7 +103,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 //		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_R),				new RenderActions.Redraw());
 	}
 
-	public InfoView(Window window, ATextSyntax syntax, Canvas view_canvas) {
+	public InfoView(Window window, Draw_ATextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax);
 		this.bg_formatter = new BgFormatter();
 		this.view_canvas = view_canvas;
