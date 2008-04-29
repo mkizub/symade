@@ -135,10 +135,15 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	public abstract Draw_ATextSyntax getCompiled();
 	
 	public void fillCompiled(Draw_ATextSyntax ts) {
+		if (parent_syntax.dnode != null)
+			ts.parent_syntax = parent_syntax.dnode.getCompiled();
+		else if (parent() instanceof ATextSyntax)
+			ts.parent_syntax = ((ATextSyntax)parent()).getCompiled();
 		Vector<Draw_ATextSyntax> sub_syntax = new Vector<Draw_ATextSyntax>();
 		foreach(ATextSyntax stx; this.members)
 			sub_syntax.append(stx.getCompiled());
 		ts.sub_syntax = sub_syntax.toArray();
+		Vector<Draw_SyntaxElemDecl> syntax_elements = new Vector<Draw_SyntaxElemDecl>();
 		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
 			if !(sed.rnode.dnode instanceof Struct)
 				continue;
@@ -147,8 +152,9 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			Struct s = (Struct)sed.rnode.dnode;
 			if !(s.isCompilerNode())
 				continue;
-			ts.allSyntax.put(s.qname().replace('\u001f','.'), sed.getCompiled());
+			syntax_elements.append(sed.getCompiled());
 		}
+		ts.declared_syntax_elements = syntax_elements.toArray();
 	}
 }
 
@@ -837,7 +843,6 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 		super.fillCompiled(dr_elem);
 		dr_elem.text = this.text;
 	}
-
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -850,6 +855,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	@nodeAttr public SymbolRef<ATextSyntax>		in_syntax;
 	@nodeAttr public SymbolRef[]					expected_types;
 	@nodeAttr public SyntaxElem						empty;
+	@nodeData public AttrSlot						attr_slot;
 
 	@setter
 	public void set$name(String value) {
@@ -859,13 +865,11 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	public SyntaxAttr() {
 		this.in_syntax = new SymbolRef<ATextSyntax>();
 	}
-	public SyntaxAttr(String name) {
-		this.name = name;
-		this.in_syntax = new SymbolRef<ATextSyntax>();
-	}
-	public SyntaxAttr(String name, ATextSyntax stx) {
-		this.name = name;
-		this.in_syntax = new SymbolRef<ATextSyntax>(stx);
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "attr_slot")
+			return false;
+		return super.includeInDump(dump, attr, val);
 	}
 
 	public void preResolveOut() {
@@ -917,11 +921,45 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		Draw_SyntaxAttr dr_elem = (Draw_SyntaxAttr)_dr_elem;
 		super.fillCompiled(dr_elem);
 		dr_elem.name = this.name;
+		dr_elem.attr_slot = this.attr_slot;
 		if (this.in_syntax.dnode != null)
 			dr_elem.in_syntax = this.in_syntax.dnode.getCompiled();
-		dr_elem.expected_types = this.expected_types;
 		if (this.empty != null)
 			dr_elem.empty = this.empty.getCompiled();
+		if (this.expected_types != null && this.expected_types.length > 0) {
+			dr_elem.expected_types = new ExpectedTypeInfo[this.expected_types.length];
+			for (int i=0; i < dr_elem.expected_types.length; i++)
+				dr_elem.expected_types[i] = makeExpectedTypeInfo(this.expected_types[i]);
+		}
+	}
+	
+	private ExpectedTypeInfo makeExpectedTypeInfo(SymbolRef sr) {
+		if (sr.dnode instanceof Struct) {
+			Struct s = (Struct)sr.dnode;
+			ExpectedTypeInfo eti = new ExpectedTypeInfo();
+			eti.title = s.sname;
+			eti.typeinfo = TypeInfo.newTypeInfo(Class.forName(s.qname().replace('\u001f','.')),null);
+			return eti;
+		}
+		else if (sr.dnode instanceof SyntaxExpectedTemplate) {
+			SyntaxExpectedTemplate exp = (SyntaxExpectedTemplate)sr.dnode;
+			ExpectedTypeInfo eti = new ExpectedTypeInfo();
+			eti.title = exp.title;
+			eti.subtypes = new ExpectedTypeInfo[exp.expected_types.length];
+			for (int i=0; i < eti.subtypes.length; i++)
+				eti.subtypes[i] = makeExpectedTypeInfo(exp.expected_types[i]);
+			return eti;
+		}
+		return new ExpectedTypeInfo();
+	}
+
+	public Struct getExpectedType() {
+		ANode p = parent();
+		while (p != null && !(p instanceof SyntaxAttr || p instanceof ASyntaxElemDecl))
+			p = p.parent();
+		if (p instanceof SyntaxElemDecl)
+			return ((SyntaxElemDecl)p).rnode.dnode;
+		return null;
 	}
 
 }
@@ -931,12 +969,6 @@ public final class SyntaxSubAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxSubAttr;
 
 	public SyntaxSubAttr() {}
-	public SyntaxSubAttr(String name) {
-		super(name);
-	}
-	public SyntaxSubAttr(String name, ATextSyntax stx) {
-		super(name,stx);
-	}
 
 	public Draw_SyntaxElem getCompiled() {
 		Draw_SyntaxSubAttr dr_elem = new Draw_SyntaxSubAttr();
@@ -944,6 +976,26 @@ public final class SyntaxSubAttr extends SyntaxAttr {
 		return dr_elem;
 	}
 
+	public void mainResolveOut() {
+		super.mainResolveOut();
+		Struct s = getExpectedType();
+		if (s != null) {
+			Class cls = Class.forName(s.qname().replace('\u001f','.'));
+			java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
+			fld.setAccessible(true);
+			AttrSlot[] slots = (AttrSlot[])fld.get(null);
+			AttrSlot slot = null;
+			foreach (AttrSlot s; slots; s.name == name) {
+				slot = s;
+				break;
+			}
+			if (slot != null)
+				attr_slot = slot;
+			else
+				Kiev.reportWarning(this,"Cannot find attribute '"+name+"' in "+cls);
+		}
+	}
+	
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -960,11 +1012,6 @@ public class SyntaxList extends SyntaxAttr {
 	@nodeAttr public boolean						folded_by_default;
 
 	public SyntaxList() {}
-	public SyntaxList(String name) {
-		super(name);
-		this.element = new SyntaxNode();
-		this.folded = new SyntaxToken("{?"+name+"?}");
-	}
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -1014,10 +1061,6 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	public SyntaxIdentAttr() {
 		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
 	}
-	public SyntaxIdentAttr(String name) {
-		super(name);
-		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
-	}
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -1061,9 +1104,6 @@ public class SyntaxCharAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxCharAttr;
 
 	public SyntaxCharAttr() {}
-	public SyntaxCharAttr(String name) {
-		super(name);
-	}
 
 	public Draw_SyntaxElem getCompiled() {
 		Draw_SyntaxCharAttr dr_elem = new Draw_SyntaxCharAttr();
@@ -1077,9 +1117,6 @@ public class SyntaxStrAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxStrAttr;
 
 	public SyntaxStrAttr() {}
-	public SyntaxStrAttr(String name) {
-		super(name);
-	}
 
 	public Draw_SyntaxElem getCompiled() {
 		Draw_SyntaxStrAttr dr_elem = new Draw_SyntaxStrAttr();
@@ -1121,11 +1158,9 @@ public class SyntaxNode extends SyntaxAttr {
 	@virtual typedef This  = SyntaxNode;
 
 
-	public SyntaxNode() {}
-	public SyntaxNode(ATextSyntax stx) {
-		super("");
-		this.in_syntax.name = stx.sname;
-		this.in_syntax.symbol = stx;
+	public SyntaxNode() {
+		this.name = "";
+		this.attr_slot = ANode.nodeattr$this;
 	}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1424,9 +1459,6 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 	@nodeAttr public SyntaxElem[] elements;
 
 	public SyntaxEnumChoice() {}
-	public SyntaxEnumChoice(String name) {
-		super(name);
-	}
 
 	public Draw_SyntaxElem getCompiled() {
 		Draw_SyntaxEnumChoice dr_elem = new Draw_SyntaxEnumChoice();

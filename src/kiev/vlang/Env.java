@@ -462,6 +462,27 @@ public class Env extends KievPackage {
 			classHashOfFails.put(qname);
 		return dn;
 	}
+	
+	public static Draw_ATextSyntax loadLanguageSyntax(String qname) {
+		//DNode ts = Env.resolveGlobalDNode(qname);
+		//if (ts instanceof ATextSyntax)
+		//	return ts.getCompiled().init();
+		
+		Draw_ATextSyntax dts = null;
+		InputStream inp = null;
+		try {
+			inp = Env.class.getClassLoader().getSystemResourceAsStream(qname.replace('\u001f','/')+".ser");
+			ObjectInput oi = new ObjectInputStream(inp);
+			dts = (Draw_ATextSyntax)oi.readObject();
+			dts.init();
+		} catch (IOException e) {
+			System.out.println("Read error while syntax deserialization: "+e);
+		} finally {
+			if (inp != null)
+				inp.close();
+		}
+		return dts;
+	}
 
 	public static TypeDecl loadTypeDecl(TypeDecl cl) {
 		if (!cl.isTypeDeclNotLoaded())

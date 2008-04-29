@@ -829,6 +829,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 				dumpSrc((TypeDecl)n);
 			else if (n instanceof NameSpace)
 				dumpSrc((NameSpace)n);
+			else if (n instanceof ATextSyntax)
+				dumpSrc((ATextSyntax)n);
 		}
 	}
 	public void dumpSrc(NameSpace ns) {
@@ -837,6 +839,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 				dumpSrc((TypeDecl)n);
 			else if (n instanceof NameSpace)
 				dumpSrc((NameSpace)n);
+			else if (n instanceof ATextSyntax)
+				dumpSrc((ATextSyntax)n);
 		}
 	}
 	public void dumpSrc(TypeDecl td) {
@@ -847,9 +851,27 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		try {
 			String out_file = td.qname().replace('\u001f',File.separatorChar)+".xml";
 			File f = new File(output_dir,out_file);
-			Env.dumpTextFile(td, f, stx.getCompiled());
+			Env.dumpTextFile(td, f, stx.getCompiled().init());
 		} catch (IOException e) {
 			System.out.println("Create/write error while API dump: "+e);
+		}
+	}
+	public void dumpSrc(ATextSyntax stx) {
+		String output_dir = Kiev.output_dir;
+		if( output_dir==null ) output_dir = "classes";
+		FileOutputStream fo = null;
+		try {
+			String out_file = stx.qname().replace('\u001f',File.separatorChar)+".ser";
+			File f = new File(output_dir,out_file);
+			FileOutputStream fo = new FileOutputStream(f);
+			ObjectOutput so = new ObjectOutputStream(fo);
+			so.writeObject(stx.getCompiled().init());
+			so.flush();
+		} catch (IOException e) {
+			System.out.println("Create/write error while API dump: "+e);
+		} finally {
+			if (fo != null)
+				fo.close();
 		}
 	}
 }
@@ -1063,7 +1085,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 				stx = new XmlDumpSyntax("full");
 			else
 				stx = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
-			Env.dumpTextFile(fu, f, stx.getCompiled());
+			Env.dumpTextFile(fu, f, stx.getCompiled().init());
 		} catch (IOException e) {
 			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
 		}

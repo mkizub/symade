@@ -232,10 +232,12 @@ public final class DrawPlaceHolder extends DrawTerm {
 public class DrawNodeTerm extends DrawTerm {
 
 	String attr;
+	AttrSlot attr_slot;
 
-	public DrawNodeTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax, String attr) {
+	public DrawNodeTerm(ANode node, Draw_SyntaxAttr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		this.attr = attr.intern();
+		this.attr = syntax.name.intern();
+		this.attr_slot = syntax.attr_slot;
 	}
 
 	String makeText(Formatter fmt) {
@@ -243,14 +245,21 @@ public class DrawNodeTerm extends DrawTerm {
 		if (node instanceof ConstExpr && attr == "value") {
 			return String.valueOf(node);
 		} else {
-			Object o = getAttrPtr().get();
+			Object o = getAttrObject();
 			if (o == null)
 				return null;
 			return String.valueOf(o);
 		}
 	}
 	
+	public final Object getAttrObject() {
+		if (attr_slot != null)
+			return attr_slot.get(drnode);
+		return drnode.getVal(attr);
+	}
 	public final AttrPtr getAttrPtr() {
+		if (attr_slot != null)
+			return new AttrPtr(drnode, attr_slot);
 		return drnode.getAttrPtr(attr);
 	}
 }
@@ -258,15 +267,20 @@ public class DrawNodeTerm extends DrawTerm {
 @ThisIsANode(copyable=false)
 public class DrawIdent extends DrawNodeTerm {
 
-	private boolean escaped;
+	private String prefix = "";
+	private String suffix = "";
 
-	public DrawIdent(ANode node, Draw_SyntaxIdentAttr syntax, Draw_ATextSyntax text_syntax, String attr) {
-		super(node, syntax, text_syntax, attr);
+	public DrawIdent(ANode node, Draw_SyntaxIdentAttr syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
+		//prefix = syntax.getPrefix();
+		//suffix = syntax.getSuffix();
 	}
 
 	String makeText(Formatter fmt) {
 		String text = super.makeText(fmt);
-		escaped = false;
+		// set unescaped
+		prefix = "";
+		suffix = "";
 		if (text == null)
 			return null;
 		//text = text.intern();
@@ -289,26 +303,27 @@ public class DrawIdent extends DrawNodeTerm {
 		} else {
 			if (!fmt.getHintEscapes() || si.isOk(text))
 				return text;
-			escaped = true;
+			prefix = si.getPrefix();
+			suffix = si.getSuffix();
 			return getPrefix()+text+getSuffix();
 		}
 	}
 	
-	public String getPrefix() { if (escaped) return ((Draw_SyntaxIdentAttr)this.syntax).getPrefix(); return ""; }
-	public String getSuffix() { if (escaped) return ((Draw_SyntaxIdentAttr)this.syntax).getSuffix(); return ""; }
+	public String getPrefix() { prefix }
+	public String getSuffix() { suffix }
 }
 
 @ThisIsANode(copyable=false)
 public class DrawCharTerm extends DrawNodeTerm {
 
-	public DrawCharTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax, String attr) {
-		super(node, syntax, text_syntax, attr);
+	public DrawCharTerm(ANode node, Draw_SyntaxCharAttr syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
 	}
 
 	public String getPrefix() { return "'"; }	
 	public String getSuffix() { return "'"; }	
 	String makeText(Formatter fmt) {
-		Object o = getAttrPtr().get();
+		Object o = getAttrObject();
 		if (o instanceof String) {
 			return "'"+o+"'";
 		}
@@ -325,14 +340,14 @@ public class DrawCharTerm extends DrawNodeTerm {
 @ThisIsANode(copyable=false)
 public class DrawStrTerm extends DrawNodeTerm {
 
-	public DrawStrTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax, String attr) {
-		super(node, syntax, text_syntax, attr);
+	public DrawStrTerm(ANode node, Draw_SyntaxStrAttr syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
 	}
 
 	public String getPrefix() { return "\""; }	
 	public String getSuffix() { return "\""; }	
 	String makeText(Formatter fmt) {
-		Object o = getAttrPtr().get();
+		Object o = getAttrObject();
 		if (o == null)
 			return null;
 		String str = String.valueOf(o);
@@ -345,8 +360,8 @@ public class DrawStrTerm extends DrawNodeTerm {
 @ThisIsANode(copyable=false)
 public class DrawXmlStrTerm extends DrawNodeTerm {
 
-	public DrawXmlStrTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax, String attr) {
-		super(node, syntax, text_syntax, attr);
+	public DrawXmlStrTerm(ANode node, Draw_SyntaxXmlStrAttr syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
 	}
 
 	final String escapeString(String str) {
@@ -375,7 +390,7 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 	}
 
 	String makeText(Formatter fmt) {
-		Object o = getAttrPtr().get();
+		Object o = getAttrObject();
 		if (o == null)
 			return "";
 		String str = String.valueOf(o);
@@ -386,12 +401,12 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 @ThisIsANode(copyable=false)
 public class DrawXmlTypeTerm extends DrawXmlStrTerm {
 
-	public DrawXmlTypeTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax, String attr) {
-		super(node, syntax, text_syntax, attr);
+	public DrawXmlTypeTerm(ANode node, Draw_SyntaxXmlTypeAttr syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
 	}
 
 	String makeText(Formatter fmt) {
-		Type t = (Type)getAttrPtr().get();
+		Type t = (Type)getAttrObject();
 		if (t == null)
 			return "";
 		String str = t.makeSignature();

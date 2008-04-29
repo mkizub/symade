@@ -339,7 +339,7 @@ public class Editor extends InfoView implements KeyListener {
 				view_root.walkTree(new TreeWalker() {
 					public boolean pre_exec(ANode n) {
 						if (n instanceof Drawable) {
-							if (n instanceof DrawNodeTerm && n.getAttrPtr().get() == node || n.drnode == node) {
+							if (n instanceof DrawNodeTerm && n.getAttrObject() == node || n.drnode == node) {
 								DrawTerm dr = n.getFirstLeaf();
 								cur_elem.set(dr);
 								cur_x = cur_elem.dr.x;
@@ -750,18 +750,23 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		this.editor = editor;
 	}
 
-	private void addItems(Menu menu, SymbolRef[] expected_types, ANode n, String name) {
-		foreach (SymbolRef sr; expected_types) {
-			if (sr.dnode instanceof Struct) {
-				menu.actions = (NewElemAction[])Arrays.append(menu.actions, new NewElemAction((Struct)sr.dnode, n, name));
-			} else if (sr.dnode instanceof SyntaxExpectedTemplate) {
-				SyntaxExpectedTemplate et = (SyntaxExpectedTemplate)sr.dnode;
-				if (et.title == null || et.title.length() == 0) {
-					addItems(menu, et.expected_types, n, name);
+	private void addItems(Menu menu, ExpectedTypeInfo[] expected_types, ANode n, String name) {
+		if (expected_types == null)
+			return;
+		foreach (ExpectedTypeInfo eti; expected_types) {
+			if (eti.typeinfo != null) {
+				String title = eti.title;
+				if (title == null)
+					title = eti.typeinfo.clazz.getName();
+				menu.actions = (NewElemAction[])Arrays.append(menu.actions, new NewElemAction(title, eti.typeinfo, n, name));
+			}
+			else if (eti.subtypes != null && eti.subtypes.length > 0) {
+				if (eti.title == null || eti.title.length() == 0) {
+					addItems(menu, eti.subtypes, n, name);
 				} else {
-					Menu sub_menu = new Menu(et.title);
+					Menu sub_menu = new Menu(eti.title);
 					menu.menus = (Menu[])Arrays.append(menu.menus, sub_menu);
-					addItems(sub_menu, et.expected_types, n, name);
+					addItems(sub_menu, eti.subtypes, n, name);
 				}
 			}
 		}
@@ -819,12 +824,12 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 
 	class NewElemAction extends TextAction {
-		private Struct	cls;
-		private ANode	node;
-		private String	attr;
-		NewElemAction(Struct cls, ANode node, String attr) {
-			super(cls.sname);
-			this.cls = cls;
+		private TypeInfo	typeinfo;
+		private ANode		node;
+		private String		attr;
+		NewElemAction(String title, TypeInfo typeinfo, ANode node, String attr) {
+			super(title);
+			this.typeinfo = typeinfo;
 			this.node = node;
 			this.attr = attr;
 		}
@@ -833,7 +838,7 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 				editor.view_canvas.remove(menu);
 			foreach (AttrSlot a; node.values(); a.name == attr) {
 				try {
-					ANode obj = (ANode)Class.forName(cls.qname().replace('\u001f','.')).newInstance();
+					ANode obj = (ANode)typeinfo.newInstance();
 					obj.initForEditor();
 					if (a.is_space) {
 						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
@@ -864,13 +869,13 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 	NewElemHere(Editor editor) { super(editor); }
 	public void run() {
 		Drawable dr = editor.cur_elem.dr;
-//		if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent() instanceof Draw_SyntaxAttr) {
-//			ANode n = dr.drnode;
-//			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)((Draw_SyntaxPlaceHolder)dr.syntax).parent();
-//			makeMenu("Set new item", n, satt);
-//			return;
-//		}
-		if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
+		if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
+			ANode n = dr.drnode;
+			Draw_SyntaxAttr satt = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
+			makeMenu("Set new item", n, satt);
+			return;
+		}
+		if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrObject() == null)) {
 			ANode n = dr.drnode;
 			while (n == null) {
 				dr = (Drawable)dr.parent();
@@ -896,21 +901,21 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 				return null;
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
-//			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent() instanceof Draw_SyntaxAttr) {
-//				ANode n = dr.drnode;
-//				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)((Draw_SyntaxPlaceHolder)dr.syntax).parent();
-//				if (satt.expected_types.length == 0)
-//					return null;
-//				return new NewElemHere(editor);
-//			}
-			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
+			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
+				ANode n = dr.drnode;
+				Draw_SyntaxAttr satt = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
+				if (satt.expected_types == null || satt.expected_types.length == 0)
+					return null;
+				return new NewElemHere(editor);
+			}
+			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrObject() == null)) {
 				ANode n = dr.drnode;
 				while (n == null) {
 					dr = (Drawable)dr.parent();
 					n = dr.drnode;
 				}
 				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
-				if (satt.expected_types.length == 0)
+				if (satt.expected_types == null || satt.expected_types.length == 0)
 					return null;
 				return new NewElemHere(editor);
 			}
@@ -918,7 +923,7 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 			if (ap == null || ap.length < 0)
 				return null;
 			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
-			if (slst.expected_types.length == 0)
+			if (slst.expected_types == null || slst.expected_types.length == 0)
 				return null;
 			return new NewElemHere(editor);
 		}
@@ -947,7 +952,7 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 			if (ap == null || ap.length < 0)
 				return null;
 			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
-			if (slst.expected_types.length == 0)
+			if (slst.expected_types == null || slst.expected_types.length == 0)
 				return null;
 			return new NewElemNext(editor);
 		}
@@ -1008,14 +1013,14 @@ final class PasteElemHere implements Runnable {
 					return new PasteElemHere(node, editor, pattr);
 			}
 			// try paste as a node into placeholder
-//			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent() instanceof Draw_SyntaxAttr) {
-//				Draw_SyntaxAttr sa = (Draw_SyntaxAttr)((Draw_SyntaxPlaceHolder)dr.syntax).parent();
-//				AttrPtr pattr = dr.drnode.getAttrPtr(sa.name);
-//				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
-//					return new PasteElemHere(node, editor, pattr);
-//				else if (pattr.slot.is_space && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
-//					return new PasteElemHere(node, editor, pattr);
-//			}
+			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
+				Draw_SyntaxAttr sa = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
+				AttrPtr pattr = dr.drnode.getAttrPtr(sa.name);
+				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
+					return new PasteElemHere(node, editor, pattr);
+				else if (pattr.slot.is_space && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
+					return new PasteElemHere(node, editor, pattr);
+			}
 			// try paste as an element of list
 			ActionPoint ap = editor.getActionPoint(false);
 			if (ap != null && ap.length >= 0 && ap.slot.typeinfo.$instanceof(node)) {

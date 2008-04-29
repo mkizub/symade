@@ -16,38 +16,6 @@ import static kiev.fmt.SpaceKind.*;
 import syntax kiev.Syntax;
 
 @ThisIsANode(lang=SyntaxLang)
-public class SyntaxXmlStrAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxXmlStrAttr;
-
-	public SyntaxXmlStrAttr() {}
-	public SyntaxXmlStrAttr(String name) {
-		super(name);
-	}
-
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxXmlStrAttr dr_elem = new Draw_SyntaxXmlStrAttr();
-		fillCompiled(dr_elem);
-		return dr_elem;
-	}
-}
-
-@ThisIsANode(lang=SyntaxLang)
-public class SyntaxXmlTypeAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxXmlTypeAttr;
-
-	public SyntaxXmlTypeAttr() {}
-	public SyntaxXmlTypeAttr(String name) {
-		super(name);
-	}
-
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxXmlTypeAttr dr_elem = new Draw_SyntaxXmlTypeAttr();
-		fillCompiled(dr_elem);
-		return dr_elem;
-	}
-}
-
-@ThisIsANode(lang=SyntaxLang)
 public class XmlDumpSyntax extends ATextSyntax {
 	@virtual typedef This  = XmlDumpSyntax;
 

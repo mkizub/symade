@@ -212,6 +212,7 @@ CLASS kievfmtDraw_TextSyntax kiev/fmt/Draw_TextSyntax kiev/fmt/Compiled.java
 CLASS kievfmtDraw_TreeSyntax kiev/fmt/Draw_TreeSyntax kiev/fmt/Compiled.java
 CLASS kievfmtDraw_XmlDumpSyntax kiev/fmt/Draw_XmlDumpSyntax kiev/fmt/Compiled.java
 CLASS kievfmtDrawable kiev/fmt/Drawable kiev/fmt/Drawable.java
+CLASS kievfmtExpectedTypeInfo kiev/fmt/ExpectedTypeInfo kiev/fmt/Compiled.java
 CLASS kievfmtGfxFormatter kiev/fmt/GfxFormatter kiev/fmt/Formatter.java
 CLASS kievfmtJavaComment kiev/fmt/JavaComment kiev/fmt/DrawJava.java
 CLASS kievfmtKievTextSyntax kiev/fmt/KievTextSyntax kiev/fmt/JavaSyntax.java
@@ -254,8 +255,6 @@ CLASS kievfmtSyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxSubAttr kiev/fmt/SyntaxSubAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxSwitch kiev/fmt/SyntaxSwitch kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxToken kiev/fmt/SyntaxToken kiev/fmt/SyntaxLayout.java
-CLASS kievfmtSyntaxXmlStrAttr kiev/fmt/SyntaxXmlStrAttr kiev/fmt/XmlDumpSyntax.java
-CLASS kievfmtSyntaxXmlTypeAttr kiev/fmt/SyntaxXmlTypeAttr kiev/fmt/XmlDumpSyntax.java
 CLASS kievfmtTextFormatter kiev/fmt/TextFormatter kiev/fmt/Formatter.java
 CLASS kievfmtTextPrinter kiev/fmt/TextPrinter kiev/fmt/DrawDevice.java
 CLASS kievfmtTextSyntax kiev/fmt/TextSyntax kiev/fmt/SyntaxLayout.java

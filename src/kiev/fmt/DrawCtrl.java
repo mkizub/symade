@@ -102,7 +102,7 @@ public class DrawSubAttr extends DrawCtrl {
 			else if (obj == null && sn.empty != null)
 				arg = sn.empty.makeDrawable(cont.fmt, node, text_syntax);
 			else
-				arg = new DrawNodeTerm(node, sn, text_syntax, sn.name);
+				arg = new DrawNodeTerm(node, sn, text_syntax);
 		}
 		if (arg != null) {
 			if (obj instanceof ANode)

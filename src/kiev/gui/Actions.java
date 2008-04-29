@@ -503,9 +503,9 @@ public final class FileActions implements Runnable {
 				return;
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
-				ATextSyntax stx = (ATextSyntax)Env.loadDNodeFromXML(dff.syntax_qname);
-				Env.dumpTextFile(fu, jfc.getSelectedFile(), stx.getCompiled());
-				fu.current_syntax = stx.qname();
+				Draw_ATextSyntax stx = Env.loadLanguageSyntax(dff.syntax_qname);
+				Env.dumpTextFile(fu, jfc.getSelectedFile(), stx);
+				fu.current_syntax = stx.q_name;
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}
@@ -518,7 +518,7 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			try {
-				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled());
+				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled().init());
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml API exporting: "+e);
 			}
@@ -529,12 +529,9 @@ public final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root;
 			else
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
-			ATextSyntax stx = null;
-			if (fu.current_syntax != null) {
-				DNode d = Env.loadDNodeFromXML(fu.current_syntax);
-				if (d instanceof ATextSyntax)
-					stx = (ATextSyntax)d;
-			}
+			Draw_ATextSyntax stx = null;
+			if (fu.current_syntax != null)
+				stx = Env.loadLanguageSyntax(fu.current_syntax);
 			File f = new File(fu.pname());
 			if (stx == null || stx != uiv.syntax) {
 				JFileChooser jfc = new JFileChooser(".");
@@ -551,12 +548,12 @@ public final class FileActions implements Runnable {
 				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
 					return;
 				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
-				stx = (ATextSyntax)Env.loadDNodeFromXML(dff.syntax_qname);
+				stx = Env.loadLanguageSyntax(dff.syntax_qname);
 				f = jfc.getSelectedFile();
 			}
 			try {
-				Env.dumpTextFile(fu, f, stx.getCompiled());
-				fu.current_syntax = stx.qname();
+				Env.dumpTextFile(fu, f, stx);
+				fu.current_syntax = stx.q_name;
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}
@@ -733,8 +730,7 @@ public final class EditActions implements Runnable {
 		}
 		else if (action == "copy") {
 			if (editor.cur_elem.dr instanceof DrawNodeTerm) {
-				AttrPtr pattr = ((DrawNodeTerm)editor.cur_elem.dr).getAttrPtr();
-				Object obj = pattr.get();
+				Object obj = ((DrawNodeTerm)editor.cur_elem.dr).getAttrObject();
 				Transferable tr = null;
 				if (obj instanceof ANode)
 					tr = new TransferableANode((ANode)obj);
@@ -802,58 +798,69 @@ public final class EditActions implements Runnable {
 
 public final class RenderActions implements Runnable {
 	
-	final InfoView uiv;
+	final UIView ui;
 	final String action;
 	
-	RenderActions(InfoView uiv, String action) {
-		this.uiv = uiv;
+	RenderActions(UIView ui, String action) {
+		this.ui = ui;
 		this.action = action;
 	}
 	
 	public void run() {
+		UIView ui = this.ui;
 		if (action == "select-syntax") {
 			// build a menu of types to instantiate
 			JPopupMenu m = new JPopupMenu();
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java")));
-//			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Kiev Syntax (java.xml)", "java.xml", "test\u001fsyntax-for-java")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for API", "stx-fmt\u001fsyntax-for-api")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax")));
-//			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
-			m.show(uiv.view_canvas, 0, 0);
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java")));
+//			m.add(new JMenuItem(new LoadSyntaxAction(ui,"Kiev Syntax (java.xml)", "java.xml", "test\u001fsyntax-for-java")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax")));
+//			m.add(new JMenuItem(new LoadSyntaxAction(ui,"Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
+			if (ui instanceof InfoView)
+				m.show(ui.view_canvas, 0, 0);
+			else if (ui instanceof TreeView)
+				m.show(ui.the_tree, 0, 0);
 		}
 		else if (action == "unfold-all") {
-			uiv.view_root.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) n.draw_folded = false; return true; }
-			});
-			uiv.formatAndPaint(true);
+			if (ui instanceof InfoView) {
+				ui.view_root.walkTree(new TreeWalker() {
+					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) n.draw_folded = false; return true; }
+				});
+			}
+			ui.formatAndPaint(true);
 		}
 		else if (action == "fold-all") {
-			uiv.view_root.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) n.draw_folded = true; return true; }
-			});
-			uiv.formatAndPaint(true);
+			if (ui instanceof InfoView) {
+				ui.view_root.walkTree(new TreeWalker() {
+					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) n.draw_folded = true; return true; }
+				});
+			}
+			ui.formatAndPaint(true);
 		}
 		else if (action == "toggle-autogen") {
-			uiv.show_auto_generated = !uiv.show_auto_generated;
-			uiv.formatAndPaint(true);
+			if (ui instanceof InfoView)
+				ui.show_auto_generated = !ui.show_auto_generated;
+			ui.formatAndPaint(true);
 		}
 		else if (action == "toggle-placeholder") {
-			uiv.show_placeholders = !uiv.show_placeholders;
-			uiv.formatAndPaint(true);
+			if (ui instanceof InfoView)
+				ui.show_placeholders = !ui.show_placeholders;
+			ui.formatAndPaint(true);
 		}
 		else if (action == "toggle-escape") {
-			uiv.show_hint_escapes = !uiv.show_hint_escapes;
-			uiv.formatAndPaint(true);
+			if (ui instanceof InfoView)
+				ui.show_hint_escapes = !ui.show_hint_escapes;
+			ui.formatAndPaint(true);
 		}
 		else if (action == "redraw") {
-			uiv.setSyntax(uiv.syntax);
-			if (uiv instanceof Editor)
-				((Editor)uiv).cur_elem.set(uiv.view_root.getFirstLeaf());
-			//uiv.view_canvas.root = uiv.view_root;
-			uiv.formatAndPaint(false);
+			ui.setSyntax(ui.syntax);
+			if (ui instanceof Editor)
+				ui.cur_elem.set(ui.view_root.getFirstLeaf());
+			//ui.view_canvas.root = ui.view_root;
+			ui.formatAndPaint(false);
 		}
 	}
 
@@ -877,14 +884,14 @@ public final class RenderActions implements Runnable {
 				ATextSyntax stx = (ATextSyntax)clazz.newInstance();
 				if (stx instanceof XmlDumpSyntax)
 					stx.dump = qname;
-				this.uiv.setSyntax(stx.getCompiled());
+				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}
-			ATextSyntax stx = Env.loadDNodeFromXML(qname);
-			this.uiv.setSyntax(stx.getCompiled());
+			Draw_ATextSyntax stx = Env.loadLanguageSyntax(qname);
+			this.uiv.setSyntax(stx);
 		}
 	}
-	
+/*
 	static class LoadSyntaxAction extends TextAction {
 		private UIView uiv;
 		private String file;
@@ -913,17 +920,17 @@ public final class RenderActions implements Runnable {
 			} finally { tr.close(); }
 
 			foreach (ATextSyntax stx; fu.members; stx.sname == name) {
-				this.uiv.setSyntax(stx.getCompiled());
+				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}
 		}
 	}
-
+*/
 	final static class SyntaxFileAs implements UIActionFactory {
 		public String getDescr() { "Set the syntax of the curret view" }
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
-			return new RenderActions(context.uiv, "select-syntax");
+			return new RenderActions(context.ui, "select-syntax");
 		}
 	}
 
@@ -933,7 +940,7 @@ public final class RenderActions implements Runnable {
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv == null || context.uiv.view_root == null)
 				return null;
-			return new RenderActions(context.uiv, "unfold-all");
+			return new RenderActions(context.ui, "unfold-all");
 		}
 	}
 
@@ -943,7 +950,7 @@ public final class RenderActions implements Runnable {
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv == null || context.uiv.view_root == null)
 				return null;
-			return new RenderActions(context.uiv, "fold-all");
+			return new RenderActions(context.ui, "fold-all");
 		}
 	}
 
@@ -951,7 +958,7 @@ public final class RenderActions implements Runnable {
 		public String getDescr() { "Toggle show of auto-generated code" }
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
-			return new RenderActions(context.uiv, "toggle-autogen");
+			return new RenderActions(context.ui, "toggle-autogen");
 		}
 	}
 
@@ -959,7 +966,7 @@ public final class RenderActions implements Runnable {
 		public String getDescr() { "Toggle show of editor placeholders" }
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
-			return new RenderActions(context.uiv, "toggle-placeholder");
+			return new RenderActions(context.ui, "toggle-placeholder");
 		}
 	}
 
@@ -967,7 +974,7 @@ public final class RenderActions implements Runnable {
 		public String getDescr() { "Toggle idents and strings escaping" }
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
-			return new RenderActions(context.uiv, "toggle-escape");
+			return new RenderActions(context.ui, "toggle-escape");
 		}
 	}
 
@@ -975,7 +982,7 @@ public final class RenderActions implements Runnable {
 		public String getDescr() { "Redraw the window" }
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
-			return new RenderActions(context.uiv, "redraw");
+			return new RenderActions(context.ui, "redraw");
 		}
 	}
 }

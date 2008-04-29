@@ -23,16 +23,16 @@ public final class SyntaxLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-syntax");
-		return defaultEditorSyntax.getCompiled();
+			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-syntax");
+		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-syntax");
-		return defaultInfoSyntax.getCompiled();
+			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-syntax");
+		return defaultInfoSyntax;
 	}
-	private static ATextSyntax defaultEditorSyntax;
-	private static ATextSyntax defaultInfoSyntax;
+	private static Draw_ATextSyntax defaultEditorSyntax;
+	private static Draw_ATextSyntax defaultInfoSyntax;
 	private static Class[] superLanguages = {};
 	private static Class[] nodeClasses = {
 		ATextSyntax.class,
@@ -95,9 +95,6 @@ public final class SyntaxLang implements Language {
 		SyntaxJavaPackedField.class,
 		SyntaxJavaComment.class,
 		SyntaxJavaConstructorName.class,
-		// xml dump
-		SyntaxXmlStrAttr.class,
-		SyntaxXmlTypeAttr.class
 	};
 }
 

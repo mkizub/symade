@@ -33,16 +33,16 @@ public final class CoreLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax.getCompiled();
+			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax.getCompiled();
+			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+		return defaultInfoSyntax;
 	}
-	private static ATextSyntax defaultEditorSyntax;
-	private static ATextSyntax defaultInfoSyntax;
+	private static Draw_ATextSyntax defaultEditorSyntax;
+	private static Draw_ATextSyntax defaultInfoSyntax;
 	private static Class[] superLanguages = {};
 	private static Class[] nodeClasses = {
 	ASTNode.class,
@@ -212,16 +212,16 @@ public final class LogicLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax.getCompiled();
+			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax.getCompiled();
+			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+		return defaultInfoSyntax;
 	}
-	private static ATextSyntax defaultEditorSyntax;
-	private static ATextSyntax defaultInfoSyntax;
+	private static Draw_ATextSyntax defaultEditorSyntax;
+	private static Draw_ATextSyntax defaultInfoSyntax;
 	private static Class[] superLanguages = {CoreLang.class};
 	private static Class[] nodeClasses = {
 		RuleMethod.class,		// extends Method
@@ -245,16 +245,16 @@ public final class MacroLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax.getCompiled();
+			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = (ATextSyntax)Env.loadDNodeFromXML("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax.getCompiled();
+			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+		return defaultInfoSyntax;
 	}
-	private static ATextSyntax defaultEditorSyntax;
-	private static ATextSyntax defaultInfoSyntax;
+	private static Draw_ATextSyntax defaultEditorSyntax;
+	private static Draw_ATextSyntax defaultInfoSyntax;
 	private static Class[] superLanguages = {CoreLang.class};
 	private static Class[] nodeClasses = {
 		RewriteMatch.class,

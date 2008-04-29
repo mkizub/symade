@@ -1112,6 +1112,8 @@ public class Compiler {
 					}
 					continue;
 				}
+				if (value.bname == null)
+					continue;
 				String vbn = value.bname.toString().replace('/', File.separatorChar);
 				File fclass = new File(Kiev.output_dir,vbn);
 				if( fclass.exists() && fclass.isDirectory() ) {

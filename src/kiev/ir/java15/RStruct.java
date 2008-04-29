@@ -271,6 +271,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// 		ti = new TypeInfo(hash, clazz, args[0], args[1], ...);
 		// 	return ti;
 		// }
+		Method mNewTypeInfo = null;
 		{
 			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.xtype, ACC_STATIC|ACC_PUBLIC);
 			init.params.add(new LVar(pos,"clazz",Type.tpClass,Var.PARAM_NORMAL,ACC_FINAL));
@@ -306,6 +307,30 @@ public final view RStruct of Struct extends RTypeDecl {
 			));
 			init.block.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
 			typeinfo_clazz.addMethod(init);
+			mNewTypeInfo = init;
+		}
+
+		// create readResolve() for serialization support:
+		// public Object readResolve() {
+		//  return This.newTypeInfo(this.clazz, args);
+		// }
+		{
+			Method mrr = new MethodImpl("readResolve", Type.tpObject, ACC_PUBLIC);
+			typeinfo_clazz.addMethod(mrr);
+			mrr.body = new Block(pos);
+			Vector<ENode> targs = new Vector<ENode>();
+			foreach (ArgType at; this.getTypeInfoArgs()) {
+				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
+				targs.append(new IFldExpr(pos,new ThisExpr(pos), f));
+			}
+			mrr.block.stats.add(new ReturnStat(pos,
+				new CallExpr(pos,
+					new TypeRef(typeinfo_clazz.xtype),
+					mNewTypeInfo,
+					new ENode[]{
+						new IFldExpr(pos,new ThisExpr(),typeinfo_clazz.resolveField("clazz")),
+						new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpTypeInfo,Operator.PostTypeArray),1,targs.toArray())
+					})));
 		}
 		
 		// create equals function:

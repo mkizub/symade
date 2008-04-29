@@ -13,6 +13,7 @@ package kiev.stdlib;
 import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.io.Serializable;
 
 import syntax kiev.stdlib.Syntax;
 
@@ -26,13 +27,15 @@ public interface TypeInfoInterface {
 	public TypeInfo getTypeInfoField();
 }
 
-public class TypeInfo {
+public class TypeInfo implements Serializable {
 
 	private static TypeInfo[] hashTable = new TypeInfo[1777];
 	private static int        hashTableCount;
 	
 	public final Class			clazz;
 	public final int			hash;
+
+	transient
 	private      TypeInfo		next; // for hashTable
 
 	protected TypeInfo(int hash, Class clazz) {
@@ -55,6 +58,10 @@ public class TypeInfo {
 
 	public String toString() {
 		return clazz.getName();
+	}
+
+	public Object readResolve() {
+		return TypeInfo.newTypeInfo(this.clazz, null);
 	}
 
 	public boolean eq(Class clazz, TypeInfo[] args) {
