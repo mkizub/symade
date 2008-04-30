@@ -194,7 +194,6 @@ public abstract class WorkerThread extends Thread {
 							if (file_reader != null) file_reader.close();
 						}
 						java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
-						Kiev.k.interface_only = true;
 						Compiler.runGC(this);
 						diff_time = curr_time = System.currentTimeMillis();
 						Kiev.k.ReInit(bis);
@@ -206,7 +205,7 @@ public abstract class WorkerThread extends Thread {
 					Compiler.runGC(this);
 					this.curFile = "";
 					if( Kiev.verbose )
-						Kiev.reportInfo("Scanned file   "+cpi.fname,diff_time);
+						Kiev.reportInfo("Parsed  file   "+cpi.fname,diff_time);
 					System.out.flush();
 				} catch (Exception e) {
 					Kiev.reportParserError(0,e);

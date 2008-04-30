@@ -26,7 +26,7 @@ public class test_001 {
 	
 	}
 	
-	public static void test1(int i, ...) {
+	public static void test1(int i, Object... va_args) {
 		System.out.println("test(int,...) is called: i = "+i);
 		if( va_args != null ) {
 			for(int j=0; j < va_args.length; j++) {
@@ -35,7 +35,7 @@ public class test_001 {
 		}
 	}
 
-	public static void test2(String s, ...) {
+	public static void test2(String s, Object... va_args) {
 		System.out.println("test(int,...) is called: s = "+s);
 		if( va_args != null ) {
 			for(int j=0; j < va_args.length; j++) {
@@ -44,7 +44,7 @@ public class test_001 {
 		}
 	}
 
-	public void test3(int i, ...) {
+	public void test3(int i, Object... va_args) {
 		System.out.println("test(int,...) is called: i = "+i);
 		if( va_args != null ) {
 			for(int j=0; j < va_args.length; j++) {
@@ -53,7 +53,7 @@ public class test_001 {
 		}
 	}
 
-	public void test4(String s, ...) {
+	public void test4(String s, Object... va_args) {
 		System.out.println("test(int,...) is called: s = "+s);
 		if( va_args != null ) {
 			for(int j=0; j < va_args.length; j++) {

@@ -49,7 +49,6 @@ public abstract class kiev050 {
 	public TypeDecl			curClazz;
 	public Method			curMethod;
 	public boolean			interface_only = false;
-	public PreScanneable	presc = null;
 
 	public boolean			declMode = true;
 
@@ -106,6 +105,19 @@ public abstract class kiev050 {
 			return true;
 		}
 		return false;
+	}
+
+	private boolean ExpressionNoNoLA() {
+		switch (getToken(1).kind) {
+		case RPAREN:
+		case RBRACE:
+		case RBRACKET:
+		case SEMICOLON:
+		case COLON:
+		case COMMA:
+			return false;
+		}
+		return true;
 	}
 
 	/*{
@@ -866,11 +878,43 @@ ASTModifiers Modifiers() :
 {}
 {	{ ASTModifiers n = new ASTModifiers(); }
 	(
-		n.annotations	+= Annotation()
-	|	SpecialAnnotation(n)
+		SpecialAnnotation(n)
 	|	Access(n)			// TODO: remove, use @access and views
+	|	LOOKAHEAD({ getToken(1).kind==OPERATOR_AT })
+		n.annotations	+= Annotation()
 	)*
 	{ return n; }
+}
+
+void InBlockModifiersLA() :
+{}
+{
+		"@"
+
+	|	"@access"
+	|	"@public"
+	|	"@protected"
+	|	"@private"
+
+	| "@singleton"
+	| "@mixin"
+	| "@forward"
+	| "@unerasable"
+	| "@virtual"
+	| "@macro"
+	| "static"
+	| "@static"
+	| "abstract"
+	| "@abstract"
+	| "final"
+	| "@final"
+	| "@native"
+	| "@synchronized"
+	| "@transient"
+	| "@volatile"
+	| "@packed"
+	| "@throws"
+	| "@uuid"
 }
 
 SymbolRef Package() :
@@ -994,7 +1038,7 @@ KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) :
 	{ parent.members += stx; oldClazz = curClazz; curClazz = stx; }
 	try {
 		"{"
-		(
+		(	LOOKAHEAD({ getToken(1).kind != RBRACE })
 			modifiers = Modifiers()
 			(
 				stx.members += Typedef(modifiers)
@@ -1015,7 +1059,9 @@ TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{
 		tdecl = mkMetaType(name, modifiers, (NameSpace)parent);	
 	}
-	args = ClazzArguments() { tdecl.args.addAll(args); }
+	[
+		args = ClazzArguments() { tdecl.args.addAll(args); }
+	]
 	[
 		"extends"
 		tdecl.super_types += Type()
@@ -1037,7 +1083,9 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		{
 			clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
 		}
-		args = ClazzArguments() { clazz.args.addAll(args); }
+		[
+			args = ClazzArguments() { clazz.args.addAll(args); }
+		]
 		[
 			"extends"
 			clazz.super_types += Type()
@@ -1053,7 +1101,9 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		{
 			clazz = mkStruct(name, new JavaInterface(), ACC_INTERFACE, modifiers, parent);
 		}
-		args = ClazzArguments() { clazz.args.addAll(args); }
+		[
+			args = ClazzArguments() { clazz.args.addAll(args); }
+		]
 		[
 			"extends"
 			clazz.super_types += Type()
@@ -1077,7 +1127,9 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
 			KievView kview = (KievView)clazz;
 		}
-		args = ClazzArguments() { clazz.args.addAll(args); }
+		[
+			args = ClazzArguments() { clazz.args.addAll(args); }
+		]
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
 		kview.view_of = NArrType()
@@ -1115,32 +1167,60 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 		[ ";" ]
 	)?
 	(
+		LOOKAHEAD({ getToken(1).kind != RBRACE })
 		{ comments_alone(clazz_members); }
 		modifiers = Modifiers()
-		(
+		(	LOOKAHEAD({ getToken(1).kind == LBRACE })
 			clazz.members += Initializer(modifiers)
-		|	clazz.members += InvariantDeclaration(modifiers) [ ";" ]
-		|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
-		|	clazz.members += MemberArgDecl(modifiers)
-		|	clazz.members += CaseTypeDeclaration(modifiers, (Struct)clazz)
+		|	LOOKAHEAD(1)
+			clazz.members += InvariantDeclaration(modifiers) [ ";" ]
+		|	LOOKAHEAD(1)
+			clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
+		|	LOOKAHEAD(1)
+			clazz.members += MemberArgDecl(modifiers)
+		|	LOOKAHEAD(1)
+			clazz.members += CaseTypeDeclaration(modifiers, (Struct)clazz)
 		|
 			//LOOKAHEAD( "rule" <IDENTIFIER> "(" )
 			LOOKAHEAD(3, <IDENTIFIER> <IDENTIFIER> "(", { getToken(1).image.equals("rule") })
 			clazz.members += RuleDeclaration(modifiers)
 		|
-			LOOKAHEAD( <IDENTIFIER> "(" )
-			clazz.members += ConstructorDeclaration(modifiers)
-		|
-			LOOKAHEAD( ClazzArguments() Type() <IDENTIFIER> "(" )
-			clazz.members += MethodDeclaration(modifiers)
-		|
-			LOOKAHEAD(0) // LOOKAHEAD( Type() <IDENTIFIER> ("=" | "," | ";") )
-			clazz_members += FieldDecl(modifiers)
+			LOOKAHEAD(0)
+			clazz.members += FieldOrMethodDecl(modifiers)
 		)
 	)*
 	{ comments_alone(clazz_members); }
 	"}"
 }
+
+DNode FieldOrMethodDecl(ASTModifiers modifiers) :
+{ TypeConstr[] args; TypeRef type; DNode res = null; }
+{
+	(
+		args = ClazzArguments()
+		(
+			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
+			res = ConstructorDeclaration(modifiers, args)
+		|
+			type = Type()
+			res = MethodDeclaration(modifiers, args, type)
+		)
+	|
+		LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
+		res = ConstructorDeclaration(modifiers, null)
+	|
+		type = Type()
+		(
+			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
+			res = MethodDeclaration(modifiers, null, type)
+		|
+			LOOKAHEAD(0)
+			res = FieldDecl(modifiers, type)
+		)
+	)
+	{ return res; }
+}
+
 
 Field EnumFieldDeclaration(ASTModifiers modifiers) :
 { Symbol id; Field f; ConstStringExpr text; NewEnumExpr ne; }
@@ -1173,10 +1253,13 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
 		clazz.setSingleton(true);
 	}
-	args = ClazzArguments() { clazz.args.addAll(args); }
+	[
+		args = ClazzArguments() { clazz.args.addAll(args); }
+	]
 	[
 	"(" { clazz.setSingleton(false); }
-		[
+		(
+			LOOKAHEAD({ getToken(1).kind != RPAREN })
 			modifiers = Modifiers()
 			clazz.case_fields += CaseTypeField(modifiers)
 			(
@@ -1184,7 +1267,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 				modifiers = Modifiers()
 				clazz.case_fields += CaseTypeField(modifiers)
 			)*
-		]
+		)?
 	")"
 	]
 	";"
@@ -1195,16 +1278,14 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 TypeConstr[] ClazzArguments() :
 { TypeConstr[] args = new TypeConstr[0]; TypeConstr arg; }
 {
-	[
-		("<" | <LANGLE>)
+	("<" | <LANGLE>)
+		arg = ArgumentDeclaration()
+		{ args = (TypeConstr[])Arrays.append(args,arg); }
+		(	","
 			arg = ArgumentDeclaration()
 			{ args = (TypeConstr[])Arrays.append(args,arg); }
-			(	","
-				arg = ArgumentDeclaration()
-				{ args = (TypeConstr[])Arrays.append(args,arg); }
-			)*
-		(">" | <RANGLE>)
-	]
+		)*
+	(">" | <RANGLE>)
 	{ return args; }
 }
 
@@ -1489,8 +1570,8 @@ MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
 }
 
 
-Field FieldDecl(ASTModifiers modifiers) :
-{ boolean old_declMode; TypeRef type; Symbol id; ENode init; Field fld; }
+Field FieldDecl(ASTModifiers modifiers, TypeRef type) :
+{ boolean old_declMode; Symbol id; ENode init; Field fld; }
 {
 	{
 		old_declMode = declMode;
@@ -1498,7 +1579,6 @@ Field FieldDecl(ASTModifiers modifiers) :
 		init = null;
 	}
 	try {
-		type = Type()
 		id = Name()
 		[	"="	init = VariableInitializer()	]
 		{
@@ -1630,10 +1710,9 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 	{ return mkVar(id, modifiers, tp); }
 }
 
-LVar MethodFormalParameter(ASTModifiers modifiers) :
-{ Token t; TypeRef tp; TypeRef st=null; Symbol id; }
+LVar MethodFormalParameter(ASTModifiers modifiers, TypeRef tp) :
+{ Token t; TypeRef st=null; Symbol id; }
 {
-	tp = Type()
 	[
 		":"
 		st = Type()
@@ -1642,10 +1721,9 @@ LVar MethodFormalParameter(ASTModifiers modifiers) :
 	{ return mkFormPar(id, modifiers, tp, st); }
 }
 
-LVar MethodVarargsParameter(ASTModifiers modifiers) :
-{ Token t; TypeRef tp = null; Symbol id = null; }
+LVar MethodVarargsParameter(ASTModifiers modifiers, TypeRef tp) :
+{ Token t; Symbol id = null; }
 {
-	[ tp = Type() ]
 	t = "..."
 	[ id = Name() ]
 	{
@@ -1661,10 +1739,9 @@ LVar MethodVarargsParameter(ASTModifiers modifiers) :
 	}
 }
 
-LVar FormalParameter(ASTModifiers modifiers) :
-{ Token t; TypeRef tp; Symbol id; }
+LVar FormalParameter(ASTModifiers modifiers, TypeRef tp) :
+{ Token t; Symbol id; }
 {
-	tp = Type()
 	id = Name()
 	{ return mkFormPar(id, modifiers, tp, null); }
 }
@@ -1711,68 +1788,77 @@ Symbol Alias() :
 	{ return a; }
 }
 
-ENode MaybeSkipBlock() :
-{ boolean old_declMode; ENode bl = null; }
+void SkipBlock() :
+{}
+{
+	LOOKAHEAD({ interface_only })
+	"{"
+	{
+		Token tk = getToken(0);
+		int depth = 1;
+		do {
+			tk = getNextToken();
+			if( tk.kind == LBRACE ) depth++;
+			else if( tk.kind == RBRACE ) depth--;
+		} while( depth > 0 );
+	}
+}
+/*
+ENode MaybeSkipBlock(ASTNode target) :
+{ ENode bl = null; }
 {
 	(
 		LOOKAHEAD({ interface_only })
 		"{"
 		{
 			Token tk = getToken(0);
-			PrescannedBody pbody = new PrescannedBody((ASTNode)presc, tk.beginLine, tk.beginColumn);
-			curFileUnit.addPrescannedBody(pbody);
 			int depth = 1;
 			do {
 				tk = getNextToken();
 				if( tk.kind == LBRACE ) depth++;
 				else if( tk.kind == RBRACE ) depth--;
 			} while( depth > 0 );
-			if (presc instanceof RuleMethod)
-				pbody.mode = PrescannedBody.RuleBlockMode;
-			else if (presc instanceof Method && ((Method)presc).isMacro())
-				pbody.mode = PrescannedBody.RewriteMatchMode;
-			else
-				pbody.mode = PrescannedBody.BlockMode;
-			bl = pbody;
 		}
 	|
-		LOOKAHEAD({ presc instanceof RuleMethod })
+		LOOKAHEAD({ target instanceof RuleMethod })
 		bl = RuleBlock()
 	|
-		LOOKAHEAD({ presc instanceof Method && ((Method)presc).isMacro() })
+		LOOKAHEAD({ target instanceof Method && ((Method)target).isMacro() })
 		bl = RewriteMatch()
 	|
 		bl = Block()
 	)
 	{ return bl; }
 }
-
-Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; ConstStringExpr cor; MetaThrows thr; TypeConstr[] args; }
+*/
+Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret) :
+{ Token t; Method m, oldMethod; Symbol id; ConstStringExpr cor; MetaThrows thr; TypeRef ptype; }
 {
-	args = ClazzArguments()
-	ret = Type()
 	id = Name()
-	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
+	{
+		m = mkMethod(id,modifiers,ret);
+		if (args != null)
+			m.targs.addAll(args);
+		oldMethod = curMethod;
+		curMethod = m;
+	}
 	try {
 	"("
 		(
-			LOOKAHEAD( Modifiers() [Type()] "...")
+			LOOKAHEAD({ getToken(1).kind != RPAREN })
 			modifiers = Modifiers()
-			m.params += MethodVarargsParameter(modifiers)
-			{ m.setVarArgs(true); }
-		|
-			modifiers = Modifiers()
-			m.params += MethodFormalParameter(modifiers)
-			(	LOOKAHEAD(1, ",", { !m.isVarArgs() })
+			ptype = Type()
+			(	m.params += MethodFormalParameter(modifiers,ptype)
+			|	m.params += MethodVarargsParameter(modifiers,ptype)
+				{ m.setVarArgs(true); }
+			)
+			(
 				","
 				modifiers = Modifiers()
-				(
-					LOOKAHEAD( [Type()] "...")
-					m.params += MethodVarargsParameter(modifiers)
+				ptype = Type()
+				(	m.params += MethodFormalParameter(modifiers,ptype)
+				|	m.params += MethodVarargsParameter(modifiers,ptype)
 					{ m.setVarArgs(true); }
-				|
-					m.params += MethodFormalParameter(modifiers)
 				)
 			)*
 		)?
@@ -1786,9 +1872,12 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	|	m.conditions += EnsureDeclaration()
 	)*
 	(
-		LOOKAHEAD("{")
-		{ presc = m; }
-		m.body = MaybeSkipBlock() [ ";" ]
+		LOOKAHEAD({ getToken(1).kind == LBRACE && m.isMacro() })
+		m.body = RewriteMatch() [ ";" ]
+	|	LOOKAHEAD({ getToken(1).kind == LBRACE && interface_only })
+		SkipBlock() [ ";" ]
+	|	LOOKAHEAD({ getToken(1).kind == LBRACE })
+		m.body = Block() [ ";" ]
 	|	"default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m)) ";"
 	|	"continue" cor = StringConstExpression() { m.body = CoreExpr.makeInstance(cor.pos, cor.value); } ";"
 	|	";"
@@ -1797,36 +1886,36 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	{ return m; }
 }
 
-Constructor ConstructorDeclaration(ASTModifiers modifiers) :
-{ Token t; Constructor m; Symbol id; MetaThrows thr; Method oldMethod; }
+Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args) :
+{ Token t; Constructor m; Symbol id; MetaThrows thr; Method oldMethod; TypeRef ptype; }
 {
 	id = Name()
 	{
 		if( !id.sname.equals(curClazz.sname) )
 			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
 		m = mkConstructor(id,modifiers); 
+		if (args != null)
+			m.targs.addAll(args);
 		oldMethod = curMethod;
 		curMethod = m;
 	}
 	try {
 	"("
 		(
-			LOOKAHEAD( Modifiers() [Type()] "...")
+			LOOKAHEAD({ getToken(1).kind != RPAREN })
 			modifiers = Modifiers()
-			m.params += MethodVarargsParameter(modifiers)
-			{ m.setVarArgs(true); }
-		|
-			modifiers = Modifiers()
-			m.params += MethodFormalParameter(modifiers)
-			(	LOOKAHEAD(1, ",", { !m.isVarArgs() })
+			ptype = Type()
+			(	m.params += MethodFormalParameter(modifiers,ptype)
+			|	m.params += MethodVarargsParameter(modifiers,ptype)
+				{ m.setVarArgs(true); }
+			)
+			(
 				","
 				modifiers = Modifiers()
-				(
-					LOOKAHEAD( [Type()] "...")
-					m.params += MethodVarargsParameter(modifiers)
+				ptype = Type()
+				(	m.params += MethodFormalParameter(modifiers,ptype)
+				|	m.params += MethodVarargsParameter(modifiers,ptype)
 					{ m.setVarArgs(true); }
-				|
-					m.params += MethodFormalParameter(modifiers)
 				)
 			)*
 		)?
@@ -1840,9 +1929,10 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	|	m.conditions += EnsureDeclaration()
 	)*
 	(
-		LOOKAHEAD("{")
-		{ presc = m; }
-		m.body = MaybeSkipBlock() [ ";" ]
+		LOOKAHEAD({ getToken(1).kind == LBRACE && interface_only })
+		SkipBlock() [ ";" ]
+	|	LOOKAHEAD({ getToken(1).kind == LBRACE })
+		m.body = Block() [ ";" ]
 	|	";"
 	)
 	} finally { curMethod = oldMethod; }
@@ -1920,22 +2010,25 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 }
 
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
-{ RuleBlock bl; RuleMethod m; Symbol id; Method oldMethod; }
+{ RuleBlock bl; RuleMethod m; Symbol id; Method oldMethod; TypeRef ptype; }
 {
 	<IDENTIFIER> // "rule"
 	id = Name()
 	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); oldMethod = curMethod; curMethod = m; }
 	try {
 	"("
-		[
+		(
+			LOOKAHEAD({ getToken(1).kind != RPAREN })
 			modifiers = Modifiers()
-			m.params += FormalParameter(modifiers)
+			ptype = Type()
+			m.params += FormalParameter(modifiers,ptype)
 			(
 				","
 				modifiers = Modifiers()
-				m.params += FormalParameter(modifiers)
+				ptype = Type()
+				m.params += FormalParameter(modifiers,ptype)
 			)*
-		]
+		)?
 	")"
 	(
 		m.aliases += Alias()
@@ -1949,10 +2042,13 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 	|	m.conditions += EnsureDeclaration()
 	)*
 	(
-		LOOKAHEAD("{")
-		{ presc = m; }
-		m.body = MaybeSkipBlock() [ ";" ]
-	|	";"
+		LOOKAHEAD({ getToken(1).kind == LBRACE && interface_only })
+		SkipBlock() [ ";" ]
+	|
+		LOOKAHEAD({ getToken(1).kind == LBRACE })
+		m.body = RuleBlock() [ ";" ]
+	|
+		";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }
@@ -1963,10 +2059,13 @@ Initializer Initializer(ASTModifiers modifiers) :
 	Initializer n = mkInitializer(getToken(0).getPos(),modifiers);
 }
 {
-	{ presc = n; }
-	n.body = MaybeSkipBlock()
-	[ ";" ]
-	
+	(
+		LOOKAHEAD({ getToken(1).kind == LBRACE && interface_only })
+		SkipBlock() [ ";" ]
+	|
+		LOOKAHEAD(0)
+		n.body = Block() [ ";" ]
+	)
 	{ return n; }
 }
 
@@ -2291,11 +2390,11 @@ ENode ExpressionColonComma() :
 { ASTExpression e = new ASTExpression(); Token t; }
 {
 	(
-		ExpressionNoNo(e)
-	|
 		t=":"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	|
 		t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+	|	LOOKAHEAD({ExpressionNoNoLA()})
+		ExpressionNoNo(e)
 	)+
 	{
 		if (e.nodes.length == 1)
@@ -2307,9 +2406,9 @@ ENode ExpressionColon() :
 { ASTExpression e = new ASTExpression(); Token t; }
 {
 	(
-		ExpressionNoNo(e)
-	|
 		t=":"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+	|	LOOKAHEAD({ExpressionNoNoLA()})
+		ExpressionNoNo(e)
 	)+
 	{
 		if (e.nodes.length == 1)
@@ -2321,9 +2420,9 @@ ENode ExpressionComma() :
 { ASTExpression e = new ASTExpression(); Token t; }
 {
 	(
-		ExpressionNoNo(e)
-	|
 		t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+	|	LOOKAHEAD({ExpressionNoNoLA()})
+		ExpressionNoNo(e)
 	)+
 	{
 		if (e.nodes.length == 1)
@@ -2335,6 +2434,7 @@ ENode Expression() :
 { ASTExpression e = new ASTExpression(); }
 {
 	(
+		LOOKAHEAD({ExpressionNoNoLA()})
 		ExpressionNoNo(e)
 	)+
 	{
@@ -2433,18 +2533,21 @@ ENode NewAny() :
 }
 
 NewClosure AnonymouseClosure() :
-{ ASTModifiers modifiers; NewClosure nc = new NewClosure(getToken(1).getPos()); }
+{ ASTModifiers modifiers; TypeRef ptype; NewClosure nc = new NewClosure(getToken(1).getPos()); }
 {
 	"fun" "("
-	[
-		modifiers = Modifiers()
-		nc.params += FormalParameter(modifiers)
 		(
-			","
+			LOOKAHEAD({ getToken(1).kind != RPAREN })
 			modifiers = Modifiers()
-			nc.params += FormalParameter(modifiers)
-		)*
-	]
+			ptype = Type()
+			nc.params += FormalParameter(modifiers,ptype)
+			(
+				","
+				modifiers = Modifiers()
+				ptype = Type()
+				nc.params += FormalParameter(modifiers,ptype)
+			)*
+		)?
 	")" "->"
     (
 		LOOKAHEAD( { getToken(1).kind == IDENTIFIER && getToken(1).image.equals("rule") } )
@@ -2545,12 +2648,14 @@ NewExpr NewExpression(TypeRef tp) :
 	//"new"
     //ne.type = NArrType()
 	"("
-	[	ne.args += ExpressionColon()
-		(	"," ne.args += ExpressionColon()	)*
-	]
+		(
+			LOOKAHEAD({ getToken(1).kind != RPAREN })
+			ne.args += ExpressionColon()
+			(	"," ne.args += ExpressionColon()	)*
+		)?
 	")"
-	[
-		LOOKAHEAD("{")
+	(
+		LOOKAHEAD({ getToken(1).kind == LBRACE })
 		{
 			old_mode = interface_only;
 			interface_only = false;
@@ -2564,7 +2669,7 @@ NewExpr NewExpression(TypeRef tp) :
 			interface_only = old_mode;
 			curClazz = oldClazz;
 		}
-	]
+	)?
 	{ return ne; }
 }
 
@@ -2661,42 +2766,6 @@ ENode LabeledStatement() :
 	{ return st; }
 }
 
-
-ENode PrescannedBlock(PrescannedBody b) :
-{
-	Token t;
-	// Skip to the start of prescanned body
-	Token tk;
-	for(;;) {
-		tk = getToken(1);
-		if( tk.beginLine==b.lineno && tk.beginColumn==b.columnno )
-			break;
-		if( tk.kind == EOF ) {
-			throw new CompilerException(b,
-				"Expected to find start of block after scanning. Have you changed the file?"
-			);
-		}
-		getNextToken();
-	}
-	ENode bl = null;
-}
-{
-	(
-		LOOKAHEAD({b.mode == PrescannedBody.BlockMode})
-		bl=Block()
-	|
-		LOOKAHEAD({b.mode == PrescannedBody.RuleBlockMode})
-		bl=RuleBlock()
-	|
-		LOOKAHEAD({b.mode == PrescannedBody.CondBlockMode})
-		bl=CondBlock()
-	|
-		LOOKAHEAD({b.mode == PrescannedBody.RewriteMatchMode})
-		bl=RewriteMatch()
-	)
-	{ return bl; }
-}
-
 Block Block() :
 { boolean old_declMode; }
 {
@@ -2753,28 +2822,30 @@ Block CondBlock() :
 }
 
 void BlockStatement(SpacePtr stats) :
-{ boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var; }
+{ boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Var var; }
 {
 	{ comments_alone(stats); }
 	(
-		/* class declaration */
-		LOOKAHEAD( Modifiers() ("class" | "interface" | "@interface") )
-		{
-			old_declMode = declMode;
-			declMode = true;
-		}
-		try {
+		LOOKAHEAD(InBlockModifiersLA())
+		(
 			modifiers = Modifiers()
-			clazz = TypeDeclaration(modifiers, (ASTNode)stats.node)
-			{ stats += clazz; }
-		} finally {
-			declMode = old_declMode;
-		}
+			(
+				{ old_declMode = declMode; declMode = true; }
+				try {
+					stats += TypeDeclaration(modifiers, (ASTNode)stats.node)
+				} finally { declMode = old_declMode; }
+			|	LOOKAHEAD(0)
+				stats += VarDecls(modifiers)
+			)
+		)
 	|
-		/* local vars declaration */
-		LOOKAHEAD( Modifiers() Type() Name() )
-		modifiers = Modifiers()
-		stats += VarDecls(modifiers)
+		{ old_declMode = declMode; declMode = true; }
+		try {
+			stats += TypeDeclaration(new ASTModifiers(), (ASTNode)stats.node)
+		} finally { declMode = old_declMode; }
+	|
+		LOOKAHEAD( Type() Name() )
+		stats += VarDecls(new ASTModifiers())
 		";"
 	|
 		/* other statements */
@@ -2829,7 +2900,10 @@ SwitchStat SwitchStatement() :
 	{ st.pos = getToken(0).getPos(); }
 	"(" st.sel = ExpressionColonComma() ")"
 	"{"
-	(	st.cases += CaseStatements(st)	)+
+	(
+		LOOKAHEAD( 1, "case" | "default" )
+		st.cases += CaseStatements(st)
+	)+
 	"}"
 	{ return st; }
 }
@@ -2869,7 +2943,7 @@ CaseLabel PizzaCase(SwitchStat sw) :
 	"case"		{ c.pos = getToken(0).getPos(); }
 	c.val = TypeWithArgs()
 	"("
-	[
+	(	LOOKAHEAD({ getToken(1).kind != RPAREN })
 		modifiers = Modifiers()
 		c.pattern += PizzaCaseFormalParameter(modifiers)
 		(
@@ -2877,7 +2951,7 @@ CaseLabel PizzaCase(SwitchStat sw) :
 			modifiers = Modifiers()
 			c.pattern += PizzaCaseFormalParameter(modifiers)
 		)*
-	]
+	)?
 	")" ":"
 	(
 		BlockStatement(sw.getSpacePtr("stats"))
@@ -2942,20 +3016,25 @@ DoWhileStat DoStatement() :
 }
 
 ForStat ForStatement() :
-{ ForStat st = new ForStat(); }
+{ ASTModifiers modifiers; ForStat st = new ForStat(); }
 {
 	"for"
 	{ st.pos = getToken(0).getPos(); }
 	"("
-		st.init = ForInitDecl()
-	/*";"*/
-	[
-		st.cond = Expression()
-	]
+		(	LOOKAHEAD( InBlockModifiersLA() | (Type() QName() ("=" | "," | ";")) )
+			modifiers = Modifiers()
+			st.init = VarDecls(modifiers)
+		|
+			st.init = CommaExpression()
+		)?
 	";"
-	[
-		st.iter = CommaExpression()
-	]
+		[
+			st.cond = Expression()
+		]
+	";"
+		[
+			st.iter = CommaExpression()
+		]
 	")"
 	st.body = Statement()
 	{ return st; }
@@ -2967,37 +3046,20 @@ ForEachStat ForEachStatement() :
 	"foreach"
 	{ st.pos = getToken(0).getPos(); }
 	"("
-	[	LOOKAHEAD( Modifiers() FormalParameter() )
-		modifiers = Modifiers()
-		st.var = PizzaCaseFormalParameter(modifiers)
-		";"
-	]
-	st.container = Expression()
-	[
-		";"
 		[
+			LOOKAHEAD( InBlockModifiersLA() | PizzaCaseFormalParameter() )
+			modifiers = Modifiers()
+			st.var = PizzaCaseFormalParameter(modifiers)
+			";"
+		]
+		st.container = Expression()
+		[
+			";"
 			st.cond = Expression()
 		]
-	]
 	")"
 	st.body = Statement()
 	{ return st; }
-}
-
-ASTNode ForInitDecl() :
-{ ASTModifiers modifiers; ASTNode n; ASTModifiers modifiers; TypeRef tp; }
-{
-	(
-		LOOKAHEAD( Modifiers() Type() QName() ("=" | "," | ";") )
-		modifiers = Modifiers()
-		n = VarDecls(modifiers)
-		";"
-	|
-		n = CommaExpression() ";"
-	|
-		";" { n = null; }
- 	)
-	{ return n; }
 }
 
 ENode GotoStatement() :

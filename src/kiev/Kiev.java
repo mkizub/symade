@@ -414,72 +414,6 @@ public final class Kiev {
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;
 
-	public static void parseFile(FileUnit f) {
-		InputStreamReader file_reader = null;
-		char[] file_chars = new char[8196];
-		int file_sz = 0;
-		setCurFile(f.pname());
-		try {
-			file_reader = new InputStreamReader(new FileInputStream(getCurFile()), "UTF-8");
-			for (;;) {
-				int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
-				if (r < 0)
-					break;
-				file_sz += r;
-				if (file_sz >= file_chars.length) {
-					char[] tmp = new char[file_chars.length + 8196];
-					System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
-					file_chars = tmp;
-				}
-			}
-		} catch( Exception e ) {
-			reportError(f,e);
-			return;
-		} finally {
-			file_reader.close();
-		}
-		Kiev.k.interface_only = false;
-		try {
-			CharArrayReader bis = new CharArrayReader(file_chars, 0, file_sz);
-			Kiev.k.ReInit(bis);
-			foreach(PrescannedBody b; f.bodies; b != null ) {
-				Kiev.k.curFileUnit = null;
-				Kiev.k.curClazz = null;
-				Kiev.k.curMethod = null;
-				// callect parents of this block
-				List<ANode> pl = List.Nil;
-				ANode n = (ANode)b;
-				while( n != null ) {
-					pl = new List.Cons<ANode>(n,pl);
-					if (n instanceof FileUnit)
-						break;
-					n = n.parent();
-				}
-				if( pl.head() != f ) {
-					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+b.expected_parent+" is expected in file "+f);
-					continue;
-				}
-				foreach(ANode nn; pl) {
-					if (nn instanceof FileUnit)
-						Kiev.k.curFileUnit = (FileUnit)nn;
-					else if (nn instanceof TypeDecl)
-						Kiev.k.curClazz = (TypeDecl)nn;
-					else if (nn instanceof Method)
-						Kiev.k.curMethod = (Method)nn;
-				}
-				ENode bl = Kiev.k.PrescannedBlock(b);
-				if( !((PreScanneable)b.parent()).setBody(bl) ) {
-					reportError(b,"Prescanned body does not math");
-				}
-				pl = pl.reverse();
-			}
-		} finally {
-			Kiev.k.curFileUnit = null;
-			Kiev.k.curClazz = null;
-			f.bodies.delAll();
-		}
-	}
-
 	public static KievBackend useBackend = Compiler.useBackend;
 
 	private static int					fe_pass_no;
@@ -499,7 +433,6 @@ public final class Kiev {
 			processors.append(KievFE_Pass3);
 			processors.append(PizzaFE_Pass3);
 			processors.append(VNodeFE_Pass3);
-			processors.append(KievFE_SrcParse);
 			processors.append(VirtFldFE_GenMembers);
 			processors.append(EnumFE_GenMembers);
 			processors.append(ViewFE_GenMembers);

@@ -729,10 +729,6 @@ public class TreeWalker {
 	public void post_exec(ANode n) {}
 }
 
-public interface PreScanneable {
-	public boolean setBody(ENode body);
-}
-
 final class DataAttachInfo {
 	final   AttrSlot	p_slot;
 	final   Object		p_data;

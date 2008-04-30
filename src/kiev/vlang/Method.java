@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable,GlobalDNode {
+public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,GlobalDNode {
 	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView ≤ RMethod;
@@ -847,12 +847,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return new MethodDFFunc(dfi);
 	}
 
-	public boolean setBody(ENode body) {
-		trace(Kiev.debug && Kiev.debugMultiMethod,"Setting body of methods "+this);
-		this.body = body;
-		return true;
-	}
-	
 	public Method makeAccessor() {
 		assert(isPrivate());
 		if (caller_from_inner != null)
@@ -955,7 +949,7 @@ public final class Constructor extends Method {
 }
 
 @ThisIsANode(name="InitBlock", lang=CoreLang)
-public final class Initializer extends DNode implements PreScanneable {
+public final class Initializer extends DNode {
 	
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")		ENode		body;
@@ -979,12 +973,6 @@ public final class Initializer extends DNode implements PreScanneable {
 		if (dump == "api" && attr.name == "this")
 			return false;
 		return super.includeInDump(dump, attr, val);
-	}
-
-	public boolean setBody(ENode body) {
-		trace(Kiev.debug && Kiev.debugMultiMethod,"Setting body of initializer "+this);
-		this.body = body;
-		return true;
 	}
 
 }
@@ -1021,11 +1009,6 @@ public final class WBCCondition extends DNode {
 		this.sname = name;
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public boolean setBody(ENode body) {
-		this.body = body;
-		return true;
 	}
 }
 

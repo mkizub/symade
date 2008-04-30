@@ -708,37 +708,6 @@ public final class KievFE_MetaValues extends TransfProcessor {
 }
 
 ////////////////////////////////////////////////////
-//	   PASS 5 - parse method bodies               //
-////////////////////////////////////////////////////
-
-@singleton
-public final class KievFE_SrcParse extends TransfProcessor {
-	private KievFE_SrcParse() { super(KievExt.JavaOnly); }
-	public String getDescr() { "Full Parser" }
-
-	public void process(ASTNode node, Transaction tr) {
-		if (node instanceof FileUnit) {
-			doProcess((FileUnit)node);
-		}
-	}
-	
-	public void doProcess(FileUnit fu) {
-		if (fu.scanned_for_interface_only || fu.bodies.length == 0)
-			return;
-		long curr_time = System.currentTimeMillis();
-		try {
-			Kiev.parseFile(fu);
-			Kiev.setCurFile("");
-		} catch (Exception ioe) {
-			Kiev.reportParserError(0,ioe);
-		}
-		long diff_time = System.currentTimeMillis() - curr_time;
-		if( Kiev.verbose )
-			Kiev.reportInfo("Parsed file    "+fu,diff_time);
-	}
-}
-
-////////////////////////////////////////////////////
 //	   PASS 5 - pre-resolve                       //
 ////////////////////////////////////////////////////
 

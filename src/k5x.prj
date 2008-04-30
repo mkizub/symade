@@ -305,7 +305,6 @@ CLASS kievparserOpdef kiev/parser/Opdef kiev/parser/Opdef.java
 CLASS kievparserParseError kiev/parser/ParseError kiev/parser/ParseError.java
 CLASS kievparserParseException kiev/parser/ParseException kiev/parser/ParseException.java
 CLASS kievparserParser kiev/parser/Parser kiev/parser/kiev050.java
-CLASS kievparserPrescannedBody kiev/parser/PrescannedBody kiev/parser/PrescannedBody.java
 CLASS kievparserSimpleCharStream kiev/parser/SimpleCharStream kiev/parser/SimpleCharStream.java
 CLASS kievparserToken kiev/parser/Token kiev/parser/Token.java
 CLASS kievparserTokenMgrError kiev/parser/TokenMgrError kiev/parser/TokenMgrError.java
@@ -358,7 +357,6 @@ CLASS kievtransfKievFE_Pass1 kiev/transf/KievFE_Pass1 kiev/transf/ImportKievSr
 CLASS kievtransfKievFE_Pass2 kiev/transf/KievFE_Pass2 kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievFE_Pass3 kiev/transf/KievFE_Pass3 kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievFE_PreResolve kiev/transf/KievFE_PreResolve kiev/transf/ImportKievSrc.java
-CLASS kievtransfKievFE_SrcParse kiev/transf/KievFE_SrcParse kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievFE_Verify kiev/transf/KievFE_Verify kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievME_DumpAPI kiev/transf/KievME_DumpAPI kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievME_PostGenerate kiev/transf/KievME_PostGenerate kiev/transf/ImportKievSrc.java
@@ -1023,7 +1021,6 @@ INTERFACE kievvlangtypesStdTypes kiev/vlang/types/StdTypes kiev/vlang/types/S
 INTERFACE kievvlangtypesTVSet kiev/vlang/types/TVSet kiev/vlang/types/TVarBld.java
 INTERFACE kievvtreeDataFlowDefinition kiev/vtree/DataFlowDefinition kiev/vtree/metas.java
 INTERFACE kievvtreeINode kiev/vtree/INode kiev/vtree/AST.java
-INTERFACE kievvtreePreScanneable kiev/vtree/PreScanneable kiev/vtree/AST.java
 INTERFACE kievvtreeThisIsANode kiev/vtree/ThisIsANode kiev/vtree/metas.java
 INTERFACE kievvtreeUnVersioned kiev/vtree/UnVersioned kiev/vtree/metas.java
 INTERFACE kievvtreenodeAttr kiev/vtree/nodeAttr kiev/vtree/metas.java

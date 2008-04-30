@@ -578,7 +578,7 @@ public class Env extends KievPackage {
 		pr.draw(dr);
 		make_output_dir(f);
 		FileOutputStream out = new FileOutputStream(f);
-		if (stx instanceof XmlDumpSyntax) {
+		if (stx instanceof Draw_XmlDumpSyntax) {
 			out.write("<?xml version='1.1' encoding='UTF-8' standalone='yes'?>\n".getBytes("UTF-8"));
 			out.write("<!--\n".getBytes("UTF-8"));
 			out.write(" Copyright (c) 2005-2007 UAB \"MAKSINETA\".\n".getBytes("UTF-8"));

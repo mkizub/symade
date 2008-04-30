@@ -183,8 +183,7 @@ public final class FileUnit extends NameSpace {
 
 	@nodeAttr public String						fname;
 	
-	@nodeData public PrescannedBody[]			bodies;
-	@nodeData public boolean						scanned_for_interface_only;
+	@nodeData public boolean					scanned_for_interface_only;
 
 	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
 	public String							current_syntax;
@@ -223,10 +222,6 @@ public final class FileUnit extends NameSpace {
 
 	private FileUnit(String name) {
 		this.fname = name;
-	}
-
-	public void addPrescannedBody(PrescannedBody b) {
-		bodies.append(b);
 	}
 
 	public String toString() { return fname; }
@@ -290,7 +285,6 @@ public final class FileUnit extends NameSpace {
 
 	public boolean backendCleanup() {
         Kiev.parserAddresses.clear();
-		Kiev.k.presc = null;
 		return super.backendCleanup();
 	}
 }

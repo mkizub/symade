@@ -73,7 +73,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	public boolean instanceOf(TypeDecl cl);
 	public Field resolveField(String name);
 	public Field resolveField(String name, boolean fatal);
-	public Method resolveMethod(String name, Type ret, ...);
+	public Method resolveMethod(String name, Type ret, Type... va_args);
 	public Constructor getClazzInitMethod();
 
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {

@@ -749,7 +749,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return null;
 	}
 
-	public Method resolveMethod(String name, Type ret, ...) {
+	public Method resolveMethod(String name, Type ret, Type... va_args) {
 		Type[] args = new Type[va_args.length];
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
