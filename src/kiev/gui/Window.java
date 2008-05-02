@@ -224,7 +224,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		info_view   = new InfoView(this, Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
 		clip_view   = new InfoView(this, Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
 		expl_view   = new TreeView(this, Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
-		expl_view.setRoot(Env.getRoot().rdir);
+		expl_view.setRoot(Env.getProject().root_dir);
 		expl_view.formatAndPaint(true);
 		expl_tree.requestFocus();
 	}

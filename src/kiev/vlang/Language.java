@@ -187,7 +187,6 @@ public final class CoreLang implements Language {
 				MetaVarArgs.class,
 				MetaSynthetic.class,
 		SNode.class,	// syntax nodes
-			DirUnit.class,		// directory
 			NameSpace.class,	// name space unit
 				FileUnit.class,	// file/compilation unit, also acts as a namespace
 			Opdef.class,		// operator declaration

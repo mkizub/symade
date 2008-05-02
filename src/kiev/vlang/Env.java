@@ -26,8 +26,6 @@ import kiev.be.java15.Attr;
 import kiev.be.java15.JStruct;
 import kiev.be.java15.JEnv;
 
-import static kiev.vlang.ProjectFileType.*;
-
 import syntax kiev.Syntax;
 
 /**
@@ -35,31 +33,6 @@ import syntax kiev.Syntax;
  * @version $Revision$
  *
  */
-
-public enum ProjectFileType {
-	CLASS,
-	INTERFACE,
-	ENUM,
-	SYNTAX,
-	PACKAGE,
-	METATYPE,
-	FORMAT
-}
-
-@ThisIsANode(lang=void)
-public final class ProjectFile extends ASTNode {
-
-	@virtual typedef This  = ProjectFile;
-
-	public ProjectFileType		type;
-	public String				qname;
-	public KString				bname;
-	public File					file;
-	public boolean				bad;
-
-	public ProjectFile() {}
-}
-
 
 /** Class Env is a static class that implements global
 	static methods and data for kiev compiler
@@ -70,9 +43,6 @@ public class Env extends KievPackage {
 
 	/** Hashtable of all defined and loaded classes */
 	public static Hash<String>						classHashOfFails	= new Hash<String>();
-
-	/** Hashtable for project file (class name + file name) */
-	public static Hashtable<String,ProjectFile>	projectHash = new Hashtable<String,ProjectFile>();
 
 	/** Root of package hierarchy */
 	private static Env								root = new Env();
@@ -86,9 +56,10 @@ public class Env extends KievPackage {
 	/** Backend environment */
 	public static JEnv								jenv;
 
-	@nodeAttr public DirUnit								rdir;
-	
+	@nodeAttr public Project						project;
+
 	public static Env getRoot() { return root; }
+	public static Project getProject() { return root.project; }
 	
 	/** Private class constructor -
 		really there may be no instances of this class
@@ -226,63 +197,17 @@ public class Env extends KievPackage {
 		return tdecl;
 	}
 
-	/** Default environment initialization */
-	public static void InitializeEnv() {
-		if (Env.getRoot().rdir == null)
-			Env.getRoot().rdir = DirUnit.makeRootDir();
-	    InitializeEnv(System.getProperty("java.class.path"));
-	}
-
 	/** Environment initialization with specified CLASSPATH
 		for the compiling classes
 	 */
 	public static void InitializeEnv(String path) {
-		if (Env.getRoot().rdir == null)
-			Env.getRoot().rdir = DirUnit.makeRootDir();
 		if (path == null) path = System.getProperty("java.class.path");
 		classpath = new kiev.bytecode.Classpath(path);
 		jenv = new JEnv();
-		if( Kiev.project_file != null && Kiev.project_file.exists() ) {
-			try {
-				BufferedReader in = new BufferedReader(new FileReader(Kiev.project_file));
-				while(in.ready()) {
-					String line = in.readLine();
-					if( line==null ) continue;
-					String[] args = line.trim().split("\\s+");
-					if (args.length == 0)
-						continue;
-					int idx = 0;
-					ProjectFile pf = new ProjectFile();
-					pf.type = ProjectFileType.fromString(args[idx++]);
-					switch (pf.type) {
-					case CLASS:
-					case INTERFACE:
-					case ENUM:
-					case SYNTAX:
-					case PACKAGE:
-						pf.qname = args[idx++].intern();
-						pf.bname = KString.from(args[idx++]);
-						pf.file = new File(args[idx++].replace('/',File.separatorChar));
-						break;
-					case METATYPE:
-					case FORMAT:
-						pf.qname = args[idx++].intern();
-						pf.file = new File(args[idx++].replace('/',File.separatorChar));
-						break;
-					}
-					for (int i=idx; i < args.length; i++) {
-						if (args[i].equals("bad"))
-							pf.bad = true;
-					}
-					projectHash.put(pf.qname, pf);
-				}
-				in.close();
-			} catch (EOFException e) {
-				// OK
-			} catch (IOException e) {
-				Kiev.reportWarning("Error while project file reading: "+e);
-			}
-		}
+		if (Kiev.project_file != null && Kiev.project_file.exists())
+			getRoot().project = loadProject(Kiev.project_file);
+		if (getRoot().project == null)
+			getRoot().project = new Project();
 
 		//root.setPackage();
 		root.addSpecialField("$GenAsserts", Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));
@@ -301,80 +226,7 @@ public class Env extends KievPackage {
 
 	public static void dumpProjectFile() {
 		if( Kiev.project_file == null ) return;
-		try {
-			PrintStream out = new PrintStream(new FileOutputStream(Kiev.project_file));
-			Vector<String> strs = new Vector<String>();
-			for(Enumeration<String> e=projectHash.keys(); e.hasMoreElements();) {
-				String key = e.nextElement();
-				ProjectFile pf = projectHash.get(key);
-				DNode cl = resolveGlobalDNode(pf.qname);
-				if (cl != null && cl.isBad()) pf.bad = true;
-				if (cl instanceof Struct) {
-					if      (cl.isSyntax())		pf.type = SYNTAX;
-					else if (cl.isPackage())	pf.type = PACKAGE;
-					else if (cl.isInterface())	pf.type = INTERFACE;
-					else if (cl.isEnum())		pf.type = ENUM;
-					else						pf.type = CLASS;
-					strs.append(pf.type+" "+pf.qname+" "+pf.bname+" "+pf.file.getPath().replace(File.separatorChar,'/')+(pf.bad?" bad":""));
-				}
-				else if (cl instanceof TypeDecl) {
-					pf.type = METATYPE;
-					strs.append(pf.type+" "+pf.qname+" "+pf.file.getPath().replace(File.separatorChar,'/')+(pf.bad?" bad":""));
-				}
-				else if (cl instanceof ATextSyntax) {
-					pf.type = FORMAT;
-					strs.append(pf.type+" "+pf.qname+" "+pf.file.getPath().replace(File.separatorChar,'/')+(pf.bad?" bad":""));
-				}
-			}
-			String[] sarr = (String[])strs;
-			java.util.Arrays.sort(sarr);
-			foreach(String s; sarr) out.println(s);
-		} catch (IOException e) {
-			Kiev.reportWarning("Error while project file writing: "+e);
-		}
-	}
-
-	public static void createProjectInfo(GlobalDNode dn, String f) {
-		String qname = dn.qname();
-		if (qname == null || qname == "")
-			return;
-		ProjectFile pf = projectHash.get(qname);
-		if( pf == null ) {
-			ProjectFile pf = new ProjectFile();
-			pf.qname = qname;
-			pf.file = new File(f);
-			projectHash.put(qname,pf);
-		}
-		else {
-			if( !pf.file.getName().equals(f) )
-				pf.file = new File(f);
-		}
-		setProjectInfo(dn, false);
-	}
-
-	public static void setProjectInfo(GlobalDNode dn, boolean good) {
-		String qname = dn.qname();
-		if (qname == null)
-			return;
-		ProjectFile pf = projectHash.get(qname);
-		if (pf != null) {
-			if (dn instanceof Struct)
-				pf.bname = dn.bytecode_name;
-			pf.bad = !good;
-			if (dn instanceof Struct) {
-				if      (dn.isSyntax())		pf.type = SYNTAX;
-				else if (dn.isPackage())	pf.type = PACKAGE;
-				else if (dn.isInterface())	pf.type = INTERFACE;
-				else if (dn.isEnum())		pf.type = ENUM;
-				else						pf.type = CLASS;
-			}
-			else if (dn instanceof TypeDecl) {
-				pf.type = METATYPE;
-			}
-			else if (dn instanceof ATextSyntax) {
-				pf.type = FORMAT;
-			}
-		}
+		Env.dumpTextFile(Env.getProject(), Kiev.project_file, new XmlDumpSyntax("proj").getCompiled().init());
 	}
 
 	public static boolean existsStruct(String qname) {
@@ -383,9 +235,6 @@ public class Env extends KievPackage {
 		if (classHashOfFails.get(qname) != null) return false;
 		Struct cl = (Struct)resolveGlobalDNode(qname);
 		if (cl != null)
-			return true;
-		// check class in the project
-		if (Env.projectHash.get(qname) != null)
 			return true;
 		// Check if not loaded
 		return Env.classpath.exists(qname.replace('\u001f','/'));
@@ -404,9 +253,6 @@ public class Env extends KievPackage {
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
-		// Try to load from project file (scan sources) or from .xml API dump
-		if (cl == null && !Compiler.makeall_project && Env.projectHash.get(qname) != null)
-			cl = loadTypeDeclFromProject(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
@@ -421,48 +267,6 @@ public class Env extends KievPackage {
 		return cl;
 	}
 
-	public static DNode loadDNodeFromXML(String qname) {
-		if (qname == "") return Env.getRoot();
-		// Check class is already loaded
-		if (classHashOfFails.get(qname) != null) return null;
-		DNode dn = resolveGlobalDNode(qname);
-		// Try to load from project file (scan sources) or from .xml API dump
-		if (dn == null && !Compiler.makeall_project && Env.projectHash.get(qname) != null)
-			dn = loadTypeDeclFromProject(qname);
-		// Load if not loaded or not resolved
-		if (dn == null) {
-			byte[] data = Env.classpath.read(qname.replace('\u001f','/'));
-			if (data != null && data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
-				if (Thread.currentThread() instanceof WorkerThread) {
-					FileUnit fu = loadFromXmlData(data, qname.replace('\u001f','/')+".xml", null);
-					//Kiev.runProcessorsOn(fu);
-				} else {
-					CompilerParseInfo carg = new CompilerParseInfo(qname.replace('\u001f','/')+".xml", data, false);
-					Transaction tr = Transaction.open("Env.java:loadDNodeFromXML");
-					try {
-						EditorThread thr = EditorThread;
-						Compiler.runFrontEnd(thr,new CompilerParseInfo[]{carg},null,true);
-					} finally { tr.close(); }
-				}
-				dn = Env.resolveGlobalDNode(qname);
-				if (dn != null)
-					return dn;
-			}
-		}
-		if (dn instanceof TypeDecl) {
-			TypeDecl cl = (TypeDecl)dn;
-			if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
-				if (cl instanceof Struct)
-					dn = jenv.loadClazz((Struct)cl);
-				else
-					dn = jenv.loadClazz(cl.qname());
-			}
-		}
-		if (dn == null)
-			classHashOfFails.put(qname);
-		return dn;
-	}
-	
 	public static Draw_ATextSyntax loadLanguageSyntax(String qname) {
 		//DNode ts = Env.resolveGlobalDNode(qname);
 		//if (ts instanceof ATextSyntax)
@@ -489,9 +293,6 @@ public class Env extends KievPackage {
 			return cl;
 		if (cl instanceof Env)
 			return Env.getRoot();
-		// Try to load from project file (scan sources) or from .xml API dump
-		if (!Compiler.makeall_project && Env.projectHash.get(cl.qname()) != null)
-			loadTypeDeclFromProject(cl.qname());
 		// Load if not loaded or not resolved
 		if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
 			if (cl instanceof Struct)
@@ -502,68 +303,6 @@ public class Env extends KievPackage {
 		return cl;
 	}
 	
-	private static TypeDecl loadTypeDeclFromProject(String qname) {
-		ProjectFile pf = Env.projectHash.get(qname);
-		if (pf == null || pf.file == null)
-			return null;
-		File file = pf.file;
-		if (!file.exists() || !file.canRead())
-			return null;
-		String filename = file.toString();
-		String cur_file = Kiev.getCurFile();
-		Kiev.setCurFile(filename);
-		Parser k = Kiev.k;
-		long curr_time = 0L, diff_time = 0L;
-		try {
-			diff_time = curr_time = System.currentTimeMillis();
-			java.io.InputStreamReader file_reader = null;
-			char[] file_chars = new char[8196];
-			int file_sz = 0;
-			try {
-				file_reader = new InputStreamReader(new FileInputStream(filename), "UTF-8");
-				for (;;) {
-					int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
-					if (r < 0)
-						break;
-					file_sz += r;
-					if (file_sz >= file_chars.length) {
-						char[] tmp = new char[file_chars.length + 8196];
-						System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
-						file_chars = tmp;
-					}
-				}
-			} finally {
-				if (file_reader != null) file_reader.close();
-			}
-			java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
-			Kiev.k.interface_only = true;
-			diff_time = curr_time = System.currentTimeMillis();
-			Kiev.k.ReInit(bis);
-			FileUnit fu = Kiev.k.FileUnit(filename);
-			fu.current_syntax = "stx-fmt\u001fsyntax-for-java";
-			fu.scanned_for_interface_only = true;
-			diff_time = System.currentTimeMillis() - curr_time;
-			bis.close();
-			if( Kiev.verbose )
-				Kiev.reportInfo("Scanned file   "+filename,diff_time);
-			try {
-				Kiev.runProcessorsOn(fu);
-				//Kiev.lockNodeTree(fu);
-			} catch(Exception e ) {
-				Kiev.reportError(e);
-			}
-		} catch ( ParseException e ) {
-			Kiev.reportError(e);
-		} catch ( ParseError e ) {
-			System.out.println("Error while scanning input file:"+filename+":"+e);
-		} finally {
-			k.interface_only = Kiev.interface_only;
-			Kiev.setCurFile(cur_file);
-		}
-		TypeDecl td = (TypeDecl)Env.resolveGlobalDNode(qname);
-		return td;
-	}
-
 	public static void dumpTextFile(ASTNode node, File f, Draw_ATextSyntax stx)
 		throws IOException
 	{
@@ -603,6 +342,25 @@ public class Env extends KievPackage {
 		}
 	}
 	
+	private static Project loadProject(File f) {
+		assert (Thread.currentThread() instanceof WorkerThread);
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser saxParser = factory.newSAXParser();
+		SAXHandler handler = new SAXHandler();
+		saxParser.parse(f, handler);
+		Project prj = (Project)handler.root;
+		prj.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) {
+				if (n instanceof FileUnit) {
+					n.project_file = true;
+					return false;
+				}
+				return true;
+			}
+		});
+		return prj;
+	}
+
 	public static FileUnit loadFromXmlFile(File f, byte[] data) {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -617,7 +375,7 @@ public class Env extends KievPackage {
 			dti.applay();
 		ANode root = handler.root;
 		if!(root instanceof FileUnit) {
-			root = FileUnit.makeFile(getRelativePath(f));
+			root = FileUnit.makeFile(getRelativePath(f), false);
 			root.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 			root.members += handler.root;
 		}
@@ -688,7 +446,7 @@ public class Env extends KievPackage {
 						qname = tdname;
 					else
 						qname = pkg.qname() + '\u001f' + tdname;
-					FileUnit fu = FileUnit.makeFile(qname.replace('\u001f','/')+".xml");
+					FileUnit fu = FileUnit.makeFile(qname.replace('\u001f','/')+".xml", false);
 					fu.scanned_for_interface_only = true;
 					fu.srpkg.symbol = pkg;
 					root = fu;
@@ -714,7 +472,7 @@ public class Env extends KievPackage {
 				else if (cl_name.equals("kiev.vlang.FileUnit")) {
 					if (file == null)
 						file = new File(tdname.replace('\u001f','/')+".xml");
-					FileUnit fu = FileUnit.makeFile(getRelativePath(file));
+					FileUnit fu = FileUnit.makeFile(getRelativePath(file), false);
 					root = fu;
 					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 					nodes.push(root);

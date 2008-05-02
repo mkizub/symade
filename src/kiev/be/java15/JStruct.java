@@ -260,7 +260,6 @@ public final view JStruct of Struct extends JTypeDecl {
 			return;
 		if !(isPackage() || isSyntax() || isMacro())
 			this.toBytecode(constPool);
-		Env.setProjectInfo((Struct)this, true);
 	}
 
 	static void make_output_dir(String top_dir, String filename) throws IOException {

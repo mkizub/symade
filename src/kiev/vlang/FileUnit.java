@@ -27,152 +27,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@ThisIsANode(name="FileUnit", lang=CoreLang, copyable=false)
-public final class DirUnit extends SNode {
-
-	@virtual typedef This  = DirUnit;
-
-	public static final DirUnit[] emptyArray = new DirUnit[0];
-
-	@nodeAttr public String			name;
-	@nodeAttr public ASTNode[]		members;
-	
-	@setter public void set$name(String value) {
-		this.name = (value == null) ? null : value.intern();
-	}
-
-	private DirUnit(String name) {
-		this.name = name;
-	}
-	
-	public String pname() {
-		if (parent() instanceof DirUnit) {
-			DirUnit p = (DirUnit)parent();
-			if (p.name == ".")
-				return name;
-			return p.pname() + '/' + name;
-		}
-		return name;
-	}
-	
-	private DirUnit addDir(String name) {
-		DirUnit dir = new DirUnit(name);
-		for (int i=0; i < members.length; i++) {
-			SNode m = members[i];
-			if (!(m instanceof DirUnit) || ((DirUnit)m).name.compareToIgnoreCase(name) > 0) {
-				members.insert(i, dir);
-				return dir;
-			}
-		}
-		members.append(dir);
-		return dir;
-	}
-
-	public FileUnit addFile(FileUnit fu) {
-		for (int i=0; i < members.length; i++) {
-			SNode m = members[i];
-			if!(m instanceof FileUnit)
-				continue;
-			if (((FileUnit)m).fname.compareToIgnoreCase(fu.fname) > 0) {
-				members.insert(i, fu);
-				break;
-			}
-		}
-		if (!fu.isAttached())
-			members.append(fu);
-		if (Thread.currentThread() instanceof WorkerThread) {
-			WorkerThread wt = (WorkerThread)Thread.currentThread();
-			if (wt.fileEnumerator != null)
-				wt.fileEnumerator.addNewFile(fu);
-		}
-		return fu;
-	}
-
-	public static DirUnit makeRootDir() {
-		return new DirUnit(".");
-	}
-	public DirUnit makeDir(String qname) {
-		qname = qname.replace(File.separatorChar, '/');
-		DirUnit dir = this;
-		int start = 0;
-		int end = qname.indexOf('/', start);
-		while (end > 0) {
-			String nm = qname.substring(start, end).intern();
-			if (nm != "") {
-				DirUnit dd = null;
-				foreach (DirUnit d; dir.members; d.name == nm) {
-					dd = d;
-					break;
-				}
-				if (dd == null)
-					dd = dir.addDir(nm);
-				dir = dd;
-			}
-			start = end+1;
-			end = qname.indexOf('/', start);
-		}
-		String nm = qname.substring(start).intern();
-		if (nm != "") {
-			DirUnit dd = null;
-			foreach (DirUnit d; dir.members; d.name == nm) {
-				dd = d;
-				break;
-			}
-			if (dd == null)
-				dd = dir.addDir(nm);
-			dir = dd;
-		}
-		return dir;
-	}
-	
-	public Enumeration<FileUnit> enumerateAllFiles() {
-		FileEnumerator fe = new FileEnumerator(this,true);
-		if (Thread.currentThread() instanceof WorkerThread) {
-			WorkerThread wt = (WorkerThread)Thread.currentThread();
-			assert (wt.fileEnumerator == null);
-			wt.fileEnumerator = fe;
-		}
-		return fe;
-	}
-	
-	public Enumeration<FileUnit> enumerateNewFiles() {
-		FileEnumerator fe = new FileEnumerator(this,false);
-		if (Thread.currentThread() instanceof WorkerThread) {
-			WorkerThread wt = (WorkerThread)Thread.currentThread();
-			assert (wt.fileEnumerator == null);
-			wt.fileEnumerator = fe;
-		}
-		return fe;
-	}
-	
-	public static class FileEnumerator implements Enumeration<FileUnit> {
-		private Vector<FileUnit> files;
-		private int idx;
-		public boolean hasMoreElements() {
-			return idx < files.length;
-		}
-		public FileUnit nextElement() {
-			return files[idx++];
-		}
-		FileEnumerator(DirUnit dir, boolean all) {
-			this.files = new Vector<FileUnit>();
-			if (all)
-				addFiles(dir);
-		}
-		private void addFiles(DirUnit dir) {
-			foreach (FileUnit fu; dir.members)
-				this.files.append(fu);
-			foreach (DirUnit d; dir.members)
-				addFiles(d);
-		}
-		void addNewFile(FileUnit fu) {
-			this.files.append(fu);
-		}
-	}
-
-}
-
-@ThisIsANode(name="FileUnit", lang=CoreLang, copyable=false)
+@ThisIsANode(name="FileUnit", lang=CoreLang)
 public final class FileUnit extends NameSpace {
 
 	@virtual typedef This  = FileUnit;
@@ -181,9 +36,10 @@ public final class FileUnit extends NameSpace {
 
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
-	@nodeAttr public String						fname;
+	@nodeAttr public String					fname;
+	@nodeAttr public boolean				project_file;
 	
-	@nodeData public boolean					scanned_for_interface_only;
+	@nodeData public boolean				scanned_for_interface_only;
 
 	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
 	public String							current_syntax;
@@ -201,33 +57,43 @@ public final class FileUnit extends NameSpace {
 		return ((DirUnit)parent()).pname() + '/' + fname;
 	}
 	
-	public static FileUnit makeFile(String qname) {
+	public static FileUnit makeFile(String qname, boolean project_file) {
 		qname = qname.replace(File.separatorChar, '/');
 		DirUnit dir;
 		String name;
 		int end = qname.lastIndexOf('/');
 		if (end < 0) {
-			dir = Env.getRoot().rdir;
+			dir = Env.getProject().root_dir;
 			name = qname;
 		} else {
-			dir = Env.getRoot().rdir.makeDir(qname.substring(0,end));
+			dir = Env.getProject().root_dir.makeDir(qname.substring(0,end));
 			name = qname.substring(end+1);
 		}
 		foreach (FileUnit fu; dir.members; name.equals(fu.fname))
 			return fu;
-		FileUnit fu = new FileUnit(name);
-		dir.addFile(fu); 
+		FileUnit fu = new FileUnit(name, project_file);
+		dir.addFile(fu);
 		return fu;
 	}
 
-	private FileUnit(String name) {
+	public FileUnit() {}
+
+	public FileUnit(String name, boolean project_file) {
 		this.fname = name;
+		this.project_file = project_file;
 	}
 
 	public String toString() { return fname; }
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "fname")
+		if (dump == "proj") {
+			if (attr == ANode.nodeattr$this)
+				return this.project_file;
+			if (attr.name == "fname")
+				return true;
+			return false;
+		}
+		else if (attr.name == "fname")
 			return false;
 		return super.includeInDump(dump, attr, val);
 	}
@@ -299,7 +165,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 
-	@nodeAttr public SymbolRef<TypeDecl>			srpkg;
+	@nodeAttr public SymbolRef<TypeDecl>		srpkg;
 	@nodeAttr public ASTNode[]					members;
 	
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }

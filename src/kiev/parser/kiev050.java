@@ -114,7 +114,6 @@ public abstract class kiev050 implements kiev050Constants {
 		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(tdecl.meta);
-		Env.createProjectInfo(tdecl, String.valueOf(Kiev.getCurFile()));
 		return tdecl;
 	}
 
@@ -153,10 +152,8 @@ public abstract class kiev050 implements kiev050Constants {
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(clazz.meta);
-		if (parent instanceof NameSpace) {
+		if (parent instanceof NameSpace)
 			clazz.setLocal(false);
-			Env.createProjectInfo(clazz, String.valueOf(Kiev.getCurFile()));
-		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
 		else
@@ -422,7 +419,7 @@ public abstract class kiev050 implements kiev050Constants {
   final public FileUnit FileUnit(String filename) throws ParseException {
   FileUnit oldFileUnit; TypeDecl oldClazz;
                 oldFileUnit = curFileUnit;
-                FileUnit fu = FileUnit.makeFile(filename);
+                FileUnit fu = FileUnit.makeFile(filename, false);
                 curFileUnit = fu;
                 declMode = true;
                 ASTModifiers modifiers;
@@ -6196,13 +6193,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_54() {
-    if (jj_3R_108()) return true;
+  final private boolean jj_3_29() {
+    if (jj_3R_94()) return true;
     return false;
   }
 
-  final private boolean jj_3_29() {
-    if (jj_3R_94()) return true;
+  final private boolean jj_3_54() {
+    if (jj_3R_108()) return true;
     return false;
   }
 

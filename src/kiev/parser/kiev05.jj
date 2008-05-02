@@ -127,7 +127,6 @@ public abstract class kiev050 {
 		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(tdecl.meta);
-		Env.createProjectInfo(tdecl, String.valueOf(Kiev.getCurFile()));
 		return tdecl;
 	}
 
@@ -166,10 +165,8 @@ public abstract class kiev050 {
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(clazz.meta);
-		if (parent instanceof NameSpace) {
+		if (parent instanceof NameSpace)
 			clazz.setLocal(false);
-			Env.createProjectInfo(clazz, String.valueOf(Kiev.getCurFile()));
-		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
 		else
@@ -800,7 +797,7 @@ FileUnit FileUnit(String filename) :
 {
 	{
 		oldFileUnit = curFileUnit;
-		FileUnit fu = FileUnit.makeFile(filename);
+		FileUnit fu = FileUnit.makeFile(filename, false);
 		curFileUnit = fu;
 		declMode = true;
 		ASTModifiers modifiers;
