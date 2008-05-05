@@ -33,12 +33,12 @@ public final class CoreLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
 		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
 		return defaultInfoSyntax;
 	}
 	private static Draw_ATextSyntax defaultEditorSyntax;
@@ -211,12 +211,12 @@ public final class LogicLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
 		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
 		return defaultInfoSyntax;
 	}
 	private static Draw_ATextSyntax defaultEditorSyntax;
@@ -244,12 +244,12 @@ public final class MacroLang implements Language {
 	public Class[] getNodeClasses() { nodeClasses }
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
 		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
 		return defaultInfoSyntax;
 	}
 	private static Draw_ATextSyntax defaultEditorSyntax;

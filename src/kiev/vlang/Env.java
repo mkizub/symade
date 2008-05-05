@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-public class Env extends KievPackage {
+public final class Env extends KievPackage {
 
 	/** Hashtable of all defined and loaded classes */
 	public static Hash<String>						classHashOfFails	= new Hash<String>();
@@ -47,14 +47,11 @@ public class Env extends KievPackage {
 	/** Root of package hierarchy */
 	private static Env								root = new Env();
 
-	/** Compiler properties */
-	public static Properties						props = System.getProperties();
-	
 	/** Class/library path */
-	public static kiev.bytecode.Classpath			classpath;
+	private kiev.bytecode.Classpath					classpath;
 
 	/** Backend environment */
-	public static JEnv								jenv;
+	private JEnv									jenv;
 
 	@nodeAttr public Project						project;
 
@@ -69,23 +66,15 @@ public class Env extends KievPackage {
 		new CompaundMetaType(this);
 	}
 
-	public static void setProperty(String prop, String value) {
-		props.put(prop,value);
-	}
-
-	public static void removeProperty(String prop) {
-		props.remove(prop);
-	}
-
-	public static String getProperty(String prop) {
-		return props.getProperty(prop);
+	public JEnv getBackendEnv() {
+		return jenv;
 	}
 	
 	public String toString() {
 		return "<root>";
 	}
 
-	public static DNode resolveGlobalDNode(String qname) {
+	public DNode resolveGlobalDNode(String qname) {
 		//assert(qname.indexOf('.') < 0);
 		Struct pkg = Env.getRoot();
 		int start = 0;
@@ -109,11 +98,11 @@ public class Env extends KievPackage {
 		return null;
 	}
 	
-	public static Struct newStruct(String sname, Struct outer, int acces, Struct variant) {
+	public Struct newStruct(String sname, Struct outer, int acces, Struct variant) {
 		return newStruct(sname,true,outer,acces,variant,false,null);
 	}
 
-	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, Struct cl, boolean cleanup, String uuid)
+	public Struct newStruct(String sname, boolean direct, Struct outer, int acces, Struct cl, boolean cleanup, String uuid)
 	{
 		assert(outer != null);
 		Struct bcl = null;
@@ -142,7 +131,7 @@ public class Env extends KievPackage {
 		return cl;
 	}
 
-	public static Struct newPackage(String qname) {
+	public Struct newPackage(String qname) {
 		if (qname == "")
 			return Env.getRoot();
 		assert(qname.indexOf('.') < 0);
@@ -153,7 +142,7 @@ public class Env extends KievPackage {
 			return newPackage(qname.substring(end+1).intern(),newPackage(qname.substring(0,end).intern()));
 	}
 
-	public static Struct newPackage(String sname, Struct outer) {
+	public Struct newPackage(String sname, Struct outer) {
 		assert( outer instanceof KievPackage );
 		Struct cl = null;
 		foreach (Struct s; outer.sub_decls; s.sname == sname) {
@@ -168,7 +157,7 @@ public class Env extends KievPackage {
 		return cl;
 	}
 
-	public static MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, Struct pkg, boolean cleanup, String uuid) {
+	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, Struct pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
 			pkg = Env.getRoot();
 		assert (pkg.isPackage());
@@ -200,14 +189,14 @@ public class Env extends KievPackage {
 	/** Environment initialization with specified CLASSPATH
 		for the compiling classes
 	 */
-	public static void InitializeEnv(String path) {
+	public void InitializeEnv(String path) {
 		if (path == null) path = System.getProperty("java.class.path");
-		classpath = new kiev.bytecode.Classpath(path);
-		jenv = new JEnv();
+		this.classpath = new kiev.bytecode.Classpath(path);
+		this.jenv = new JEnv();
 		if (Kiev.project_file != null && Kiev.project_file.exists())
-			getRoot().project = loadProject(Kiev.project_file);
-		if (getRoot().project == null)
-			getRoot().project = new Project();
+			this.project = loadProject(Kiev.project_file);
+		if (this.project == null)
+			this.project = new Project();
 
 		//root.setPackage();
 		root.addSpecialField("$GenAsserts", Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));
@@ -224,12 +213,12 @@ public class Env extends KievPackage {
 		members.add(f);
 	}
 
-	public static void dumpProjectFile() {
+	public void dumpProjectFile() {
 		if( Kiev.project_file == null ) return;
-		Env.dumpTextFile(Env.getProject(), Kiev.project_file, new XmlDumpSyntax("proj").getCompiled().init());
+		dumpTextFile(getProject(), Kiev.project_file, new XmlDumpSyntax("proj").getCompiled().init());
 	}
 
-	public static boolean existsStruct(String qname) {
+	public boolean existsStruct(String qname) {
 		if (qname == "") return true;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return false;
@@ -237,18 +226,18 @@ public class Env extends KievPackage {
 		if (cl != null)
 			return true;
 		// Check if not loaded
-		return Env.classpath.exists(qname.replace('\u001f','/'));
+		return this.classpath.exists(qname.replace('\u001f','/'));
 
 	}
 
-	public static TypeDecl loadTypeDecl(String qname, boolean fatal) {
+	public TypeDecl loadTypeDecl(String qname, boolean fatal) {
 		TypeDecl s = loadTypeDecl(qname);
 		if (fatal && s == null)
 			throw new RuntimeException("Cannot find TypeDecl "+qname);
 		return s;
 	}
 
-	public static TypeDecl loadTypeDecl(String qname) {
+	public TypeDecl loadTypeDecl(String qname) {
 		if (qname == "") return Env.getRoot();
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
@@ -267,7 +256,7 @@ public class Env extends KievPackage {
 		return cl;
 	}
 
-	public static Draw_ATextSyntax loadLanguageSyntax(String qname) {
+	public Draw_ATextSyntax loadLanguageSyntax(String qname) {
 		//DNode ts = Env.resolveGlobalDNode(qname);
 		//if (ts instanceof ATextSyntax)
 		//	return ts.getCompiled().init();
@@ -288,7 +277,7 @@ public class Env extends KievPackage {
 		return dts;
 	}
 
-	public static TypeDecl loadTypeDecl(TypeDecl cl) {
+	public TypeDecl loadTypeDecl(TypeDecl cl) {
 		if (!cl.isTypeDeclNotLoaded())
 			return cl;
 		if (cl instanceof Env)
@@ -303,7 +292,7 @@ public class Env extends KievPackage {
 		return cl;
 	}
 	
-	public static void dumpTextFile(ASTNode node, File f, Draw_ATextSyntax stx)
+	public void dumpTextFile(ASTNode node, File f, Draw_ATextSyntax stx)
 		throws IOException
 	{
 		StringBuilder sb = new StringBuilder(1024);
@@ -334,7 +323,7 @@ public class Env extends KievPackage {
 		out.close();
 	}
 
-	private static void make_output_dir(File f) throws IOException {
+	private void make_output_dir(File f) throws IOException {
 		File dir = f.getParentFile();
 		if (dir != null) {
 			dir.mkdirs();
@@ -342,7 +331,20 @@ public class Env extends KievPackage {
 		}
 	}
 	
-	private static Project loadProject(File f) {
+
+	public byte[] loadClazzFromClasspath(String name) {
+		trace(kiev.bytecode.Clazz.traceRules,"Loading data for clazz "+name);
+
+		byte[] data = this.classpath.read(name);
+		trace(kiev.bytecode.Clazz.traceRules && data != null ,"Data for clazz "+name+" loaded");
+
+		if (data == null || data.length == 0)
+			trace(kiev.bytecode.Clazz.traceRules,"Data for clazz "+name+" not found");
+
+		return data;
+	}
+
+	private Project loadProject(File f) {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
@@ -361,7 +363,7 @@ public class Env extends KievPackage {
 		return prj;
 	}
 
-	public static FileUnit loadFromXmlFile(File f, byte[] data) {
+	public FileUnit loadFromXmlFile(File f, byte[] data) {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
@@ -383,7 +385,7 @@ public class Env extends KievPackage {
 		return (FileUnit)root;
 	}
 
-	public static FileUnit loadFromXmlData(byte[] data, String tdname, TypeDecl pkg) {
+	public FileUnit loadFromXmlData(byte[] data, String tdname, TypeDecl pkg) {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
@@ -450,7 +452,7 @@ public class Env extends KievPackage {
 					fu.scanned_for_interface_only = true;
 					fu.srpkg.symbol = pkg;
 					root = fu;
-					TypeDecl td = (TypeDecl)Env.resolveGlobalDNode(qname);
+					TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(qname);
 					if (td != null) {
 						assert(td.getClass().getName().equals(cl_name));
 						td.cleanupOnReload();
@@ -669,7 +671,7 @@ public class Env extends KievPackage {
 		return s;
 	}
 
-	public static String getRelativePath(File f, File home)
+	private static String getRelativePath(File f, File home)
 		throws IOException
 	{
 		Vector<String> homelist = getPathList(home);
@@ -678,7 +680,7 @@ public class Env extends KievPackage {
 		return s;
 	}
 
-	public static String getRelativePath(File f)
+	private static String getRelativePath(File f)
 		throws IOException
 	{
 		return getRelativePath(f, new File("."));

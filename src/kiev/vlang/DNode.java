@@ -653,7 +653,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public boolean checkResolved() {
 		if( isTypeDeclNotLoaded() ) {
-			if (Env.loadTypeDecl(this).isTypeDeclNotLoaded()) {
+			if (Env.getRoot().loadTypeDecl(this).isTypeDeclNotLoaded()) {
 				if (isPackage())
 					setTypeDeclNotLoaded(false);
 				else

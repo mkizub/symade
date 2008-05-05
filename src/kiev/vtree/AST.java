@@ -230,18 +230,6 @@ public abstract class ANode implements INode {
 	
 	public final boolean    isAttached()    { return parent() != null; }
 
-	public static <V extends ANode> V getVersion(V[] arr, int idx) {
-		return arr[idx];
-	}
-
-	public static <I extends INode> I getVersion(I node) {
-		return node;
-	}
-
-	public static <V extends ANode> V getVersion(V node) {
-		return node;
-	}
-
 	// attach to parent node 'parent' to parent's slot 'slot'
 	public final void callbackAttached(ANode parent, AttrSlot slot) {
 		assert (slot.is_attr);

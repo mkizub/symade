@@ -190,11 +190,11 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 			if (parent() != null && parent().ctx_name_space != null)
 				td = parent().ctx_name_space.getPackage();
 			if (td == null || td instanceof Env) {
-				td = Env.newPackage(srpkg.name);
+				td = Env.getRoot().newPackage(srpkg.name);
 				srpkg.symbol = td;
 				srpkg.qualified = true;
 			} else {
-				td = Env.newPackage(td.qname() + "\u001f" + srpkg.name);
+				td = Env.getRoot().newPackage(td.qname() + "\u001f" + srpkg.name);
 				srpkg.symbol = td;
 				srpkg.qualified = false;
 			}

@@ -158,7 +158,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		TypeRef view_of = kview.view_of;
 
 		// generate implementation
-		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
+		Struct impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
 		impl.pos = clazz.pos;
 		if (clazz.isAbstract()) {
 			clazz.setAbstract(false);

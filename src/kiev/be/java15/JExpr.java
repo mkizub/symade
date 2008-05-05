@@ -138,7 +138,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 
 	static {
 		try {
-		clazzStringBuffer = (Struct)Env.loadTypeDecl("java\u001flang\u001fStringBuilder");
+		clazzStringBuffer = (Struct)Env.getRoot().loadTypeDecl("java\u001flang\u001fStringBuilder");
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuilder not found");
 		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);

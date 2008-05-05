@@ -820,7 +820,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		try {
 			String out_file = td.qname().replace('\u001f',File.separatorChar)+".xml";
 			File f = new File(output_dir,out_file);
-			Env.dumpTextFile(td, f, stx.getCompiled().init());
+			Env.getRoot().dumpTextFile(td, f, stx.getCompiled().init());
 		} catch (IOException e) {
 			System.out.println("Create/write error while API dump: "+e);
 		}
@@ -832,6 +832,11 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		try {
 			String out_file = stx.qname().replace('\u001f',File.separatorChar)+".ser";
 			File f = new File(output_dir,out_file);
+			File dir = f.getParentFile();
+			if (dir != null) {
+				dir.mkdirs();
+				if( !dir.exists() || !dir.isDirectory() ) throw new IOException("Can't create output dir "+dir);
+			}
 			FileOutputStream fo = new FileOutputStream(f);
 			ObjectOutput so = new ObjectOutputStream(fo);
 			so.writeObject(stx.getCompiled().init());
@@ -1053,8 +1058,8 @@ public final class ExportBE_Generate extends BackendProcessor {
 			if (fu.fname.toLowerCase().endsWith(".xml"))
 				stx = new XmlDumpSyntax("full");
 			else
-				stx = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
-			Env.dumpTextFile(fu, f, stx.getCompiled().init());
+				stx = (ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");
+			Env.getRoot().dumpTextFile(fu, f, stx.getCompiled().init());
 		} catch (IOException e) {
 			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
 		}

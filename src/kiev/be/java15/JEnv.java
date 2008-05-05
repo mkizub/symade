@@ -25,7 +25,7 @@ public final class JEnv {
 		// Check class is already loaded
 		String qname = name.name.toString().replace('.','\u001f');
 		if (Env.classHashOfFails.get(qname) != null ) return null;
-		Struct cl = (Struct)Env.resolveGlobalDNode(qname);
+		Struct cl = (Struct)Env.getRoot().resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if( cl == null )
 			cl = (Struct)loadClazz(name);
@@ -42,9 +42,9 @@ public final class JEnv {
 		if (p < 0)
 			return loadClazz(ClazzName.fromToplevelName(KString.from(qname)));
 		String pname = qname.substring(0,p);
-		TypeDecl td = Env.loadTypeDecl(pname,true);
+		TypeDecl td = Env.getRoot().loadTypeDecl(pname,true);
 		// maybe an inner class is already loaded by outer class
-		TypeDecl cl = (TypeDecl)Env.resolveGlobalDNode(qname);
+		TypeDecl cl = (TypeDecl)Env.getRoot().resolveGlobalDNode(qname);
 		if (cl != null && !cl.isTypeDeclNotLoaded())
 			return cl;
 		return loadClazz(ClazzName.fromOuterAndName((Struct)td, KString.from(qname.substring(p+1))));
@@ -65,21 +65,21 @@ public final class JEnv {
 		// Ensure the parent package/outer class is loaded
 		Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 		if (pkg == null)
-			pkg = Env.newPackage(name.package_name().toString().replace('.','\u001f'));
+			pkg = Env.getRoot().newPackage(name.package_name().toString().replace('.','\u001f'));
 		if (pkg.isTypeDeclNotLoaded())
 			pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 
 		long curr_time = 0L, diff_time = 0L;
 		diff_time = curr_time = System.currentTimeMillis();
-		byte[] data = loadClazzFromClasspath(name.bytecode_name.toString());
+		byte[] data = Env.getRoot().loadClazzFromClasspath(name.bytecode_name.toString());
 		if (data == null)
 			return null;
 		TypeDecl td = null;
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
-			Env.loadFromXmlData(data, name.src_name.toString(), pkg);
-			td = (TypeDecl)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
+			Env.getRoot().loadFromXmlData(data, name.src_name.toString(), pkg);
+			td = (TypeDecl)Env.getRoot().resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
 		}
 		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing .class data for clazz "+name);
@@ -88,7 +88,7 @@ public final class JEnv {
 		}
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)
-				td = (Struct)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
+				td = (Struct)Env.getRoot().resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
 			if (td == null || td.isTypeDeclNotLoaded())
 				td = new Bytecoder((Struct)td,clazz,null).readClazz(name, pkg);
 		}
@@ -103,18 +103,6 @@ public final class JEnv {
 					)+name,diff_time);
 		}
 		return td;
-	}
-
-	private synchronized byte[] loadClazzFromClasspath(String name) {
-		trace(kiev.bytecode.Clazz.traceRules,"Loading data for clazz "+name);
-
-		byte[] data = Env.classpath.read(name);
-		trace(kiev.bytecode.Clazz.traceRules && data != null ,"Data for clazz "+name+" loaded");
-
-		if( data == null || data.length == 0 )
-			trace(kiev.bytecode.Clazz.traceRules,"Data for clazz "+name+" not found");
-
-		return data;
 	}
 }
 

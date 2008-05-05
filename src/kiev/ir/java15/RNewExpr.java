@@ -246,12 +246,12 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate() {
 		if (clazz != null)                                                    
 			return true;
-		clazz = Env.newStruct(null,false,(Struct)ctx_tdecl,0,new JavaAnonymouseClass(),true,null);
+		clazz = Env.getRoot().newStruct(null,false,(Struct)ctx_tdecl,0,new JavaAnonymouseClass(),true,null);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		if (ctx_method==null || ctx_method.isStatic())
 			clazz.setStatic(true);
-		if (Env.loadTypeDecl(Type.tpClosureClazz).isTypeDeclNotLoaded())
+		if (Env.getRoot().loadTypeDecl(Type.tpClosureClazz).isTypeDeclNotLoaded())
 			throw new RuntimeException("Core class "+Type.tpClosureClazz+" not found");
 		clazz.super_types.insert(0, new TypeRef(Type.tpClosureClazz.xtype));
 		Kiev.runProcessorsOn(clazz);

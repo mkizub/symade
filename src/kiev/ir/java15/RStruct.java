@@ -202,7 +202,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		int flags = this.meta.mflags & JAVA_ACC_MASK;
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
-		typeinfo_clazz = Env.newStruct(nameClTypeInfo,true,this.getStruct(),flags,new JavaClass(),true,null);
+		typeinfo_clazz = Env.getRoot().newStruct(nameClTypeInfo,true,this.getStruct(),flags,new JavaClass(),true,null);
 		((Struct)this).members.add(typeinfo_clazz);
 		typeinfo_clazz.setPublic();
 		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
@@ -801,7 +801,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	}
 	
 	private static Struct makeImpl(@forward RStruct self) {
-		Struct defaults = Env.newStruct(nameIFaceImpl,true,
+		Struct defaults = Env.getRoot().newStruct(nameIFaceImpl,true,
 			self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC | ACC_ABSTRACT | ACC_FORWARD,
 			new JavaClass(), true, null
 		);

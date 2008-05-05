@@ -110,9 +110,9 @@ public interface StdTypes {
 
 	static {
 
-		Struct tpEnvClazz = Env.getRoot();
-		tpEnv				= new CompaundType((CompaundMetaType)tpEnvClazz.xmeta_type, TVarBld.emptySet);
-		tpEnvClazz.xtype	= tpEnv;
+		Env env = Env.getRoot();
+		tpEnv				= new CompaundType((CompaundMetaType)env.xmeta_type, TVarBld.emptySet);
+		env.xtype			= tpEnv;
 		tpEnv.flags			= flResolved;
 
 		tpAny		= new CoreType(Constants.nameAny,     null,  0);								tpAny.meta_type.tdecl.setTypeDeclNotLoaded(true);
@@ -126,40 +126,40 @@ public interface StdTypes {
 		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, flFloat);							tpFloat.meta_type.tdecl.setTypeDeclNotLoaded(true);
 		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, flFloat   | flDoubleSize);		tpDouble.meta_type.tdecl.setTypeDeclNotLoaded(true);
 
-		Struct java_lang = Env.newPackage("java\u001flang");
-		Struct java_lang_annotation = Env.newPackage("java\u001flang\u001fannotation");
-		Struct java_util = Env.newPackage("java\u001futil");
-		Struct kiev_stdlib = Env.newPackage("kiev\u001fstdlib");
-		Struct kiev_stdlib_meta = Env.newPackage("kiev\u001fstdlib\u001fmeta");
+		Struct java_lang = env.newPackage("java\u001flang");
+		Struct java_lang_annotation = env.newPackage("java\u001flang\u001fannotation");
+		Struct java_util = env.newPackage("java\u001futil");
+		Struct kiev_stdlib = env.newPackage("kiev\u001fstdlib");
+		Struct kiev_stdlib_meta = env.newPackage("kiev\u001fstdlib\u001fmeta");
 
-		Struct tpObjectClazz = Env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpObjectClazz = env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass());
 		tpObjectClazz.setTypeDeclNotLoaded(true);
 		tpObject				= (CompaundType)tpObjectClazz.xtype;
 
-		Struct tpClassClazz = Env.newStruct("Class",java_lang,ACC_PUBLIC|ACC_FINAL,new JavaClass());
+		Struct tpClassClazz = env.newStruct("Class",java_lang,ACC_PUBLIC|ACC_FINAL,new JavaClass());
 		tpClassClazz.setTypeDeclNotLoaded(true);
 		tpClass					= (CompaundType)tpClassClazz.xtype;
 
 		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
 		tpNull.meta_type.tdecl.setTypeDeclNotLoaded(true);
 
-		Struct tpRuleClazz = Env.newStruct("rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
+		Struct tpRuleClazz = env.newStruct("rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
 		tpRuleClazz.setTypeDeclNotLoaded(true);
 		tpRule					= (CompaundType)tpRuleClazz.xtype;
 
-		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpDebugClazz = env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpDebugClazz.setTypeDeclNotLoaded(true);
 		tpDebug				= (CompaundType)tpDebugClazz.xtype;
 
-		Struct tpTypeInfoClazz = Env.newStruct("TypeInfo",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpTypeInfoClazz = env.newStruct("TypeInfo",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpTypeInfoClazz.setTypeDeclNotLoaded(true);
 		tpTypeInfo				= (CompaundType)tpTypeInfoClazz.xtype;
 
-		Struct tpTypeInfoInterfaceClazz = Env.newStruct("TypeInfoInterface",kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE,new JavaInterface());
+		Struct tpTypeInfoInterfaceClazz = env.newStruct("TypeInfoInterface",kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE,new JavaInterface());
 		tpTypeInfoInterfaceClazz.setTypeDeclNotLoaded(true);
 		tpTypeInfoInterface				= (CompaundType)tpTypeInfoInterfaceClazz.xtype;
 
-		Struct tpCloneableClazz = Env.newStruct("Cloneable",java_lang,ACC_PUBLIC|ACC_INTERFACE,new JavaInterface());
+		Struct tpCloneableClazz = env.newStruct("Cloneable",java_lang,ACC_PUBLIC|ACC_INTERFACE,new JavaInterface());
 		tpCloneableClazz.setTypeDeclNotLoaded(true);
 		tpCloneable				= (CompaundType)tpCloneableClazz.xtype;
 
@@ -176,7 +176,7 @@ public interface StdTypes {
 		tpArray					= ArrayType.newArrayType(tpArrayArg);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
-		TypeDecl tdVararg = Env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
+		TypeDecl tdVararg = env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
 		tdVararg.setPublic();
 		tdVararg.setMacro(true);
 		tdVararg.setFinal(true);
@@ -189,7 +189,7 @@ public interface StdTypes {
 		tpVararg				= (XType)tdVararg.xtype;
 		//tpVararg.flags			|= flResolved | flReference | flArray;
 
-		tdASTNodeType = Env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
+		tdASTNodeType = env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
 		tdASTNodeType.setPublic();
 		tdASTNodeType.setMacro(true);
 		tdASTNodeType.setFinal(true);
@@ -201,113 +201,113 @@ public interface StdTypes {
 		tpASTNodeTypeArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tdASTNodeType.super_types += new TypeRef(StdTypes.tpAny);
 
-		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpBooleanRefClazz = env.newStruct("Boolean",java_lang,ACC_PUBLIC,new JavaClass());
 		tpBooleanRefClazz.setTypeDeclNotLoaded(true);
 		tpBooleanRef			= (CompaundType)tpBooleanRefClazz.xtype;
 
-		Struct tpCharRefClazz = Env.newStruct("Character",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpCharRefClazz = env.newStruct("Character",java_lang,ACC_PUBLIC,new JavaClass());
 		tpCharRefClazz.setTypeDeclNotLoaded(true);
 		tpCharRef			= (CompaundType)tpCharRefClazz.xtype;
 
-		Struct tpNumberRefClazz = Env.newStruct("Number",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpNumberRefClazz = env.newStruct("Number",java_lang,ACC_PUBLIC,new JavaClass());
 		tpNumberRefClazz.setTypeDeclNotLoaded(true);
 		tpNumberRef			= (CompaundType)tpNumberRefClazz.xtype;
 
-		Struct tpByteRefClazz = Env.newStruct("Byte",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpByteRefClazz = env.newStruct("Byte",java_lang,ACC_PUBLIC,new JavaClass());
 		tpByteRefClazz.setTypeDeclNotLoaded(true);
 		tpByteRef			= (CompaundType)tpByteRefClazz.xtype;
 
-		Struct tpShortRefClazz = Env.newStruct("Short",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpShortRefClazz = env.newStruct("Short",java_lang,ACC_PUBLIC,new JavaClass());
 		tpShortRefClazz.setTypeDeclNotLoaded(true);
 		tpShortRef			= (CompaundType)tpShortRefClazz.xtype;
 
-		Struct tpIntRefClazz = Env.newStruct("Integer",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpIntRefClazz = env.newStruct("Integer",java_lang,ACC_PUBLIC,new JavaClass());
 		tpIntRefClazz.setTypeDeclNotLoaded(true);
 		tpIntRef			= (CompaundType)tpIntRefClazz.xtype;
 
-		Struct tpLongRefClazz = Env.newStruct("Long",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpLongRefClazz = env.newStruct("Long",java_lang,ACC_PUBLIC,new JavaClass());
 		tpLongRefClazz.setTypeDeclNotLoaded(true);
 		tpLongRef			= (CompaundType)tpLongRefClazz.xtype;
 
-		Struct tpFloatRefClazz = Env.newStruct("Float",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpFloatRefClazz = env.newStruct("Float",java_lang,ACC_PUBLIC,new JavaClass());
 		tpFloatRefClazz.setTypeDeclNotLoaded(true);
 		tpFloatRef			= (CompaundType)tpFloatRefClazz.xtype;
 
-		Struct tpDoubleRefClazz = Env.newStruct("Double",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpDoubleRefClazz = env.newStruct("Double",java_lang,ACC_PUBLIC,new JavaClass());
 		tpDoubleRefClazz.setTypeDeclNotLoaded(true);
 		tpDoubleRef			= (CompaundType)tpDoubleRefClazz.xtype;
 
-		Struct tpVoidRefClazz = Env.newStruct("Void",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpVoidRefClazz = env.newStruct("Void",java_lang,ACC_PUBLIC,new JavaClass());
 		tpVoidRefClazz.setTypeDeclNotLoaded(true);
 		tpVoidRef			= (CompaundType)tpVoidRefClazz.xtype;
 
-		Struct tpStringClazz = Env.newStruct("String",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpStringClazz = env.newStruct("String",java_lang,ACC_PUBLIC,new JavaClass());
 		tpStringClazz.setTypeDeclNotLoaded(true);
 		tpString				= (CompaundType)tpStringClazz.xtype;
 
-		Struct tpAnnotationClazz = Env.newStruct("Annotation",java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT,new JavaInterface());
+		Struct tpAnnotationClazz = env.newStruct("Annotation",java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT,new JavaInterface());
 		tpAnnotationClazz.setTypeDeclNotLoaded(true);
 		tpAnnotation			= (CompaundType)tpAnnotationClazz.xtype;
 		
-		Struct tpThrowableClazz = Env.newStruct("Throwable",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpThrowableClazz = env.newStruct("Throwable",java_lang,ACC_PUBLIC,new JavaClass());
 		tpThrowableClazz.setTypeDeclNotLoaded(true);
 		tpThrowable				= (CompaundType)tpThrowableClazz.xtype;
 
-		Struct tpErrorClazz = Env.newStruct("Error",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpErrorClazz = env.newStruct("Error",java_lang,ACC_PUBLIC,new JavaClass());
 		tpErrorClazz.setTypeDeclNotLoaded(true);
 		tpError				= (CompaundType)tpErrorClazz.xtype;
 
-		Struct tpExceptionClazz = Env.newStruct("Exception",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpExceptionClazz = env.newStruct("Exception",java_lang,ACC_PUBLIC,new JavaClass());
 		tpExceptionClazz.setTypeDeclNotLoaded(true);
 		tpException				= (CompaundType)tpExceptionClazz.xtype;
 
-		Struct tpCastExceptionClazz = Env.newStruct("ClassCastException",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpCastExceptionClazz = env.newStruct("ClassCastException",java_lang,ACC_PUBLIC,new JavaClass());
 		tpCastExceptionClazz.setTypeDeclNotLoaded(true);
 		tpCastException				= (CompaundType)tpCastExceptionClazz.xtype;
 
-		Struct tpRuntimeExceptionClazz = Env.newStruct("RuntimeException",java_lang,ACC_PUBLIC,new JavaClass());
+		Struct tpRuntimeExceptionClazz = env.newStruct("RuntimeException",java_lang,ACC_PUBLIC,new JavaClass());
 		tpRuntimeExceptionClazz.setTypeDeclNotLoaded(true);
 		tpRuntimeException				= (CompaundType)tpRuntimeExceptionClazz.xtype;
 
-		Struct tpAssertExceptionClazz = Env.newStruct("AssertionFailedException",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpAssertExceptionClazz = env.newStruct("AssertionFailedException",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpAssertExceptionClazz.setTypeDeclNotLoaded(true);
 		tpAssertException				= (CompaundType)tpAssertExceptionClazz.xtype;
 
-		Struct tpEnumClazz = Env.newStruct("Enum",java_lang,ACC_PUBLIC | ACC_ABSTRACT,new JavaClass());
+		Struct tpEnumClazz = env.newStruct("Enum",java_lang,ACC_PUBLIC | ACC_ABSTRACT,new JavaClass());
 		tpEnumClazz.setTypeDeclNotLoaded(true);
 		tpEnum					= (CompaundType)tpEnumClazz.xtype;
 
-		tpClosureClazz = Env.newStruct("closure",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		tpClosureClazz = env.newStruct("closure",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpClosureClazz.setTypeDeclNotLoaded(true);
 		tpClosure				= (CompaundType)tpClosureClazz.xtype;
 
-		Struct tpTypeSwitchHashClazz = Env.newStruct("TypeSwitchHash",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpTypeSwitchHashClazz = env.newStruct("TypeSwitchHash",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpTypeSwitchHashClazz.setTypeDeclNotLoaded(true);
 		tpTypeSwitchHash			= (CompaundType)tpTypeSwitchHashClazz.xtype;
 
 
-		Struct tpJavaEnumerationClazz = Env.newStruct("Enumeration",java_util,ACC_PUBLIC,new JavaInterface());
+		Struct tpJavaEnumerationClazz = env.newStruct("Enumeration",java_util,ACC_PUBLIC,new JavaInterface());
 		tpJavaEnumerationClazz.setTypeDeclNotLoaded(true);
 		tpJavaEnumeration	= (CompaundType)tpJavaEnumerationClazz.xtype;
 		
-		Struct tpKievEnumerationClazz = Env.newStruct("Enumeration",kiev_stdlib,ACC_PUBLIC,new JavaInterface());
+		Struct tpKievEnumerationClazz = env.newStruct("Enumeration",kiev_stdlib,ACC_PUBLIC,new JavaInterface());
 		tpKievEnumerationClazz.setTypeDeclNotLoaded(true);
 		tpKievEnumerationClazz.args.add(new TypeConstr("A"));
 		tpKievEnumeration	= (CompaundType)tpKievEnumerationClazz.xtype;
 		
 		
-		Struct tpArrayEnumeratorClazz = Env.newStruct("ArrayEnumerator",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpArrayEnumeratorClazz = env.newStruct("ArrayEnumerator",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpArrayEnumeratorClazz.setTypeDeclNotLoaded(true);
 		tpArrayEnumeratorClazz.args.add(new TypeConstr("A"));
 		tpArrayEnumerator	= (CompaundType)tpArrayEnumeratorClazz.xtype;
 		
 
-		Struct tpPrologVarClazz = Env.newStruct("PVar",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpPrologVarClazz = env.newStruct("PVar",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpPrologVarClazz.setTypeDeclNotLoaded(true);
 		tpPrologVarClazz.args.add(new TypeConstr("A"));
 		tpPrologVar	= (CompaundType)tpPrologVarClazz.xtype;
 
-		Struct tpRefProxyClazz = Env.newStruct("Ref",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpRefProxyClazz = env.newStruct("Ref",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpRefProxyClazz.setTypeDeclNotLoaded(true);
 		tpRefProxyClazz.args.add(new TypeConstr("A"));
 		tpRefProxy	= (CompaundType)tpRefProxyClazz.xtype;

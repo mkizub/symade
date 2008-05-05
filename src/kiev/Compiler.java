@@ -140,7 +140,7 @@ public abstract class WorkerThread extends Thread {
 			if( !Kiev.initialized ) {
 				if (args == null)
 					args = new CompilerParseInfo[0];
-				Env.InitializeEnv(Kiev.compiler_classpath);
+				Env.getRoot().InitializeEnv(Kiev.compiler_classpath);
 				foreach (CompilerParseInfo cpi; args; cpi.add_to_project && cpi.fname != null)
 					Env.getProject().addProjectFile(cpi.fname);
 				addRequaredToMake();
@@ -163,7 +163,7 @@ public abstract class WorkerThread extends Thread {
 				try {
 					this.curFile = cpi.fname.replace('/', File.separatorChar);
 					if (this.curFile.toLowerCase().endsWith(".xml")) {
-						cpi.fu = Env.loadFromXmlFile(new File(this.curFile), cpi.fdata);
+						cpi.fu = Env.getRoot().loadFromXmlFile(new File(this.curFile), cpi.fdata);
 						Kiev.runProcessorsOn(cpi.fu);
 					} else {
 						java.io.InputStreamReader file_reader = null;
@@ -219,7 +219,7 @@ public abstract class WorkerThread extends Thread {
 
 stop:;
 		dataFlowInfos.clear();
-		Env.dumpProjectFile();
+		Env.getRoot().dumpProjectFile();
 		if (this.errCount > 0) {
 			run_be = false;
 			this.root = null;
@@ -264,7 +264,7 @@ stop:;
 stop:;
 		dataFlowInfos.clear();
 		Kiev.lockNodeTree(root);
-		Env.dumpProjectFile();
+		Env.getRoot().dumpProjectFile();
 		Compiler.runGC(this);
 		if (this.errCount > 0)
 			run_be = false;
@@ -332,7 +332,7 @@ stop:;
 			tr_me.rollback(false);
 			((WorkerThread)Thread.currentThread()).fileEnumerator = null;
 		}
-		Env.dumpProjectFile();
+		Env.getRoot().dumpProjectFile();
 		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
 			reportTotals("Backend");
 	}
@@ -779,9 +779,9 @@ public class Compiler {
 						value = args[a].substring(indx+1);
 					}
 					if( onoff ) {
-						Env.setProperty(prop,value);
+						System.getProperties().setProperty(prop,value);
 					} else {
-						Env.removeProperty(prop);
+						System.getProperties().remove(prop);
 					}
 					args[a] = null;
 					continue;

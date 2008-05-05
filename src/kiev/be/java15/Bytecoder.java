@@ -89,7 +89,7 @@ public class Bytecoder implements JConstants {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 			CompaundType st = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 		    cl.super_types.append(new TypeRef(st));
-			if (Env.loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
+			if (Env.getRoot().loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
 		}
 
@@ -98,7 +98,7 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if (Env.loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
+			if (Env.getRoot().loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.tdecl.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");
@@ -248,7 +248,7 @@ public class Bytecoder implements JConstants {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
 						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz));
-						outer[i] = (JStruct)Env.jenv.loadStruct(cn);
+						outer[i] = (JStruct)Env.getRoot().getBackendEnv().loadStruct(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
 					} else {
@@ -270,7 +270,7 @@ public class Bytecoder implements JConstants {
 						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
 							inner[i] == null;
 						} else {
-							Struct inn = Env.jenv.loadStruct(cn);
+							Struct inn = Env.getRoot().getBackendEnv().loadStruct(cn);
 							inner[i] = (JStruct)inn;
 							if( inn == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");

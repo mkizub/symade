@@ -20,15 +20,6 @@ import syntax kiev.Syntax;
 public metatype NodeSpace<N extends ANode> extends N[] {
 	
 	@macro
-	public N getVers(int idx) alias xfy operator []
-	{
-		case Call# self():
-			ANode.getVersion( this, idx )
-		case SetAccess# self():
-			ANode.getVersion( self.obj, self.index )
-	}
-
-	@macro
 	private static ENode# getAttr(Field# f) {
 		case Call# self():
 			(f.parent).#id"nodeattr$'f'"#	//new #SFldExpr(obj=f.parent, ident="nodeattr$'f'")

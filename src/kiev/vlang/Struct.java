@@ -448,9 +448,9 @@ public abstract class Struct extends TypeDecl {
 		TypeDecl cl;
 		String qn = name;
 		if (this instanceof Env)
-			cl = Env.loadTypeDecl(qn);
+			cl = Env.getRoot().loadTypeDecl(qn);
 		else
-			cl = Env.loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
+			cl = Env.getRoot().loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
 		trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+(cl != null ? cl+" found " : qn+" not found")+" in "+this);
 		return cl;
 	}

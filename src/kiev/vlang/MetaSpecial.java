@@ -236,7 +236,7 @@ public abstract class MetaFlag extends MNode {
 
 	@getter public abstract String get$qname();
 
-	public final TypeDecl getTypeDecl() { return (TypeDecl)Env.resolveGlobalDNode(this.qname); }
+	public final TypeDecl getTypeDecl() { return (TypeDecl)Env.getRoot().resolveGlobalDNode(this.qname); }
 
 	public final void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {

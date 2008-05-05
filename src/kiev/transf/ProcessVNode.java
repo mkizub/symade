@@ -90,21 +90,21 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	
 	public void doProcess(FileUnit:ASTNode fu) {
 		if (tpINode == null) {
-			tpINode = Env.loadTypeDecl(nameINode, true).xtype;
-			tpANode = Env.loadTypeDecl(nameANode, true).xtype;
-			tpNode = Env.loadTypeDecl(nameNode, true).xtype;
+			tpINode = Env.getRoot().loadTypeDecl(nameINode, true).xtype;
+			tpANode = Env.getRoot().loadTypeDecl(nameANode, true).xtype;
+			tpNode = Env.getRoot().loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
-			tpNodeSpace = Env.loadTypeDecl(nameNodeSpace).xtype;
-			tpAttrSlot = Env.loadTypeDecl(nameAttrSlot, true).xtype;
-			tpRefAttrSlot = Env.loadTypeDecl(nameRefAttrSlot, true).xtype;
-			tpAttAttrSlot = Env.loadTypeDecl(nameAttAttrSlot, true).xtype;
-			tpExtRefAttrSlot = Env.loadTypeDecl(nameExtRefAttrSlot, true).xtype;
-			tpExtAttAttrSlot = Env.loadTypeDecl(nameExtAttAttrSlot, true).xtype;
-			tpSpaceAttrSlot = Env.loadTypeDecl(nameSpaceAttrSlot, true).xtype;
-			tpSpaceRefAttrSlot = Env.loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
-			tpSpaceAttAttrSlot = Env.loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
-			tpLanguageIface = Env.loadTypeDecl(nameLanguageIface, true).xtype;
-			tpCopyContext = Env.loadTypeDecl(nameCopyContext, true).xtype;
+			tpNodeSpace = Env.getRoot().loadTypeDecl(nameNodeSpace).xtype;
+			tpAttrSlot = Env.getRoot().loadTypeDecl(nameAttrSlot, true).xtype;
+			tpRefAttrSlot = Env.getRoot().loadTypeDecl(nameRefAttrSlot, true).xtype;
+			tpAttAttrSlot = Env.getRoot().loadTypeDecl(nameAttAttrSlot, true).xtype;
+			tpExtRefAttrSlot = Env.getRoot().loadTypeDecl(nameExtRefAttrSlot, true).xtype;
+			tpExtAttAttrSlot = Env.getRoot().loadTypeDecl(nameExtAttAttrSlot, true).xtype;
+			tpSpaceAttrSlot = Env.getRoot().loadTypeDecl(nameSpaceAttrSlot, true).xtype;
+			tpSpaceRefAttrSlot = Env.getRoot().loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
+			tpSpaceAttAttrSlot = Env.getRoot().loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
+			tpLanguageIface = Env.getRoot().loadTypeDecl(nameLanguageIface, true).xtype;
+			tpCopyContext = Env.getRoot().loadTypeDecl(nameCopyContext, true).xtype;
 		}
 		foreach (ASTNode n; fu.members)
 			doProcess(n);
@@ -202,7 +202,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Kiev.reportWarning(td,"Class "+snode+"."+sname+" already exists and will not be generated");
 			return td.xtype;
 		}
-		Struct s = Env.newStruct(sname,true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
+		Struct s = Env.getRoot().newStruct(sname,true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
 		snode.members.add(s);
 		if (isArr) {
 			if (isAtt) {
@@ -539,7 +539,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeSet() {
 		if (_codeSet == null) {
-			TypeDecl td = (TypeDecl)Env.resolveGlobalDNode("kiev\u001ftransf\u001fTemplateVNode");
+			TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001ftransf\u001fTemplateVNode");
 			_codeSet = td.resolveMethod("codeSet", StdTypes.tpVoid)
 		}
 		return _codeSet;
@@ -547,7 +547,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeGet() {
 		if (_codeGet == null) {
-			TypeDecl td = (TypeDecl)Env.resolveGlobalDNode("kiev\u001ftransf\u001fTemplateVNode");
+			TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001ftransf\u001fTemplateVNode");
 			_codeGet = td.resolveMethod("codeGet", StdTypes.tpVoid)
 		}
 		return _codeGet;
@@ -762,7 +762,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Kiev.runProcessorsOn(copyV);
 		}
 
-		Type tpNodeVVV = ((TypeDecl)Env.loadTypeDecl(VNode_Base.nameNode+"\u001fVVV", true)).xtype;
+		Type tpNodeVVV = ((TypeDecl)Env.getRoot().loadTypeDecl(VNode_Base.nameNode+"\u001fVVV", true)).xtype;
 		// nodeRestore(ASTNode.VVV from), a reverted nodeBackup()
 		if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeRestore")) {
 			//Kiev.reportWarning(s,"Method "+s+"."+"nodeRestore already exists, @node member is not generated");
@@ -839,7 +839,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 	
 	private Struct makeNodeValuesClass(Struct iface, Struct impl) {
-		Struct s = Env.newStruct("VVV",true,iface,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
+		Struct s = Env.getRoot().newStruct("VVV",true,iface,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
 		iface.members += s;
 	super_vvv:
 		foreach (TypeRef st; iface.super_types; isNodeKind(st.getStruct()) || VNode_Base.nameNode.equals(st.getStruct().qname()) || VNode_Base.nameANode.equals(st.getStruct().qname())) {

@@ -27,7 +27,7 @@ public class MetaType implements Constants {
 	@getter
 	public final TypeDecl get$tdecl() {
 		if (descr instanceof String) {
-			TypeDecl td = Env.loadTypeDecl((String)descr, true);
+			TypeDecl td = Env.getRoot().loadTypeDecl((String)descr, true);
 			if (td != null)
 				descr = td;
 		}
@@ -189,7 +189,7 @@ public final class CoreMetaType extends MetaType {
 		MetaTypeDecl tdecl = new MetaTypeDecl(this);
 		this.descr = tdecl;
 		tdecl.sname = name;
-		tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
+		tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.xmeta_type = this;
 		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
@@ -368,7 +368,7 @@ public final class CompaundMetaType extends MetaType {
 	private TVarSet			templ_bindings;
 	
 	public static CompaundMetaType newCompaundMetaType(String clazz_name) alias lfy operator new {
-		TypeDecl td = Env.resolveGlobalDNode(clazz_name);
+		TypeDecl td = Env.getRoot().resolveGlobalDNode(clazz_name);
 		if (td != null)
 			return (CompaundMetaType)td.xmeta_type;
 		CompaundMetaType mt = compaundMetaTypes.get(clazz_name);
@@ -451,11 +451,11 @@ public final class ArrayMetaType extends MetaType {
 	public static final ArrayMetaType		instance;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl(null);
 			tdecl.sname = "_array_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
@@ -563,11 +563,11 @@ public class WrapperMetaType extends MetaType {
 	private static final MetaTypeDecl		wrapper_tdecl;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wrapper_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
@@ -676,11 +676,11 @@ public class CallMetaType extends MetaType {
 
 	public static final CallMetaType instance;
 	static {
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_call_type_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");
 		}

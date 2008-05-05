@@ -111,7 +111,7 @@ public abstract class kiev050 implements kiev050Constants {
 	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, NameSpace fu) {
 		Struct pkg = fu.getPackage();
 		String uuid = modifiers == null ? null : modifiers.getUUID();
-		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
+		TypeDecl tdecl = Env.getRoot().newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(tdecl.meta);
 		return tdecl;
@@ -145,7 +145,7 @@ public abstract class kiev050 implements kiev050Constants {
 			direct = false;
 		}
 		String uuid = modifiers == null ? null : modifiers.getUUID();
-		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,variant,true,uuid);
+		Struct clazz = Env.getRoot().newStruct(nm,direct,(Struct)curClazz,flags,variant,true,uuid);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -714,7 +714,7 @@ public abstract class kiev050 implements kiev050Constants {
     jj_consume_token(PACKAGE);
     qn = QName();
     jj_consume_token(SEMICOLON);
-                qn.symbol = Env.newPackage(qn.name);
+                qn.symbol = Env.getRoot().newPackage(qn.name);
                 {if (true) return qn;}
     throw new Error("Missing return statement in function");
   }

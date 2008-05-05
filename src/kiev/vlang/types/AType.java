@@ -418,11 +418,11 @@ public abstract class AType implements StdTypes, TVSet {
 				assert (tdecl.qname().equals(name));
 		}
 		if (tdecl == null) {
-			tdecl = (TypeDecl)Env.resolveGlobalDNode(name);
+			tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode(name);
 		}
 		if (tdecl == null) {
-			if (Env.existsStruct(name))
-				tdecl = Env.loadTypeDecl(name,false);
+			if (Env.getRoot().existsStruct(name))
+				tdecl = Env.getRoot().loadTypeDecl(name,false);
 			if (tdecl == null) {
 				System.out.println("Warning: Cannot find TypeDecl "+name);
 				tdecl = StdTypes.tpVoid.meta_type.tdecl;
