@@ -13,7 +13,12 @@ package kiev.stdlib;
 import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectInput;
 
 import syntax kiev.stdlib.Syntax;
 
@@ -27,11 +32,46 @@ public interface TypeInfoInterface {
 	public TypeInfo getTypeInfoField();
 }
 
-public class TypeInfo implements Serializable {
+public class TypeInfo implements Externalizable {
 
 	private static TypeInfo[] hashTable = new TypeInfo[1777];
 	private static int        hashTableCount;
 	
+	final static class TypeInfoSerialized implements Externalizable {
+		static final long serialVersionUID = 7933549803914250163L;
+		Class ti_clazz;
+		Class clazz;
+		TypeInfo[] args;
+		public TypeInfoSerialized() {}
+		TypeInfoSerialized(Class ti_clazz, Class clazz, TypeInfo[] args) {
+			this.ti_clazz = ti_clazz;
+			this.clazz = clazz;
+			this.args = args;
+		}
+		public Object readResolve() {
+			//if (ti_clazz != TypeInfo.class)
+			//	System.out.println("Serialization readResolve "+ti_clazz);
+			Method m = ti_clazz.getDeclaredMethod("newTypeInfo", Class.class, TypeInfo[].class);
+			return m.invoke(null,new Object[]{this.clazz,this.args});
+		}
+		public final void writeExternal(ObjectOutput out) throws IOException {
+			//System.out.println("Serialization writeExternal "+ti_clazz);
+			out.writeObject(this.ti_clazz.getName());
+			out.writeObject(this.clazz.getName());
+			out.writeObject(this.args);
+		}
+		
+		public final void readExternal(ObjectInput in) throws IOException {
+			ClassLoader cl = this.getClass().getClassLoader();
+			String ti_clazz_name = (String)in.readObject();
+			//System.out.println("Serialization readExternal "+ti_clazz_name);
+			String clazz_name = (String)in.readObject();
+			this.args = (TypeInfo[])in.readObject();
+			this.ti_clazz = Class.forName(ti_clazz_name, false, cl);
+			this.clazz = Class.forName(clazz_name, false, cl);
+		}
+	}
+
 	public final Class			clazz;
 	public final int			hash;
 
@@ -51,6 +91,10 @@ public class TypeInfo implements Serializable {
 			ti = new TypeInfo(hash, clazz);
 		return ti;
 	}
+	
+	public TypeInfo[] getTopArgs() {
+		return null;
+	}
 
 	public final int hashCode() {
 		return hash;
@@ -59,9 +103,21 @@ public class TypeInfo implements Serializable {
 	public String toString() {
 		return clazz.getName();
 	}
-
-	public Object readResolve() {
-		return TypeInfo.newTypeInfo(this.clazz, null);
+	
+	public final void writeExternal(ObjectOutput out) throws IOException {
+		//System.out.println("Serialization writeExternal "+this.getClass());
+		throw new IOException("TypeInfo.writeExternal()");
+	}
+	
+	public final void readExternal(ObjectInput in) throws IOException {
+		//System.out.println("Serialization readExternal "+this.getClass());
+		throw new IOException("TypeInfo.readExternal()");
+	}
+	
+	public final Object writeReplace() {
+		//if (this.getClass() != TypeInfo.class)
+		//	System.out.println("Serialization writeReplace "+this.getClass());
+		return new TypeInfoSerialized(this.getClass(), this.clazz, this.getTopArgs());
 	}
 
 	public boolean eq(Class clazz, TypeInfo[] args) {

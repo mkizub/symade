@@ -310,12 +310,12 @@ public final view RStruct of Struct extends RTypeDecl {
 			mNewTypeInfo = init;
 		}
 
-		// create readResolve() for serialization support:
-		// public Object readResolve() {
-		//  return This.newTypeInfo(this.clazz, args);
+		// create getTopArgs()
+		// public TypeInfo[] getTopArgs() {
+		//  return new TypeInfo[]{typeinfo$A,typeinfo$B,...);
 		// }
 		{
-			Method mrr = new MethodImpl("readResolve", Type.tpObject, ACC_PUBLIC);
+			Method mrr = new MethodImpl("getTopArgs", new ArrayType(Type.tpTypeInfo), ACC_PUBLIC);
 			typeinfo_clazz.addMethod(mrr);
 			mrr.body = new Block(pos);
 			Vector<ENode> targs = new Vector<ENode>();
@@ -324,13 +324,8 @@ public final view RStruct of Struct extends RTypeDecl {
 				targs.append(new IFldExpr(pos,new ThisExpr(pos), f));
 			}
 			mrr.block.stats.add(new ReturnStat(pos,
-				new CallExpr(pos,
-					new TypeRef(typeinfo_clazz.xtype),
-					mNewTypeInfo,
-					new ENode[]{
-						new IFldExpr(pos,new ThisExpr(),typeinfo_clazz.resolveField("clazz")),
-						new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpTypeInfo,Operator.PostTypeArray),1,targs.toArray())
-					})));
+				new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpTypeInfo,Operator.PostTypeArray),1,targs.toArray())
+				));
 		}
 		
 		// create equals function:
