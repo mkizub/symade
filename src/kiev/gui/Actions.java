@@ -811,14 +811,14 @@ public final class RenderActions implements Runnable {
 		if (action == "select-syntax") {
 			// build a menu of types to instantiate
 			JPopupMenu m = new JPopupMenu();
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java")));
-//			m.add(new JMenuItem(new LoadSyntaxAction(ui,"Kiev Syntax (java.xml)", "java.xml", "test\u001fsyntax-for-java")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java", false)));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt\u001fsyntax-for-java", true)));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl", false)));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax")));
-//			m.add(new JMenuItem(new LoadSyntaxAction(ui,"Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
 			if (ui instanceof InfoView)
 				m.show(ui.view_canvas, 0, 0);
 			else if (ui instanceof TreeView)
@@ -868,16 +868,18 @@ public final class RenderActions implements Runnable {
 		private UIView uiv;
 		private Class clazz;
 		private String qname;
+		private boolean in_project;
 		SetSyntaxAction(UIView uiv, String text, Class clazz, String name) {
 			super(text);
 			this.uiv = uiv;
 			this.clazz = clazz;
 			this.qname = name;
 		}
-		SetSyntaxAction(UIView uiv, String text, String qname) {
+		SetSyntaxAction(UIView uiv, String text, String qname, boolean in_project) {
 			super(text);
 			this.uiv = uiv;
 			this.qname = qname;
+			this.in_project = in_project;
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (clazz != null) {
@@ -887,7 +889,7 @@ public final class RenderActions implements Runnable {
 				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}
-			Draw_ATextSyntax stx = Env.getRoot().loadLanguageSyntax(qname);
+			Draw_ATextSyntax stx = Env.getRoot().getLanguageSyntax(qname, in_project);
 			this.uiv.setSyntax(stx);
 		}
 	}

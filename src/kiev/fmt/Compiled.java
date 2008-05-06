@@ -754,9 +754,9 @@ public class Draw_SyntaxJavaCommentTemplate implements Serializable {
 
 
 public class Draw_ATextSyntax implements Serializable {
-	protected transient Hashtable<String,Draw_SyntaxElem>					badSyntax = new Hashtable<Class,Draw_SyntaxElem>();
-	protected transient Hashtable<String,Draw_SyntaxElem>					allSyntax = new Hashtable<String,Draw_SyntaxElem>();
-	protected transient Hashtable<Pair<Operator,Class>, Draw_SyntaxElem> 	allSyntaxExprs = new Hashtable<Pair<Operator,Class>, Draw_SyntaxElem>();
+	protected transient Hashtable<String,Draw_SyntaxElem>					badSyntax;
+	protected transient Hashtable<String,Draw_SyntaxElem>					allSyntax;
+	protected transient Hashtable<Pair<Operator,Class>, Draw_SyntaxElem> 	allSyntaxExprs;
 
 	public Draw_ATextSyntax				parent_syntax;
 	public Draw_ATextSyntax[]			sub_syntax;

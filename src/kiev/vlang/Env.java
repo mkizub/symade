@@ -48,12 +48,14 @@ public final class Env extends KievPackage {
 	private static Env								root = new Env();
 
 	/** Class/library path */
-	private kiev.bytecode.Classpath					classpath;
+	private kiev.bytecode.Classpath				classpath;
 
 	/** Backend environment */
 	private JEnv									jenv;
 
 	@nodeAttr public Project						project;
+	
+	private Hashtable<String,Draw_ATextSyntax>		languageSyntaxMap	= new Hashtable<String,Draw_ATextSyntax>();
 
 	public static Env getRoot() { return root; }
 	public static Project getProject() { return root.project; }
@@ -256,15 +258,23 @@ public final class Env extends KievPackage {
 		return cl;
 	}
 
-	public Draw_ATextSyntax loadLanguageSyntax(String qname) {
-		//DNode ts = Env.resolveGlobalDNode(qname);
-		//if (ts instanceof ATextSyntax)
-		//	return ts.getCompiled().init();
-		
+	public Draw_ATextSyntax getLanguageSyntax(String name, boolean in_project) {
+		if (in_project) {
+			DNode ts = Env.getRoot().resolveGlobalDNode(name);
+			if (ts instanceof ATextSyntax)
+				return ts.getCompiled().init();
+		}
+		Draw_ATextSyntax stx = languageSyntaxMap.get(name);
+		if (stx != null)
+			return stx;
+		return loadLanguageSyntax(name);
+	}
+	
+	public Draw_ATextSyntax loadLanguageSyntax(String name) {
 		Draw_ATextSyntax dts = null;
 		InputStream inp = null;
 		try {
-			inp = Env.class.getClassLoader().getSystemResourceAsStream(qname.replace('\u001f','/')+".ser");
+			inp = Env.class.getClassLoader().getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
 			ObjectInput oi = new ObjectInputStream(inp);
 			dts = (Draw_ATextSyntax)oi.readObject();
 			dts.init();
@@ -274,6 +284,8 @@ public final class Env extends KievPackage {
 			if (inp != null)
 				inp.close();
 		}
+		if (dts != null)
+			languageSyntaxMap.put(name, dts);
 		return dts;
 	}
 

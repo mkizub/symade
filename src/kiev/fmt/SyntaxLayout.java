@@ -110,6 +110,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 	
 	public boolean preResolveIn() {
+		this.compiled = null;
 		if (parent_syntax.name != null && parent_syntax.name != "") {
 			ATextSyntax@ ts;
 			if (!PassInfo.resolveNameR(this,ts,new ResInfo(this,parent_syntax.name)))
