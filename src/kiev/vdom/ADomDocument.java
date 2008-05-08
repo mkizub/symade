@@ -43,6 +43,7 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	public org.w3c.dom.Node getFirstChild() { this.element }
 	public org.w3c.dom.Node getLastChild() { this.element }
 
+	public final org.w3c.dom.Node getParentNode() { null }
     public final short getNodeType() { org.w3c.dom.Node.DOCUMENT_NODE }
 
 	public org.w3c.dom.DocumentType getDoctype() {
@@ -108,14 +109,7 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	public org.w3c.dom.Element createElementNS(String uri, String qname) throws DOMException {
 		if (qname == null || qname.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qname="+qname);
-		ADomElement node;
-		if (uri.startsWith("map:")) {
-			String clname = uri.substring(4);
-			Class clazz = Class.forName(clname);
-			node = (ADomElement)clazz.newInstance();
-		} else {
-			node = new GenDomElement();
-		}
+		ADomElement node = new GenDomElement();
 		node.nodeName = qname;
 		node.nodeNamespaceURI = uri;
 		return node;

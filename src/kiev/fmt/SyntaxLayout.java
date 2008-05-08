@@ -1127,6 +1127,20 @@ public class SyntaxStrAttr extends SyntaxAttr {
 }
 
 @ThisIsANode(lang=SyntaxLang)
+public class SyntaxXmlStrAttr extends SyntaxAttr {
+	@virtual typedef This  = SyntaxXmlStrAttr;
+
+	public SyntaxXmlStrAttr() {}
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxXmlStrAttr dr_elem = new Draw_SyntaxXmlStrAttr();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+}
+
+
+@ThisIsANode(lang=SyntaxLang)
 public class SyntaxSet extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxSet;
 

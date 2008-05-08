@@ -39,7 +39,8 @@ public final class DomText extends ACharacterData implements org.w3c.dom.Text {
 @ThisIsANode
 public abstract class ACharacterData extends ADomNode implements org.w3c.dom.CharacterData {
 	
-	private String value = "";
+	@nodeAttr
+	public String value = "";
 	
 	public String getNodeValue() throws DOMException { value }
 	public void setNodeValue(String value) throws DOMException { this.value = value; }

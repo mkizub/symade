@@ -28,12 +28,13 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 
 	public static final ADomElement[] emptyArray = new ADomElement[0];
 
+	@nodeAttr
 	public String		nodeNamespaceURI;
+	@nodeAttr
 	public String		nodeName;
-	
 	@nodeAttr
 	public ADomAttr[]	attributes;
-
+	
 	public final String getNodeName() { this.nodeName }
 	public final String getNamespaceURI() { this.nodeNamespaceURI }
 	public String getPrefix() {

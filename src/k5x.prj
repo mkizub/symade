@@ -748,6 +748,9 @@
       <a-node class='kiev.vlang.FileUnit'>
        <fname>syntax-for-syntax.xml</fname>
       </a-node>
+      <a-node class='kiev.vlang.FileUnit'>
+       <fname>syntax-for-vdom.xml</fname>
+      </a-node>
      </members>
     </a-node>
    </members>

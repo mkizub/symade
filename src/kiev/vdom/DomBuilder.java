@@ -83,7 +83,7 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 		//System.out.println("startElement("+uri+","+localName+","+qName+")");
 		ADomElement elem;
 		if (uri.length() != 0)
-			elem = (ADomElement)document.createElementNS(uri, localName);
+			elem = (ADomElement)document.createElementNS(uri, qName);
 		else
 			elem = (ADomElement)document.createElement(qName);
 		int nattrs = attributes.getLength();

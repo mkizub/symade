@@ -65,6 +65,7 @@ public final class SyntaxLang implements Language {
 				SyntaxIdentAttr.class,
 				SyntaxCharAttr.class,
 				SyntaxStrAttr.class,
+				SyntaxXmlStrAttr.class,
 				SyntaxNode.class,
 			SyntaxSwitch.class,
 			SyntaxSet.class,

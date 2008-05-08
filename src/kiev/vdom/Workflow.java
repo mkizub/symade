@@ -10,6 +10,10 @@
  *******************************************************************************/
 package kiev.vdom;
 
+import org.w3c.dom.NodeList;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.*;
+
 import syntax kiev.Syntax;
 
 /**
@@ -17,56 +21,118 @@ import syntax kiev.Syntax;
  *
  */
 
-@ThisIsANode
-public final class WorkflowState extends ADomElement {
+public abstract class WorkflowWrapper {
 	
+	public final static XPath xPath = XPathFactory.newInstance().newXPath();
+	static {
+		xPath.setNamespaceContext(new NamespaceContext() {
+			public String getNamespaceURI(String prefix) {
+				if ("wflow".equals(prefix)) return "map:kiev.vdom.Workflow";
+				if ("wfstate".equals(prefix)) return "map:kiev.vdom.WorkflowState";
+				if ("wftrans".equals(prefix)) return "map:kiev.vdom.WorkflowTransition";
+				if ("wffunc".equals(prefix)) return "map:kiev.vdom.WorkflowFunction";
+				return "";
+			} 
+			public String getPrefix(String namespaceURI) {
+				if ("map:kiev.vdom.Workflow".equals(namespaceURI)) return "wflow";
+				if ("map:kiev.vdom.WorkflowState".equals(namespaceURI)) return "wfstate";
+				if ("map:kiev.vdom.WorkflowTransition".equals(namespaceURI)) return "wftrans";
+				if ("map:kiev.vdom.WorkflowFunction".equals(namespaceURI)) return "wffunc";
+				return "";
+			}
+			public java.util.Iterator getPrefixes(String namespaceURI) { return null; }
+		});
+	}
+	
+	public final ADomElement elem;
+	
+	public WorkflowWrapper(ADomElement elem) {
+		this.elem = elem;
+		assert (getMapURI().equals(elem.nodeNamespaceURI));
+	}
+	
+	public abstract String getMapURI();
+	
+}
+
+public final class Workflow extends WorkflowWrapper {
+	
+	public Workflow(ADomElement elem) {
+		super(elem);
+	}
+	
+	public String getMapURI() { "map:kiev.vdom.Workflow" }
+
+	public WorkflowState getState(String name) {
+		ADomElement el = (ADomElement)xPath.evaluate("wfstate:"+name,this.elem,XPathConstants.NODE);
+		if (el == null)
+			throw new RuntimeException("Workflow state '"+name+"' not found");
+		return new WorkflowState(el);
+	}
+	
+
+}
+
+public final class WorkflowState extends WorkflowWrapper {
+	
+	private final static XPathExpression xpath_transitions = xPath.compile("*[substring-before(name(),':')='wftrans']");
+	
+	public WorkflowState(ADomElement elem) {
+		super(elem);
+	}
+	
+	public String getMapURI() { "map:kiev.vdom.WorkflowState" }
+
 	public WorkflowTransition[] getTransitions() {
-		Vector<WorkflowTransition> transitions = new Vector<WorkflowTransition>();
-		foreach (WorkflowTransition t; elements)
-			transitions.append(t);
-		return transitions.toArray();
+		NodeList lst = (NodeList)xpath_transitions.evaluate(this.elem,XPathConstants.NODESET);
+		WorkflowTransition[] wtrs = new WorkflowTransition[lst.getLength()];
+		for (int i=0; i < wtrs.length; i++)
+			wtrs[i] = new WorkflowTransition((ADomElement)lst.item(i));
+		return wtrs;
 	}
 
 }
 
-@ThisIsANode
-public final class WorkflowTransition extends ADomElement {
+public final class WorkflowTransition extends WorkflowWrapper {
 	
+	private final static XPathExpression xpath_function = xPath.compile("*[substring-before(name(),':')='wffunc']");
+	private final static XPathExpression xpath_target = xPath.compile("text(child::target)");
+	
+	public WorkflowTransition(ADomElement elem) {
+		super(elem);
+	}
+	
+	public String getMapURI() { "map:kiev.vdom.WorkflowTransition" }
+
 	public WorkflowFunction getFunction(String name) {
-		foreach (WorkflowFunction f; elements; name.equals(f.getLocalName()))
-			return f;
-		return null;
+		ADomElement n = (ADomElement)xpath_function.evaluate(this.elem,XPathConstants.NODE);
+		return new WorkflowFunction(n);
 	}
 	public String getTarget() {
-		foreach (ADomElement e; elements; "target".equals(e.getNodeName())) {
-			foreach (DomText t; e.elements) {
-				return t.getData();
-			}
-		}
-		return null;
+		return (String)xpath_target.evaluate(this.elem,XPathConstants.STRING);
 	}
 }
 
-@ThisIsANode
-public final class WorkflowFunction extends ADomElement {
+public final class WorkflowFunction extends WorkflowWrapper {
 	
+	private final static XPathExpression xpath_func = xPath.compile("text(child::func)");
+	private final static XPathExpression xpath_args = xPath.compile("arg/text()");
+
+	public WorkflowFunction(ADomElement elem) {
+		super(elem);
+	}
+	
+	public String getMapURI() { "map:kiev.vdom.WorkflowFunction" }
+
 	public String getFunc() {
-		foreach (ADomElement e; elements; "func".equals(e.getNodeName())) {
-			foreach (DomText t; e.elements) {
-				return t.getData();
-			}
-		}
-		return null;
+		return (String)xpath_func.evaluate(this.elem,XPathConstants.STRING);
 	}
 	public String[] getArgs() {
-		Vector<String> args = new Vector<String>();
-		foreach (ADomElement e; elements; "arg".equals(e.getNodeName())) {
-			foreach (DomText t; e.elements) {
-				args.append(t.getData());
-				break;
-			}
-		}
-		return args.toArray();
+		NodeList lst = (NodeList)xpath_args.evaluate(this.elem,XPathConstants.NODESET);
+		String[] args = new String[lst.getLength()];
+		for (int i=0; i < args.length; i++)
+			args[i] = ((DomText)lst.item(i)).getData();
+		return args;
 	}
 }
 
@@ -74,6 +140,7 @@ public final class WorkflowFunction extends ADomElement {
 public final class WorkflowInterpreter implements Runnable {
 	
 	private final ADomDocument doc;
+	private final Workflow wf;
 	
 	static class ReturnExit extends Error {
 		final int exit_code;
@@ -85,10 +152,12 @@ public final class WorkflowInterpreter implements Runnable {
 	
 	public WorkflowInterpreter(org.w3c.dom.Document doc) {
 		this.doc = (ADomDocument)doc;
+		this.wf = new Workflow(this.doc.element);
 	}
+	
 	public void run() {
 		try {
-			WorkflowState wfst = getState("begin");
+			WorkflowState wfst = wf.getState("begin");
 			if (wfst == null)
 				throw new RuntimeException("Workflow state 'begin' not found");
 			exec(wfst);
@@ -99,26 +168,22 @@ public final class WorkflowInterpreter implements Runnable {
 		}
 	}
 	private void exec(WorkflowState st) {
+		System.out.println("Executing state "+st.elem.getNodeName());
 		WorkflowTransition[] transitions = st.getTransitions();
 		foreach (WorkflowTransition t; transitions) {
+			System.out.println("Executing transition "+t.elem.getNodeName());
 			WorkflowFunction f = t.getFunction("default");
 			if (f != null)
 				exec(f);
 			String tgt = t.getTarget();
 			if (tgt != null) {
-				WorkflowState next = getState(tgt);
+				WorkflowState next = wf.getState(tgt);
 				if (next == null)
 					throw new RuntimeException("Workflow state '"+tgt+"' not found");
 				exec(next);
 				return;
 			}
 		}
-	}
-	
-	private WorkflowState getState(String name) {
-		foreach (WorkflowState st; doc.element.elements; name.equals(st.getLocalName()))
-			return st;
-		return null;
 	}
 	
 	private void exec(WorkflowFunction f) {

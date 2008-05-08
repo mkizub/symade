@@ -28,11 +28,14 @@ public abstract class ADomAttr extends ADomNode implements org.w3c.dom.Attr {
 	
 	public static final ADomAttr[] emptyArray = new ADomAttr[0];
 
+	@nodeAttr
 	public String		attrNamespaceURI;
+	@nodeAttr
 	public String		attrName;
-
-	private String value = "";
+	@nodeAttr
+	public String		value = "";
 	
+	public final org.w3c.dom.Node getParentNode() { null }
     public final short getNodeType() { org.w3c.dom.Node.ATTRIBUTE_NODE }
 
 	public String getValue() throws DOMException { value }
@@ -40,7 +43,17 @@ public abstract class ADomAttr extends ADomNode implements org.w3c.dom.Attr {
 	
 	public String getNodeValue() throws DOMException { value }
 	public void setNodeValue(String value) throws DOMException { this.value = value; }
+
+	public org.w3c.dom.Element getOwnerElement() {
+		ANode p = parent();
+		if (p instanceof org.w3c.dom.Element)
+			return (org.w3c.dom.Element)p;
+		return null;
+	}
 	
+	public boolean isId() { false } 
+	
+	public String getName() { attrName }
 	public String getNodeName() { attrName }
 	public String getNamespaceURI() { attrNamespaceURI }
 	public String getPrefix() {

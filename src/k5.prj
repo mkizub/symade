@@ -255,6 +255,7 @@ CLASS kievfmtSyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxSubAttr kiev/fmt/SyntaxSubAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxSwitch kiev/fmt/SyntaxSwitch kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxToken kiev/fmt/SyntaxToken kiev/fmt/SyntaxLayout.java
+CLASS kievfmtSyntaxXmlStrAttr kiev/fmt/SyntaxXmlStrAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtTextFormatter kiev/fmt/TextFormatter kiev/fmt/Formatter.java
 CLASS kievfmtTextPrinter kiev/fmt/TextPrinter kiev/fmt/DrawDevice.java
 CLASS kievfmtTextSyntax kiev/fmt/TextSyntax kiev/fmt/SyntaxLayout.java
@@ -391,10 +392,12 @@ CLASS kievvdomDomText kiev/vdom/DomText kiev/vdom/ACharacterData.java
 CLASS kievvdomGenDomAttr kiev/vdom/GenDomAttr kiev/vdom/ADomAttr.java
 CLASS kievvdomGenDomDocument kiev/vdom/GenDomDocument kiev/vdom/ADomDocument.java
 CLASS kievvdomGenDomElement kiev/vdom/GenDomElement kiev/vdom/ADomElement.java
+CLASS kievvdomWorkflow kiev/vdom/Workflow kiev/vdom/Workflow.java
 CLASS kievvdomWorkflowFunction kiev/vdom/WorkflowFunction kiev/vdom/Workflow.java
 CLASS kievvdomWorkflowInterpreter kiev/vdom/WorkflowInterpreter kiev/vdom/Workflow.java
 CLASS kievvdomWorkflowState kiev/vdom/WorkflowState kiev/vdom/Workflow.java
 CLASS kievvdomWorkflowTransition kiev/vdom/WorkflowTransition kiev/vdom/Workflow.java
+CLASS kievvdomWorkflowWrapper kiev/vdom/WorkflowWrapper kiev/vdom/Workflow.java
 CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
 CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java

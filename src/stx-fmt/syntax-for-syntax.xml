@@ -10,6 +10,7 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 <a-node class='kiev.vlang.FileUnit'>
+ <project_file>true</project_file>
  <srpkg>
   <a-node class='kiev.vlang.SymbolRef'>
    <name>stx-fmt</name>
@@ -486,6 +487,7 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
+         <name></name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-nl</name>
@@ -620,6 +622,7 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -1396,6 +1399,7 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
           </a-node>
          </element>
          <prefix>
@@ -1603,6 +1607,9 @@
            <name>SyntaxStrAttr</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
+           <name>SyntaxXmlStrAttr</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
            <name>SyntaxCharAttr</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
@@ -1636,6 +1643,7 @@
      <regexp_ok>.*</regexp_ok>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
+       <name></name>
       </a-node>
      </elem>
      <sname>ident-template</sname>
@@ -1958,6 +1966,7 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
             </a-node>
            </element>
            <separator>
@@ -2088,6 +2097,7 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
             </a-node>
            </element>
            <separator>
@@ -2287,6 +2297,83 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxXmlStrAttr</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxFolder'>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>name</name>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-of-subattr</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
+        </a-node>
+       </folded>
+       <unfolded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>xml-str-attr:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&quot;</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>name</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&quot;</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>fmt:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>fmt</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>in:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>in_syntax</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>TextSyntax</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&gt;</text>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
+        </a-node>
+       </unfolded>
+      </a-node>
+     </elem>
+     <sname>stx-def-attr-xstr</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>SyntaxList</name>
       </a-node>
      </rnode>
@@ -2478,6 +2565,7 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-nl-1++</name>
@@ -2557,6 +2645,7 @@
            </folded>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-nl-1++</name>
@@ -2599,6 +2688,9 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxStrAttr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxXmlStrAttr</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxCharAttr</name>
@@ -2645,6 +2737,7 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-nl-1++</name>
@@ -2690,6 +2783,9 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxStrAttr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxXmlStrAttr</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxCharAttr</name>
@@ -2803,6 +2899,7 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
             </a-node>
            </element>
            <separator>
@@ -2855,6 +2952,7 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
+             <name></name>
             </a-node>
            </element>
            <separator>
@@ -3127,6 +3225,7 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
           </a-node>
          </element>
          <separator>
@@ -3200,6 +3299,7 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
           </a-node>
          </element>
          <separator>
@@ -3355,6 +3455,7 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -3389,6 +3490,7 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -4034,6 +4136,7 @@
      </expected_types>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
+       <name></name>
       </a-node>
      </elem>
      <sname>stx-types-CalcOptions</sname>
@@ -4097,6 +4200,7 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
+         <name></name>
         </a-node>
        </element>
        <separator>
@@ -4135,6 +4239,7 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
+         <name></name>
         </a-node>
        </element>
        <separator>
@@ -4365,6 +4470,11 @@
        </elements>
        <folded_by_default>false</folded_by_default>
        <nested_function_lookup>false</nested_function_lookup>
+       <par>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>par-indent</name>
+        </a-node>
+       </par>
       </a-node>
      </elem>
      <sname>stx-func</sname>
@@ -4379,6 +4489,7 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
+         <name></name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-nl-1++</name>
@@ -4398,7 +4509,7 @@
        </sufix>
        <elpar>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>par-indent</name>
+         <name>par-flow</name>
         </a-node>
        </elpar>
        <folded_by_default>false</folded_by_default>

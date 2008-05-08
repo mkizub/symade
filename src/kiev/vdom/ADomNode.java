@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode
-public abstract class ADomNode extends ANode implements org.w3c.dom.Node {
+public abstract class ADomNode extends ASTNode implements org.w3c.dom.Node {
 	
 	public static final ADomNode[] emptyArray = new ADomNode[0];
 
@@ -57,18 +57,14 @@ public abstract class ADomNode extends ANode implements org.w3c.dom.Node {
 		throw new DOMException(DOMException.NAMESPACE_ERR, "Cannot set namespace for this type of node");
 	}
 	
-	public final org.w3c.dom.Node getParentNode() {
-		if (is_owned)
-			return (org.w3c.dom.Node)parent();
-		return null;
+	public org.w3c.dom.Node getParentNode() {
+		return (org.w3c.dom.Node)parent();
 	}
 
 	public final org.w3c.dom.Document getOwnerDocument() {
 		if (this instanceof org.w3c.dom.Document)
 			return null;
 		ANode p = parent();
-		if !(is_owned)
-			return (org.w3c.dom.Document)p;
 		while (p != null && !(p instanceof org.w3c.dom.Node) && !(p instanceof org.w3c.dom.Document))
 			p = p.parent();
 		if (p instanceof org.w3c.dom.Document)
