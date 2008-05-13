@@ -19,6 +19,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public view RMethod of Method extends RDNode {
 
 	public:ro			TypeDef[]			targs;
@@ -112,6 +113,7 @@ public view RMethod of Method extends RDNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RConstructor of Constructor extends RMethod {
 
 	public void resolveDecl() {
@@ -126,6 +128,7 @@ public final view RConstructor of Constructor extends RMethod {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RInitializer of Initializer extends RDNode {
 	public:ro ENode			body;
 	public:ro Block			block;
@@ -144,6 +147,7 @@ public final view RInitializer of Initializer extends RDNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RWBCCondition of WBCCondition extends RDNode {
 	public WBCType				cond;
 	public ENode				body;

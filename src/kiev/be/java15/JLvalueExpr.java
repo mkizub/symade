@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public abstract view JLvalueExpr of LvalueExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
@@ -41,10 +42,12 @@ public abstract view JLvalueExpr of LvalueExpr extends JENode {
 	public abstract void generateStoreDupValue(Code code);
 }
 
+@ViewOf(vcast=true, iface=true)
 public abstract view JAccessExpr of AccessExpr extends JLvalueExpr {
 	public:ro	JENode		obj;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	
 	private static final Field arr_length = Type.tpArray.resolveField("length");
@@ -164,6 +167,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExpr {
 	public:ro	JENode		obj;
 	public:ro	JENode		index;
@@ -271,6 +275,7 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public final view JThisExpr of ThisExpr extends JLvalueExpr {
 
 	public void generateLoad(Code code) {
@@ -333,6 +338,7 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JSuperExpr of SuperExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
@@ -349,6 +355,7 @@ public final view JSuperExpr of SuperExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 	public:ro	JVar		var;
 
@@ -508,6 +515,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 	public:ro JTypeRef		obj;
 	public:ro JField		var;
@@ -550,6 +558,7 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JENode {
 	public:ro	JField[]		outer_refs;
 
@@ -563,6 +572,7 @@ public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JReinterpExpr of ReinterpExpr extends JLvalueExpr {
 	public:ro	JENode		expr;
 

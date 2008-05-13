@@ -12,6 +12,7 @@ package kiev.be.java15;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public view JNode of ASTNode implements JConstants {
 
 	@unerasable
@@ -64,6 +65,7 @@ public view JNode of ASTNode implements JConstants {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JDNode of DNode extends JNode {
 
 	public:ro	MetaSet		meta;
@@ -122,9 +124,11 @@ public view JDNode of DNode extends JNode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JSNode of SNode extends JNode {
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JDeclGroup of DeclGroup extends JSNode {
 
 	public DNode[] getDecls();
@@ -150,6 +154,7 @@ public final view JDeclGroup of DeclGroup extends JSNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JENode of ENode extends JNode {
 	
 	public:ro	String			ident;
@@ -182,6 +187,7 @@ public view JENode of ENode extends JNode {
 	public Object	getConstValue();
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view JNopExpr of NopExpr extends JENode {
 	public void generate(Code code, Type reqType) {
 		// nothing to generate - noop
@@ -193,6 +199,7 @@ public static final view JNopExpr of NopExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;
 	public:ro	JNode[]				members;
@@ -227,6 +234,7 @@ public view JTypeDecl of TypeDecl extends JDNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view JTypeRef of TypeRef extends JENode {
 	public:ro Type	type_lnk;
 

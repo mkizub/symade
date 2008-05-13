@@ -837,6 +837,40 @@ public class CastExpr extends ENode {
 		return new Type[]{getType()};
 	}
 
+	public void mainResolveOut() {
+		Type type = this.type.getType();
+		Type extp = Type.getRealType(type,expr.getType());
+		if (extp.getAutoCastTo(type) == null) {
+			resolveOverloadedCast(extp);
+		}
+		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(type) != null) {
+			resolveOverloadedCast(extp);
+		}
+		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView()
+				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(type) != null)
+		{
+			resolveOverloadedCast(extp);
+		}
+	}
+
+	private boolean resolveOverloadedCast(Type et) {
+		Method@ v;
+		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+		CallType mt = new CallType(et,null,null,this.type.getType(),false);
+		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
+			this.symbol = (Method)v;
+			return true;
+		}
+		v.$unbind();
+		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noImports);
+		mt = new CallType(null,null,new Type[]{expr.getType()},this.type.getType(),false);
+		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
+			this.symbol = (Method)v;
+			return true;
+		}
+		return false;
+	}
+
 	public static void autoCast(ENode ex, TypeRef tp) {
 		autoCast(ex, tp.getType());
 	}

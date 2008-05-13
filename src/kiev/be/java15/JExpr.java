@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public final view JShadow of Shadow extends JENode {
 	public:ro	JNode		rnode;
 
@@ -27,6 +28,7 @@ public final view JShadow of Shadow extends JENode {
 	
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JTypeClassExpr of TypeClassExpr extends JENode {
 	public:ro	Type			type;
 
@@ -39,6 +41,7 @@ public final view JTypeClassExpr of TypeClassExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JENode				cl_expr;
@@ -74,6 +77,7 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JAssignExpr of AssignExpr extends JENode {
 	public:ro	Operator		op;
 	public:ro	JENode			lval;
@@ -92,6 +96,7 @@ public view JAssignExpr of AssignExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JBinaryExpr of BinaryExpr extends JENode {
 	public:ro	Operator	op;
 	public:ro	JENode		expr1;
@@ -111,6 +116,7 @@ public view JBinaryExpr of BinaryExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JUnaryExpr of UnaryExpr extends JENode {
 	public:ro	Operator			op;
 	public:ro	JENode			expr;
@@ -129,6 +135,7 @@ public view JUnaryExpr of UnaryExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JStringConcatExpr of StringConcatExpr extends JENode {
 	public:ro	JENode[]			args;
 
@@ -171,6 +178,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JCommaExpr of CommaExpr extends JENode {
 	public:ro	JENode[]			exprs;
 
@@ -186,6 +194,7 @@ public view JCommaExpr of CommaExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JBlock of Block extends JENode {
 	public:ro	JNode[]			stats;
 	public:ro	JLabel			lblbrk;
@@ -243,6 +252,7 @@ public view JBlock of Block extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JIncrementExpr of IncrementExpr extends JENode {
 	public:ro	Operator			op;
 	public:ro	JENode			lval;
@@ -260,6 +270,7 @@ public final view JIncrementExpr of IncrementExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JConditionalExpr of ConditionalExpr extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		expr1;
@@ -287,6 +298,7 @@ public view JConditionalExpr of ConditionalExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JCastExpr of CastExpr extends JENode {
 	public:ro	JENode			expr;
 	public:ro	Type			type;

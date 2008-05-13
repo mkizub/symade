@@ -18,6 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public view RNode of ASTNode implements Constants {
 	public String toString();
 	
@@ -49,10 +50,12 @@ public view RNode of ASTNode implements Constants {
 	public boolean preGenerate() { return true; }
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RSNode of SNode extends RNode {
 	public void resolveDecl() {}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RDeclGroup of DeclGroup extends RSNode {
 	public:ro MetaSet	meta;
 
@@ -67,6 +70,7 @@ public static final view RDeclGroup of DeclGroup extends RSNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RDNode of DNode extends RNode {
 
 	public:ro MetaSet	meta;
@@ -120,6 +124,7 @@ public static view RDNode of DNode extends RNode {
 	public void resolveDecl() { /* empty */ }
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RENode of ENode extends RNode {
 
 	public		String			ident;
@@ -186,6 +191,7 @@ public static view RENode of ENode extends RNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RNopExpr of NopExpr extends RENode {
 
 	public void resolve(Type reqType) {
@@ -195,6 +201,7 @@ public final view RNopExpr of NopExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view RTypeDecl of TypeDecl extends RDNode {
 	public:ro			TypeRef[]				super_types;
 	public:ro			TypeDef[]				args;

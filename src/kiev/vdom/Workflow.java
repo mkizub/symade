@@ -10,8 +10,10 @@
  *******************************************************************************/
 package kiev.vdom;
 
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
 
 import syntax kiev.Syntax;
@@ -21,12 +23,37 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class WorkflowWrapper {
+public final class QNameValue extends QName {
+	public final Object value;
+	public QNameValue(String name, Object value) {
+		super(name);
+		this.value = value;
+	}
+}
+
+public final class XPathVarResolveHelper implements XPathVariableResolver {
+	private final QNameValue[] vars;
+	public XPathVarResolveHelper(QNameValue... vars) {
+		this.vars = vars;
+	}
+	public Object resolveVariable(QName qName) {
+		foreach (QNameValue var; vars; qName.equals(var))
+			return var.value;
+		return null;
+	}
+}
 	
-	public final static XPath xPath = XPathFactory.newInstance().newXPath();
+@ViewOf(vcast=false, iface=false)
+public abstract view WorkflowWrapper of Node {
+	
+	private final static XPath xPath = XPathFactory.newInstance().newXPath();
 	static {
 		xPath.setNamespaceContext(new NamespaceContext() {
 			public String getNamespaceURI(String prefix) {
+				if (prefix == null)
+					throw new IllegalArgumentException();
+				if (prefix.equals("xml")) return "http://www.w3.org/XML/1998/namespace";
+				if (prefix.equals("xmlns")) return "http://www.w3.org/2000/xmlns/";
 				if ("wflow".equals(prefix)) return "map:kiev.vdom.Workflow";
 				if ("wfstate".equals(prefix)) return "map:kiev.vdom.WorkflowState";
 				if ("wftrans".equals(prefix)) return "map:kiev.vdom.WorkflowTransition";
@@ -34,6 +61,10 @@ public abstract class WorkflowWrapper {
 				return "";
 			} 
 			public String getPrefix(String namespaceURI) {
+				if (namespaceURI == null)
+					throw new IllegalArgumentException();
+				if ("http://www.w3.org/XML/1998/namespace".equals(namespaceURI)) return "xml";
+				if ("http://www.w3.org/2000/xmlns/".equals(namespaceURI)) return "xmlns";
 				if ("map:kiev.vdom.Workflow".equals(namespaceURI)) return "wflow";
 				if ("map:kiev.vdom.WorkflowState".equals(namespaceURI)) return "wfstate";
 				if ("map:kiev.vdom.WorkflowTransition".equals(namespaceURI)) return "wftrans";
@@ -44,102 +75,88 @@ public abstract class WorkflowWrapper {
 		});
 	}
 	
-	public final ADomElement elem;
-	
-	public WorkflowWrapper(ADomElement elem) {
-		this.elem = elem;
-		assert (getMapURI().equals(elem.nodeNamespaceURI));
+	public static XPath getXPath(QNameValue... vars) {
+		WorkflowWrapper.xPath.setXPathVariableResolver(new XPathVarResolveHelper(vars));
+		return WorkflowWrapper.xPath;
 	}
+
+	public String getMapURI() { "" }
+
+	{
+		assert (this.getMapURI().equals(this.getNamespaceURI()));
+	}
+
+	public final String getNodeName();
+	public final String getNamespaceURI();
 	
-	public abstract String getMapURI();
+	public final NodeList evalNodeList(String expr, QNameValue... args) {
+		return (NodeList)getXPath(args).evaluate(expr,(Node)this,XPathConstants.NODESET);
+	}
+	public final Node evalNode(String expr, QNameValue... args) {
+		return (Node)getXPath(args).evaluate(expr,(Node)this,XPathConstants.NODE);
+	}
+	public final String evalText(String expr, QNameValue... args) {
+		return (String)getXPath(args).evaluate(expr,(Node)this,XPathConstants.STRING);
+	}
+	public final String[] evalTextList(String expr, QNameValue... args) {
+		NodeList lst = (NodeList)getXPath(args).evaluate(expr,(Node)this,XPathConstants.NODESET);
+		String[] strs = new String[lst.getLength()];
+		for (int i=0; i < strs.length; i++)
+			strs[i] = lst.item(i).getNodeValue();
+		return strs;
+	}
 	
 }
 
-public final class Workflow extends WorkflowWrapper {
-	
-	public Workflow(ADomElement elem) {
-		super(elem);
-	}
+@ViewOf(vcast=false, iface=false)
+public final view Workflow of Node extends WorkflowWrapper {
 	
 	public String getMapURI() { "map:kiev.vdom.Workflow" }
 
 	public WorkflowState getState(String name) {
-		ADomElement el = (ADomElement)xPath.evaluate("wfstate:"+name,this.elem,XPathConstants.NODE);
-		if (el == null)
-			throw new RuntimeException("Workflow state '"+name+"' not found");
-		return new WorkflowState(el);
+		WorkflowState.makeView(evalNode("wfstate:*[local-name()=$name]",new QNameValue("name",name)))
 	}
-	
-
 }
 
-public final class WorkflowState extends WorkflowWrapper {
-	
-	private final static XPathExpression xpath_transitions = xPath.compile("*[substring-before(name(),':')='wftrans']");
-	
-	public WorkflowState(ADomElement elem) {
-		super(elem);
-	}
+@ViewOf(vcast=false, iface=false)
+public final view WorkflowState of Node extends WorkflowWrapper {
 	
 	public String getMapURI() { "map:kiev.vdom.WorkflowState" }
 
 	public WorkflowTransition[] getTransitions() {
-		NodeList lst = (NodeList)xpath_transitions.evaluate(this.elem,XPathConstants.NODESET);
+		NodeList lst = evalNodeList("*[substring-before(name(),':')='wftrans']");
 		WorkflowTransition[] wtrs = new WorkflowTransition[lst.getLength()];
 		for (int i=0; i < wtrs.length; i++)
-			wtrs[i] = new WorkflowTransition((ADomElement)lst.item(i));
+			wtrs[i] = WorkflowTransition.makeView(lst.item(i));
 		return wtrs;
 	}
 
 }
 
-public final class WorkflowTransition extends WorkflowWrapper {
-	
-	private final static XPathExpression xpath_function = xPath.compile("*[substring-before(name(),':')='wffunc']");
-	private final static XPathExpression xpath_target = xPath.compile("text(child::target)");
-	
-	public WorkflowTransition(ADomElement elem) {
-		super(elem);
-	}
+@ViewOf(vcast=false, iface=false)
+public final view WorkflowTransition of Node extends WorkflowWrapper {
 	
 	public String getMapURI() { "map:kiev.vdom.WorkflowTransition" }
 
 	public WorkflowFunction getFunction(String name) {
-		ADomElement n = (ADomElement)xpath_function.evaluate(this.elem,XPathConstants.NODE);
-		return new WorkflowFunction(n);
+		WorkflowFunction.makeView(evalNode("wffunc:*[local-name()=$name]",new QNameValue("name",name)))
 	}
-	public String getTarget() {
-		return (String)xpath_target.evaluate(this.elem,XPathConstants.STRING);
-	}
+	public String getTarget() { evalText("target/text()") }
 }
 
-public final class WorkflowFunction extends WorkflowWrapper {
-	
-	private final static XPathExpression xpath_func = xPath.compile("text(child::func)");
-	private final static XPathExpression xpath_args = xPath.compile("arg/text()");
-
-	public WorkflowFunction(ADomElement elem) {
-		super(elem);
-	}
+@ViewOf(vcast=false, iface=false)
+public final view WorkflowFunction of Node extends WorkflowWrapper {
 	
 	public String getMapURI() { "map:kiev.vdom.WorkflowFunction" }
 
-	public String getFunc() {
-		return (String)xpath_func.evaluate(this.elem,XPathConstants.STRING);
-	}
-	public String[] getArgs() {
-		NodeList lst = (NodeList)xpath_args.evaluate(this.elem,XPathConstants.NODESET);
-		String[] args = new String[lst.getLength()];
-		for (int i=0; i < args.length; i++)
-			args[i] = ((DomText)lst.item(i)).getData();
-		return args;
-	}
+	public String getFunc() { evalText("func/text()") }
+	public String[] getArgs() { evalTextList("func/text()") }
 }
 
 
 public final class WorkflowInterpreter implements Runnable {
 	
-	private final ADomDocument doc;
+	private final org.w3c.dom.Document doc;
 	private final Workflow wf;
 	
 	static class ReturnExit extends Error {
@@ -151,8 +168,8 @@ public final class WorkflowInterpreter implements Runnable {
 	}
 	
 	public WorkflowInterpreter(org.w3c.dom.Document doc) {
-		this.doc = (ADomDocument)doc;
-		this.wf = new Workflow(this.doc.element);
+		this.doc = doc;
+		this.wf = Workflow.makeView(this.doc.getDocumentElement());
 	}
 	
 	public void run() {
@@ -168,13 +185,15 @@ public final class WorkflowInterpreter implements Runnable {
 		}
 	}
 	private void exec(WorkflowState st) {
-		System.out.println("Executing state "+st.elem.getNodeName());
+		System.out.println("Executing state "+st.getNodeName());
 		WorkflowTransition[] transitions = st.getTransitions();
 		foreach (WorkflowTransition t; transitions) {
-			System.out.println("Executing transition "+t.elem.getNodeName());
+			System.out.println("Executing transition "+t.getNodeName());
 			WorkflowFunction f = t.getFunction("default");
 			if (f != null)
 				exec(f);
+			else
+				System.out.println("Workflow function 'default' not found");
 			String tgt = t.getTarget();
 			if (tgt != null) {
 				WorkflowState next = wf.getState(tgt);

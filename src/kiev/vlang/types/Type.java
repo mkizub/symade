@@ -591,7 +591,7 @@ public final class CompaundType extends Type {
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-		str.append(tdecl.qname().replace('\u001f','.'));
+		str.append(tdecl.toString());
 		int n = tdecl.args.length;
 		if (n > 0) {
 			str.append('<');

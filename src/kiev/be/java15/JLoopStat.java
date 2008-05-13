@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public abstract view JLoopStat of LoopStat extends JENode implements BreakTarget, ContinueTarget {
 	public:ro	JLabel				lblcnt;
 	public:ro	JLabel				lblbrk;
@@ -22,6 +23,7 @@ public abstract view JLoopStat of LoopStat extends JENode implements BreakTarget
 	public final JLabel getBrkLabel() { return lblbrk; }
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JLabel of Label extends JDNode {
 	public:ro	List<ASTNode>		links;
 	public		CodeLabel			label;
@@ -35,6 +37,7 @@ public final view JLabel of Label extends JDNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JWhileStat of WhileStat extends JLoopStat {
 	public:ro	JENode		cond;
 	public:ro	JENode		body;
@@ -68,6 +71,7 @@ public final view JWhileStat of WhileStat extends JLoopStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JDoWhileStat of DoWhileStat extends JLoopStat {
 	public:ro	JENode		cond;
 	public:ro	JENode		body;
@@ -101,6 +105,7 @@ public final view JDoWhileStat of DoWhileStat extends JLoopStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JForStat of ForStat extends JLoopStat {
 	public:ro	JNode		init;
 	public:ro	JENode		cond;
@@ -157,6 +162,7 @@ public final view JForStat of ForStat extends JLoopStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JForEachStat of ForEachStat extends JLoopStat {
 	public:ro	int				mode;
 	public:ro	JENode		container;

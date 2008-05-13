@@ -385,6 +385,7 @@ CLASS kievvdomADomContainer kiev/vdom/ADomContainer kiev/vdom/ADomContainer.ja
 CLASS kievvdomADomDocument kiev/vdom/ADomDocument kiev/vdom/ADomDocument.java
 CLASS kievvdomADomElement kiev/vdom/ADomElement kiev/vdom/ADomElement.java
 CLASS kievvdomADomNode kiev/vdom/ADomNode kiev/vdom/ADomNode.java
+CLASS kievvdomDfltNsDomAttr kiev/vdom/DfltNsDomAttr kiev/vdom/ADomAttr.java
 CLASS kievvdomDomBuilder kiev/vdom/DomBuilder kiev/vdom/DomBuilder.java
 CLASS kievvdomDomBuilderFactory kiev/vdom/DomBuilderFactory kiev/vdom/DomBuilder.java
 CLASS kievvdomDomBuilderHandler kiev/vdom/DomBuilderHandler kiev/vdom/DomBuilder.java
@@ -392,12 +393,8 @@ CLASS kievvdomDomText kiev/vdom/DomText kiev/vdom/ACharacterData.java
 CLASS kievvdomGenDomAttr kiev/vdom/GenDomAttr kiev/vdom/ADomAttr.java
 CLASS kievvdomGenDomDocument kiev/vdom/GenDomDocument kiev/vdom/ADomDocument.java
 CLASS kievvdomGenDomElement kiev/vdom/GenDomElement kiev/vdom/ADomElement.java
-CLASS kievvdomWorkflow kiev/vdom/Workflow kiev/vdom/Workflow.java
-CLASS kievvdomWorkflowFunction kiev/vdom/WorkflowFunction kiev/vdom/Workflow.java
-CLASS kievvdomWorkflowInterpreter kiev/vdom/WorkflowInterpreter kiev/vdom/Workflow.java
-CLASS kievvdomWorkflowState kiev/vdom/WorkflowState kiev/vdom/Workflow.java
-CLASS kievvdomWorkflowTransition kiev/vdom/WorkflowTransition kiev/vdom/Workflow.java
-CLASS kievvdomWorkflowWrapper kiev/vdom/WorkflowWrapper kiev/vdom/Workflow.java
+CLASS kievvdomGenDomImplementation kiev/vdom/GenDomImplementation kiev/vdom/ADomDocument.java
+CLASS kievvdomNsDomAttr kiev/vdom/NsDomAttr kiev/vdom/ADomAttr.java
 CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
 CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java
@@ -997,6 +994,7 @@ INTERFACE kievstdlibAssertionHandler kiev/stdlib/AssertionHandler kiev/stdlib/
 INTERFACE kievstdlibEnumeration kiev/stdlib/Enumeration kiev/stdlib/Enumeration.java
 INTERFACE kievstdlibTypeInfoInterface kiev/stdlib/TypeInfoInterface kiev/stdlib/TypeInfo.java
 INTERFACE kievstdlibmetaCompilerNode kiev/stdlib/meta/CompilerNode kiev/stdlib/meta/CompilerNode.java
+INTERFACE kievstdlibmetaViewOf kiev/stdlib/meta/ViewOf kiev/stdlib/meta/ViewOf.java
 INTERFACE kievstdlibmetaabstract kiev/stdlib/meta/abstract kiev/stdlib/meta/abstract.java
 INTERFACE kievstdlibmetaaccess kiev/stdlib/meta/access kiev/stdlib/meta/access.java
 INTERFACE kievstdlibmetaalias kiev/stdlib/meta/alias kiev/stdlib/meta/alias.java

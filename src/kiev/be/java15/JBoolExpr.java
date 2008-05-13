@@ -19,6 +19,7 @@ interface IBoolExpr {
 	public abstract void generate_iffalse(Code code, CodeLabel label);
 }
 
+@ViewOf(vcast=true, iface=true)
 public abstract view JBoolExpr of BoolExpr extends JENode implements IBoolExpr {
 
 	public void generate(Code code, Type reqType) {
@@ -109,6 +110,7 @@ public abstract view JBoolExpr of BoolExpr extends JENode implements IBoolExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JBinaryBooleanOrExpr of BinaryBooleanOrExpr extends JBoolExpr {
 	public:ro JENode		expr1;
 	public:ro JENode		expr2;
@@ -130,6 +132,7 @@ public final view JBinaryBooleanOrExpr of BinaryBooleanOrExpr extends JBoolExpr 
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JBinaryBooleanAndExpr of BinaryBooleanAndExpr extends JBoolExpr {
 	public:ro JENode		expr1;
 	public:ro JENode		expr2;
@@ -151,6 +154,7 @@ public final view JBinaryBooleanAndExpr of BinaryBooleanAndExpr extends JBoolExp
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 	public:ro Operator			op;
 	public:ro JENode			expr1;
@@ -259,6 +263,7 @@ public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JInstanceofExpr of InstanceofExpr extends JBoolExpr {
 	public:ro JENode		expr;
 	public:ro Type			type;
@@ -280,6 +285,7 @@ public final view JInstanceofExpr of InstanceofExpr extends JBoolExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JBooleanNotExpr of BooleanNotExpr extends JBoolExpr {
 	public:ro JENode		expr;
 	

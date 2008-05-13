@@ -17,9 +17,11 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public abstract view RBoolExpr of BoolExpr extends RENode {
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends RBoolExpr {
 	public ENode		expr1;
 	public ENode		expr2;
@@ -36,6 +38,7 @@ public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends RBoolExpr 
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends RBoolExpr {
 	public ENode		expr1;
 	public ENode		expr2;
@@ -51,6 +54,7 @@ public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends RBoolExp
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 	public Operator			op;
 	public ENode			expr1;
@@ -101,6 +105,7 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 	public ENode	expr;
 	public TypeRef	type;
@@ -148,6 +153,7 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 	public ENode		expr;
 

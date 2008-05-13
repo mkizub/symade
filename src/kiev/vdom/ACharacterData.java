@@ -21,9 +21,14 @@ import syntax kiev.Syntax;
 
 @ThisIsANode
 public final class DomText extends ACharacterData implements org.w3c.dom.Text {
+	
+	public DomText() {}
+	public DomText(String value) {
+		this.value = value;
+	}
 
-    public final short getNodeType() { org.w3c.dom.Node.TEXT_NODE }
 	public final String getNodeName() { "#text" }
+    public final short getNodeType() { org.w3c.dom.Node.TEXT_NODE }
 
 	public String getWholeText() { this.getData() }
 	public boolean isElementContentWhitespace() { getData().trim().length() == 0 }
@@ -40,10 +45,13 @@ public final class DomText extends ACharacterData implements org.w3c.dom.Text {
 public abstract class ACharacterData extends ADomNode implements org.w3c.dom.CharacterData {
 	
 	@nodeAttr
-	public String value = "";
+	public String value;
 	
+	public abstract String getNodeName();
 	public String getNodeValue() throws DOMException { value }
 	public void setNodeValue(String value) throws DOMException { this.value = value; }
+    public abstract short getNodeType();
+
 	public int getLength() { value.length() }
 	public String getData() throws DOMException { value }
 	public void setData(String value) throws DOMException { this.value = value; }

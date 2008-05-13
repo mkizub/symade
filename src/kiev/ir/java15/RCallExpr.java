@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RCallExpr of CallExpr extends RENode {
 
 	public:ro	Method			func;
@@ -70,6 +71,7 @@ public final view RCallExpr of CallExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RCtorCallExpr of CtorCallExpr extends RENode {
 
 	public:ro	Method			func;
@@ -134,6 +136,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RClosureCallExpr of ClosureCallExpr extends RENode {
 	public		ENode			expr;
 	public:ro	ENode[]			args;

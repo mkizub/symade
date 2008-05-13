@@ -60,6 +60,20 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 		return true;
 	}
 
+	boolean rewrite(CastExpr:ANode ce) {
+		Method m = (Method)ce.dnode;
+		if (m != null && m.isMacro() && !m.isNative()) {
+			if (m.body != null) {
+				int idx = 0;
+				Hashtable<String,Object> args = new Hashtable<String,Object>();
+				//foreach (Var fp; m.params; fp.kind == Var.PARAM_NORMAL)
+				//	args.put(fp.sname, ce.args[idx++]);
+				doRewrite(m.body, ce, args);
+			}
+		}
+		return true;
+	}
+
 	boolean rewrite(CallExpr:ANode ce) {
 		Method m = ce.func;
 		if (m.isMacro() && !m.isNative()) {

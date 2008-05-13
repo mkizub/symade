@@ -29,42 +29,97 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	public static final ADomElement[] emptyArray = new ADomElement[0];
 
 	@nodeAttr
-	public String		nodeNamespaceURI;
+	public String			nodeNamespaceURI;
 	@nodeAttr
-	public String		nodeName;
+	public String			nodeName;
 	@nodeAttr
-	public ADomAttr[]	attributes;
+	public ADomAttr[]		attributes;
 	
-	public final String getNodeName() { this.nodeName }
-	public final String getNamespaceURI() { this.nodeNamespaceURI }
+	//
+	//
+	// DOM level 1 Node interface
+	//
+	//
+	
+	public final String getNodeName() { nodeName }
+    public final short getNodeType() { org.w3c.dom.Node.ELEMENT_NODE }
+	public org.w3c.dom.NamedNodeMap getAttributes() { new AttrMap() }
+
+
+	//
+	//
+	// DOM level 2 Node interface
+	//
+	//
+	
+	public final String getNamespaceURI() { nodeNamespaceURI }
+	
 	public String getPrefix() {
 		int p = nodeName.indexOf(':');
         return p < 0 ? null : nodeName.substring(0, p);
+	}
+	public void setPrefix(String prefix) throws DOMException {
+		String nm = this.nodeName;
+		int p = nm.indexOf(':');
+		if (p < 0)
+			nodeName = prefix + ":" + nm;
+		else
+			nodeName = prefix + ":" + nm.substring(p+1);
 	}
 	public String getLocalName() {
 		int p = nodeName.indexOf(':');
         return p < 0 ? nodeName : nodeName.substring(p+1);
 	}
-	public String getBaseURI() {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI() is not implemented yet");
-	}
-
-    public final short getNodeType() { org.w3c.dom.Node.ELEMENT_NODE }
-
-	public org.w3c.dom.NamedNodeMap getAttributes() { new AttrMap() }
 
 	public boolean hasAttributes() { attributes.length > 0 }
 
 
-	public String getTagName() { this.nodeName }
-    
+	//
+	//
+	// DOM level 3 Node interface
+	//
+	//
+	public String lookupPrefix(String namespaceURI) {
+		foreach (NsDomAttr ns; attributes; ns.getNodeValue().equals(namespaceURI)) {
+			return ns.getLocalName();
+		}
+		return super.lookupPrefix(namespaceURI);
+	}
+
+	public boolean isDefaultNamespace(String namespaceURI) {
+		foreach (DfltNsDomAttr ns; attributes; ns.getNodeValue().equals(namespaceURI)) {
+			return true;
+		}
+		return super.isDefaultNamespace(namespaceURI);
+	}
+
+	public String lookupNamespaceURI(String prefix) {
+		if (prefix == null || prefix.length() == 0) {
+			foreach (DfltNsDomAttr ns; attributes)
+				return ns.getNodeValue();
+		} else {
+			foreach (NsDomAttr ns; attributes; ns.getLocalName().equals(prefix))
+				return ns.getNodeValue();
+		}
+		return super.lookupNamespaceURI(prefix);
+	}
+
+	
+	//
+	//
+	// DOM level 1 Element interface
+	//
+	//
+	
+	public String getTagName() { nodeName }
+	
 	public String getAttribute(String name) {
 		int i = lookupAttrIndex(name);
 		if (i < 0 || i >= attributes.length)
 			return null;
 		return attributes[i].getValue();
 	}
-    
+	
 	public void setAttribute(String name, String value) throws DOMException {
 		if (name == null || name.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name="+name);
@@ -73,7 +128,7 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 		attr.setValue(value);
 		setAttributeNodeNS(attr);
 	}
-	
+
 	public void removeAttribute(String nm) throws DOMException {
 		if (is_readonly)
 			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
@@ -82,14 +137,14 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 			throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+nm+" not found");
 		attributes.del(i);
 	}
-	
+
 	public org.w3c.dom.Attr getAttributeNode(String name) {
 		int i = lookupAttrIndex(name);
 		if (i >= 0 && i < attributes.length)
 			return attributes[i];
 		return null;
 	}
-	
+
 	public org.w3c.dom.Attr setAttributeNode(org.w3c.dom.Attr _attr) throws DOMException {
 		ADomAttr attr = (ADomAttr)_attr;
 		if (is_readonly)
@@ -104,7 +159,7 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 			return old;
 		}
 	}
-	
+
 	public org.w3c.dom.Attr removeAttributeNode(org.w3c.dom.Attr attr) throws DOMException {
 		if (is_readonly)
 			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
@@ -115,10 +170,17 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 		attributes.del(i);
 		return old;
 	}
-	
-	public org.w3c.dom.NodeList getElementsByTagName(String s) {
+
+    public org.w3c.dom.NodeList getElementsByTagName(String name) {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementsByTagName(String) is not implemented yet");
 	}
+	
+	
+	//
+	//
+	// DOM level 2 Element interface
+	//
+	//
 	
 	public String getAttributeNS(String uri, String nm) throws DOMException {
 		int i = lookupAttrIndex(uri, nm);
@@ -126,7 +188,7 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 			return null;
 		return attributes[i].getValue();
 	}
-	
+
 	public void setAttributeNS(String uri, String nm, java.lang.String value) throws DOMException {
 		int i = lookupAttrIndex(uri, nm);
 		if (i < 0) {
@@ -142,7 +204,7 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 			attr.setValue(value);
 		}
 	}
-	
+
 	public void removeAttributeNS(String uri, String nm) throws DOMException {
 		if (is_readonly)
 			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
@@ -151,7 +213,7 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 			throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+uri+':'+nm+" not found");
 		attributes.del(i);
 	}
-	
+
 	public org.w3c.dom.Attr getAttributeNodeNS(String uri, String nm) throws DOMException {
 		int i = lookupAttrIndex(uri, nm);
 		if (i >= 0)
@@ -173,11 +235,11 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 			return old;
 		}
 	}
-	
+
 	public org.w3c.dom.NodeList getElementsByTagNameNS(String uri, String nm) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementsByTagNameNS(String,String) is not implemented yet");
 	}
-	
+
 	public boolean hasAttribute(String nm) {
 		return lookupAttrIndex(nm) >= 0;
 	}
@@ -185,6 +247,13 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	public boolean hasAttributeNS(String uri, String nm) throws DOMException {
 		return lookupAttrIndex(uri,nm) >= 0;
 	}
+	
+	
+	//
+	//
+	// DOM level 3 Element interface
+	//
+	//
 	
 	public org.w3c.dom.TypeInfo getSchemaTypeInfo() {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getSchemaTypeInfo() is not implemented yet");
@@ -202,6 +271,13 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setIdAttributeNS(String,String,bool) is not implemented yet");
 	}
 	
+	
+	//
+	//
+	// Support code
+	//
+	//
+
 	final int lookupAttrIndex(String name) {
 		if (name == null)
 			return -1;

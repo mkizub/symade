@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RStruct of Struct extends RTypeDecl {
 
 	static final AttrSlot TI_ATTR = new ExtAttrSlot("rstruct ti field temp expr",ANode.nodeattr$parent,false,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	

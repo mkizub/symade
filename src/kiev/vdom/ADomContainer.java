@@ -25,6 +25,12 @@ public abstract class ADomContainer extends ADomNode {
 	@nodeAttr
 	public ADomNode[]	elements;
 
+	//
+	//
+	// DOM level 1 Node interface
+	//
+	//
+	
 	public org.w3c.dom.NodeList getChildNodes() { new DomNodeList() }
 
 	public org.w3c.dom.Node getFirstChild() {

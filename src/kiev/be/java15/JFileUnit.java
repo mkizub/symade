@@ -18,6 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view JFileUnit of FileUnit extends JNameSpace {
 	public:ro	String					fname;
 	public:ro	boolean[]				disabled_extensions;
@@ -50,6 +51,7 @@ public final view JFileUnit of FileUnit extends JNameSpace {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JNameSpace of NameSpace extends JSNode {
 	public		SymbolRef<KievPackage>	srpkg;
 	public:ro	JNode[]					members;

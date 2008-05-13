@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public static final view RCaseLabel of CaseLabel extends RENode {
 	public		ENode			val;
 	public		Type			type;
@@ -106,6 +107,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RSwitchStat of SwitchStat extends RBlock {
 	public		ENode					sel;
 	public:ro	CaseLabel[]				cases;
@@ -165,6 +167,7 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 	
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RSwitchEnumStat of SwitchEnumStat extends RSwitchStat {
 
 	public void resolve(Type reqType) {
@@ -199,6 +202,7 @@ public static final view RSwitchEnumStat of SwitchEnumStat extends RSwitchStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 
 	public void resolve(Type reqType) {
@@ -262,6 +266,7 @@ public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RMatchStat of MatchStat extends RSwitchStat {
 
 	public Var					tmp_var;

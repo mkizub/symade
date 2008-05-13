@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RSynchronizedStat of SynchronizedStat extends RENode {
 	public ENode			expr;
 	public Var				expr_var;
@@ -35,6 +36,7 @@ public final view RSynchronizedStat of SynchronizedStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RWithStat of WithStat extends RENode {
 	public ENode		expr;
 	public ENode		body;

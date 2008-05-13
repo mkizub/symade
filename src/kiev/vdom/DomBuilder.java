@@ -51,7 +51,7 @@ public final class DomBuilder extends DocumentBuilder {
     public org.w3c.dom.Document newDocument() { new GenDomDocument() }
     
     public org.w3c.dom.DOMImplementation getDOMImplementation() {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDOMImplementation() is not implemented yet");
+		return GenDomImplementation;
 	}
     
     public org.w3c.dom.Document parse(InputSource inputSource) throws SAXException, IOException {
@@ -69,8 +69,10 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 	
 	ADomDocument document;
 	
-	private ADomElement cur_element;
-	private DomText cur_text;
+	private ADomElement		cur_element;
+	private DomText			cur_text;
+	private DfltNsDomAttr	cur_dflt_namespace;
+	private NsDomAttr[]		cur_namespaces;
 	
 	DomBuilderHandler() {}
 	
@@ -86,6 +88,15 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 			elem = (ADomElement)document.createElementNS(uri, qName);
 		else
 			elem = (ADomElement)document.createElement(qName);
+		if (cur_dflt_namespace != null) {
+			elem.setAttributeNode(cur_dflt_namespace);
+			cur_dflt_namespace = null;
+		}
+		if (cur_namespaces != null) {
+			foreach (NsDomAttr ns; cur_namespaces)
+				elem.setAttributeNode(ns);
+			cur_namespaces = null;
+		}
 		int nattrs = attributes.getLength();
 		for (int i=0; i < nattrs; i++) {
 			//System.out.println("attribute("+attributes.getURI(i)+","+attributes.getLocalName(i)+","+attributes.getQName(i)+")='"+attributes.getValue(i)+"'");
@@ -120,6 +131,15 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 	
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		//System.out.println("xmlns:"+prefix+"="+uri);
+		if (prefix.length() == 0) {
+			cur_dflt_namespace = new DfltNsDomAttr(uri);
+		} else {
+			NsDomAttr attr = new NsDomAttr(prefix, uri);
+			if (cur_namespaces == null)
+				cur_namespaces = new NsDomAttr[]{attr};
+			else
+				cur_namespaces = (NsDomAttr[])Arrays.append(cur_namespaces, attr);
+		}
 	}
 	
 	public void endPrefixMapping(String prefix) throws SAXException {

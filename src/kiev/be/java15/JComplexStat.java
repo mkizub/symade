@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public final view JCaseLabel of CaseLabel extends JENode {
 	public:ro	JENode			val;
 	public:ro	Type			type;
@@ -62,6 +63,7 @@ class SwitchInfo {
 	int hi = Integer.MIN_VALUE;
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 	public:ro	JENode				sel;
 	public:ro	JCaseLabel[]		cases;
@@ -159,6 +161,7 @@ public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JSwitchEnumStat of SwitchEnumStat extends JSwitchStat {
 
 	public void generate(Code code, Type reqType) {
@@ -185,6 +188,7 @@ public view JSwitchEnumStat of SwitchEnumStat extends JSwitchStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JSwitchTypeStat of SwitchTypeStat extends JSwitchStat {
 
 	public void generate(Code code, Type reqType) {
@@ -210,6 +214,7 @@ public view JSwitchTypeStat of SwitchTypeStat extends JSwitchStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JMatchStat of MatchStat extends JSwitchStat {
 
 	public:ro	JVar				tmp_var;
@@ -247,6 +252,7 @@ public view JMatchStat of MatchStat extends JSwitchStat {
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public view JCatchInfo of CatchInfo extends JENode {
 	public:ro	JVar			arg;
 	public:ro	JENode			body;
@@ -280,6 +286,7 @@ public view JCatchInfo of CatchInfo extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public view JFinallyInfo of FinallyInfo extends JENode {
 	public:ro	JVar			ret_arg;
 	public:ro	JENode			body;
@@ -313,6 +320,7 @@ public view JFinallyInfo of FinallyInfo extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JTryStat of TryStat extends JENode {
 	public:ro	JENode				body;
 	public:ro	JCatchInfo[]		catchers;
@@ -382,6 +390,7 @@ public final view JTryStat of TryStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JSynchronizedStat of SynchronizedStat extends JENode {
 	public:ro	JENode			expr;
 	public:ro	JVar			expr_var;
@@ -432,6 +441,7 @@ public final view JSynchronizedStat of SynchronizedStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JWithStat of WithStat extends JENode {
 	public:ro	JENode		expr;
 	public:ro	JENode		body;

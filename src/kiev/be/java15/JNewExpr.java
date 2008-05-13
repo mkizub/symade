@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public final view JNewExpr of NewExpr extends JENode {
 
 	public:ro	JMethod			func;
@@ -80,6 +81,7 @@ public final view JNewExpr of NewExpr extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JNewEnumExpr of NewEnumExpr extends JENode {
 
 	public:ro	JMethod			func;
@@ -109,6 +111,7 @@ public final view JNewEnumExpr of NewEnumExpr extends JENode {
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public final view JNewArrayExpr of NewArrayExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JENode[]			args;
@@ -138,6 +141,7 @@ public final view JNewArrayExpr of NewArrayExpr extends JENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JENode[]			args;
@@ -170,6 +174,7 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JE
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JNewClosure of NewClosure extends JENode {
 	public:ro	JStruct		clazz;
 

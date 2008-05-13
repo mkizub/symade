@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RConstExpr of ConstExpr extends RENode {
 	
 	public final void resolve(Type reqType) {

@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public static final view RNewExpr of NewExpr extends RENode {
 	public:ro	Method				func;
 	public		TypeRef				type;
@@ -99,6 +100,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 	public:ro	Method				func;
 	public:ro	ENode[]				args;
@@ -136,6 +138,7 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 	public		TypeRef				type;
 	public:ro	ENode[]				args;
@@ -184,6 +187,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
 	public		TypeRef				type;
 	public:ro	ENode[]				args;
@@ -236,6 +240,7 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RNewClosure of NewClosure extends RENode {
 	public		TypeRef			type_ret;
 	public:ro	Var[]			params;

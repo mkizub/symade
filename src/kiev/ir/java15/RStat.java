@@ -19,6 +19,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RInlineMethodStat of InlineMethodStat extends RENode {
 	public Method			method;
 	public ParamRedir[]		params_redir;
@@ -45,6 +46,7 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RExprStat of ExprStat extends RENode {
 	public ENode		expr;
 
@@ -60,6 +62,7 @@ public final view RExprStat of ExprStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RReturnStat of ReturnStat extends RENode {
 	public ENode		expr;
 
@@ -86,6 +89,7 @@ public final view RReturnStat of ReturnStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RThrowStat of ThrowStat extends RENode {
 	public ENode		expr;
 
@@ -102,6 +106,7 @@ public final view RThrowStat of ThrowStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RIfElseStat of IfElseStat extends RENode {
 	public ENode		cond;
 	public ENode		thenSt;
@@ -143,6 +148,7 @@ public final view RIfElseStat of IfElseStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RCondStat of CondStat extends RENode {
 	public ENode		enabled;
 	public ENode		cond;
@@ -167,6 +173,7 @@ public final view RCondStat of CondStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RLabeledStat of LabeledStat extends RENode {
 	public Label			lbl;
 	public ENode			stat;
@@ -182,6 +189,7 @@ public final view RLabeledStat of LabeledStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RBreakStat of BreakStat extends RENode {
 	public Label			dest;
 
@@ -238,6 +246,7 @@ public final view RBreakStat of BreakStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RContinueStat of ContinueStat extends RENode {
 	public Label			dest;
 
@@ -247,6 +256,7 @@ public final view RContinueStat of ContinueStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RGotoStat of GotoStat extends RENode {
 	public Label			dest;
 
@@ -270,6 +280,7 @@ public final view RGotoStat of GotoStat extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RGotoCaseStat of GotoCaseStat extends RENode {
 	public ENode		expr;
 	public SwitchStat	sw;

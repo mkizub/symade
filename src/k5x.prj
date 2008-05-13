@@ -406,6 +406,9 @@
            <fname>varargs.java</fname>
           </a-node>
           <a-node class='kiev.vlang.FileUnit'>
+           <fname>ViewOf.java</fname>
+          </a-node>
+          <a-node class='kiev.vlang.FileUnit'>
            <fname>virtual.java</fname>
           </a-node>
          </members>

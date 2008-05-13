@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public final view JCallExpr of CallExpr extends JENode {
 
 	public:ro	JMethod			func;
@@ -118,6 +119,7 @@ public final view JCallExpr of CallExpr extends JENode {
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public final view JCtorCallExpr of CtorCallExpr extends JENode {
 
 	public:ro	JMethod			func;
@@ -203,6 +205,7 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 	public:ro JENode		expr;
 	public:ro JENode[]		args;

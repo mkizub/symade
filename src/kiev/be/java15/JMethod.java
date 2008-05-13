@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view JMethod of Method extends JDNode {
 
 	public:ro	JVar[]					params;
@@ -159,6 +160,7 @@ public final view JMethod of Method extends JDNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JInitializer of Initializer extends JDNode {
 	public:ro	JENode		body;
 
@@ -169,6 +171,7 @@ public final view JInitializer of Initializer extends JDNode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final final view JWBCCondition of WBCCondition extends JDNode {
 	public:ro	WBCType				cond;
 	public:ro	JENode				body;

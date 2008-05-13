@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RRuleMethod of RuleMethod extends RMethod {
 	public:ro	Var[]				localvars;
 	public		int					base;
@@ -58,6 +59,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RRuleBlock of RuleBlock extends RENode {
 	public ASTRuleNode		rnode;
 

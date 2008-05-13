@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RCoreExpr of CoreExpr extends RENode {
 
 	public void resolve(Type reqType) {
@@ -24,6 +25,7 @@ public final view RCoreExpr of CoreExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RShadow of Shadow extends RENode {
 	public ASTNode		rnode;
 
@@ -36,6 +38,7 @@ public final view RShadow of Shadow extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RTypeClassExpr of TypeClassExpr extends RENode {
 	public TypeRef		type;
 
@@ -53,6 +56,7 @@ public final view RTypeClassExpr of TypeClassExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 	public		TypeRef				type;
 	public		ENode				cl_expr;
@@ -91,6 +95,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 
 	public void resolve(Type reqType) {
@@ -130,6 +135,7 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RAssignExpr of AssignExpr extends RENode {
 	public Operator			op;
 	public ENode			lval;
@@ -225,6 +231,7 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RBinaryExpr of BinaryExpr extends RENode {
 	public Operator			op;
 	public ENode			expr1;
@@ -281,6 +288,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RUnaryExpr of UnaryExpr extends RENode {
 	public Operator			op;
 	public ENode			expr;
@@ -334,6 +342,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 }
 
 
+@ViewOf(vcast=true, iface=true)
 public static final view RStringConcatExpr of StringConcatExpr extends RENode {
 	public:ro	ENode[]			args;
 
@@ -347,6 +356,7 @@ public static final view RStringConcatExpr of StringConcatExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RCommaExpr of CommaExpr extends RENode {
 	public:ro	ENode[]		exprs;
 
@@ -366,6 +376,7 @@ public static final view RCommaExpr of CommaExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RBlock of Block extends RENode {
 	public:ro	ASTNode[]		stats;
 
@@ -416,6 +427,7 @@ public static view RBlock of Block extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RIncrementExpr of IncrementExpr extends RENode {
 	public Operator		op;
 	public ENode		lval;
@@ -461,6 +473,7 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RConditionalExpr of ConditionalExpr extends RENode {
 	public ENode		cond;
 	public ENode		expr1;
@@ -484,6 +497,7 @@ public static final view RConditionalExpr of ConditionalExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RCastExpr of CastExpr extends RENode {
 	public ENode	expr;
 	public TypeRef	type;

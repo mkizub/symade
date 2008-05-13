@@ -18,6 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view JField of Field extends JVar {
 
 	public:ro	JConstExpr			const_value;

@@ -18,9 +18,11 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public abstract static view RLvalueExpr of LvalueExpr extends RENode {
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 	public ENode		obj;
 
@@ -91,6 +93,7 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
 	public		ENode		obj;
 	public:ro	Field		var;
@@ -110,6 +113,7 @@ public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RContainerAccessExpr of ContainerAccessExpr extends RLvalueExpr {
 	public ENode		obj;
 	public ENode		index;
@@ -138,6 +142,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 
 	public void resolve(Type reqType) throws RuntimeException {
@@ -154,6 +159,7 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RSuperExpr of SuperExpr extends RENode {
 
 	public void resolve(Type reqType) throws RuntimeException {
@@ -170,6 +176,7 @@ public static final view RSuperExpr of SuperExpr extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 	static final String namePEnv = "$env";
@@ -234,6 +241,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
 	public		TypeRef		obj;
 	public:ro	Field		var;
@@ -249,6 +257,7 @@ public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RENode {
 	public		TypeRef			outer;
 	public:ro	Var[]			outer_refs;
@@ -270,6 +279,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
 	public TypeRef		type;
 	public ENode		expr;

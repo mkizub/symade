@@ -16,6 +16,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public final view JInlineMethodStat of InlineMethodStat extends JENode {
 	public:ro	JMethod			method;
 	public:ro	ParamRedir[]	params_redir;
@@ -42,6 +43,7 @@ public final view JInlineMethodStat of InlineMethodStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final final view JExprStat of ExprStat extends JENode {
 	public:ro	JENode		expr;
 
@@ -56,6 +58,7 @@ public final final view JExprStat of ExprStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JReturnStat of ReturnStat extends JENode {
 	public:ro	JENode		expr;
 
@@ -119,6 +122,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JThrowStat of ThrowStat extends JENode {
 	public:ro	JENode		expr;
 
@@ -134,6 +138,7 @@ public final view JThrowStat of ThrowStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JIfElseStat of IfElseStat extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		thenSt;
@@ -185,6 +190,7 @@ public final view JIfElseStat of IfElseStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JCondStat of CondStat extends JENode {
 	public:ro	JENode		enabled;
 	public:ro	JENode		cond;
@@ -242,6 +248,7 @@ public final view JCondStat of CondStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JLabeledStat of LabeledStat extends JENode {
 	public:ro	JLabel		lbl;
 	public:ro	JENode		stat;
@@ -262,6 +269,7 @@ public final view JLabeledStat of LabeledStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JBreakStat of BreakStat extends JENode {
 	public:ro	JLabel		dest;
 
@@ -342,6 +350,7 @@ public final view JBreakStat of BreakStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JContinueStat of ContinueStat extends JENode {
 	public:ro	JLabel		dest;
 
@@ -407,6 +416,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JGotoStat of GotoStat extends JENode {
 	public:ro	JLabel		dest;
 
@@ -479,6 +489,7 @@ public final view JGotoStat of GotoStat extends JENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JGotoCaseStat of GotoCaseStat extends JENode {
 	public:ro	JENode			expr;
 	public:ro	JSwitchStat		sw;

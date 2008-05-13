@@ -16,17 +16,20 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
+@ViewOf(vcast=true, iface=true)
 public static abstract view RLoopStat of LoopStat extends RENode {
 	public:ro	Label					lblcnt;
 	public:ro	Label					lblbrk;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final static view RLabel of Label extends RDNode {
 	public List<ASTNode>		links;
 	public void addLink(ASTNode lnk);
 	public void delLink(ASTNode lnk);
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RWhileStat of WhileStat extends RLoopStat {
 	public ENode		cond;
 	public ENode		body;
@@ -45,6 +48,7 @@ public static final view RWhileStat of WhileStat extends RLoopStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RDoWhileStat of DoWhileStat extends RLoopStat {
 	public ENode		cond;
 	public ENode		body;
@@ -67,6 +71,7 @@ public static view RDoWhileStat of DoWhileStat extends RLoopStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RForStat of ForStat extends RLoopStat {
 	public ASTNode		init;
 	public ENode		cond;
@@ -121,6 +126,7 @@ public static final view RForStat of ForStat extends RLoopStat {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static final view RForEachStat of ForEachStat extends RLoopStat {
 	public int			mode;
 	public ENode		container;

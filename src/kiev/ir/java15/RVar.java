@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public static view RVar of Var extends RDNode {
 	public	TypeRef		vtype;
 	public	ENode		init;

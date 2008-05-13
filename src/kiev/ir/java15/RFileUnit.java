@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public static final view RFileUnit of FileUnit extends RNameSpace {
 	public:ro	String					fname;
 	public:ro	boolean[]				disabled_extensions;
@@ -45,6 +46,7 @@ public static final view RFileUnit of FileUnit extends RNameSpace {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public static view RNameSpace of NameSpace extends RSNode {
 	public		SymbolRef<KievPackage>	srpkg;
 	public:ro	ASTNode[]				members;

@@ -23,6 +23,18 @@ import syntax kiev.Syntax;
 public final class GenDomDocument extends ADomDocument {
 }
 
+@singleton
+public class GenDomImplementation implements org.w3c.dom.DOMImplementation {
+	public boolean hasFeature(String feature, String version) { false }
+	public Object getFeature(String feature, String version) { null }
+	public org.w3c.dom.DocumentType createDocumentType(String qualifiedName, String publicId, String systemId) { null }
+	public org.w3c.dom.Document createDocument(String namespaceURI, String qualifiedName, org.w3c.dom.DocumentType doctype) {
+		GenDomDocument doc = new GenDomDocument();
+		doc.element = doc.createElementNS(namespaceURI, qualifiedName);
+		return doc;
+	}
+}
+
 @ThisIsANode
 public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Document {
 	
@@ -51,7 +63,7 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	}
 	
 	public org.w3c.dom.DOMImplementation getImplementation() {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getImplementation() is not implemented yet");
+		return GenDomImplementation;
 	}
     
 	public org.w3c.dom.Element getDocumentElement() {

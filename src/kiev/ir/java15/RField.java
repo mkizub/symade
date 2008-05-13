@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public static final view RField of Field extends RVar {
 	public		ConstExpr		const_value;
 	

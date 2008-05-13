@@ -14,6 +14,7 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstBoolExpr of ConstBoolExpr extends JConstExpr implements IBoolExpr {
 	public:ro boolean	value;
 
@@ -42,45 +43,56 @@ public final view JConstBoolExpr of ConstBoolExpr extends JConstExpr implements 
 
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstNullExpr of ConstNullExpr extends JConstExpr {
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstByteExpr of ConstByteExpr extends JConstExpr {
 	public:ro byte		value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstShortExpr of ConstShortExpr extends JConstExpr {
 	public:ro short		value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstIntExpr of ConstIntExpr extends JConstExpr {
 	public:ro int		value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstLongExpr of ConstLongExpr extends JConstExpr {
 	public:ro long		value;
 }
 	
+@ViewOf(vcast=true, iface=true)
 public final view JConstCharExpr of ConstCharExpr extends JConstExpr {
 	public:ro char		value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstFloatExpr of ConstFloatExpr extends JConstExpr {
 	public:ro float		value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstDoubleExpr of ConstDoubleExpr extends JConstExpr {
 	public:ro double	value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstStringExpr of ConstStringExpr extends JConstExpr {
 	public:ro String	value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view JConstEnumExpr of ConstEnumExpr extends JConstExpr {
 	public:ro Enum		value;
 }
 
+@ViewOf(vcast=true, iface=true)
 public abstract view JConstExpr of ConstExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {

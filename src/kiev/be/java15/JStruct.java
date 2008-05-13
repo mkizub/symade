@@ -22,6 +22,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	KString				bytecode_name;

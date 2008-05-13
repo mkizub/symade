@@ -18,6 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public view JVar of Var extends JDNode {
 	
 	public:ro	Type			vtype;

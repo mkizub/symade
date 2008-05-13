@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@ViewOf(vcast=true, iface=true)
 public final view RCatchInfo of CatchInfo extends RENode {
 	public Var				arg;
 	public ENode			body;
@@ -31,6 +32,7 @@ public final view RCatchInfo of CatchInfo extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RFinallyInfo of FinallyInfo extends RENode {
 	public ENode		body;
 	public Var			ret_arg;
@@ -48,6 +50,7 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 	}
 }
 
+@ViewOf(vcast=true, iface=true)
 public final view RTryStat of TryStat extends RENode {
 	public		ENode				body;
 	public:ro	CatchInfo[]			catchers;
