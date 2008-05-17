@@ -75,6 +75,13 @@ public final class KievView extends Struct {
 		super.cleanupOnReload();
 		this.meta.is_virtual = true;
 	}
+	
+	public Struct getViewImpl() {
+		UserMeta view_meta = (UserMeta)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
+		if (view_meta != null && view_meta.getZ("iface"))
+			return this.iface_impl;
+		return this;
+	}
 }
 
 @ThisIsANode(lang=CoreLang)

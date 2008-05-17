@@ -421,6 +421,14 @@ public abstract class AType implements StdTypes, TVSet {
 			tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode(name);
 		}
 		if (tdecl == null) {
+			// pre-load all top-level classes, to find an inner class
+			int p = name.indexOf('\u001f');
+			while (p > 0) {
+				String pnm = name.substring(0,p);
+				if (Env.getRoot().existsStruct(pnm))
+					Env.getRoot().loadTypeDecl(pnm,false);
+				p = name.indexOf('\u001f', p+1);
+			}
 			if (Env.getRoot().existsStruct(name))
 				tdecl = Env.getRoot().loadTypeDecl(name,false);
 			if (tdecl == null) {

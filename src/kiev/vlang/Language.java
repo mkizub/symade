@@ -121,6 +121,8 @@ public final class CoreLang implements Language {
 				TypeDeclRef.class,
 				TypeClosureRef.class,
 				TypeExpr.class,
+				TypeArgRef.class,
+				TypeASTNodeRef.class,
 				TypeNameRef.class,
 			Shadow.class,
 			TypeClassExpr.class,

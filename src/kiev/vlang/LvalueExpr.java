@@ -716,6 +716,12 @@ public final class SFldExpr extends LvalueExpr {
 		return types;
 	}
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "obj" && this.dnode != null && this.dnode.parent() == Env.getRoot())
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public void mainResolveOut() {
 		if (var != null) {
 			if (!var.isStatic())

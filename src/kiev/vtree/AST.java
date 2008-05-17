@@ -167,6 +167,11 @@ public abstract class ANode implements INode {
 						if (sr.symbol == si.sold)
 							sr.symbol = si.snew;
 					}
+					else if (n instanceof TypeArgRef) {
+						TypeArgRef en = (TypeArgRef)n;
+						if (en.symbol == si.sold)
+							en.type_lnk = ((TypeDef)si.snew).getAType();
+					}
 					else if (n instanceof ENode) {
 						ENode en = (ENode)n;
 						if (en.symbol == si.sold)

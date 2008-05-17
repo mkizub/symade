@@ -566,7 +566,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (bnd ≡ at) {
 				Vector<Type> bindings = new Vector<Type>();
 				// bind from mt
-				for (int i=0; i < rt.arity; i++)
+				for (int i=0; i < rt.arity && i < mt.arity; i++)
 					addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
 				addBindingsFor(at, mt.ret(), rt.ret(), bindings);
 				if (bindings.length == 0) {

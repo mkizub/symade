@@ -35,8 +35,8 @@ public abstract class ENode extends ASTNode {
 	@nodeAttr @abstract public String			ident;
 	@nodeAttr @abstract public boolean			qualified; // stored ident may be qualified name
 	@nodeData @abstract public ISymbol			symbol;
-	@nodeData @abstract public Type				type_lnk;
-	@nodeData @abstract public:ro DNode			dnode;
+	@nodeData @abstract public Type			type_lnk;
+	@nodeData @abstract public:ro DNode		dnode;
 	
 	@getter public final String get$ident() {
 		Object id = this.ident_or_symbol_or_type;
@@ -107,10 +107,12 @@ public abstract class ENode extends ASTNode {
 	}
 	
 	@setter public final void set$symbol(ISymbol val) {
+		//assert (!(this instanceof TypeRef) || (this instanceof TypeNameRef));
 		ident_or_symbol_or_type = val;
 	}
 	
 	@setter public final void set$type_lnk(Type val) {
+		assert (this instanceof TypeRef);
 		ident_or_symbol_or_type = val;
 	}
 	

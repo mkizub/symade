@@ -106,6 +106,27 @@ public abstract view WorkflowWrapper of Node {
 		return strs;
 	}
 	
+	@unerasable
+	public final <W extends WorkflowWrapper> W[] evalWorkFlowList(String expr) {
+		NodeList nlst = evalNodeList(expr);
+		int sz = nlst.getLength();
+		W[] warr = new W[sz];
+		for (int i=0; i < sz; i++) {
+			Node n = nlst.item(i);
+			String map = n.getNamespaceURI();
+			if (map == null || !map.startsWith("map:")) {
+				System.err.println("Unexpected node with namespace URI "+map);
+				return null;
+			}
+			String cnm = map.substring(4);
+			Class cls = Class.forName(cnm);
+			if (cls.isInterface())
+				cls = Class.forName(cnm+"$_Impl_");
+			warr[i] = (WorkflowWrapper)cls.getConstructor(Node.class).newInstance(n);
+		}
+		return warr;
+	}
+	
 }
 
 @ViewOf(vcast=false, iface=false)
@@ -124,10 +145,11 @@ public final view WorkflowState of Node extends WorkflowWrapper {
 	public String getMapURI() { "map:kiev.vdom.WorkflowState" }
 
 	public WorkflowTransition[] getTransitions() {
-		NodeList lst = evalNodeList("*[substring-before(name(),':')='wftrans']");
-		WorkflowTransition[] wtrs = new WorkflowTransition[lst.getLength()];
-		for (int i=0; i < wtrs.length; i++)
-			wtrs[i] = WorkflowTransition.makeView(lst.item(i));
+		//NodeList lst = evalNodeList("*[substring-before(name(),':')='wftrans']");
+		//WorkflowTransition[] wtrs = new WorkflowTransition[lst.getLength()];
+		//for (int i=0; i < wtrs.length; i++)
+		//	wtrs[i] = WorkflowTransition.makeView(lst.item(i));
+		WorkflowTransition[] wtrs = this.evalWorkFlowList<WorkflowTransition>("*[substring-before(name(),':')='wftrans']");
 		return wtrs;
 	}
 
@@ -150,7 +172,7 @@ public final view WorkflowFunction of Node extends WorkflowWrapper {
 	public String getMapURI() { "map:kiev.vdom.WorkflowFunction" }
 
 	public String getFunc() { evalText("func/text()") }
-	public String[] getArgs() { evalTextList("func/text()") }
+	public String[] getArgs() { evalTextList("arg/text()") }
 }
 
 

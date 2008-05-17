@@ -30,7 +30,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 	private Struct getViewImpl(Struct clazz) {
 		if !(clazz.isStructView())
 			return null;
-		return clazz.iface_impl;
+		return ((KievView)clazz).getViewImpl();
 	}
 
 	public void process(ASTNode node, Transaction tr) {
@@ -59,14 +59,23 @@ public class ViewFE_GenMembers extends TransfProcessor {
 			return;
 		}
 		
-		if (clazz.isForward() || getViewImpl(clazz) != null)
+		if (clazz.isForward() || clazz.isMembersGenerated())
 			return;
-		
-		clazz.meta.is_struct_interface = true; //clazz.setInterface();
 		
 		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
+
+		if (view_meta != null && view_meta.getZ("iface"))
+			clazz.meta.is_struct_interface = true; //clazz.setInterface();
+		
+		// generate constructor
+		{
+			Constructor ctor = new Constructor(ACC_PUBLIC);
+			ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
+			ctor.body = new Block(clazz.pos);
+			clazz.members.add(ctor);
+		}
 
 		// add a cast from clazz.view_of to this view
 		if (view_meta != null && view_meta.getZ("vcast")) {
@@ -117,6 +126,8 @@ public class ViewFE_GenMembers extends TransfProcessor {
 				clazz.addMethod(cast);
 			}
 		}
+		
+		clazz.setMembersGenerated(true);
 	}
 }
 
@@ -134,7 +145,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 	private Struct getViewImpl(Struct clazz) {
 		if !(clazz.isStructView())
 			return null;
-		return clazz.iface_impl;
+		return ((KievView)clazz).getViewImpl();
 	}
 
 	////////////////////////////////////////////////////
@@ -161,7 +172,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
-	
+
 	public void doProcess(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members)
@@ -169,94 +180,120 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			return;
 		}
 		
-		if (clazz.isForward() || getViewImpl(clazz) != null)
+		foreach (TypeRef st; clazz.super_types)
+			doProcess(st.getStruct());
+			
+		if (clazz.isForward())
 			return;
+		Struct impl = getViewImpl(clazz);
+		if (impl != null) {
+			foreach (Constructor ctor; impl.members; ctor.block.stats.length > 0)
+				return;
+		}
 		
 		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
+		Struct super_view_impl = null;
 
 		// generate implementation
-		Struct impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
-		impl.pos = clazz.pos;
-		if (clazz.isAbstract()) {
-			clazz.setAbstract(false);
-			impl.setAbstract(true);
-		}
-		if (clazz.isFinal()) {
-			clazz.setFinal(false);
-			impl.setFinal(true);
-		}
-		clazz.iface_impl = impl;
-		{
-			foreach (TypeRef st; clazz.super_types)
-				doProcess(st.getStruct());
-			Struct s = getViewImpl(clazz.super_types[0]);
-			if (s != null)
-				impl.super_types += new TypeRef(s.xtype);
+		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
+		if (view_meta != null && view_meta.getZ("iface")) {
+			impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
+			impl.pos = clazz.pos;
+			if (clazz.isAbstract()) {
+				clazz.setAbstract(false);
+				impl.setAbstract(true);
+			}
+			if (clazz.isFinal()) {
+				clazz.setFinal(false);
+				impl.setFinal(true);
+			}
+			clazz.iface_impl = impl;
+			super_view_impl = getViewImpl(clazz.super_types[0]);
+			if (super_view_impl != null)
+				impl.super_types += new TypeRef(super_view_impl.xtype);
 			else
 				impl.super_types += new TypeRef(Type.tpObject);
 			impl.super_types += new TypeRef(clazz.xtype);
 			
 			if (clazz.super_types[0].getType() ≉ Type.tpObject)
 				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
-		}
-		clazz.members.append(impl);
-		
-		// generate constructor
-		{
-			Constructor ctor = new Constructor(ACC_PUBLIC);
-			ctor.pos = impl.pos;
-			ctor.params.append(new LVar(impl.pos,nameImpl,view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
-			ctor.body = new Block(impl.pos);
-			impl.members.add(ctor);
-		}
+			clazz.members.append(impl);
 
-		Vector<Pair<Method.Method>> moved_methods = new Vector<Pair<Method.Method>>();
-		foreach (ASTNode dn; clazz.members) {
-			if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
-				Method cm = dn;
-				ASTNode body = cm.body;
-				if (body != null)
-					~body;
-				Method im = cm.ncopy();
-				Var[] cm_params = cm.params.delToArray();
-				Var[] im_params = im.params.delToArray();
-				im.params.addAll(cm_params);
-				cm.params.addAll(im_params);
-				impl.members.add(im);
-				cm.setFinal(false);
-				cm.setPublic();
-				cm.setAbstract(true);
-				im.body = body;
-				moved_methods.append(new Pair<Method,Method>(cm,im));
-				continue;
-			}
-			else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
-				Field cf = dn;
-				if (!cf.isPublic()) {
-					Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
-					cf.setPublic();
+			ASTNode.CopyContext cc = new ASTNode.CopyContext();
+			foreach (ASTNode dn; clazz.members) {
+				if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
+					Method cm = dn;
+					Method im = cm.ncopy(cc);
+					impl.members.add(im);
+					cm.setFinal(false);
+					cm.setPublic();
+					cm.setAbstract(true);
+					cm.body = null;
+					continue;
 				}
-				Field f = cf.ncopy();
-				cf.init = null;
-				cf.setPublic();
-				cf.setAbstract(true);
-				impl.members.add(f);
-				continue;
+				else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
+					Field cf = dn;
+					if (!cf.isPublic()) {
+						Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
+						cf.setPublic();
+					}
+					Field f = cf.ncopy(cc);
+					cf.init = null;
+					cf.setPublic();
+					cf.setAbstract(true);
+					impl.members.add(f);
+					continue;
+				}
+				if (dn instanceof Struct)
+					continue;
+				if (dn instanceof Method && !(dn instanceof Constructor) && !dn.isPublic() && !dn.isStatic()) {
+					Kiev.reportWarning(dn, "Method "+clazz+'.'+dn+" must be public");
+					dn.setPublic();
+				}
+				impl.members.add(~dn);
 			}
-			if (dn instanceof Struct)
-				continue;
-			if (dn instanceof Method && !(dn instanceof Constructor) && !dn.isPublic() && !dn.isStatic()) {
-				Kiev.reportWarning(dn, "Method "+clazz+'.'+dn+" must be public");
-				dn.setPublic();
-			}
-			impl.members.add(~dn);
+			cc.updateLinks();
+		} else {
+			impl = clazz;
+			super_view_impl = getViewImpl(clazz.super_types[0]);
+			if (super_view_impl != null && super_view_impl != clazz.super_types[0].getStruct())
+				impl.super_types.insert(0, new TypeRef(super_view_impl.xtype));
 		}
 		
 		// generate a field for the object this view represents
 		Field fview = impl.resolveField(nameImpl, false);
 		if (fview == null)
 			fview = impl.addField(new Field(nameImpl,view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+
+		// generate constructor
+		boolean ctor_found = false;
+		foreach (Constructor ctor; impl.members; !ctor.isStatic()) {
+			Var pimpl = null;
+			foreach (Var p; ctor.params; p.sname == nameImpl) {
+				pimpl = p;
+				break;
+			}
+			if (super_view_impl != null) {
+				CtorCallExpr ctor_call = new CtorCallExpr(clazz.pos, new SuperExpr(), ENode.emptyArray);
+				ctor_call.args.insert(0,new LVarExpr(clazz.pos, pimpl));
+				ctor.block.stats.insert(0,new ExprStat(ctor_call));
+			} else {
+				assert (fview.parent() == impl);
+				CtorCallExpr ctor_call = new CtorCallExpr(clazz.pos, new SuperExpr(), ENode.emptyArray);
+				ctor.block.stats.insert(0,new ExprStat(ctor_call));
+				ctor.block.stats.insert(1,
+					new ExprStat(ctor.pos,
+						new AssignExpr(ctor.pos,Operator.Assign,
+							new IFldExpr(ctor.pos,new ThisExpr(ctor.pos),fview),
+							new LVarExpr(ctor.pos,pimpl)
+						)
+					)
+				);
+			}
+			ctor_found = true;
+		}
+		assert (ctor_found);
 
 		// generate bridge methods
 		foreach (Method m; impl.members) {
@@ -286,13 +323,9 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		
 		// generate getter/setter methods
-		foreach (Field f; impl.members) {
-			Method mv_set = f.setter;
-			foreach (Pair<Method,Method> p; moved_methods; p.fst == mv_set) {
-				mv_set = p.snd;
-				f.setter = mv_set;
-				break;
-			}
+		foreach (Field f; impl.members; f != fview) {
+			Method mv_set = f.getSetterMethod();
+			assert (mv_set == null || mv_set.parent() == impl);
 			if (mv_set != null && mv_set.isSynthetic()) {
 				Method set_var = mv_set;
 				Block body = new Block(f.pos);
@@ -321,12 +354,8 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
 				set_var.setAbstract(false);
 			}
-			Method mv_get = f.getter;
-			foreach (Pair<Method,Method> p; moved_methods; p.fst == mv_get) {
-				mv_get = p.snd;
-				f.getter = mv_get;
-				break;
-			}
+			Method mv_get = f.getGetterMethod();
+			assert (mv_get == null || mv_get.parent() == impl);
 			if (mv_get != null && mv_get.isSynthetic()) {
 				Method get_var = mv_get;
 				Block body = new Block(f.pos);

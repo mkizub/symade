@@ -753,6 +753,8 @@ CLASS kievvlangtypesTVar kiev/vlang/types/TVar kiev/vlang/types/AType.java
 CLASS kievvlangtypesTVarBld kiev/vlang/types/TVarBld kiev/vlang/types/TVarBld.java
 CLASS kievvlangtypesTVarSet kiev/vlang/types/TVarSet kiev/vlang/types/AType.java
 CLASS kievvlangtypesType kiev/vlang/types/Type kiev/vlang/types/Type.java
+CLASS kievvlangtypesTypeASTNodeRef kiev/vlang/types/TypeASTNodeRef kiev/vlang/types/TypeRef.java
+CLASS kievvlangtypesTypeArgRef kiev/vlang/types/TypeArgRef kiev/vlang/types/TypeRef.java
 CLASS kievvlangtypesTypeAssign kiev/vlang/types/TypeAssign kiev/vlang/types/TypeDef.java
 CLASS kievvlangtypesTypeClosureRef kiev/vlang/types/TypeClosureRef kiev/vlang/types/TypeClosure.java
 CLASS kievvlangtypesTypeConstr kiev/vlang/types/TypeConstr kiev/vlang/types/TypeDef.java

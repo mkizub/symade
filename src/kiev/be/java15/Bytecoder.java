@@ -78,7 +78,8 @@ public class Bytecoder implements JConstants {
 		MetaAccess.verifyDecl(cl);
 
 		cl.setTypeDeclNotLoaded(false);
-		cl.setMembersGenerated(true);
+		cl.setFrontEndPassed();
+		//cl.setMembersGenerated(true);
 
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
 
@@ -211,12 +212,6 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
-		if( m.isStatic()
-		 && !(m instanceof Constructor)
-		 && cl.package_clazz.dnode.isInterface()
-		 && cl.sname == nameIFaceImpl
-		)
-			m.setVirtualStatic(true);
 //		jclazz.addMember(new JMethod(m));
 		return m;
 	}

@@ -199,7 +199,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					expr = new AssignExpr(f.pos, Operator.Assign, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
 				body.stats.add(new ExprStat(f.pos, expr));
 
-				f.setter = set_var;
+				f.setter = new SymbolRef(set_var);
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
@@ -234,7 +234,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 				
 				body.stats.add(new ReturnStat(f.pos,expr));
 				
-				f.getter = get_var;
+				f.getter = new SymbolRef(get_var);
 			}
 		}
 		foreach(Struct n; s.members)
@@ -297,10 +297,10 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			return;
 		if (dn instanceof Field && dn.isPackedField()) {
 			Field f = (Field)dn;
-			Method getter = f.getter;
+			Method getter = f.getGetterMethod();
 			if (getter != null && !getter.isFinal())
 				getter.setFinal(true);
-			Method setter = f.setter;
+			Method setter = f.getSetterMethod();
 			if (setter != null && !setter.isFinal())
 				setter.setFinal(true);
 		}

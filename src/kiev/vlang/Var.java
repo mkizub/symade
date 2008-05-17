@@ -56,10 +56,10 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public TypeRef		stype;
 	@nodeAttr
 	public ENode		init;
-	@nodeData(ext_data=true)
-	public Method		getter;
-	@nodeData(ext_data=true)
-	public Method		setter;
+	@nodeAttr(ext_data=true)
+	public SymbolRef<Method>		getter;
+	@nodeAttr(ext_data=true)
+	public SymbolRef<Method>		setter;
 	@nodeData(ext_data=true)
 	public ConstExpr	const_value;
 
@@ -243,6 +243,20 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 
 	public Type	getType() { return type; }
+	
+	public Method getGetterMethod() {
+		SymbolRef<Method> g = this.getter;
+		if (g != null)
+			return g.dnode;
+		return null; 
+	}
+
+	public Method getSetterMethod() {
+		SymbolRef<Method> s = this.setter;
+		if (s != null)
+			return s.dnode;
+		return null; 
+	}
 
 	public ANode doRewrite(RewriteContext ctx) {
 		if (getMeta("kiev\u001fstdlib\u001fmeta\u001fextern") != null)
@@ -324,10 +338,10 @@ public class Field extends Var {
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
-	@nodeData(ext_data=true)
-	public Method		getter_from_inner;
-	@nodeData(ext_data=true)
-	public Method		setter_from_inner;
+	@nodeAttr(ext_data=true)
+	public SymbolRef<Method>		getter_from_inner;
+	@nodeAttr(ext_data=true)
+	public SymbolRef<Method>		setter_from_inner;
 
 	public Field() { super(FIELD_NORMAL); }
 	
@@ -353,8 +367,8 @@ public class Field extends Var {
 
 	public Method makeReadAccessor() {
 		assert(isPrivate());
-		if (getter_from_inner != null)
-			return getter_from_inner;
+		if (getter_from_inner != null && getter_from_inner.dnode != null)
+			return getter_from_inner.dnode;
 		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		if (isStatic()) {
@@ -366,14 +380,14 @@ public class Field extends Var {
 		}
 		ctx_tdecl.members += m;
 		Kiev.runProcessorsOn(m);
-		this.getter_from_inner = m;
+		this.getter_from_inner = new SymbolRef(m);
 		return m;
 	}
 
 	public Method makeWriteAccessor() {
 		assert(isPrivate());
-		if (setter_from_inner != null)
-			return setter_from_inner;
+		if (setter_from_inner != null && setter_from_inner.dnode != null)
+			return setter_from_inner.dnode;
 		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), Type.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
 		Var val = new LVar(pos,"value",this.getType(),Var.PARAM_NORMAL,0);
 		m.params += val;
@@ -387,7 +401,7 @@ public class Field extends Var {
 		}
 		ctx_tdecl.members += m;
 		Kiev.runProcessorsOn(m);
-		this.setter_from_inner = m;
+		this.setter_from_inner = new SymbolRef(m);
 		return m;
 	}
 

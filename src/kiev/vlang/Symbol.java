@@ -131,7 +131,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@abstract @nodeAttr public		String		name; // unresolved name
 	@abstract @nodeAttr public		boolean		qualified; // stored name may be qualified name
 	@abstract @nodeData public		ISymbol		symbol; // resolved symbol
-	@abstract      public:ro	D			dnode; // resolved dnode (symbol.parent())
+	@abstract           public:ro	D			dnode; // resolved dnode (symbol.parent())
 		 
 	public SymbolRef() {}
 

@@ -37,18 +37,6 @@ public class TypeRef extends ENode {
 
 	public TypeRef() {}
 	
-	private TypeRef(CoreType tp) {
-		this.type_lnk = tp;
-	}
-	
-	private TypeRef(ArgType tp) {
-		this.type_lnk = tp;
-	}
-	
-	private TypeRef(ASTNodeType tp) {
-		this.type_lnk = tp;
-	}
-	
 	public static TypeRef newTypeRef(Type tp)
 		alias lfy operator new
 	{
@@ -58,11 +46,11 @@ public class TypeRef extends ENode {
 			String name = ((ASTNodeMetaType)tp.meta_type).name;
 			if (name != null)
 				return new TypeExpr(new TypeNameRef(name),Operator.PostTypeAST,tp);
-			return new TypeRef((ASTNodeType)tp);
+			return new TypeASTNodeRef((ASTNodeType)tp);
 			//return new TypeExpr(newTypeRef(tp.getStruct().xtype),Operator.PostTypeAST);
 		}
 		if (tp instanceof ArgType)
-			return new TypeRef((ArgType)tp);
+			return new TypeArgRef((ArgType)tp);
 		if (tp instanceof ArrayType)
 			return new TypeExpr(newTypeRef(tp.arg), Operator.PostTypeArray, tp);
 		if (tp instanceof WrapperType)
@@ -160,6 +148,36 @@ public class TypeRef extends ENode {
 			return;
 		}
 		throw new CompilerException(this,"Type "+this+" is not a singleton");
+	}
+}
+
+/*
+@ThisIsANode(lang=CoreLang)
+public class TypeCoreRef extends TypeRef {
+	@virtual typedef This  = TypeCoreRef;
+	
+	public TypeCoreRef() {}
+	public TypeCoreRef(CoreType tp) {
+		this.type_lnk = tp;
+	}
+}
+*/
+@ThisIsANode(lang=CoreLang)
+public class TypeArgRef extends TypeRef {
+	@virtual typedef This  = TypeArgRef;
+	
+	public TypeArgRef() {}
+	public TypeArgRef(ArgType tp) {
+		this.type_lnk = tp;
+	}
+}
+@ThisIsANode(lang=CoreLang)
+public class TypeASTNodeRef extends TypeRef {
+	@virtual typedef This  = TypeASTNodeRef;
+	
+	public TypeASTNodeRef() {}
+	public TypeASTNodeRef(ASTNodeType tp) {
+		this.type_lnk = tp;
 	}
 }
 

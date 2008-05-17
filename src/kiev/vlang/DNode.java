@@ -84,7 +84,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isForward()			{ return this.meta.is_forward || group != null && group.meta.is_forward; }
 	public final boolean hasUUID()				{ return this.meta.is_has_uuid; }
 	
-	public final boolean isStructView()		{ return this.meta.is_virtual; }
+	public final boolean isStructView()		{ return this instanceof KievView; }
 	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
 	public final boolean isPackage()			{ return this instanceof KievPackage; }
 	public final boolean isSyntax()				{ return this instanceof KievSyntax; }
@@ -480,6 +480,9 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		if (this.is_struct_args_resolved != on) {
 			this.is_struct_args_resolved = on;
 		}
+	}
+	public final boolean isFrontEndPassed() {
+		return this.is_struct_fe_passed;
 	}
 	public final void setFrontEndPassed() {
 		this.is_struct_fe_passed = true;

@@ -500,7 +500,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				// TODO: check flags for fields
 				if( me.isPackage() )
 					f.setStatic(true);
-				if( me.isStructView() && !f.isStatic()) {
+				if( me.isStructView() && !f.isStatic() && f.sname != nameImpl) {
 					//f.setFinal(true);
 					f.setAbstract(true);
 					f.setVirtual(true);
@@ -905,8 +905,14 @@ public final class KievME_PostGenerate extends BackendProcessor {
 	public void doProcess(Struct:ASTNode s) {
 		makeBytecodeName(s);
 		cleanupMixins(s);
-		foreach (ASTNode dn; s.sub_decls)
+		foreach (DNode dn; s.sub_decls) {
+			// check the class is still attached
+			if (dn.ctx_root != s.ctx_root) {
+				s.sub_decls.detach(dn);
+				continue;
+			}
 			this.doProcess(dn);
+		}
 	}
 	
 	private KString makeBytecodeName(TypeDecl s) {
