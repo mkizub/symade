@@ -615,21 +615,15 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (vals.init != null)
 			return; // already generated
 
-		if (iface.xtype.isInstanceOf(tpNode))
+		boolean interface_only = s.ctx_file_unit.scanned_for_interface_only;
+
+		if (iface.xtype.isInstanceOf(tpNode)) {
 			makeNodeValuesClass(iface, impl);
+		}
 
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
 		collectAllAttrFields(aflds, iface);
-		//{
-		//	Struct ss = iface;
-		//	while (ss != null && isNodeKind(ss)) {
-		//		foreach (Field f; ss.members; !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {
-		//			aflds.append(f);
-		//		}
-		//		ss = ss.super_types[0].getStruct();
-		//	}
-		//}
 		ENode[] vals_init = new ENode[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
@@ -659,11 +653,13 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		} else {
 			Method elems = new MethodImpl(nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
 			iface.addMethod(elems);
-			elems.body = new Block(0);
-			elems.block.stats.add(
-				new ReturnStat(0,
-					new SFldExpr(0,vals) ) );
-			Kiev.runProcessorsOn(elems);
+			if (!interface_only) {
+				elems.body = new Block(0);
+				elems.block.stats.add(
+					new ReturnStat(0,
+						new SFldExpr(0,vals) ) );
+				Kiev.runProcessorsOn(elems);
+			}
 		}
 
 		// copyTo(Object)
@@ -678,88 +674,90 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			copyV.params.append(new LVar(0,"to$node", Type.tpObject, Var.PARAM_NORMAL, 0));
 			copyV.params.append(cc=new LVar(0,"in$context", tpCopyContext, Var.PARAM_NORMAL, 0));
 			impl.addMethod(copyV);
-			copyV.body = new Block();
-			Var v = new LVar(0,"node",impl.xtype,Var.VAR_LOCAL,0);
-			if (VNode_Base.isNodeKind(impl.super_types[0].getStruct())) {
-				CallExpr cae = new CallExpr(0,new SuperExpr(),
-					new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0]), new LVarExpr(0,cc)});
-				v.init = new CastExpr(0,impl.xtype,cae);
-				copyV.block.addSymbol(v);
-			} else {
-				v.init = new CastExpr(0,impl.xtype,new EToken(0,"to$node",ETokenKind.IDENTIFIER,true));
-				copyV.block.addSymbol(v);
-			}
-			foreach (Field f; impl.members) {
-				if (f.isPackedField() || f.isAbstract() || f.isStatic())
-					continue;
-				{	// check if we may not copy the field
-					UserMeta fmeta = (UserMeta)f.getMeta(VNode_Base.mnAtt);
-					if (fmeta == null)
-						fmeta = (UserMeta)f.getMeta(VNode_Base.mnRef);
-					if (fmeta != null && !fmeta.getZ(VNode_Base.nameCopyable))
-						continue; // do not copy the field
+			if (!interface_only) {
+				copyV.body = new Block();
+				Var v = new LVar(0,"node",impl.xtype,Var.VAR_LOCAL,0);
+				if (VNode_Base.isNodeKind(impl.super_types[0].getStruct())) {
+					CallExpr cae = new CallExpr(0,new SuperExpr(),
+						new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0]), new LVarExpr(0,cc)});
+					v.init = new CastExpr(0,impl.xtype,cae);
+					copyV.block.addSymbol(v);
+				} else {
+					v.init = new CastExpr(0,impl.xtype,new EToken(0,"to$node",ETokenKind.IDENTIFIER,true));
+					copyV.block.addSymbol(v);
 				}
-				boolean isNode = (VNode_Base.isNodeKind(f.getType()));
-				boolean isArr = f.getType().isInstanceOf(tpNArray);
-				if (f.getMeta(VNode_Base.mnAtt) != null && (isNode || isArr)) {
-					if (isArr) {
-						CallExpr cae = new CallExpr(0,
-							new IFldExpr(0,new LVarExpr(0,v),f),
-							new SymbolRef<Method>("copyFrom"),
-							null,
-							new ENode[]{new IFldExpr(0,new ThisExpr(),f),new LVarExpr(0,cc)});
-						copyV.block.stats.append(new ExprStat(0,cae));
+				foreach (Field f; impl.members) {
+					if (f.isPackedField() || f.isAbstract() || f.isStatic())
+						continue;
+					{	// check if we may not copy the field
+						UserMeta fmeta = (UserMeta)f.getMeta(VNode_Base.mnAtt);
+						if (fmeta == null)
+							fmeta = (UserMeta)f.getMeta(VNode_Base.mnRef);
+						if (fmeta != null && !fmeta.getZ(VNode_Base.nameCopyable))
+							continue; // do not copy the field
 					}
-					else if (f.isFinal()) {
-						if (isNode) {
-							copyV.block.stats.append( 
-								new ExprStat(0,
-									new CallExpr(0,
-										new IFldExpr(0,new ThisExpr(),f),
-										new SymbolRef<Method>("copyTo"),
-										null,
-										new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f),new LVarExpr(0,cc)}
+					boolean isNode = (VNode_Base.isNodeKind(f.getType()));
+					boolean isArr = f.getType().isInstanceOf(tpNArray);
+					if (f.getMeta(VNode_Base.mnAtt) != null && (isNode || isArr)) {
+						if (isArr) {
+							CallExpr cae = new CallExpr(0,
+								new IFldExpr(0,new LVarExpr(0,v),f),
+								new SymbolRef<Method>("copyFrom"),
+								null,
+								new ENode[]{new IFldExpr(0,new ThisExpr(),f),new LVarExpr(0,cc)});
+							copyV.block.stats.append(new ExprStat(0,cae));
+						}
+						else if (f.isFinal()) {
+							if (isNode) {
+								copyV.block.stats.append( 
+									new ExprStat(0,
+										new CallExpr(0,
+											new IFldExpr(0,new ThisExpr(),f),
+											new SymbolRef<Method>("copyTo"),
+											null,
+											new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f),new LVarExpr(0,cc)}
+										)
 									)
+								);
+							}
+						} else {
+							CallExpr cae = new CallExpr(0,
+								new IFldExpr(0, new ThisExpr(),f),
+								new SymbolRef<Method>("copy"),
+								null,
+								new ENode[]{new LVarExpr(0,cc)});
+							copyV.block.stats.append( 
+								new IfElseStat(0,
+									new BinaryBoolExpr(0, Operator.NotEquals,
+										new IFldExpr(0,new ThisExpr(),f),
+										new ConstNullExpr()
+										),
+									new ExprStat(0,
+										new AssignExpr(0,Operator.Assign,
+											new IFldExpr(0,new LVarExpr(0,v),f),
+											new CastExpr(0,f.getType(),cae)
+										)
+									),
+									null
 								)
 							);
 						}
 					} else {
-						CallExpr cae = new CallExpr(0,
-							new IFldExpr(0, new ThisExpr(),f),
-							new SymbolRef<Method>("copy"),
-							null,
-							new ENode[]{new LVarExpr(0,cc)});
-						copyV.block.stats.append( 
-							new IfElseStat(0,
-								new BinaryBoolExpr(0, Operator.NotEquals,
-									new IFldExpr(0,new ThisExpr(),f),
-									new ConstNullExpr()
-									),
+						if (!f.isFinal()) {
+							copyV.block.stats.append( 
 								new ExprStat(0,
 									new AssignExpr(0,Operator.Assign,
 										new IFldExpr(0,new LVarExpr(0,v),f),
-										new CastExpr(0,f.getType(),cae)
+										new IFldExpr(0,new ThisExpr(),f)
 									)
-								),
-								null
-							)
-						);
-					}
-				} else {
-					if (!f.isFinal()) {
-						copyV.block.stats.append( 
-							new ExprStat(0,
-								new AssignExpr(0,Operator.Assign,
-									new IFldExpr(0,new LVarExpr(0,v),f),
-									new IFldExpr(0,new ThisExpr(),f)
 								)
-							)
-						);
+							);
+						}
 					}
 				}
+				copyV.block.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
+				Kiev.runProcessorsOn(copyV);
 			}
-			copyV.block.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
-			Kiev.runProcessorsOn(copyV);
 		}
 
 		Type tpNodeVVV = ((TypeDecl)Env.getRoot().loadTypeDecl(VNode_Base.nameNode+"\u001fVVV", true)).xtype;
@@ -770,36 +768,38 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Method mkRstr = new MethodImpl("nodeRestore",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
 			mkRstr.params.append(new LVar(0,"from", tpNodeVVV, Var.PARAM_NORMAL, 0));
 			impl.addMethod(mkRstr);
-			mkRstr.body = new Block();
-			Struct sVVV = null;
-			foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
-				sVVV = vvv;
-				break;
-			}
-			Var v = new LVar(0,"from",sVVV.xtype,Var.VAR_LOCAL,0);
-			v.init = new CastExpr(0,sVVV.xtype,new LVarExpr(0,mkRstr.params[0]));
-			mkRstr.block.stats += v;
-			foreach (Field f; impl.members) {
-				if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
-					continue;
-				Field vf = null;
-				foreach (Field vvv; sVVV.members; vvv.sname == f.sname) {
-					vf = vvv;
+			if (!interface_only) {
+				mkRstr.body = new Block();
+				Struct sVVV = null;
+				foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
+					sVVV = vvv;
 					break;
 				}
-				mkRstr.block.stats.append( 
-					new ExprStat(0,
-						new AssignExpr(0,Operator.Assign,
-							new IFldExpr(0,new ThisExpr(),f,true),
-							new IFldExpr(0,new LVarExpr(0,v),vf,true)
+				Var v = new LVar(0,"from",sVVV.xtype,Var.VAR_LOCAL,0);
+				v.init = new CastExpr(0,sVVV.xtype,new LVarExpr(0,mkRstr.params[0]));
+				mkRstr.block.stats += v;
+				foreach (Field f; impl.members) {
+					if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
+						continue;
+					Field vf = null;
+					foreach (Field vvv; sVVV.members; vvv.sname == f.sname) {
+						vf = vvv;
+						break;
+					}
+					mkRstr.block.stats.append( 
+						new ExprStat(0,
+							new AssignExpr(0,Operator.Assign,
+								new IFldExpr(0,new ThisExpr(),f,true),
+								new IFldExpr(0,new LVarExpr(0,v),vf,true)
+							)
 						)
-					)
-				);
+					);
+				}
+				CallExpr cae = new CallExpr(0,new SuperExpr(),
+					new SymbolRef<Method>("nodeRestore"),null,new ENode[]{new LVarExpr(0,v)});
+				mkRstr.block.stats += cae;
+				Kiev.runProcessorsOn(mkRstr);
 			}
-			CallExpr cae = new CallExpr(0,new SuperExpr(),
-				new SymbolRef<Method>("nodeRestore"),null,new ENode[]{new LVarExpr(0,v)});
-			mkRstr.block.stats += cae;
-			Kiev.runProcessorsOn(mkRstr);
 		}
 		// nodeBackup()
 		if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeBackup")) {
@@ -807,15 +807,20 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		} else {
 			Method mkBkup = new MethodImpl("nodeBackup",tpNodeVVV,ACC_PUBLIC | ACC_SYNTHETIC);
 			impl.addMethod(mkBkup);
-			mkBkup.body = new Block();
-			Type tpVVV = null;
-			foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
-				tpVVV = vvv.xtype;
-				break;
+			if (!interface_only) {
+				mkBkup.body = new Block();
+				Type tpVVV = null;
+				foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
+					tpVVV = vvv.xtype;
+					break;
+				}
+				mkBkup.block.stats.append(new ReturnStat(0,new NewExpr(0,tpVVV,new ENode[]{new CastExpr(impl.xtype,new ThisExpr())})));
+				Kiev.runProcessorsOn(mkBkup);
 			}
-			mkBkup.block.stats.append(new ReturnStat(0,new NewExpr(0,tpVVV,new ENode[]{new CastExpr(impl.xtype,new ThisExpr())})));
-			Kiev.runProcessorsOn(mkBkup);
 		}
+
+		if (interface_only)
+			return;
 
 		// fix methods
 		foreach(Field f; impl.members; !f.isStatic()) {
@@ -839,6 +844,10 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 	
 	private Struct makeNodeValuesClass(Struct iface, Struct impl) {
+		foreach (Struct s; iface.members; s.sname == "VVV") {
+			if (!s.isSynthetic())
+				return s;
+		}
 		Struct s = Env.getRoot().newStruct("VVV",true,iface,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
 		iface.members += s;
 	super_vvv:
@@ -867,7 +876,13 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 	
 	private void collectAllAttrFields(Vector<Field> aflds, Struct iface) {
-		if (iface == null || !isNodeKind(iface))
+		if (iface == null)
+			return;
+		//if (iface.qname.equals(nameANode)) {
+		//	aflds.append(iface.resolveField("nodeattr$parent"));
+		//	return;
+		//}
+		if (!isNodeKind(iface))
 			return;
 	next_fld:
 		foreach (Field f; iface.members; !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {

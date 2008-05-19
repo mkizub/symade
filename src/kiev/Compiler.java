@@ -431,6 +431,7 @@ public class Compiler {
 		Compiler.setExtension(false, "view");
 		Compiler.setExtension(false, "vnode");
 		Compiler.setExtension(false, "dflow");
+		Compiler.setExtension(false, "xpath");
 	}
 	
 	public static boolean[] getCmdLineExtSet() {

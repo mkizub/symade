@@ -29,5 +29,14 @@ public abstract class BackendProcessor implements Constants {
 
 	public abstract String getDescr();
 	public abstract void process(ASTNode node, Transaction tr);
+
+	public static String getPropS(String base, String name, String dflt) {
+		String fname = base+"."+name;
+		String val = System.getProperty(fname,dflt);
+		if (val != null)
+			val = val.trim().intern();
+		trace(Kiev.debug, "Loaded "+fname+" as \""+val+"\"");
+		return val;
+	}
 }
 

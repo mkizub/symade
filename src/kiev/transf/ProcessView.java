@@ -187,7 +187,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			return;
 		Struct impl = getViewImpl(clazz);
 		if (impl != null) {
-			foreach (Constructor ctor; impl.members; ctor.block.stats.length > 0)
+			foreach (Constructor ctor; impl.members; ctor.body != null && (ctor.body instanceof NopExpr || ctor.block.stats.length > 0))
 				return;
 		}
 		
@@ -195,6 +195,8 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		TypeRef view_of = kview.view_of;
 		Struct super_view_impl = null;
 
+		boolean interface_only = clazz.ctx_file_unit.scanned_for_interface_only;
+		
 		// generate implementation
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
 		if (view_meta != null && view_meta.getZ("iface")) {
@@ -218,7 +220,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			
 			if (clazz.super_types[0].getType() ≉ Type.tpObject)
 				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
-			clazz.members.append(impl);
+			clazz.members.append(~impl);
 
 			ASTNode.CopyContext cc = new ASTNode.CopyContext();
 			foreach (ASTNode dn; clazz.members) {
@@ -266,14 +268,18 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		if (fview == null)
 			fview = impl.addField(new Field(nameImpl,view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
-		// generate constructor
-		boolean ctor_found = false;
 		foreach (Constructor ctor; impl.members; !ctor.isStatic()) {
+			if (interface_only) {
+				ctor.body = new NopExpr();
+				continue;
+			}
 			Var pimpl = null;
 			foreach (Var p; ctor.params; p.sname == nameImpl) {
 				pimpl = p;
 				break;
 			}
+			if (ctor.body == null)
+				ctor.body = new Block();
 			if (super_view_impl != null) {
 				CtorCallExpr ctor_call = new CtorCallExpr(clazz.pos, new SuperExpr(), ENode.emptyArray);
 				ctor_call.args.insert(0,new LVarExpr(clazz.pos, pimpl));
@@ -291,9 +297,13 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					)
 				);
 			}
-			ctor_found = true;
 		}
-		assert (ctor_found);
+
+		// generate constructor
+		if (interface_only) {
+			Kiev.runProcessorsOn(impl);
+			return;
+		}
 
 		// generate bridge methods
 		foreach (Method m; impl.members) {

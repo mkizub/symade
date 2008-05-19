@@ -379,6 +379,7 @@ CLASS kievtransfViewME_PreGenerate kiev/transf/ViewME_PreGenerate kiev/transf/
 CLASS kievtransfVirtFldBE_Rewrite kiev/transf/VirtFldBE_Rewrite kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldFE_GenMembers kiev/transf/VirtFldFE_GenMembers kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldME_PreGenerate kiev/transf/VirtFldME_PreGenerate kiev/transf/ProcessVirtFld.java
+CLASS kievtransfXPathME_PreGenerate kiev/transf/XPathME_PreGenerate kiev/transf/ProcessXPath.java
 CLASS kievvdomACharacterData kiev/vdom/ACharacterData kiev/vdom/ACharacterData.java
 CLASS kievvdomADomAttr kiev/vdom/ADomAttr kiev/vdom/ADomAttr.java
 CLASS kievvdomADomContainer kiev/vdom/ADomContainer kiev/vdom/ADomContainer.java
@@ -395,7 +396,12 @@ CLASS kievvdomGenDomAttr kiev/vdom/GenDomAttr kiev/vdom/ADomAttr.java
 CLASS kievvdomGenDomDocument kiev/vdom/GenDomDocument kiev/vdom/ADomDocument.java
 CLASS kievvdomGenDomElement kiev/vdom/GenDomElement kiev/vdom/ADomElement.java
 CLASS kievvdomGenDomImplementation kiev/vdom/GenDomImplementation kiev/vdom/ADomDocument.java
+CLASS kievvdomNamespaceContextHelper kiev/vdom/NamespaceContextHelper kiev/vdom/XPathUtils.java
+CLASS kievvdomNamespaceMap kiev/vdom/NamespaceMap kiev/vdom/XPathUtils.java
 CLASS kievvdomNsDomAttr kiev/vdom/NsDomAttr kiev/vdom/ADomAttr.java
+CLASS kievvdomQNameValue kiev/vdom/QNameValue kiev/vdom/XPathUtils.java
+CLASS kievvdomXPathUtils kiev/vdom/XPathUtils kiev/vdom/XPathUtils.java
+CLASS kievvdomXPathVarResolveHelper kiev/vdom/XPathVarResolveHelper kiev/vdom/XPathUtils.java
 CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
 CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java
@@ -1024,6 +1030,8 @@ INTERFACE kievstdlibmetaunerasable kiev/stdlib/meta/unerasable kiev/stdlib/me
 INTERFACE kievstdlibmetauuid kiev/stdlib/meta/uuid kiev/stdlib/meta/uuid.java
 INTERFACE kievstdlibmetavarargs kiev/stdlib/meta/varargs kiev/stdlib/meta/varargs.java
 INTERFACE kievstdlibmetavirtual kiev/stdlib/meta/virtual kiev/stdlib/meta/virtual.java
+INTERFACE kievvdomXPathExpr kiev/vdom/XPathExpr kiev/vdom/XPathUtils.java
+INTERFACE kievvdomXPathNSMap kiev/vdom/XPathNSMap kiev/vdom/XPathUtils.java
 INTERFACE kievvlangAccessFlags kiev/vlang/AccessFlags kiev/vlang/MemberFlags.java
 INTERFACE kievvlangConstants kiev/vlang/Constants kiev/vlang/Constants.java
 INTERFACE kievvlangDataFlowSlots kiev/vlang/DataFlowSlots kiev/vlang/DataFlow.java

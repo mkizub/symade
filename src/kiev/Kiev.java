@@ -55,7 +55,8 @@ static public enum KievExt {
 	Wrappers				: "wrappers"		,
 	Access					: "access"			,
 	VNode					: "vnode"			,
-	DFlow					: "dflow"
+	DFlow					: "dflow"			,
+	XPath					: "xpath"
 }
 	
 public final class Kiev {
@@ -448,6 +449,7 @@ public final class Kiev {
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
 			processors.append(KievME_DumpAPI);
 			processors.append(RewriteME_PreGenerate);
+			processors.append(XPathME_PreGenerate);
 			processors.append(KievME_PreGenartion);
 			processors.append(PackedFldME_PreGenerate);
 			processors.append(VirtFldME_PreGenerate);

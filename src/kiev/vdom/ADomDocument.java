@@ -122,7 +122,12 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	public org.w3c.dom.Element createElementNS(String uri, String qname) throws DOMException {
 		if (qname == null || qname.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qname="+qname);
-		ADomElement node = new GenDomElement();
+		ADomElement node;
+		if (uri != null && uri.startsWith("map:")) {
+			node = (ADomElement)Class.forName(uri.substring(4)).newInstance();
+		} else {
+			node = new GenDomElement();
+		}
 		node.nodeName = qname;
 		node.nodeNamespaceURI = uri;
 		return node;

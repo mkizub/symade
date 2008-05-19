@@ -521,6 +521,9 @@
          <fname>ProcessVNode.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
+         <fname>ProcessXPath.java</fname>
+        </a-node>
+        <a-node class='kiev.vlang.FileUnit'>
          <fname>TemplatVNode.xml</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
@@ -553,7 +556,7 @@
          <fname>DomBuilder.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
-         <fname>Workflow.java</fname>
+         <fname>XPathUtils.java</fname>
         </a-node>
        </members>
       </a-node>
@@ -750,9 +753,6 @@
       </a-node>
       <a-node class='kiev.vlang.FileUnit'>
        <fname>syntax-for-syntax.xml</fname>
-      </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
-       <fname>syntax-for-vdom.xml</fname>
       </a-node>
      </members>
     </a-node>
