@@ -13,7 +13,7 @@ package kiev.fmt;
 import syntax kiev.Syntax;
 
 @ThisIsANode(copyable=false)
-public class DrawCtrl extends Drawable {
+public abstract class DrawCtrl extends Drawable {
 	@nodeAttr
 	public Drawable arg;
 	

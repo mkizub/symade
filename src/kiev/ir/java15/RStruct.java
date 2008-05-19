@@ -580,6 +580,9 @@ public final view RStruct of Struct extends RTypeDecl {
 //			// generate method dispatchers for multimethods
 //			foreach (VTableEntry vte; vtable; vte.overloader == null)
 //				createMethodDispatchers(vte);
+			// check unimplemented methods
+			foreach (VTableEntry vte; vtable)
+				checkUnimplementedMethod(this,vte);
 		}
 		
 		combineMethods(this);
@@ -615,8 +618,8 @@ public final view RStruct of Struct extends RTypeDecl {
 		foreach (Method m; members; !(m instanceof Constructor)) {
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
-			if (m.isMethodBridge())
-				continue;
+			//if (m.isMethodBridge())
+			//	continue;
 			CallType etype = m.etype;
 			String name = m.sname;
 			boolean is_new = true;
@@ -637,8 +640,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			foreach (Method m; members; !(m instanceof Constructor)) {
 				if (m.isStatic() && !m.isVirtualStatic())
 					continue;
-				if (m.isMethodBridge())
-					continue;
+				//if (m.isMethodBridge())
+				//	continue;
 				if (m.sname != vte.name || vte.methods.contains(m))
 					continue;
 				CallType mt = m.etype.toCallTypeRetAny();
@@ -795,6 +798,17 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 	}
 	
+	private static void checkUnimplementedMethod(@forward RStruct self, VTableEntry vte) {
+		if (self.isAbstract())
+			return;
+		foreach (Method m; vte.methods; !m.ctx_tdecl.isInterface()) {
+			if (!m.isAbstract())
+				return;
+			break;
+		}
+		Kiev.reportWarning(self,"Method "+vte.name+vte.etype+" is not implemented in "+self);
+	}
+
 	private static Struct makeImpl(@forward RStruct self) {
 		Struct defaults = Env.getRoot().newStruct(nameIFaceImpl,true,
 			self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC | ACC_ABSTRACT | ACC_FORWARD,

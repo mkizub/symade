@@ -29,13 +29,11 @@ public class SNode extends ASTNode {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	public static final SNode dummyNode = new SNode();
+	public static final SNode dummySNode = new SNode();
 
 	public SNode() {}
 
-	public ASTNode getDummyNode() {
-		return SNode.dummyNode;
-	}
+	public ASTNode getDummyNode() { SNode.dummySNode }
 	
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
 

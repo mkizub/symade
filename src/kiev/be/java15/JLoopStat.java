@@ -14,6 +14,14 @@ import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
+public interface BreakTarget {
+	public JLabel getBrkLabel();
+}
+
+public interface ContinueTarget {
+	public JLabel getCntLabel();
+}
+
 @ViewOf(vcast=true, iface=true)
 public abstract view JLoopStat of LoopStat extends JENode implements BreakTarget, ContinueTarget {
 	public:ro	JLabel				lblcnt;

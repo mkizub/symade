@@ -36,7 +36,7 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	@virtual typedef This  ≤ Symbol;
 
 	public static final Symbol[] emptyArray = new Symbol[0];
-
+	
 	@nodeAttr public	String		sname; // source code name, may be null for anonymouse symbols
 	
 	@getter public D get$dnode() {
@@ -115,6 +115,7 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	public String toString() {
 		return sname;
 	}
+
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -125,6 +126,8 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@virtual typedef This  = SymbolRef;
 
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
+
+	private static final SymbolRef<DNode> dummySymbolRef = new SymbolRef<DNode>("<dummy>");
 
 	private Object	ident_or_symbol_or_type;
 	
@@ -253,6 +256,8 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		return super.findForResolve(name,slot,by_equals);
 	}
+
+	public ASTNode getDummyNode() { dummySymbolRef }
 }
 
 

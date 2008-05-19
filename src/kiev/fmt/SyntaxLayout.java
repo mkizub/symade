@@ -1198,6 +1198,24 @@ public class SyntaxSwitch extends SyntaxElem {
 		this.suffix = sf;
 		this.target_syntax = stx;
 	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxSwitch dr_elem = (Draw_SyntaxSwitch)_dr_elem;
+		super.fillCompiled(dr_elem);
+		if (this.prefix != null)
+			dr_elem.prefix = (Draw_SyntaxToken)this.prefix.getCompiled();
+		if (this.target_syntax != null)
+			dr_elem.target_syntax = (Draw_ATextSyntax)this.target_syntax.getCompiled();
+		if (this.suffix != null)
+			dr_elem.suffix = (Draw_SyntaxToken)this.suffix.getCompiled();
+	}
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxSpace dr_elem = new Draw_SyntaxSwitch();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)

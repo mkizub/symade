@@ -1002,7 +1002,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		}
 	}
 
-	public abstract ASTNode getDummyNode();
+	public ASTNode getDummyNode() { SNode.dummySNode }
 	
 	public boolean hasName(String name, boolean by_equals) {
 		return false;

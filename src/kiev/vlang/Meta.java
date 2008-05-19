@@ -160,6 +160,19 @@ public abstract class MNode extends ASTNode {
 	public void verify() {}
 	public boolean isRuntimeVisible() { return false; }
 	public boolean isRuntimeInvisible() { return false; }
+	public ASTNode getDummyNode() { DummyMNode.dummyMNode }
+
+}
+
+@ThisIsANode(lang=void)
+public class DummyMNode extends MNode {
+	@virtual typedef This  = DummyMNode;
+
+	public static final DummyMNode dummyMNode = new DummyMNode();
+
+	@getter
+	public String get$qname() { "<dummy>" }
+	public TypeDecl getTypeDecl() { null }
 }
 
 @ThisIsANode(name="UserMeta", lang=CoreLang)

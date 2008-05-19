@@ -310,6 +310,8 @@ public class JMethodType extends JType {
 		return null;
 	}
 	
+	public String toClassForNameString() { throw new RuntimeException("JMethodType.toClassForNameString()"); }
+	
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 		str.append('(');

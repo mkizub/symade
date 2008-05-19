@@ -438,7 +438,7 @@ class ShortAssign extends BinaryFunc {
 
 @singleton
 class ShortPOS extends UnaryFunc {
-	public void normilizeExpr(Method core_method, Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, UnaryExpr.class, Operator.Pos); }
+	public void normilizeExpr(Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, UnaryExpr.class, Operator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( ($cast short) + arg.intValue()) }
 }
 

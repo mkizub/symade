@@ -26,6 +26,7 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 	public abstract int		size();
 	public abstract int		constant_type();
 	public boolean			double_slot() { return false; }
+	public final void		read(ReadContext cont) { /* actual reading is done by readConstantPool */ }
 
 	public PoolConstant(int idx) {
 		this.idx = idx;

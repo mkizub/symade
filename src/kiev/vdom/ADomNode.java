@@ -782,4 +782,13 @@ public abstract class ADomNode extends ASTNode implements org.w3c.dom.Node {
 	public Object getUserData(String key) {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData(String) is not implemented yet");
 	}
+
+	public ASTNode getDummyNode() { DummyDomNode.dummyDomNode }
+}
+
+@ThisIsANode
+public final class DummyDomNode extends ADomNode {
+	public static final DummyDomNode dummyDomNode = new DummyDomNode();
+	public String getNodeName() { "<dummy>" }
+	public short getNodeType() { return (short)0; }
 }

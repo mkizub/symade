@@ -50,6 +50,7 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	@nodeAttr
 	public boolean			is_standalone;
 	
+	public String getNodeName() { "#document" }
 	public boolean hasChildNodes() { return this.element != null; }
 	public org.w3c.dom.NodeList getChildNodes() { new DomDocNodeList() }
 	public org.w3c.dom.Node getFirstChild() { this.element }

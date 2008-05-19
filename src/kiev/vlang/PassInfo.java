@@ -20,14 +20,6 @@ import syntax kiev.Syntax;
  *
  */
 
-public interface BreakTarget {
-	public JLabel getBrkLabel();
-}
-
-public interface ContinueTarget {
-	public JLabel getCntLabel();
-}
-
 public final class ParentEnumerator implements Enumeration<ASTNode> {
 	ASTNode n;
 	ASTNode r;

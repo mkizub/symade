@@ -390,6 +390,7 @@ CLASS kievvdomDomBuilder kiev/vdom/DomBuilder kiev/vdom/DomBuilder.java
 CLASS kievvdomDomBuilderFactory kiev/vdom/DomBuilderFactory kiev/vdom/DomBuilder.java
 CLASS kievvdomDomBuilderHandler kiev/vdom/DomBuilderHandler kiev/vdom/DomBuilder.java
 CLASS kievvdomDomText kiev/vdom/DomText kiev/vdom/ACharacterData.java
+CLASS kievvdomDummyDomNode kiev/vdom/DummyDomNode kiev/vdom/ADomNode.java
 CLASS kievvdomGenDomAttr kiev/vdom/GenDomAttr kiev/vdom/ADomAttr.java
 CLASS kievvdomGenDomDocument kiev/vdom/GenDomDocument kiev/vdom/ADomDocument.java
 CLASS kievvdomGenDomElement kiev/vdom/GenDomElement kiev/vdom/ADomElement.java
@@ -491,6 +492,7 @@ CLASS kievvlangDoubleNEG kiev/vlang/DoubleNEG kiev/vlang/CoreMethod.java
 CLASS kievvlangDoublePOS kiev/vlang/DoublePOS kiev/vlang/CoreMethod.java
 CLASS kievvlangDoubleSUB kiev/vlang/DoubleSUB kiev/vlang/CoreMethod.java
 CLASS kievvlangDummyDNode kiev/vlang/DummyDNode kiev/vlang/DNode.java
+CLASS kievvlangDummyMNode kiev/vlang/DummyMNode kiev/vlang/Meta.java
 CLASS kievvlangENode kiev/vlang/ENode kiev/vlang/ENode.java
 CLASS kievvlangEnv kiev/vlang/Env kiev/vlang/Env.java
 CLASS kievvlangExprStat kiev/vlang/ExprStat kiev/vlang/Statement.java
@@ -800,6 +802,8 @@ ENUM kievparserETokenKind kiev/parser/ETokenKind kiev/parser/EToken.java
 ENUM kievvlangIntRadix kiev/vlang/IntRadix kiev/vlang/ConstExpr.java
 ENUM kievvlangWBCType kiev/vlang/WBCType kiev/vlang/Method.java
 ENUM kievvtreeChildChangeType kiev/vtree/ChildChangeType kiev/vtree/AST.java
+INTERFACE kievbejava15BreakTarget kiev/be/java15/BreakTarget kiev/be/java15/JLoopStat.java
+INTERFACE kievbejava15ContinueTarget kiev/be/java15/ContinueTarget kiev/be/java15/JLoopStat.java
 INTERFACE kievbejava15IBoolExpr kiev/be/java15/IBoolExpr kiev/be/java15/JBoolExpr.java
 INTERFACE kievbejava15JAccessExpr kiev/be/java15/JAccessExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JAssignExpr kiev/be/java15/JAssignExpr kiev/be/java15/JExpr.java
@@ -1021,9 +1025,7 @@ INTERFACE kievstdlibmetauuid kiev/stdlib/meta/uuid kiev/stdlib/meta/uuid.java
 INTERFACE kievstdlibmetavarargs kiev/stdlib/meta/varargs kiev/stdlib/meta/varargs.java
 INTERFACE kievstdlibmetavirtual kiev/stdlib/meta/virtual kiev/stdlib/meta/virtual.java
 INTERFACE kievvlangAccessFlags kiev/vlang/AccessFlags kiev/vlang/MemberFlags.java
-INTERFACE kievvlangBreakTarget kiev/vlang/BreakTarget kiev/vlang/PassInfo.java
 INTERFACE kievvlangConstants kiev/vlang/Constants kiev/vlang/Constants.java
-INTERFACE kievvlangContinueTarget kiev/vlang/ContinueTarget kiev/vlang/PassInfo.java
 INTERFACE kievvlangDataFlowSlots kiev/vlang/DataFlowSlots kiev/vlang/DataFlow.java
 INTERFACE kievvlangGlobalDNode kiev/vlang/GlobalDNode kiev/vlang/DNode.java
 INTERFACE kievvlangISymbol kiev/vlang/ISymbol kiev/vlang/Symbol.java

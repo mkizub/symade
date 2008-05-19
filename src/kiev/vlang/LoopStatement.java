@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-public abstract class LoopStat extends ENode implements ContinueTarget {
+public abstract class LoopStat extends ENode {
 	@virtual typedef This  ≤ LoopStat;
 	@virtual typedef JView ≤ JLoopStat;
 	@virtual typedef RView ≤ RLoopStat;
