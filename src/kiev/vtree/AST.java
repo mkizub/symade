@@ -23,32 +23,9 @@ import syntax kiev.Syntax;
  */
 
 public interface INode {
-
-	@virtual typedef This  ≤ INode;
-
-	public:ro @virtual ANode		ctx_root;
-	public:ro @virtual FileUnit		ctx_file_unit;
-	public:ro @virtual NameSpace	ctx_name_space;
-	public:ro @virtual TypeDecl		ctx_tdecl;
-	public:ro @virtual Method		ctx_method;
-
-	public boolean isAttached();
-	public void callbackAttached(ANode parent, AttrSlot slot);
-	public void callbackAttached(ParentInfo pi);
-	public void callbackDetached(ANode parent, AttrSlot slot);
-	public void callbackChildChanged(AttrSlot attr);
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data);
 	public ANode parent();
 	public AttrSlot pslot();
 	public AttrSlot[] values();
-	public Object getExtData(AttrSlot attr);
-	public void setExtData(Object d, AttrSlot attr);
-	public void delExtData(AttrSlot attr);
-	public void walkTree(TreeWalker walker);
-	public This ncopy();
-	public This detach() alias fy operator ~ ;
-	public <N extends ANode> N replaceWithNode(N node);
-	public void initForEditor();
 }
 
 public enum ChildChangeType {
@@ -774,7 +751,7 @@ class CurrentVersionInfo extends VersionInfo {
 }
 
 @ThisIsANode(lang=CoreLang)
-public abstract class ASTNode extends ANode implements Constants, Cloneable {
+public abstract class ASTNode extends ANode implements Constants {
 
 	@virtual typedef This  ≤ ASTNode;
 	@virtual typedef JView ≤ JNode;

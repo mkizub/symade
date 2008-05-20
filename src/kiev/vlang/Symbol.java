@@ -25,6 +25,7 @@ public interface ISymbol extends INode {
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
 	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
+	@getter public String	get$UUID(); // UUID of this symbol (auto-generated, if not exists)
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -38,6 +39,10 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	public static final Symbol[] emptyArray = new Symbol[0];
 	
 	@nodeAttr public	String		sname; // source code name, may be null for anonymouse symbols
+
+	@UnVersioned
+	@nodeAttr(copyable=false)
+	public	String					uuid; // source code name, may be null for anonymouse symbols
 	
 	@getter public D get$dnode() {
 		ANode p = parent();
@@ -46,6 +51,21 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 		return null;
 	}
 	
+	@getter final public String get$UUID() {
+		String u = this.uuid;
+		if (u == null) {
+			u = java.util.UUID.randomUUID().toString();
+			this.uuid = u;
+		}
+		return u;
+	}
+	@setter final public void set$uuid(String value) {
+		assert (this.uuid == null);
+		value = value.intern();
+		Env.getRoot().registerISymbol(value,this);
+		this.uuid = value;
+	}
+
 	public Symbol() {}
 	public Symbol(int pos, String sname) {
 		this.pos = pos;

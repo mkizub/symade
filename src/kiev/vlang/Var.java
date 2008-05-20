@@ -332,7 +332,6 @@ public class Field extends Var {
 	}
 
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
-	public static final AttrSlot ALT_ENUM_ID_ATTR = new ExtAttrSlot("alt enum id",ANode.nodeattr$parent,false,TypeInfo.newTypeInfo(ConstStringExpr.class,null));
 
 	@virtual typedef This  ≤ Field;
 	@virtual typedef JView = JField;
@@ -342,6 +341,8 @@ public class Field extends Var {
 	public SymbolRef<Method>		getter_from_inner;
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		setter_from_inner;
+	@nodeAttr(ext_data=true)
+	public ConstStringExpr			alt_enum_id;
 
 	public Field() { super(FIELD_NORMAL); }
 	

@@ -84,10 +84,7 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 		cur_text = null;
 		//System.out.println("startElement("+uri+","+localName+","+qName+")");
 		ADomElement elem;
-		if (uri.length() != 0)
-			elem = (ADomElement)document.createElementNS(uri, qName);
-		else
-			elem = (ADomElement)document.createElement(qName);
+		elem = (ADomElement)document.createElementNS(uri, qName);
 		if (cur_dflt_namespace != null) {
 			elem.setAttributeNode(cur_dflt_namespace);
 			cur_dflt_namespace = null;
@@ -102,15 +99,9 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 			//System.out.println("attribute("+attributes.getURI(i)+","+attributes.getLocalName(i)+","+attributes.getQName(i)+")='"+attributes.getValue(i)+"'");
 			String aUri = attributes.getURI(i);
 			ADomAttr a;
-			if (aUri.length() != 0) {
-				a = (ADomAttr)document.createAttributeNS(aUri,attributes.getQName(i));
-				a.setValue(attributes.getValue(i));
-				elem.setAttributeNodeNS(a);
-			} else {
-				a = (ADomAttr)document.createAttribute(attributes.getQName(i));
-				a.setValue(attributes.getValue(i));
-				elem.setAttributeNode(a);
-			}
+			a = (ADomAttr)document.createAttributeNS(aUri,attributes.getQName(i));
+			a.setValue(attributes.getValue(i));
+			elem.setAttributeNodeNS(a);
 			//System.out.println("val='"+a.getValue()+"'");
 		}
 		if (cur_element == null)

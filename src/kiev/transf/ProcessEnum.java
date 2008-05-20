@@ -124,7 +124,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 					ENode.emptyArray));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
-				ConstStringExpr alt_id = (ConstStringExpr)Field.ALT_ENUM_ID_ATTR.get(f);
+				ConstStringExpr alt_id = f.alt_enum_id;
 				String str = (alt_id != null) ? alt_id.value : f.sname;
 				sw.stats.add(new CaseLabel(pos,new ConstIntExpr(i)));
 				sw.stats.add(new ReturnStat(pos,new ConstStringExpr(str)));
@@ -167,7 +167,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 					null
 					);
 				fromstr.block.stats.add(ifst);
-				ConstStringExpr alt_id = (ConstStringExpr)Field.ALT_ENUM_ID_ATTR.get(f);
+				ConstStringExpr alt_id = f.alt_enum_id;
 				if (alt_id != null) {
 					str = alt_id.value;
 					if (str != f.sname) {

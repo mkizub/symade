@@ -368,7 +368,7 @@ public abstract class AType implements StdTypes, TVSet {
 		StringBuffer str = new StringBuffer();
 		TypeDecl tdecl = meta_type.tdecl;
 		str.append(tdecl.qname());
-		String uuid = tdecl.getUUID();
+		String uuid = tdecl.uuid;
 		if (uuid != null)
 			str.append('@').append(uuid);
 		boolean hasArgs = false;
@@ -413,7 +413,7 @@ public abstract class AType implements StdTypes, TVSet {
 		}
 		TypeDecl tdecl = null;
 		if (uuid != null) {
-			tdecl = (TypeDecl)MetaUUID.getRegisteredNode(uuid);
+			tdecl = (TypeDecl)Env.getRoot().getISymbolByUUID(uuid);
 			if (tdecl != null)
 				assert (tdecl.qname().equals(name));
 		}

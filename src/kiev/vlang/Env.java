@@ -55,6 +55,8 @@ public final class Env extends KievPackage {
 
 	@nodeAttr public Project						project;
 	
+	private java.util.WeakHashMap					uuidToSymbolMap	= new java.util.WeakHashMap();
+	
 	private Hashtable<String,Draw_ATextSyntax>		languageSyntaxMap	= new Hashtable<String,Draw_ATextSyntax>();
 
 	public static Env getRoot() { return root; }
@@ -100,6 +102,20 @@ public final class Env extends KievPackage {
 		return null;
 	}
 	
+	public void registerISymbol(String uuid, ISymbol sym) {
+		ISymbol old = (ISymbol)this.uuidToSymbolMap.get(uuid);
+		if (old != null) {
+			if (old == sym)
+				return;
+			Debug.assert("Registering another symbol with the same UUID ("+uuid+"):\n\t"+sym);
+		}
+		this.uuidToSymbolMap.put(uuid,sym);
+	}
+	
+	public ISymbol getISymbolByUUID(String uuid) {
+		return (ISymbol)this.uuidToSymbolMap.get(uuid);
+	}
+	
 	public Struct newStruct(String sname, Struct outer, int acces, Struct variant) {
 		return newStruct(sname,true,outer,acces,variant,false,null);
 	}
@@ -118,8 +134,8 @@ public final class Env extends KievPackage {
 			assert (bcl.getClass() == cl.getClass());
 			cl = (Struct)bcl;
 			if( cleanup ) {
-				if (cl.hasUUID() && cl.getUUID() != uuid)
-					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.getUUID()+" != "+uuid);
+				if (cl.uuid != uuid)
+					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
 				cl.cleanupOnReload();
 				cl.meta.mflags = acces;
 				cl.package_clazz.symbol = outer;
@@ -177,8 +193,8 @@ public final class Env extends KievPackage {
 			pkg.sub_decls.add(tdecl);
 		}
 		else if( cleanup ) {
-			if (tdecl.hasUUID() && tdecl.getUUID() != uuid)
-				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.getUUID()+" != "+uuid);
+			if (tdecl.uuid != uuid)
+				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.uuid+" != "+uuid);
 			tdecl.cleanupOnReload();
 			tdecl.meta.mflags = ACC_MACRO;
 			tdecl.package_clazz.symbol = pkg;

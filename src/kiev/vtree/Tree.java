@@ -76,7 +76,7 @@ public abstract class AttrSlot {
 	public final boolean         is_attr; // @nodeAttr or @nodeData
 	public final boolean         is_space; // if Node[]
 	public final boolean         is_child; // @nodeAttr and Node
-	public final boolean         is_external; // not declared within the node (i.e., not listed in values())
+	public final boolean         is_external; // not a field, stored in ANode.ext_data[]
 	public final Class           clazz; // type of the fields
 	public final TypeInfo        typeinfo; // type of the fields
 	public final Object          defaultValue;

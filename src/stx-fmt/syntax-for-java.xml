@@ -3427,7 +3427,7 @@
             <a-node class='kiev.fmt.SyntaxOptional'>
              <calculator>
               <a-node class='kiev.fmt.CalcOptionNotNull'>
-               <name>alt enum id</name>
+               <name>alt_enum_id</name>
               </a-node>
              </calculator>
              <opt_true>
@@ -3442,7 +3442,7 @@
                  </fmt>
                 </a-node>
                 <a-node class='kiev.fmt.SyntaxSubAttr'>
-                 <name>alt enum id</name>
+                 <name>alt_enum_id</name>
                 </a-node>
                </elements>
                <folded_by_default>false</folded_by_default>
@@ -9384,7 +9384,7 @@
      </rnode>
      <elem>
       <a-node class='kiev.fmt.SyntaxSubAttr'>
-       <name>node</name>
+       <name>rnode</name>
       </a-node>
      </elem>
      <sname>stx-shadow</sname>
@@ -10148,19 +10148,6 @@
       </a-node>
      </members>
      <sname>syntax-java-decl-group</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>Shadow</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSubAttr'>
-       <name>node</name>
-      </a-node>
-     </elem>
-     <sname>stx-shadow</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -12294,7 +12281,7 @@
          </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>node</name>
+         <name>anode</name>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>

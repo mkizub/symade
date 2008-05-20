@@ -43,6 +43,10 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeData(ext_data=true)
 	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
 
+	@UnVersioned
+	@nodeAttr(copyable=false)
+	public	String								uuid;  // UUID of the node, since it's an ISymbol
+
 	public final MetaAccess getMetaAccess() {
 		return (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
 	}
@@ -59,6 +63,22 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		if (this instanceof GlobalDNode)
 			return ((GlobalDNode)this).qname();
 		return this.sname;
+	}
+	@getter final public String get$UUID() {
+		String u = this.uuid;
+		if (u == null) {
+			u = java.util.UUID.randomUUID().toString();
+			this.uuid = u;
+		}
+		return u;
+	}
+	@setter final public void set$uuid(String value) {
+		value = value.intern();
+		assert (this.uuid == null || this.uuid == value);
+		if (this.uuid == null) {
+			Env.getRoot().registerISymbol(value,this);
+			this.uuid = value;
+		}
 	}
 	
 	public final boolean isPublic()				{ return this.meta.is_access == MASK_ACC_PUBLIC || group != null && group.meta.is_access == MASK_ACC_PUBLIC; }
@@ -82,7 +102,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isMacro()				{ return this.meta.is_macro || group != null && group.meta.is_macro; }
 	public final boolean isVirtual()			{ return this.meta.is_virtual || group != null && group.meta.is_virtual; }
 	public final boolean isForward()			{ return this.meta.is_forward || group != null && group.meta.is_forward; }
-	public final boolean hasUUID()				{ return this.meta.is_has_uuid; }
 	
 	public final boolean isStructView()		{ return this instanceof KievView; }
 	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
@@ -283,18 +302,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 			if (this.sname != null && this.sname.startsWith(nm)) return true;
 		}
 		return false;
-	}
-
-	public void setUUID(String uuid) {
-		MetaUUID m = new MetaUUID();
-		m.value = uuid;
-		this.setMeta(m);
-	}
-
-	public String getUUID() {
-		foreach (MetaUUID m; meta.metas)
-			return m.value;
-		return null;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

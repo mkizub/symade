@@ -43,7 +43,7 @@ public abstract view JLvalueExpr of LvalueExpr extends JENode {
 }
 
 @ViewOf(vcast=true, iface=true)
-public abstract view JAccessExpr of AccessExpr extends JLvalueExpr {
+public final view JAccessExpr of AccessExpr extends JLvalueExpr {
 	public:ro	JENode		obj;
 }
 

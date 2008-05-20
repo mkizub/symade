@@ -461,7 +461,7 @@ public final class ArrayMetaType extends MetaType {
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
 			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
-			tdecl.setUUID("bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04");
+			tdecl.uuid = "bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04";
 			Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
 			tdecl.members.add(length);
@@ -573,7 +573,7 @@ public class WrapperMetaType extends MetaType {
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
 			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
-			tdecl.setUUID("67544053-836d-3bac-b94d-0c4b14ae9c55");
+			tdecl.uuid = "67544053-836d-3bac-b94d-0c4b14ae9c55";
 		}
 		wrapper_tdecl = tdecl;
 		tdecl.xmeta_type = WrapperMetaType.instance(StdTypes.tpWrapperArg);
@@ -683,7 +683,7 @@ public class CallMetaType extends MetaType {
 			tdecl.sname = "_call_type_";
 			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			tdecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");
+			tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
 		}
 		instance = new CallMetaType(tdecl);
 	}

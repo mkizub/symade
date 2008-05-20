@@ -339,24 +339,24 @@ public interface StdTypes {
 			//tpUnattachedArgs[i].flags |= flHidden;
 		}
 		
-		tpAny.meta_type.tdecl.setUUID(				"be8bba7f-b4f9-3991-8834-6552dcb237a0");
-		tpVoid.meta_type.tdecl.setUUID(				"ec98468f-75f6-3811-ab77-6b0a8458b3ad");
-		tpBoolean.meta_type.tdecl.setUUID(			"9c517365-318e-307c-acdf-6682cf309b3f");
-		tpChar.meta_type.tdecl.setUUID(				"7713311e-809c-30f7-964a-3d28beb7aab3");
-		tpByte.meta_type.tdecl.setUUID(				"89ed44f6-f9a6-3ef7-b396-d2248d5f69db");
-		tpShort.meta_type.tdecl.setUUID(			"f9bb2439-c397-3930-b36c-5b1565ec7841");
-		tpInt.meta_type.tdecl.setUUID(				"d50f9a1a-2e09-3313-8a64-6b58b300579e");
-		tpLong.meta_type.tdecl.setUUID(				"2d6eef81-2c5e-36e4-ab9d-136dfec1dc6b");
-		tpFloat.meta_type.tdecl.setUUID(			"a02d23b3-8055-3c87-b331-2b242964a7f1");
-		tpDouble.meta_type.tdecl.setUUID(			"d741575d-769c-3108-810e-6c0e57a4b03e");
-		tpNull.meta_type.tdecl.setUUID(				"6c8cef01-5c38-36c3-aab0-bd16c23e817d");
+		tpAny.meta_type.tdecl.uuid =			"be8bba7f-b4f9-3991-8834-6552dcb237a0";
+		tpVoid.meta_type.tdecl.uuid =			"ec98468f-75f6-3811-ab77-6b0a8458b3ad";
+		tpBoolean.meta_type.tdecl.uuid =		"9c517365-318e-307c-acdf-6682cf309b3f";
+		tpChar.meta_type.tdecl.uuid =			"7713311e-809c-30f7-964a-3d28beb7aab3";
+		tpByte.meta_type.tdecl.uuid =			"89ed44f6-f9a6-3ef7-b396-d2248d5f69db";
+		tpShort.meta_type.tdecl.uuid =			"f9bb2439-c397-3930-b36c-5b1565ec7841";
+		tpInt.meta_type.tdecl.uuid =			"d50f9a1a-2e09-3313-8a64-6b58b300579e";
+		tpLong.meta_type.tdecl.uuid =			"2d6eef81-2c5e-36e4-ab9d-136dfec1dc6b";
+		tpFloat.meta_type.tdecl.uuid =			"a02d23b3-8055-3c87-b331-2b242964a7f1";
+		tpDouble.meta_type.tdecl.uuid =		"d741575d-769c-3108-810e-6c0e57a4b03e";
+		tpNull.meta_type.tdecl.uuid =			"6c8cef01-5c38-36c3-aab0-bd16c23e817d";
 
-		tdArrayArg.setUUID(							"74843bf1-3c28-374b-ad11-006af8a31a71");
-		tdWrapperArg.setUUID(						"400f213e-a4bb-3ee2-b870-9ec1951fd955");
-		tdVararg.setUUID(							"8aa32751-ac53-343e-b456-6f8521b01647");
-		tdVarargArg.setUUID(						"924f219a-37cf-3654-b761-7cb5e26ceef0");
-		tdASTNodeType.setUUID(						"3e32f9c7-9846-393e-8c6e-11512191ec94");
-		tdASTNodeTypeArg.setUUID(					"f23d4ec5-7fc2-3bbb-9b8f-46a309fc5f24");
+		tdArrayArg.uuid =						"74843bf1-3c28-374b-ad11-006af8a31a71";
+		tdWrapperArg.uuid =						"400f213e-a4bb-3ee2-b870-9ec1951fd955";
+		tdVararg.uuid =							"8aa32751-ac53-343e-b456-6f8521b01647";
+		tdVarargArg.uuid =						"924f219a-37cf-3654-b761-7cb5e26ceef0";
+		tdASTNodeType.uuid =					"3e32f9c7-9846-393e-8c6e-11512191ec94";
+		tdASTNodeTypeArg.uuid =					"f23d4ec5-7fc2-3bbb-9b8f-46a309fc5f24";
 	}
 }
 

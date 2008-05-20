@@ -23,17 +23,9 @@ import syntax kiev.Syntax;
 public final class MetaUUID extends UserMeta {
 	@virtual typedef This  = MetaUUID;
 
-	private static final Hashtable<String,DNode> registeredNodes = new Hashtable<String,DNode>();
-	
 	@nodeAttr public String				value;
 
 	public MetaUUID() { super("kiev\u001fstdlib\u001fmeta\u001fuuid"); }
-
-	public MetaUUID(boolean autogen) {
-		this();
-		if (autogen)
-			value = java.util.UUID.randomUUID().toString();
-	}
 
 	public void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {
@@ -53,35 +45,31 @@ public final class MetaUUID extends UserMeta {
 		if (ms != null)
 			p = ms.parent();
 		if (p instanceof DNode) {
+			DNode dn = (DNode)p;
 			if (on) {
-				p.meta.is_has_uuid = true;
-				if (value != null)
-					registeredNodes.put(value,(DNode)p);
-			} else {
-				p.meta.is_has_uuid = false;
-				if (value != null)
-					registeredNodes.remove(value);
+				if (dn.uuid != null)
+					this.value = dn.uuid;
+				else if (this.value != null)
+					dn.uuid = this.value;
 			}
 		}
 	}
 
 	@setter public void set$value(String val) {
+		if (val != null)
+			val = val.intern();
 		MetaSet ms = (MetaSet)parent();
 		ANode p = null;
 		if (ms != null)
 			p = ms.parent();
 		if (p instanceof DNode) {
-			if (value != null)
-				registeredNodes.remove(value);
+			DNode dn = (DNode)p;
+			if (dn.uuid != null)
+				return;
+			dn.uuid = val;
 		}
-		if (val != null)
-			val = val.intern();
-		value = val;
+		this.value = val;
 		super.setS("value",val);
-		if (p instanceof DNode) {
-			if (value != null)
-				registeredNodes.put(value, (DNode)p);
-		}
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -90,10 +78,6 @@ public final class MetaUUID extends UserMeta {
 		if (dump == "api" && attr.name == "values")
 			return false;
 		return super.includeInDump(dump, attr, val);
-	}
-
-	public static DNode getRegisteredNode(String uuid) {
-		return registeredNodes.get(uuid);
 	}
 }
 
