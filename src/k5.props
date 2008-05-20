@@ -15,4 +15,3 @@ symade.transf.vnode.nameSpaceAttrSlot = kiev\u001fvtree\u001fSpaceAttrSlot
 symade.transf.vnode.nameSpaceRefAttrSlot = kiev\u001fvtree\u001fSpaceRefAttrSlot
 symade.transf.vnode.nameSpaceAttAttrSlot = kiev\u001fvtree\u001fSpaceAttAttrSlot
 symade.transf.vnode.nameCopyContext = kiev\u001fvtree\u001fANode\u001fCopyContext
-symade.vlang.anode.useCopyContext = true

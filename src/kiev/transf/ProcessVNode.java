@@ -612,7 +612,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		if (vals == null)
 			throw new CompilerException(s,"Auto-generated field with name "+nameEnumValuesFld+" is not found");
-		if (vals.init != null)
+		if (vals.init != null || VNode_Base.nameNode.equals(iface.qname()) || VNode_Base.nameANode.equals(iface.qname()))
 			return; // already generated
 
 		boolean interface_only = s.ctx_file_unit.scanned_for_interface_only;
@@ -878,15 +878,15 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	private void collectAllAttrFields(Vector<Field> aflds, Struct iface) {
 		if (iface == null)
 			return;
-		//if (iface.qname.equals(nameANode)) {
-		//	aflds.append(iface.resolveField("nodeattr$parent"));
-		//	return;
-		//}
+		if (iface.qname.equals(VNode_Base.nameANode)) {
+			aflds.append(iface.resolveField("parent"));
+			return;
+		}
 		if (!isNodeKind(iface))
 			return;
 	next_fld:
 		foreach (Field f; iface.members; !f.isStatic() && (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)) {
-			foreach (Field af; aflds; f == af)
+			foreach (Field af; aflds; f == af || f.sname == "parent")
 				continue next_fld;
 			aflds.append(f);
 		}

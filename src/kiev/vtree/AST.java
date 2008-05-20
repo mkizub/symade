@@ -90,6 +90,10 @@ public abstract class ANode implements INode {
 	ANode					p_parent;
 	DataAttachInfo[]		ext_data;
 	ParentInfo[]			ext_parent;
+	@abstract
+	public:ro ANode			parent;
+
+	@getter public final ANode get$parent() { return parent(); }
 
 	public static class VVV implements Cloneable {
 		public static final int IS_LOCKED    = 1;
@@ -790,8 +794,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public int						compileflags;	// temporal flags for compilation process
 	
 	public int						nodeflags;		// presistent flags of the node
-	@nodeData @abstract
-	public:ro ANode					parent;
+	
+	// Uncomment to compile with symade-04g.jar
+	//@nodeData @abstract
+	//public:ro ANode					parent;
 	
 	public static class VVV extends ANode.VVV {
 		int						transaction_id;
@@ -823,8 +829,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@setter public final void set$pos(int value) { this.pos = value; }
 	@getter public final int get$pos() { return this.pos; }
 	
-	@getter public final ANode get$parent() { return parent(); }
-
 	// SymbolRef/ENode/ISymRef
 	public @packed:1,nodeflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
 	// EToken
