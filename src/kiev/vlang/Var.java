@@ -86,7 +86,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 	// is a field of enum
 	public final boolean isEnumField() {
-		return this.meta.is_enum || group != null && group.meta.is_enum;
+		return this.meta.is_enum;
 	}
 	// packer field (auto-generated for packed fields)
 	public final boolean isPackerField() {

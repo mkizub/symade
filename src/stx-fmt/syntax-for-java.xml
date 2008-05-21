@@ -2111,9 +2111,6 @@
        <name>LVar</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>DeclGroupVars</name>
-      </a-node>
-      <a-node class='kiev.vlang.SymbolRef'>
        <name>JavaClass</name>
       </a-node>
      </expected_types>
@@ -3332,55 +3329,6 @@
     </a-node>
     <a-node class='kiev.fmt.TextSyntax'>
      <members>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>DeclGroupEnumFields</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxList'>
-         <element>
-          <a-node class='kiev.fmt.SyntaxNode'>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-decl-group-enum-fields</name>
-            </a-node>
-           </in_syntax>
-          </a-node>
-         </element>
-         <separator>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>,</text>
-           <fmt>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>fmt-space-nl</name>
-            </a-node>
-           </fmt>
-          </a-node>
-         </separator>
-         <sufix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>;</text>
-           <kind>SEPARATOR</kind>
-           <fmt>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>fmt-separator-eat-left</name>
-            </a-node>
-           </fmt>
-          </a-node>
-         </sufix>
-         <elpar>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>par-indented</name>
-          </a-node>
-         </elpar>
-         <folded_by_default>false</folded_by_default>
-         <name>decls</name>
-        </a-node>
-       </elem>
-       <sname>stx-decl-group-enums</sname>
-      </a-node>
       <a-node class='kiev.fmt.TextSyntax'>
        <members>
         <a-node class='kiev.fmt.SyntaxElemDecl'>
@@ -9615,49 +9563,6 @@
      </members>
      <sname>syntax-java-decl-simple</sname>
     </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>DeclGroupEnumFields</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSpace'>
-      </a-node>
-     </elem>
-     <sname>stx-decl-group-enum-fields</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>DeclGroupVars</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxNode'>
-         <in_syntax>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>syntax-java-decl-group</name>
-          </a-node>
-         </in_syntax>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>;</text>
-         <fmt>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-separator-eat-left</name>
-          </a-node>
-         </fmt>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-       <nested_function_lookup>false</nested_function_lookup>
-      </a-node>
-     </elem>
-     <sname>stx-decl-group</sname>
-    </a-node>
     <a-node class='kiev.fmt.TextSyntax'>
      <members>
       <a-node class='kiev.fmt.SyntaxElemDecl'>
@@ -9864,66 +9769,6 @@
         </a-node>
        </elem>
        <sname>stx-decl-field</sname>
-      </a-node>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>DeclGroupVars</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>meta</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>dtype</name>
-           <expected_types>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>stx-types-TypeRef</name>
-            </a-node>
-           </expected_types>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxList'>
-           <element>
-            <a-node class='kiev.fmt.SyntaxNode'>
-             <in_syntax>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>syntax-java-decl-group-vars</name>
-              </a-node>
-             </in_syntax>
-            </a-node>
-           </element>
-           <separator>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>,</text>
-             <fmt>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>fmt-separator-eat-left</name>
-              </a-node>
-             </fmt>
-            </a-node>
-           </separator>
-           <folded_by_default>false</folded_by_default>
-           <name>decls</name>
-           <expected_types>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>LVar</name>
-            </a-node>
-           </expected_types>
-           <empty>
-            <a-node class='kiev.fmt.SyntaxPlaceHolder'>
-             <text>&lt;vars&gt;</text>
-            </a-node>
-           </empty>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-         <nested_function_lookup>false</nested_function_lookup>
-        </a-node>
-       </elem>
-       <sname>stx-decl-group</sname>
       </a-node>
       <a-node class='kiev.fmt.TextSyntax'>
        <members>
@@ -11013,9 +10858,6 @@
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>LVar</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>DeclGroupVars</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>stx-types-Expr</name>

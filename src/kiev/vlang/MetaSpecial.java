@@ -330,12 +330,8 @@ public final class MetaAccess extends MetaFlag {
 	
 	public static final int getFlags(DNode dn) {
 		MetaAccess acc = dn.getMetaAccess();
-		if (acc == null) {
-			if (dn.parent() instanceof DeclGroup)
-				acc = ((DeclGroup)dn.parent()).getMetaAccess();
-			if (acc == null)
-				return 0x0F;
-		}
+		if (acc == null)
+			return 0x0F;
 		if (acc.flags != -1)
 			return acc.flags;
 		else if (acc.simple == "public")

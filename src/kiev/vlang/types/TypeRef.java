@@ -195,13 +195,6 @@ public class TypeDeclRef extends TypeRef {
 		ANode p = parent();
 		while (p != null && !(p instanceof Var))
 			p = p.parent();
-		if (p instanceof Var) {
-			Var v = (Var)p;
-			if (v.group != null) {
-				this.type_lnk = v.group.getType();
-				return this.type_lnk;
-			}
-		}
 		return Type.tpVoid;
 	}
 

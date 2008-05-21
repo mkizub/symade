@@ -62,14 +62,6 @@ public final class MetaSet extends ASTNode {
 	public @packed:1,mflags,24 boolean is_has_throws;
 
 	
-	@getter
-	public DeclGroup get$group() {
-		ANode p = parent();
-		if (p instanceof DNode)
-			return p.group;
-		return null;
-	}
-
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "metas" && isAttached())
 			parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
@@ -81,26 +73,15 @@ public final class MetaSet extends ASTNode {
 	public boolean hasRuntimeVisibles() {
 		foreach (MNode m; metas; m.isRuntimeVisible())
 			return true;
-		if (group != null) {
-			foreach (MNode m; group.meta.metas; m.isRuntimeVisible())
-				return true;
-		}
 		return false;
 	}
 	public boolean hasRuntimeInvisibles() {
 		foreach (MNode m; metas; m.isRuntimeInvisible())
 			return true;
-		if (group != null) {
-			foreach (MNode m; group.meta.metas; m.isRuntimeInvisible())
-				return true;
-		}
 		return false;
 	}
 
 	public void resolve() {
-		if (group != null)
-			foreach (MNode m; group.meta.metas)
-				m.resolve(null);
 		foreach (MNode m; metas)
 			m.resolve(null);
 	}
@@ -121,12 +102,6 @@ public final class MetaSet extends ASTNode {
 		foreach (MNode m; metas) {
 			if (m.qname == name)
 				return m;
-		}
-		if (group != null) {
-			foreach (MNode m; group.meta.metas) {
-				if (m.qname == name)
-					return m;
-			}
 		}
 		return null;
 	}

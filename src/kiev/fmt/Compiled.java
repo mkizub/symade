@@ -227,10 +227,6 @@ public final class Draw_CalcOptionHasMeta extends Draw_CalcOption {
 			DNode dn = (DNode)node;
 			return (dn.getMeta(name) != null);
 		}
-		if (node instanceof DeclGroup) {
-			DeclGroup dn = (DeclGroup)node;
-			return (dn.getMeta(name) != null);
-		}
 		return false;
 	}
 	Object readResolve() throws ObjectStreamException {

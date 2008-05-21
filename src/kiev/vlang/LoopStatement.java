@@ -213,10 +213,10 @@ public class DoWhileStat extends LoopStat {
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
-	@DataFlowDefinition(in="this:in")				ASTNode		init;
-	@DataFlowDefinition(in="init", links="iter")		ENode		cond;
+	@DataFlowDefinition(in="this:in", seq="true")		ASTNode[]	inits;
+	@DataFlowDefinition(in="inits", links="iter")		ENode		cond;
 	@DataFlowDefinition(in="cond:true")				ENode		body;
-	@DataFlowDefinition(in="body")					Label		lblcnt;
+	@DataFlowDefinition(in="body")						Label		lblcnt;
 	@DataFlowDefinition(in="lblcnt")					ENode		iter;
 	@DataFlowDefinition(in="cond:false")				Label		lblbrk;
 	}
@@ -225,21 +225,13 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef JView = JForStat;
 	@virtual typedef RView = RForStat;
 
-	@nodeAttr public ASTNode		init;
+	@nodeAttr public ASTNode[]	inits;
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
 	@nodeAttr public ENode		iter;
 
 	public ForStat() {}
 	
-	public ForStat(int pos, ASTNode init, ENode cond, ENode iter, ENode body) {
-		this.pos = pos;
-		this.init = init;
-		this.cond = cond;
-		this.iter = iter;
-		this.body = body;
-	}
-
 	public void initForEditor() {
 		if (body == null) {
 			body = new Block();
@@ -253,29 +245,21 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
-		DNode@ dn;
 	{
-		init instanceof DeclGroup,
-		dn @= ((DeclGroup)init).getDecls(),
-		info.checkNodeName(dn),
-		info.check(dn),
-		node ?= dn
-	;	init instanceof Var,
-		info.checkNodeName(init),
-		info.check(init),
-		node ?= init
+		node @= inits,
+		info.checkNodeName(node),
+		info.check(node)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
-		init instanceof DeclGroup,
-		((DeclGroup)init).resolveMethodR(node,info,mt)
-	;	init instanceof Var,
-		info.checkNodeName(init),
-		((Var)init).isForward(),
-		info.enterForward(init) : info.leaveForward(init),
-		init.getType().resolveCallAccessR(node,info,mt)
+		n @= inits,
+		n instanceof Var,
+		info.checkNodeName(n),
+		((Var)n).isForward(),
+		info.enterForward(n) : info.leaveForward(n),
+		n.getType().resolveCallAccessR(node,info,mt)
 	}
 }
 

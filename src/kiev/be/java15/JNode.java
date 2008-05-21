@@ -129,32 +129,6 @@ public view JSNode of SNode extends JNode {
 }
 
 @ViewOf(vcast=true, iface=true)
-public final view JDeclGroup of DeclGroup extends JSNode {
-
-	public DNode[] getDecls();
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating DeclGroup");
-		code.setLinePos(this);
-		try {
-			foreach (DNode dn; getDecls())
-				((JDNode)dn).generate(code,Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-	public void removeVars(Code code) {
-		DNode[] decls = getDecls();
-		for(int i=decls.length-1; i >= 0; i--) {
-			if (decls[i] instanceof LVar) {
-				LVar v = (LVar)decls[i];
-				code.removeVar((JVar)v);
-			}
-		}
-	}
-}
-
-@ViewOf(vcast=true, iface=true)
 public view JENode of ENode extends JNode {
 	
 	public:ro	String			ident;

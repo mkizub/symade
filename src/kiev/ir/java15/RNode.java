@@ -56,21 +56,6 @@ public static view RSNode of SNode extends RNode {
 }
 
 @ViewOf(vcast=true, iface=true)
-public static final view RDeclGroup of DeclGroup extends RSNode {
-	public:ro MetaSet	meta;
-
-	public DNode[] getDecls();
-
-	public void resolveDecl() {
-		if( isResolved() ) return;
-		foreach (DNode dn; getDecls())
-			dn.resolveDecl();
-		DataFlowInfo.getDFlow((DeclGroup)this).out();
-		setResolved(true);
-	}
-}
-
-@ViewOf(vcast=true, iface=true)
 public static view RDNode of DNode extends RNode {
 
 	public:ro MetaSet	meta;

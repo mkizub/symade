@@ -222,7 +222,7 @@ public view JBlock of Block extends JENode {
 					else
 						st.generate(code,reqType);
 				}
-				else if (st instanceof JVar || st instanceof JDeclGroup) {
+				else if (st instanceof JVar) {
 					st.generate(code,Type.tpVoid);
 				}
 			} catch(Exception e ) {
@@ -235,8 +235,6 @@ public view JBlock of Block extends JENode {
 			JNode n = stats[j];
 			if (n instanceof JVar)
 				((JVar)n).removeVar(code);
-			else if (n instanceof JDeclGroup)
-				((JDeclGroup)n).removeVars(code);
 		}
 		JNode p = this.jparent;
 		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.type.ret() ≢ Type.tpVoid)

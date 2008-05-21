@@ -605,12 +605,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
-			n instanceof DeclGroup,
-			dn @= ((DeclGroup)n).getDecls(),
-			info.checkNodeName(dn),
-			info.check(dn),
-			node ?= dn
-		;
 			n instanceof CaseLabel,
 			((CaseLabel)n).resolveNameR(node,info)
 		;
@@ -630,9 +624,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
-			n instanceof DeclGroup,
-			((DeclGroup)n).resolveMethodR(node, info, mt)
-		;
 			n instanceof CaseLabel,
 			((CaseLabel)n).resolveMethodR(node, info, mt)
 		;
@@ -666,10 +657,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 				if (dn instanceof Var) {
 					vars.append((Var)dn);
 					continue;
-				}
-				if (dn instanceof DeclGroup) {
-					foreach (Var v; ((DeclGroup)dn).getDecls())
-						vars.append(v);
 				}
 			}
 			if (vars.length > 0)

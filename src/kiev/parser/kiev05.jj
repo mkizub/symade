@@ -247,6 +247,9 @@ public abstract class kiev050 {
 		f.meta.is_enum = true;
 		f.pos = id.pos;
 		modifiers.moveToNode(f.meta);
+		f.setPublic();
+		f.setStatic(true);
+		f.setFinal(true);
 		return f;
 	}
 
@@ -1150,12 +1153,12 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 	"{"
 	(
 		LOOKAHEAD({ clazz.isEnum() })
-		{ DeclGroupEnumFields enums = ((JavaEnum)clazz).group; }
+		{ JavaEnum enum_clazz = (JavaEnum)clazz; }
 		modifiers = Modifiers()
-		enums.decls += EnumFieldDeclaration(modifiers)
+		enum_clazz.enum_fields += EnumFieldDeclaration(modifiers)
 		(	","
 			modifiers = Modifiers()
-			enums.decls += EnumFieldDeclaration(modifiers)
+			enum_clazz.enum_fields += EnumFieldDeclaration(modifiers)
 		)*
 		[ ";" ]
 	)?
@@ -1605,50 +1608,36 @@ LVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 	{ return lv; }
 }
 
-ASTNode VarDecls(ASTModifiers modifiers) :
-{ boolean old_declMode; TypeRef type; Symbol id; ENode init; DeclGroupVars decl; Var var; }
+void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
+{ boolean old_declMode; TypeRef type; Symbol id; ENode init; Var var; }
 {
 	{
 		old_declMode = declMode;
 		declMode = false;
 		init = null;
-		decl = null;
 		var = null;
 	}
 	try {
 		type = Type()
 		id = Name()
 		[	"="	init = VariableInitializer()	]
+		{
+			var = mkVar(id, new ASTModifiers(), type);
+			modifiers.copyToNode(var.meta);
+			var.init = init;
+			stats += var;
+		}
 		(
+			","
+			id = Name()
+			[	"="	init = VariableInitializer()	]
 			{
-				decl = new DeclGroupVars();
-				modifiers.copyToNode(decl.meta);
-				decl.dtype = type;
-				var = mkVar(id, new ASTModifiers(), null);
+				var = mkVar(id, new ASTModifiers(), type.ncopy());
+				modifiers.copyToNode(var.meta);
 				var.init = init;
-				init = null;
-				decl.decls += var;
+				stats += var;
 			}
-			(
-				","
-				id = Name()
-				[	"="	init = VariableInitializer()	]
-				{
-					var = mkVar(id, new ASTModifiers(), null);
-					var.init = init;
-					init = null;
-					decl.decls += var;
-				}
-			)+
-			{	return decl; }
-		|
-			{
-				var = mkVar(id, modifiers, type);
-				var.init = init;
-				init = null;
-				return var;
-			}
-		)
+		)*
 	} finally { declMode = old_declMode; }
 }
 
@@ -2828,7 +2817,7 @@ void BlockStatement(SpacePtr stats) :
 					stats += TypeDeclaration(modifiers, (ASTNode)stats.node)
 				} finally { declMode = old_declMode; }
 			|	LOOKAHEAD(0)
-				stats += VarDecls(modifiers)
+				VarDecls(modifiers, stats)
 			)
 		)
 	|
@@ -2838,7 +2827,7 @@ void BlockStatement(SpacePtr stats) :
 		} finally { declMode = old_declMode; }
 	|
 		LOOKAHEAD( Type() Name() )
-		stats += VarDecls(new ASTModifiers())
+		VarDecls(new ASTModifiers(), stats)
 		";"
 	|
 		/* other statements */
@@ -3014,11 +3003,18 @@ ForStat ForStatement() :
 	"for"
 	{ st.pos = getToken(0).getPos(); }
 	"("
-		(	LOOKAHEAD( InBlockModifiersLA() | (Type() QName() ("=" | "," | ";")) )
+		(	LOOKAHEAD( InBlockModifiersLA())
 			modifiers = Modifiers()
-			st.init = VarDecls(modifiers)
+			VarDecls(modifiers, st.getSpacePtr("inits"))
 		|
-			st.init = CommaExpression()
+			LOOKAHEAD( Type() Name() )
+			VarDecls(new ASTModifiers(), st.getSpacePtr("inits"))
+		|
+			st.inits += Expression()
+			(
+				","
+				st.inits += Expression()
+			)*
 		)?
 	";"
 		[

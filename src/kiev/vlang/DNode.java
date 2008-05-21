@@ -37,7 +37,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeAttr public final			MetaSet			meta;
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public				String			sname; // source code name, may be null for anonymouse symbols
-	@nodeData public				DeclGroup		group;
 
 	@nodeData(ext_data=true, copyable=false)
 	public KString								bytecode_name; // used by backend for anonymouse and inner declarations
@@ -83,32 +82,32 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	
-	public final boolean isPublic()				{ return this.meta.is_access == MASK_ACC_PUBLIC || group != null && group.meta.is_access == MASK_ACC_PUBLIC; }
-	public final boolean isPrivate()			{ return this.meta.is_access == MASK_ACC_PRIVATE || group != null && group.meta.is_access == MASK_ACC_PRIVATE; }
-	public final boolean isProtected()			{ return this.meta.is_access == MASK_ACC_PROTECTED || group != null && group.meta.is_access == MASK_ACC_PROTECTED; }
-	public final boolean isPkgPrivate()		{ return this.meta.is_access == MASK_ACC_DEFAULT || group != null && group.meta.is_access == MASK_ACC_DEFAULT; }
-	public final boolean isStatic()				{ return this.meta.is_static || group != null && group.meta.is_static; }
-	public final boolean isFinal()				{ return this.meta.is_final || group != null && group.meta.is_final; }
-	public final boolean isSynchronized()		{ return this.meta.is_mth_synchronized || group != null && group.meta.is_final; }
-	public final boolean isFieldVolatile()		{ return this.meta.is_fld_volatile || group != null && group.meta.is_fld_volatile; }
+	public final boolean isPublic()			{ return this.meta.is_access == MASK_ACC_PUBLIC; }
+	public final boolean isPrivate()			{ return this.meta.is_access == MASK_ACC_PRIVATE; }
+	public final boolean isProtected()			{ return this.meta.is_access == MASK_ACC_PROTECTED; }
+	public final boolean isPkgPrivate()		{ return this.meta.is_access == MASK_ACC_DEFAULT; }
+	public final boolean isStatic()			{ return this.meta.is_static; }
+	public final boolean isFinal()				{ return this.meta.is_final; }
+	public final boolean isSynchronized()		{ return this.meta.is_mth_synchronized; }
+	public final boolean isFieldVolatile()		{ return this.meta.is_fld_volatile; }
 	public final boolean isMethodBridge()		{ return this.meta.is_mth_bridge; }
-	public final boolean isFieldTransient()	{ return this.meta.is_fld_transient || group != null && group.meta.is_fld_transient; }
+	public final boolean isFieldTransient()	{ return this.meta.is_fld_transient; }
 	public final boolean isMethodVarargs()		{ return this.meta.is_mth_varargs; }
 	public final boolean isStructBcLoaded()	{ return this.meta.is_struct_bytecode; }
-	public final boolean isNative()				{ return this.meta.is_native || group != null && group.meta.is_native; }
+	public final boolean isNative()			{ return this.meta.is_native; }
 	public final boolean isInterface()			{ return this.meta.is_struct_interface; }
-	public final boolean isAbstract()			{ return this.meta.is_abstract || group != null && group.meta.is_abstract; }
-	public final boolean isMathStrict()		{ return this.meta.is_math_strict || group != null && group.meta.is_math_strict; }
-	public final boolean isSynthetic()			{ return this.meta.is_synthetic || group != null && group.meta.is_synthetic; }
+	public final boolean isAbstract()			{ return this.meta.is_abstract; }
+	public final boolean isMathStrict()		{ return this.meta.is_math_strict; }
+	public final boolean isSynthetic()			{ return this.meta.is_synthetic; }
 
-	public final boolean isMacro()				{ return this.meta.is_macro || group != null && group.meta.is_macro; }
-	public final boolean isVirtual()			{ return this.meta.is_virtual || group != null && group.meta.is_virtual; }
-	public final boolean isForward()			{ return this.meta.is_forward || group != null && group.meta.is_forward; }
+	public final boolean isMacro()				{ return this.meta.is_macro; }
+	public final boolean isVirtual()			{ return this.meta.is_virtual; }
+	public final boolean isForward()			{ return this.meta.is_forward; }
 	
 	public final boolean isStructView()		{ return this instanceof KievView; }
-	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
+	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable; }
 	public final boolean isPackage()			{ return this instanceof KievPackage; }
-	public final boolean isSyntax()				{ return this instanceof KievSyntax; }
+	public final boolean isSyntax()			{ return this instanceof KievSyntax; }
 	public final boolean isStructInner()		{ return !isPackage() && !isSyntax() && !(this.parent() instanceof NameSpace); }
 
 	public void setPublic() {
@@ -269,13 +268,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return DummyDNode.dummyNode;
 	}
 	
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic()) {
-			this.group = null;
-		}
-		super.callbackDetached(parent, slot);
-	}
-
 	public Object copy(CopyContext cc) {
 		ANode obj = cc.hasCopyOf(this);
 		if (obj != null)
@@ -288,10 +280,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
 
 	public int getFlags() {
-		int mflags = this.meta.mflags;
-		if (group != null)
-			mflags |= group.meta.mflags;
-		return mflags;
+		return this.meta.mflags;
 	}
 	public short getJavaFlags() {
 		return (short)(getFlags() & JAVA_ACC_MASK);

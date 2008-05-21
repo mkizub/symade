@@ -135,7 +135,7 @@ public class Bytecoder implements JConstants {
 		int packer_size = -1;
 		Type ftype = Signature.getType(f_type);
 		if ((f_flags & ACC_ENUM)!=0) {
-			f = new Field(f_name.toString(),new TypeDeclRef(),0);
+			f = new Field(f_name.toString(),ftype,f_flags);
 			f.meta.is_enum = true;
 		} else {
 			f = new Field(f_name.toString(),ftype,f_flags);
@@ -159,7 +159,7 @@ public class Bytecoder implements JConstants {
 		f.init = f_init;
 		cl.members.append(f);
 		if ((f_flags & ACC_ENUM)!=0)
-			((JavaEnum)cl).group.decls.append(f);
+			((JavaEnum)cl).enum_fields.append(f);
 		return f;
 	}
 

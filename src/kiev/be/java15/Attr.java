@@ -603,17 +603,11 @@ public class RVMetaAttr extends MetaAttr {
 		constPool.addAsciiCP(name);
 		foreach (UserMeta m; ms.metas; m.isRuntimeVisible())
 			generateValue(constPool, m);
-		if (ms.group != null)
-			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeVisible())
-				generateValue(constPool, m);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		int size = 0;
 		foreach (UserMeta m; ms.metas; m.isRuntimeVisible())
 			size++;
-		if (ms.group != null)
-			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeVisible())
-				size++;
 		kiev.bytecode.RVAnnotations a = new kiev.bytecode.RVAnnotations();
 		a.annotations = new kiev.bytecode.Annotation.annotation[size];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
@@ -622,13 +616,6 @@ public class RVMetaAttr extends MetaAttr {
 			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
 			write_annotation(constPool, m, a.annotations[n]);
 			n++;
-		}
-		if (ms.group != null) {
-			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeVisible()) {
-				a.annotations[n] = new kiev.bytecode.Annotation.annotation();
-				write_annotation(constPool, m, a.annotations[n]);
-				n++;
-			}
 		}
 		return a;
 	}
@@ -644,17 +631,11 @@ public class RIMetaAttr extends MetaAttr {
 		constPool.addAsciiCP(name);
 		foreach (UserMeta m; ms.metas; m.isRuntimeInvisible())
 			generateValue(constPool, m);
-		if (ms.group != null)
-			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeInvisible())
-				generateValue(constPool, m);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		int size = 0;
 		foreach (UserMeta m; ms.metas; m.isRuntimeInvisible())
 			size++;
-		if (ms.group != null)
-			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeInvisible())
-				size++;
 		kiev.bytecode.RIAnnotations a = new kiev.bytecode.RIAnnotations();
 		a.annotations = new kiev.bytecode.Annotation.annotation[size];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
@@ -663,13 +644,6 @@ public class RIMetaAttr extends MetaAttr {
 			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
 			write_annotation(constPool, m, a.annotations[n]);
 			n++;
-		}
-		if (ms.group != null) {
-			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeInvisible()) {
-				a.annotations[n] = new kiev.bytecode.Annotation.annotation();
-				write_annotation(constPool, m, a.annotations[n]);
-				n++;
-			}
 		}
 		return a;
 	}

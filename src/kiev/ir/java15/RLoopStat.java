@@ -73,26 +73,26 @@ public static view RDoWhileStat of DoWhileStat extends RLoopStat {
 
 @ViewOf(vcast=true, iface=true)
 public static final view RForStat of ForStat extends RLoopStat {
-	public ASTNode		init;
-	public ENode		cond;
-	public ENode		body;
-	public ENode		iter;
+	public:ro ASTNode[]		inits;
+	public    ENode			cond;
+	public    ENode			body;
+	public    ENode			iter;
 
 	public void resolve(Type reqType) {
-		if( init != null ) {
+		foreach (ASTNode n; inits) {
 			try {
-				if (init instanceof DNode) {
-					((DNode)init).resolveDecl();
+				if (n instanceof DNode) {
+					((DNode)n).resolveDecl();
 				}
-				else if (init instanceof SNode) {
-					((SNode)init).resolveDecl();
+				else if (n instanceof SNode) {
+					((SNode)n).resolveDecl();
 				}
-				else if (init instanceof ENode) {
-					((ENode)init).resolve(Type.tpVoid);
-					((ENode)init).setGenVoidExpr(true);
+				else if (n instanceof ENode) {
+					((ENode)n).resolve(Type.tpVoid);
+					((ENode)n).setGenVoidExpr(true);
 				}
 			} catch(Exception e ) {
-				Kiev.reportError(init,e);
+				Kiev.reportError(n,e);
 			}
 		}
 		if( cond != null ) {
