@@ -34,10 +34,16 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@virtual typedef This  = Import;
 
 	@nodeAttr public SymbolRef<DNode>	name;
+
 	@nodeAttr public ImportMode			mode = ImportMode.IMPORT_CLASS;
-	@nodeAttr public boolean				star;
+
+	@AttrXMLDumpInfo(attr=true, name="all")
+	@nodeAttr public boolean			star;
+
 	@nodeAttr public TypeRef[]			args;
-	@nodeAttr public boolean				of_method;
+
+	@AttrXMLDumpInfo(attr=true, name="methods")
+	@nodeAttr public boolean			of_method;
 
 	public Import() {
 		this.name = new SymbolRef<DNode>();

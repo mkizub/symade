@@ -38,8 +38,10 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 
 	public static final Symbol[] emptyArray = new Symbol[0];
 	
+	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public	String		sname; // source code name, may be null for anonymouse symbols
 
+	@AttrXMLDumpInfo(attr=true)
 	@UnVersioned
 	@nodeAttr(copyable=false)
 	public	String					uuid; // source code name, may be null for anonymouse symbols
@@ -151,8 +153,11 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	private Object	ident_or_symbol_or_type;
 	
+	@AttrXMLDumpInfo(attr=true)
 	@abstract @nodeAttr public		String		name; // unresolved name
+	@AttrXMLDumpInfo(attr=true, name="full")
 	@abstract @nodeAttr public		boolean		qualified; // stored name may be qualified name
+	@AttrXMLDumpInfo(ignore=true)
 	@abstract @nodeData public		ISymbol		symbol; // resolved symbol
 	@abstract           public:ro	D			dnode; // resolved dnode (symbol.parent())
 		 

@@ -18,27 +18,22 @@ import syntax kiev.Syntax;
  */
 
 @singleton
-public final class SyntaxLang implements Language {
+public final class SyntaxLang extends LangBase {
+	static {
+		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-syntax";
+		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-syntax";
+	}
+	public String getName() { "syntax" }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public Draw_ATextSyntax getDefaultEditorSyntax() {
-		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-syntax");
-		return defaultEditorSyntax;
-	}
-	public Draw_ATextSyntax getDefaultInfoSyntax() {
-		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-syntax");
-		return defaultInfoSyntax;
-	}
-	private static Draw_ATextSyntax defaultEditorSyntax;
-	private static Draw_ATextSyntax defaultInfoSyntax;
+
 	private static Class[] superLanguages = {};
 	private static Class[] nodeClasses = {
 		ATextSyntax.class,
 			TextSyntax.class,
 			KievTextSyntax.class,
 			XmlDumpSyntax.class,
+			NsXmlDumpSyntax.class,
 			TreeSyntax.class,
 		SpaceInfo.class,
 		SpaceCmd.class,

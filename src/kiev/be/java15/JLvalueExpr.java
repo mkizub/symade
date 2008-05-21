@@ -45,6 +45,12 @@ public abstract view JLvalueExpr of LvalueExpr extends JENode {
 @ViewOf(vcast=true, iface=true)
 public final view JAccessExpr of AccessExpr extends JLvalueExpr {
 	public:ro	JENode		obj;
+
+	public void generateLoad(Code code) { throw new RuntimeException("JAccessExpr.generateLoad()"); }
+	public void generateLoadDup(Code code) { throw new RuntimeException("JAccessExpr.generateLoadDup()"); }
+	public void generateAccess(Code code) { throw new RuntimeException("JAccessExpr.generateAccess()"); }
+	public void generateStore(Code code) { throw new RuntimeException("JAccessExpr.generateStore()"); }
+	public void generateStoreDupValue(Code code) { throw new RuntimeException("JAccessExpr.generateStoreDupValue()"); }
 }
 
 @ViewOf(vcast=true, iface=true)

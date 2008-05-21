@@ -642,6 +642,8 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 					;
 				else if( n instanceof Struct )
 					;
+				else if( n instanceof Comment )
+					;
 				else
 					Kiev.reportError(n, "Annotations may only have methods and final fields");
 			}

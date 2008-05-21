@@ -72,6 +72,9 @@ public abstract class ANode implements INode {
 
 	@getter public final ANode get$parent() { return parent(); }
 
+	public Language getCompilerLang() { return CoreLang; }
+	public String getCompilerNodeName() { return "Node"; }
+	
 	public static class VVV implements Cloneable {
 		public static final int IS_LOCKED    = 1;
 		public static final int FOR_COMPILER = 2;
@@ -775,6 +778,9 @@ public abstract class ASTNode extends ANode implements Constants {
 	// Uncomment to compile with symade-04g.jar
 	//@nodeData @abstract
 	//public:ro ANode					parent;
+	
+	public Language getCompilerLang() { return CoreLang; }
+	public String getCompilerNodeName() { return "ASTNode"; }
 	
 	public static class VVV extends ANode.VVV {
 		int						transaction_id;

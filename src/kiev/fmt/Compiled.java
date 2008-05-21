@@ -872,26 +872,31 @@ public class Draw_ATextSyntax implements Serializable {
 public class Draw_TextSyntax extends Draw_ATextSyntax {
 }
 
-public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
+public abstract class Draw_AXmlDumpSyntax extends Draw_ATextSyntax {
 	public String dump = "full";
-	private Draw_Layout loutNoNo;
-	private Draw_Layout loutNlNl;
-	private Draw_Layout loutNoNl;
-	private Draw_Paragraph plIndented;
+	protected Draw_Layout loutSpNo;
+	protected Draw_Layout loutNoNo;
+	protected Draw_Layout loutNlNl;
+	protected Draw_Layout loutNoNl;
+	protected Draw_Paragraph plIndented;
 
-	public Draw_XmlDumpSyntax() {
+	public Draw_AXmlDumpSyntax() {
 		this("full");
 	}
-	public Draw_XmlDumpSyntax(String dump) {
+	public Draw_AXmlDumpSyntax(String dump) {
 		this.dump = dump;
+		SpaceInfo siSp = new SpaceInfo("sp", SP_SPACE, 1,  4);
 		SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
 		SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
+		SyntaxElemFormatDecl sefdSpNo = new SyntaxElemFormatDecl("fmt-sp-no");
 		SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
 		SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
 
+		sefdSpNo.spaces += new SpaceCmd(siSp, SP_ADD, SP_NOP, 0);
 		sefdNlNl.spaces += new SpaceCmd(siNl, SP_ADD, SP_ADD, 0);
 		sefdNoNl.spaces += new SpaceCmd(siNl, SP_NOP, SP_ADD, 0);
 
+		loutSpNo = sefdSpNo.compile();
 		loutNoNo = sefdNoNo.compile();
 		loutNlNl = sefdNlNl.compile();
 		loutNoNl = sefdNoNl.compile();
@@ -900,31 +905,27 @@ public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 		plIndented.indent_text_size = 1;
 		plIndented.indent_pixel_size = 10;
 	}
-	
-	
-	private Draw_SyntaxElem open(String name) {
-		Draw_SyntaxToken st = new Draw_SyntaxToken("<"+name+">");
-		st.lout = loutNlNl;
+
+	protected Draw_SyntaxElem tok(String text, Draw_Layout lout) {
+		Draw_SyntaxToken st = new Draw_SyntaxToken(text);
+		st.lout = lout;
 		return st;
 	}
-	private Draw_SyntaxElem close(String name) {
-		Draw_SyntaxToken st = new Draw_SyntaxToken("</"+name+">");
-		st.lout = loutNlNl;
+	protected Draw_SyntaxElem tok(Draw_Layout lout, String text) {
+		Draw_SyntaxToken st = new Draw_SyntaxToken(text);
+		st.lout = lout;
 		return st;
 	}
-	private Draw_SyntaxElem open0(String name) {
-		Draw_SyntaxToken st = new Draw_SyntaxToken("<"+name+">");
-		st.lout = loutNoNo;
-		return st;
-	}
-	private Draw_SyntaxElem close0(String name) {
-		Draw_SyntaxToken st = new Draw_SyntaxToken("</"+name+">");
-		st.lout = loutNoNl;
-		return st;
-	}
-	protected Draw_SyntaxAttr attr(String slot) {
+	protected Draw_SyntaxElem tok(String text) { tok(text, loutNoNo) }
+	protected Draw_SyntaxElem open(String name) { tok("<"+name+">", loutNlNl) }
+	protected Draw_SyntaxElem close(String name) { tok("</"+name+">", loutNlNl) }
+	protected Draw_SyntaxElem open0(String name) { tok("<"+name+">", loutNoNo) }
+	protected Draw_SyntaxElem close0(String name) { tok("</"+name+">", loutNoNo) }
+
+	protected Draw_SyntaxAttr attr(AttrSlot slot) {
 		Draw_SyntaxSubAttr st = new Draw_SyntaxSubAttr();
-		st.name = slot;
+		st.name = slot.name;
+		st.attr_slot = slot;
 		return st;
 	}
 	protected Draw_SyntaxElem par(Draw_SyntaxElem elem) {
@@ -949,6 +950,12 @@ public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 		st.opt_true = opt_true;
 		return st;
 	}
+}
+	
+public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
+	
+	public Draw_XmlDumpSyntax() { this("full"); }
+	public Draw_XmlDumpSyntax(String dump) { super(dump); }
 
 	public Draw_SyntaxElem getSyntaxElem(ANode node) {
 		String cl_name = node.getClass().getName();
@@ -971,9 +978,9 @@ public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 				se = setl(loutNoNl, open(attr.name), sl, close(attr.name));
 			} else {
 				if (ANode.class.isAssignableFrom(attr.clazz))
-					se = setl(loutNoNl, open(attr.name), par(attr(attr.name)), close(attr.name));
+					se = setl(loutNoNl, open(attr.name), par(attr(attr)), close(attr.name));
 				else if (Enum.class.isAssignableFrom(attr.clazz))
-					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
+					se = set(open0(attr.name), attr(attr), close0(attr.name));
 				else if (attr.clazz == String.class)
 					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
 				else if (attr.clazz == Operator.class)
@@ -984,11 +991,9 @@ public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
 					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
 					)
-					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
+					se = set(open0(attr.name), attr(attr), close0(attr.name));
 				else if (attr.is_attr) {
-					Draw_SyntaxToken st = new Draw_SyntaxToken("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />");
-					st.lout = loutNlNl;
-					se = st;
+					se = tok("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />", loutNlNl);
 				}
 			}
 			if (se != null) {
@@ -996,24 +1001,107 @@ public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, opt(new Draw_CalcOptionIncludeInDump(this.dump,attr.name),se));
 			}
 		}
-		{
-			Draw_SyntaxToken st;
-			Draw_SyntaxSet sn = new Draw_SyntaxSet();
-			ss.lout = loutNoNl;
-			st = new Draw_SyntaxToken("<a-node class='"+cl_name+"'>");
-			st.lout = loutNlNl;
-			//sn.elements += st;
-			sn.elements = (Draw_SyntaxElem[])Arrays.append(sn.elements, st);
-			//sn.elements += par(ss);
-			sn.elements = (Draw_SyntaxElem[])Arrays.append(sn.elements, par(ss));
-			st = new Draw_SyntaxToken("</a-node>");
-			st.lout = loutNlNl;
-			//sn.elements += st;
-			sn.elements = (Draw_SyntaxElem[])Arrays.append(sn.elements, st);
-			ss = sn;
-		}
+		ss = setl(loutNoNl, tok("<a-node class='"+cl_name+"'>", loutNlNl), par(ss), tok("</a-node>", loutNlNl));
 		allSyntax.put(cl_name,ss);
 		return ss;
+	}
+}
+
+public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
+	
+	public Draw_NsXmlDumpSyntax() { this("full"); }
+	public Draw_NsXmlDumpSyntax(String dump) { super(dump); }
+
+	public Draw_SyntaxElem getSyntaxElem(ANode node) {
+		String cl_name = node.getClass().getName();
+		{
+			Draw_SyntaxElem elem = allSyntax.get(cl_name);
+			if (elem != null)
+				return elem;
+		}
+		Draw_SyntaxSet attrs = new Draw_SyntaxSet();
+		Draw_SyntaxSet elems = new Draw_SyntaxSet();
+		elems.lout = loutNoNl;
+		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
+			AttrXMLDumpInfo dinfo = (AttrXMLDumpInfo)attr.getClass().getAnnotation(AttrXMLDumpInfo.class);
+			if (dinfo != null && dinfo.ignore())
+				continue;
+			Draw_SyntaxElem se = null;
+			Draw_SyntaxElem ae = null;
+			if (attr.is_space) {
+				Draw_SyntaxList sl = new Draw_SyntaxList();
+				sl.name = attr.name;
+				sl.element = new Draw_SyntaxNode();
+				sl.filter = new Draw_CalcOptionIncludeInDump(this.dump,"this");
+				sl.lout = loutNoNl;
+				sl.elpar = plIndented;
+				se = setl(loutNoNl, open(attr.name), sl, close(attr.name));
+			}
+			else if (dinfo != null && dinfo.attr()) {
+				String anm = dinfo.name();
+				if (anm == null || anm.length() == 0)
+					anm = attr.name;
+				if (Enum.class.isAssignableFrom(attr.clazz))
+					ae = setl(loutSpNo, tok(anm+"='"), attr(attr), tok("'"));
+				else if (attr.clazz == String.class)
+					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlStrAttr(attr), tok("'"));
+				else if (attr.clazz == Operator.class)
+					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlStrAttr(attr), tok("'"));
+				else if (Type.class.isAssignableFrom(attr.clazz))
+					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlTypeAttr(attr), tok("'"));
+				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
+					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
+					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
+					)
+					ae = setl(loutSpNo, tok(anm+"='"), attr(attr), tok("'"));
+				else if (attr.is_attr || ANode.class.isAssignableFrom(attr.clazz)) {
+					ae = tok(loutSpNo, "error_attr='"+attr.name+" class="+cl_name+"'");
+				}
+			}
+			else {
+				if (ANode.class.isAssignableFrom(attr.clazz))
+					se = setl(loutNoNl, open(attr.name), par(attr(attr)), close(attr.name));
+				else if (Enum.class.isAssignableFrom(attr.clazz))
+					se = set(open0(attr.name), attr(attr), close0(attr.name));
+				else if (attr.clazz == String.class)
+					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
+				else if (attr.clazz == Operator.class)
+					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
+				else if (Type.class.isAssignableFrom(attr.clazz))
+					se = set(open0(attr.name), new Draw_SyntaxXmlTypeAttr(attr), close0(attr.name));
+				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
+					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
+					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
+					)
+					se = set(open0(attr.name), attr(attr), close0(attr.name));
+				else if (attr.is_attr) {
+					se = tok(loutNlNl, "<error attr='"+attr.name+"'"+" class='"+cl_name+"' />");
+				}
+			}
+			if (se != null) {
+				elems.elements = (Draw_SyntaxElem[])Arrays.append(elems.elements, opt(new Draw_CalcOptionIncludeInDump(this.dump,attr.name),se));
+			}
+			if (ae != null) {
+				attrs.elements = (Draw_SyntaxElem[])Arrays.append(attrs.elements, opt(new Draw_CalcOptionIncludeInDump(this.dump,attr.name),ae));
+			}
+		}
+		Draw_SyntaxElem sn;
+		Language lng = node.getCompilerLang();
+		String lng_name = lng == null ? "void" : lng.getName();
+		String node_name = lng_name+":"+node.getCompilerNodeName(); // <core:Var>
+		{
+			Draw_SyntaxElem start;
+			if (attrs.elements.length == 0 && elems.elements.length == 0)
+				sn = tok(loutNlNl, "<"+node_name+"/>");
+			else if (attrs.elements.length == 0)
+				sn = set(tok(loutNlNl, "<"+node_name+">"), par(elems), tok(loutNlNl, "</"+node_name+">"));
+			else if (elems.elements.length == 0)
+				sn = setl(loutNlNl, tok("<"+node_name), attrs, tok("/>"));
+			else
+				sn = setl(loutNlNl, tok("<"+node_name), attrs, tok(loutNoNl, ">"), par(elems), tok(loutNlNl, "</"+node_name+">"));
+		}
+		allSyntax.put(cl_name,sn);
+		return sn;
 	}
 }
 

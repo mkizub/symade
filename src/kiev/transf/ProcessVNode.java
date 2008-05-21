@@ -38,6 +38,7 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameCopyContext			= getPropS(PROP_BASE,"nameCopyContext","kiev\u001fvtree\u001fANode\u001fCopyContext"); 
 	public static final String nameCopyable			= getPropS(PROP_BASE,"nameCopyable","copyable");
 	public static final String nameExtData				= getPropS(PROP_BASE,"nameExtData","ext_data");
+	public static final String nameNodeName			= getPropS(PROP_BASE,"nameNodeName","name");
 	public static final String nameLangName			= getPropS(PROP_BASE,"nameLangName","lang");
 	
 	static Type tpINode;
@@ -204,6 +205,11 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		}
 		Struct s = Env.getRoot().newStruct(sname,true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
 		snode.members.add(s);
+		{
+			String nameTreePkg = nameANode.substring(0,nameANode.lastIndexOf('\u001f'));
+			foreach (UserMeta m; f.meta.metas; m.qname.startsWith(nameTreePkg))
+				s.meta.setMeta(m.ncopy());
+		}
 		if (isArr) {
 			if (isAtt) {
 				TVarBld set = new TVarBld();
@@ -501,6 +507,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	static Type tpAttrSlot;
 	static Type tpSpaceAttrSlot;
 	static Type tpCopyContext;
+	static Type tpLanguageIface;
 	
 	static Method _codeSet;
 	static Method _codeGet;
@@ -532,6 +539,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			tpAttrSlot = VNode_Base.tpAttrSlot;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
 			tpCopyContext = VNode_Base.tpCopyContext;
+			tpLanguageIface = VNode_Base.tpLanguageIface;
 		}
 		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
@@ -659,6 +667,50 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					new ReturnStat(0,
 						new SFldExpr(0,vals) ) );
 				Kiev.runProcessorsOn(elems);
+			}
+		}
+
+		// Language getCompilerLang()
+		if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "getCompilerLang")) {
+			//Kiev.reportWarning(s,"Method "+s+"."+"getCompilerLang already exists, @node member is not generated");
+		} else {
+			Method lng = new MethodImpl("getCompilerLang",tpLanguageIface,ACC_PUBLIC | ACC_SYNTHETIC);
+			impl.addMethod(lng);
+			if (!interface_only) {
+				lng.body = new Block();
+				UserMeta m = iface.getMeta(VNode_Base.mnNode);
+				MetaValueScalar langValue = (MetaValueScalar)m.get(VNode_Base.nameLangName);
+				TypeDecl td;
+				if (langValue.value instanceof TypeClassExpr)
+					td = ((TypeClassExpr)langValue.value).type.getTypeDecl();
+				else
+					td = ((TypeRef)langValue.value).getTypeDecl();
+				ENode res = null;
+				if (td.xtype ≡ StdTypes.tpVoid)
+					res = new ConstNullExpr();
+				else if (!td.isSingleton())
+					res = new ConstNullExpr();
+				else
+					res = new TypeRef(td.xtype);
+				lng.block.stats.append(new ReturnStat(0,res));
+				Kiev.runProcessorsOn(lng);
+			}
+		}
+
+		// String getCompilerNodeName()
+		if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "getCompilerNodeName")) {
+			//Kiev.reportWarning(s,"Method "+s+"."+"getCompilerNodeName already exists, @node member is not generated");
+		} else {
+			Method nname = new MethodImpl("getCompilerNodeName",StdTypes.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
+			impl.addMethod(nname);
+			if (!interface_only) {
+				nname.body = new Block();
+				UserMeta m = iface.getMeta(VNode_Base.mnNode);
+				String nm = m.getS(VNode_Base.nameNodeName);
+				if (nm == null || nm.length() == 0)
+					nm = iface.sname;
+				nname.block.stats.append(new ReturnStat(0,new ConstStringExpr(nm)));
+				Kiev.runProcessorsOn(nname);
 			}
 		}
 

@@ -35,6 +35,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
 
 	@nodeAttr public final			MetaSet			meta;
+	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public				String			sname; // source code name, may be null for anonymouse symbols
 	@nodeData public				DeclGroup		group;
 
@@ -43,6 +44,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeData(ext_data=true)
 	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
 
+	@AttrXMLDumpInfo(attr=true)
 	@UnVersioned
 	@nodeAttr(copyable=false)
 	public	String								uuid;  // UUID of the node, since it's an ISymbol

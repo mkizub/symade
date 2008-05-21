@@ -816,6 +816,8 @@ public final class RenderActions implements Runnable {
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl", false)));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full, namespace)", NsXmlDumpSyntax.class, "full")));
+			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api, namespace)", NsXmlDumpSyntax.class, "api")));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt\u001fsyntax-for-vdom", false)));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt\u001fsyntax-for-vdom", true)));

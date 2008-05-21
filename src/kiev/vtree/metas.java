@@ -59,9 +59,9 @@ public @interface attrUnCopyable {
 	boolean value() default true;
 }
 
-// attribute is external (thus, optional), and stored in ANode.ext_data[]
+// attribute is extended data (thus, optional), and stored in ANode.ext_data[]
 @Retention(RetentionPolicy.RUNTIME)
-public @interface attrExternal {
+public @interface attrExtended {
 	boolean value() default true;
 }
 
@@ -69,6 +69,16 @@ public @interface attrExternal {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface attrReadOnly {
 	boolean value() default true;
+}
+
+// attribute is not modifiable (read-only, final)
+// attr(): dump as XML attribute, instead of element; for primitive types only
+// name(): XML elemment/attribute name; use field name if empty
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AttrXMLDumpInfo {
+	boolean ignore() default false;
+	boolean attr() default false;
+	String name() default "";
 }
 
 //

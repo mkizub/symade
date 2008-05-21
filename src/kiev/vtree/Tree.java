@@ -76,7 +76,7 @@ public abstract class AttrSlot {
 	public final boolean         is_attr; // @nodeAttr or @nodeData
 	public final boolean         is_space; // if Node[]
 	public final boolean         is_child; // @nodeAttr and Node
-	public final boolean         is_external; // not a field, stored in ANode.ext_data[]
+	public final boolean         is_external; // not a field, declared externally of the node, not in values(), stored in ANode.ext_data[]
 	public final Class           clazz; // type of the fields
 	public final TypeInfo        typeinfo; // type of the fields
 	public final Object          defaultValue;
@@ -148,8 +148,8 @@ public final class ParentAttrSlot extends AttrSlot {
 }
 
 public class ExtAttrSlot extends AttrSlot {
-	public ExtAttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, TypeInfo typeinfo) {
-		super(name,p_attr,is_space,true,typeinfo);
+	public ExtAttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, boolean is_external, TypeInfo typeinfo) {
+		super(name,p_attr,is_space,is_external,typeinfo);
 	}
 
 	public final void set(ANode parent, Object value) {
@@ -182,13 +182,13 @@ public abstract class AttAttrSlot extends AttrSlot {
 
 public abstract class ExtRefAttrSlot extends ExtAttrSlot {
 	public ExtRefAttrSlot(String name, TypeInfo typeinfo) {
-		super(name, null, false, typeinfo);
+		super(name, null, false, false, typeinfo);
 	}
 }
 
 public abstract class ExtAttAttrSlot extends ExtAttrSlot {
 	public ExtAttAttrSlot(String name, TypeInfo typeinfo) {
-		super(name, ANode.nodeattr$parent, false, typeinfo);
+		super(name, ANode.nodeattr$parent, false, false, typeinfo);
 		assert (this.is_attr);
 	}
 }

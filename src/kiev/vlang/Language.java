@@ -21,28 +21,66 @@ import syntax kiev.Syntax;
  */
 
 public interface Language {
+	public String getName();
+	public String getURI();
 	public Class[] getSuperLanguages();
 	public Class[] getNodeClasses();
 	public Draw_ATextSyntax getDefaultEditorSyntax();
 	public Draw_ATextSyntax getDefaultInfoSyntax();
+	public ANode makeNode(String name);
 }
 
-@singleton
-public final class CoreLang implements Language {
-	public Class[] getSuperLanguages() { superLanguages }
-	public Class[] getNodeClasses() { nodeClasses }
+public abstract class LangBase implements Language {
+	
+	public static final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
+	private static Draw_ATextSyntax defaultEditorSyntax;
+	private static Draw_ATextSyntax defaultInfoSyntax;
+	protected static String defaultEditorSyntaxName;
+	protected static String defaultInfoSyntaxName;
+
+	public String getURI() { return "sop://languages/"+getName(); }
+
+	public LangBase() {
+		foreach (Class c; getNodeClasses()) {
+			ThisIsANode um = (ThisIsANode)c.getAnnotation(ThisIsANode.class);
+			if (um == null)
+				continue;
+			String nm = um.name();
+			if (nm == null || nm.length() == 0)
+				nm = c.getSimpleName();
+			allNodesMap.put(nm, c);
+		}
+	}
+	
+	public ANode makeNode(String name) {
+		Class c = allNodesMap.get(name);
+		if (c == null)
+			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
+		return (ANode)c.newInstance();
+	}
+
 	public Draw_ATextSyntax getDefaultEditorSyntax() {
 		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax(defaultEditorSyntaxName);
 		return defaultEditorSyntax;
 	}
 	public Draw_ATextSyntax getDefaultInfoSyntax() {
 		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
+			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax(defaultInfoSyntaxName);
 		return defaultInfoSyntax;
 	}
-	private static Draw_ATextSyntax defaultEditorSyntax;
-	private static Draw_ATextSyntax defaultInfoSyntax;
+}
+
+@singleton
+public final class CoreLang extends LangBase {
+	static {
+		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-java";
+		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-java";
+	}
+	public String getName() { "core" }
+	public Class[] getSuperLanguages() { superLanguages }
+	public Class[] getNodeClasses() { nodeClasses }
+	
 	private static Class[] superLanguages = {};
 	private static Class[] nodeClasses = {
 	ASTNode.class,
@@ -208,21 +246,15 @@ public final class CoreLang implements Language {
 }
 
 @singleton
-public final class LogicLang implements Language {
+public final class LogicLang extends LangBase {
+	static {
+		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-java";
+		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-java";
+	}
+	public String getName() { "logic" }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public Draw_ATextSyntax getDefaultEditorSyntax() {
-		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax;
-	}
-	public Draw_ATextSyntax getDefaultInfoSyntax() {
-		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax;
-	}
-	private static Draw_ATextSyntax defaultEditorSyntax;
-	private static Draw_ATextSyntax defaultInfoSyntax;
+
 	private static Class[] superLanguages = {CoreLang.class};
 	private static Class[] nodeClasses = {
 		RuleMethod.class,		// extends Method
@@ -241,21 +273,15 @@ public final class LogicLang implements Language {
 }
 
 @singleton
-public final class MacroLang implements Language {
+public final class MacroLang extends LangBase {
+	static {
+		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-java";
+		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-java";
+	}
+	public String getName() { "macro" }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	public Draw_ATextSyntax getDefaultEditorSyntax() {
-		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
-		return defaultEditorSyntax;
-	}
-	public Draw_ATextSyntax getDefaultInfoSyntax() {
-		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax("stx-fmt\u001fsyntax-for-java");
-		return defaultInfoSyntax;
-	}
-	private static Draw_ATextSyntax defaultEditorSyntax;
-	private static Draw_ATextSyntax defaultInfoSyntax;
+
 	private static Class[] superLanguages = {CoreLang.class};
 	private static Class[] nodeClasses = {
 		RewriteMatch.class,
