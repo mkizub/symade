@@ -21,7 +21,6 @@ import syntax kiev.Syntax;
 public static view RVar of Var extends RDNode {
 	public	TypeRef		vtype;
 	public	ENode		init;
-	public	int			kind;
 
 	@getter public final Type get$type();
 	

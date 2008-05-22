@@ -37,12 +37,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	
 	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
-	@nodeAttr public TypeConstr[]		targs;
+	@nodeAttr public TypeConstr[]			targs;
 	@nodeAttr public TypeRef				type_ret;
 	@nodeAttr public TypeRef				dtype_ret;
-	@nodeAttr public Var[]				params;
-	@nodeAttr public Symbol[]			aliases;
-	@nodeAttr public ENode				body;
+	@nodeAttr public Var[]					params;
+	@nodeAttr public Symbol[]				aliases;
+	@nodeAttr public ENode					body;
 	@nodeAttr public WBCCondition[]	 	conditions;
 	@nodeAttr(ext_data=true) public Var	ret_var;
 
@@ -59,6 +59,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public:ro			CallType		etype;
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "params") {
+			Var p = (Var)data;
+			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
+				p.meta.var_kind = Var.PARAM_NORMAL;
+			else if (ct == ChildChangeType.DETACHED && p.kind == Var.PARAM_NORMAL)
+				p.meta.var_kind = Var.VAR_LOCAL;
+		}
 		if (isAttached()) {
 			if      (attr.name == "params")
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
@@ -370,8 +377,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 */	}
 
 	public boolean preResolveIn() {
-		foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
-			fp.kind = Var.PARAM_NORMAL;
+		//foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
+		//	fp.meta.var_kind = Var.PARAM_NORMAL;
 		Type t = this.type; // rebuildTypes()
 		return true;
 	}
@@ -781,8 +788,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				fp.stype.getType(); // resolve
 			if (fp.meta != null)
 				fp.meta.verify();
-			if (fp.kind == Var.VAR_LOCAL)
-				fp.kind = Var.PARAM_NORMAL;
+			//if (fp.kind == Var.VAR_LOCAL)
+			//	fp.meta.var_kind = Var.PARAM_NORMAL;
 		}
 
 		Type t = this.type; // rebuildTypes()

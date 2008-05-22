@@ -323,7 +323,7 @@ public final class Env extends KievPackage {
 	public void dumpTextFile(ASTNode node, File f, Draw_ATextSyntax stx)
 		throws IOException
 	{
-		StringBuilder sb = new StringBuilder(1024);
+		StringBuffer sb = new StringBuffer(1024);
 		TextFormatter tf = new TextFormatter();
 		tf.setHintEscapes(true);
 		if (stx instanceof Draw_XmlDumpSyntax)

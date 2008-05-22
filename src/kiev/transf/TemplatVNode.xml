@@ -68,7 +68,6 @@
             <a-node class='kiev.vlang.RewritePattern'>
              <vars>
               <a-node class='kiev.vlang.RewritePattern'>
-               <kind>4</kind>
                <vtype>
                 <a-node class='kiev.vlang.types.TypeExpr'>
                  <arg>
@@ -83,7 +82,6 @@
                <sname>obj</sname>
               </a-node>
              </vars>
-             <kind>4</kind>
              <vtype>
               <a-node class='kiev.vlang.types.TypeExpr'>
                <arg>
@@ -98,7 +96,6 @@
              <sname>lval</sname>
             </a-node>
            </vars>
-           <kind>4</kind>
            <vtype>
             <a-node class='kiev.vlang.types.TypeExpr'>
              <arg>
@@ -364,7 +361,6 @@
           <a-node class='kiev.vlang.RewritePattern'>
            <vars>
             <a-node class='kiev.vlang.RewritePattern'>
-             <kind>4</kind>
              <vtype>
               <a-node class='kiev.vlang.types.TypeExpr'>
                <arg>
@@ -379,7 +375,6 @@
              <sname>obj</sname>
             </a-node>
            </vars>
-           <kind>4</kind>
            <vtype>
             <a-node class='kiev.vlang.types.TypeExpr'>
              <arg>

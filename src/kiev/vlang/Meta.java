@@ -36,30 +36,31 @@ public final class MetaSet extends ASTNode {
 	public @packed:1,mflags, 5 boolean is_mth_synchronized;	// method
 	public @packed:1,mflags, 5 boolean is_struct_super;		// struct
 	public @packed:1,mflags, 6 boolean is_fld_volatile;		// field
-	public @packed:1,mflags, 6 boolean is_mth_bridge;		// method
-	public @packed:1,mflags, 7 boolean is_fld_transient;	// field
-	public @packed:1,mflags, 7 boolean is_mth_varargs;		// method
-	public @packed:1,mflags, 8 boolean is_native;			// native method, backend operation/field/struct
+	public @packed:1,mflags, 6 boolean is_mth_bridge;			// method
+	public @packed:1,mflags, 7 boolean is_fld_transient;		// field
+	public @packed:1,mflags, 7 boolean is_mth_varargs;			// method
+	public @packed:1,mflags, 8 boolean is_native;				// native method, backend operation/field/struct
 	public @packed:1,mflags, 9 boolean is_struct_interface;
 	public @packed:1,mflags,10 boolean is_abstract;
-	public @packed:1,mflags,11 boolean is_math_strict;		// strict math
-	public @packed:1,mflags,12 boolean is_synthetic;		// any decl that was generated (not in sources)
+	public @packed:1,mflags,11 boolean is_math_strict;			// strict math
+	public @packed:1,mflags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
 	public @packed:1,mflags,13 boolean is_struct_annotation;
 	public @packed:1,mflags,14 boolean is_enum;				// struct/decl group/fields
 		
 	// Flags temporary used with java flags
-	public @packed:1,mflags,16 boolean is_forward;			// var/field/method, type is wrapper
-	public @packed:1,mflags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
-	public @packed:1,mflags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
-
-	public @packed:1,mflags,19 boolean is_macro;			// macro-declarations for fields, methods, etc
-	public @packed:1,mflags,20 boolean is_struct_singleton;
-	public @packed:1,mflags,21 boolean is_struct_mixin;
+	public @packed:1,mflags,16 boolean is_forward;				// var/field/method, type is wrapper
+	public @packed:1,mflags,17 boolean is_virtual;				// var/field, method is 'static virtual', struct is 'view'
+	public @packed:1,mflags,18 boolean is_type_unerasable;		// typedecl, method/struct as parent of typedef
+	public @packed:1,mflags,19 boolean is_macro;				// macro-declarations for fields, methods, etc
 	
-	public @packed:1,mflags,22 boolean is_tdecl_not_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
+	public @packed:1,mflags,20 boolean is_has_throws;			// methods
 
-	public @packed:1,mflags,23 boolean is_has_aliases;
-	public @packed:1,mflags,24 boolean is_has_throws;
+	public @packed:1,mflags,20 boolean is_struct_singleton;	// struct
+	public @packed:1,mflags,21 boolean is_struct_mixin;		// struct
+	public @packed:1,mflags,22 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
+
+	public @packed:10,mflags,20 int    var_kind;				// var/field kind
+	
 
 	
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {

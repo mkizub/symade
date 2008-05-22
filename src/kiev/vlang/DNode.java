@@ -34,19 +34,20 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
 	public static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
 
-	@nodeAttr public final			MetaSet			meta;
+	@nodeAttr
+	public final					MetaSet			meta;
+	
 	@AttrXMLDumpInfo(attr=true, name="name")
-	@nodeAttr public				String			sname; // source code name, may be null for anonymouse symbols
+	@nodeAttr
+	public							String			sname; // source code name, may be null for anonymouse symbols
 
-	@nodeData(ext_data=true, copyable=false)
-	public KString								bytecode_name; // used by backend for anonymouse and inner declarations
 	@nodeData(ext_data=true)
-	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
+	public kiev.be.java15.Attr[]					jattrs; // array of java class attributes of this node
 
 	@AttrXMLDumpInfo(attr=true)
 	@UnVersioned
 	@nodeAttr(copyable=false)
-	public	String								uuid;  // UUID of the node, since it's an ISymbol
+	public							String			uuid;  // UUID of the node, since it's an ISymbol
 
 	public final MetaAccess getMetaAccess() {
 		return (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
@@ -355,22 +356,23 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@nodeData public SymbolRef<TypeDecl>			package_clazz;
+	@nodeData public SymbolRef<TypeDecl>		package_clazz;
 	@nodeAttr public TypeConstr[]				args;
 	@nodeAttr public TypeRef[]					super_types;
 	@nodeAttr public ASTNode[]					members;
-	@nodeData public DNode[]						sub_decls;
-	@nodeData public int							prefix_counter;	// for name_prefix auto-generation
-		 private MetaType[]					super_meta_types;
-	@nodeData private TypeDecl[]					direct_extenders;
-		 public int							type_decl_version;
-		 public String						q_name;	// qualified name
-		 public MetaType					xmeta_type;
-		 public Type						xtype;
+	@nodeData public DNode[]					sub_decls;
+	@nodeData public int						prefix_counter;	// for name_prefix auto-generation
+	          private MetaType[]				super_meta_types;
+	@nodeData private TypeDecl[]				direct_extenders;
+	          public int						type_decl_version;
+	          public String						q_name;	// qualified name
+	          public MetaType					xmeta_type;
+	          public Type						xtype;
 
-	@nodeData(ext_data=true, copyable=false) public WrapperMetaType		wmeta_type;
+	@nodeData(ext_data=true, copyable=false) public KString			bytecode_name; // used by backend for anonymouse and inner declarations
+	@nodeData(ext_data=true, copyable=false) public WrapperMetaType	wmeta_type;
 	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
-	@nodeData(ext_data=true, copyable=false) public Integer				inner_counter;
+	@nodeData(ext_data=true, copyable=false) public Integer			inner_counter;
 
 	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
 

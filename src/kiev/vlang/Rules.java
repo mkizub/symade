@@ -36,11 +36,22 @@ public class RuleMethod extends Method {
 	@virtual typedef RView = RRuleMethod;
 
 	@nodeAttr public Var[]				localvars;
-	     public int					base = 1;
-	     public int					max_depth;
-	     public int					state_depth;
-	     public int					max_vars;
-	     public int					index;		// index counter for RuleNode.idx
+	          public int				base = 1;
+	          public int				max_depth;
+	          public int				state_depth;
+	          public int				max_vars;
+	          public int				index;		// index counter for RuleNode.idx
+
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "localvars") {
+			Var p = (Var)data;
+			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
+				p.meta.var_kind = Var.VAR_RULE;
+			else if (ct == ChildChangeType.DETACHED && p.kind == Var.VAR_RULE)
+				p.meta.var_kind = Var.VAR_LOCAL;
+		}
+		super.callbackChildChanged(ct, attr, data);
+	}
 
 	public RuleMethod() {}
 

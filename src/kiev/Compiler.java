@@ -793,7 +793,8 @@ public class Compiler {
 					args[a] = null;
 					try {
 						InputStream inp = new FileInputStream(fname);
-						System.getProperties().load(new InputStreamReader(inp, "UTF-8"));
+						//System.getProperties().load(new InputStreamReader(inp, "UTF-8"));
+						System.getProperties().load(inp);
 					} catch( IOException e ) {
 						Kiev.reportError("Error opening property file: "+e);
 					}

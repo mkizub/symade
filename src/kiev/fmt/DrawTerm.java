@@ -287,7 +287,7 @@ public class DrawIdent extends DrawNodeTerm {
 		Draw_SyntaxIdentAttr si = (Draw_SyntaxIdentAttr)this.syntax;
 		if (text.indexOf('\u001f') >= 0) {
 			String[] idents = text.split("\u001f");
-			StringBuilder sb = new StringBuilder(text.length());
+			StringBuffer sb = new StringBuffer(text.length());
 			foreach (String id; idents) {
 				if (sb.length() > 0)
 					sb.append('.');
@@ -365,7 +365,7 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 	}
 
 	final String escapeString(String str) {
-		StringBuilder sb = new StringBuilder(str);
+		StringBuffer sb = new StringBuffer(str);
 		boolean changed = false;
 		for(int i=0; i < sb.length(); i++) {
 			char ch = sb.charAt(i);

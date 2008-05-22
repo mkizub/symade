@@ -56,6 +56,14 @@ public class Classpath implements BytecodeFileConstants {
 						entries.append(new ZipClasspathEntry(f));
 				} catch (RuntimeException e) {
 					System.out.println("Error adding to CLASSPATH: "+f+"\n\t"+e);
+				} catch (ZipException e) {
+					String name = f.getName();
+					int p = name.lastIndexOf('.');
+					if (p > 0) {
+						String ext = name.substring(p);
+						if (ext.equalsIgnoreCase(".zip") || ext.equalsIgnoreCase(".jar"))
+							System.out.println("Error adding to CLASSPATH: "+f+"\n\t"+e);
+					}
 				} catch (IOException e) {
 					System.out.println("Error adding to CLASSPATH: "+f+"\n\t"+e);
 				}

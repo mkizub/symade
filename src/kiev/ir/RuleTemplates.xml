@@ -67,7 +67,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -127,7 +126,6 @@
            </body>
           </a-node>
           <a-node class='kiev.vlang.Field'>
-           <kind>2</kind>
            <vtype>
             <a-node class='kiev.vlang.types.TypeNameRef'>
              <ident>int</ident>
@@ -147,7 +145,6 @@
          <sname>frame$$</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>frame$$</ident>
@@ -156,7 +153,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -343,7 +339,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -358,7 +353,6 @@
        <sname>node</sname>
       </a-node>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeNameRef'>
          <ident>boolean</ident>
@@ -371,7 +365,6 @@
       <a-node class='kiev.vlang.BlockRewr'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -395,7 +388,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -600,7 +592,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -615,7 +606,6 @@
        <sname>node</sname>
       </a-node>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeNameRef'>
          <ident>boolean</ident>
@@ -628,7 +618,6 @@
       <a-node class='kiev.vlang.BlockRewr'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -652,7 +641,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -833,7 +821,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -852,7 +839,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -876,7 +862,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -1207,7 +1192,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -1461,7 +1445,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -1480,7 +1463,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -1504,7 +1486,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -2137,7 +2118,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -2156,7 +2136,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -2245,7 +2224,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -2260,7 +2238,6 @@
        <sname>node</sname>
       </a-node>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeNameRef'>
          <ident>boolean</ident>
@@ -2273,7 +2250,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -2297,7 +2273,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -2540,7 +2515,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -2555,7 +2529,6 @@
        <sname>node</sname>
       </a-node>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeNameRef'>
          <ident>boolean</ident>
@@ -2564,7 +2537,6 @@
        <sname>has_bt_expr</sname>
       </a-node>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeNameRef'>
          <ident>boolean</ident>
@@ -2577,7 +2549,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -2601,7 +2572,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>
@@ -2930,7 +2900,6 @@
      </type_ret>
      <params>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeExpr'>
          <arg>
@@ -2945,7 +2914,6 @@
        <sname>node</sname>
       </a-node>
       <a-node class='kiev.vlang.LVar'>
-       <kind>5</kind>
        <vtype>
         <a-node class='kiev.vlang.types.TypeNameRef'>
          <ident>boolean</ident>
@@ -2958,7 +2926,6 @@
       <a-node class='kiev.vlang.Block'>
        <stats>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>
@@ -2982,7 +2949,6 @@
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
-         <kind>0</kind>
          <vtype>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>int</ident>

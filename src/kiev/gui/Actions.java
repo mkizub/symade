@@ -37,7 +37,6 @@ import javax.swing.JScrollBar;
 
 import javax.swing.text.TextAction;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -35,35 +35,34 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final int VAR_LOCAL          = 0;
 	public static final int VAR_RULE           = 1;
 	public static final int FIELD_NORMAL       = 2;
-	public static final int FIELD_NODE_ATTR    = 3;
-	public static final int REWRITE_PATTERN    = 4;
-	public static final int PARAM_NORMAL       = 5;
-	public static final int PARAM_THIS         = 6;
-	public static final int PARAM_OUTER_THIS   = 7;
-	public static final int PARAM_RULE_ENV     = 8;
-	public static final int PARAM_TYPEINFO     = 9;
-	public static final int PARAM_ENUM_NAME    = 10;
-	public static final int PARAM_ENUM_ORD     = 11;
-	public static final int PARAM_VARARGS      = 12;
-	public static final int PARAM_LVAR_PROXY   = 13;
-	public static final int PARAM_TYPEINFO_N   = 128;
+	public static final int REWRITE_PATTERN    = 3;
+	public static final int PARAM_NORMAL       = 4;
+	public static final int PARAM_THIS         = 5;
+	public static final int PARAM_OUTER_THIS   = 6;
+	public static final int PARAM_RULE_ENV     = 7;
+	public static final int PARAM_TYPEINFO     = 8;
+	public static final int PARAM_ENUM_NAME    = 9;
+	public static final int PARAM_ENUM_ORD     = 10;
+	public static final int PARAM_VARARGS      = 11;
+	public static final int PARAM_LVAR_PROXY   = 12;
+	public static final int PARAM_TYPEINFO_N   = 16;
 
 	@nodeAttr
-	public int			kind;
-	@nodeAttr
-	public TypeRef		vtype;
+	public TypeRef					vtype;
 	@nodeAttr(ext_data=true)
-	public TypeRef		stype;
+	public TypeRef					stype;
 	@nodeAttr
-	public ENode		init;
+	public ENode					init;
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		getter;
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		setter;
 	@nodeData(ext_data=true)
-	public ConstExpr	const_value;
+	public ConstExpr				const_value;
 
 	@getter public Type get$type() { return this.vtype.getType(); }
+	
+	@getter public int get$kind() { return this.meta.var_kind; }
 
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
@@ -133,14 +132,13 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final Var[]	emptyArray = new Var[0];
 
 	public Var(int kind) {
-		this.kind = kind;
+		this.meta.var_kind = kind;
 	}
 
 	public Var(String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
 		this.sname = name;
-		this.kind = kind;
 		this.vtype = vtype;
 		if (flags != 0) {
 			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
@@ -157,14 +155,15 @@ public abstract class Var extends DNode implements GlobalDNode {
 			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
 			this.meta.mflags = flags;
 		}
+		this.meta.var_kind = kind;
 	}
 
 	public Var(String name, TypeRef vtype, int kind)
 		require vtype != null;
 	{
 		this.sname = name;
-		this.kind = kind;
 		this.vtype = vtype;
+		this.meta.var_kind = kind;
 	}
 
 	public ASTNode getDummyNode() {
