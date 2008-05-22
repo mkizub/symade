@@ -10,34 +10,47 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.vlang.InlineMethodStat.ParamRedir;
-
 import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
 @ViewOf(vcast=true, iface=true)
 public final view JInlineMethodStat of InlineMethodStat extends JENode {
-	public:ro	JMethod			method;
-	public:ro	ParamRedir[]	params_redir;
+	public:ro JMethod				dispatched;
+	public:ro JMethod				dispatcher;
+	public:ro SymbolRef[]			old_vars;
+	public:ro SymbolRef[]			new_vars;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating InlineMethodStat");
 		code.setLinePos(this);
-		if( Kiev.verify )
-			generateArgumentCheck(code);
-		foreach (ParamRedir redir; params_redir)
-			((JVar)redir.old_var).bcpos = ((JVar)redir.new_var).bcpos;
-		method.body.generate(code,reqType);
+		for (int i=0; i < old_vars.length; i++) {
+			Var vold = (Var)old_vars[i].dnode;
+			Var vnew = (Var)new_vars[i].dnode;
+			code.addVarAlias((JVar)vold, (JVar)vnew);
+		}
+		try {
+			if( Kiev.verify )
+				generateArgumentCheck(code);
+			dispatched.body.generate(code,reqType);
+		} finally {
+			for (int i=old_vars.length-1; i >= 0; i--) {
+				Var vold = (Var)old_vars[i].dnode;
+				Var vnew = (Var)new_vars[i].dnode;
+				code.removeVarAlias((JVar)vold, (JVar)vnew);
+			}
+		}
 	}
 
 	public void generateArgumentCheck(Code code) {
-		for(int i=0; i < params_redir.length; i++) {
-			ParamRedir redir = params_redir[i];
-			if( !redir.new_var.getType().equals(method.params[i].type) ) {
-				code.addInstr(Instr.op_load,(JVar)redir.new_var);
-				code.addInstr(Instr.op_checkcast,method.params[i].type);
-				code.addInstr(Instr.op_store,(JVar)redir.new_var);
+		JMethod m = dispatched;
+		for (int i=0; i < old_vars.length; i++) {
+			JVar vold = (JVar)(Var)old_vars[i].dnode;
+			JVar vnew = (JVar)(Var)new_vars[i].dnode;
+			if( !vnew.equals(m.params[i].type) ) {
+				code.addInstr(Instr.op_load,vold);
+				code.addInstr(Instr.op_checkcast,m.params[i].type);
+				code.addInstr(Instr.op_store,vnew);
 			}
 		}
 	}

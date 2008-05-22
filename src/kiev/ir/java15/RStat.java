@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.ir.java15;
 
-import kiev.vlang.InlineMethodStat.ParamRedir;
-
 import syntax kiev.Syntax;
 
 /**
@@ -21,26 +19,26 @@ import syntax kiev.Syntax;
 
 @ViewOf(vcast=true, iface=true)
 public final view RInlineMethodStat of InlineMethodStat extends RENode {
-	public Method			method;
-	public ParamRedir[]		params_redir;
+	public:ro Method					dispatched;
+	public:ro Method					dispatcher;
+	public:ro SymbolRef[]				old_vars;
+	public:ro SymbolRef[]				new_vars;
 
 	public void resolve(Type reqType) {
-		Type[] types = new Type[params_redir.length];
-		for (int i=0; i < params_redir.length; i++) {
-			types[i] = params_redir[i].new_var.getType();
-			if (params_redir[i].new_var.vtype.type_lnk != method.params[i].type) {
-				params_redir[i].new_var.vtype.type_lnk = method.params[i].type;
-			}
+		Type[] types = new Type[new_vars.length];
+		for (int i=0; i < new_vars.length; i++) {
+			types[i] = new_vars[i].dnode.getType();
+			if (((Var)new_vars[i].dnode).vtype.type_lnk != dispatched.params[i].type)
+				((Var)new_vars[i].dnode).vtype.type_lnk = dispatched.params[i].type;
 		}
 		try {
-			method.resolveDecl();
-			if( method.body.isAbrupted() ) setAbrupted(true);
-			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
+			dispatched.resolveDecl();
+			if( dispatched.body.isAbrupted() ) setAbrupted(true);
+			if( dispatched.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
-			for (int i=0; i < params_redir.length; i++) {
-				if (params_redir[i].new_var.vtype.type_lnk != types[i]) {
-					params_redir[i].new_var.vtype.type_lnk = types[i];
-				}
+			for (int i=0; i < new_vars.length; i++) {
+				if (((Var)new_vars[i].dnode).vtype.type_lnk != types[i])
+					((Var)new_vars[i].dnode).vtype.type_lnk = types[i];
 			}
 		}
 	}

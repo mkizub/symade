@@ -40,13 +40,14 @@ public final class Code implements JConstants {
 	/** Code (JVM bytecode) - for code generation only */
 	public byte[]			bcode;
 
-	/** Variables of this code (method args & locals) */
+	/** Variables of this code (method args & locals & aliases) */
 	public CodeVar[]		vars;
+	/** Current number of local vars (method args & local vars & aliases) */
+	public int				num_vars;
 
-	/** Current number of local vars (method args & local vars) */
+	/** Stack slots allocated by local vars (method args & local vars) */
 	private int				cur_locals;
-
-	/** Max locals (method args & local vars) */
+	/** Max stack slots allocated by local vars (method args & local vars) */
 	private int				max_locals;
 
 	/** Stack of code - for code generation only */
@@ -106,6 +107,7 @@ public final class Code implements JConstants {
 		cur_locals = 0;
 		max_locals = 0;
 		vars = new CodeVar[255];
+		num_vars = 0;
 
 		// Initialize stack
 		stack = new JType[256];
@@ -698,10 +700,11 @@ public final class Code implements JConstants {
 
 	/** This method pushes var (loads) from locals (args and auto vars)
 	 */
-	private void generateLoadVar(int vv) {
-		CodeVar v = vars[vv];
+	private void generateLoadVar(int vars_pos) {
+		CodeVar v = vars[vars_pos];
+		assert (v.vars_pos == vars_pos);
 		int[] opcodes;
-		JType t = v.var.getType().getJType();
+		JType t = v.jvar.getType().getJType();
 		if( t == JType.tpVoid )
 			throw new RuntimeException("Can't load variable of type "+t);
 		else if( t == JType.tpLong )	opcodes = lload_ops;
@@ -732,10 +735,11 @@ public final class Code implements JConstants {
 
 	/** This method pops var (stores) into locals (args and auto vars)
 	 */
-	private void generateStoreVar(int vv) {
-		CodeVar v = vars[vv];
+	private void generateStoreVar(int vars_pos) {
+		CodeVar v = vars[vars_pos];
+		assert (v.vars_pos == vars_pos);
 		int[] opcodes;
-		JType t = v.var.getType().getJType();
+		JType t = v.jvar.getType().getJType();
 		if( t == JType.tpVoid )
 			throw new RuntimeException("Can't store variable of type "+t);
 		else if( t == JType.tpLong )	opcodes = lstore_ops;
@@ -926,49 +930,106 @@ public final class Code implements JConstants {
 			else if( from.isIntegerInCode() )	add_opcode(opc_i2d);
 		}
 	}
+	
+	private static boolean var_eq(JVar v1, JVar v2) {
+		if (v1 == null || v2 == null)
+			return false;
+		return ((Var)v1) == ((Var)v2);
+	}
+	
+	public CodeVar lookupCodeVar(JVar jv) {
+		for (int i=num_vars-1; i >= 0; i--) {
+			CodeVar cv = vars[i];
+			if (var_eq(jv, cv.jvar)) {
+				assert (cv.vars_pos == i);
+				return cv;
+			}
+		}
+		return null;
+	}
+
+	/** Add local var alias for this code.
+		For debug version automatically generates debug info
+	 */
+	public void addVarAlias(JVar jvar, JVar jalias) {
+		trace(Kiev.debug && Kiev.debugInstrGen,"Code add var "+jalias+" as alias of "+jvar);
+		CodeVar cv = lookupCodeVar(jvar);
+		if (cv == null)
+			throw new RuntimeException("Var "+jvar+" not exists in the code");
+		CodeVar cva = new CodeVar(jalias, num_vars, cv.stack_pos);
+		cva.start_pc = pc;
+		vars[num_vars] = cva;
+		num_vars++;
+		//if (jalias.sname != "" && jalias.sname != null)
+		//	lvta.addVar(cva);
+	}
+
+	/**  Remove local var alias for this code. */
+	public void removeVarAlias(JVar jvar, JVar jalias) {
+		trace(Kiev.debug && Kiev.debugInstrGen,"Code add var "+jalias+" as alias of "+jvar);
+		CodeVar cv = lookupCodeVar(jvar);
+		if (cv == null)
+			throw new RuntimeException("Var "+jvar+" not exists in the code");
+		CodeVar cva = lookupCodeVar(jalias);
+		if (cva == null)
+			throw new RuntimeException("Var alias "+jalias+" not exists in the code");
+		if (cv.stack_pos != cva.stack_pos)
+			throw new RuntimeException("Removing wrong alias "+jalias+" of var "+jvar);
+		cva.end_pc = pc-1;
+		for (int i=cva.vars_pos; i < num_vars; i++)
+			vars[i] = vars[i+1];
+		vars[--num_vars] = null;
+	}
 
 	/** Add local var for this code.
 		For debug version automatically generates debug info
 	 */
 	public CodeVar addVar(JVar v) {
 		trace(Kiev.debug && Kiev.debugInstrGen,"Code add var "+v);
-		int pos = cur_locals;
-		v.bcpos = pos;
-		vars[pos] = new CodeVar(v);
-		vars[pos].start_pc = pc;
-		cur_locals++;
+		if (lookupCodeVar(v) != null)
+			throw new RuntimeException("Var "+v+" already added to the code");
+		CodeVar cv = new CodeVar(v, num_vars, cur_locals);
+		cv.start_pc = pc;
+		vars[num_vars] =cv;
+		num_vars++;
 		JType t = v.type.getJType();
-		if( t==JType.tpLong || t==JType.tpDouble ) cur_locals++;
-		if( cur_locals > max_locals ) max_locals = cur_locals;
-		if( v.sname != "" && v.sname != null) {
-			lvta.addVar(vars[pos]);
-		}
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code var "+v+" added to bc pos "+pos+" "+vars[pos]);
-		return vars[pos];
+		if( t==JType.tpLong || t==JType.tpDouble )
+			cur_locals += 2;
+		else
+			cur_locals += 1;
+		if( cur_locals > max_locals )
+			max_locals = cur_locals;
+		if( v.sname != "" && v.sname != null)
+			lvta.addVar(cv);
+		trace(Kiev.debug && Kiev.debugInstrGen,"Code var "+v+" added to bc pos "+pc+" "+cv);
+		return cv;
 	}
 
 	/** Remove local var for this code.
 	 */
 	public void removeVar(JVar v) {
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.bcpos+" "+vars[v.bcpos]);
+		CodeVar cv = lookupCodeVar(v);
+		if (cv == null)
+			throw new RuntimeException("Var "+v+" not exists in the code");
+		trace(Kiev.debug && Kiev.debugInstrGen,"Code remove var "+cv+" from bc pos "+pc);
+		cv.end_pc = pc-1;
 		JType t = v.type.getJType();
-		if( v.sname != "" && v.sname != null ) {
-			lvta.vars[vars[v.bcpos].index].end_pc = pc-1;
-		}
-		if( t==JType.tpLong || t==JType.tpDouble ) {
-			if( v.bcpos != cur_locals-2 )
-				throw new RuntimeException("Removing var "+v+" at pos "+v.bcpos+" but last inserted var was "
-					+(vars[cur_locals-1]!=null?vars[cur_locals-1].var:vars[cur_locals-2].var)+" at pos "
+		if (t==JType.tpLong || t==JType.tpDouble) {
+			if (cv.stack_pos != cur_locals-2)
+				throw new RuntimeException("Removing var "+v+" at pos "+cv.stack_pos+" but last inserted var was "
+					+(vars[cur_locals-1]!=null?vars[cur_locals-1].jvar:vars[cur_locals-2].jvar)+" at pos "
 					+(vars[cur_locals-1]!=null?(cur_locals-2):(cur_locals-1)));
-			vars[--cur_locals] = null;
-			vars[--cur_locals] = null;
+			cur_locals -= 2;
 		} else {
-			if( v.bcpos != cur_locals-1 )
-				throw new RuntimeException("Removing var "+v+" at pos "+v.bcpos+" but last inserted var was "
-					+(vars[cur_locals-1]!=null?vars[cur_locals-1].var:vars[cur_locals-2].var)+" at pos "
+			if( cv.stack_pos != cur_locals-1 )
+				throw new RuntimeException("Removing var "+v+" at pos "+cv.stack_pos+" but last inserted var was "
+					+(vars[cur_locals-1]!=null?vars[cur_locals-1].jvar:vars[cur_locals-2].jvar)+" at pos "
 					+(vars[cur_locals-1]!=null?(cur_locals-2):(cur_locals-1)));
-			vars[--cur_locals] = null;
+			cur_locals -= 1;
 		}
+		for (int i=cv.vars_pos; i < num_vars; i++)
+			vars[i] = vars[i+1];
+		vars[--num_vars] = null;
 	}
 
 	/** Add local vars for this code.
@@ -1120,14 +1181,16 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction for this code.
 	 */
-	public void addInstrIncr(JVar vv, int val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": op_incr "+vv+" "+val);
+	public void addInstrIncr(JVar v, int val) {
+		trace(Kiev.debug && Kiev.debugInstrGen,pc+": op_incr "+v+" "+val);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\"op_incr\" ingnored as unreachable");
 			return;
 		}
-		CodeVar v = vars[vv.bcpos];
-		add_opcode_and_short(opc_iinc, v.stack_pos<<8 | ((byte)val & 0xFF) );
+		CodeVar cv = lookupCodeVar(v);
+		if (cv == null)
+			throw new RuntimeException("Var "+v+" not exists in the code");
+		add_opcode_and_short(opc_iinc, cv.stack_pos<<8 | ((byte)val & 0xFF) );
 	}
 
 
@@ -1183,24 +1246,23 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with var for this code.
 	 */
 	public void addInstr(Instr i, JVar v) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+vars[v.bcpos].var);
+		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+v);
+		CodeVar cv = lookupCodeVar(v);
+		if (cv == null)
+			throw new RuntimeException("Var "+v+" not exists in the code");
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
         case op_load:
-        	if( vars[v.bcpos] == null )
-        		throw new RuntimeException("Generation of unplaced var "+v);
-        	generateLoadVar(v.bcpos);
+        	generateLoadVar(cv.vars_pos);
         	break;
         case op_store:
-        	if( vars[v.bcpos] == null )
-        		throw new RuntimeException("Generation of unplaced var "+v);
-        	generateStoreVar(v.bcpos);
+        	generateStoreVar(cv.vars_pos);
         	break;
         case op_ret:
-        	add_opcode_and_byte(opc_ret,vars[v.bcpos].stack_pos);
+        	add_opcode_and_byte(opc_ret,cv.stack_pos);
         	reachable = false;
         	break;
 		default:
@@ -1506,9 +1568,9 @@ public final class Code implements JConstants {
 
 	private CodeAttr generateCodeAttr(int cond) {
 		bcode = (byte[])Arrays.cloneToSize(bcode,pc);
-		for(int i=0; i < cur_locals; i++) {
-			if( vars[i] == null ) continue;
-			if( vars[i].end_pc == -1) vars[i].end_pc = pc;
+		for(int i=0; i < num_vars; i++) {
+			if (vars[i].end_pc == -1)
+				vars[i].end_pc = pc;
 		}
 
 		if( !cond_generation && !(cond == 1 || cond == 2) ) {

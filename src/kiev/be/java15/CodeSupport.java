@@ -20,19 +20,20 @@ import syntax kiev.Syntax;
 
 public class CodeVar {
 
-	public JVar		var;
-	public int			stack_pos = -1;
-	public int			start_pc = -1;
-	public int			end_pc = -1;
-	public int			index = 0;
+	public final JVar			jvar;
+	public final int			vars_pos;
+	public final int			stack_pos;
+	public       int			start_pc = -1;
+	public       int			end_pc = -1;
 
-	public CodeVar(JVar var) {
-		this.var = var;
-		stack_pos = var.bcpos;
+	public CodeVar(JVar var, int vars_pos, int stack_pos) {
+		this.jvar = var;
+		this.vars_pos = vars_pos;
+		this.stack_pos = stack_pos;
 	}
 
 	public String toString() {
-		return "("+stack_pos+","+index+","+start_pc+","+end_pc+")";
+		return "("+vars_pos+":"+jvar+" at "+stack_pos+","+start_pc+","+end_pc+")";
 	}
 
 }

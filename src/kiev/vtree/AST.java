@@ -898,6 +898,7 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public Object copyTo(Object to$node, CopyContext in$context) {
 		ASTNode node = (ASTNode)super.copyTo(to$node, in$context);
+		node.pos			= this.pos;
 		node.compileflags	= 0;
 		node.nodeflags		= this.nodeflags;
 		return node;

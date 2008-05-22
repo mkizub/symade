@@ -24,7 +24,6 @@ public view JVar of Var extends JDNode {
 	public:ro	Type			vtype;
 	public:ro	JType			jtype;
 	public:ro	JENode			init;
-	public		int				bcpos;
 	public:ro	int				kind;
 
 	public final boolean isForward();

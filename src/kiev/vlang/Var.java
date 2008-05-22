@@ -63,8 +63,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 	@nodeData(ext_data=true)
 	public ConstExpr	const_value;
 
-	public int bcpos;
-
 	@getter public Type get$type() { return this.vtype.getType(); }
 
 	// init wrapper

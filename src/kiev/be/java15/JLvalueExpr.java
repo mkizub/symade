@@ -429,8 +429,8 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
-			if( code.vars[var.bcpos] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
+			if( code.lookupCodeVar(var) == null )
+				throw new CompilerException("Var "+var+" not exists in the code");
 			code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
@@ -449,8 +449,8 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
-			if( code.vars[var.bcpos] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
+			if( code.lookupCodeVar(var) == null )
+				throw new CompilerException("Var "+var+" not exists in the code");
 			code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
@@ -485,8 +485,8 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
-			if( code.vars[var.bcpos] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
+			if( code.lookupCodeVar(var) == null )
+				throw new CompilerException("Var "+var+" not exists in the code");
 			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
@@ -503,8 +503,8 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
-			if( code.vars[var.bcpos] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
+			if( code.lookupCodeVar(var) == null )
+				throw new CompilerException("Var "+var+" not exists in the code");
 			code.addInstr(op_dup);
 			code.addInstr(op_store,var);
 		} else {

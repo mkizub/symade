@@ -160,13 +160,12 @@ public class LocalVarTableAttr extends Attr {
 
 	public void addVar(CodeVar var) {
 		vars = (CodeVar[])Arrays.append(vars,var);
-		var.index = vars.length-1;
 	}
 
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
-			JVar v = vars[i].var;
+			JVar v = vars[i].jvar;
 			constPool.addAsciiCP(v.sname);
 			constPool.addAsciiCP(v.jtype.java_signature);
 		}
@@ -178,7 +177,7 @@ public class LocalVarTableAttr extends Attr {
 		int len = vars.length;
 		lvta.vars = new kiev.bytecode.LocalVariableTableAttribute.VarInfo[len];
 		for(int i=0; i < len; i++) {
-			JVar v = vars[i].var;
+			JVar v = vars[i].jvar;
 			KString sign = v.jtype.java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();

@@ -52,37 +52,42 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@DataFlowDefinition(in="root()", out="this:out()") private static class DFI {}
 
-	public static final class ParamRedir {
-		public Var		old_var;
-		public Var		new_var;
-		public ParamRedir(Var o, Var n) { old_var=o; new_var=n; }
-	};
-
 	@virtual typedef This  = InlineMethodStat;
 	@virtual typedef JView = JInlineMethodStat;
 	@virtual typedef RView = RInlineMethodStat;
 
-	@nodeAttr public Method			method;
-	@nodeData public ParamRedir[]	params_redir;
+	@nodeAttr public Method					dispatched;
+	@nodeData public Method					dispatcher;
+	@nodeAttr public SymbolRef[]			old_vars;
+	@nodeAttr public SymbolRef[]			new_vars;
 
 	public InlineMethodStat() {}
 
-	public InlineMethodStat(int pos, Method m, Method in) {
+	public InlineMethodStat(int pos, Method dispatched, Method dispatcher) {
 		this.pos = pos;
-		this.method = m;
-		assert(m.params.length == in.params.length);
-		params_redir = new ParamRedir[m.params.length];
-		for (int i=0; i < m.params.length; i++) {
-			params_redir[i] = new ParamRedir(m.params[i],in.params[i]);
+		this.dispatched = dispatched;
+		this.dispatcher = dispatcher;
+		assert(dispatched.params.length == dispatcher.params.length);
+		for (int i=0; i < dispatched.params.length; i++) {
+			old_vars += new SymbolRef<Var>(dispatcher.params[i]);
+			new_vars += new SymbolRef<Var>(dispatched.params[i]);
 		}
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
-		ParamRedir@	redir;
+		SymbolRef@	sr;
 	{
-		redir @= params_redir,
-		path.checkNodeName(redir.old_var),
-		node ?= redir.new_var
+		sr @= old_vars,
+		path.checkNodeName((Var)sr.dnode),
+		node ?= getNewVar((Var)sr.dnode)
+	}
+	
+	private Var getNewVar(Var old) {
+		for (int i=0; i < old_vars.length; i++) {
+			if (old_vars[i].dnode == old)
+				return (Var)old_vars[i].dnode;
+		}
+		throw new CompilerException(this, "Cannot find a matched new var for old var "+old);
 	}
 
 	static class InlineMethodStatDFFuncIn extends DFFunc {
@@ -95,9 +100,9 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 			if (res != null) return res;
 			InlineMethodStat node = (InlineMethodStat)dfi.node_impl;
 			DFState in = DFState.makeNewState();
-			for(int i=0; i < node.params_redir.length; i++) {
-				in = in.declNode(node.params_redir[i].new_var);
-				in = in.addNodeType(new Var[]{node.params_redir[i].new_var},node.method.params[i].type);
+			for(int i=0; i < node.new_vars.length; i++) {
+				in = in.declNode((Var)node.new_vars[i].dnode);
+				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].type);
 			}
 			res = in;
 			dfi.setResult(res_idx, res);
