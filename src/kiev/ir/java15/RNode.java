@@ -104,6 +104,7 @@ public static view RDNode of DNode extends RNode {
 	public final void setForward(boolean on);
 
 	public final boolean isMacro();
+	public final boolean isInterfaceOnly();
 	
 	public boolean preGenerate() { return true; }
 	public void resolveDecl() { /* empty */ }

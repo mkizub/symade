@@ -18,6 +18,7 @@ import syntax kiev.Syntax;
  */
 abstract class VNode_Base extends TransfProcessor {
 	private static final String PROP_BASE				= "symade.transf.vnode";
+	public static final boolean GEN_VERSIONED			= getPropS(PROP_BASE,"genUnversioned","false") != "true";
 	public static final String mnNode					= getPropS(PROP_BASE,"mnNode","kiev\u001fvtree\u001fThisIsANode"); 
 	public static final String mnAtt					= getPropS(PROP_BASE,"mnAtt","kiev\u001fvtree\u001fnodeAttr"); 
 	public static final String mnRef					= getPropS(PROP_BASE,"mnRef","kiev\u001fvtree\u001fnodeData"); 
@@ -470,6 +471,8 @@ public final class VNodeFE_Verify extends VNode_Base {
 			Kiev.reportError(m,"Language '"+td+"' is not a class");
 			return;
 		}
+		if (td.isInterfaceOnly())
+			return;
 		Field nodeClasses = td.resolveField("nodeClasses", false);
 		if (nodeClasses == null) {
 			Kiev.reportWarning(m,"Language '"+td+"' has no field 'nodeClasses'");
@@ -623,12 +626,6 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (vals.init != null || VNode_Base.nameNode.equals(iface.qname()) || VNode_Base.nameANode.equals(iface.qname()))
 			return; // already generated
 
-		boolean interface_only = s.ctx_file_unit.scanned_for_interface_only;
-
-		if (iface.xtype.isInstanceOf(tpNode)) {
-			makeNodeValuesClass(iface, impl);
-		}
-
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
 		collectAllAttrFields(aflds, iface);
@@ -661,7 +658,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		} else {
 			Method elems = new MethodImpl(nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
 			iface.addMethod(elems);
-			if (!interface_only) {
+			if (!s.isInterfaceOnly()) {
 				elems.body = new Block(0);
 				elems.block.stats.add(
 					new ReturnStat(0,
@@ -676,7 +673,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		} else {
 			Method lng = new MethodImpl("getCompilerLang",tpLanguageIface,ACC_PUBLIC | ACC_SYNTHETIC);
 			impl.addMethod(lng);
-			if (!interface_only) {
+			if (!s.isInterfaceOnly()) {
 				lng.body = new Block();
 				UserMeta m = iface.getMeta(VNode_Base.mnNode);
 				MetaValueScalar langValue = (MetaValueScalar)m.get(VNode_Base.nameLangName);
@@ -703,7 +700,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		} else {
 			Method nname = new MethodImpl("getCompilerNodeName",StdTypes.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
 			impl.addMethod(nname);
-			if (!interface_only) {
+			if (!s.isInterfaceOnly()) {
 				nname.body = new Block();
 				UserMeta m = iface.getMeta(VNode_Base.mnNode);
 				String nm = m.getS(VNode_Base.nameNodeName);
@@ -726,7 +723,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			copyV.params.append(new LVar(0,"to$node", Type.tpObject, Var.PARAM_NORMAL, 0));
 			copyV.params.append(cc=new LVar(0,"in$context", tpCopyContext, Var.PARAM_NORMAL, 0));
 			impl.addMethod(copyV);
-			if (!interface_only) {
+			if (!s.isInterfaceOnly()) {
 				copyV.body = new Block();
 				Var v = new LVar(0,"node",impl.xtype,Var.VAR_LOCAL,0);
 				if (VNode_Base.isNodeKind(impl.super_types[0].getStruct())) {
@@ -812,66 +809,71 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			}
 		}
 
-		Type tpNodeVVV = ((TypeDecl)Env.getRoot().loadTypeDecl(VNode_Base.nameNode+"\u001fVVV", true)).xtype;
-		// nodeRestore(ASTNode.VVV from), a reverted nodeBackup()
-		if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeRestore")) {
-			//Kiev.reportWarning(s,"Method "+s+"."+"nodeRestore already exists, @node member is not generated");
-		} else {
-			Method mkRstr = new MethodImpl("nodeRestore",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
-			mkRstr.params.append(new LVar(0,"from", tpNodeVVV, Var.PARAM_NORMAL, 0));
-			impl.addMethod(mkRstr);
-			if (!interface_only) {
-				mkRstr.body = new Block();
-				Struct sVVV = null;
-				foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
-					sVVV = vvv;
-					break;
-				}
-				Var v = new LVar(0,"from",sVVV.xtype,Var.VAR_LOCAL,0);
-				v.init = new CastExpr(0,sVVV.xtype,new LVarExpr(0,mkRstr.params[0]));
-				mkRstr.block.stats += v;
-				foreach (Field f; impl.members) {
-					if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
-						continue;
-					Field vf = null;
-					foreach (Field vvv; sVVV.members; vvv.sname == f.sname) {
-						vf = vvv;
+		if (VNode_Base.GEN_VERSIONED) {
+			if (iface.xtype.isInstanceOf(tpNode))
+				makeNodeValuesClass(iface, impl);
+	
+			Type tpNodeVVV = ((TypeDecl)Env.getRoot().loadTypeDecl(VNode_Base.nameNode+"\u001fVVV", true)).xtype;
+			// nodeRestore(ASTNode.VVV from), a reverted nodeBackup()
+			if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeRestore")) {
+				//Kiev.reportWarning(s,"Method "+s+"."+"nodeRestore already exists, @node member is not generated");
+			} else {
+				Method mkRstr = new MethodImpl("nodeRestore",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+				mkRstr.params.append(new LVar(0,"from", tpNodeVVV, Var.PARAM_NORMAL, 0));
+				impl.addMethod(mkRstr);
+				if (!s.isInterfaceOnly()) {
+					mkRstr.body = new Block();
+					Struct sVVV = null;
+					foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
+						sVVV = vvv;
 						break;
 					}
-					mkRstr.block.stats.append( 
-						new ExprStat(0,
-							new AssignExpr(0,Operator.Assign,
-								new IFldExpr(0,new ThisExpr(),f,true),
-								new IFldExpr(0,new LVarExpr(0,v),vf,true)
+					Var v = new LVar(0,"from",sVVV.xtype,Var.VAR_LOCAL,0);
+					v.init = new CastExpr(0,sVVV.xtype,new LVarExpr(0,mkRstr.params[0]));
+					mkRstr.block.stats += v;
+					foreach (Field f; impl.members) {
+						if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
+							continue;
+						Field vf = null;
+						foreach (Field vvv; sVVV.members; vvv.sname == f.sname) {
+							vf = vvv;
+							break;
+						}
+						mkRstr.block.stats.append( 
+							new ExprStat(0,
+								new AssignExpr(0,Operator.Assign,
+									new IFldExpr(0,new ThisExpr(),f,true),
+									new IFldExpr(0,new LVarExpr(0,v),vf,true)
+								)
 							)
-						)
-					);
+						);
+					}
+					CallExpr cae = new CallExpr(0,new SuperExpr(),
+						new SymbolRef<Method>("nodeRestore"),null,new ENode[]{new LVarExpr(0,v)});
+					mkRstr.block.stats += cae;
+					Kiev.runProcessorsOn(mkRstr);
 				}
-				CallExpr cae = new CallExpr(0,new SuperExpr(),
-					new SymbolRef<Method>("nodeRestore"),null,new ENode[]{new LVarExpr(0,v)});
-				mkRstr.block.stats += cae;
-				Kiev.runProcessorsOn(mkRstr);
 			}
-		}
-		// nodeBackup()
-		if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeBackup")) {
-			//Kiev.reportWarning(s,"Method "+s+"."+"nodeBackup already exists, @node member is not generated");
-		} else {
-			Method mkBkup = new MethodImpl("nodeBackup",tpNodeVVV,ACC_PUBLIC | ACC_SYNTHETIC);
-			impl.addMethod(mkBkup);
-			if (!interface_only) {
-				mkBkup.body = new Block();
-				Type tpVVV = null;
-				foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
-					tpVVV = vvv.xtype;
-					break;
+			// nodeBackup()
+			if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeBackup")) {
+				//Kiev.reportWarning(s,"Method "+s+"."+"nodeBackup already exists, @node member is not generated");
+			} else {
+				Method mkBkup = new MethodImpl("nodeBackup",tpNodeVVV,ACC_PUBLIC | ACC_SYNTHETIC);
+				impl.addMethod(mkBkup);
+				if (!s.isInterfaceOnly()) {
+					mkBkup.body = new Block();
+					Type tpVVV = null;
+					foreach (Struct vvv; iface.members; vvv.sname == "VVV") {
+						tpVVV = vvv.xtype;
+						break;
+					}
+					mkBkup.block.stats.append(new ReturnStat(0,new NewExpr(0,tpVVV,new ENode[]{new CastExpr(impl.xtype,new ThisExpr())})));
+					Kiev.runProcessorsOn(mkBkup);
 				}
-				mkBkup.block.stats.append(new ReturnStat(0,new NewExpr(0,tpVVV,new ENode[]{new CastExpr(impl.xtype,new ThisExpr())})));
-				Kiev.runProcessorsOn(mkBkup);
 			}
 		}
 
-		if (interface_only)
+		if (s.isInterfaceOnly())
 			return;
 
 		// fix methods
@@ -1020,7 +1022,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (get_var.isSynthetic())
 			get_var.setFinal(true);
 		
-		if (s.xtype.isInstanceOf(tpNode) && f.getMeta(VNode_Base.mnUnVersioned) == null) {
+		if (s.xtype.isInstanceOf(tpNode) && f.getMeta(VNode_Base.mnUnVersioned) == null && VNode_Base.GEN_VERSIONED) {
 			get_var.body.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) {
 					if (n instanceof IFldExpr && n.obj instanceof ThisExpr)
@@ -1082,7 +1084,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (set_var.isSynthetic())
 			set_var.setFinal(true);
 		Block body = set_var.body;
-		if (s.xtype.isInstanceOf(tpNode) && f.getMeta(VNode_Base.mnUnVersioned) == null) {
+		if (s.xtype.isInstanceOf(tpNode) && f.getMeta(VNode_Base.mnUnVersioned) == null && VNode_Base.GEN_VERSIONED) {
 			body.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) {
 					if (n instanceof AssignExpr)

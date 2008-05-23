@@ -210,6 +210,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.xtype));
 		else
 			typeinfo_clazz.super_types.insert(0, new TypeRef(Type.tpTypeInfo));
+		if (this.isInterfaceOnly())
+			typeinfo_clazz.meta.is_interface_only = true;
 		getStruct().addSubStruct(typeinfo_clazz);
 		typeinfo_clazz.pos = pos;
 
@@ -556,6 +558,13 @@ public final view RStruct of Struct extends RTypeDecl {
 		autoFixSuperTypes(this);
 		// generate default constrctor if needed
 		autoGenerateConstructor();
+		
+		if (this.isInterfaceOnly()) {
+			foreach (Struct s; sub_decls)
+				s.preGenerate();
+			return false;
+		}
+		
 		// build vtable
 		List<Struct> processed = List.Nil;
 		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
@@ -815,6 +824,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			new JavaClass(), true, null
 		);
 		((Struct)self).members.add(defaults);
+		if (self.isInterfaceOnly())
+			defaults.meta.is_interface_only = true;
 		iface_impl = defaults;
 		// add the super-type
 		defaults.super_types += new TypeRef(self.xtype);

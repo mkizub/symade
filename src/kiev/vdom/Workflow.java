@@ -25,9 +25,9 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode
-public final class Workflow extends ADomElement {
+public final class WorkflowDocument extends ADomElement {
 	
-	@XPathExpr(value="wfstate:*[local-name()=$name]", nsmap={@XPathNSMap(prefix="wfstate",uri="map:kiev.vdom.WorkflowState")})
+	@XPathExpr(value="wf:State[@name=$name]", nsmap={@XPathNSMap(prefix="wf",uri="map:kiev.vdom.Workflow")})
 	public WorkflowState getState(String name);
 }
 
@@ -35,14 +35,14 @@ public final class Workflow extends ADomElement {
 @ThisIsANode
 public final class WorkflowState extends ADomElement {
 	
-	@XPathExpr(value="wftrans:*",nsmap={@XPathNSMap(prefix="wftrans",uri="map:kiev.vdom.WorkflowTransition")})
+	@XPathExpr(value="wf:Transition",nsmap={@XPathNSMap(prefix="wf",uri="map:kiev.vdom.Workflow")})
 	public WorkflowTransition[] getTransitions();
 }
 
 @ThisIsANode
 public final class WorkflowTransition extends ADomElement {
 	
-	@XPathExpr(value="wffunc:*[local-name()=$name]",nsmap={@XPathNSMap(prefix="wffunc",uri="map:kiev.vdom.WorkflowFunction")})
+	@XPathExpr(value="wf:Function[@name=$name]",nsmap={@XPathNSMap(prefix="wf",uri="map:kiev.vdom.Workflow")})
 	public WorkflowFunction getFunction(String name);
 	
 	@XPathExpr("target/text()")
@@ -63,7 +63,7 @@ public final class WorkflowFunction extends ADomElement {
 public final class WorkflowInterpreter implements Runnable {
 	
 	private final org.w3c.dom.Document doc;
-	private final Workflow wf;
+	private final WorkflowDocument wf;
 	
 	static class ReturnExit extends Error {
 		final int exit_code;
@@ -75,7 +75,7 @@ public final class WorkflowInterpreter implements Runnable {
 	
 	public WorkflowInterpreter(org.w3c.dom.Document doc) {
 		this.doc = doc;
-		this.wf = (Workflow)this.doc.getDocumentElement();
+		this.wf = (WorkflowDocument)this.doc.getDocumentElement();
 	}
 	
 	public void run() {

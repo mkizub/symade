@@ -61,6 +61,7 @@ public final class MetaSet extends ASTNode {
 
 	public @packed:10,mflags,20 int    var_kind;				// var/field kind
 	
+	public @packed:1,mflags,31 boolean is_interface_only;		// only node's interface was scanned/loded; no implementation
 
 	
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {

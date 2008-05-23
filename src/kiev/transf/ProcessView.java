@@ -195,12 +195,12 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		TypeRef view_of = kview.view_of;
 		Struct super_view_impl = null;
 
-		boolean interface_only = clazz.ctx_file_unit.scanned_for_interface_only;
-		
 		// generate implementation
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
 		if (view_meta != null && view_meta.getZ("iface")) {
 			impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
+			if (clazz.isInterfaceOnly())
+				impl.meta.is_interface_only = true;
 			impl.pos = clazz.pos;
 			if (clazz.isAbstract()) {
 				clazz.setAbstract(false);
@@ -269,7 +269,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			fview = impl.addField(new Field(nameImpl,view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		foreach (Constructor ctor; impl.members; !ctor.isStatic()) {
-			if (interface_only) {
+			if (clazz.isInterfaceOnly()) {
 				ctor.body = new NopExpr();
 				continue;
 			}
@@ -300,7 +300,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 
 		// generate constructor
-		if (interface_only) {
+		if (clazz.isInterfaceOnly()) {
 			Kiev.runProcessorsOn(impl);
 			return;
 		}

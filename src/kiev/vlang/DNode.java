@@ -111,6 +111,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isSyntax()			{ return this instanceof KievSyntax; }
 	public final boolean isStructInner()		{ return !isPackage() && !isSyntax() && !(this.parent() instanceof NameSpace); }
 
+	public final boolean isInterfaceOnly()		{ return this.meta.is_interface_only; }
+
 	public void setPublic() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)

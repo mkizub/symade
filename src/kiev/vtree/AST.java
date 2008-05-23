@@ -764,10 +764,21 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
+//#ifndef UNVERSIONED
 	@UnVersioned
 	public VVV						v_editor;
 	@UnVersioned
 	public int						transaction_id;
+//#else UNVERSIONED
+//#	@UnVersioned @abstract
+//#	public:ro VVV						v_editor;
+//#	@getter public VVV get$v_editor() { return null;}
+//#	
+//#	@UnVersioned @abstract
+//#	public:ro int						transaction_id;
+//#	@getter public int get$transaction_id() { return 0;}
+//#endif UNVERSIONED
+
 	@UnVersioned
 	public int						pos;
 	@UnVersioned
@@ -890,10 +901,12 @@ public abstract class ASTNode extends ANode implements Constants {
 	}
 
 	public void nodeRestore(ASTNode.VVV from) {
+//#ifndef UNVERSIONED
 		this.transaction_id = from.transaction_id;
 		this.compileflags = from.compileflags & ~3;
 		this.nodeflags = from.nodeflags;
 		super.nodeRestore(from);
+//#endif UNVERSIONED
 	}
 
 	public Object copyTo(Object to$node, CopyContext in$context) {
@@ -983,11 +996,13 @@ public abstract class ASTNode extends ANode implements Constants {
 	public Type getType() { return Type.tpVoid; }
 
 	public ASTNode() {
+//#ifndef UNVERSIONED
 		Transaction tr = Transaction.get();
 		if (tr != null) {
 			this.transaction_id = tr.version;
 			tr.add(this);
 		}
+//#endif UNVERSIONED
 	}
 
 	public ASTNode getDummyNode() { SNode.dummySNode }
@@ -1015,11 +1030,14 @@ public abstract class ASTNode extends ANode implements Constants {
 	}
 
 	public static <A extends ASTNode> A openCmp(A self) {
+//#ifndef UNVERSIONED
 		if (!self.locked)
 			return self;
 		ASTNode.openCmp2(self);
+//#endif UNVERSIONED
 		return self;
 	}
+//#ifndef UNVERSIONED
 	private static synchronized void openCmp2(ASTNode self) {
 		ASTNode.VVV v = self.nodeBackup();
 		v.transaction_id = self.transaction_id;
@@ -1038,13 +1056,17 @@ public abstract class ASTNode extends ANode implements Constants {
 		self.transaction_id = tr.version;
 		tr.add(self);
 	}
+//#endif UNVERSIONED
 	public static ASTNode.VVV openEdt(ASTNode self) {
+//#ifndef UNVERSIONED
 		ASTNode.VVV ve = self.v_editor;
 		if (ve != null && (ve.vvv_flags & VVV.IS_LOCKED) == 0)
 			return ve;
 		openEdt2(self);
+//#endif UNVERSIONED
 		return self.v_editor;
 	}
+//#ifndef UNVERSIONED
 	private static synchronized void openEdt2(ASTNode self) {
 		ASTNode.VVV ve = self.v_editor;
 		if (ve != null) {
@@ -1071,8 +1093,10 @@ public abstract class ASTNode extends ANode implements Constants {
 			tr.add(self);
 		}
 	}
+//#end UNVERSIONED
 
 	public final void rollback(Transaction tr, boolean save_next) {
+//#ifndef UNVERSIONED
 		if (this.v_editor == null)
 			return;
 		if (Thread.currentThread() == CompilerThread) {
@@ -1123,15 +1147,19 @@ public abstract class ASTNode extends ANode implements Constants {
 					this.v_editor = v.vvv_next;
 			}
 		}
+//#endif UNVERSIONED
 	}
 
 	public void mergeTree() {
+//#ifndef UNVERSIONED
 		// notify nodes about new root
 		this.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) n.merge(); return true; }
 		});
+//#endif UNVERSIONED
 	}
 
+//#ifndef UNVERSIONED
 	final void merge() {
 		VVV v = this.v_editor;
 		if (v == null)
@@ -1161,6 +1189,7 @@ public abstract class ASTNode extends ANode implements Constants {
 			v = prev;
 		}
 	}
+//#endif UNVERSIONED
 }
 
 

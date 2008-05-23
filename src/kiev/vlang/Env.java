@@ -21,9 +21,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import kiev.be.java15.Bytecoder;
-import kiev.be.java15.Attr;
-import kiev.be.java15.JStruct;
 import kiev.be.java15.JEnv;
 
 import syntax kiev.Syntax;
@@ -497,6 +494,7 @@ public final class Env extends KievPackage {
 					} else {
 						fu.members += td;
 					}
+					td.meta.is_interface_only = true;
 					nodes.push(td);
 				}
 				else if (cl_name.equals("kiev.vlang.FileUnit")) {
@@ -509,6 +507,8 @@ public final class Env extends KievPackage {
 				}
 				else {
 					root = (ASTNode)Class.forName(cl_name).newInstance();
+					if (root instanceof DNode)
+						((DNode)root).meta.is_interface_only = true;
 					nodes.push(root);
 				}
 				expect_attr = true;
@@ -541,6 +541,8 @@ public final class Env extends KievPackage {
 						n = null;
 					}
 				}
+				if (n instanceof DNode)
+					n.meta.is_interface_only = true;
 				//System.out.println("push node "+nodes.length);
 				nodes.push(n);
 				expect_attr = true;

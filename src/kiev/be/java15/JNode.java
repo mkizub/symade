@@ -87,6 +87,7 @@ public view JDNode of DNode extends JNode {
 	public final boolean isAbstract();
 
 	public final boolean isMacro();
+	public final boolean isInterfaceOnly();
 
 	public short getJavaFlags();
 

@@ -59,6 +59,7 @@ public class Bytecoder implements JConstants {
 			cl = variant;
 		}
 		cl.initStruct(clname.src_name.toString(), outer, bcclazz.flags);
+		cl.meta.is_interface_only = true;
 		cl.bytecode_name = clname.bytecode_name;
 
 		if (!cl.isAttached()) {
@@ -140,6 +141,7 @@ public class Bytecoder implements JConstants {
 		} else {
 			f = new Field(f_name.toString(),ftype,f_flags);
 		}
+		f.meta.is_interface_only = true;
 		for(int i=0; i < bcf.attrs.length; i++) {
 			Attr at = readAttr(bcf.attrs[i],bcclazz,f);
 			if( at == null ) continue;
@@ -177,6 +179,7 @@ public class Bytecoder implements JConstants {
 				m = new Constructor(m_flags);
 			else
 				m = new MethodImpl(m_name.toString(),mtype.ret(),m_flags);
+			m.meta.is_interface_only = true;
 			cl.members.append(m);
 			for (int i=0; i < mtype.arity; i++) {
 				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
