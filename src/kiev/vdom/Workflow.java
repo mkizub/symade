@@ -35,8 +35,16 @@ public final class WorkflowDocument extends ADomElement {
 @ThisIsANode
 public final class WorkflowState extends ADomElement {
 	
+	@AttrXMLDumpInfo(attr=true)
+	@nodeAttr
+	public String		name;
+	
 	@XPathExpr(value="wf:Transition",nsmap={@XPathNSMap(prefix="wf",uri="map:kiev.vdom.Workflow")})
 	public WorkflowTransition[] getTransitions();
+	
+	public String toString() {
+		return this.getNodeName()+":"+name;
+	}
 }
 
 @ThisIsANode
@@ -52,8 +60,11 @@ public final class WorkflowTransition extends ADomElement {
 @ThisIsANode
 public final class WorkflowFunction extends ADomElement {
 	
-	@XPathExpr("func/text()")
-	public String getFunc();
+	@AttrXMLDumpInfo(attr=true, name="call")
+	@nodeAttr
+	public String		func;
+	
+	public String getFunc() { func }
 	
 	@XPathExpr("arg/text()")
 	public String[] getArgs();
@@ -91,7 +102,7 @@ public final class WorkflowInterpreter implements Runnable {
 		}
 	}
 	private void exec(WorkflowState st) {
-		System.out.println("Executing state "+st.getNodeName());
+		System.out.println("Executing state "+st);
 		WorkflowTransition[] transitions = st.getTransitions();
 		foreach (WorkflowTransition t; transitions) {
 			System.out.println("Executing transition "+t.getNodeName());

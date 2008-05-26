@@ -1019,8 +1019,7 @@ public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
 		Draw_SyntaxSet elems = new Draw_SyntaxSet();
 		elems.lout = loutNoNl;
 		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
-			AttrXMLDumpInfo dinfo = (AttrXMLDumpInfo)attr.getClass().getAnnotation(AttrXMLDumpInfo.class);
-			if (dinfo != null && dinfo.ignore())
+			if (attr.isXmlIgnore())
 				continue;
 			Draw_SyntaxElem se = null;
 			Draw_SyntaxElem ae = null;
@@ -1033,8 +1032,8 @@ public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
 				sl.elpar = plIndented;
 				se = setl(loutNoNl, open(attr.name), sl, close(attr.name));
 			}
-			else if (dinfo != null && dinfo.attr()) {
-				String anm = dinfo.name();
+			else if (attr.isXmlAttr()) {
+				String anm = attr.getXmlFullName();
 				if (anm == null || anm.length() == 0)
 					anm = attr.name;
 				if (Enum.class.isAssignableFrom(attr.clazz))

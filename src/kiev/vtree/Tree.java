@@ -81,6 +81,10 @@ public abstract class AttrSlot {
 	public final TypeInfo        typeinfo; // type of the fields
 	public final Object          defaultValue;
 	
+	private final boolean        is_xml_ignore;
+	private final boolean        is_xml_attr;
+	private final String         xml_attr_name;
+	
 	public AttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, boolean is_external, TypeInfo typeinfo) {
 		assert (name.intern() == name);
 		this.name = name;
@@ -107,6 +111,20 @@ public abstract class AttrSlot {
 		else if (clazz == Double.class) defaultValue = new Double(0.);
 		else if (clazz == String.class) defaultValue = "";
 		else defaultValue = null;
+		
+		AttrXMLDumpInfo dinfo = (AttrXMLDumpInfo)this.getClass().getAnnotation(AttrXMLDumpInfo.class);
+		if (dinfo != null) {
+			is_xml_ignore = dinfo.ignore();
+			is_xml_attr = dinfo.attr();
+			xml_attr_name = dinfo.name().intern();
+			if (xml_attr_name.length() == 0)
+				xml_attr_name = this.name;
+		} else {
+			is_xml_ignore = false;
+			is_xml_attr = false;
+			xml_attr_name = this.name;
+		}
+
 	}
 	
 	public final boolean isSemantic() {
@@ -117,6 +135,12 @@ public abstract class AttrSlot {
 	public abstract Object get(ANode parent);
 	public void clear(ANode parent) { this.set(parent, defaultValue); }
 	public boolean isWrittable() { return true; }
+	
+	public boolean isXmlIgnore() { return is_xml_ignore; }
+	public boolean isXmlAttr() { return is_xml_attr; }
+	public String getXmlLocalName() { return xml_attr_name; }
+	public String getXmlFullName() { return xml_attr_name; }
+	public String getXmlNamespaceURI() { return null; }
 }
 
 public final class ParentAttrSlot extends AttrSlot {

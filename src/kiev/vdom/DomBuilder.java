@@ -71,8 +71,8 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 	
 	private ADomElement		cur_element;
 	private DomText			cur_text;
-	private DfltNsDomAttr	cur_dflt_namespace;
-	private NsDomAttr[]		cur_namespaces;
+	private GenDomAttr		cur_dflt_namespace;
+	private GenDomAttr[]	cur_namespaces;
 	
 	DomBuilderHandler() {}
 	
@@ -90,17 +90,25 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 			cur_dflt_namespace = null;
 		}
 		if (cur_namespaces != null) {
-			foreach (NsDomAttr ns; cur_namespaces)
+			foreach (GenDomAttr ns; cur_namespaces)
 				elem.setAttributeNode(ns);
 			cur_namespaces = null;
 		}
 		int nattrs = attributes.getLength();
+	next_attr:
 		for (int i=0; i < nattrs; i++) {
 			//System.out.println("attribute("+attributes.getURI(i)+","+attributes.getLocalName(i)+","+attributes.getQName(i)+")='"+attributes.getValue(i)+"'");
 			String aUri = attributes.getURI(i);
-			ADomAttr a;
-			a = (ADomAttr)document.createAttributeNS(aUri,attributes.getQName(i));
-			a.setValue(attributes.getValue(i));
+			String aName = attributes.getQName(i);
+			String aValue = attributes.getValue(i);
+			if (aUri == null || aUri.length() == 0) {
+				foreach (AttrSlot slot; elem.values(); slot.getXmlLocalName().equals(aName)) {
+					slot.set(elem, aValue);
+					continue next_attr;
+				}
+			}
+			ADomAttr a = (ADomAttr)document.createAttributeNS(aUri,aName);
+			a.setValue(aValue);
 			elem.setAttributeNodeNS(a);
 			//System.out.println("val='"+a.getValue()+"'");
 		}
@@ -123,13 +131,15 @@ final class DomBuilderHandler extends org.xml.sax.helpers.DefaultHandler {
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		//System.out.println("xmlns:"+prefix+"="+uri);
 		if (prefix.length() == 0) {
-			cur_dflt_namespace = new DfltNsDomAttr(uri);
+			cur_dflt_namespace = new GenDomAttr(null, "xmlns", null);
+			cur_dflt_namespace.setNodeValue(uri);
 		} else {
-			NsDomAttr attr = new NsDomAttr(prefix, uri);
+			GenDomAttr attr = new GenDomAttr("xmlns", prefix, "http://www.w3.org/XML/1998/namespace");
+			attr.setNodeValue(uri);
 			if (cur_namespaces == null)
-				cur_namespaces = new NsDomAttr[]{attr};
+				cur_namespaces = new GenDomAttr[]{attr};
 			else
-				cur_namespaces = (NsDomAttr[])Arrays.append(cur_namespaces, attr);
+				cur_namespaces = (GenDomAttr[])Arrays.append(cur_namespaces, attr);
 		}
 	}
 	

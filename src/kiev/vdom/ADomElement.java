@@ -24,7 +24,7 @@ public final class GenDomElement extends ADomElement {
 }
 
 @ThisIsANode
-public abstract class ADomElement extends ADomContainer implements org.w3c.dom.Element {
+public class ADomElement extends ADomContainer implements org.w3c.dom.Element {
 
 	public static final ADomElement[] emptyArray = new ADomElement[0];
 
@@ -32,8 +32,6 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	public String			nodeNamespaceURI;
 	@nodeAttr
 	public String			nodeName;
-	@nodeAttr
-	public ADomAttr[]		attributes;
 	
 	//
 	//
@@ -71,7 +69,18 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
         return p < 0 ? nodeName : nodeName.substring(p+1);
 	}
 
-	public boolean hasAttributes() { attributes.length > 0 }
+	public boolean hasAttributes() {
+		foreach (AttrSlot slot; this.values(); slot.isXmlAttr()) {
+			if (slot.get(this) != null)
+				return true;
+		}
+		DataAttachInfo[] data = this.getAllExtData();
+		if (data != null) {
+			foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot)
+				return true;
+		}
+		return false;
+	}
 
 
 	//
@@ -80,26 +89,39 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	//
 	//
 	public String lookupPrefix(String namespaceURI) {
-		foreach (NsDomAttr ns; attributes; ns.getNodeValue().equals(namespaceURI)) {
-			return ns.getLocalName();
+		DataAttachInfo[] data = this.getAllExtData();
+		if (data != null) {
+			foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot) {
+				DomAttrSlot slot = (DomAttrSlot)dai.p_slot;
+				if (slot.prefix == "xmlns" && dai.p_data.equals(namespaceURI))
+					return slot.name;
+			}
 		}
 		return super.lookupPrefix(namespaceURI);
 	}
 
 	public boolean isDefaultNamespace(String namespaceURI) {
-		foreach (DfltNsDomAttr ns; attributes; ns.getNodeValue().equals(namespaceURI)) {
-			return true;
+		DataAttachInfo[] data = this.getAllExtData();
+		if (data != null) {
+			foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot) {
+				DomAttrSlot slot = (DomAttrSlot)dai.p_slot;
+				if (slot.name == "xmlns")
+					return dai.p_data.equals(namespaceURI);
+			}
 		}
 		return super.isDefaultNamespace(namespaceURI);
 	}
 
 	public String lookupNamespaceURI(String prefix) {
-		if (prefix == null || prefix.length() == 0) {
-			foreach (DfltNsDomAttr ns; attributes)
-				return ns.getNodeValue();
-		} else {
-			foreach (NsDomAttr ns; attributes; ns.getLocalName().equals(prefix))
-				return ns.getNodeValue();
+		DataAttachInfo[] data = this.getAllExtData();
+		if (data != null) {
+			if (prefix == null || prefix.length() == 0) {
+				foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot && ((DomAttrSlot)dai.p_slot).prefix == null && ((DomAttrSlot)dai.p_slot).name == "xmlns")
+					return (String)dai.p_data;
+			} else {
+				foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot && ((DomAttrSlot)dai.p_slot).prefix == "xmlns" && dai.p_slot.name.equals(prefix))
+					return (String)dai.p_data;
+			}
 		}
 		return super.lookupNamespaceURI(prefix);
 	}
@@ -114,61 +136,42 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	public String getTagName() { nodeName }
 	
 	public String getAttribute(String name) {
-		int i = lookupAttrIndex(name);
-		if (i < 0 || i >= attributes.length)
+		ADomAttr dattr = lookupAttrNode(name);
+		if (dattr == null)
 			return null;
-		return attributes[i].getValue();
+		return dattr.getNodeValue();
 	}
 	
 	public void setAttribute(String name, String value) throws DOMException {
 		if (name == null || name.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name="+name);
-		ADomAttr attr = new GenDomAttr();
-		attr.attrName = name;
-		attr.setValue(value);
-		setAttributeNodeNS(attr);
+		ADomAttr dattr = lookupAttrNode(name);
+		if (dattr == null)
+			dattr = new GenDomAttr(null, this, DomAttrSlot.getAttrSlot(null,name,null));
+		dattr.setNodeValue(value);
 	}
 
 	public void removeAttribute(String nm) throws DOMException {
-		if (is_readonly)
-			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-		int i = lookupAttrIndex(nm);
-		if (i < 0)
+		ADomAttr dattr = lookupAttrNode(nm);
+		if (dattr == null)
 			throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+nm+" not found");
-		attributes.del(i);
+		this.delExtData(dattr.pslot());
 	}
 
-	public org.w3c.dom.Attr getAttributeNode(String name) {
-		int i = lookupAttrIndex(name);
-		if (i >= 0 && i < attributes.length)
-			return attributes[i];
-		return null;
+	public org.w3c.dom.Attr getAttributeNode(String nm) {
+		return lookupAttrNode(nm);
 	}
 
 	public org.w3c.dom.Attr setAttributeNode(org.w3c.dom.Attr _attr) throws DOMException {
 		ADomAttr attr = (ADomAttr)_attr;
-		if (is_readonly)
-			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-		int i = lookupAttrIndex(attr.getNodeName());
-		if (i < 0) {
-			attributes.append(attr);
-			return null;
-		} else {
-			ADomAttr old = attributes[i];
-			attributes[i] = attr;
-			return old;
-		}
+		this.setExtData(attr.getNodeValue(),attr.pslot());
+		return null;
 	}
 
-	public org.w3c.dom.Attr removeAttributeNode(org.w3c.dom.Attr attr) throws DOMException {
-		if (is_readonly)
-			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-		int i = lookupAttrIndex(attr.getNodeName());
-		if (i < 0)
-			throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+attr.getNodeName()+" not found");
-		org.w3c.dom.Attr old = attributes[i];
-		attributes.del(i);
-		return old;
+	public org.w3c.dom.Attr removeAttributeNode(org.w3c.dom.Attr _attr) throws DOMException {
+		ADomAttr attr = (ADomAttr)_attr;
+		this.delExtData(attr.pslot());
+		return null;
 	}
 
     public org.w3c.dom.NodeList getElementsByTagName(String name) {
@@ -183,69 +186,53 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	//
 	
 	public String getAttributeNS(String uri, String nm) throws DOMException {
-		int i = lookupAttrIndex(uri, nm);
-		if (i < 0 || i >= attributes.length)
+		ADomAttr dattr = lookupAttrNode(uri, nm);
+		if (dattr == null)
 			return null;
-		return attributes[i].getValue();
+		return dattr.getNodeValue();
 	}
 
-	public void setAttributeNS(String uri, String nm, java.lang.String value) throws DOMException {
-		int i = lookupAttrIndex(uri, nm);
-		if (i < 0) {
-			if (nm == null || nm.length() == 0)
-				throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name="+nm);
-			ADomAttr attr = new GenDomAttr();
-			attr.attrName = nm;
-			attr.attrNamespaceURI = uri;
-			attr.setValue(value);
-			setAttributeNodeNS(attr);
-		} else {
-			ADomAttr attr = attributes[i];
-			attr.setValue(value);
+	public void setAttributeNS(String uri, String qname, java.lang.String value) throws DOMException {
+		ADomAttr dattr = lookupAttrNode(uri, qname);
+		if (dattr == null) {
+			String prefix = null;
+			int p = qname.indexOf(':');
+			if (p >= 0) {
+				prefix = qname.substring(0,p);
+				qname = qname.substring(p+1);
+			}
+			dattr = new GenDomAttr(value, this, DomAttrSlot.getAttrSlot(prefix,qname,uri));
 		}
+		dattr.setNodeValue(value);
 	}
 
 	public void removeAttributeNS(String uri, String nm) throws DOMException {
-		if (is_readonly)
-			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-		int i = lookupAttrIndex(uri,nm);
-		if (i < 0)
+		ADomAttr dattr = lookupAttrNode(uri, nm);
+		if (dattr == null)
 			throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+uri+':'+nm+" not found");
-		attributes.del(i);
+		this.delExtData(dattr.pslot());
 	}
 
 	public org.w3c.dom.Attr getAttributeNodeNS(String uri, String nm) throws DOMException {
-		int i = lookupAttrIndex(uri, nm);
-		if (i >= 0)
-			return attributes[i];
-		return null;
+		return lookupAttrNode(uri, nm);
 	}
 	
 	public org.w3c.dom.Attr setAttributeNodeNS(org.w3c.dom.Attr _attr) throws DOMException {
 		ADomAttr attr = (ADomAttr)_attr;
-		if (is_readonly)
-			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-		int i = lookupAttrIndex(attr.getNamespaceURI(), attr.getNodeName());
-		if (i < 0) {
-			attributes.append(attr);
-			return null;
-		} else {
-			ADomAttr old = attributes[i];
-			attributes[i] = attr;
-			return old;
-		}
+		this.setExtData(attr.getNodeValue(),attr.pslot());
+		return null;
 	}
 
 	public org.w3c.dom.NodeList getElementsByTagNameNS(String uri, String nm) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementsByTagNameNS(String,String) is not implemented yet");
 	}
 
-	public boolean hasAttribute(String nm) {
-		return lookupAttrIndex(nm) >= 0;
+	public boolean hasAttribute(String qname) {
+		return lookupAttrNode(qname) != null;
 	}
 	
-	public boolean hasAttributeNS(String uri, String nm) throws DOMException {
-		return lookupAttrIndex(uri,nm) >= 0;
+	public boolean hasAttributeNS(String uri, String lname) throws DOMException {
+		return lookupAttrNode(uri,lname) != null;
 	}
 	
 	
@@ -278,49 +265,93 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 	//
 	//
 
-	final int lookupAttrIndex(String name) {
+	final ADomAttr lookupAttrNode(String name) {
 		if (name == null)
-			return -1;
-		ADomAttr[] attrs = attributes;
-		for (int i=0; i < attrs.length; i++) {
-			if (name.equals(attrs[i].getNodeName()))
-				return i;
-		}
-		return -1;
-	}
-
-	final int lookupAttrIndex(String uri, String name) {
-		if (name == null)
-			return -1;
-		ADomAttr[] attrs = attributes;
-		for (int i = 0; i < attrs.length; i++) {
-			ADomAttr a = attrs[i];
-			String a_uri = a.getNamespaceURI();
-			String a_name = a.getLocalName();
-			if (uri == null) {
-				if (a_uri == null && (name.equals(a_name) ||
-					(a_name == null && name.equals(a.getNodeName()))))
-					return i;
-			} else {
-				if (uri.equals(a_uri) && name.equals(a_name))
-					return i;
+			return null;
+		foreach (AttrSlot slot; this.values(); slot.isXmlAttr() && slot.getXmlFullName().equals(name))
+			return new GenDomAttr(null,this,slot);
+		DataAttachInfo[] data = this.getAllExtData();
+		if (data != null) {
+			foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot) {
+				DomAttrSlot slot = (DomAttrSlot)dai.p_slot;
+				if (slot.fullName().equals(name))
+					return new GenDomAttr((String)dai.p_data,this,slot);
 			}
 		}
-		return -1;
+		return null;
+	}
+
+	final ADomAttr lookupAttrNode(String uri, String name) {
+		if (name == null)
+			return null;
+		foreach (AttrSlot slot; this.values(); slot.isXmlAttr()) {
+			String a_uri = slot.getXmlNamespaceURI();
+			String a_name = slot.getXmlLocalName();
+			if (uri == null) {
+				if (a_uri == null && name.equals(a_name))
+					return new GenDomAttr(null,this,slot);
+			} else {
+				if (uri.equals(a_uri) && name.equals(a_name))
+					return new GenDomAttr(null,this,slot);
+			}
+		}
+		DataAttachInfo[] data = this.getAllExtData();
+		if (data != null) {
+			foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot) {
+				DomAttrSlot slot = (DomAttrSlot)dai.p_slot;
+				String a_uri = slot.namespaceURI;
+				String a_name = slot.name;
+				if (uri == null) {
+					if (a_uri == null && name.equals(a_name))
+						return new GenDomAttr((String)dai.p_data,this,slot);
+				} else {
+					if (uri.equals(a_uri) && name.equals(a_name))
+						return new GenDomAttr((String)dai.p_data,this,slot);
+				}
+			}
+		}
+		return null;
 	}
 
 	final class AttrMap implements org.w3c.dom.NamedNodeMap {
 		
-		public int getLength() { attributes.length }
+		public int getLength() {
+			int count = 0;
+			foreach (AttrSlot slot; this.values(); slot.isXmlAttr()) {
+				if (slot.get(ADomElement.this) != null)
+					count++;
+			}
+			DataAttachInfo[] data = this.getAllExtData();
+			if (data != null) {
+				foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot)
+					count++;
+			}
+			return count;
+		}
 		
 		public org.w3c.dom.Node item(int i) {
-			if (i < 0 || i >= attributes.length)
-				return null;
-			return attributes[i];
+			int count = 0;
+			foreach (AttrSlot slot; this.values(); slot.isXmlAttr()) {
+				Object val = slot.get(ADomElement.this);
+				if (val != null) {
+					if (i == count)
+						return new GenDomAttr(String.valueOf(val),ADomElement.this,slot);
+					count++;
+				}
+			}
+			DataAttachInfo[] data = this.getAllExtData();
+			if (data != null) {
+				foreach (DataAttachInfo dai; data; dai.p_slot instanceof DomAttrSlot) {
+					if (i == count)
+						return new GenDomAttr((String)dai.p_data,ADomElement.this,dai.p_slot);
+					count++;
+				}
+			}
+			return null;
 		}
 		
 		public org.w3c.dom.Node getNamedItem(java.lang.String nm) {
-			return item(lookupAttrIndex(nm));
+			return lookupAttrNode(nm);
 		}
 		
 		public org.w3c.dom.Node setNamedItem(org.w3c.dom.Node _node) throws DOMException {
@@ -329,44 +360,22 @@ public abstract class ADomElement extends ADomContainer implements org.w3c.dom.E
 		}
 
 		public org.w3c.dom.Node removeNamedItem(String nm) throws DOMException {
-			if (is_readonly)
-				throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-			int i = lookupAttrIndex(nm);
-			if (i < 0)
-				throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+nm+" not found");
-			ADomAttr old = attributes[i];
-			attributes.del(i);
-			return old;
+			removeAttribute(nm);
+			return null;
 		}
 		
 		public org.w3c.dom.Node getNamedItemNS(String uri, String nm) throws DOMException {
-			return item(lookupAttrIndex(uri,nm));
+			return lookupAttrNode(uri,nm);
 		}
 		
 		public org.w3c.dom.Node setNamedItemNS(org.w3c.dom.Node _node) throws DOMException {
 			ADomAttr attr = (ADomAttr)_node;
-			if (is_readonly)
-				throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-			int i = lookupAttrIndex(attr.getNamespaceURI(), attr.getLocalName());
-			if (i < 0) {
-				attributes.append(attr);
-				return null;
-			} else {
-				ADomAttr old = attributes[i];
-				attributes[i] = attr;
-				return old;
-			}
+			return setAttributeNodeNS(attr);
 		}
 		
 		public org.w3c.dom.Node removeNamedItemNS(String uri, String nm) throws DOMException {
-			if (is_readonly)
-				throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, "readonly element");
-			int i = lookupAttrIndex(uri,nm);
-			if (i < 0)
-				throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute "+uri+':'+nm+" not found");
-			ADomAttr old = attributes[i];
-			attributes.del(i);
-			return old;
+			removeAttributeNS(uri,nm);
+			return null;
 		}
 		
 	}

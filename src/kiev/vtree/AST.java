@@ -398,6 +398,12 @@ public abstract class ANode implements INode {
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 
+	public final DataAttachInfo[] getAllExtData() {
+		if (ext_data == null)
+			return null;
+		return (DataAttachInfo[])ext_data.clone();
+	}
+	
 	public final Object getExtData(AttrSlot attr) {
 		if (ext_data != null) {
 			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == attr.name)
@@ -706,9 +712,9 @@ public class TreeWalker {
 	public void post_exec(ANode n) {}
 }
 
-final class DataAttachInfo {
-	final   AttrSlot	p_slot;
-	final   Object		p_data;
+public final class DataAttachInfo {
+	public final   AttrSlot		p_slot;
+	public final   Object		p_data;
 	DataAttachInfo(Object data, AttrSlot slot) {
 		this.p_slot = slot;
 		this.p_data = data;

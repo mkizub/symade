@@ -102,8 +102,7 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	public org.w3c.dom.Attr createAttribute(String name) throws DOMException {
 		if (name == null || name.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name="+name);
-		ADomAttr attr = new GenDomAttr();
-		attr.attrName = name;
+		ADomAttr attr = new GenDomAttr(null, name, null);
 		return attr;
 	}
 	
@@ -140,9 +139,13 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	public org.w3c.dom.Attr createAttributeNS(String uri, String qname) throws DOMException {
 		if (qname == null || qname.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qname="+qname);
-		ADomAttr attr = new GenDomAttr();
-		attr.attrName = qname;
-		attr.attrNamespaceURI = uri;
+		String prefix = null;
+		int p = qname.indexOf(':');
+		if (p >= 0) {
+			prefix = qname.substring(0,p);
+			qname = qname.substring(p+1);
+		}
+		ADomAttr attr = new GenDomAttr(prefix, qname, uri);
 		return attr;
 	}
 	
