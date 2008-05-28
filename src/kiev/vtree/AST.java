@@ -620,7 +620,7 @@ public abstract class ANode implements INode {
 	
 	public final SpacePtr getSpacePtr(String name) {
 		foreach (AttrSlot attr; this.values(); attr.name == name && attr.is_space)
-			return new SpacePtr(this, (SpaceAttrSlot<ASTNode>)attr);
+			return new SpacePtr(this, (SpaceAttrSlot<ANode>)attr);
 		throw new RuntimeException("No @nodeAttr/@nodeData space '"+name+"' in "+getClass());
 	}
 

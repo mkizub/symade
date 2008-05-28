@@ -19,7 +19,7 @@ import syntax kiev.stdlib.Syntax;
 */
 
 public abstract class #id"rule"# extends Object {
-	public static boolean contains(Enumeration<Object> e, Object value) {
+	public static <V> boolean contains(Enumeration<V> e, Object value) {
 		foreach(Object val; e; val!=null && (val==value || val.equals(value)) )
 			return true;
 		return false;

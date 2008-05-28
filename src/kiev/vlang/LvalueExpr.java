@@ -186,7 +186,7 @@ public final class AccessExpr extends LvalueExpr {
 			ANode o = this.obj.doRewrite(ctx);
 			if (!prim)
 				return (ANode)o.getVal(this.ident);
-			return new AccessExpr(pos,(ENode)ctx.fixup(obj.pslot(),o),new SymbolRef(ctx.replace(ident)));
+			return new AccessExpr(pos,(ENode)ctx.fixup(obj.pslot(),o),new SymbolRef<DNode>(ctx.replace(ident)));
 		}
 		return super.doRewrite(ctx);
 	}

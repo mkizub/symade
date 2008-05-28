@@ -119,9 +119,13 @@ public abstract class Type extends AType {
 				if (v2.var ≡ r2)
 					continue;
 				Type r1 = b1.resolve(v2.var);
-				if (r1 ≡ r2)
+				if (r1 ≈ r2)
 					continue;
-				if (!r1.isInstanceOf(r2))
+				if (t1.isArray() && t2.isArray() && /*v2.var ≡ tpArrayArg &&*/ r1.isInstanceOf(r2))
+					continue;
+				if ((r1 instanceof ArgType || r2 instanceof ArgType) && r1.isInstanceOf(r2))
+					continue;
+				//if (!r1.isInstanceOf(r2))
 					return false;
 			}
 			return true;
