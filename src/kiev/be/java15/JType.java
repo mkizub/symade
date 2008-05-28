@@ -13,18 +13,15 @@ package kiev.be.java15;
 import syntax kiev.Syntax;
 
 public class JPrimitiveMetaType extends MetaType {
-
-	static final JPrimitiveMetaType instance = new JPrimitiveMetaType();
-	JPrimitiveMetaType() {
-		super("<JPrimitiveMetaType>");
+	JPrimitiveMetaType(int flags) {
+		super("<JPrimitiveMetaType>", flags);
 	}
 }
 
 public class JFakeMetaType extends MetaType {
 
-	static final JFakeMetaType instance = new JFakeMetaType();
-	JFakeMetaType() {
-		super("<JFakeMetaType>");
+	JFakeMetaType(int flags) {
+		super("<JFakeMetaType>", flags);
 	}
 }
 
@@ -32,8 +29,8 @@ public class JBaseMetaType extends MetaType {
 
 	public final Struct clazz;
 	
-	JBaseMetaType(Struct clazz) {
-		super(clazz);
+	JBaseMetaType(Struct clazz, int flags) {
+		super(clazz, flags);
 		this.clazz = clazz;
 	}
 }
@@ -45,24 +42,12 @@ public abstract class JType {
 
 	static Hashtable<KString,JType>		jtypeHash = new Hashtable<KString,JType>();
 
-	public static final int flReference		= StdTypes.flReference;
-	public static final int flIntegerInCode	= StdTypes.flIntegerInCode;
-	public static final int flInteger			= StdTypes.flInteger;
-	public static final int flFloatInCode		= StdTypes.flFloatInCode;
-	public static final int flFloat				= StdTypes.flFloat;
-	public static final int flNumber			= StdTypes.flNumber;
-	public static final int flDoubleSize		= StdTypes.flDoubleSize;
-	public static final int flArray				= StdTypes.flArray;
-	public static final int flResolved			= StdTypes.flResolved;
-	public static final int flBoolean			= StdTypes.flBoolean;
-	public static final int flCallable			= StdTypes.flCallable;
 	public static final int flAbstract			= StdTypes.flAbstract;
 	public static final int flUnerasable		= StdTypes.flUnerasable;
 	public static final int flVirtual			= StdTypes.flVirtual;
-	public static final int flFinal				= StdTypes.flFinal;
+	public static final int flFinal			= StdTypes.flFinal;
 	public static final int flStatic			= StdTypes.flStatic;
 	public static final int flForward			= StdTypes.flForward;
-	public static final int flFake				= 1 << 31;
 	
 	public static final JFakeType tpAny			= new JFakeType(StdTypes.tpAny,  JConstants.sigAny);
 	public static final JFakeType tpVoid			= new JFakeType(StdTypes.tpVoid, JConstants.sigVoid);
@@ -103,23 +88,22 @@ public abstract class JType {
 	public JStruct getJStruct() { return null; }
 	public JTypeDecl getJTypeDecl() { return (JTypeDecl)jmeta_type.tdecl; }
 
-	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
-	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
-	public final boolean isIntegerInCode()	{ return (flags & flIntegerInCode)	!= 0 ; }
-	public final boolean isInteger()		{ return (flags & flInteger)		!= 0 ; }
-	public final boolean isFloatInCode()	{ return (flags & flFloatInCode)	!= 0 ; }
-	public final boolean isFloat()			{ return (flags & flFloat)			!= 0 ; }
-	public final boolean isNumber()			{ return (flags & flNumber)			!= 0 ; }
-	public final boolean isDoubleSize()	{ return (flags & flDoubleSize)		!= 0 ; }
-	public final boolean isResolved()		{ return (flags & flResolved)		!= 0 ; }
-	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
-	public final boolean isCallable()		{ return (flags & flCallable)		!= 0 ; }
-	public final boolean isAbstract()		{ return (flags & flAbstract)		!= 0 ; }
-	public final boolean isUnerasable()	{ return (flags & flUnerasable)		!= 0 ; }
-	public final boolean isVirtual()		{ return (flags & flVirtual)		!= 0 ; }
-	public final boolean isFinal()			{ return (flags & flFinal)			!= 0 ; }
-	public final boolean isStatic()			{ return (flags & flStatic)			!= 0 ; }
-	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
+	public final boolean isReference()		{ return (jmeta_type.flags & MetaType.flReference)		!= 0 ; }
+	public final boolean isArray()			{ return (jmeta_type.flags & MetaType.flArray)			!= 0 ; }
+	public final boolean isIntegerInCode()	{ return (jmeta_type.flags & MetaType.flIntegerInCode)	!= 0 ; }
+	public final boolean isInteger()		{ return (jmeta_type.flags & MetaType.flInteger)		!= 0 ; }
+	public final boolean isFloatInCode()	{ return (jmeta_type.flags & MetaType.flFloatInCode)	!= 0 ; }
+	public final boolean isFloat()			{ return (jmeta_type.flags & MetaType.flFloat)			!= 0 ; }
+	public final boolean isNumber()		{ return (jmeta_type.flags & MetaType.flNumber)		!= 0 ; }
+	public final boolean isDoubleSize()	{ return (jmeta_type.flags & MetaType.flDoubleSize)	!= 0 ; }
+	public final boolean isBoolean()		{ return (jmeta_type.flags & MetaType.flBoolean)		!= 0 ; }
+	public final boolean isCallable()		{ return (jmeta_type.flags & MetaType.flCallable)		!= 0 ; }
+	public final boolean isAbstract()		{ return (flags & flAbstract)							!= 0 ; }
+	public final boolean isUnerasable()	{ return (flags & flUnerasable)						!= 0 ; }
+	public final boolean isVirtual()		{ return (flags & flVirtual)							!= 0 ; }
+	public final boolean isFinal()			{ return (flags & flFinal)								!= 0 ; }
+	public final boolean isStatic()		{ return (flags & flStatic)								!= 0 ; }
+	public final boolean isForward()		{ return (flags & flForward)							!= 0 ; }
 
 	public static JType leastCommonType(JType tp1, JType tp2) {
 		JType tp = tp1;
@@ -153,7 +137,7 @@ public abstract class JType {
 
 public final class JFakeType extends JType {
 	JFakeType(CoreType vtype, KString signature) {
-		super(JFakeMetaType.instance, signature, vtype.flags | flFake);
+		super(new JFakeMetaType(vtype.meta_type.flags), signature, vtype.flags);
 		assert (vtype.jtype == null);
 		vtype.jtype = this;
 	}
@@ -172,7 +156,7 @@ public class JPrimitiveType extends JType {
 	private final CoreType vtype;
 	
 	JPrimitiveType(CoreType vtype, KString signature) {
-		super(JPrimitiveMetaType.instance, signature, vtype.flags);
+		super(new JPrimitiveMetaType(vtype.meta_type.flags), signature, vtype.flags);
 		assert (vtype.jtype == null);
 		vtype.jtype = this;
 		this.vtype = vtype;
@@ -193,7 +177,7 @@ public class JBaseType extends JType {
 	public final Struct clazz;
 
 	private JBaseType(KString java_signature, Struct clazz) {
-		super(new JBaseMetaType(clazz), java_signature, flReference);
+		super(new JBaseMetaType(clazz, MetaType.flReference), java_signature, 0);
 		this.clazz = clazz;
 	}
 	
@@ -243,7 +227,7 @@ public class JArrayType extends JType {
 	public final JType				jarg;
 	
 	private JArrayType(KString java_signature, JType jarg) {
-		super(ArrayMetaType.instance, java_signature, flReference | flArray);
+		super(ArrayMetaType.instance, java_signature, 0);
 		this.jarg = jarg;
 	}
 
@@ -285,7 +269,7 @@ public class JMethodType extends JType {
 	public final JType				jret;
 	
 	private JMethodType(KString java_signature, JType[] jargs, JType jret) {
-		super(CallMetaType.instance, java_signature, flCallable);
+		super(CallMetaType.call_instance, java_signature, 0);
 		this.jargs = jargs;
 		this.jret = jret;
 	}

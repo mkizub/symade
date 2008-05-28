@@ -18,9 +18,22 @@ import syntax kiev.Syntax;
 public class MetaType implements Constants {
 
 	public final static MetaType[] emptyArray = new MetaType[0];
-	static final MetaType dummy = new MetaType("<dummy>");
+	static final MetaType dummy = new MetaType("<dummy>",0);
+
+	public static final int flReference		= 1 <<  0;
+	public static final int flIntegerInCode	= 1 <<  1;
+	public static final int flInteger			= 1 <<  2;
+	public static final int flFloatInCode		= 1 <<  3;
+	public static final int flFloat			= 1 <<  4;
+	public static final int flNumber			= flFloat | flInteger;
+	public static final int flDoubleSize		= 1 <<  5;
+	public static final int flArray			= 1 <<  6;
+	public static final int flBoolean			= 1 <<  7;
+	public static final int flWrapper			= 1 <<  8;
+	public static final int flCallable			= 1 <<  9;
 
 	Object					descr; // type description, TypeDecl for loaded types, String for names of not loaded yet types
+	public int				flags;
 	public int				version;
 	private TVarSet			templ_bindings;
 
@@ -28,8 +41,9 @@ public class MetaType implements Constants {
 	public final TypeDecl get$tdecl() {
 		if (descr instanceof String) {
 			TypeDecl td = Env.getRoot().loadTypeDecl((String)descr, true);
-			if (td != null)
+			if (td != null) {
 				descr = td;
+			}
 		}
 		return (TypeDecl)this.descr;
 	}
@@ -40,11 +54,13 @@ public class MetaType implements Constants {
 		return ((TypeDecl)descr).qname();
 	}
 	
-	public MetaType(String name) {
+	public MetaType(String name, int flags) {
 		this.descr = name;
+		this.flags = flags;
 	}
-	public MetaType(TypeDecl tdecl) {
+	public MetaType(TypeDecl tdecl, int flags) {
 		this.descr = tdecl;
+		this.flags = flags;
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -184,8 +200,8 @@ public final class CoreMetaType extends MetaType {
 
 	CoreType core_type;
 	
-	CoreMetaType(String name, Type super_type) {
-		super("kiev\u001fstdlib\u001f"+name);
+	CoreMetaType(String name, Type super_type, int flags) {
+		super("kiev\u001fstdlib\u001f"+name, flags);
 		MetaTypeDecl tdecl = new MetaTypeDecl(this);
 		this.descr = tdecl;
 		tdecl.sname = name;
@@ -276,7 +292,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	ASTNodeMetaType(Class clazz) {
-		super(StdTypes.tdASTNodeType);
+		super(StdTypes.tdASTNodeType,0);
 		this.templ_bindings = TVarSet.emptySet;
 		this.clazz = clazz;
 		allASTNodeMetaTypes.put(clazz,this);
@@ -393,12 +409,12 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	private CompaundMetaType(String clazz_name) {
-		super(clazz_name);
+		super(clazz_name, MetaType.flReference);
 		this.templ_bindings = TVarSet.emptySet;
 	}
 	
 	private CompaundMetaType(Struct clazz) {
-		super(clazz);
+		super(clazz, MetaType.flReference);
 		if (this.tdecl == Env.getRoot()) Env.getRoot().xmeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
 	}
@@ -477,7 +493,7 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.xtype = ArrayType.newArrayType(Type.tpAny);
 	}
 	private ArrayMetaType(TypeDecl tdecl) {
-		super(tdecl);
+		super(tdecl, MetaType.flArray | MetaType.flReference);
 	}
 
 	public TVarSet getTemplBindings() { return templ_bindings; }
@@ -504,7 +520,7 @@ public class ArgMetaType extends MetaType {
 	public final ArgType atype;
 	
 	public ArgMetaType(TypeDef definer) {
-		super(definer);
+		super(definer, MetaType.flReference);
 		atype = new ArgType(this);
 		definer.xtype = atype;
 	}
@@ -588,7 +604,7 @@ public class WrapperMetaType extends MetaType {
 		return td.wmeta_type;
 	}
 	private WrapperMetaType(TypeDecl td) {
-		super(wrapper_tdecl);
+		super(wrapper_tdecl, MetaType.flReference | MetaType.flWrapper);
 		this.clazz = td;
 		clazz.checkResolved();
 		this.field = getWrappedField(td,false);
@@ -675,7 +691,8 @@ public class WrapperMetaType extends MetaType {
 
 public class CallMetaType extends MetaType {
 
-	public static final CallMetaType instance;
+	public static final CallMetaType call_instance;
+	public static final CallMetaType closure_instance;
 	static {
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
 		if (tdecl == null) {
@@ -685,10 +702,11 @@ public class CallMetaType extends MetaType {
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
 		}
-		instance = new CallMetaType(tdecl);
+		call_instance = new CallMetaType(tdecl, MetaType.flCallable);
+		closure_instance = new CallMetaType(tdecl, MetaType.flCallable | MetaType.flReference);
 	}
-	private CallMetaType(TypeDecl tdecl) {
-		super(tdecl);
+	private CallMetaType(TypeDecl tdecl, int flags) {
+		super(tdecl, flags);
 	}
 
 	public boolean checkTypeVersion(int version) {

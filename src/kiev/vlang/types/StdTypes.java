@@ -22,28 +22,16 @@ import syntax kiev.Syntax;
 
 public interface StdTypes {
 
-	public static final int flReference		= 1 <<  0;
-	public static final int flIntegerInCode	= 1 <<  1;
-	public static final int flInteger			= 1 <<  2;
-	public static final int flFloatInCode		= 1 <<  3;
-	public static final int flFloat				= 1 <<  4;
-	public static final int flNumber			= flFloat | flInteger;
-	public static final int flDoubleSize		= 1 <<  5;
-	public static final int flArray				= 1 <<  6;
-	public static final int flResolved			= 1 <<  7;
-	public static final int flBoolean			= 1 <<  8;
-	public static final int flWrapper			= 1 <<  9;
-	public static final int flCallable			= 1 << 10;
-	public static final int flAbstract			= 1 << 11;
-	public static final int flUnerasable		= 1 << 12;
-	public static final int flVirtual			= 1 << 13;
-	public static final int flFinal				= 1 << 14;
-	public static final int flStatic			= 1 << 15;
-	public static final int flForward			= 1 << 16;
-	public static final int flHidden			= 1 << 17;
-	public static final int flArgAppliable		= 1 << 18;
-	public static final int flValAppliable		= 1 << 19;
-	public static final int flBindable			= 1 << 20;
+	public static final int flAbstract			= 1 <<  0;
+	public static final int flUnerasable		= 1 <<  1;
+	public static final int flVirtual			= 1 <<  2;
+	public static final int flFinal			= 1 <<  3;
+	public static final int flStatic			= 1 <<  4;
+	public static final int flForward			= 1 <<  5;
+	public static final int flHidden			= 1 <<  6;
+	public static final int flArgAppliable		= 1 <<  7;
+	public static final int flValAppliable		= 1 <<  8;
+	public static final int flBindable			= 1 <<  9;
 
 	public static final CompaundType tpEnv;
 	public static final CoreType tpAny;
@@ -113,18 +101,17 @@ public interface StdTypes {
 		Env env = Env.getRoot();
 		tpEnv				= new CompaundType((CompaundMetaType)env.xmeta_type, TVarBld.emptySet);
 		env.xtype			= tpEnv;
-		tpEnv.flags			= flResolved;
 
-		tpAny		= new CoreType(Constants.nameAny,     null,  0);								tpAny.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpVoid		= new CoreType(Constants.nameVoid,    null,  0);								tpVoid.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpBoolean	= new CoreType(Constants.nameBoolean, tpAny, flBoolean | flIntegerInCode);	tpBoolean.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpChar		= new CoreType(Constants.nameChar,    tpAny, flInteger | flIntegerInCode);	tpChar.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpByte		= new CoreType(Constants.nameByte,    tpAny, flInteger | flIntegerInCode);	tpByte.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpShort		= new CoreType(Constants.nameShort,   tpAny, flInteger | flIntegerInCode);	tpShort.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpInt		= new CoreType(Constants.nameInt,     tpAny, flInteger | flIntegerInCode);	tpInt.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpLong		= new CoreType(Constants.nameLong,    tpAny, flInteger | flDoubleSize);		tpLong.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, flFloat);							tpFloat.meta_type.tdecl.setTypeDeclNotLoaded(true);
-		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, flFloat   | flDoubleSize);		tpDouble.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpAny		= new CoreType(Constants.nameAny,     null,  0);												tpAny.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpVoid		= new CoreType(Constants.nameVoid,    null,  0);												tpVoid.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpBoolean	= new CoreType(Constants.nameBoolean, tpAny, MetaType.flBoolean | MetaType.flIntegerInCode);	tpBoolean.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpChar		= new CoreType(Constants.nameChar,    tpAny, MetaType.flInteger | MetaType.flIntegerInCode);	tpChar.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpByte		= new CoreType(Constants.nameByte,    tpAny, MetaType.flInteger | MetaType.flIntegerInCode);	tpByte.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpShort		= new CoreType(Constants.nameShort,   tpAny, MetaType.flInteger | MetaType.flIntegerInCode);	tpShort.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpInt		= new CoreType(Constants.nameInt,     tpAny, MetaType.flInteger | MetaType.flIntegerInCode);	tpInt.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpLong		= new CoreType(Constants.nameLong,    tpAny, MetaType.flInteger | MetaType.flDoubleSize);		tpLong.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, MetaType.flFloat);								tpFloat.meta_type.tdecl.setTypeDeclNotLoaded(true);
+		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, MetaType.flFloat   | MetaType.flDoubleSize);		tpDouble.meta_type.tdecl.setTypeDeclNotLoaded(true);
 
 		Struct java_lang = env.newPackage("java\u001flang");
 		Struct java_lang_annotation = env.newPackage("java\u001flang\u001fannotation");
@@ -140,7 +127,7 @@ public interface StdTypes {
 		tpClassClazz.setTypeDeclNotLoaded(true);
 		tpClass					= (CompaundType)tpClassClazz.xtype;
 
-		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
+		tpNull		= new CoreType(Constants.nameNull,    tpObject, MetaType.flReference);
 		tpNull.meta_type.tdecl.setTypeDeclNotLoaded(true);
 
 		Struct tpRuleClazz = env.newStruct("rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
@@ -174,7 +161,6 @@ public interface StdTypes {
 		tpArrayArg = tdArrayArg.getAType();
 		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tpArray					= ArrayType.newArrayType(tpArrayArg);
-		tpArray.flags			|= flResolved | flReference | flArray;
 
 		TypeDecl tdVararg = env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
 		tdVararg.setPublic();
@@ -187,7 +173,6 @@ public interface StdTypes {
 		tpVarargArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tdVararg.super_types += new TypeRef(ArrayType.newArrayType(tpVarargArg));
 		tpVararg				= (XType)tdVararg.xtype;
-		//tpVararg.flags			|= flResolved | flReference | flArray;
 
 		tdASTNodeType = env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
 		tdASTNodeType.setPublic();

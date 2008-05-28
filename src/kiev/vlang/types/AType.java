@@ -30,7 +30,10 @@ public abstract class AType implements StdTypes, TVSet {
 	public final			MetaType	meta_type;
 	public:ro,ro,ro,rw		TVar[]		tvars;
 	private					TArg[]		appls;
-	public					int			flags;
+	private					int			version_and_flags;
+	@packed:16,version_and_flags,0
+	public:ro,ro,rw,rw		int			flags;
+	@packed:16,version_and_flags,16
 	private					int			version;
 	
 	protected AType(MetaType meta_type, int flags, TVar[] tvars, TArg[] appls) {
@@ -47,6 +50,27 @@ public abstract class AType implements StdTypes, TVSet {
 		this.setFromBld(bld);
 	}
 	
+	public       boolean isReference()		{ return (meta_type.flags & MetaType.flReference)		!= 0 ; }
+	public       boolean isArray()			{ return (meta_type.flags & MetaType.flArray)			!= 0 ; }
+	public final boolean isIntegerInCode()	{ return (meta_type.flags & MetaType.flIntegerInCode)	!= 0 ; }
+	public final boolean isInteger()		{ return (meta_type.flags & MetaType.flInteger)		!= 0 ; }
+	public final boolean isFloatInCode()	{ return (meta_type.flags & MetaType.flFloatInCode)	!= 0 ; }
+	public final boolean isFloat()			{ return (meta_type.flags & MetaType.flFloat)			!= 0 ; }
+	public final boolean isNumber()		{ return (meta_type.flags & MetaType.flNumber)			!= 0 ; }
+	public final boolean isDoubleSize()	{ return (meta_type.flags & MetaType.flDoubleSize)		!= 0 ; }
+	public final boolean isBoolean()		{ return (meta_type.flags & MetaType.flBoolean)		!= 0 ; }
+	public final boolean isCallable()		{ return (meta_type.flags & MetaType.flCallable)		!= 0 ; }
+	public final boolean isAbstract()		{ return (flags & flAbstract)							!= 0 ; }
+	public final boolean isUnerasable()	{ return (flags & flUnerasable)						!= 0 ; }
+	public final boolean isVirtual()		{ return (flags & flVirtual)							!= 0 ; }
+	public final boolean isFinal()			{ return (flags & flFinal)								!= 0 ; }
+	public final boolean isStatic()		{ return (flags & flStatic)								!= 0 ; }
+	public final boolean isForward()		{ return (flags & flForward)							!= 0 ; }
+	public final boolean isHidden()		{ return (flags & flHidden)								!= 0 ; }
+	public final boolean isArgAppliable()	{ return (flags & flArgAppliable)						!= 0 ; }
+	public final boolean isValAppliable()	{ return (flags & flValAppliable)						!= 0 ; }
+	public final boolean isBindable()		{ return (flags & flBindable)							!= 0 ; }
+
 	private void setFromBld(TVarBld bld) {
 		bld.close();
 		int n = bld.tvars.length;

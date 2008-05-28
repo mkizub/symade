@@ -205,28 +205,6 @@ public abstract class Type extends AType {
 		return false;
 	}
 
-	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
-	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
-	public final boolean isIntegerInCode()	{ return (flags & flIntegerInCode)	!= 0 ; }
-	public final boolean isInteger()		{ return (flags & flInteger)		!= 0 ; }
-	public final boolean isFloatInCode()	{ return (flags & flFloatInCode)	!= 0 ; }
-	public final boolean isFloat()			{ return (flags & flFloat)			!= 0 ; }
-	public final boolean isNumber()			{ return (flags & flNumber)			!= 0 ; }
-	public final boolean isDoubleSize()	{ return (flags & flDoubleSize)		!= 0 ; }
-	public final boolean isResolved()		{ return (flags & flResolved)		!= 0 ; }
-	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
-	public final boolean isCallable()		{ return (flags & flCallable)		!= 0 ; }
-	public final boolean isAbstract()		{ return (flags & flAbstract)		!= 0 ; }
-	public final boolean isUnerasable()	{ return (flags & flUnerasable)		!= 0 ; }
-	public final boolean isVirtual()		{ return (flags & flVirtual)		!= 0 ; }
-	public final boolean isFinal()			{ return (flags & flFinal)			!= 0 ; }
-	public final boolean isStatic()			{ return (flags & flStatic)			!= 0 ; }
-	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
-	public final boolean isHidden()			{ return (flags & flHidden)			!= 0 ; }
-	public final boolean isArgAppliable()	{ return (flags & flArgAppliable)	!= 0 ; }
-	public final boolean isValAppliable()	{ return (flags & flValAppliable)	!= 0 ; }
-	public final boolean isBindable()		{ return (flags & flBindable)		!= 0 ; }
-
 	public Type getUnboxedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
 	public Type getEnclosedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
 	public ENode makeUnboxedExpr(ENode from)		{ throw new RuntimeException("Type "+this+" is not a box type"); } 
@@ -262,12 +240,23 @@ public final class XType extends Type {
 
 	public XType(MetaType meta_type, TVarBld bindings) {
 		super(meta_type, 0, bindings);
-		foreach (MetaType mt; tdecl.getAllSuperTypes()) {
-			if (mt instanceof CompaundMetaType) flags |= flReference;
-			if (mt instanceof ArrayMetaType) flags |= flArray;
-		}
 	}
 	
+	public boolean isReference() {
+		if ((meta_type.flags & MetaType.flReference) != 0)
+			return true;
+		foreach (MetaType mt; tdecl.getAllSuperTypes(); (mt.flags & MetaType.flReference) != 0)
+			return true;
+		return false;
+	}
+	public boolean isArray() {
+		if ((meta_type.flags & MetaType.flArray) != 0)
+			return true;
+		foreach (MetaType mt; tdecl.getAllSuperTypes(); (mt.flags & MetaType.flArray) != 0)
+			return true;
+		return false;
+	}
+
 	public JType getJType() {
 		if (jtype == null) {
 			foreach (Type t; getMetaSupers()) {
@@ -321,8 +310,8 @@ public final class XType extends Type {
 
 public final class CoreType extends Type {
 	public final String name;
-	CoreType(String name, Type super_type, int flags) {
-		super(new CoreMetaType(name,super_type), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
+	CoreType(String name, Type super_type, int meta_flags) {
+		super(new CoreMetaType(name,super_type,meta_flags), 0, TVar.emptyArray, TArg.emptyArray);
 		((CoreMetaType)meta_type).core_type = this;
 		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name.intern();
@@ -484,7 +473,7 @@ public final class ASTNodeType extends Type {
 	}
 
 	private ASTNodeType(ASTNodeMetaType meta_type, TVarBld bindings) {
-		super(meta_type, flResolved, bindings);
+		super(meta_type, 0, bindings);
 	}
 
 	public MNode getMeta(String name)		{ return null; }
@@ -514,15 +503,21 @@ public final class ArgType extends Type {
 	
 	@getter public final TypeDef get$definer() { return (TypeDef)meta_type.tdecl; }
 
+	private static int makeFlags(ArgMetaType mt) {
+		TypeDef definer = (TypeDef)mt.tdecl;
+		int flags = flValAppliable;
+		if (definer.isTypeAbstract())   flags |= flAbstract | flArgAppliable;
+		if (definer.isTypeUnerasable()) flags |= flUnerasable;
+		if (definer.isTypeVirtual())    flags |= flVirtual;
+		if (definer.isTypeFinal())      flags |= flFinal;
+		if (definer.isTypeStatic())     flags |= flStatic;
+		if (definer.isTypeForward())    flags |= flForward;
+		return flags;
+	}
+	
 	public ArgType(ArgMetaType meta_type) {
-		super(meta_type, flReference | flValAppliable, TVar.emptyArray, TArg.emptyArray);
+		super(meta_type, makeFlags(meta_type), TVar.emptyArray, TArg.emptyArray);
 		this.name = meta_type.tdecl.sname;
-		if (definer.isTypeAbstract())   this.flags |= flAbstract | flArgAppliable;
-		if (definer.isTypeUnerasable()) this.flags |= flUnerasable;
-		if (definer.isTypeVirtual())    this.flags |= flVirtual;
-		if (definer.isTypeFinal())      this.flags |= flFinal;
-		if (definer.isTypeStatic())     this.flags |= flStatic;
-		if (definer.isTypeForward())    this.flags |= flForward;
 	}
 	
 	public JType getJType() {
@@ -576,7 +571,7 @@ public final class CompaundType extends Type {
 	public final TypeDecl get$tdecl() { return meta_type.tdecl; }
 
 	public CompaundType(CompaundMetaType meta_type, TVarBld bindings) {
-		super(meta_type, flReference, bindings);
+		super(meta_type, 0, bindings);
 	}
 	
 	public final JType getJType() {
@@ -654,7 +649,7 @@ public final class ArrayType extends Type {
 	}
 	
 	private ArrayType(Type arg) {
-		super(ArrayMetaType.instance, flReference | flArray, new TVarBld(tpArrayArg, arg).close());
+		super(ArrayMetaType.instance, 0, new TVarBld(tpArrayArg, arg).close());
 	}
 
 	public JType getJType() {
@@ -711,7 +706,7 @@ public final class WrapperType extends CTimeType {
 	}
 	
 	public WrapperType(Type unwrapped_type) {
-		super(WrapperMetaType.instance(unwrapped_type), flReference | flWrapper, tpWrapperArg, unwrapped_type);
+		super(WrapperMetaType.instance(unwrapped_type), 0, tpWrapperArg, unwrapped_type);
 	}
 
 	@getter
@@ -800,10 +795,8 @@ public final class CallType extends Type {
 
 	CallType(TVarBld bld, int arity, boolean is_closure)
 	{
-		super(CallMetaType.instance, flCallable, bld);
+		super((is_closure ? CallMetaType.closure_instance : CallMetaType.call_instance), 0, bld);
 		this.arity = arity;
-		if (is_closure)
-			flags |= flReference;
 	}
 	
 	public static CallType createCallType(Type accessor, Type[] targs, Type[] args, Type ret, boolean is_closure)

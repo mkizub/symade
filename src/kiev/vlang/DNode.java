@@ -868,7 +868,7 @@ public final class MetaTypeDecl extends TypeDecl {
 	public MetaTypeDecl() {
 		super(null);
 		this.type_decl_version = 1;
-		this.xmeta_type = new MetaType(this);
+		this.xmeta_type = new MetaType(this, 0);
 		this.xtype = this.xmeta_type.make(TVarBld.emptySet);
 	}
 	public MetaTypeDecl(MetaType meta_type) {
@@ -882,7 +882,10 @@ public final class MetaTypeDecl extends TypeDecl {
 		Struct obj = (Struct)super.copy(cc);
 		if (this == obj)
 			return this;
-		obj.xmeta_type = new MetaType(obj);
+		if (this.xmeta_type != null)
+			obj.xmeta_type = new MetaType(obj, this.xmeta_type.flags);
+		else
+			obj.xmeta_type = new MetaType(obj, 0);
 		obj.xtype = this.xmeta_type.make(TVarBld.emptySet);
 		return obj;
 	}

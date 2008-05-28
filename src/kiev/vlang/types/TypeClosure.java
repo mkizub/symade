@@ -56,6 +56,6 @@ public class TypeClosureRef extends TypeRef {
 		return null;
 	}
 	public TypeDecl getTypeDecl() {
-		return CallMetaType.instance.tdecl;
+		return CallMetaType.closure_instance.tdecl;
 	}
 }
