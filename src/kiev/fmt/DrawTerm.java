@@ -389,6 +389,8 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 		return str;
 	}
 
+	public String getPrefix() { ((Draw_SyntaxXmlStrAttr)this.syntax).getPrefix() }
+	public String getSuffix() { ((Draw_SyntaxXmlStrAttr)this.syntax).getSuffix() }	
 	String makeText(Formatter fmt) {
 		Object o = getAttrObject();
 		if (o == null)

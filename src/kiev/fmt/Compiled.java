@@ -456,21 +456,33 @@ public class Draw_SyntaxStrAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxXmlStrAttr extends Draw_SyntaxAttr {
+	public String prefix;
+	public String suffix;
 	public Draw_SyntaxXmlStrAttr() {}
-	public Draw_SyntaxXmlStrAttr(AttrSlot attr_slot) {
+	public Draw_SyntaxXmlStrAttr(AttrSlot attr_slot, String prefix, String suffix) {
 		this.name = attr_slot.name;
 		this.attr_slot = attr_slot;
+		this.prefix = prefix;
+		this.suffix = suffix;
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
 		Drawable dr = new DrawXmlStrTerm(node, this, text_syntax);
 		return dr;
 	}
+	public String getPrefix() {
+		if (prefix == null) return "";
+		return prefix;
+	}	
+	public String getSuffix() {
+		if (suffix == null) return "";
+		return suffix;
+	}	
 }
 
 public class Draw_SyntaxXmlTypeAttr extends Draw_SyntaxXmlStrAttr {
 	public Draw_SyntaxXmlTypeAttr() {}
 	public Draw_SyntaxXmlTypeAttr(AttrSlot attr_slot) {
-		super(attr_slot);
+		super(attr_slot,null,null);
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
 		Drawable dr = new DrawXmlTypeTerm(node, this, text_syntax);
@@ -977,15 +989,13 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 					se = setl(loutNoNl, open(attr.name), par(attr(attr)), close(attr.name));
 				else if (Enum.class.isAssignableFrom(attr.clazz))
 					se = set(open0(attr.name), attr(attr), close0(attr.name));
-				else if (attr.clazz == String.class)
-					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
-				else if (attr.clazz == Operator.class)
-					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
+				else if (attr.clazz == String.class || attr.clazz == Character.TYPE || attr.clazz == Operator.class)
+					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr,null,null), close0(attr.name));
 				else if (Type.class.isAssignableFrom(attr.clazz))
 					se = set(open0(attr.name), new Draw_SyntaxXmlTypeAttr(attr), close0(attr.name));
 				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
-					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
+					attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
 					)
 					se = set(open0(attr.name), attr(attr), close0(attr.name));
 				else if (attr.is_attr) {
@@ -1038,10 +1048,8 @@ public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
 					anm = attr.name;
 				if (Enum.class.isAssignableFrom(attr.clazz))
 					ae = setl(loutSpNo, tok(anm+"='"), attr(attr), tok("'"));
-				else if (attr.clazz == String.class)
-					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlStrAttr(attr), tok("'"));
-				else if (attr.clazz == Operator.class)
-					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlStrAttr(attr), tok("'"));
+				else if (attr.clazz == String.class || attr.clazz == Character.TYPE || attr.clazz == Operator.class)
+					ae = setl(loutSpNo, tok(anm+"="), new Draw_SyntaxXmlStrAttr(attr,"'","'"));
 				else if (Type.class.isAssignableFrom(attr.clazz))
 					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlTypeAttr(attr), tok("'"));
 				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
@@ -1058,15 +1066,13 @@ public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
 					se = setl(loutNoNl, open(attr.name), par(attr(attr)), close(attr.name));
 				else if (Enum.class.isAssignableFrom(attr.clazz))
 					se = set(open0(attr.name), attr(attr), close0(attr.name));
-				else if (attr.clazz == String.class)
-					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
-				else if (attr.clazz == Operator.class)
-					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr), close0(attr.name));
+				else if (attr.clazz == String.class || attr.clazz == Character.TYPE || attr.clazz == Operator.class)
+					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(attr,null,null), close0(attr.name));
 				else if (Type.class.isAssignableFrom(attr.clazz))
 					se = set(open0(attr.name), new Draw_SyntaxXmlTypeAttr(attr), close0(attr.name));
 				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
-					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
+					attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
 					)
 					se = set(open0(attr.name), attr(attr), close0(attr.name));
 				else if (attr.is_attr) {

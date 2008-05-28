@@ -541,9 +541,6 @@
          <fname>ADomAttr.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
-         <fname>ADomContainer.java</fname>
-        </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
          <fname>ADomDocument.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>

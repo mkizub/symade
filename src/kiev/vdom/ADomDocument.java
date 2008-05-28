@@ -72,8 +72,8 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 	}
 	
 	public org.w3c.dom.Element createElement(String name) throws DOMException {
-		ADomElement node = new GenDomElement();
-		node.nodeName = name;
+		GenDomElement node = new GenDomElement();
+		node.localName = name;
 		return node;
 	}
 	
@@ -122,17 +122,21 @@ public abstract class ADomDocument extends ADomNode implements org.w3c.dom.Docum
 		if (qname == null || qname.length() == 0)
 			throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qname="+qname);
 		ADomElement node;
+		String nm = qname;
+		String pr = null;
+		int p = nm.indexOf(':');
+		if (p > 0) {
+			pr = qname.substring(0,p);
+			nm = qname.substring(p+1);
+		}
 		if (uri != null && uri.startsWith("map:")) {
-			String nm = qname;
-			int p = nm.indexOf(':');
-			if (p > 0)
-				nm = nm.substring(p+1);
 			node = (ADomElement)Class.forName(uri.substring(4)+nm).newInstance();
 		} else {
 			node = new GenDomElement();
+			node.localName = nm;
+			node.prefixName = pr;
+			node.namespaceURI = uri;
 		}
-		node.nodeName = qname;
-		node.nodeNamespaceURI = uri;
 		return node;
 	}
 	

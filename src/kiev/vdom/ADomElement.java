@@ -21,28 +21,70 @@ import syntax kiev.Syntax;
 
 @ThisIsANode
 public final class GenDomElement extends ADomElement {
+
+	@nodeAttr
+	public String			namespaceURI;
+	@nodeAttr
+	public String			prefixName;
+	@nodeAttr
+	public String			localName;
+	
+	public final String getNamespaceURI() { namespaceURI }
+
+	public final String getPrefix() { prefixName }
+
+	public final String getLocalName() { localName }
+
+	public final void setPrefix(String prefix) throws DOMException {
+		this.prefixName = prefix;
+	}
+
 }
 
 @ThisIsANode
-public class ADomElement extends ADomContainer implements org.w3c.dom.Element {
+public class ADomElement extends ADomNode implements org.w3c.dom.Element {
 
 	public static final ADomElement[] emptyArray = new ADomElement[0];
 
 	@nodeAttr
-	public String			nodeNamespaceURI;
-	@nodeAttr
-	public String			nodeName;
-	
+	public ADomNode[]		elements;
+
 	//
 	//
 	// DOM level 1 Node interface
 	//
 	//
 	
-	public final String getNodeName() { nodeName }
+	public final String getNodeName() {
+		String p = getPrefix();
+		if (p == null || p.length() == 0)
+			return getLocalName();
+		return p + ":" + getLocalName();
+	}
+	
     public final short getNodeType() { org.w3c.dom.Node.ELEMENT_NODE }
 	public org.w3c.dom.NamedNodeMap getAttributes() { new AttrMap() }
 
+
+	public org.w3c.dom.NodeList getChildNodes() { new DomNodeList() }
+
+	public org.w3c.dom.Node getFirstChild() {
+		ADomNode[] els = elements;
+		if (els.length > 0)
+			return els[0];
+		return null;
+	}
+	public org.w3c.dom.Node getLastChild() {
+		ADomNode[] els = elements;
+		if (els.length > 0)
+			return els[els.length-1];
+		return null;
+	}
+	
+	public org.w3c.dom.Node getPreviousSibling() { (org.w3c.dom.Node)ANode.getPrevNode(this) }
+	public org.w3c.dom.Node getNextSibling() { (org.w3c.dom.Node)ANode.getNextNode(this) }
+	
+	public boolean hasChildNodes() { elements.length > 0 }
 
 	//
 	//
@@ -50,23 +92,14 @@ public class ADomElement extends ADomContainer implements org.w3c.dom.Element {
 	//
 	//
 	
-	public final String getNamespaceURI() { nodeNamespaceURI }
-	
-	public String getPrefix() {
-		int p = nodeName.indexOf(':');
-        return p < 0 ? null : nodeName.substring(0, p);
-	}
+	public String getNamespaceURI() { null }
+
+	public String getPrefix() { null }
+
+	public String getLocalName() { getCompilerNodeName() }
+
 	public void setPrefix(String prefix) throws DOMException {
-		String nm = this.nodeName;
-		int p = nm.indexOf(':');
-		if (p < 0)
-			nodeName = prefix + ":" + nm;
-		else
-			nodeName = prefix + ":" + nm.substring(p+1);
-	}
-	public String getLocalName() {
-		int p = nodeName.indexOf(':');
-        return p < 0 ? nodeName : nodeName.substring(p+1);
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setPrefix(String) is not supported for this kind of elements");
 	}
 
 	public boolean hasAttributes() {
@@ -133,7 +166,7 @@ public class ADomElement extends ADomContainer implements org.w3c.dom.Element {
 	//
 	//
 	
-	public String getTagName() { nodeName }
+	public String getTagName() { getNodeName() }
 	
 	public String getAttribute(String name) {
 		ADomAttr dattr = lookupAttrNode(name);
@@ -311,6 +344,20 @@ public class ADomElement extends ADomContainer implements org.w3c.dom.Element {
 			}
 		}
 		return null;
+	}
+
+	final class DomNodeList implements org.w3c.dom.NodeList {
+	
+		public int getLength() {
+			return elements.length;
+		}
+		
+		public Node item(int i) {
+			ADomNode[] els = elements;
+			if (i < 0 || i > els.length)
+				return null;
+			return els[i];
+		}
 	}
 
 	final class AttrMap implements org.w3c.dom.NamedNodeMap {

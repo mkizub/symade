@@ -173,7 +173,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 				Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" may not have initializer");
 			}
 		}
-		else if !(f.isStatic()) {
+		else if (!f.isStatic() && !f.isInterfaceOnly()) {
 			if (f.type.isInstanceOf(tpNArray))
 				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @nodeAttr or @nodeData");
 			else if (isNodeKind(f.type))
@@ -201,7 +201,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 		String sname = ("NodeAttr_"+f.sname).intern();
 		foreach (TypeDecl td; snode.members; td.sname == sname) {
-			Kiev.reportWarning(td,"Class "+snode+"."+sname+" already exists and will not be generated");
+			if (!f.isInterfaceOnly())
+				Kiev.reportWarning(td,"Class "+snode+"."+sname+" already exists and will not be generated");
 			return td.xtype;
 		}
 		Struct s = Env.getRoot().newStruct(sname,true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
@@ -412,10 +413,12 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				f_attr = ff;
 				break;
 			}
-			if (f_attr != null)
-				Kiev.reportWarning(f_attr,"Field "+s+"."+fname+" already exists and will not be generated");
-			else
+			if (f_attr != null) {
+				if (!f.isInterfaceOnly())
+					Kiev.reportWarning(f_attr,"Field "+s+"."+fname+" already exists and will not be generated");
+			} else {
 				s.addField(new Field(fname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
+			}
 			if (isArr && !f.isAbstract()) {
 				TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
 				Field emptyArray = N.resolveField("emptyArray", false);

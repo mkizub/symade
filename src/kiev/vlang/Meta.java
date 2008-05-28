@@ -448,6 +448,11 @@ public class UserMeta extends MNode {
 			return false;
 		if (v instanceof ConstBoolExpr)
 			return ((ConstBoolExpr)v).value;
+		if (v instanceof ENode && v.isConstantExpr()) {
+			Object val = v.getConstValue();
+			if (val instanceof Boolean)
+				return ((Boolean)val).booleanValue();
+		}
 		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a boolean constant, but "+v);
 	}
 	
@@ -458,6 +463,11 @@ public class UserMeta extends MNode {
 			return 0;
 		if (v instanceof ConstIntExpr)
 			return ((ConstIntExpr)v).value;
+		if (v instanceof ENode && v.isConstantExpr()) {
+			Object val = v.getConstValue();
+			if (val instanceof Number)
+				return ((Number)val).intValue();
+		}
 		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not an int constant, but "+v);
 	}
 	
@@ -468,6 +478,11 @@ public class UserMeta extends MNode {
 			return null;
 		if (v instanceof ConstStringExpr)
 			return ((ConstStringExpr)v).value;
+		if (v instanceof ENode && v.isConstantExpr()) {
+			Object val = v.getConstValue();
+			if (val instanceof String)
+				return (String)val;
+		}
 		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a String constant, but "+v);
 	}
 	

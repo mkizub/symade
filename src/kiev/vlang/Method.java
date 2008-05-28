@@ -305,7 +305,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "body") {
-			if (this.isMacro())
+			if (this.isMacro() || this.ctx_tdecl.isMixin()) // save for macroses and trait/mixin
 				return true;
 			if (this.body instanceof MetaValue)
 				return true;

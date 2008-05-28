@@ -646,8 +646,11 @@ public final class Env extends KievPackage {
 			if( text.startsWith("0x") || text.startsWith("0X") ) { text = text.substring(2); radix = 16; }
 			else if( text.startsWith("0") && text.length() > 1 ) { text = text.substring(1); radix = 8; }
 			else { radix = 10; }
-			if (text.charAt(text.length()-1) == 'L' || text.charAt(text.length()-1) == 'l')
+			if (text.charAt(text.length()-1) == 'L' || text.charAt(text.length()-1) == 'l') {
 				text = text.substring(0,text.length()-1);
+				if (text.length() == 0)
+					return 0L; // 0L 
+			}
 			long l = ConstExpr.parseLong(text,radix);
 			return l;
 		}

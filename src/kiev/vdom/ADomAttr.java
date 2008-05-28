@@ -115,13 +115,7 @@ public class ADomAttr implements ADomNodeMixin, org.w3c.dom.Attr {
 	//
 	
 	public String getNodeName() {
-		AttrSlot slot = this.pslot();
-		if (slot instanceof DomAttrSlot) {
-			String prefix = slot.prefix;
-			if (prefix != null && prefix.length() > 0)
-				return prefix + ":" + slot.name;
-		}
-		return slot.name;
+		return this.pslot().getXmlFullName();
 	}
 	public String getNodeValue() {
 		if (pslot() == null || parent() == null)
@@ -164,15 +158,7 @@ public class ADomAttr implements ADomNodeMixin, org.w3c.dom.Attr {
 	}
 
 	public final String getNamespaceURI() {
-		AttrSlot slot = this.pslot();
-		if (slot == null)
-			return null;
-		if (slot instanceof DomAttrSlot) {
-			String namespaceURI = slot.namespaceURI;
-			if (namespaceURI != null)
-				return namespaceURI;
-		}
-		return null;
+		return this.pslot().getXmlNamespaceURI();
 	}
 
 	public String getPrefix() {
@@ -192,10 +178,7 @@ public class ADomAttr implements ADomNodeMixin, org.w3c.dom.Attr {
 	}
 
 	public String getLocalName() {
-		AttrSlot slot = this.pslot();
-		if (slot == null)
-			return null;
-		return slot.name;
+		return this.pslot().getXmlLocalName();
 	}
 
 	//
