@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  */
 
 @mixin
-public interface ADomNodeMixin /* extends org.w3c.dom.Node */ {
+public interface ADomNodeMixin extends org.w3c.dom.Node {
 
 	static class EmptyList implements org.w3c.dom.NodeList {
 		public int getLength() { 0 }
