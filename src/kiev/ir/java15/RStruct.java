@@ -267,11 +267,11 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 
 		// create public constructor
-		// public static TypeInfo newTypeInfo(Class clazz, TypeInfo[] args) {
+		// public static __ti__ newTypeInfo(Class clazz, TypeInfo[] args) {
 		// 	int hash = hashCode(clazz, args);
-		// 	TypeInfo ti = get(hash, clazz, args);
+		// 	TypeInfo ti = (__ti__)get(hash, clazz, args);
 		// 	if (ti == null)
-		// 		ti = new TypeInfo(hash, clazz, args[0], args[1], ...);
+		// 		ti = new __ti__(hash, clazz, args[0], args[1], ...);
 		// 	return ti;
 		// }
 		Method mNewTypeInfo = null;
@@ -289,11 +289,12 @@ public final view RStruct of Struct extends RTypeDecl {
 			});
 			init.block.addSymbol(h);
 			Method mget = Type.tpTypeInfo.tdecl.resolveMethod("get",Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
-			v.init = new CallExpr(pos,null,mget,new ENode[]{
-				new LVarExpr(pos,h),
-				new LVarExpr(pos,init.params[0]),
-				new LVarExpr(pos,init.params[1])
-			});
+			v.init = new CastExpr(pos, typeinfo_clazz.xtype, 
+				new CallExpr(pos,null,mget,new ENode[]{
+					new LVarExpr(pos,h),
+					new LVarExpr(pos,init.params[0]),
+					new LVarExpr(pos,init.params[1])
+				}));
 			init.block.addSymbol(v);
 			NewExpr ne = new NewExpr(pos,typeinfo_clazz.xtype,
 				new ENode[]{
@@ -659,7 +660,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						CallType mt = m.dtype.toCallTypeRetAny().applay(this.xtype);
+						CallType mt = (CallType)m.dtype.toCallTypeRetAny().applay(this.xtype);
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -1033,7 +1034,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				((Struct)self).members.add(mmm);
 			}
-			CallType type1 = mmm.type.getErasedType(); // erase type, like X... -> X[]
+			CallType type1 = (CallType)mmm.type.getErasedType(); // erase type, like X... -> X[]
 			CallType dtype1 = mmm.dtype;
 			CallType etype1 = mmm.etype;
 			mmm.detach();
@@ -1042,7 +1043,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			// find all methods with the same java type
 			ListBuffer<Method> mlistb = new ListBuffer<Method>();
 			foreach (Method mj; members; !mj.isMethodBridge() && mj.isStatic() == m.isStatic()) {
-				CallType type2 = mj.type.getErasedType(); // erase type, like X... -> X[]
+				CallType type2 = (CallType)mj.type.getErasedType(); // erase type, like X... -> X[]
 				CallType dtype2 = mj.dtype;
 				CallType etype2 = mj.etype;
 				if( mj.sname != m.sname || etype2.arity != etype1.arity )
@@ -1446,7 +1447,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 
-				Block initbody = m.body;
+				Block initbody = m.block;
 				
 				if (initbody == null)
 					continue; // API class loaded?

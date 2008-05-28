@@ -225,7 +225,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			ASTNode.CopyContext cc = new ASTNode.CopyContext();
 			foreach (ASTNode dn; clazz.members) {
 				if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
-					Method cm = dn;
+					Method cm = (Method)dn;
 					Method im = cm.ncopy(cc);
 					impl.members.add(im);
 					cm.setFinal(false);
@@ -235,7 +235,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					continue;
 				}
 				else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
-					Field cf = dn;
+					Field cf = (Field)dn;
 					if (!cf.isPublic()) {
 						Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
 						cf.setPublic();

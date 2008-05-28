@@ -313,7 +313,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			}
 			else if (clazz instanceof PizzaCase) {
 				clazz.setStatic(true);
-				Struct p = clazz.ctx_tdecl;
+				Struct p = (Struct)clazz.ctx_tdecl;
 				p.addCase((PizzaCase)clazz);
 				getStructType(p, path);
 				if (clazz.super_types.length == 0) {

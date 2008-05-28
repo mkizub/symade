@@ -262,7 +262,7 @@ public class UserMeta extends MNode {
 	
 	public boolean isRuntimeVisible() {
 		TypeDecl tdecl = getTypeDecl();
-		UserMeta retens = tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
+		UserMeta retens = (UserMeta)tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
 		if (retens == null)
 			return false;
 		MetaValue val = retens.get("value");
@@ -276,7 +276,7 @@ public class UserMeta extends MNode {
 
 	public boolean isRuntimeInvisible() {
 		TypeDecl tdecl = getTypeDecl();
-		UserMeta retens = tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
+		UserMeta retens = (UserMeta)tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
 		if (retens == null)
 			return true;
 		MetaValue val = retens.get("value");

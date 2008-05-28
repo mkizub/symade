@@ -73,7 +73,7 @@ public class XPathME_PreGenerate extends BackendProcessor implements Constants {
 	public void doProcess(Struct:ASTNode clazz) {
 		// generate XPath methods
 		foreach (Method m; clazz.members; !m.isAbstract() && m.body == null) {
-			UserMeta xpe = m.getMeta(mnXPathExpr);
+			UserMeta xpe = (UserMeta)m.getMeta(mnXPathExpr);
 			if (xpe == null)
 				continue;
 			String xpath_expr = xpe.getS("value");

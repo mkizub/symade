@@ -1009,7 +1009,7 @@ public final class ExprEditActions implements Runnable, KeyListener {
 	
 	public void run() {
 		if (action == "split") {
-			ENode en = context.node;
+			ENode en = (ENode)context.node;
 			DrawNonTerm nt = null;
 			{
 				Drawable d = context.dr;

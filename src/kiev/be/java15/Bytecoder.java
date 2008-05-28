@@ -89,7 +89,7 @@ public class Bytecoder implements JConstants {
 			assert(cl.super_types.length == 0);
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-			CompaundType st = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+			CompaundType st = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 		    cl.super_types.append(new TypeRef(st));
 			if (Env.getRoot().loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
@@ -99,7 +99,7 @@ public class Bytecoder implements JConstants {
 		KString[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
-			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
+			CompaundType interf = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
 			if (Env.getRoot().loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.tdecl.isInterface())
@@ -259,7 +259,7 @@ public class Bytecoder implements JConstants {
 						for (int i=0; i < cn.bytecode_name.len; i++) {
 							i = cn.bytecode_name.indexOf((byte)'$',i);
 							if (i < 0) break;
-							char ch = cn.bytecode_name.byteAt(i+1);
+							char ch = (char)cn.bytecode_name.byteAt(i+1);
 							if (ch >= '0' && ch <= '9') {
 								anon = true;
 								break;

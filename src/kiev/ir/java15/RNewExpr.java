@@ -294,7 +294,7 @@ public final view RNewClosure of NewClosure extends RENode {
 
 		Var[] params = ((NewClosure)this).params.delToArray();
 		for(int i=0; i < params.length; i++) {
-			LVar v = params[i];
+			Var v = params[i];
 			ENode val = new ContainerAccessExpr(pos,
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));

@@ -1211,7 +1211,7 @@ public class SyntaxSwitch extends SyntaxElem {
 	}
 
 	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxSpace dr_elem = new Draw_SyntaxSwitch();
+		Draw_SyntaxSwitch dr_elem = new Draw_SyntaxSwitch();
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}

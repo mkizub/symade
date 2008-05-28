@@ -132,8 +132,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		
 		// Check fields to not have @nodeAttr and @nodeData
 		foreach (Field f; s.members) {
-			UserMeta fmatt = f.getMeta(mnAtt);
-			UserMeta fmref = f.getMeta(mnRef);
+			UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
+			UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 			if (fmatt != null || fmref != null) {
 				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.ctx_tdecl+" may not be @nodeAttr or @nodeData");
 			}
@@ -141,8 +141,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	}
 	
 	public void doProcess(Field:ASTNode f) {
-		UserMeta fmatt = f.getMeta(mnAtt);
-		UserMeta fmref = f.getMeta(mnRef);
+		UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
+		UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 		//if (fmatt != null || fmref != null) {
 		//	System.out.println("process @node: field "+f+" has @nodeAttr="+fmatt+" and @nodeData="+fmref);
 		if (fmatt != null && fmref != null) {
@@ -461,7 +461,7 @@ public final class VNodeFE_Verify extends VNode_Base {
 			doProcess(sub);
 		if!(isNodeKind(s))
 			return;
-		UserMeta m = s.getMeta(mnNode);
+		UserMeta m = (UserMeta)s.getMeta(mnNode);
 		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
 		TypeDecl td;
 		if (langValue.value instanceof TypeClassExpr)
@@ -678,7 +678,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			impl.addMethod(lng);
 			if (!s.isInterfaceOnly()) {
 				lng.body = new Block();
-				UserMeta m = iface.getMeta(VNode_Base.mnNode);
+				UserMeta m = (UserMeta)iface.getMeta(VNode_Base.mnNode);
 				MetaValueScalar langValue = (MetaValueScalar)m.get(VNode_Base.nameLangName);
 				TypeDecl td;
 				if (langValue.value instanceof TypeClassExpr)
@@ -705,7 +705,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			impl.addMethod(nname);
 			if (!s.isInterfaceOnly()) {
 				nname.body = new Block();
-				UserMeta m = iface.getMeta(VNode_Base.mnNode);
+				UserMeta m = (UserMeta)iface.getMeta(VNode_Base.mnNode);
 				String nm = m.getS(VNode_Base.nameNodeName);
 				if (nm == null || nm.length() == 0)
 					nm = iface.sname;
@@ -881,8 +881,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 
 		// fix methods
 		foreach(Field f; impl.members; !f.isStatic()) {
-			UserMeta fmatt = f.getMeta(VNode_Base.mnAtt);
-			UserMeta fmref = f.getMeta(VNode_Base.mnRef);
+			UserMeta fmatt = (UserMeta)f.getMeta(VNode_Base.mnAtt);
+			UserMeta fmref = (UserMeta)f.getMeta(VNode_Base.mnRef);
 			if (fmatt != null || fmref != null) {
 				boolean isArr = f.getType().isInstanceOf(tpNArray);
 				if (isArr && !f.isAbstract()) {
@@ -968,7 +968,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			ANode stat = ctor.block.stats[i];
 			if (stat instanceof ExprStat) stat = stat.expr;
 			if (stat instanceof AssignExpr && stat.lval instanceof IFldExpr) {
-				IFldExpr fe = ((AssignExpr)stat).lval;
+				IFldExpr fe = (IFldExpr)((AssignExpr)stat).lval;
 				if (fe.obj instanceof ThisExpr && fe.var.isFinal() && fe.var.getMeta(VNode_Base.mnAtt) != null) {
 					Field f = fe.var;
 					fe.setAsField(true);
@@ -1086,7 +1086,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 
 		if (set_var.isSynthetic())
 			set_var.setFinal(true);
-		Block body = set_var.body;
+		Block body = set_var.block;
 		if (s.xtype.isInstanceOf(tpNode) && f.getMeta(VNode_Base.mnUnVersioned) == null && VNode_Base.GEN_VERSIONED) {
 			body.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) {

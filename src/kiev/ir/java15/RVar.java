@@ -49,7 +49,9 @@ public static view RVar of Var extends RDNode {
 			try {
 				init.resolve(tp);
 				Type it = init.getType();
-				if( !it.isInstanceOf(tp) ) {
+				if (!it.isInstanceOf(tp)) {
+					if (it.getAutoCastTo(tp) == null)
+						Kiev.reportWarning(this, "Cannot auto-cast initializer to the var "+this);
 					init = new CastExpr(init.pos,tp,~init);
 					init.resolve(tp);
 				}

@@ -437,7 +437,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	// build data flow for this node
 	public static DataFlowInfo getDFlow(ASTNode n) {
 		WorkerThread wt = (WorkerThread)Thread.currentThread();
-		DataFlowInfo df = wt.dataFlowInfos.get(n);
+		DataFlowInfo df = (DataFlowInfo)wt.dataFlowInfos.get(n);
 		if (df == null) {
 			df = newDataFlowInfo(n);
 			wt.dataFlowInfos.put(n,df);

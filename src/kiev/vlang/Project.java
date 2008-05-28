@@ -124,7 +124,9 @@ public final class DirUnit extends SNode {
 	private DirUnit addDir(String name) {
 		DirUnit dir = new DirUnit(name);
 		for (int i=0; i < members.length; i++) {
-			SNode m = members[i];
+			if !(members[i] instanceof SNode)
+				continue;
+			SNode m = (SNode)members[i];
 			if (!(m instanceof DirUnit) || ((DirUnit)m).name.compareToIgnoreCase(name) > 0) {
 				members.insert(i, dir);
 				return dir;
@@ -136,7 +138,9 @@ public final class DirUnit extends SNode {
 
 	public FileUnit addFile(FileUnit fu) {
 		for (int i=0; i < members.length; i++) {
-			SNode m = members[i];
+			if !(members[i] instanceof SNode)
+				continue;
+			SNode m = (SNode)members[i];
 			if!(m instanceof FileUnit)
 				continue;
 			if (((FileUnit)m).fname.compareToIgnoreCase(fu.fname) > 0) {

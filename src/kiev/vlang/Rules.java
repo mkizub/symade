@@ -115,9 +115,9 @@ public class RuleMethod extends Method {
 	}
 
     public void pass3() {
-		if !( parent() instanceof Struct )
+		if !(parent() instanceof Struct)
 			throw new CompilerException(this,"Method must be declared on class level only");
-		Struct clazz = this.ctx_tdecl;
+		Struct clazz = (Struct)this.parent();
 		// TODO: check flags for fields
 		if( clazz.isPackage() ) setStatic(true);
 		if( (getFlags() & ACC_PRIVATE) != 0 ) setFinal(false);

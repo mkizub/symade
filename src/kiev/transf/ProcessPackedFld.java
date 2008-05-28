@@ -57,7 +57,7 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 				Kiev.reportError(f, "Packed field has no @packed attribute");
 			return;
 		}
-		Struct s = f.ctx_tdecl;
+		TypeDecl s = f.ctx_tdecl;
 		String mp_in = mp.getS("in");
 		if( mp_in != null && mp_in.length() > 0 ) {
 			Field p = s.resolveField(mp_in.intern(),false);

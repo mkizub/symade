@@ -307,7 +307,7 @@ public abstract class ANode implements INode {
 		AttrSlot slot = node.p_slot;
 		if (slot == null || !slot.is_space)
 			return null;
-		ANode[] arr = slot.get(node.parent());
+		ANode[] arr = (ANode[])slot.get(node.parent());
 		for (int i=arr.length-1; i >= 0; i--) {
 			ANode n = arr[i];
 			if (n == node) {
@@ -322,7 +322,7 @@ public abstract class ANode implements INode {
 		AttrSlot slot = node.p_slot;
 		if (slot == null || !slot.is_space)
 			return null;
-		ANode[] arr = slot.get(node.parent());
+		ANode[] arr = (ANode[])slot.get(node.parent());
 		for (int i=arr.length-1; i >= 0; i--) {
 			ANode n = arr[i];
 			if (n == node) {
@@ -648,7 +648,7 @@ public abstract class ANode implements INode {
 	public ANode doRewrite(RewriteContext ctx) {
 		if !(this instanceof ASTNode)
 			return this.ncopy();
-		ANode rn = getClass().newInstance();
+		ANode rn = (ANode)getClass().newInstance();
 		foreach (AttrSlot attr; this.values(); attr.is_attr) {
 			Object val = attr.get(this);
 			if (val == null)
@@ -937,7 +937,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode) {
 		assert(isAttached());
-		ASTNode parent = parent();
+		ANode parent = parent();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);

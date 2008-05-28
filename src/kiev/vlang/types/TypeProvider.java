@@ -385,7 +385,7 @@ public final class CompaundMetaType extends MetaType {
 	private TVarSet			templ_bindings;
 	
 	public static CompaundMetaType newCompaundMetaType(String clazz_name) alias lfy operator new {
-		TypeDecl td = Env.getRoot().resolveGlobalDNode(clazz_name);
+		TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(clazz_name);
 		if (td != null)
 			return (CompaundMetaType)td.xmeta_type;
 		CompaundMetaType mt = compaundMetaTypes.get(clazz_name);

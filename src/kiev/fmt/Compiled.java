@@ -349,7 +349,7 @@ public class Draw_SyntaxToken extends Draw_SyntaxElem implements Cloneable {
 	}
 	
 	public Draw_SyntaxToken copyWithText(String text) {
-		Draw_SyntaxToken st = ((Draw_SyntaxToken)this).clone();
+		Draw_SyntaxToken st = (Draw_SyntaxToken)this.clone();
 		st.text = text;
 		return st;
 	}
@@ -429,12 +429,12 @@ public class Draw_SyntaxIdentAttr extends Draw_SyntaxAttr {
 	}
 	
 	public String getPrefix() {
-		SyntaxIdentTemplate t = template;
+		Draw_SyntaxIdentTemplate t = template;
 		if (t == null || t.esc_prefix == null) return "";
 		return t.esc_prefix;
 	}	
 	public String getSuffix() {
-		SyntaxIdentTemplate t = template;
+		Draw_SyntaxIdentTemplate t = template;
 		if (t == null || t.esc_suffix == null) return "";
 		return t.esc_suffix;
 	}	
