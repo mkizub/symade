@@ -28,7 +28,8 @@ public abstract class TypeDef extends TypeDecl {
 
 	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
 
-	public abstract TypeRef[] getLowerBounds();
+	public TypeRef[] getUpperBounds() { return super_types; }
+	public TypeRef[] getLowerBounds() { return TypeRef.emptyArray; }
 
 	public TypeDef(String name) {
 		super(name);
@@ -84,8 +85,6 @@ public final class TypeAssign extends TypeDef {
 			super_types[0] = tr;
 	}
 	
-	public TypeRef[] getLowerBounds() { return super_types; }
-
 	public TypeAssign() {
 		super(null);
 	}

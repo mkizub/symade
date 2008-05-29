@@ -38,7 +38,7 @@ public final class ResInfo {
 	private ASTNode		from;
 	
 	// a real type of the method in Method.compare() call
-	public CallType	mt;
+	public CallType		resolved_type;
 	
 	public ASTNode		space_prev;
 	
@@ -329,7 +329,7 @@ public final class ResInfo {
 		ri.forwards_stack = (Object[])this.forwards_stack.clone();
 		ri.forwards_p     = this.forwards_p;
 		ri.transforms     = this.transforms;
-		ri.mt             = this.mt;
+		ri.resolved_type  = this.resolved_type;
 		ri.from_scope     = this.from_scope;
 		ri.from           = this.from;
 		return ri;
@@ -345,7 +345,7 @@ public final class ResInfo {
 		this.forwards_stack = ri.forwards_stack;
 		this.forwards_p     = ri.forwards_p;
 		this.transforms     = ri.transforms;
-		this.mt             = ri.mt;
+		this.resolved_type  = ri.resolved_type;
 		this.from_scope     = ri.from_scope;
 		this.from           = ri.from;
 	}

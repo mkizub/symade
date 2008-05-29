@@ -104,7 +104,7 @@ public final class PizzaCase extends Struct {
 	// declare NodeAttr_case_fields to be an attribute for ANode.nodeattr$syntax_parent
 	static final class NodeAttr_case_fields extends SpaceAttAttrSlot<Field> {
 		public final ANode[] get(ANode parent) { return ((PizzaCase)parent).case_fields; }
-		public final void set(ANode parent, Object narr) { ((PizzaCase)parent).case_fields = (Field[])narr; }
+		public final void set(ANode parent, Object narr) { ((PizzaCase)parent).case_fields = (Field∅)narr; }
 		NodeAttr_case_fields(String name, TypeInfo typeinfo) {
 			super(name, ANode.nodeattr$syntax_parent, typeinfo);
 		}
@@ -151,7 +151,7 @@ public final class JavaEnum extends JavaClass {
 	// declare NodeAttr_enum_fields to be an attribute for ANode.nodeattr$syntax_parent
 	static final class NodeAttr_enum_fields extends SpaceAttAttrSlot<Field> {
 		public final ANode[] get(ANode parent) { return ((JavaEnum)parent).enum_fields; }
-		public final void set(ANode parent, Object narr) { ((JavaEnum)parent).enum_fields = (Field[])narr; }
+		public final void set(ANode parent, Object narr) { ((JavaEnum)parent).enum_fields = (Field∅)narr; }
 		NodeAttr_enum_fields(String name, TypeInfo typeinfo) {
 			super(name, ANode.nodeattr$syntax_parent, typeinfo);
 		}

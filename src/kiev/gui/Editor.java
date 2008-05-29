@@ -386,9 +386,10 @@ public class Editor extends InfoView implements KeyListener {
 				this.x = dr.x + dr.w / 2;
 				this.y = dr.y;
 				Vector<Drawable> v = new Vector<Drawable>();
-				while (dr != null) {
-					v.append(dr);
-					dr = (Drawable)dr.parent();
+				Drawable d = dr;
+				while (d != null) {
+					v.append(d);
+					d = (Drawable)d.parent();
 				}
 				path = v.toArray();
 			} else {

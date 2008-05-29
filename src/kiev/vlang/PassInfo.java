@@ -106,7 +106,7 @@ public class PassInfo {
 		}
 		methods.append(m);
 		paths.append(info.copy());
-		types.append(info.mt);
+		types.append(info.resolved_type);
 	}
 	
 	public static boolean resolveBestMethodR(

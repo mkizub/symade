@@ -592,12 +592,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		// check bindings are correct
-		//foreach (TVar tv; rt.tvars; tv.var ≢ StdTypes.tpCallRetArg) {
-		//	ArgType var = tv.var;
-		//	Type val = rt.resolve(var);
-		//	if (!var.isInstanceOf(val))
-		//		Kiev.reportWarning(info.getFrom(),"Incorrect method found "+rt);
-		//}
+		foreach (TVar tv; rt.tvars; tv.var ≢ StdTypes.tpCallRetArg) {
+			ArgType var = tv.var;
+			Type val = rt.resolve(var);
+			if (!var.checkBindings(rt, val))
+				return false; //Kiev.reportWarning(info.getFrom(),"Incorrect method found "+rt+" for the binding "+tv);
+		}
 		
 		if (mt.ret() ≢ Type.tpAny && rt.ret().getAutoCastTo(mt.ret()) == null) {
 			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -606,7 +606,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		
 		trace(Kiev.debug && Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+" match as "+rt);
-		info.mt = rt;
+		info.resolved_type = rt;
 		return true;
 	}
 	

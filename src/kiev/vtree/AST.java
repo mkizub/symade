@@ -104,7 +104,7 @@ public abstract class ANode implements INode {
 			SymbolInfo(ISymbol sold, ISymbol snew) {
 				this.sold = sold;
 				this.snew = snew;
-				this.srefs = List.Nil;
+				this.srefs = List.newList<ASTNode>();
 			}
 			SymbolInfo(ISymbol sold, ASTNode sref) {
 				this.sold = sold;
@@ -242,7 +242,7 @@ public abstract class ANode implements INode {
 				for (int i=0; i < sz; i++)
 					tmp[i] = data[i];
 				tmp[sz] = new ParentInfo(parent,slot);
-				ext_data = tmp;
+				ext_parent = tmp;
 				this.callbackAttached(tmp[sz]);
 			} else {
 				ParentInfo pi = new ParentInfo(parent,slot);

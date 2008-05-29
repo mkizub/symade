@@ -559,7 +559,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType();
-				Type tp = info.mt.resolve(at);
+				Type tp = info.resolved_type.resolve(at);
 				targs[i] = new TypeRef(tp);
 			}
 			ENode call = info.buildCall((ASTNode)this,~expr,m,targs,ENode.emptyArray).closeBuild();
@@ -576,7 +576,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType();
-				Type tp = info.mt.resolve(at);
+				Type tp = info.resolved_type.resolve(at);
 				targs[i] = new TypeRef(tp);
 			}
 			assert(m.isStatic());

@@ -90,7 +90,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			acc.setFlags(0);
 		}
 		f.setVirtual(true);
-		f.setter = new SymbolRef(m);
+		f.setter = new SymbolRef<Method>(m);
 		if (m.getMeta(nameMetaSetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
 		}
@@ -150,7 +150,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			acc.setFlags(0);
 		}
 		f.setVirtual(true);
-		f.getter = new SymbolRef(m);
+		f.getter = new SymbolRef<Method>(m);
 		if (m.getMeta(nameMetaGetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
 		}
@@ -288,7 +288,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 
 				body.stats.append(ass_st);
 			}
-			f.setter = new SymbolRef(set_var);
+			f.setter = new SymbolRef<Method>(set_var);
 		}
 		else if( set_found && (f.isFinal() || !MetaAccess.writeable(f)) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
@@ -309,7 +309,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
-			f.getter = new SymbolRef(get_var);
+			f.getter = new SymbolRef<Method>(get_var);
 		}
 		else if( get_found && !MetaAccess.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);

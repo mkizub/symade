@@ -568,6 +568,43 @@ public final class ArgType extends Type {
 		}
 		return false;
 	}
+	
+	public boolean checkBindings(Type base, Type t) {
+		if (this ≡ t) return true;
+		return checkUpperBounds(base, t) && checkLowerBounds(base, t);
+	}
+	
+	private boolean checkUpperBounds(Type base, Type t) {
+		TypeRef[] types = definer.getUpperBounds();
+		foreach (TypeRef tr; types) {
+			Type bnd = tr.getType();
+			while (bnd instanceof ArgType) {
+				Type res = base.resolve((ArgType)bnd);
+				if (res == bnd)
+					break;
+				bnd = res;
+			}
+			if (!t.isInstanceOf(bnd))
+				return false;
+		}
+		return true;
+	}
+
+	private boolean checkLowerBounds(Type base, Type t) {
+		TypeRef[] types = definer.getLowerBounds();
+		foreach (TypeRef tr; types) {
+			Type bnd = tr.getType();
+			while (bnd instanceof ArgType) {
+				Type res = base.resolve((ArgType)bnd);
+				if (res == bnd)
+					break;
+				bnd = res;
+			}
+			if (!bnd.isInstanceOf(t))
+				return false;
+		}
+		return true;
+	}
 }
 
 public final class CompaundType extends Type {

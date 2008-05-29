@@ -447,20 +447,17 @@ public class List<A>
 
 /** list's consisting of given (0-10) elements
  */
-	public static List<A> newList()
-		alias lfy operator new
+	public static <A> List<A> newList()
 	{
 		return Nil;
 	}
 
-	public static List<A> newList(A hd)
-		alias lfy operator new
+	public static <A> List<A> newList(A hd)
 	{
 		return new Cons<A>(hd,Nil);
 	}
 
-	public static List<A> newList(A hd, A ... va_args)
-		alias lfy operator new
+	public static <A> List<A> newList(A hd, A ... va_args)
 	{
 		List<A> nl = Nil;
 		for(int i=va_args.length-1; i >= 0; i--) {

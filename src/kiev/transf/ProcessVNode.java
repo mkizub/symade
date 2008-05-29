@@ -1051,7 +1051,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (set_var.getMeta(VNode_Base.mnAtt) != null || set_var.getMeta(VNode_Base.mnRef) != null)
 			return; // already generated
 
-		LVar value = null;
+		Var value = null;
 		foreach (Var fp; set_var.params; fp.kind == Var.PARAM_NORMAL) {
 			value = fp;
 			break;

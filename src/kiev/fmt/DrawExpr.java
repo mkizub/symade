@@ -26,7 +26,7 @@ public class DrawAutoParenth extends DrawNonTerm {
 		Draw_SyntaxExprTemplate template = sp.template;
 		ENode node;
 		if (sp.attr instanceof Draw_SyntaxNode)
-			node = this.drnode;
+			node = (ENode)this.drnode;
 		else
 			node = (ENode)this.drnode.getVal(sp.attr.name);
 		if (args.length == 0) {

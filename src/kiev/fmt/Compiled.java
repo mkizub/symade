@@ -781,7 +781,7 @@ public class Draw_ATextSyntax implements Serializable {
 	public Draw_ATextSyntax init() {
 		if (allSyntax != null)
 			return this;
-		badSyntax = new Hashtable<Class,Draw_SyntaxElem>();
+		badSyntax = new Hashtable<String,Draw_SyntaxElem>();
 		allSyntax = new Hashtable<String,Draw_SyntaxElem>();
 		allSyntaxExprs = new Hashtable<Pair<Operator,Class>, Draw_SyntaxElem>();
 		foreach (Draw_SyntaxElemDecl sed; declared_syntax_elements) {

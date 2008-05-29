@@ -378,7 +378,7 @@ public class Field extends Var {
 		}
 		ctx_tdecl.members += m;
 		Kiev.runProcessorsOn(m);
-		this.getter_from_inner = new SymbolRef(m);
+		this.getter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
 
@@ -399,7 +399,7 @@ public class Field extends Var {
 		}
 		ctx_tdecl.members += m;
 		Kiev.runProcessorsOn(m);
-		this.setter_from_inner = new SymbolRef(m);
+		this.setter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
 

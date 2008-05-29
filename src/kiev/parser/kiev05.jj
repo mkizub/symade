@@ -32,6 +32,9 @@ import java.io.Reader;
 import static kiev.vlang.AccessFlags.*;
 import syntax kiev.Syntax;
 
+typedef SymbolRefPkg = SymbolRef<KievPackage> ;
+typedef SymbolRefFld = SymbolRef<Field> ;
+
 }*/ 
 
 public final class Parser extends kiev050 {
@@ -825,15 +828,15 @@ FileUnit FileUnit(String filename) :
 }
 
 NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
-{ TypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); }
+{ TypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); SymbolRef sr; }
 {
 	{ declMode = true; }
 	try {
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
 		<IDENTIFIER>	// "namespace"
 		(	LOOKAHEAD({ parent.getPackage() instanceof Env })
-			ns.srpkg = QName()
-		|	ns.srpkg = NameRef()
+			sr = QName()		{ ns.srpkg = (SymbolRefPkg)sr; }
+		|	sr = NameRef()		{ ns.srpkg = (SymbolRefPkg)sr; }
 		)
 		{ parent.members += ns; curClazz = ns.getPackage(); }
 		"{"
@@ -913,7 +916,7 @@ void InBlockModifiersLA() :
 	| "@uuid"
 }
 
-SymbolRef Package() :
+SymbolRefPkg Package() :
 { SymbolRef qn; }
 {
 	"package"
@@ -921,7 +924,7 @@ SymbolRef Package() :
 	";"
 	{
 		qn.symbol = Env.getRoot().newPackage(qn.name);
-		return qn;
+		return (SymbolRefPkg)qn;
 	}
 }
 
@@ -1376,7 +1379,7 @@ int AccessSpec() :
 }
 
 void SpecialAnnotation(ASTModifiers modifiers) :
-{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; ConstStringExpr cs; SymbolRef nr; }
+{ MetaPacked mp; MetaThrows mthr; MetaUUID muuid; TypeNameRef thr; ConstIntExpr ice; ConstStringExpr cs; SymbolRef nr; }
 {
 	  "@singleton"		{ modifiers += new MetaSingleton(); }
 	| "@mixin"			{ modifiers += new MetaMixin(); }
@@ -1412,14 +1415,14 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 		(
 			"("
 						ice = IntConstExpression() { mp.size = ice.value; }
-			[	","		nr  = NameRef() { mp.fld = nr; }
+			[	","		nr  = NameRef() { mp.fld = (SymbolRefFld)nr; }
 				","		ice = IntConstExpression() { mp.offset = ice.value; }
 			]
 			")"
 		|
 			":" 	ice = IntConstExpression() { mp.size = ice.value; }
 			[
-			","		nr  = NameRef() { mp.fld = nr; }
+			","		nr  = NameRef() { mp.fld = (SymbolRefFld)nr; }
 			","		ice = IntConstExpression() { mp.offset = ice.value; }
 			]
 		|
@@ -1428,24 +1431,24 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 		{ modifiers += mp; }
 
 	| "@throws"
-		{ mt = new MetaThrows(); }
+		{ mthr = new MetaThrows(); }
 		(
-			thr = TypeQName() { mt.add(thr); }
-			( "," thr = TypeQName() { mt.add(thr); } )*
+			thr = TypeQName() { mthr.add(thr); }
+			( "," thr = TypeQName() { mthr.add(thr); } )*
 		|
 			"(" [ LOOKAHEAD(2) <IDENTIFIER> "="] ["{"]
-			thr = TypeQName() { mt.add(thr); }
-			( "," thr = TypeQName() { mt.add(thr); } )*
+			thr = TypeQName() { mthr.add(thr); }
+			( "," thr = TypeQName() { mthr.add(thr); } )*
 			 ["}"] ")"
 		)
-		{ modifiers += mt; }
+		{ modifiers += mthr; }
 
 	| "@uuid"
-		{ mt = new MetaUUID(); }
+		{ muuid = new MetaUUID(); }
 		"("
 		cs = StringConstExpression()
 		")"
-		{ mt.value = cs.value; modifiers += mt; }
+		{ muuid.value = cs.value; modifiers += muuid; }
 }
 
 SymbolRef KeywordAsNameRef() :
@@ -1519,7 +1522,7 @@ void AnnotationValues(UserMeta m) :
 }
 
 MetaValue AnnotationValueAny(SymbolRef id) :
-{ ENode n; MetaValue v; }
+{ ASTNode n; MetaValue v; }
 {
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
@@ -1536,7 +1539,7 @@ MetaValue AnnotationValueAny(SymbolRef id) :
 }
 
 MetaValueScalar AnnotationValueScalar(SymbolRef id) :
-{ ENode n; MetaValueScalar v; }
+{ ASTNode n; MetaValueScalar v; }
 {
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )

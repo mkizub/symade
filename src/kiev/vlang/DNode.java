@@ -531,11 +531,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 	
 	public void updatePackageClazz() {
-		Struct pkg = null;
+		TypeDecl pkg = null;
 		TypeDecl td = ctx_tdecl;
 		NameSpace ns;
-		if (td instanceof Struct)
-			pkg = (Struct)td;
+		if (td instanceof TypeDecl)
+			pkg = (TypeDecl)td;
 		else if ((ns=ctx_name_space) != null)
 			pkg = ns.getPackage();
 		TypeDecl cur = this.package_clazz.dnode;

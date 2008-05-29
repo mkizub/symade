@@ -165,7 +165,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 
-	@nodeAttr public SymbolRef<TypeDecl>		srpkg;
+	@nodeAttr public SymbolRef<KievPackage>	srpkg;
 	@nodeAttr public ASTNode[]					members;
 	
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
@@ -179,8 +179,8 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		this.srpkg = new SymbolRef<KievPackage>(Env.getRoot());
 	}
 	
-	public TypeDecl getPackage() {
-		TypeDecl td = srpkg.dnode;
+	public KievPackage getPackage() {
+		KievPackage td = srpkg.dnode;
 		if (td != null)
 			return td;
 		if (srpkg.name == "") {

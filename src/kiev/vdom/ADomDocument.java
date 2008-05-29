@@ -30,7 +30,7 @@ public class GenDomImplementation implements org.w3c.dom.DOMImplementation {
 	public org.w3c.dom.DocumentType createDocumentType(String qualifiedName, String publicId, String systemId) { null }
 	public org.w3c.dom.Document createDocument(String namespaceURI, String qualifiedName, org.w3c.dom.DocumentType doctype) {
 		GenDomDocument doc = new GenDomDocument();
-		doc.element = doc.createElementNS(namespaceURI, qualifiedName);
+		doc.element = (ADomElement)doc.createElementNS(namespaceURI, qualifiedName);
 		return doc;
 	}
 }

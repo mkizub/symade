@@ -199,7 +199,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					expr = new AssignExpr(f.pos, Operator.Assign, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
 				body.stats.add(new ExprStat(f.pos, expr));
 
-				f.setter = new SymbolRef(set_var);
+				f.setter = new SymbolRef<Method>(set_var);
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
@@ -234,7 +234,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 				
 				body.stats.add(new ReturnStat(f.pos,expr));
 				
-				f.getter = new SymbolRef(get_var);
+				f.getter = new SymbolRef<Method>(get_var);
 			}
 		}
 		foreach(Struct n; s.members)

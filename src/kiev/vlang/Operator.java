@@ -354,7 +354,7 @@ public final class Operator implements Constants {
 						tmp[j] = methods[j];
 					for (int j=i; j < tmp.length; j++)
 						tmp[j] = methods[j+1];
-					op.methods[i] = methods = tmp;
+					op.methods = methods = tmp;
 					i--;
 				}
 			}

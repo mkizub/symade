@@ -19,6 +19,9 @@ import java.io.Reader;
 import static kiev.vlang.AccessFlags.*;
 import syntax kiev.Syntax;
 
+typedef SymbolRefPkg = SymbolRef<KievPackage> ;
+typedef SymbolRefFld = SymbolRef<Field> ;
+
 }*/
 
 public final class Parser extends kiev050 {
@@ -460,7 +463,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) throws ParseException {
-  TypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace();
+  TypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); SymbolRef sr;
           declMode = true;
     try {
       if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace")) {
@@ -471,11 +474,13 @@ public abstract class kiev050 implements kiev050Constants {
       }
       jj_consume_token(IDENTIFIER);
       if (parent.getPackage() instanceof Env) {
-        ns.srpkg = QName();
+        sr = QName();
+                                                  ns.srpkg = (SymbolRefPkg)sr;
       } else {
         switch (jj_nt.kind) {
         case IDENTIFIER:
-          ns.srpkg = NameRef();
+          sr = NameRef();
+                                                  ns.srpkg = (SymbolRefPkg)sr;
           break;
         default:
           jj_consume_token(-1);
@@ -708,13 +713,13 @@ public abstract class kiev050 implements kiev050Constants {
     }
   }
 
-  final public SymbolRef Package() throws ParseException {
+  final public SymbolRefPkg Package() throws ParseException {
   SymbolRef qn;
     jj_consume_token(PACKAGE);
     qn = QName();
     jj_consume_token(SEMICOLON);
                 qn.symbol = Env.getRoot().newPackage(qn.name);
-                {if (true) return qn;}
+                {if (true) return (SymbolRefPkg)qn;}
     throw new Error("Missing return statement in function");
   }
 
@@ -1762,7 +1767,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public void SpecialAnnotation(ASTModifiers modifiers) throws ParseException {
-  MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; ConstStringExpr cs; SymbolRef nr;
+  MetaPacked mp; MetaThrows mthr; MetaUUID muuid; TypeNameRef thr; ConstIntExpr ice; ConstStringExpr cs; SymbolRef nr;
     switch (jj_nt.kind) {
     case META_SINGLETON:
       jj_consume_token(META_SINGLETON);
@@ -1856,7 +1861,7 @@ public abstract class kiev050 implements kiev050Constants {
         case COMMA:
           jj_consume_token(COMMA);
           nr  = NameRef();
-                                                                  mp.fld = nr;
+                                                                  mp.fld = (SymbolRefFld)nr;
           jj_consume_token(COMMA);
           ice = IntConstExpression();
                                                                              mp.offset = ice.value;
@@ -1874,7 +1879,7 @@ public abstract class kiev050 implements kiev050Constants {
         case COMMA:
           jj_consume_token(COMMA);
           nr  = NameRef();
-                                                          mp.fld = nr;
+                                                          mp.fld = (SymbolRefFld)nr;
           jj_consume_token(COMMA);
           ice = IntConstExpression();
                                                                      mp.offset = ice.value;
@@ -1890,11 +1895,11 @@ public abstract class kiev050 implements kiev050Constants {
       break;
     case META_THROWS:
       jj_consume_token(META_THROWS);
-                  mt = new MetaThrows();
+                  mthr = new MetaThrows();
       switch (jj_nt.kind) {
       case IDENTIFIER:
         thr = TypeQName();
-                                            mt.add(thr);
+                                            mthr.add(thr);
         label_22:
         while (true) {
           switch (jj_nt.kind) {
@@ -1906,7 +1911,7 @@ public abstract class kiev050 implements kiev050Constants {
           }
           jj_consume_token(COMMA);
           thr = TypeQName();
-                                                  mt.add(thr);
+                                                  mthr.add(thr);
         }
         break;
       case LPAREN:
@@ -1925,7 +1930,7 @@ public abstract class kiev050 implements kiev050Constants {
           ;
         }
         thr = TypeQName();
-                                            mt.add(thr);
+                                            mthr.add(thr);
         label_23:
         while (true) {
           switch (jj_nt.kind) {
@@ -1937,7 +1942,7 @@ public abstract class kiev050 implements kiev050Constants {
           }
           jj_consume_token(COMMA);
           thr = TypeQName();
-                                                  mt.add(thr);
+                                                  mthr.add(thr);
         }
         switch (jj_nt.kind) {
         case RBRACE:
@@ -1952,15 +1957,15 @@ public abstract class kiev050 implements kiev050Constants {
         jj_consume_token(-1);
         throw new ParseException();
       }
-                  modifiers += mt;
+                  modifiers += mthr;
       break;
     case META_UUID:
       jj_consume_token(META_UUID);
-                  mt = new MetaUUID();
+                  muuid = new MetaUUID();
       jj_consume_token(LPAREN);
       cs = StringConstExpression();
       jj_consume_token(RPAREN);
-                  mt.value = cs.value; modifiers += mt;
+                  muuid.value = cs.value; modifiers += muuid;
       break;
     default:
       jj_consume_token(-1);
@@ -2067,7 +2072,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public MetaValue AnnotationValueAny(SymbolRef id) throws ParseException {
-  ENode n; MetaValue v;
+  ASTNode n; MetaValue v;
     if (jj_2_11(2147483647)) {
       n = Annotation();
                   v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n;
@@ -2086,7 +2091,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public MetaValueScalar AnnotationValueScalar(SymbolRef id) throws ParseException {
-  ENode n; MetaValueScalar v;
+  ASTNode n; MetaValueScalar v;
     if (jj_2_12(2147483647)) {
       n = Annotation();
                   v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n;

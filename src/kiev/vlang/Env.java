@@ -64,6 +64,7 @@ public final class Env extends KievPackage {
 	 */
 	private Env() {
 		root = this;
+		this.setTypeDeclNotLoaded(false);
 		new CompaundMetaType(this);
 	}
 
@@ -146,7 +147,7 @@ public final class Env extends KievPackage {
 		return cl;
 	}
 
-	public Struct newPackage(String qname) {
+	public KievPackage newPackage(String qname) {
 		if (qname == "")
 			return Env.getRoot();
 		assert(qname.indexOf('.') < 0);
@@ -157,15 +158,14 @@ public final class Env extends KievPackage {
 			return newPackage(qname.substring(end+1).intern(),newPackage(qname.substring(0,end).intern()));
 	}
 
-	public Struct newPackage(String sname, Struct outer) {
-		assert( outer instanceof KievPackage );
-		Struct cl = null;
-		foreach (Struct s; outer.sub_decls; s.sname == sname) {
+	public KievPackage newPackage(String sname, KievPackage outer) {
+		KievPackage cl = null;
+		foreach (KievPackage s; outer.sub_decls; s.sname == sname) {
 			cl = s;
 			break;
 		}
 		if (cl == null) {
-			cl = newStruct(sname,outer,0,new KievPackage());
+			cl = (KievPackage)newStruct(sname,outer,0,new KievPackage());
 			outer.members += cl;
 			cl.setTypeDeclNotLoaded(false);
 		}
@@ -475,7 +475,10 @@ public final class Env extends KievPackage {
 						qname = pkg.qname() + '\u001f' + tdname;
 					FileUnit fu = FileUnit.makeFile(qname.replace('\u001f','/')+".xml", false);
 					fu.scanned_for_interface_only = true;
-					fu.srpkg.symbol = pkg;
+					TypeDecl p = pkg;
+					while (p != null && !p.isPackage())
+						p = p.package_clazz.dnode;
+					fu.srpkg.symbol = p;
 					root = fu;
 					TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(qname);
 					if (td != null) {
@@ -525,7 +528,7 @@ public final class Env extends KievPackage {
 					if (attr.is_space) {
 						n = (ANode)attr.typeinfo.newInstance();
 					} else {
-						n = attr.get(nodes.peek());
+						n = (ANode)attr.get(nodes.peek());
 						if (n == null)
 							n = (ANode)attr.typeinfo.newInstance();
 					}
