@@ -121,12 +121,16 @@ public abstract class Type extends AType {
 				Type r1 = b1.resolve(v2.var);
 				if (r1 ≈ r2)
 					continue;
-				if (t1.isArray() && t2.isArray() && /*v2.var ≡ tpArrayArg &&*/ r1.isInstanceOf(r2))
+				if (v2.var.isCoVariant() && r1.isInstanceOf(r2))
+					continue;
+				if (v2.var.isContraVariant() && r2.isInstanceOf(r1))
+					continue;
+				// before we can declare N to be covariant in NodeSpace<+N extends ANode>
+				if (t1.isArray() && t2.isArray() && r1.isInstanceOf(r2))
 					continue;
 				if ((r1 instanceof ArgType || r2 instanceof ArgType) && r1.isInstanceOf(r2))
 					continue;
-				//if (!r1.isInstanceOf(r2))
-					return false;
+				return false;
 			}
 			return true;
 		}
@@ -235,6 +239,57 @@ public abstract class Type extends AType {
 	}
 
 	public final Field resolveField(String name) { return meta_type.tdecl.resolveField(name); }
+
+
+	// checks the type 'base' for argument 'at' to confirm variance 'variance'
+	private static VarianceCheckError checkArgVariance(Type base, ArgType at, TypeVariance variance) {
+		if (at.isInVariant())
+			return null;
+		if (at.isCoVariant()) {
+			if (variance == TypeVariance.CO_VARIANT)
+				return null;
+			return new VarianceCheckError(base, at, variance);
+		}
+		if (at.isContraVariant()) {
+			if (variance == TypeVariance.CONTRA_VARIANT)
+				return null;
+			return new VarianceCheckError(base, at, variance);
+		}
+		assert ("Unexpected variance "+at.definer.getVariance()+" of "+at);
+		return null;
+	}
+	
+	public VarianceCheckError checkVariance(TypeVariance variance) {
+		return checkVariance(this,variance);
+	}
+	public VarianceCheckError checkVariance(Type base, TypeVariance variance) {
+		if (this instanceof ArgType)
+			return checkArgVariance(base,(ArgType)this,variance);
+		foreach (TVar tv; this.bindings().tvars; !tv.isAlias()) {
+			Type t = tv.unalias().result();
+			TypeVariance check_variance;
+			if (tv.var.isInVariant())
+				check_variance = TypeVariance.IN_VARIANT;
+			else if (tv.var.isCoVariant())
+				check_variance = variance;
+			else if (variance == TypeVariance.CO_VARIANT)
+				check_variance = TypeVariance.CONTRA_VARIANT;
+			else if (variance == TypeVariance.CONTRA_VARIANT)
+				check_variance = TypeVariance.CO_VARIANT;
+			else
+				check_variance = variance;
+			if (t instanceof ArgType) {
+				VarianceCheckError err = checkArgVariance(base,(ArgType)t,check_variance);
+				if (err != null)
+					return err;
+			} else {
+				VarianceCheckError err = t.checkVariance(base,check_variance);
+				if (err != null)
+					return err;
+			}
+		}
+		return null;
+	}
 }
 
 public final class XType extends Type {
@@ -544,6 +599,10 @@ public final class ArgType extends Type {
 	public String toString() {
 		return String.valueOf(definer.sname);
 	}
+	
+	public boolean isCoVariant() { return definer.getVariance() == TypeVariance.CO_VARIANT; }
+	public boolean isContraVariant() { return definer.getVariance() == TypeVariance.CONTRA_VARIANT; }
+	public boolean isInVariant() { return definer.getVariance() == TypeVariance.IN_VARIANT; }
 
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t || t ≡ Type.tpAny ) return true;

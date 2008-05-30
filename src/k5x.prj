@@ -406,6 +406,9 @@
            <fname>varargs.java</fname>
           </a-node>
           <a-node class='kiev.vlang.FileUnit'>
+           <fname>Variance.java</fname>
+          </a-node>
+          <a-node class='kiev.vlang.FileUnit'>
            <fname>ViewOf.java</fname>
           </a-node>
           <a-node class='kiev.vlang.FileUnit'>
@@ -442,9 +445,6 @@
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
          <fname>List.java</fname>
-        </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
-         <fname>ListBuffer.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
          <fname>MatchError.java</fname>

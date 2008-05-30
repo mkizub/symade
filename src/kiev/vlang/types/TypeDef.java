@@ -17,6 +17,39 @@ import syntax kiev.Syntax;
  *
  */
 
+public enum TypeVariance {
+	IN_VARIANT,
+	CO_VARIANT,
+	CONTRA_VARIANT
+}
+
+public class VarianceCheckError {
+	// the type in which we've found missmatch
+	public final Type			base;
+	// the type we check
+	public final ArgType		at;
+	// the expected variance
+	public final TypeVariance	variance;
+	
+	public VarianceCheckError(Type base, ArgType at, TypeVariance variance) {
+		this.base = base;
+		this.at = at;
+		this.variance = variance;
+	}
+	
+	public String toString() {
+		return varianceName(at.definer.getVariance())+" type variable "+at
+				+" found at "+varianceName(variance)+" position in type "+base;
+	}
+	private static String varianceName(TypeVariance variance) {
+		if (variance == TypeVariance.CO_VARIANT)
+			return "co-variant";
+		if (variance == TypeVariance.CONTRA_VARIANT)
+			return "contra-variant";
+		return "in-variant";
+	}
+}
+
 @ThisIsANode(lang=CoreLang)
 public abstract class TypeDef extends TypeDecl {
 
@@ -30,6 +63,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeRef[] getUpperBounds() { return super_types; }
 	public TypeRef[] getLowerBounds() { return TypeRef.emptyArray; }
+	public TypeVariance getVariance() { return TypeVariance.IN_VARIANT; }
 
 	public TypeDef(String name) {
 		super(name);
@@ -130,6 +164,16 @@ public final class TypeAssign extends TypeDef {
 			}
 		}
 	}
+
+	public void postVerify() {
+		// check upper bounds
+		foreach (TypeRef tr; getUpperBounds()) {
+			Type t = tr.getType();
+			VarianceCheckError err = t.checkVariance(t,TypeVariance.IN_VARIANT);
+			if (err != null)
+				Kiev.reportWarning(this, err.toString());
+		}
+	}
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -142,8 +186,16 @@ public final class TypeConstr extends TypeDef {
 	@virtual typedef This  = TypeConstr;
 
 	@nodeAttr public TypeRef[]			lower_bound;
+	@nodeAttr public TypeVariance		variance;
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }
+	
+	public TypeVariance getVariance() {
+		TypeVariance tv = this.variance;
+		if (tv == null)
+			return TypeVariance.IN_VARIANT;
+		return tv;
+	}
 
 	public TypeConstr() {
 		super(null);
@@ -169,6 +221,31 @@ public final class TypeConstr extends TypeDef {
 		return null;
 	}
 	
+	public void postVerify() {
+		if !(parent() instanceof Method) {
+			TypeVariance variance = getVariance();
+			
+			// check upper bounds
+			foreach (TypeRef tr; getUpperBounds()) {
+				Type t = tr.getType();
+				VarianceCheckError err = t.checkVariance(t,variance);
+				if (err != null)
+					Kiev.reportWarning(this, err.toString());
+			}
+			
+			// check lower bounds with inverted variance
+			if (variance == TypeVariance.CO_VARIANT)
+				variance = TypeVariance.CONTRA_VARIANT;
+			else if (variance == TypeVariance.CONTRA_VARIANT)
+				variance = TypeVariance.CO_VARIANT;
+			foreach (TypeRef tr; getLowerBounds()) {
+				Type t = tr.getType();
+				VarianceCheckError err = t.checkVariance(t,variance);
+				if (err != null)
+					Kiev.reportWarning(this, err.toString());
+			}
+		}
+	}
 }
 
 

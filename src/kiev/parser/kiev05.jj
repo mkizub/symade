@@ -1313,11 +1313,29 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 }
 
 TypeConstr ArgumentDeclaration() :
-{ ASTModifiers modifiers; Symbol name; TypeConstr arg; TypeRef tr; }
+{ ASTModifiers modifiers; Symbol name; TypeConstr arg; TypeRef tr; TypeVariance variance = null; }
 {
 	modifiers = Modifiers()
+	(
+		LOOKAHEAD( <OPERATOR> /*, { getToken(1).image.equals("+") || getToken(1).image.equals("-") || getToken(1).image.equals("*") } */)
+		//"+" | "-" | "*"
+		<OPERATOR>
+		{
+			String img = getToken(0).image;
+			if (img.equals("+"))
+				variance = TypeVariance.CO_VARIANT;
+			else if (img.equals("-"))
+				variance = TypeVariance.CONTRA_VARIANT;
+			else if (img.equals("*"))
+				variance = TypeVariance.IN_VARIANT;
+		}
+	)?
 	name      = Name()
-	{ arg = mkTypeConstr(name,modifiers,true); arg.setAbstract(true); }
+	{
+		arg = mkTypeConstr(name,modifiers,true); arg.setAbstract(true);
+		if (variance != null)
+			arg.variance = variance;
+	}
 	[
 		"extends"
 		tr = Type() { arg.super_types.add(tr); }
@@ -1328,12 +1346,17 @@ TypeConstr ArgumentDeclaration() :
 	]
 	[
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("super") }) //"super"
+		<IDENTIFIER>
 		tr = Type() { arg.lower_bound.add(tr); }
 		(	LOOKAHEAD( <OPERATOR>, { getToken(1).image.equals("&") })
 			<OPERATOR>
 			tr = Type() { arg.lower_bound.add(tr); }
 		)*
 	]
+	(
+		<OPERATOR_UPPER_BOUND> tr = Type() { arg.super_types.add(tr);}
+	|	<OPERATOR_LOWER_BOUND> tr = Type() { arg.lower_bound.add(tr);}
+	)*
 	{ return arg; }
 }
 

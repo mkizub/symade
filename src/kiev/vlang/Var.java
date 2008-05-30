@@ -402,5 +402,22 @@ public class Field extends Var {
 		this.setter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
-
+	
+	public void postVerify() {
+		if (!isStatic() && !isPrivate()) {
+			Type t = this.getType();
+			TypeVariance variance = TypeVariance.IN_VARIANT;
+			boolean readable = MetaAccess.readable(this);
+			boolean writable = MetaAccess.writeable(this) && !this.isFinal();
+			if (readable && writable)
+				variance = TypeVariance.IN_VARIANT;
+			else if (readable)
+				variance = TypeVariance.CO_VARIANT;
+			else if (writable)
+				variance = TypeVariance.CONTRA_VARIANT;
+			VarianceCheckError err = t.checkVariance(variance);
+			if (err != null)
+				Kiev.reportWarning(this.vtype, err.toString());
+		}
+	}
 }

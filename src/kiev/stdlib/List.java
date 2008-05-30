@@ -23,7 +23,7 @@ public class List<A>
 {
 
 	public case Nil;
-	public case Cons<A>(A head, List<A> tail);
+	public case Cons<A> (A head, List<A> tail);
 
 /** return the length of the list
  */

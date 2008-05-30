@@ -887,6 +887,23 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return m;
 	}
 
+	public void postVerify() {
+		if (!isStatic() && !isPrivate()) {
+			CallType ct = this.type;
+			if (ct.ret() != StdTypes.tpVoid) {
+				// check return to be co-variant
+				VarianceCheckError err = ct.ret().checkVariance(ct,TypeVariance.CO_VARIANT);
+				if (err != null)
+					Kiev.reportWarning(this, err.toString());
+			}
+			for (int i=0; i < ct.arity; i++) {
+				// check argument to be contra-variant
+				VarianceCheckError err = ct.arg(i).checkVariance(ct,TypeVariance.CONTRA_VARIANT);
+				if (err != null)
+					Kiev.reportWarning(this, err.toString());
+			}
+		}
+	}
 }
 
 @ThisIsANode(name="Method", lang=CoreLang)

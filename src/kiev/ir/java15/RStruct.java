@@ -186,12 +186,12 @@ public final view RStruct of Struct extends RTypeDecl {
 //		System.out.println("Field "+f+" of type "+f.init+" added");
 	}
 
-	public List<ArgType> getTypeInfoArgs() {
-		ListBuffer<ArgType> lb = new ListBuffer<ArgType>();
+	public ArgType[] getTypeInfoArgs() {
+		Vector<ArgType> lb = new Vector<ArgType>();
 		TVar[] templ = this.xmeta_type.getTemplBindings().tvars;
 		foreach (TVar tv; templ; tv.isFree() && tv.var.isUnerasable())
 			lb.append(tv.var);
-		return lb.toList();
+		return lb.toArray();
 	}
 
 	public void autoGenerateTypeinfoClazz() {
@@ -1041,7 +1041,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Method mm = null;
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
 			// find all methods with the same java type
-			ListBuffer<Method> mlistb = new ListBuffer<Method>();
+			Vector<Method> marr = new Vector<Method>();
 			foreach (Method mj; members; !mj.isMethodBridge() && mj.isStatic() == m.isStatic()) {
 				CallType type2 = (CallType)mj.type.getErasedType(); // erase type, like X... -> X[]
 				CallType dtype2 = mj.dtype;
@@ -1057,7 +1057,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						if (((CallType)mm.type.getErasedType()).greater(type2))
 							mm = mj;
 					}
-					mlistb.append(mj);
+					marr.append(mj);
 				} else {
 					trace(Kiev.debug && Kiev.debugMultiMethod,"methods "+mj+" with dispatch type "+etype2+" doesn't match...");
 				}
@@ -1068,13 +1068,11 @@ public final view RStruct of Struct extends RTypeDecl {
 				overwr = getOverwrittenMethod(super_types[0].getStruct(),self.xtype,m);
 
 			// nothing to do, if no methods to combine
-			if (mlistb.length() == 1 && mm != null) {
+			if (marr.length == 1 && mm != null) {
 				// mm will have the base type - so, no super. call will be done
 				trace(Kiev.debug && Kiev.debugMultiMethod,"no need to dispatch "+m);
 				continue;
 			}
-
-			List<Method> mlist = mlistb.toList();
 
 			if (mm == null) {
 				// create a new dispatcher method...
@@ -1090,7 +1088,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			// create mmtree
 			MMTree mmt = new MMTree(mm);
 
-			foreach (Method m; mlist; m != mm)
+			foreach (Method m; marr; m != mm)
 				mmt.add(m);
 
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);

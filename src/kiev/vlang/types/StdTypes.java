@@ -158,6 +158,7 @@ public interface StdTypes {
 		
 		tdArrayArg = new TypeConstr("_elem_", tpAny);
 		tdArrayArg.setAbstract(true);
+		tdArrayArg.variance = TypeVariance.CO_VARIANT;
 		tpArrayArg = tdArrayArg.getAType();
 		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tpArray					= ArrayType.newArrayType(tpArrayArg);
