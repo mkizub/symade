@@ -251,7 +251,7 @@ public final class IFldExpr extends LvalueExpr {
 			return StdTypes.tpVoid;
 		if (ot.getErasedType() instanceof ASTNodeType) {
 			String name = ("attr$"+var.sname+"$type").intern();
-			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
+			foreach (TVar tv; ot.bindings().getTVars(); tv.var.name == name) {
 				return ot.resolve(tv.var);
 			}
 			if (var.getType().getErasedType() instanceof ASTNodeType)

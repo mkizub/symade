@@ -28,15 +28,15 @@ import syntax kiev.Syntax;
 public abstract class AType implements StdTypes, TVSet {
 	
 	public final			MetaType	meta_type;
-	public:ro,ro,ro,rw		TVar[]		tvars;
-	private					TArg[]		appls;
+	@access:no,no,ro,rw		TVar[]		tvars;
+	private					ArgType[]	appls;
 	private					int			version_and_flags;
 	@packed:16,version_and_flags,0
 	public:ro,ro,rw,rw		int			flags;
 	@packed:16,version_and_flags,16
 	private					int			version;
 	
-	protected AType(MetaType meta_type, int flags, TVar[] tvars, TArg[] appls) {
+	protected AType(MetaType meta_type, int flags, TVar[] tvars, ArgType[] appls) {
 		this.meta_type = meta_type;
 		this.flags = flags;
 		this.tvars = tvars;
@@ -73,21 +73,22 @@ public abstract class AType implements StdTypes, TVSet {
 
 	private void setFromBld(TVarBld bld) {
 		bld.close();
-		int n = bld.tvars.length;
+		TVar[] bld_tvars = bld.getTVars();
+		int n = bld_tvars.length;
 		if (n > 0) {
 			this.tvars = new TVar[n];
 			for (int i=0; i < n; i++)
-				this.tvars[i] = bld.tvars[i].copy(this);
+				this.tvars[i] = bld_tvars[i];
 		} else {
 			this.tvars = TVar.emptyArray;
 		}
 //		if (bld.appls != null && bld.appls.length > 0) {
 //			n = bld.appls.length;
-//			this.appls = new TArg[n];
+//			this.appls = new ArgType[n];
 //			for (int i=0; i < n; i++)
 //				this.appls[i] = bld.appls[i].copy(this);
 //		} else {
-//			this.appls = TArg.emptyArray;
+//			this.appls = ArgType.emptyArray;
 //		}
 
 		flags &= ~(flAbstract|flValAppliable|flBindable);
@@ -134,7 +135,7 @@ public abstract class AType implements StdTypes, TVSet {
 			TVar tv1 = b1[i];
 			TVar tv2 = b2[i];
 			if (tv1.var != tv2.var) return false;
-			if (tv1.unalias().result() ≉ tv2.unalias().result())
+			if (tv1.unalias(t1).result() ≉ tv2.unalias(t2).result())
 				return false;
 		}
 		return true;
@@ -149,7 +150,7 @@ public abstract class AType implements StdTypes, TVSet {
 		return this.tvars;
 	}
 
-	public TArg[] getTArgs() {
+	public ArgType[] getTArgs() {
 		if (this.appls == null)
 			buildApplayables();
 		return this.appls;
@@ -161,7 +162,7 @@ public abstract class AType implements StdTypes, TVSet {
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
 			if (tvars[i].var ≡ arg)
-				return tvars[i].unalias().result();
+				return tvars[i].unalias(this).result();
 		}
 		return arg;
 	}
@@ -200,20 +201,20 @@ public abstract class AType implements StdTypes, TVSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.unalias().result());
+						sr.set(i, y.unalias(vs).result());
 						continue next_my;
 					}
 				}
 				// bind to itself
-				sr.set(sr.tvars[i], sr.tvars[i].unalias().result());
+				sr.set(i, sr.tvars[i].unalias(sr).result());
 				continue next_my;
 			}
 			// bind virtual aliases
-			if (x.isAlias() && x.var.isVirtual() && x.unalias().isFree()) {
+			if (x.isAlias() && x.var.isVirtual() && x.unalias(this).isFree()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.unalias().result());
+						sr.set(i, y.unalias(vs).result());
 						continue next_my;
 					}
 				}
@@ -238,7 +239,7 @@ public abstract class AType implements StdTypes, TVSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.unalias().result());
+						sr.set(i, y.unalias(vs).result());
 						continue next_my;
 					}
 				}
@@ -249,7 +250,7 @@ public abstract class AType implements StdTypes, TVSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.unalias().result());
+						sr.set(i, y.unalias(vs).result());
 						continue next_my;
 					}
 				}
@@ -294,7 +295,7 @@ public abstract class AType implements StdTypes, TVSet {
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i].unalias();
+			TVar x = my_vars[i].unalias(this);
 			Type bnd = x.val;
 			if (x.isFree() || !x.var.isArgAppliable())
 				continue;
@@ -303,7 +304,7 @@ public abstract class AType implements StdTypes, TVSet {
 					TVar y = vs_vars[j];
 					if (bnd ≡ y.var) {
 						// re-bind
-						sr.set(sr.tvars[i], y.unalias().result());
+						sr.set(i, y.unalias(vs).result());
 						continue next_my;
 					}
 				}
@@ -312,14 +313,14 @@ public abstract class AType implements StdTypes, TVSet {
 				// recursive
 				Type t = bnd.applay(vs);
 				if (t ≉ bnd)
-					sr.set(sr.tvars[i], t);
+					sr.set(i, t);
 			}
 		}
 		return sr.close();
 	}
 	
 	private boolean hasApplayables(TVSet vs) {
-		final TArg[] appls = this.getTArgs();
+		final ArgType[] appls = this.getTArgs();
 		final int my_size = appls.length;
 		if (my_size == 0)
 			return false;
@@ -329,7 +330,7 @@ public abstract class AType implements StdTypes, TVSet {
 			return false;
 		for (int i=0; i < my_size; i++) {
 			for (int j=0; j < tp_size; j++) {
-				if (appls[i].var ≡ vs_vars[j].var)
+				if (appls[i] ≡ vs_vars[j].var)
 					return true;
 			}
 		}
@@ -337,19 +338,19 @@ public abstract class AType implements StdTypes, TVSet {
 	}
 	
 	public boolean hasApplayable(ArgType at) {
-		final TArg[] appls = this.getTArgs();
+		final ArgType[] appls = this.getTArgs();
 		final int my_size = appls.length;
 		if (my_size == 0)
 			return false;
 		for (int i=0; i < my_size; i++) {
-			if (appls[i].var ≡ at)
+			if (appls[i] ≡ at)
 				return true;
 		}
 		return false;
 	}
 	
 	private void buildApplayables() {
-		this.appls = TArg.emptyArray;
+		this.appls = ArgType.emptyArray;
 		foreach (TVar tv; tvars; !tv.isAlias())
 			addApplayables(tv.result());
 	}
@@ -358,21 +359,21 @@ public abstract class AType implements StdTypes, TVSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			TArg[] tappls = t.bindings().getTArgs();
+			ArgType[] tappls = t.bindings().getTArgs();
 			for (int i=0; i < tappls.length; i++)
-				addApplayable(tappls[i].var);
+				addApplayable(tappls[i]);
 		}
 	}
 	private void addApplayable(ArgType at) {
 		int sz = this.appls.length;
 		for (int i=0; i < sz; i++) {
-			if (this.appls[i].var ≡ at)
+			if (this.appls[i] ≡ at)
 				return;
 		}
-		TArg[] tmp = new TArg[sz+1];
+		ArgType[] tmp = new ArgType[sz+1];
 		for (int i=0; i < sz; i++)
 			tmp[i] = this.appls[i];
-		tmp[sz] = new TArg(this,sz,at);
+		tmp[sz] = at;
 		this.appls = tmp;
 	}
 
@@ -380,8 +381,8 @@ public abstract class AType implements StdTypes, TVSet {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.getClass());
 		sb.append(" {\n");
-		foreach (TVar v; tvars)
-			sb.append(v).append('\n');
+		for (int i=0; i < tvars.length; i++)
+			sb.append(i).append(": ").append(tvars[i]).append('\n');
 		sb.append("}");
 		return sb.toString();
 	}
@@ -495,7 +496,7 @@ public final class TVarSet extends AType {
 	public static final TVarSet emptySet = new TVarSet();
 
 	private TVarSet() {
-		super(MetaType.dummy, 0, TVar.emptyArray, TArg.emptyArray);
+		super(MetaType.dummy, 0, TVar.emptyArray, ArgType.emptyArray);
 	}
 	
 	TVarSet(TVarBld bld) {
@@ -506,61 +507,41 @@ public final class TVarSet extends AType {
 
 
 public final class TVar {
+	
+	public static final int MODE_FREE  = -1;
+	public static final int MODE_BOUND = -2;
+	
 	public static final TVar[] emptyArray = new TVar[0];
 
-	public final TVSet			set;	// the set this TVar belongs to
-	public final int			idx;	// position in the set (set.tvars[idx] == this)
 	public final ArgType		var;	// variable
 	public final Type			val;	// value of the TVar (null for free vars, ArgType for aliases) 
 	public final int			ref;	// reference to actual TVar, for aliases
 
-	// copy
-	private TVar(TVSet set, int idx, ArgType var, Type val, int ref) {
-		this.set = set;
-		this.idx = idx;
+	TVar(ArgType var, Type val, int ref) {
+		assert ((ref>=0 && val instanceof ArgType) || (ref==MODE_FREE && val==null) || (ref==MODE_BOUND && val!=null));
 		this.var = var;
 		this.val = val;
 		this.ref = ref;
 	}
 	
-	// free vars
-	TVar(TVSet set, int idx, ArgType var) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.ref = -1;
-	}
-
-	// bound vars
-	TVar(TVSet set, int idx, ArgType var, Type val) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.val = val;
-		this.ref = -1;
-	}
-
-	// aliases vars
-	TVar(TVSet set, int idx, ArgType var, ArgType val, int ref) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.val = val;
-		this.ref = ref;
-	}
-
 	public Type result() {
 		return val == null? var : val;
 	}
 	
-	public TVar copy(TVSet set) {
-		return new TVar(set, idx, var, val, ref);
-	}
-
-	public TVar unalias() {
+	public TVar unalias(TVSet tp) {
 		TVar r = this;
-		while (r.ref >= 0) r = set.getTVars()[r.ref];
+		while (r.ref >= 0) r = tp.getTVars()[r.ref];
 		return r;
+	}
+	
+	public int unalias_idx(TVSet tp, int idx) {
+		TVar r = tp.getTVars()[idx];
+		assert(r == this); 
+		while (r.ref >= 0) {
+			idx = r.ref;
+			r = tp.getTVars()[idx];
+		}
+		return idx;
 	}
 	
 	public boolean isFree() { return val == null; }
@@ -569,31 +550,12 @@ public final class TVar {
 
 	public String toString() {
 		if (isFree())
-			return idx+": free  "+var.definer.parent()+"."+var.definer;
+			return "free  "+var.definer.parent()+"."+var.definer;
 		else if (isAlias())
-			return idx+": alias "+var.definer.parent()+"."+var.definer+" > "+set.getTVars()[this.ref];
+			return "alias "+var.definer.parent()+"."+var.definer+" > "+this.ref;
 		else
-			return idx+": bound "+var.definer.parent()+"."+var.definer+" = "+val;
+			return "bound "+var.definer.parent()+"."+var.definer+" = "+val;
 	}
 }
-
-public final class TArg {
-	public static final TArg[] emptyArray = new TArg[0];
-
-	public final TVSet			set;	// the set this TVar belongs to
-	public final int			idx;	// position in the set (set.appls[idx] == this)
-	public final ArgType		var;	// variable
-
-	TArg(TVSet set, int idx, ArgType var) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-	}
-
-	public TArg copy(TVSet set) {
-		return new TArg(set, idx, var);
-	}
-}
-
 
 

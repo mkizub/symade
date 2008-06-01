@@ -17,26 +17,29 @@ import syntax kiev.Syntax;
 
 interface TVSet {
 	public TVar[] getTVars();
-	public TArg[] getTArgs();
+	public ArgType[] getTArgs();
 	public Type resolve(ArgType arg);
 }
 
 public final class TVarBld implements TVSet {
 
-	private static final boolean ASSERT_MORE = false;
+	private static final boolean ASSERT_MORE = true;
 
 	public static final TVarBld emptySet = new TVarBld().close();
 
-	public:ro,rw,ro,rw	TVar[]		tvars;
-	private				TArg[]		appls;
-	private				boolean		closed;
+	@access:no,no,ro,rw		TVar[]		tvars;
+	private					ArgType[]	appls;
+	private					boolean		closed;
 
 	public TVarBld() {
 		tvars = TVar.emptyArray;
 	}
 	
 	public TVarBld(ArgType var, Type bnd) {
-		this.tvars = new TVar[]{ new TVar(this, 0, var, bnd) };
+		if (bnd == null)
+			this.tvars = new TVar[]{ new TVar(var, bnd, TVar.MODE_FREE) };
+		else
+			this.tvars = new TVar[]{ new TVar(var, bnd, TVar.MODE_BOUND) };
 		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
@@ -46,11 +49,11 @@ public final class TVarBld implements TVSet {
 		if (n > 0) {
 			this.tvars = new TVar[n];
 			for (int i=0; i < n; i++)
-				this.tvars[i] = vset.tvars[i].copy(this);
+				this.tvars[i] = vset.tvars[i];
 		}
 		//if (vset.appls != null && vset.appls.length > 0) {
 		//	n = vset.appls.length;
-		//	this.appls = new TArg[n];
+		//	this.appls = new ArgType[n];
 		//	for (int i=0; i < n; i++)
 		//		this.appls[i] = vset.appls[i].copy(this);
 		//}
@@ -69,7 +72,7 @@ public final class TVarBld implements TVSet {
 		return this.tvars;
 	}
 	
-	public TArg[] getTArgs() {
+	public ArgType[] getTArgs() {
 		if (this.appls == null)
 			buildApplayables();
 		return this.appls;
@@ -83,13 +86,6 @@ public final class TVarBld implements TVSet {
 		return tvars.length;
 	}
 
-	public TVar get(int idx)
-		alias at
-		alias xfy operator []
-	{
-		return tvars[idx];
-	}
-	
 	public void append(TVSet set)
 	{
 		foreach (TVar v; set.getTVars())
@@ -111,37 +107,39 @@ public final class TVarBld implements TVSet {
 		if (var.isVirtual()) {
 			for (int i=0; i < n; i++) {
 				if (tmp[i].var.isVirtual() && tmp[i].var.name == var.name) {
-					tmp[n] = new TVar(this, n, var, tmp[i].var, i);
+					tmp[n] = new TVar(var, tmp[i].var, i);
 					value = null;
 					break;
 				}
 			}
 		}
 		if (tmp[n] == null)
-			tmp[n] = new TVar(this, n, var);
+			tmp[n] = new TVar(var, null, TVar.MODE_FREE);
 		// fix aliases
 		for (int i=0; i < n; i++) {
 			TVar v = tmp[i];
 			if (!v.isAlias() && v.val ≡ var)
-				tmp[i] = new TVar(this, i, v.var, var, n);
+				tmp[i] = new TVar(v.var, var, n);
 		}
 		this.tvars = tmp;
 		
 		if (ASSERT_MORE) checkIntegrity(false);
 		if (var ≢ value && value ≢ null)
-			set(this.tvars[n], value);
+			set(n, value);
 		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
-	public void set(TVar v, Type bnd)
-		require { v.set == this && bnd != null; }
+	void set(int v_idx, Type bnd)
+		require { bnd != null; }
 	{
 		TVar[] tvars = this.tvars;
+		TVar v = tvars[v_idx];
 		if (v.val ≡ bnd)
 			return; // ignore duplicated alias
 		while (v.isAlias()) {
-			// alias of another var, must point to 
-			v = tvars[v.ref];
+			// alias of another var, must point to
+			v_idx = v.ref;
+			v = tvars[v_idx];
 			if (v.val ≡ bnd)
 				return; // ignore duplicated alias
 		}
@@ -152,24 +150,25 @@ public final class TVarBld implements TVSet {
 				TVar av = tvars[i];
 				if (av.var ≡ bnd) {
 					// set v as alias of av
-					av = av.unalias();
+					int av_idx = av.unalias_idx(this,i);
+					av = tvars[av_idx];
 					if (v == av)
 						break; // don't alias a var to itself 
-					tvars[v.idx] = new TVar(this, v.idx, v.var, av.var, av.idx);
-					assert (i < n);
+					assert (i < n && av_idx < n);
+					tvars[v_idx] = new TVar(v.var, av.var, av_idx);
 					if (ASSERT_MORE) checkIntegrity(false);
 					return;
 				}
 			}
 		}
 		// not an alias, just bind
-		tvars[v.idx] = new TVar(this,v.idx,v.var,bnd);
+		tvars[v_idx] = new TVar(v.var,bnd,TVar.MODE_BOUND);
 		if (ASSERT_MORE) checkIntegrity(false);
 		return;
 	}
 	
 	private void buildApplayables() {
-		appls = TArg.emptyArray;
+		appls = ArgType.emptyArray;
 		foreach (TVar tv; tvars; !tv.isAlias())
 			addApplayables(tv.result());
 	}
@@ -178,21 +177,21 @@ public final class TVarBld implements TVSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			TArg[] tappls = t.bindings().getTArgs();
+			ArgType[] tappls = t.bindings().getTArgs();
 			for (int i=0; i < tappls.length; i++)
-				addApplayable(tappls[i].var);
+				addApplayable(tappls[i]);
 		}
 	}
 	private void addApplayable(ArgType at) {
 		int sz = this.appls.length;
 		for (int i=0; i < sz; i++) {
-			if (this.appls[i].var ≡ at)
+			if (this.appls[i] ≡ at)
 				return;
 		}
-		TArg[] tmp = new TArg[sz+1];
+		ArgType[] tmp = new ArgType[sz+1];
 		for (int i=0; i < sz; i++)
 			tmp[i] = this.appls[i];
-		tmp[sz] = new TArg(this,sz,at);
+		tmp[sz] = at;
 		this.appls = tmp;
 	}
 
@@ -202,7 +201,7 @@ public final class TVarBld implements TVSet {
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
 			if (tvars[i].var ≡ arg)
-				return tvars[i].unalias().result();
+				return tvars[i].unalias(this).result();
 		}
 		return arg;
 	}
@@ -212,7 +211,6 @@ public final class TVarBld implements TVSet {
 		final int n = tvars.length;
 		for (int i=0; i < n; i++) {
 			TVar v = tvars[i];
-			assert(v.idx == i);
 			for (int j=0; j < n; j++)
 				assert(i==j || tvars[j].var ≢ v.var);
 			if (v.isAlias()) {
@@ -227,7 +225,7 @@ public final class TVarBld implements TVSet {
 					if (v.val == null) {
 						int j=0;
 						for (; j < this.appls.length; j++) {
-							if (this.appls[j].var ≡ v.var)
+							if (this.appls[j] ≡ v.var)
 								break;
 						}
 						assert (j < this.appls.length);
@@ -235,16 +233,16 @@ public final class TVarBld implements TVSet {
 					else if (v.val instanceof ArgType) {
 						int j=0;
 						for (; j < this.appls.length; j++) {
-							if (this.appls[j].var ≡ v.val)
+							if (this.appls[j] ≡ v.val)
 								break;
 						}
 						assert (j < this.appls.length);
 					}
 					else {
-						foreach (TArg at; v.val.bindings().getTArgs()) {
+						foreach (ArgType at; v.val.bindings().getTArgs()) {
 							int j=0;
 							for (; j < this.appls.length; j++) {
-								if (this.appls[j].var ≡ at.var)
+								if (this.appls[j] ≡ at)
 									break;
 							}
 							assert (j < this.appls.length);
@@ -256,24 +254,24 @@ public final class TVarBld implements TVSet {
 		if (check_appls) {
 			final int m = this.appls.length;
 			for (int i=0; i < m; i++) {
-				TArg at = this.appls[i];
+				ArgType at = this.appls[i];
 				int j = 0;
 			next_tvar:
 				for (; j < n; j++) {
 					if (!tvars[j].isAlias()) {
 						TVar tv = tvars[j];
 						if (tv.val == null) {
-							if (tv.var ≡ at.var)
+							if (tv.var ≡ at)
 								break next_tvar;
 						}
 						else if (tv.val instanceof ArgType) {
-							if (tv.val ≡ at.var)
+							if (tv.val ≡ at)
 								break next_tvar;
 						}
 						else {
-							TArg[] tappls = tv.val.bindings().getTArgs();
+							ArgType[] tappls = tv.val.bindings().getTArgs();
 							for (int k=0; k < tappls.length; k++) {
-								if (at.var ≡ tappls[k].var)
+								if (at ≡ tappls[k])
 									break next_tvar;
 							}
 						}
@@ -287,8 +285,8 @@ public final class TVarBld implements TVSet {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("TVarBld{\n");
-		foreach (TVar v; tvars)
-			sb.append(v).append('\n');
+		for (int i=0; i < tvars.length; i++)
+			sb.append(i).append(": ").append(tvars[i]).append('\n');
 		sb.append("}");
 		return sb.toString();
 	}

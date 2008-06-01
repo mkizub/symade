@@ -188,7 +188,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public ArgType[] getTypeInfoArgs() {
 		Vector<ArgType> lb = new Vector<ArgType>();
-		TVar[] templ = this.xmeta_type.getTemplBindings().tvars;
+		TVar[] templ = this.xmeta_type.getTemplBindings().getTVars();
 		foreach (TVar tv; templ; tv.isFree() && tv.var.isUnerasable())
 			lb.append(tv.var);
 		return lb.toArray();

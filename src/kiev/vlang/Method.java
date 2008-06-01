@@ -501,7 +501,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
-			Type varg_tp = Type.getRealType(t,getVarArgParam().type).tvars[0].unalias().result();
+			Type tn = Type.getRealType(t,getVarArgParam().type);
+			Type varg_tp = tn.getTVars()[0].unalias(tn).result();
 			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 			} else {
@@ -540,13 +541,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
 		}
 		
-		if ((mt.bindings().tvars.length - mt.arity - 1) > 0) {
+		if ((mt.bindings().getTVars().length - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
 			int a = 0;
-			foreach (TVar tv; mt.bindings().tvars) {
+			foreach (TVar tv; mt.bindings().getTVars()) {
 				if (tv.var.isHidden())
 					continue;
-				Type bound = tv.unalias().result();
+				Type bound = tv.unalias(mt).result();
 				ArgType arg = targs[a].getAType();
 				if!(bound.isInstanceOf(arg)) {
 					trace(Kiev.debug && Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg	+" for type arg "+a);
@@ -592,7 +593,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		// check bindings are correct
-		foreach (TVar tv; rt.tvars; tv.var ≢ StdTypes.tpCallRetArg) {
+		foreach (TVar tv; rt.getTVars(); tv.var ≢ StdTypes.tpCallRetArg) {
 			ArgType var = tv.var;
 			Type val = rt.resolve(var);
 			if (!var.checkBindings(rt, val))
@@ -627,7 +628,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();
 			int a = 0;
-			foreach (TVar tv; rt.bindings().tvars) {
+			foreach (TVar tv; rt.bindings().getTVars()) {
 				if (tv.var.isHidden())
 					continue;
 				Type bound = targs[a].getType();
@@ -680,9 +681,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		if (!qt.hasApplayable(at))
 			return;
-		final int qt_size = qt.tvars.length;
+		final int qt_size = qt.getTVars().length;
 		for (int i=0; i < qt_size; i++) {
-			TVar qtv = qt.tvars[i];
+			TVar qtv = qt.getTVars()[i];
 			if (!qtv.isAlias()) {
 				if (qtv.val ≡ at) {
 					Type bnd = pt.resolve(qtv.var);

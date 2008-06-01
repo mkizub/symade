@@ -551,7 +551,7 @@ public class ArgMetaType extends MetaType {
 		ArgType at = (ArgType)t;
 		foreach (TVar v; bindings.getTVars()) {
 			if (v.var ≡ at || v.val ≡ at)
-				return v.unalias().result();
+				return v.unalias(bindings).result();
 		}
 		// Not found, return itself
 		return t;

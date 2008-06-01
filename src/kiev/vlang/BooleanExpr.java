@@ -380,7 +380,7 @@ public class InstanceofExpr extends BoolExpr {
 			Type et = expr.getType();
 			Type tp = type.getType();
 			if (et instanceof CTimeType && !(tp instanceof CTimeType)) {
-				tp = et.applay(new TVarBld(et.bindings().tvars[0].var, tp));
+				tp = et.applay(new TVarBld(et.bindings().getTVars()[0].var, tp));
 			}
 			return dfs.addNodeType(path,tp);
 		}

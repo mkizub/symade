@@ -79,7 +79,8 @@ public final view JCallExpr of CallExpr extends JENode {
 			int N = func.params.length-1;
 			for(; i < N; i++)
 				args[i].generate(code,null);
-			Type varg_tp = func.params[N].type.tvars[0].unalias().result();
+			Type tn = func.params[N].type;
+			Type varg_tp = tn.getTVars()[0].unalias(tn).result();
 			if (args.length == func.params.length && args[N].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 				args[i].generate(code,null);
@@ -177,7 +178,8 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			int N = func.params.length-1;
 			for(; i < N; i++)
 				args[i].generate(code,null);
-			Type varg_tp = func.params[N].type.tvars[0].unalias().result();
+			Type tn = func.params[N].type;
+			Type varg_tp = tn.getTVars()[0].unalias(tn).result();
 			if (args.length == func.params.length && args[N].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 				args[i].generate(code,null);

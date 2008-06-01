@@ -74,7 +74,7 @@ public abstract class Type extends AType {
 		super(meta_type, flags, bindings);
 	}
 
-	protected Type(MetaType meta_type, int flags, TVar[] tvars, TArg[] appls)
+	protected Type(MetaType meta_type, int flags, TVar[] tvars, ArgType[] appls)
 		require { meta_type != null; }
 	{
 		super(meta_type, flags, tvars, appls);
@@ -266,7 +266,7 @@ public abstract class Type extends AType {
 		if (this instanceof ArgType)
 			return checkArgVariance(base,(ArgType)this,variance);
 		foreach (TVar tv; this.bindings().tvars; !tv.isAlias()) {
-			Type t = tv.unalias().result();
+			Type t = tv.unalias(this).result();
 			TypeVariance check_variance;
 			if (tv.var.isInVariant())
 				check_variance = TypeVariance.IN_VARIANT;
@@ -370,7 +370,7 @@ public final class XType extends Type {
 public final class CoreType extends Type {
 	public final String name;
 	CoreType(String name, Type super_type, int meta_flags) {
-		super(new CoreMetaType(name,super_type,meta_flags), 0, TVar.emptyArray, TArg.emptyArray);
+		super(new CoreMetaType(name,super_type,meta_flags), 0, TVar.emptyArray, ArgType.emptyArray);
 		((CoreMetaType)meta_type).core_type = this;
 		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name.intern();
@@ -575,7 +575,7 @@ public final class ArgType extends Type {
 	}
 	
 	public ArgType(ArgMetaType meta_type) {
-		super(meta_type, makeFlags(meta_type), TVar.emptyArray, TArg.emptyArray);
+		super(meta_type, makeFlags(meta_type), TVar.emptyArray, ArgType.emptyArray);
 		this.name = meta_type.tdecl.sname;
 	}
 	
@@ -740,7 +740,7 @@ public final class ArrayType extends Type {
 
 	private static MetaType[] allSuperTypes = new MetaType[] { tpObject.meta_type, tpCloneable.meta_type };
 	
-	@getter public Type get$arg() { return this.tvars[0].unalias().result(); }
+	@getter public Type get$arg() { return this.tvars[0].unalias(this).result(); }
 	
 	public static ArrayType newArrayType(Type type)
 		alias lfy operator new
@@ -796,7 +796,7 @@ public abstract class CTimeType extends Type {
 	public abstract ENode makeInitExpr(Var dn, ENode init); // returns an expression of enclosed type 
 	public abstract Type getUnboxedType();
 
-	public Type getEnclosedType()	{ return this.tvars[0].unalias().result(); }
+	public Type getEnclosedType()	{ return this.tvars[0].unalias(this).result(); }
 }
 
 public final class WrapperType extends CTimeType {
@@ -937,14 +937,14 @@ public final class CallType extends Type {
 		AType bindings = this.bindings();
 		TVar tv = bindings.tvars[0];
 		assert (tv.var ≡ tpCallRetArg);
-		return tv.unalias().result().applay(bindings);
+		return tv.unalias(this).result().applay(bindings);
 	}
 	
 	public Type arg(int idx) {
 		AType bindings = this.bindings();
 		TVar tv = bindings.tvars[idx+1];
 		assert (tv.var ≡ tpCallParamArgs[idx]);
-		return tv.unalias().result().applay(bindings);
+		return tv.unalias(this).result().applay(bindings);
 	}
 	
 	public Type[] params() {
@@ -955,7 +955,7 @@ public final class CallType extends Type {
 		TVar[] tvars = this.tvars;
 		for (int i=0; i < arity; i++) {
 			assert (tvars[i+1].var ≡ tpCallParamArgs[i]);
-			params[i] = tvars[i+1].unalias().result();
+			params[i] = tvars[i+1].unalias(this).result();
 		}
 		return params;
 	}
