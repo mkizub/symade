@@ -518,17 +518,23 @@ public static final view RCastExpr of CastExpr extends RENode {
 			if( tryOverloadedCast(extp) )
 				return;
 			if (extp instanceof CTimeType) {
-				expr = extp.makeUnboxedExpr(expr);
-				resolve(reqType);
-				return;
+				ENode e = extp.makeUnboxedExpr(expr);
+				if (e != expr) {
+					expr = e;
+					resolve(reqType);
+					return;
+				}
 			}
 		}
 		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(type) != null) {
 			if( tryOverloadedCast(extp) )
 				return;
-			expr = extp.makeUnboxedExpr(expr);
-			resolve(reqType);
-			return;
+			ENode e = extp.makeUnboxedExpr(expr);
+			if (e != expr) {
+				expr = e;
+				resolve(reqType);
+				return;
+			}
 		}
 		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView()
 				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(type) != null)

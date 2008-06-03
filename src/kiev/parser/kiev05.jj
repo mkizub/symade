@@ -779,6 +779,8 @@ TOKEN : /* OPERATORS */
 | < OPERATOR_AT:    "@" >
 | < OPERATOR_SHARP: "#" >
 | < OPERATOR_LRBRACKETS: "[" ( " " )* "]" >
+| < OPERATOR_SUPERSCRIPT_PLUS: "\u207a" >
+| < OPERATOR_SUPERSCRIPT_MINUS: "\u207b" >
 
 | < OPERATOR_UPPER_BOUND:    "\u2264" > // ≤
 | < OPERATOR_LOWER_BOUND:    "\u2265" > // ≥
@@ -2119,6 +2121,31 @@ TypeNameRef TypeQName() :
 	{ return res; }
 }
 
+TypeRef TypeWithWildcard() :
+{ TypeRef res; }
+{
+	(
+		// "?"
+		LOOKAHEAD({getToken(1).kind == OPERATOR && getToken(1).image.equals("?")})
+		<OPERATOR>
+		(
+			"extends"
+			res = Type()
+			{ res = new TypeExpr(res, Operator.PostTypeWildcardCoVariant); }
+		|
+			LOOKAHEAD({getToken(1).kind == IDENTIFIER && getToken(1).image.equals("super")})
+			<IDENTIFIER>
+			res = Type()
+			{ res = new TypeExpr(res, Operator.PostTypeWildcardContraVariant); }
+		|
+			{ res = new TypeExpr(StdTypes.tpObject, Operator.PostTypeWildcardCoVariant); res.pos = getToken(0).getPos(); }
+		)
+	|
+		res = Type()
+	)
+	{ return res; }
+}
+
 TypeNameRef TypeWithArgs() :
 { TypeNameRef res, sub; }
 {
@@ -2341,6 +2368,8 @@ Token TypeOperatorChar() :
 	(
 		t=<OPERATOR_AT>
 	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR_SUPERSCRIPT_PLUS>
+	|	t=<OPERATOR_SUPERSCRIPT_MINUS>
 	|	t=<OPERATOR>
 	)
 	{ return t; }

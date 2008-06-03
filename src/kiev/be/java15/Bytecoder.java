@@ -82,17 +82,31 @@ public class Bytecoder implements JConstants {
 
 		cl.setTypeDeclNotLoaded(false);
 		cl.setFrontEndPassed();
-		//cl.setMembersGenerated(true);
 
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
+		
+		KString.KStringScanner cl_sign_sc = null;
+		KString cl_sign = bcclazz.getClazzSignature();
+		if (cl_sign != null) {
+			cl_sign_sc = new KString.KStringScanner(cl_sign);
+			Signature.addTypeArgs(cl,cl_sign_sc);
+		}
 
 		// This class's superclass name (load if not loaded)
 		if (bcclazz.getSuperClazzName() != null) {
 			assert(cl.super_types.length == 0);
-			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
+			KString cl_super_name = bcclazz.getSuperClazzName();
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-			CompaundType st = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-		    cl.super_types.append(new TypeRef(st));
+			CompaundType st;
+			if (cl_sign_sc != null) {
+				st = Signature.getClassTypeSignature(cl,cl_sign_sc);
+				//ClazzName cn = ClazzName.fromBytecodeName(cl_super_name);
+				//if (!st.meta_type.qname().equals(cn.name.toString().replace('.','\u001f')))
+				//	throw new RuntimeException("Class "+cl+" has super-class "+cn+" but in signature super-class name is "+st.tdecl);
+			} else {
+				st = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+			}
+			cl.super_types.append(new TypeRef(st));
 			if (Env.getRoot().loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
 		}
@@ -101,7 +115,15 @@ public class Bytecoder implements JConstants {
 		KString[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
-			CompaundType interf = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
+			CompaundType interf;
+			if (cl_sign_sc != null) {
+				interf = Signature.getClassTypeSignature(cl,cl_sign_sc);
+				//ClazzName cn = ClazzName.fromBytecodeName(interfs[i]);
+				//if (!interf.meta_type.qname().equals(cn.name.toString().replace('.','\u001f')))
+				//	throw new RuntimeException("Class "+cl+" has super-interface "+cn+" but in signature super-interface name is "+interf.tdecl);
+			} else {
+				interf = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
+			}
 			if (Env.getRoot().loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.tdecl.isInterface())
@@ -110,6 +132,16 @@ public class Bytecoder implements JConstants {
 		}
 
 		cl.members.delAll();
+
+		if (!outer.isPackage()) {
+			int n = 0;
+			for(TypeDecl p=outer; p.isStructInner() && !p.isStatic(); p=p.package_clazz.dnode) n++;
+			TypeAssign td = new TypeAssign("outer$"+n+"$type", new TypeRef(outer.xtype));
+			td.setSynthetic(true);
+			cl.members.append(td);
+			cl.ometa_tdef = td;
+			cl.type_decl_version++;
+		}
 
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);
@@ -134,9 +166,14 @@ public class Bytecoder implements JConstants {
 		int f_flags = bcf.flags;
 		KString f_name = bcf.getName(bcclazz);
 		KString f_type = bcf.getSignature(bcclazz);
+		KString f_type_sign = bcf.getFieldSignature(bcclazz);
 		ENode f_init = null;
 		int packer_size = -1;
-		Type ftype = Signature.getType(f_type);
+		Type ftype;
+		if (f_type_sign != null)
+			ftype = Signature.getTypeFromFieldSignature(cl, new KString.KStringScanner(f_type_sign));
+		else
+			ftype = Signature.getType(f_type);
 		if ((f_flags & ACC_ENUM)!=0) {
 			f = new Field(f_name.toString(),ftype,f_flags);
 			f.meta.is_enum = true;
@@ -175,25 +212,27 @@ public class Bytecoder implements JConstants {
 			KString m_name = bcm.getName(bcclazz);
 			KString m_type_java = bcm.getSignature(bcclazz);
 			KString m_type = m_type_java;
-			CallType mtype = (CallType)Signature.getType(m_type);
-			//CallType jtype = mtype;
+			KString m_type_sign = bcm.getMethodSignature(bcclazz);
+
 			if (m_name == knameInit || m_name == knameClassInit)
 				m = new Constructor(m_flags);
 			else
-				m = new MethodImpl(m_name.toString(),mtype.ret(),m_flags);
+				m = new MethodImpl(m_name.toString(),StdTypes.tpVoid,m_flags);
 			m.meta.is_interface_only = true;
 			cl.members.append(m);
+
+			CallType mtype;
+			if (m_type_sign != null) {
+				KString.KStringScanner m_type_sign_sc = new KString.KStringScanner(m_type_sign);
+				Signature.addTypeArgs(m,m_type_sign_sc);
+				mtype = Signature.getTypeFromMethodSignature(m, m_type_sign_sc);
+			} else {
+				mtype = (CallType)Signature.getType(m_type);
+			}
+			m.type_ret = new TypeRef(mtype.ret());
 			for (int i=0; i < mtype.arity; i++) {
-				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
+				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1)
 					m.params += new LVar(0,"va_arg",mtype.arg(i),Var.PARAM_VARARGS,ACC_FINAL);
-					break;
-				}
-				//else if (m instanceof Constructor && cl.isEnum() && i < 2) {
-				//	if (i == 0)
-				//		m.params += new LVar(0,"enum$name",mtype.arg(i),Var.PARAM_ENUM_NAME,0);
-				//	else
-				//		m.params += new LVar(0,"enum$ordinal",mtype.arg(i),Var.PARAM_ENUM_ORD,0);
-				//}
 				else
 					m.params += new LVar(0,"arg"+i,mtype.arg(i),Var.PARAM_NORMAL,0);
 			}
@@ -217,7 +256,6 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
-//		jclazz.addMember(new JMethod(m));
 		return m;
 	}
 

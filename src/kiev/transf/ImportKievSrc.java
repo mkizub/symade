@@ -201,7 +201,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				foreach (Field f; me.members; f.sname == fldName)
 					found = true;
 				if (!found) {
-					TypeAssign td = new TypeAssign(	"outer$"+n+"$type", new TypeRef(pkg.xtype));
+					TypeAssign td = new TypeAssign("outer$"+n+"$type", new TypeRef(pkg.xtype));
 					td.setSynthetic(true);
 					me.members.append(td);
 					me.ometa_tdef = td;

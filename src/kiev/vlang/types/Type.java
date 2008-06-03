@@ -92,6 +92,9 @@ public abstract class Type extends AType {
 		Type t1 = this;
 		if( t1 ≡ t2 || t2 ≡ Type.tpAny ) return true;
 		if( t1.isReference() && t2 ≈ Type.tpObject ) return true;
+		if (t2 instanceof WildcardCoType) {
+			return this.isInstanceOf(t2.getEnclosedType());
+		}
 		if (t2 instanceof ArgType) {
 			ArgType at = (ArgType)t2;
 			if (at.definer.super_types.length > 0) {
@@ -263,7 +266,7 @@ public abstract class Type extends AType {
 		return checkVariance(this,variance);
 	}
 	public VarianceCheckError checkVariance(Type base, TypeVariance variance) {
-		if (this instanceof ArgType)
+/*		if (this instanceof ArgType)
 			return checkArgVariance(base,(ArgType)this,variance);
 		foreach (TVar tv; this.bindings().tvars; !tv.isAlias()) {
 			Type t = tv.unalias(this).result();
@@ -288,7 +291,7 @@ public abstract class Type extends AType {
 					return err;
 			}
 		}
-		return null;
+*/		return null;
 	}
 }
 
@@ -797,6 +800,114 @@ public abstract class CTimeType extends Type {
 	public abstract Type getUnboxedType();
 
 	public Type getEnclosedType()	{ return this.tvars[0].unalias(this).result(); }
+}
+
+public final class WildcardCoType extends CTimeType {
+	
+	public WildcardCoType(Type base_type) {
+		super(WildcardCoMetaType.instance, 0, tpWildcardCoArg, base_type);
+	}
+	
+	public JType getJType() {
+		if (jtype == null)
+			jtype = getEnclosedType().getJType();
+		return jtype;
+	}
+
+	public final ENode makeUnboxedExpr(ENode from) { from }
+	public final ENode makeInitExpr(Var dn, ENode init) { init }
+	public final Type getUnboxedType()	{ getEnclosedType() }
+	
+	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
+	public MNode getMeta(String name)		{ return getEnclosedType().getMeta(name); }
+
+	public boolean checkResolved() {
+		return getEnclosedType().checkResolved();
+	}
+
+	public String toString() {
+		return getEnclosedType() + "\u207a"; // Type⁺ superscript ⁺
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		if( t ≡ tpNull ) return true;
+		if( isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		if( this.getEnclosedType().isCastableTo(t) )
+			return true;
+		return super.isCastableTo(t);
+	}
+
+	public boolean isInstanceOf(Type t) {
+		if (this ≡ t || t ≡ tpAny) return true;
+		if (getEnclosedType().isInstanceOf(t))
+			return true;
+		return false;
+	}
+
+	public MetaType[] getAllSuperTypes() {
+		return getEnclosedType().getAllSuperTypes();
+	}
+
+	public Type getErasedType() {
+		return getEnclosedType().getErasedType();
+	}
+
+}
+
+public final class WildcardContraType extends CTimeType {
+	
+	public WildcardContraType(Type base_type) {
+		super(WildcardContraMetaType.instance, 0, tpWildcardContraArg, base_type);
+	}
+	
+	public JType getJType() {
+		if (jtype == null)
+			jtype = getEnclosedType().getJType();
+		return jtype;
+	}
+
+	public final ENode makeUnboxedExpr(ENode from) { from }
+	public final ENode makeInitExpr(Var dn, ENode init) { init }
+	public final Type getUnboxedType()	{ getEnclosedType() }
+	
+	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
+	public MNode getMeta(String name)		{ return getEnclosedType().getMeta(name); }
+
+	public boolean checkResolved() {
+		return getEnclosedType().checkResolved();
+	}
+
+	public String toString() {
+		return getEnclosedType() + "\u207b"; // Type⁻ superscript ⁻
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		if( t ≡ tpNull ) return true;
+		if( isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		if( this.getEnclosedType().isCastableTo(t) )
+			return true;
+		return super.isCastableTo(t);
+	}
+
+	public boolean isInstanceOf(Type t) {
+		if (this ≡ t || t ≡ tpAny) return true;
+		if (t.isInstanceOf(getEnclosedType()))
+			return true;
+		return false;
+	}
+
+	public MetaType[] getAllSuperTypes() {
+		return getEnclosedType().getAllSuperTypes();
+	}
+
+	public Type getErasedType() {
+		return getEnclosedType().getErasedType();
+	}
+
 }
 
 public final class WrapperType extends CTimeType {

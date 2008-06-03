@@ -39,10 +39,6 @@ final class Signature {
 	}
 	
 	public static Type getType(KString.KStringScanner sc) {
-		Struct clazz;
-		Type[] args = null;
-		Type ret = null;
-
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
 
@@ -59,11 +55,12 @@ final class Signature {
 		case 'J':		return Type.tpLong;
 		case 'F':		return Type.tpFloat;
 		case 'D':		return Type.tpDouble;
-		//case 'R':		return Type.tpRule;
 		}
 
 		// Check if this signature is a method signature
 		if (ch == '(') {
+			Type[] args = null;
+			Type ret = null;
 			// Method signature
 			args = new Type[0];
 			while( sc.hasMoreChars() && sc.peekChar() != ')' )
@@ -73,28 +70,13 @@ final class Signature {
 			ret = getType(sc);
 			return new CallType(null,null,args,ret,false);
 		}
-//		if (ch == '&') {
-//			// Closure signature
-//			ch = sc.peekChar();
-//			if( ch != '(' )
-//				throw new RuntimeException("Bad closure "+sc+" at pos "+sc.pos+" - '(' expected");
-//			args = new Type[0];
-//			while( sc.hasMoreChars() && sc.peekChar() != ')' )
-//				args = (Type[])Arrays.append(args,getType(sc));
-//			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
-//				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
-//			ret = getType(sc);
-//			return new CallType(null,null,args,ret,true);
-//		}
 
 		// Normal reference type
-		if( ch == '[' ) return new ArrayType(getType(sc));
+		if( ch == '[' )
+			return new ArrayType(getType(sc));
 
-//		boolean isArgument = false;
-//		if( ch == 'A' ) isArgument = true;
-//		else
 		if( ch != 'L')
-			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - 'A' or 'L' or 'E' expected");
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - 'L' expected");
 		int pos = sc.pos;
 		while( sc.hasMoreChars() && (ch=sc.nextChar()) != ';' );
 		if( ch != ';' )
@@ -105,8 +87,6 @@ final class Signature {
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
-		Struct clazz;
-
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
 
@@ -119,70 +99,213 @@ final class Signature {
 		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
 		return new CompaundType(cmt, TVarBld.emptySet);
 	}
-
-	public static KString getJavaSignature(KString sig) {
-		return getJavaSignature(new KString.KStringScanner(sig));
+	
+	private static TypeConstr getTypeArgDecl(DNode dn, String aname) {
+		if (dn instanceof Method) {
+			foreach (TypeConstr tc; dn.targs; tc.sname == aname)
+				return tc;
+			return getTypeArgDecl((TypeDecl)dn.parent(), aname);
+		}
+		else if (dn instanceof TypeDecl) {
+			foreach (TypeConstr tc; dn.args; tc.sname == aname)
+				return tc;
+			if (dn.isStructInner())
+				return getTypeArgDecl((TypeDecl)dn.parent(), aname);
+		}
+		return null;
 	}
 
-	public static KString getJavaSignature(KString.KStringScanner sc) {
-		KStringBuffer ksb = new KStringBuffer();
-		if( sc.peekChar() == 'A' ) {
-			// Argument
-			while( sc.nextChar() != ';' );
-			if( sc.hasMoreChars() && sc.peekChar() == '<' ) {
-				sc.nextChar();
-				KString ks = getJavaSignature(sc);
-				sc.nextChar();
-				return ks;
-			} else {
-				return KString.from("Lkava/lang/Object;"); //Type.tpObject.signature;
-			}
-		}
-		if( sc.peekChar() == '&' ) {
-			sc.nextChar();
-			KString sign = null;
-			if( sc.peekChar() == 'L')
-				sign =  getJavaSignature(sc);
-			if( sc.nextChar() != '(' )
-				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '(' expected");
-			while( sc.peekChar() != ')' ) getJavaSignature(sc);
-			if( sc.nextChar() != ')' )
-				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
-			getJavaSignature(sc);
-			if( sign != null )
-				return sign;
-			return KString.from("L"+((JStruct)Type.tpClosureClazz).bname()+";");
-		}
-		if( sc.peekChar() == '(' ) {
-			ksb.append(sc.nextChar());
-			while( sc.peekChar() != ')' )
-				ksb.append(getJavaSignature(sc));
-			ksb.append(sc.nextChar()).append(getJavaSignature(sc));
-			return ksb.toKString();
-		}
-		if( sc.peekChar() == '[' ) {
-			sc.nextChar();
-			return ksb.append('[').append(getJavaSignature(sc)).toKString();
-		}
-		if( sc.peekChar() == 'R' ) {
-			sc.nextChar();
-			return ksb.append("Lkiev/stdlib/rule;").toKString();
-		}
-		if( sc.peekChar() != 'L' )
-			return ksb.append(sc.nextChar()).toKString();
+	public static void addTypeArgs(DNode dn, KString.KStringScanner sc) {
+		if (!sc.hasMoreChars() || sc.peekChar() != '<')
+			return;
 
+		sc.nextChar();
+		do {
+			int pos = sc.pos;
+			while (sc.hasMoreChars() && sc.nextChar() != ':');
+			KString aname = sc.str.substr(pos,sc.pos-1);
+			TypeConstr arg = new TypeConstr(aname.toString());
+			arg.setAbstract(true);
+			if (dn instanceof Method)
+				((Method)dn).targs += arg;
+			else
+				((TypeDecl)dn).args += arg;
+			if (sc.peekChar() != ':' && sc.peekChar() != '>') {
+				Type bnd = getTypeFromFieldSignature(dn,sc);
+				arg.super_types += new TypeRef(bnd);
+			}
+			while (sc.hasMoreChars() && sc.peekChar() == ':') {
+				sc.nextChar();
+				Type bnd = getTypeFromFieldSignature(dn,sc);
+				arg.super_types += new TypeRef(bnd);
+			}
+		} while (sc.hasMoreChars() && sc.peekChar() != '>');
+		if (sc.nextChar() != '>')
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '>' expected");
+	}
+
+	public static Type getTypeFromFieldSignature(DNode dn, KString.KStringScanner sc) {
+		if( !sc.hasMoreChars() )
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
+
+		char ch = sc.peekChar();
+
+		// Noral type
+		if (ch == 'L')
+			return getClassTypeSignature(dn, sc);
+
+		sc.nextChar();
+
+		switch(ch) {
+		case 'V': return Type.tpVoid;
+		case 'Z': return Type.tpBoolean;
+		case 'C': return Type.tpChar;
+		case 'B': return Type.tpByte;
+		case 'S': return Type.tpShort;
+		case 'I': return Type.tpInt;
+		case 'J': return Type.tpLong;
+		case 'F': return Type.tpFloat;
+		case 'D': return Type.tpDouble;
+		}
+
+		// Array type
+		if (ch == '[')
+			return new ArrayType(getTypeFromFieldSignature(dn, sc));
+
+		// Type argument type
+		if (ch == 'T') {
+			int pos = sc.pos;
+			while (sc.hasMoreChars() && sc.nextChar() != ';');
+			String aname = sc.str.substr(pos,sc.pos-1).toString().intern();
+			TypeConstr tc = getTypeArgDecl(dn, aname);
+			if (tc == null)
+				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" unknown type argument: "+aname);
+			return tc.getAType();
+		}
+
+		throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" expected 'T' or '[' or 'L'");
+	}
+
+	public static CompaundType getClassTypeSignature(DNode dn, KString.KStringScanner sc) {
+		if( !sc.hasMoreChars() )
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
+
+		char ch = sc.nextChar();
+
+		if (ch != 'L')
+			throw new RuntimeException("Bad class type signature "+sc+" at pos "+sc.pos+" expected 'L'");
+	
 		int pos = sc.pos;
-		while( sc.nextChar() != ';' );
-		KString kstr = sc.str.substr(pos,sc.pos);
-		if( sc.peekChar() == '<' ) {
-			int depth = 0;
-			while( sc.hasMoreChars() ) {
-				char ch=sc.nextChar();
-				if( ch == '<' ) depth++;
-				else if( ch == '>' ) depth--;
-				if( depth==0 ) break;
+		do {
+			ch = sc.nextChar();
+		} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
+		String cname = sc.str.substr(pos,sc.pos-1).toString();
+		CompaundMetaType cmt = new CompaundMetaType(cname.replace('/','\u001f'));
+		cmt.tdecl.checkResolved();
+		TVarBld vs = new TVarBld();
+		if (ch == '<') {
+			int aidx = 0;
+			// type arguments
+			while (sc.hasMoreChars() && (ch=sc.peekChar()) != '>') {
+				Type param;
+				if (ch == '*') {
+					// co-variant wildcard with upper bound = java.lang.Object
+					sc.nextChar();
+					param = new WildcardCoType(StdTypes.tpObject);
+				}
+				else if (ch == '+') {
+					sc.nextChar();
+					param = getTypeFromFieldSignature(dn, sc); // co-variant wildcard with upper bound
+					param = new WildcardCoType(param);
+				}
+				else if (ch == '-') {
+					sc.nextChar();
+					param = getTypeFromFieldSignature(dn, sc); // contra-variant wildcard with lower bound
+					param = new WildcardContraType(param);
+				}
+				else {
+					param = getTypeFromFieldSignature(dn, sc);
+				}
+				vs.append(cmt.tdecl.args[aidx++].getAType(), param);
 			}
+			ch = sc.nextChar();
+			assert (ch == '>');
+			ch = sc.nextChar();
 		}
-		return kstr;
+		CompaundType ct = (CompaundType)cmt.make(vs);
+		while (ch == '.') {
+			CompaundType outer = ct;
+			outer.checkResolved();
+			// inner class
+			int pos = sc.pos;
+			do {
+				ch = sc.nextChar();
+			} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
+			cname = sc.str.substr(pos,sc.pos-1).toString();
+			cmt = new CompaundMetaType(outer.meta_type.qname() + '\u001f' + cname);
+			cmt.tdecl.checkResolved();
+			if (ch == '<') {
+				vs = new TVarBld();
+				int aidx = 0;
+				// type arguments
+				while (sc.hasMoreChars() && (ch=sc.peekChar()) != '>') {
+					Type param;
+					if (ch == '*') {
+						// co-variant wildcard with upper bound = java.lang.Object
+						param = new WildcardCoType(StdTypes.tpObject);
+					}
+					else if (ch == '+') {
+						param = getTypeFromFieldSignature(dn, sc); // co-variant wildcard with upper bound
+						param = new WildcardCoType(param);
+					}
+					else if (ch == '-') {
+						param = getTypeFromFieldSignature(dn, sc); // contra-variant wildcard with lower bound
+						param = new WildcardContraType(param);
+					}
+					else {
+						param = getTypeFromFieldSignature(dn, sc);
+					}
+					vs.append(cmt.tdecl.args[aidx++].getAType(), param);
+				}
+				ch = sc.nextChar();
+				assert (ch == '>');
+				ch = sc.nextChar();
+			}
+			ct = (CompaundType)cmt.make(vs);
+			ct.checkResolved();
+			TypeAssign ta = ct.meta_type.tdecl.ometa_tdef;
+			if (ta == null)
+				Kiev.reportWarning("in signature "+sc+" at pos "+sc.pos+": type "+ct+" inner of "+outer+" must have outer TypeAssign");
+			else
+				ct = (CompaundType)ct.rebind(new TVarBld(ta.getAType(), outer));
+		}
+		if (ch != ';')
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" expected ';' but found '"+ch+"'");
+		return ct;
 	}
+
+	public static CallType getTypeFromMethodSignature(Method m, KString.KStringScanner sc) {
+		if( !sc.hasMoreChars() )
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
+
+		char ch = sc.peekChar();
+		if (ch != '(')
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" expected '(' but found '"+ch+"'");
+		sc.nextChar();
+		
+		Vector<Type> args = new Vector<Type>();
+		while (sc.hasMoreChars() && (ch=sc.peekChar()) != ')') {
+			Type arg = getTypeFromFieldSignature(m, sc);
+			args.append(arg);
+		}
+		if (ch != ')')
+			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" expected ')' but found '"+ch+"'");
+		sc.nextChar();
+		Type ret = getTypeFromFieldSignature(m, sc);
+		Vector<Type> targs = new Vector<Type>();
+		foreach (TypeConstr targ; m.targs)
+			targs.append(targ.getAType());
+		return CallType.createCallType(null, targs.toArray(), args.toArray(), ret, false);
+	}
+
 }

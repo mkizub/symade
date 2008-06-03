@@ -622,8 +622,10 @@ public final class Env extends KievPackage {
 						attr.set(nodes.peek(),Double.valueOf(text.trim()));
 					else if (attr.clazz == Character.TYPE)
 						attr.set(nodes.peek(),Character.valueOf(text.trim().charAt(0)));
-					else if (Enum.class.isAssignableFrom(attr.clazz))
-						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
+					else if (Enum.class.isAssignableFrom(attr.clazz)) {
+						//attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
+						attr.set(nodes.peek(),attr.clazz.getMethod("valueOf",String.class).invoke(null,text.trim()));
+					}
 					else if (attr.clazz == Operator.class)
 						attr.set(nodes.peek(),Operator.getOperatorByName(text.trim()));
 					else if (Type.class.isAssignableFrom(attr.clazz)) {

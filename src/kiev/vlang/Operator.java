@@ -169,6 +169,8 @@ public final class Operator implements Constants {
 	public static final Operator PostTypeRef;
 	public static final Operator PostTypeAST;
 	public static final Operator PostTypeWrapper;
+	public static final Operator PostTypeWildcardCoVariant;
+	public static final Operator PostTypeWildcardContraVariant;
 	public static final Operator PostTypeArray;
 	public static final Operator PostTypeVararg;
 	public static final Operator PostTypeSpace;
@@ -268,6 +270,8 @@ public final class Operator implements Constants {
 		PostTypeRef     = newOperator(255, "T &");							PostTypeRef.is_type_operator = true;
 		PostTypeAST     = newOperator(255, "T #");							PostTypeAST.is_type_operator = true;
 		PostTypeWrapper = newOperator(255, "T \u229b");					PostTypeWrapper.is_type_operator = true; // ⊛
+		PostTypeWildcardCoVariant     = newOperator(255, "T \u207a");		PostTypeWildcardCoVariant.is_type_operator = true; // superscript ⁺
+		PostTypeWildcardContraVariant = newOperator(255, "T \u207b");		PostTypeWildcardContraVariant.is_type_operator = true; // superscript ⁻
 		PostTypeArray   = newOperator(255, "T []");						PostTypeArray.is_type_operator = true;
 		PostTypeVararg  = newOperator(255, "T ...");						PostTypeVararg.is_type_operator = true;
 		PostTypeSpace   = newOperator(255, "T \u2205");					PostTypeSpace.is_type_operator = true; // ∅

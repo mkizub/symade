@@ -574,6 +574,102 @@ public class ArgMetaType extends MetaType {
 	}
 }
 
+public class WildcardCoMetaType extends MetaType {
+
+	private static TVarSet						templ_bindings;
+	public static final WildcardCoMetaType		instance;
+	static {
+		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWildcardCoArg, null).close());
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wildcard_co_variant_");
+		if (tdecl == null) {
+			tdecl = new MetaTypeDecl();
+			tdecl.sname = "_wildcard_co_variant_";
+			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
+			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
+			tdecl.args.add(StdTypes.tdWildcardCoArg);
+			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
+			tdecl.uuid = "6c99b10d-3003-3176-8086-71be6cee5c51";
+		}
+		instance = new WildcardCoMetaType(tdecl);
+		tdecl.xmeta_type = instance;
+		tdecl.xtype = new WildcardCoType(Type.tpAny);
+	}
+
+	private WildcardCoMetaType(TypeDecl td) {
+		super(td, MetaType.flReference | MetaType.flWrapper);
+	}
+
+	public Type[] getMetaSupers(Type tp) {
+		WildcardCoMetaType wt = (WildcardCoMetaType)tp;
+		return new Type[]{tp.getEnclosedType()};
+	}
+	public TVarSet getTemplBindings() { return templ_bindings; }
+
+
+	public Type make(TVSet bindings) {
+		return new WildcardCoType(bindings.resolve(StdTypes.tpWildcardCoArg));
+	}
+	public Type bind(Type t, TVSet bindings) {
+		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().bind(bindings));
+	}
+	public Type rebind(Type t, TVSet bindings) {
+		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().rebind(bindings));
+	}
+	public Type applay(Type t, TVSet bindings) {
+		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().applay(bindings));
+	}
+}
+
+public class WildcardContraMetaType extends MetaType {
+
+	private static TVarSet						templ_bindings;
+	public static final WildcardContraMetaType	instance;
+	static {
+		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWildcardContraArg, null).close());
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wildcard_contra_variant_");
+		if (tdecl == null) {
+			tdecl = new MetaTypeDecl();
+			tdecl.sname = "_wildcard_contra_variant_";
+			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
+			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
+			tdecl.args.add(StdTypes.tdWildcardContraArg);
+			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
+			tdecl.uuid = "933ac6b8-4d03-3799-9bb3-3c9bc1883707";
+		}
+		instance = new WildcardContraMetaType(tdecl);
+		tdecl.xmeta_type = instance;
+		tdecl.xtype = new WildcardContraType(Type.tpAny);
+	}
+
+	private WildcardContraMetaType(TypeDecl td) {
+		super(td, MetaType.flReference | MetaType.flWrapper);
+	}
+
+	public Type[] getMetaSupers(Type tp) {
+		WildcardContraMetaType wt = (WildcardContraMetaType)tp;
+		return new Type[]{tp.getEnclosedType()};
+	}
+	public TVarSet getTemplBindings() { return templ_bindings; }
+
+
+	public Type make(TVSet bindings) {
+		return new WildcardContraType(bindings.resolve(StdTypes.tpWildcardContraArg));
+	}
+	public Type bind(Type t, TVSet bindings) {
+		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().bind(bindings));
+	}
+	public Type rebind(Type t, TVSet bindings) {
+		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().rebind(bindings));
+	}
+	public Type applay(Type t, TVSet bindings) {
+		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().applay(bindings));
+	}
+}
+
 public class WrapperMetaType extends MetaType {
 
 	private static TVarSet					templ_bindings;

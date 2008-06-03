@@ -19,6 +19,8 @@ import java.lang.*;
 typedef type[] kiev.stdlib._array_<type>;
 typedef type... kiev.stdlib._vararg_<type>;
 typedef type⊛ kiev.stdlib._wrapper_<type>;
+//typedef type⁺ kiev.stdlib._wildcard_co_variant_<type>;
+//typedef type⁻ kiev.stdlib._wildcard_contra_variant_<type>;
 typedef type@ kiev.stdlib.PVar<type>⊛;
 typedef type& kiev.stdlib.Ref<type>;
 //typedef type| kiev.stdlib.List<type>;

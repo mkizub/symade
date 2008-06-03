@@ -34,6 +34,12 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 		return cp_type.value;
 	}
 
+	public KString getFieldSignature(Clazz clazz) {
+		foreach (GenericsSignatureAttribute a; attrs)
+			return a.getSignature(clazz);
+		return null;
+	}
+
 	public int size() {
 		int size = 8;	// flags+name+type+attrs.length
 		for(int i=0; i < attrs.length; i++) {

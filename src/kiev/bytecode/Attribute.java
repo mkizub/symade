@@ -27,6 +27,7 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 		attrMap = new Hashtable<KString,Class>();
 		attrMap.put(attrCode,			Class.forName("kiev.bytecode.CodeAttribute"));
 		attrMap.put(attrSourceFile,		Class.forName("kiev.bytecode.SourceFileAttribute"));
+		attrMap.put(attrSignature,		Class.forName("kiev.bytecode.GenericsSignatureAttribute"));
 		attrMap.put(attrLocalVarTable,	Class.forName("kiev.bytecode.LocalVariableTableAttribute"));
 		attrMap.put(attrLinenoTable,	Class.forName("kiev.bytecode.LineNumberTableAttribute"));
 		attrMap.put(attrExceptions,		Class.forName("kiev.bytecode.ExceptionsAttribute"));
@@ -148,6 +149,33 @@ public class SourceFileAttribute extends Attribute {
 	}
 	public KString getFileName(Clazz clazz) {
 		return cp_filename.value;
+	}
+}
+
+public class GenericsSignatureAttribute extends Attribute {
+
+	public Utf8PoolConstant		cp_signature;
+
+	public int size() {
+		return 6+2;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 2,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cp_signature = readUtf8Ref(cont,false);
+		trace(Clazz.traceRead,cont.offset+": filename is "+cp_signature.value);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_signature.value);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2);
+		cont.writeShort(cp_signature.idx);
+	}
+	public KString getSignature(Clazz clazz) {
+		return cp_signature.value;
 	}
 }
 

@@ -908,7 +908,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 			}
 			else if (self.isEnum()) {
-				assert (st.getType() ≈ StdTypes.tpEnum);
+				assert (st.getTypeDecl() == StdTypes.tpEnum.meta_type.tdecl);
 			}
 
 			Struct s = st.getStruct();

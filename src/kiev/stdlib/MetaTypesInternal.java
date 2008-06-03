@@ -16,7 +16,7 @@ import syntax kiev.stdlib.Syntax;
 // UUID name-based generated as:
 // URL is http://www.symade.com/ and UUID is generated as:
 // java -jar jug-lgpl-2.0.0.jar --name http://www.symade.com/ --namespace URL name-based => 6189bf45-88e8-3a27-8ebf-0a14795e29a7
-// UUID for names in this package were geberated using this UUID as a base, for instance:
+// UUID for names in this package were generated using this UUID as a base, for instance:
 // java -jar jug-lgpl-2.0.0.jar --name kiev.stdlib.any --namespace 6189bf45-88e8-3a27-8ebf-0a14795e29a7 name-based
 
 /**
@@ -33,6 +33,15 @@ public metatype _array_< @uuid("74843bf1-3c28-374b-ad11-006af8a31a71") _elem_ ex
 	@macro @native @CompilerNode("SetAccess")
 	public _elem_ get(int idx) alias operator "V [ V ]" ;
 }
+
+@uuid("6c99b10d-3003-3176-8086-71be6cee5c51")
+public metatype _wildcard_co_variant_< @uuid("311f0fb3-a9d6-33b9-8525-170de22d0f73") _base_ extends any > extends any {
+}
+
+@uuid("933ac6b8-4d03-3799-9bb3-3c9bc1883707")
+public metatype _wildcard_contra_variant_< @uuid("034fcce5-a61c-38df-85ea-8cd0d238fab7") _base_ extends any > extends any {
+}
+
 
 @uuid("67544053-836d-3bac-b94d-0c4b14ae9c55")
 public metatype _wrapper_< @uuid("400f213e-a4bb-3ee2-b870-9ec1951fd955") _boxed_ extends Object > extends Object {

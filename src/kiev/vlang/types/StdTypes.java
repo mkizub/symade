@@ -89,6 +89,10 @@ public interface StdTypes {
 	public static final ArgType		tpVarargArg;
 	public static final TypeDecl	tdASTNodeType;
 
+	public static final ArgType    tpWildcardCoArg;
+	public static final TypeConstr tdWildcardCoArg;
+	public static final ArgType    tpWildcardContraArg;
+	public static final TypeConstr tdWildcardContraArg;
 	public static final ArgType    tpWrapperArg;
 	public static final TypeConstr tdWrapperArg;
 	public static final ArgType    tpCallRetArg;
@@ -150,6 +154,16 @@ public interface StdTypes {
 		tpCloneableClazz.setTypeDeclNotLoaded(true);
 		tpCloneable				= (CompaundType)tpCloneableClazz.xtype;
 
+		
+		tdWildcardCoArg = new TypeConstr("_base_", tpAny);
+		tdWildcardCoArg.setAbstract(true);
+		tpWildcardCoArg = tdWildcardCoArg.getAType();
+		tpWildcardCoArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		
+		tdWildcardContraArg = new TypeConstr("_base_", tpAny);
+		tdWildcardContraArg.setAbstract(true);
+		tpWildcardContraArg = tdWildcardContraArg.getAType();
+		tpWildcardContraArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		
 		tdWrapperArg = new TypeConstr("_boxed_", tpObject);
 		tdWrapperArg.setAbstract(true);
@@ -338,6 +352,8 @@ public interface StdTypes {
 		tpNull.meta_type.tdecl.uuid =			"6c8cef01-5c38-36c3-aab0-bd16c23e817d";
 
 		tdArrayArg.uuid =						"74843bf1-3c28-374b-ad11-006af8a31a71";
+		tdWildcardCoArg.uuid =					"311f0fb3-a9d6-33b9-8525-170de22d0f73";
+		tdWildcardContraArg.uuid =				"034fcce5-a61c-38df-85ea-8cd0d238fab7";
 		tdWrapperArg.uuid =						"400f213e-a4bb-3ee2-b870-9ec1951fd955";
 		tdVararg.uuid =							"8aa32751-ac53-343e-b456-6f8521b01647";
 		tdVarargArg.uuid =						"924f219a-37cf-3654-b761-7cb5e26ceef0";

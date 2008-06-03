@@ -1395,8 +1395,11 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
 		} else {
-			EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
-			foreach (Enum e; ens.toArray())
+			//EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
+			//foreach (Enum e; ens.toArray())
+			//	menu.add(new JMenuItem(new SetSyntaxAction(e)));
+			Method vals = pattr.slot.typeinfo.clazz.getMethod("values");
+			foreach (Enum e; (Enum[])vals.invoke(null))
 				menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		}
 		int x = cur_elem.x;

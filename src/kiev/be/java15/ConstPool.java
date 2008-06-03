@@ -147,24 +147,16 @@ public class ConstPool {
 		}
 		foreach(NodeCP cp; poolHash) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			if( !cp.clazz_cp.sig.equals(Signature.getJavaSignature(cp.clazz_cp.sig)) )
-				continue;
-			if( !cp.nt_cp.type_cp.value.equals(Signature.getJavaSignature(cp.nt_cp.type_cp.value)) )
-				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
 		}
 		foreach(ClazzCP cp; poolHash) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			if( !cp.sig.equals(Signature.getJavaSignature(cp.sig)) )
-				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
 		}
 		foreach(NameTypeCP cp; poolHash) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			if( !cp.type_cp.value.equals(Signature.getJavaSignature(cp.type_cp.value)) )
-				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
 		}

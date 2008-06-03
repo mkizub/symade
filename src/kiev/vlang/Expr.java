@@ -99,7 +99,11 @@ public class TypeClassExpr extends ENode {
 
 	public Operator getOp() { return Operator.Access; }
 
-	public Type getType() { return Type.tpClass; }
+	public Type getType() {
+		if (this.type == null || StdTypes.tpClass.getTVars().length == 0)
+			return StdTypes.tpClass;
+		return Type.tpClass.make(new TVarBld(StdTypes.tpClass.getTVars()[0].var, this.type.getType()));
+	}
 
 	public String toString() {
 		return type.toString()+".class";

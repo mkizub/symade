@@ -48,6 +48,12 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		return names;
 	}
 
+	public KString getClazzSignature() {
+		foreach (GenericsSignatureAttribute a; attrs)
+			return a.getSignature(this);
+		return null;
+	}
+
 	public void readClazz(byte[] data) {
 		assert(data != null && data.length > 8 ,"Null bytecode");
 		ReadContext cont = new ReadContext();
