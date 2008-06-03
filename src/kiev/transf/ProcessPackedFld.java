@@ -46,6 +46,8 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 	}
 	
 	public void doProcess(Field:ASTNode f) {
+		if (f.isInterfaceOnly())
+			return;
 		MetaPacked mp = f.getMetaPacked();
 		if !(f.isPackedField() ) {
 			if (mp != null)
@@ -120,7 +122,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
-			if (mp.fld.dnode == null) {
+			if (!f.isInterfaceOnly() && mp.fld.dnode == null) {
 				String mp_in = mp.getS("in");
 				if( mp_in != null && mp_in.length() > 0 ) {
 					Field p = s.resolveField(mp_in,false);
@@ -167,37 +169,39 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 				set_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaSetter)).resolve(null);
 				LVar value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
 				set_var.params.add(value);
-				Block body = new Block(f.pos);
-				set_var.body = body;
-
-				Field mpfld = (Field)mp.fld.dnode;
-				Var fval = new LVar(0,"tmp$fldval",Type.tpInt,Var.VAR_LOCAL,0);
-				if (mpfld.isStatic())
-					fval.init = new SFldExpr(f.pos,mpfld);
-				else
-					fval.init = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
-				body.addSymbol(fval);
-				Var tmp = new LVar(0,"tmp$val",Type.tpInt,Var.VAR_LOCAL,0);
-				if (f.type ≡ Type.tpBoolean)
-					tmp.init = new ReinterpExpr(f.pos, Type.tpInt, new LVarExpr(f.pos,value));
-				else
-					tmp.init = new LVarExpr(f.pos,value);
-				body.addSymbol(tmp);
-
-				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-				ENode expr_l = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,tmp), mexpr);
-				if (mp.offset > 0) {
-					ConstExpr sexpr = new ConstIntExpr(mp.offset);
-					expr_l = new BinaryExpr(f.pos, Operator.LeftShift, expr_l, sexpr);
+				if (!f.isInterfaceOnly()) {
+					Block body = new Block(f.pos);
+					set_var.body = body;
+	
+					Field mpfld = (Field)mp.fld.dnode;
+					Var fval = new LVar(0,"tmp$fldval",Type.tpInt,Var.VAR_LOCAL,0);
+					if (mpfld.isStatic())
+						fval.init = new SFldExpr(f.pos,mpfld);
+					else
+						fval.init = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
+					body.addSymbol(fval);
+					Var tmp = new LVar(0,"tmp$val",Type.tpInt,Var.VAR_LOCAL,0);
+					if (f.type ≡ Type.tpBoolean)
+						tmp.init = new ReinterpExpr(f.pos, Type.tpInt, new LVarExpr(f.pos,value));
+					else
+						tmp.init = new LVarExpr(f.pos,value);
+					body.addSymbol(tmp);
+	
+					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
+					ENode expr_l = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,tmp), mexpr);
+					if (mp.offset > 0) {
+						ConstExpr sexpr = new ConstIntExpr(mp.offset);
+						expr_l = new BinaryExpr(f.pos, Operator.LeftShift, expr_l, sexpr);
+					}
+					ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
+					ENode expr_r = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,fval), clear);
+					ENode expr = new BinaryExpr(f.pos, Operator.BitOr, expr_r, expr_l);
+					if (mpfld.isStatic())
+						expr = new AssignExpr(f.pos, Operator.Assign, new SFldExpr(f.pos,mpfld), expr);
+					else
+						expr = new AssignExpr(f.pos, Operator.Assign, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
+					body.stats.add(new ExprStat(f.pos, expr));
 				}
-				ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
-				ENode expr_r = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,fval), clear);
-				ENode expr = new BinaryExpr(f.pos, Operator.BitOr, expr_r, expr_l);
-				if (mpfld.isStatic())
-					expr = new AssignExpr(f.pos, Operator.Assign, new SFldExpr(f.pos,mpfld), expr);
-				else
-					expr = new AssignExpr(f.pos, Operator.Assign, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
-				body.stats.add(new ExprStat(f.pos, expr));
 
 				f.setter = new SymbolRef<Method>(set_var);
 			}
@@ -208,31 +212,33 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					get_var.setFinal(false);
 				s.addMethod(get_var);
 				get_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaGetter)).resolve(null);
-				Block body = new Block(f.pos);
-				get_var.body = body;
-				
-				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-				Field mpfld = (Field)mp.fld.dnode;
-				ENode expr;
-				if (mpfld.isStatic())
-					expr = new SFldExpr(f.pos,mpfld);
-				else
-					expr = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
-				if (mp.offset > 0) {
-					ConstExpr sexpr = new ConstIntExpr(mp.offset);
-					expr = new BinaryExpr(f.pos, Operator.UnsignedRightShift, expr, sexpr);
+				if (!f.isInterfaceOnly()) {
+					Block body = new Block(f.pos);
+					get_var.body = body;
+					
+					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
+					Field mpfld = (Field)mp.fld.dnode;
+					ENode expr;
+					if (mpfld.isStatic())
+						expr = new SFldExpr(f.pos,mpfld);
+					else
+						expr = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
+					if (mp.offset > 0) {
+						ConstExpr sexpr = new ConstIntExpr(mp.offset);
+						expr = new BinaryExpr(f.pos, Operator.UnsignedRightShift, expr, sexpr);
+					}
+					expr = new BinaryExpr(f.pos, Operator.BitAnd, expr, mexpr);
+					if( mp.size == 8 && f.type ≡ Type.tpByte )
+						expr = new CastExpr(f.pos, Type.tpByte, expr);
+					else if( mp.size == 16 && f.type ≡ Type.tpShort )
+						expr = new CastExpr(f.pos, Type.tpShort, expr);
+					else if( mp.size == 16 && f.type ≡ Type.tpChar )
+						expr = new ReinterpExpr(f.pos, Type.tpChar, expr);
+					else if( mp.size == 1 && f.type ≡ Type.tpBoolean )
+						expr = new ReinterpExpr(f.pos, Type.tpBoolean, expr);
+					
+					body.stats.add(new ReturnStat(f.pos,expr));
 				}
-				expr = new BinaryExpr(f.pos, Operator.BitAnd, expr, mexpr);
-				if( mp.size == 8 && f.type ≡ Type.tpByte )
-					expr = new CastExpr(f.pos, Type.tpByte, expr);
-				else if( mp.size == 16 && f.type ≡ Type.tpShort )
-					expr = new CastExpr(f.pos, Type.tpShort, expr);
-				else if( mp.size == 16 && f.type ≡ Type.tpChar )
-					expr = new ReinterpExpr(f.pos, Type.tpChar, expr);
-				else if( mp.size == 1 && f.type ≡ Type.tpBoolean )
-					expr = new ReinterpExpr(f.pos, Type.tpBoolean, expr);
-				
-				body.stats.add(new ReturnStat(f.pos,expr));
 				
 				f.getter = new SymbolRef<Method>(get_var);
 			}

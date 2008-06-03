@@ -452,6 +452,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 }
 
 public final class Transaction {
+	
 	private static int currentVersion;
 	private static Transaction currentTransaction;
 
@@ -479,7 +480,7 @@ public final class Transaction {
 
 	public void close() {
 		assert (currentTransaction == this);
-		if (!Kiev.run_batch) {
+		if (!ASTNode.EXECUTE_UNVERSIONED) {
 			ASTNode[] nodes = this.nodes;
 			int n = this.size;
 			for (int i=0; i < n; i++)
@@ -494,7 +495,7 @@ public final class Transaction {
 	}
 
 	public void rollback(boolean save_next) {
-		if (!Kiev.run_batch) {
+		if (!ASTNode.EXECUTE_UNVERSIONED) {
 			ASTNode[] nodes = this.nodes;
 			int n = this.size;
 			for (int i=0; i < n; i++)
@@ -518,12 +519,12 @@ public final class Transaction {
 		this.version = ++currentVersion;
 		this.name = name;
 		this.recursion_counter = 1;
-		if (!Kiev.run_batch)
+		if (!ASTNode.EXECUTE_UNVERSIONED)
 			this.nodes = new ASTNode[64];
 	}
 	
 	public void add(ASTNode node) {
-		if (Kiev.run_batch)
+		if (ASTNode.EXECUTE_UNVERSIONED)
 			return;
 		if (size >= nodes.length) {
 			ASTNode[] tmp = new ASTNode[size*2];

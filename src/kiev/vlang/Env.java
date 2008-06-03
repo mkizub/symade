@@ -78,13 +78,13 @@ public final class Env extends KievPackage {
 
 	public DNode resolveGlobalDNode(String qname) {
 		//assert(qname.indexOf('.') < 0);
-		Struct pkg = Env.getRoot();
+		TypeDecl pkg = Env.getRoot();
 		int start = 0;
 		int end = qname.indexOf('\u001f', start);
 		while (end > 0) {
 			String nm = qname.substring(start, end).intern();
-			Struct ss = null;
-			foreach (Struct s; pkg.sub_decls; s.sname == nm) {
+			TypeDecl ss = null;
+			foreach (TypeDecl s; pkg.sub_decls; s.sname == nm) {
 				ss = s;
 				break;
 			}
@@ -233,12 +233,12 @@ public final class Env extends KievPackage {
 		dumpTextFile(getProject(), Kiev.project_file, new XmlDumpSyntax("proj").getCompiled().init());
 	}
 
-	public boolean existsStruct(String qname) {
+	public boolean existsTypeDecl(String qname) {
 		if (qname == "") return true;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return false;
-		Struct cl = (Struct)resolveGlobalDNode(qname);
-		if (cl != null)
+		DNode dn = resolveGlobalDNode(qname);
+		if (dn instanceof TypeDecl)
 			return true;
 		// Check if not loaded
 		return this.classpath.exists(qname.replace('\u001f','/'));

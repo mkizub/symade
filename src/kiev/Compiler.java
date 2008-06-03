@@ -280,7 +280,7 @@ stop:;
 			//	                  Midend                      //
 			////////////////////////////////////////////////////
 
-			if (!Kiev.run_batch) {
+			if (!ASTNode.EXECUTE_UNVERSIONED) {
 				Env.getRoot().walkTree(new TreeWalker() {
 					public boolean pre_exec(ANode n) {
 						if (n instanceof ASTNode) {
@@ -406,7 +406,6 @@ public class Compiler {
 	public static boolean errorPrompt			= false;
 
 	public static boolean run_gui				= false;
-	public static boolean run_batch				= true;
 	public static boolean interface_only		= false;
 	public static boolean initialized			= false;
 
@@ -733,12 +732,12 @@ public class Compiler {
 					args[a] = null;
 					Compiler.run_gui   = onoff;
 					if (onoff)
-						Compiler.run_batch = false;
+						System.setProperty("symade.unversioned","false");
 					continue;
 				}
 				else if( args[a].equals("-batch") ) {
 					args[a] = null;
-					Compiler.run_batch = onoff;
+					System.setProperty("symade.unversioned",String.valueOf(!onoff));
 					if (onoff)
 						Compiler.run_gui = false;
 					continue;

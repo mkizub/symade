@@ -390,7 +390,6 @@ public final class Kiev {
 	public static boolean errorPrompt			= Compiler.errorPrompt;
 
 	public static final boolean run_gui		= Compiler.run_gui;
-	public static final boolean run_batch		= Compiler.run_batch;
 
 	public static String output_dir				= Compiler.output_dir;
 	public static String compiler_classpath	= Compiler.compiler_classpath;
@@ -523,7 +522,7 @@ public final class Kiev {
 	}
 	
 	public static void lockNodeTree(ANode node) {
-		if (Kiev.run_batch)
+		if (ASTNode.EXECUTE_UNVERSIONED)
 			return;
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {

@@ -450,11 +450,11 @@ public abstract class AType implements StdTypes, TVSet {
 			int p = name.indexOf('\u001f');
 			while (p > 0) {
 				String pnm = name.substring(0,p);
-				if (Env.getRoot().existsStruct(pnm))
+				if (Env.getRoot().existsTypeDecl(pnm))
 					Env.getRoot().loadTypeDecl(pnm,false);
 				p = name.indexOf('\u001f', p+1);
 			}
-			if (Env.getRoot().existsStruct(name))
+			if (Env.getRoot().existsTypeDecl(name))
 				tdecl = Env.getRoot().loadTypeDecl(name,false);
 			if (tdecl == null) {
 				System.out.println("Warning: Cannot find TypeDecl "+name);

@@ -67,10 +67,21 @@ public final class JobJob extends JobBase {
 
 	@XPathExpr(value="job:State", nsmap={@XPathNSMap(prefix="job",uri=JobBase.NAMESPACE_URI)})
 	public JobState getJobState();
+
+	@XPathExpr(value="wf:Workflow", nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
+	public WorkflowWorkflow getWorkflow();
 }
 
 @ThisIsANode(lang=JobLang, name="File")
 public final class JobFile extends JobBase {
+	
+	@AttrXMLDumpInfo(attr=true, name="arch")
+	@nodeAttr
+	public String		is_archive;
+	
+	public boolean isArchive() {
+		is_archive != null && Boolean.valueOf(is_archive).booleanValue()
+	}
 	
 	@XPathExpr(value="name")
 	public String getName();
@@ -123,19 +134,20 @@ public final class WorkflowLang extends LangBase {
 	private static Class[] superLanguages = {};
 	private static Class[] nodeClasses = {
 		WorkflowBase.class,
-			WorkflowDocument.class,
+			WorkflowWorkflow.class,
 			WorkflowState.class,
 			WorkflowTransition.class,
-			WorkflowFunction.class
+			WorkflowFunction.class,
+			WorkflowParam.class
 	};
 }
 
 @ThisIsANode(lang=WorkflowLang)
 public abstract class WorkflowBase extends ADomElement {
 	
-	public static final String WORKFLOW_NAMESPACE_URI = "map:kiev.vdom.Workflow";
+	public static final String NAMESPACE_URI = "map:kiev.vdom.Workflow";
 
-	public final String getNamespaceURI() { WORKFLOW_NAMESPACE_URI }
+	public final String getNamespaceURI() { NAMESPACE_URI }
 
 	public String getPrefix() { getCompilerLang().getName() }
 
@@ -143,14 +155,14 @@ public abstract class WorkflowBase extends ADomElement {
 }
 
 
-@ThisIsANode(lang=WorkflowLang, name="Document")
-public final class WorkflowDocument extends WorkflowBase {
+@ThisIsANode(lang=WorkflowLang, name="Workflow")
+public final class WorkflowWorkflow extends WorkflowBase {
 	
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr
 	public String		name;
 	
-	@XPathExpr(value="wf:State[@name=$name]", nsmap={@XPathNSMap(prefix="wf",uri=WORKFLOW_NAMESPACE_URI)})
+	@XPathExpr(value="wf:State[@name=$name]", nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
 	public WorkflowState getState(String name);
 
 	public String getName() { name }
@@ -164,7 +176,7 @@ public final class WorkflowState extends WorkflowBase {
 	@nodeAttr
 	public String		name;
 	
-	@XPathExpr(value="wf:Transition",nsmap={@XPathNSMap(prefix="wf",uri=WORKFLOW_NAMESPACE_URI)})
+	@XPathExpr(value="wf:Transition",nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
 	public WorkflowTransition[] getTransitions();
 	
 	public String toString() {
@@ -175,21 +187,21 @@ public final class WorkflowState extends WorkflowBase {
 @ThisIsANode(lang=WorkflowLang, name="Transition")
 public final class WorkflowTransition extends WorkflowBase {
 	
-	@AttrXMLDumpInfo(attr=true, name="from")
+	@AttrXMLDumpInfo(attr=true, name="succ")
 	@nodeAttr
-	public String		source;
+	public String		on_success;
 	
-	@AttrXMLDumpInfo(attr=true, name="to")
+	@AttrXMLDumpInfo(attr=true, name="fail")
 	@nodeAttr
-	public String		target;
+	public String		on_fail;
 	
-	@XPathExpr(value="wf:Function",nsmap={@XPathNSMap(prefix="wf",uri=WORKFLOW_NAMESPACE_URI)})
+	@XPathExpr(value="wf:Function",nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
 	public WorkflowFunction[] getFunctions();
 	
-	@XPathExpr("@from")
-	public String getSource();
-	@XPathExpr("@to")
-	public String getTarget();
+	@XPathExpr("@succ")
+	public String getSuccessState();
+	@XPathExpr("@fail")
+	public String getFailState();
 }
 
 @ThisIsANode(lang=WorkflowLang, name="Function")
@@ -205,11 +217,27 @@ public final class WorkflowFunction extends WorkflowBase {
 	public String[] getArgs();
 }
 
+@ThisIsANode(lang=WorkflowLang, name="Param")
+public final class WorkflowParam extends WorkflowBase {
+	
+	@AttrXMLDumpInfo(attr=true)
+	@nodeAttr
+	public String		name;
+	
+	@AttrXMLDumpInfo(attr=true)
+	@nodeAttr
+	public String		value;
+	
+	public String getName() { name }
+	public String getValue() { value }
+}
+
 
 public final class WorkflowInterpreter implements Runnable {
 	
 	private final org.w3c.dom.Document doc;
-	private final WorkflowDocument wf;
+	private final JobJob job;
+	private final WorkflowWorkflow wf;
 	
 	static class ReturnExit extends Error {
 		final int exit_code;
@@ -221,12 +249,15 @@ public final class WorkflowInterpreter implements Runnable {
 	
 	public WorkflowInterpreter(org.w3c.dom.Document doc) {
 		this.doc = doc;
-		this.wf = (WorkflowDocument)this.doc.getDocumentElement();
+		this.job = (JobJob)this.doc.getDocumentElement();
+		this.wf = this.job.getWorkflow();
 	}
 	
 	public void run() {
 		try {
-			WorkflowState wfst = wf.getState("begin");
+			if (this.wf == null)
+				throw new RuntimeException("Workflow not found in the job");
+			WorkflowState wfst = this.wf.getState("begin");
 			if (wfst == null)
 				throw new RuntimeException("Workflow state 'begin' not found");
 			exec(wfst);
@@ -242,10 +273,15 @@ public final class WorkflowInterpreter implements Runnable {
 		foreach (WorkflowTransition t; transitions) {
 			System.out.println("Executing transition "+t.getNodeName());
 			WorkflowFunction[] funcs = t.getFunctions();
-			foreach (WorkflowFunction f; funcs) {
-				exec(f);
+			boolean succ = true;
+			try {
+				foreach (WorkflowFunction f; funcs)
+					exec(f);
+			} catch (Exception e) {
+				succ = false;
+				System.err.println(e);
 			}
-			String tgt = t.getTarget();
+			String tgt = succ ? t.getSuccessState() : t.getFailState();
 			if (tgt != null) {
 				WorkflowState next = wf.getState(tgt);
 				if (next == null)
@@ -272,6 +308,11 @@ public final class WorkflowInterpreter implements Runnable {
 				code = Integer.parseInt(args[0]);
 			throw new ReturnExit(code);
 		}
+		//if ("archive-files".equals(name)) {
+		//	JobFile[] files = this.job.getFiles();
+		//	foreach (JobFile f; files; !f.isArchive())
+		//		addToArchive(f);
+		//}
 		throw new RuntimeException("Uknown function '"+name+"'");
 	}
 }

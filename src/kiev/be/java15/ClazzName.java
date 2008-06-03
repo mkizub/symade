@@ -122,7 +122,7 @@ class ClazzName implements Constants {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
 				String tmp = str.substr(0,sc.pos-1).toString().replace('.','\u001f');
-				byte b = (byte)(Env.getRoot().existsStruct(tmp)?'.':'$');
+				byte b = (byte)(Env.getRoot().existsTypeDecl(tmp)?'.':'$');
 				sb.append_fast(b);
 			} else {
 				sb.append(ch);

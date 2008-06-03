@@ -167,7 +167,7 @@ public abstract class ANode implements INode {
 	}
 	
 	@getter @nodeData final AttrSlot get$p_slot() {
-		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread() == CompilerThread)
 			return this.p_slot;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
 			return ((ASTNode)this).v_editor.p_slot;
@@ -175,7 +175,7 @@ public abstract class ANode implements INode {
 	}
 	
 	@setter @nodeData final void set$p_slot(AttrSlot value) {
-		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
+		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.p_slot = value;
 		else if (Thread.currentThread() == CompilerThread)
 			ASTNode.openCmp((ASTNode)this).p_slot = value;
@@ -184,7 +184,7 @@ public abstract class ANode implements INode {
 	}
 	
 	@getter @nodeData final ANode get$p_parent() {
-		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread() == CompilerThread)
 			return this.p_parent;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
 			return ((ASTNode)this).v_editor.p_parent;
@@ -192,7 +192,7 @@ public abstract class ANode implements INode {
 	}
 	
 	@setter @nodeData final void set$p_parent(ANode value) {
-		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
+		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.p_parent = value;
 		else if (Thread.currentThread() == CompilerThread)
 			ASTNode.openCmp((ASTNode)this).p_parent = value;
@@ -201,7 +201,7 @@ public abstract class ANode implements INode {
 	}
 	
 	@getter @nodeData final DataAttachInfo[] get$ext_data() {
-		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread() == CompilerThread)
 			return this.ext_data;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
 			return ((ASTNode)this).v_editor.ext_data;
@@ -209,7 +209,7 @@ public abstract class ANode implements INode {
 	}
 	
 	@setter @nodeData final void set$ext_data(DataAttachInfo[] value) {
-		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
+		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.ext_data = value;
 		else if (Thread.currentThread() == CompilerThread)
 			ASTNode.openCmp((ASTNode)this).ext_data = value;
@@ -766,6 +766,8 @@ public abstract class ASTNode extends ANode implements Constants {
 	@virtual typedef JView ≤ JNode;
 	@virtual typedef RView ≤ RNode;
 	
+	public static final boolean EXECUTE_UNVERSIONED = Boolean.valueOf(System.getProperty("symade.unversioned","true")).booleanValue();
+	
 	public static final ASTNode[] emptyArray = new ASTNode[0];
 
 	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
@@ -812,7 +814,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	}
 	
 	@setter public final void set$nodeflags(int value) {
-		if (Kiev.run_batch || !this.versioned)
+		if (ASTNode.EXECUTE_UNVERSIONED || !this.versioned)
 			this.nodeflags = value;
 		else if (Thread.currentThread() == CompilerThread)
 			ASTNode.openCmp(this).nodeflags = value;
@@ -821,7 +823,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	}
 	
 	@getter public final int get$nodeflags() {
-		if (Kiev.run_batch || Thread.currentThread() == CompilerThread || this.v_editor == null)
+		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread() == CompilerThread || this.v_editor == null)
 			return this.nodeflags;
 		return this.v_editor.nodeflags;
 	}

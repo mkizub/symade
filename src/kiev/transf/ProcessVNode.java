@@ -554,7 +554,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeSet() {
 		if (_codeSet == null) {
-			TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001ftransf\u001fTemplateVNode");
+			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode");
 			_codeSet = td.resolveMethod("codeSet", StdTypes.tpVoid)
 		}
 		return _codeSet;
@@ -562,7 +562,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeGet() {
 		if (_codeGet == null) {
-			TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001ftransf\u001fTemplateVNode");
+			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode");
 			_codeGet = td.resolveMethod("codeGet", StdTypes.tpVoid)
 		}
 		return _codeGet;

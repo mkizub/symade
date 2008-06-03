@@ -119,10 +119,10 @@
               <a-node class='kiev.vlang.SFldExpr'>
                <obj>
                 <a-node class='kiev.vlang.types.TypeNameRef'>
-                 <ident>Kiev</ident>
+                 <ident>ASTNode</ident>
                 </a-node>
                </obj>
-               <ident>run_batch</ident>
+               <ident>EXECUTE_UNVERSIONED</ident>
               </a-node>
              </expr1>
              <expr2>
@@ -398,10 +398,10 @@
               <a-node class='kiev.vlang.SFldExpr'>
                <obj>
                 <a-node class='kiev.vlang.types.TypeNameRef'>
-                 <ident>Kiev</ident>
+                 <ident>ASTNode</ident>
                 </a-node>
                </obj>
-               <ident>run_batch</ident>
+               <ident>EXECUTE_UNVERSIONED</ident>
               </a-node>
              </expr1>
              <expr2>
