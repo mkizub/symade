@@ -102,7 +102,7 @@ public final view JNewEnumExpr of NewEnumExpr extends JENode {
 		// Generate field name constant
 		code.addConst(KString.from(f.sname));
 		// Generate field index
-		code.addConst(Integer.valueOf(idx));
+		code.addConst(idx);
 		// Constructor call args
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);

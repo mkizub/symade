@@ -21,6 +21,7 @@ public abstract class TVSet {
 	public abstract int getArgsLength();
 	public abstract ArgType getArg(int i);
 	public abstract Type resolveArg(int i);
+	public abstract boolean isAliasArg(int i);
 }
 
 public final class TemplateTVarSet extends TVSet {
@@ -120,20 +121,20 @@ public final class TemplateTVarSet extends TVSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(i, y.unalias(vs).result());
+						sr.set(i, vs.resolveArg(j));
 						continue next_my;
 					}
 				}
 				// bind to itself
-				sr.set(i, sr.tvars[i].unalias(sr).result());
+				sr.set(i, sr.resolveArg(i));
 				continue next_my;
 			}
 			// bind virtual aliases
-			if (x.isAlias() && x.var.isVirtual() && x.unalias(this).isFree()) {
+			if (x.isAlias() && x.var.isVirtual() && unaliasTVar(x).isFree()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(i, y.unalias(vs).result());
+						sr.set(i, vs.resolveArg(j));
 						continue next_my;
 					}
 				}
@@ -141,26 +142,44 @@ public final class TemplateTVarSet extends TVSet {
 		}
 		return sr.close();
 	}
+	private TVar unaliasTVar(TVar r) {
+		while (r.ref >= 0) r = this.tvars[r.ref];
+		return r;
+	}
+	
+
 
 	// TVSet interface methods
 	
 	public TVar[] getTVars() { this.tvars }
 	
 	// find a bound type of an argument
-	public Type resolve(ArgType arg) {
+	public final Type resolve(ArgType arg) {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
-			if (tvars[i].var ≡ arg)
-				return tvars[i].unalias(this).result();
+			TVar x = tvars[i];
+			if (x.var ≡ arg) {
+				while (x.ref >= 0) x = tvars[x.ref];
+				return x.result();
+			}
 		}
 		return arg;
 	}
 	
-	public int getArgsLength() { return this.tvars.length; }
-	public ArgType getArg(int i) { return this.tvars[i].var; }
-	public Type resolveArg(int i)  { return this.tvars[i].unalias(this).result(); }
+	public final int getArgsLength() { return this.tvars.length; }
+	public final ArgType getArg(int i) { return this.tvars[i].var; }
+	public final Type resolveArg(int i)  {
+		TVar[] tvars = this.tvars;
+		while (tvars[i].ref >= 0) i = tvars[i].ref;
+		return tvars[i].result();
+	}
+	public final boolean isAliasArg(int i) { return this.tvars[i].isAlias(); }
 
+	final TVar unaliasTVar(TVar r) {
+		while (r.ref >= 0) r = this.tvars[r.ref];
+		return r;
+	}
 }
 
 public final class TVarBld extends TVSet {
@@ -219,19 +238,27 @@ public final class TVarBld extends TVSet {
 	}
 	
 	// find a bound type of an argument
-	public Type resolve(ArgType arg) {
+	public final Type resolve(ArgType arg) {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
-			if (tvars[i].var ≡ arg)
-				return tvars[i].unalias(this).result();
+			TVar x = tvars[i];
+			if (x.var ≡ arg) {
+				while (x.ref >= 0) x = tvars[x.ref];
+				return x.result();
+			}
 		}
 		return arg;
 	}
 	
-	public int getArgsLength() { return this.tvars.length; }
-	public ArgType getArg(int i) { return this.tvars[i].var; }
-	public Type resolveArg(int i)  { return this.tvars[i].unalias(this).result(); }
+	public final int getArgsLength() { return this.tvars.length; }
+	public final ArgType getArg(int i) { return this.tvars[i].var; }
+	public final Type resolveArg(int i)  {
+		TVar[] tvars = this.tvars;
+		while (tvars[i].ref >= 0) i = tvars[i].ref;
+		return tvars[i].result();
+	}
+	public final boolean isAliasArg(int i) { return this.tvars[i].isAlias(); }
 
 	// Operations on the type
 
@@ -299,8 +326,11 @@ public final class TVarBld extends TVSet {
 				TVar av = tvars[i];
 				if (av.var ≡ bnd) {
 					// set v as alias of av
-					int av_idx = av.unalias_idx(this,i);
-					av = tvars[av_idx];
+					int av_idx = i;
+					while (av.ref >= 0) {
+						av_idx = av.ref;
+						av = tvars[av_idx];
+					}
 					if (v == av)
 						break; // don't alias a var to itself 
 					assert (i < n && av_idx < n);

@@ -536,27 +536,23 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		CallType rt = (CallType)this.type.rebind(tp.bindings());
+		CallType rt = (CallType)this.type.rebind(new TVarBld(tp.bindings()));
 		if (!this.isStatic() && tp != null && tp != Type.tpVoid) {
 			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
 		}
 		
 		if ((mt.bindings().getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
-			int a = 0;
-			foreach (TVar tv; mt.bindings().getTVars()) {
-				if (tv.var.isHidden())
-					continue;
-				Type bound = tv.unalias(mt).result();
-				ArgType arg = targs[a].getAType();
+			foreach (TypeConstr tc; this.targs) {
+				ArgType arg = tc.getAType();
+				Type bound = mt.resolve(arg);
 				if!(bound.isInstanceOf(arg)) {
-					trace(Kiev.debug && Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg	+" for type arg "+a);
+					trace(Kiev.debug && Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg);
 					return false;
 				}
 				set.append(arg, bound);
-				a++;
 			}
-			if (a > 0)
+			if (set.getArgsLength() > 0)
 				rt = (CallType)rt.rebind(set);
 		}
 		
@@ -593,12 +589,15 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		// check bindings are correct
-		foreach (TVar tv; rt.getTVars(); tv.var ≢ StdTypes.tpCallRetArg) {
-			ArgType var = tv.var;
-			Type val = rt.resolve(var);
+		int n = rt.getArgsLength();
+		for (int i=0; i < n; i++) {
+			ArgType var = rt.getArg(i);
+			//if (var ≡ StdTypes.tpCallRetArg)
+			//	continue;
+			Type val = rt.resolveArg(i);
 			if (!var.checkBindings(rt, val)) {
-				Kiev.reportWarning(info.getFrom(),"Incorrect method found "+rt+" for the binding "+tv);
-				//return false; 
+				trace(Kiev.debug && Kiev.debugResolve,"Incorrect bindings for var "+var+" with value "+val+" in type "+rt);
+				return false; 
 			}
 		}
 		
@@ -625,23 +624,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			mt = new Type[args.length-1];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i+1].getType();
-			rt = (CallType)this.type.rebind(args[0].getType().bindings());
+			rt = (CallType)this.type.rebind(new TVarBld(args[0].getType().bindings()));
 		}
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();
-			int a = 0;
-			foreach (TVar tv; rt.bindings().getTVars()) {
-				if (tv.var.isHidden())
-					continue;
-				Type bound = targs[a].getType();
-				ArgType arg = this.targs[a].getAType();
+			for (int i=0; i < targs.length && i < this.targs.length; i++) {
+				Type bound = targs[i].getType();
+				ArgType arg = this.targs[i].getAType();
 				set.append(arg, bound);
-				a++;
-				if (a >= targs.length)
-					break;
 			}
-			if (a > 0)
-				rt = (CallType)rt.rebind(set);
+			rt = (CallType)rt.rebind(set);
 		}
 		foreach (TypeDef td; this.targs) {
 			ArgType at = td.getAType();
@@ -685,21 +677,22 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			return;
 		final int qt_size = qt.getArgsLength();
 		for (int i=0; i < qt_size; i++) {
-			TVar qtv = qt.getTVars()[i];
-			if (!qtv.isAlias()) {
-				if (qtv.val ≡ at) {
-					Type bnd = pt.resolve(qtv.var);
-					if (bnd ≢ qtv.var && !bindings.contains(bnd)) {
-						Type t = bnd.getAutoCastTo(at);
-						if (t != null)
-							bindings.append(t);
-					}
+			if (qt.isAliasArg(i))
+				continue;
+			ArgType qtvar = qt.getArg(i);
+			Type qtval = qt.resolveArg(i);
+			if (qtval ≡ at) {
+				Type bnd = pt.resolve(qtvar);
+				if (bnd ≢ qtvar && !bindings.contains(bnd)) {
+					Type t = bnd.getAutoCastTo(at);
+					if (t != null)
+						bindings.append(t);
 				}
-				else if (qtv.val.hasApplayable(at)) {
-					Type bnd = pt.resolve(qtv.var);
-					if (bnd ≢ qtv.var)
-						addBindingsFor(at, bnd, qtv.val, bindings);
-				}
+			}
+			else if (qtval.hasApplayable(at)) {
+				Type bnd = pt.resolve(qtvar);
+				if (bnd ≢ qtvar)
+					addBindingsFor(at, bnd, qtval, bindings);
 			}
 		}
 		return;

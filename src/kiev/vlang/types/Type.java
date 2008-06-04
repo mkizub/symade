@@ -49,9 +49,9 @@ public abstract class Type extends AType {
 		return meta_type.applay(this,bindings);
 	}
 	// rebind with lower bound or outer type, etc
-	public final Type rebind(TVSet bindings) {
+	public final Type rebind(TVarBld set) {
 		bindings(); // update this type, if outdated
-		return meta_type.rebind(this,bindings);
+		return meta_type.rebind(this,set);
 	}
 	
 	public final JStruct getJStruct() {
@@ -738,7 +738,7 @@ public final class ArrayType extends Type {
 
 	private static MetaType[] allSuperTypes = new MetaType[] { tpObject.meta_type, tpCloneable.meta_type };
 	
-	@getter public Type get$arg() { return this.tvars[0].unalias(this).result(); }
+	@getter public Type get$arg() { return this.resolveArg(0); }
 	
 	public static ArrayType newArrayType(Type type)
 		alias lfy operator new
@@ -794,7 +794,7 @@ public abstract class CTimeType extends Type {
 	public abstract ENode makeInitExpr(Var dn, ENode init); // returns an expression of enclosed type 
 	public abstract Type getUnboxedType();
 
-	public Type getEnclosedType()	{ return this.tvars[0].unalias(this).result(); }
+	public Type getEnclosedType()	{ return this.resolveArg(0); }
 }
 
 public final class WildcardCoType extends CTimeType {
@@ -1041,16 +1041,14 @@ public final class CallType extends Type {
 	
 	public Type ret() {
 		AType bindings = this.bindings();
-		TVar tv = bindings.tvars[0];
-		assert (tv.var ≡ tpCallRetArg);
-		return tv.unalias(this).result().applay(bindings);
+		assert (bindings.getArg(0) ≡ tpCallRetArg);
+		return bindings.resolveArg(0).applay(bindings);
 	}
 	
 	public Type arg(int idx) {
 		AType bindings = this.bindings();
-		TVar tv = bindings.tvars[idx+1];
-		assert (tv.var ≡ tpCallParamArgs[idx]);
-		return tv.unalias(this).result().applay(bindings);
+		assert (bindings.getArg(idx+1) ≡ tpCallParamArgs[idx]);
+		return bindings.resolveArg(idx+1).applay(bindings);
 	}
 	
 	public Type[] params() {
@@ -1058,11 +1056,8 @@ public final class CallType extends Type {
 		if (arity == 0)
 			return Type.emptyArray;
 		Type[] params = new Type[arity];
-		TVar[] tvars = this.tvars;
-		for (int i=0; i < arity; i++) {
-			assert (tvars[i+1].var ≡ tpCallParamArgs[i]);
-			params[i] = tvars[i+1].unalias(this).result();
-		}
+		for (int i=0; i < arity; i++)
+			params[i] = this.arg(i);
 		return params;
 	}
 

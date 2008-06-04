@@ -83,7 +83,7 @@ public class MetaType implements Constants {
 	public Type make(TVSet bindings) {
 		return new XType(this, getTemplBindings().bind_bld(bindings));
 	}
-	public Type rebind(Type t, TVSet bindings) {
+	public Type rebind(Type t, TVarBld set) {
 		throw new RuntimeException("rebind() in DummyType");
 	}
 	public Type applay(Type t, TVSet bindings) {
@@ -218,7 +218,7 @@ public final class CoreMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		return core_type;
 	}
-	public Type rebind(Type t, TVSet bindings) {
+	public Type rebind(Type t, TVarBld set) {
 		throw new RuntimeException("rebind() in CoreType");
 	}
 	public Type applay(Type t, TVSet bindings) {
@@ -310,7 +310,7 @@ public final class ASTNodeMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in ASTNodeMetaType");
 	}
-	public Type rebind(Type t, TVSet bindings) {
+	public Type rebind(Type t, TVarBld set) {
 		throw new RuntimeException("rebind() in ASTNodeMetaType");
 	}
 	public Type applay(Type t, TVSet bindings) {
@@ -421,8 +421,8 @@ public final class CompaundMetaType extends MetaType {
 		return new CompaundType(this, getTemplBindings().bind_bld(bindings));
 	}
 
-	public Type rebind(Type t, TVSet bindings) {
-		return new CompaundType(this, t.bindings().rebind_bld(bindings));
+	public Type rebind(Type t, TVarBld set) {
+		return new CompaundType(this, t.bindings().rebind_bld(set));
 	}
 	
 	public Type applay(Type t, TVSet bindings) {
@@ -490,8 +490,8 @@ public final class ArrayMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
 	}
-	public Type rebind(Type t, TVSet bindings) {
-		return ArrayType.newArrayType(t.bindings().rebind_bld(bindings).resolve(StdTypes.tpArrayArg));
+	public Type rebind(Type t, TVarBld set) {
+		return ArrayType.newArrayType(t.bindings().rebind_bld(set).resolve(StdTypes.tpArrayArg));
 	}
 	public Type applay(Type t, TVSet bindings) {
 		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
@@ -526,17 +526,11 @@ public class ArgMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		return atype;
 	}
-	public Type rebind(Type t, TVSet bindings) {
+	public Type rebind(Type t, TVarBld set) {
 		return t; //throw new RuntimeException("bind() in ArgType");
 	}
 	public Type applay(Type t, TVSet bindings) {
-		ArgType at = (ArgType)t;
-		foreach (TVar v; bindings.getTVars()) {
-			if (v.var ≡ at || v.val ≡ at)
-				return v.unalias(bindings).result();
-		}
-		// Not found, return itself
-		return t;
+		return bindings.resolve((ArgType)t);
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
@@ -592,8 +586,8 @@ public class WildcardCoMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		return new WildcardCoType(bindings.resolve(StdTypes.tpWildcardCoArg));
 	}
-	public Type rebind(Type t, TVSet bindings) {
-		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().rebind(bindings));
+	public Type rebind(Type t, TVarBld set) {
+		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().rebind(set));
 	}
 	public Type applay(Type t, TVSet bindings) {
 		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
@@ -637,8 +631,8 @@ public class WildcardContraMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		return new WildcardContraType(bindings.resolve(StdTypes.tpWildcardContraArg));
 	}
-	public Type rebind(Type t, TVSet bindings) {
-		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().rebind(bindings));
+	public Type rebind(Type t, TVarBld set) {
+		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().rebind(set));
 	}
 	public Type applay(Type t, TVSet bindings) {
 		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
@@ -692,8 +686,8 @@ public class WrapperMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		return WrapperType.newWrapperType(bindings.resolve(StdTypes.tpWrapperArg));
 	}
-	public Type rebind(Type t, TVSet bindings) {
-		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().rebind(bindings));
+	public Type rebind(Type t, TVarBld set) {
+		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().rebind(set));
 	}
 	public Type applay(Type t, TVSet bindings) {
 		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
@@ -789,11 +783,11 @@ public class CallMetaType extends MetaType {
 		return Type.emptyArray;
 	}
 
-	public Type rebind(Type t, TVSet bindings) {
-		if (bindings.getArgsLength() == 0 || t.bindings().getArgsLength() == 0) return t;
+	public Type rebind(Type t, TVarBld set) {
+		if (set.getArgsLength() == 0 || t.bindings().getArgsLength() == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
-		mt = new CallType(mt.bindings().rebind_bld(bindings),mt.arity,mt.isReference());
+		mt = new CallType(mt.bindings().rebind_bld(set),mt.arity,mt.isReference());
 		return mt;
 	}
 	public Type applay(Type t, TVSet bindings) {

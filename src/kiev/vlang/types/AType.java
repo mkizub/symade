@@ -122,15 +122,12 @@ public abstract class AType extends TVSet implements StdTypes {
 		if (t1 == null || t2 == null) return false;
 		if (t1 == t2) return true;
 		if (t1.meta_type != t2.meta_type) return false;
-		TVar[] b1 = t1.bindings().tvars;
-		TVar[] b2 = t2.bindings().tvars;
-		if (b1.length != b2.length) return false;
-		final int n = b1.length;
+		if (t1.getArgsLength() != t2.getArgsLength()) return false;
+		final int n = t1.getArgsLength();
 		for (int i=0; i < n; i++) {
-			TVar tv1 = b1[i];
-			TVar tv2 = b2[i];
-			if (tv1.var != tv2.var) return false;
-			if (tv1.unalias(t1).result() ≉ tv2.unalias(t2).result())
+			if (t1.getArg(i) ≢ t2.getArg(i))
+				return false;
+			if (t1.resolveArg(i) ≉ t2.resolveArg(i))
 				return false;
 		}
 		return true;
@@ -150,33 +147,41 @@ public abstract class AType extends TVSet implements StdTypes {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
-			if (tvars[i].var ≡ arg)
-				return tvars[i].unalias(this).result();
+			TVar x = tvars[i];
+			if (x.var ≡ arg) {
+				while (x.ref >= 0) x = tvars[x.ref];
+				return x.result();
+			}
 		}
 		return arg;
 	}
 	
-	public int getArgsLength() { return this.tvars.length; }
-	public ArgType getArg(int i) { return this.tvars[i].var; }
-	public Type resolveArg(int i)  { return this.tvars[i].unalias(this).result(); }
+	public final int getArgsLength() { return this.tvars.length; }
+	public final ArgType getArg(int i) { return this.tvars[i].var; }
+	public final Type resolveArg(int i)  {
+		TVar[] tvars = this.tvars;
+		while (tvars[i].ref >= 0) i = tvars[i].ref;
+		return tvars[i].result();
+	}
+	public final boolean isAliasArg(int i) { return this.tvars[i].isAlias(); }
 
 	// change bound types, for virtual args, outer args, etc
-	public TVarBld rebind_bld(TVSet vs) {
+	public TVarBld rebind_bld(TVarBld vs) {
 		TVar[] my_vars = this.tvars;
-		TVar[] vs_vars = vs.getTVars();
-		final int my_size = my_vars.length;
+		TVar[] vs_vars = vs.tvars;
+		final int my_size = this.getArgsLength();
 		final int vs_size = vs_vars.length;
 		TVarBld sr = new TVarBld(this);
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i];
+			TVar x = this.tvars[i];
 			// TVarBound already bound
 			if (!x.isAlias()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(i, y.unalias(vs).result());
+						sr.set(i, vs.resolveArg(j));
 						continue next_my;
 					}
 				}
@@ -187,7 +192,7 @@ public abstract class AType extends TVSet implements StdTypes {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(i, y.unalias(vs).result());
+						sr.set(i, vs.resolveArg(j));
 						continue next_my;
 					}
 				}
@@ -222,9 +227,8 @@ public abstract class AType extends TVSet implements StdTypes {
 	
 	public TVarBld applay_bld(TVSet vs)
 	{
-		TVar[] my_vars = this.tvars;
 		TVar[] vs_vars = vs.getTVars();
-		final int my_size = my_vars.length;
+		final int my_size = this.getArgsLength();
 		final int vs_size = vs_vars.length;
 		TVarBld sr = new TVarBld(this);
 		if (!this.hasApplayables(vs))
@@ -232,7 +236,8 @@ public abstract class AType extends TVSet implements StdTypes {
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i].unalias(this);
+			TVar x = this.tvars[i];
+			while (x.ref >= 0) x = this.tvars[x.ref];
 			Type bnd = x.val;
 			if (x.isFree() || !x.var.isArgAppliable())
 				continue;
@@ -241,7 +246,7 @@ public abstract class AType extends TVSet implements StdTypes {
 					TVar y = vs_vars[j];
 					if (bnd ≡ y.var) {
 						// re-bind
-						sr.set(i, y.unalias(vs).result());
+						sr.set(i, vs.resolveArg(j));
 						continue next_my;
 					}
 				}
@@ -452,22 +457,6 @@ public final class TVar {
 	
 	public Type result() {
 		return val == null? var : val;
-	}
-	
-	public TVar unalias(TVSet tp) {
-		TVar r = this;
-		while (r.ref >= 0) r = tp.getTVars()[r.ref];
-		return r;
-	}
-	
-	public int unalias_idx(TVSet tp, int idx) {
-		TVar r = tp.getTVars()[idx];
-		assert(r == this); 
-		while (r.ref >= 0) {
-			idx = r.ref;
-			r = tp.getTVars()[idx];
-		}
-		return idx;
 	}
 	
 	public boolean isFree() { return val == null; }

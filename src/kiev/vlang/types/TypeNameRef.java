@@ -88,7 +88,7 @@ public final class TypeNameRef extends TypeRef {
 			TVarBld set = new TVarBld();
 			int a = 0;
 			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
-				if (tpset.tvars[b].unalias(tpset).val != null)
+				if (tpset.tvars[b].val != null)
 					continue;
 				Type bound = args[a].getType();
 				if (bound == null)
