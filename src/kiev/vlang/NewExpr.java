@@ -170,7 +170,7 @@ public final class NewExpr extends ENode {
 		}
 		if (outer != null) {
 			outer.resolve(null);
-			type = type.bind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
+			type = type.rebind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)

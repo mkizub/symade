@@ -568,8 +568,11 @@ public final class MacroAccessExpr extends ENode {
 		if!(ot instanceof ASTNodeType)
 			return StdTypes.tpVoid;
 		String name = ("attr$"+ident+"$type").intern();
-		foreach (TVar tv; ot.bindings().getTVars(); tv.var.name == name)
-			return ot.resolve(tv.var);
+		int n = ot.bindings().getArgsLength();
+		for (int i=0; i < n; i++) {
+			if (ot.getArg(i).name == name)
+				return ot.resolveArg(i);
+		}
 		foreach (AttrSlot a; obj.values(); a.name == this.ident) {
 			if (a.clazz == Boolean.class) return StdTypes.tpBoolean;
 			if (a.clazz == String.class) return StdTypes.tpString;

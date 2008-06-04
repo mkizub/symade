@@ -36,7 +36,7 @@ public final view RCallExpr of CallExpr extends RENode {
 		assert (!(func instanceof Constructor));
 		if (func.isVarArgs()) {
 			Type tn = func.getVarArgParam().type;
-			Type varg_tp = tn.getTVars()[0].unalias(tn).result();
+			Type varg_tp = tn.resolveArg(0);
 			int i=0;
 			for(; i < func.type.arity-1; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
@@ -102,7 +102,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 		}
 		if (func.isVarArgs()) {
 			Type tn = func.getVarArgParam().type;
-			Type varg_tp = tn.getTVars()[0].unalias(tn).result();
+			Type varg_tp = tn.resolveArg(0);
 			int i=0;
 			for(; i < func.type.arity-1; i++)
 				args[i].resolve(func.type.arg(i));

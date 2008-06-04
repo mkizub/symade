@@ -15,13 +15,155 @@ import kiev.be.java15.JStruct;
 
 import syntax kiev.Syntax;
 
-interface TVSet {
-	public TVar[] getTVars();
-	public ArgType[] getTArgs();
-	public Type resolve(ArgType arg);
+public abstract class TVSet {
+	public abstract TVar[] getTVars();
+	public abstract Type resolve(ArgType arg);
+	public abstract int getArgsLength();
+	public abstract ArgType getArg(int i);
+	public abstract Type resolveArg(int i);
 }
 
-public final class TVarBld implements TVSet {
+public final class TemplateTVarSet extends TVSet {
+
+	public static final TemplateTVarSet emptySet = new TemplateTVarSet(TVarBld.emptySet);
+
+	@access:no,no,ro,rw		TVar[]		tvars;
+	private					ArgType[]	appls;
+	private					int			flags;
+
+	TemplateTVarSet(TVarBld bld) {
+		TVar[] bld_tvars = bld.getTVars();
+		int n = bld_tvars.length;
+		if (n > 0) {
+			this.tvars = new TVar[n];
+			for (int i=0; i < n; i++)
+				this.tvars[i] = bld_tvars[i];
+		} else {
+			this.tvars = TVar.emptyArray;
+		}
+
+		foreach(TVar tv; this.tvars; !tv.isAlias()) {
+			Type r = tv.result();
+			ArgType v = tv.var;
+			if (tv.isFree()) flags |= StdTypes.flBindable;
+			if (r.isAbstract()) flags |= StdTypes.flAbstract;
+			if (v.isUnerasable()) flags |= StdTypes.flUnerasable;
+			if (v.isArgAppliable() && r.isValAppliable()) flags |= StdTypes.flValAppliable;
+		}
+	}
+	
+	private ArgType[] getTArgs() {
+		if (this.appls == null)
+			buildApplayables();
+		return this.appls;
+	}
+	
+	private void buildApplayables() {
+		appls = ArgType.emptyArray;
+		foreach (TVar tv; tvars; !tv.isAlias())
+			addApplayables(tv.result());
+	}
+	
+	private void addApplayables(Type t) {
+		if (t instanceof ArgType) {
+			addApplayable((ArgType)t);
+		} else {
+			ArgType[] tappls = t.bindings().getTArgs();
+			for (int i=0; i < tappls.length; i++)
+				addApplayable(tappls[i]);
+		}
+	}
+	private void addApplayable(ArgType at) {
+		int sz = this.appls.length;
+		for (int i=0; i < sz; i++) {
+			if (this.appls[i] ≡ at)
+				return;
+		}
+		ArgType[] tmp = new ArgType[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = this.appls[i];
+		tmp[sz] = at;
+		this.appls = tmp;
+	}
+
+	// Bind free (unbound) variables of current type to values
+	// from a set of var=value pairs, returning a new set.
+	//
+	// having a bind pair A -> V, will bind
+	// A:?      -> A:V			; bind
+	// B:A      -> B:A			; alias remains
+	// C:X<A:?> -> C X<A:?>		; non-recursive
+	//
+	// This operation is used in type extension/specification:
+	//
+	// class Bar<B> :- defines a free variable B
+	// class Foo<F> extends Bar<F> :- binds Bar.B to Foo.F
+	// new Foo<String> :- binds Foo.F to String
+	// new Foo<Bar<Foo<F>>> :- binds Foo.F with Bar<Foo<F>>
+	//
+	// my.var ≡ vs.var -> (my.var, vs.result())
+
+	public TVarBld bind_bld(TVSet vs) {
+		TVar[] my_vars = this.tvars;
+		TVar[] vs_vars = vs.getTVars();
+		final int my_size = my_vars.length;
+		final int vs_size = vs_vars.length;
+		TVarBld sr = new TVarBld(this);
+
+	next_my:
+		for(int i=0; i < my_size; i++) {
+			TVar x = my_vars[i];
+			
+			// bind TVar
+			if (x.isFree()) {
+				// try known bind
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (x.var ≡ y.var) {
+						sr.set(i, y.unalias(vs).result());
+						continue next_my;
+					}
+				}
+				// bind to itself
+				sr.set(i, sr.tvars[i].unalias(sr).result());
+				continue next_my;
+			}
+			// bind virtual aliases
+			if (x.isAlias() && x.var.isVirtual() && x.unalias(this).isFree()) {
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (x.var ≡ y.var) {
+						sr.set(i, y.unalias(vs).result());
+						continue next_my;
+					}
+				}
+			}
+		}
+		return sr.close();
+	}
+
+	// TVSet interface methods
+	
+	public TVar[] getTVars() { this.tvars }
+	
+	// find a bound type of an argument
+	public Type resolve(ArgType arg) {
+		TVar[] tvars = this.tvars;
+		final int n = tvars.length;
+		for(int i=0; i < n; i++) {
+			if (tvars[i].var ≡ arg)
+				return tvars[i].unalias(this).result();
+		}
+		return arg;
+	}
+	
+	public int getArgsLength() { return this.tvars.length; }
+	public ArgType getArg(int i) { return this.tvars[i].var; }
+	public Type resolveArg(int i)  { return this.tvars[i].unalias(this).result(); }
+
+}
+
+public final class TVarBld extends TVSet {
 
 	private static final boolean ASSERT_MORE = true;
 
@@ -44,19 +186,21 @@ public final class TVarBld implements TVSet {
 	}
 	
 	public TVarBld(AType vset) {
-		tvars = TVar.emptyArray;
-		int n = vset.tvars.length;
+		this.tvars = TVar.emptyArray;
+		TVar[] tvars = vset.getTVars();
+		int n = tvars.length;
 		if (n > 0) {
 			this.tvars = new TVar[n];
 			for (int i=0; i < n; i++)
-				this.tvars[i] = vset.tvars[i];
+				this.tvars[i] = tvars[i];
 		}
-		//if (vset.appls != null && vset.appls.length > 0) {
-		//	n = vset.appls.length;
-		//	this.appls = new ArgType[n];
-		//	for (int i=0; i < n; i++)
-		//		this.appls[i] = vset.appls[i].copy(this);
-		//}
+	}
+	
+	public TVarBld(TemplateTVarSet vset) {
+		if (vset.tvars.length > 0)
+			this.tvars = (TVar[])vset.tvars.clone();
+		else
+			this.tvars = TVar.emptyArray;
 	}
 	
 	public TVarBld close() {
@@ -68,23 +212,28 @@ public final class TVarBld implements TVSet {
 		return this;
 	}
 	
+	// TVSet interface methods
+	
 	public TVar[] getTVars() {
 		return this.tvars;
 	}
 	
-	public ArgType[] getTArgs() {
-		if (this.appls == null)
-			buildApplayables();
-		return this.appls;
+	// find a bound type of an argument
+	public Type resolve(ArgType arg) {
+		TVar[] tvars = this.tvars;
+		final int n = tvars.length;
+		for(int i=0; i < n; i++) {
+			if (tvars[i].var ≡ arg)
+				return tvars[i].unalias(this).result();
+		}
+		return arg;
 	}
 	
-	@getter
-	public int size()
-		alias length
-		alias get$length
-	{
-		return tvars.length;
-	}
+	public int getArgsLength() { return this.tvars.length; }
+	public ArgType getArg(int i) { return this.tvars[i].var; }
+	public Type resolveArg(int i)  { return this.tvars[i].unalias(this).result(); }
+
+	// Operations on the type
 
 	public void append(TVSet set)
 	{
@@ -167,6 +316,12 @@ public final class TVarBld implements TVSet {
 		return;
 	}
 	
+	private ArgType[] getTArgs() {
+		if (this.appls == null)
+			buildApplayables();
+		return this.appls;
+	}
+	
 	private void buildApplayables() {
 		appls = ArgType.emptyArray;
 		foreach (TVar tv; tvars; !tv.isAlias())
@@ -195,17 +350,6 @@ public final class TVarBld implements TVSet {
 		this.appls = tmp;
 	}
 
-	// find a bound type of an argument
-	public Type resolve(ArgType arg) {
-		TVar[] tvars = this.tvars;
-		final int n = tvars.length;
-		for(int i=0; i < n; i++) {
-			if (tvars[i].var ≡ arg)
-				return tvars[i].unalias(this).result();
-		}
-		return arg;
-	}
-	
 	private void checkIntegrity(boolean check_appls) {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;

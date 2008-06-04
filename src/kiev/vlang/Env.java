@@ -575,12 +575,12 @@ public final class Env extends KievPackage {
 				ANode n = nodes.pop();
 				if (n instanceof TypeDecl) {
 					n.setTypeDeclNotLoaded(false);
-					if (n instanceof Struct) {
-						Struct s = (Struct)n;
-						s.xmeta_type = new CompaundMetaType(s);
-						s.xtype = new CompaundType((CompaundMetaType)s.xmeta_type, TVarBld.emptySet);
-						//s.package_clazz.symbol = outer;
-					}
+					//if (n instanceof Struct) {
+					//	Struct s = (Struct)n;
+					//	s.xmeta_type = new CompaundMetaType(s);
+					//	s.xtype = new CompaundType((CompaundMetaType)s.xmeta_type, TVarBld.emptySet);
+					//	//s.package_clazz.symbol = outer;
+					//}
 				}
 				if (nodes.isEmpty()) {
 					//System.out.println("pop  root");

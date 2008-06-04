@@ -78,10 +78,13 @@ public final class TypeNameRef extends TypeRef {
 		TypeDecl td = getTypeDecl();
 		td.checkResolved();
 		Type tp = td.getType();
-		if (this.outer != null)
-			tp = tp.bind(this.outer.getType().bindings());
+		if (this.outer != null) {
+			TypeAssign ta = td.ometa_tdef;
+			if (ta != null)
+				tp = tp.rebind(new TVarBld(ta.getAType(), this.outer.getType()));
+		}
 		if (args.length > 0) {
-			TVarSet tpset = tp.meta_type.getTemplBindings();
+			TemplateTVarSet tpset = tp.meta_type.getTemplBindings();
 			TVarBld set = new TVarBld();
 			int a = 0;
 			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {

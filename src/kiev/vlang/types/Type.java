@@ -48,11 +48,6 @@ public abstract class Type extends AType {
 		//bindings(); // update this type, if outdated
 		return meta_type.applay(this,bindings);
 	}
-	// instantiate new type
-	public final Type bind(TVSet bindings) {
-		bindings(); // update this type, if outdated
-		return meta_type.bind(this,bindings);
-	}
 	// rebind with lower bound or outer type, etc
 	public final Type rebind(TVSet bindings) {
 		bindings(); // update this type, if outdated
@@ -74,10 +69,10 @@ public abstract class Type extends AType {
 		super(meta_type, flags, bindings);
 	}
 
-	protected Type(MetaType meta_type, int flags, TVar[] tvars, ArgType[] appls)
+	protected Type(MetaType meta_type, int flags)
 		require { meta_type != null; }
 	{
-		super(meta_type, flags, tvars, appls);
+		super(meta_type, flags);
 	}
 
 	public final rule resolveCallAccessR(Method@ node, ResInfo info, CallType mt) {
@@ -373,7 +368,7 @@ public final class XType extends Type {
 public final class CoreType extends Type {
 	public final String name;
 	CoreType(String name, Type super_type, int meta_flags) {
-		super(new CoreMetaType(name,super_type,meta_flags), 0, TVar.emptyArray, ArgType.emptyArray);
+		super(new CoreMetaType(name,super_type,meta_flags), 0);
 		((CoreMetaType)meta_type).core_type = this;
 		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name.intern();
@@ -578,7 +573,7 @@ public final class ArgType extends Type {
 	}
 	
 	public ArgType(ArgMetaType meta_type) {
-		super(meta_type, makeFlags(meta_type), TVar.emptyArray, ArgType.emptyArray);
+		super(meta_type, makeFlags(meta_type));
 		this.name = meta_type.tdecl.sname;
 	}
 	

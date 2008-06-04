@@ -18,7 +18,11 @@ import syntax kiev.Syntax;
 public class MetaType implements Constants {
 
 	public final static MetaType[] emptyArray = new MetaType[0];
-	static final MetaType dummy = new MetaType("<dummy>",0);
+	static final MetaType dummy;
+	static {
+		dummy = new MetaType("<dummy>",0);
+		dummy.templ_bindings = TemplateTVarSet.emptySet;
+	}
 
 	public static final int flReference		= 1 <<  0;
 	public static final int flIntegerInCode	= 1 <<  1;
@@ -32,10 +36,10 @@ public class MetaType implements Constants {
 	public static final int flWrapper			= 1 <<  8;
 	public static final int flCallable			= 1 <<  9;
 
-	Object					descr; // type description, TypeDecl for loaded types, String for names of not loaded yet types
-	public int				flags;
-	public int				version;
-	private TVarSet			templ_bindings;
+	Object						descr; // type description, TypeDecl for loaded types, String for names of not loaded yet types
+	public int					flags;
+	public int					version;
+	private TemplateTVarSet		templ_bindings;
 
 	@getter
 	public final TypeDecl get$tdecl() {
@@ -79,19 +83,15 @@ public class MetaType implements Constants {
 	public Type make(TVSet bindings) {
 		return new XType(this, getTemplBindings().bind_bld(bindings));
 	}
-	public Type bind(Type t, TVSet bindings) {
-		if (!t.isBindable()) return t;
-		return new XType(this, t.bindings().bind_bld(bindings));
-	}
 	public Type rebind(Type t, TVSet bindings) {
 		throw new RuntimeException("rebind() in DummyType");
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
 		return new XType(this, t.bindings().applay_bld(bindings));
 	}
 
-	public TVarSet getTemplBindings() {
+	public TemplateTVarSet getTemplBindings() {
 		if (this.version != tdecl.type_decl_version)
 			makeTemplBindings();
 		return templ_bindings;
@@ -105,7 +105,7 @@ public class MetaType implements Constants {
 		}
 		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
-		templ_bindings = new TVarSet(vs.close());
+		templ_bindings = new TemplateTVarSet(vs.close());
 		this.version = tdecl.type_decl_version;
 	}
 
@@ -213,13 +213,10 @@ public final class CoreMetaType extends MetaType {
 			tdecl.super_types.add(new TypeRef(super_type));
 	}
 
-	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
+	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
 
 	public Type make(TVSet bindings) {
 		return core_type;
-	}
-	public Type bind(Type t, TVSet bindings) {
-		throw new RuntimeException("bind() in CoreType");
 	}
 	public Type rebind(Type t, TVSet bindings) {
 		throw new RuntimeException("rebind() in CoreType");
@@ -278,10 +275,10 @@ public final class ASTNodeMetaType extends MetaType {
 	final public Class			clazz;
 	final public String			name;
 
-	private AttrSlot[]		values;
-	private TypeAssign[]	types;
-	private Field[]			fields;
-	private TVarSet			templ_bindings;
+	private AttrSlot[]			values;
+	private TypeAssign[]		types;
+	private Field[]				fields;
+	private TemplateTVarSet		templ_bindings;
 
 	public static ASTNodeMetaType instance(Class clazz) {
 		ASTNodeMetaType mt = allASTNodeMetaTypes.get(clazz);
@@ -293,7 +290,7 @@ public final class ASTNodeMetaType extends MetaType {
 
 	ASTNodeMetaType(Class clazz) {
 		super(StdTypes.tdASTNodeType,0);
-		this.templ_bindings = TVarSet.emptySet;
+		this.templ_bindings = TemplateTVarSet.emptySet;
 		this.clazz = clazz;
 		allASTNodeMetaTypes.put(clazz,this);
 		foreach (String key; allNodes.keys(); clazz.equals(allNodes.get(key))) {
@@ -313,9 +310,6 @@ public final class ASTNodeMetaType extends MetaType {
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in ASTNodeMetaType");
 	}
-	public Type bind(Type t, TVSet bindings) {
-		throw new RuntimeException("bind() in ASTNodeMetaType");
-	}
 	public Type rebind(Type t, TVSet bindings) {
 		throw new RuntimeException("rebind() in ASTNodeMetaType");
 	}
@@ -323,7 +317,7 @@ public final class ASTNodeMetaType extends MetaType {
 		return t;
 	}
 
-	public TVarSet getTemplBindings() {
+	public TemplateTVarSet getTemplBindings() {
 		if (this.version != 1)
 			makeTemplBindings();
 		return templ_bindings;
@@ -363,7 +357,7 @@ public final class ASTNodeMetaType extends MetaType {
 		TVarBld vs = new TVarBld();
 		foreach (TypeAssign ta; this.types /*; ta.sname.matches("attr\\$.*\\$type")*/)
 			vs.append(ta.getAType(), null);
-		templ_bindings = new TVarSet(vs.close());
+		templ_bindings = new TemplateTVarSet(vs.close());
 		this.version = 1;
 	}
 
@@ -382,7 +376,7 @@ public final class CompaundMetaType extends MetaType {
 
 	private static Hashtable<String,CompaundMetaType> compaundMetaTypes = new Hashtable<String,CompaundMetaType>();
 	
-	private TVarSet			templ_bindings;
+	private TemplateTVarSet			templ_bindings;
 	
 	public static CompaundMetaType newCompaundMetaType(String clazz_name) alias lfy operator new {
 		TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(clazz_name);
@@ -410,13 +404,13 @@ public final class CompaundMetaType extends MetaType {
 	
 	private CompaundMetaType(String clazz_name) {
 		super(clazz_name, MetaType.flReference);
-		this.templ_bindings = TVarSet.emptySet;
+		this.templ_bindings = TemplateTVarSet.emptySet;
 	}
 	
 	private CompaundMetaType(Struct clazz) {
 		super(clazz, MetaType.flReference);
 		if (this.tdecl == Env.getRoot()) Env.getRoot().xmeta_type = this;
-		this.templ_bindings = TVarSet.emptySet;
+		this.templ_bindings = TemplateTVarSet.emptySet;
 	}
 	
 	public boolean checkTypeVersion(int version) {
@@ -427,21 +421,16 @@ public final class CompaundMetaType extends MetaType {
 		return new CompaundType(this, getTemplBindings().bind_bld(bindings));
 	}
 
-	public Type bind(Type t, TVSet bindings) {
-		if (!t.isBindable()) return t;
-		return new CompaundType(this, t.bindings().bind_bld(bindings));
-	}
-	
 	public Type rebind(Type t, TVSet bindings) {
 		return new CompaundType(this, t.bindings().rebind_bld(bindings));
 	}
 	
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
 		return new CompaundType(this, t.bindings().applay_bld(bindings));
 	}
 	
-	public TVarSet getTemplBindings() {
+	public TemplateTVarSet getTemplBindings() {
 		if (this.version != tdecl.type_decl_version)
 			makeTemplBindings();
 		return templ_bindings;
@@ -456,7 +445,7 @@ public final class CompaundMetaType extends MetaType {
 		}
 		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
-		templ_bindings = new TVarSet(vs.close());
+		templ_bindings = new TemplateTVarSet(vs.close());
 		this.version = tdecl.type_decl_version;
 	}
 
@@ -464,10 +453,10 @@ public final class CompaundMetaType extends MetaType {
 
 public final class ArrayMetaType extends MetaType {
 
-	private static TVarSet					templ_bindings;
+	private static final TemplateTVarSet	templ_bindings;
 	public static final ArrayMetaType		instance;
 	static {
-		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
+		templ_bindings = new TemplateTVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl(null);
@@ -496,20 +485,16 @@ public final class ArrayMetaType extends MetaType {
 		super(tdecl, MetaType.flArray | MetaType.flReference);
 	}
 
-	public TVarSet getTemplBindings() { return templ_bindings; }
+	public TemplateTVarSet getTemplBindings() { return templ_bindings; }
 
 	public Type make(TVSet bindings) {
 		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
-	}
-	public Type bind(Type t, TVSet bindings) {
-		if (!t.isBindable()) return t;
-		return ArrayType.newArrayType(t.bindings().bind_bld(bindings).resolve(StdTypes.tpArrayArg));
 	}
 	public Type rebind(Type t, TVSet bindings) {
 		return ArrayType.newArrayType(t.bindings().rebind_bld(bindings).resolve(StdTypes.tpArrayArg));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if( !t.isValAppliable() || bindings.getTVars().length == 0 ) return t;
+		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
 	}
 	
@@ -536,13 +521,10 @@ public class ArgMetaType extends MetaType {
 		return stps;
 	}
 
-	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
+	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
 
 	public Type make(TVSet bindings) {
 		return atype;
-	}
-	public Type bind(Type t, TVSet bindings) {
-		return t; //throw new RuntimeException("bind() in ArgType");
 	}
 	public Type rebind(Type t, TVSet bindings) {
 		return t; //throw new RuntimeException("bind() in ArgType");
@@ -576,10 +558,10 @@ public class ArgMetaType extends MetaType {
 
 public class WildcardCoMetaType extends MetaType {
 
-	private static TVarSet						templ_bindings;
+	private static final TemplateTVarSet		templ_bindings;
 	public static final WildcardCoMetaType		instance;
 	static {
-		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWildcardCoArg, null).close());
+		templ_bindings = new TemplateTVarSet(new TVarBld(StdTypes.tpWildcardCoArg, null).close());
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wildcard_co_variant_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
@@ -604,30 +586,27 @@ public class WildcardCoMetaType extends MetaType {
 		WildcardCoMetaType wt = (WildcardCoMetaType)tp;
 		return new Type[]{tp.getEnclosedType()};
 	}
-	public TVarSet getTemplBindings() { return templ_bindings; }
+	public TemplateTVarSet getTemplBindings() { return templ_bindings; }
 
 
 	public Type make(TVSet bindings) {
 		return new WildcardCoType(bindings.resolve(StdTypes.tpWildcardCoArg));
 	}
-	public Type bind(Type t, TVSet bindings) {
-		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().bind(bindings));
-	}
 	public Type rebind(Type t, TVSet bindings) {
 		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().rebind(bindings));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
 		return new WildcardCoType(((WildcardCoType)t).getEnclosedType().applay(bindings));
 	}
 }
 
 public class WildcardContraMetaType extends MetaType {
 
-	private static TVarSet						templ_bindings;
-	public static final WildcardContraMetaType	instance;
+	private static final TemplateTVarSet			templ_bindings;
+	public static final WildcardContraMetaType		instance;
 	static {
-		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWildcardContraArg, null).close());
+		templ_bindings = new TemplateTVarSet(new TVarBld(StdTypes.tpWildcardContraArg, null).close());
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wildcard_contra_variant_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
@@ -652,30 +631,27 @@ public class WildcardContraMetaType extends MetaType {
 		WildcardContraMetaType wt = (WildcardContraMetaType)tp;
 		return new Type[]{tp.getEnclosedType()};
 	}
-	public TVarSet getTemplBindings() { return templ_bindings; }
+	public TemplateTVarSet getTemplBindings() { return templ_bindings; }
 
 
 	public Type make(TVSet bindings) {
 		return new WildcardContraType(bindings.resolve(StdTypes.tpWildcardContraArg));
 	}
-	public Type bind(Type t, TVSet bindings) {
-		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().bind(bindings));
-	}
 	public Type rebind(Type t, TVSet bindings) {
 		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().rebind(bindings));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
 		return new WildcardContraType(((WildcardContraType)t).getEnclosedType().applay(bindings));
 	}
 }
 
 public class WrapperMetaType extends MetaType {
 
-	private static TVarSet					templ_bindings;
+	private static final TemplateTVarSet	templ_bindings;
 	private static final MetaTypeDecl		wrapper_tdecl;
 	static {
-		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
+		templ_bindings = new TemplateTVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
@@ -710,20 +686,17 @@ public class WrapperMetaType extends MetaType {
 		WrapperType wt = (WrapperType)tp;
 		return new Type[]{tp.getEnclosedType(),tp.getUnboxedType()};
 	}
-	public TVarSet getTemplBindings() { return templ_bindings; }
+	public TemplateTVarSet getTemplBindings() { return templ_bindings; }
 
 
 	public Type make(TVSet bindings) {
 		return WrapperType.newWrapperType(bindings.resolve(StdTypes.tpWrapperArg));
 	}
-	public Type bind(Type t, TVSet bindings) {
-		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().bind(bindings));
-	}
 	public Type rebind(Type t, TVSet bindings) {
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().rebind(bindings));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 
@@ -816,22 +789,15 @@ public class CallMetaType extends MetaType {
 		return Type.emptyArray;
 	}
 
-	public Type bind(Type t, TVSet bindings) {
-		if (!t.isBindable() || bindings.getTVars().length == 0 || t.bindings().getTVars().length == 0) return t;
-		if!(t instanceof CallType) return t;
-		CallType mt = (CallType)t;
-		mt = new CallType(mt.bindings().bind_bld(bindings),mt.arity,mt.isReference());
-		return mt;
-	}
 	public Type rebind(Type t, TVSet bindings) {
-		if (bindings.getTVars().length == 0 || t.bindings().tvars.length == 0) return t;
+		if (bindings.getArgsLength() == 0 || t.bindings().getArgsLength() == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
 		mt = new CallType(mt.bindings().rebind_bld(bindings),mt.arity,mt.isReference());
 		return mt;
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if( !t.isValAppliable() || bindings.getTVars().length == 0 ) return t;
+		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
 		CallType mt = (CallType)t;
 		mt = new CallType(mt.bindings().applay_bld(bindings),mt.arity,mt.isReference());
 		return mt;

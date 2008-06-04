@@ -57,7 +57,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		}
 		if (outer != null) {
 			outer.resolve(null);
-			type = type.bind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
+			type = type.rebind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
 		if (s.isTypeUnerasable()) {
 			tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo

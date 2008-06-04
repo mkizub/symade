@@ -502,7 +502,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 					CastExpr.autoCast(args[i],ptp);
 			}
 			Type tn = Type.getRealType(t,getVarArgParam().type);
-			Type varg_tp = tn.getTVars()[0].unalias(tn).result();
+			Type varg_tp = tn.resolveArg(0);
 			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 			} else {
@@ -536,12 +536,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		CallType rt = (CallType)this.type.bind(tp.bindings());
+		CallType rt = (CallType)this.type.rebind(tp.bindings());
 		if (!this.isStatic() && tp != null && tp != Type.tpVoid) {
 			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
 		}
 		
-		if ((mt.bindings().getTVars().length - mt.arity - 1) > 0) {
+		if ((mt.bindings().getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
 			int a = 0;
 			foreach (TVar tv; mt.bindings().getTVars()) {
@@ -625,7 +625,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			mt = new Type[args.length-1];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i+1].getType();
-			rt = (CallType)this.type.bind(args[0].getType().bindings());
+			rt = (CallType)this.type.rebind(args[0].getType().bindings());
 		}
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();
@@ -683,7 +683,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		if (!qt.hasApplayable(at))
 			return;
-		final int qt_size = qt.getTVars().length;
+		final int qt_size = qt.getArgsLength();
 		for (int i=0; i < qt_size; i++) {
 			TVar qtv = qt.getTVars()[i];
 			if (!qtv.isAlias()) {

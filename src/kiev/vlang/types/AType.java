@@ -25,27 +25,30 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class AType implements StdTypes, TVSet {
+public abstract class AType extends TVSet implements StdTypes {
 	
-	public final			MetaType	meta_type;
-	@access:no,no,ro,rw		TVar[]		tvars;
-	private					ArgType[]	appls;
-	private					int			version_and_flags;
+	public final			MetaType			meta_type;
+	//private					TemplateTVarSet		type_template;
+	@access:no,no,ro,rw		TVar[]				tvars;
+	private					ArgType[]			appls;
+	private					int					version_and_flags;
 	@packed:16,version_and_flags,0
-	public:ro,ro,rw,rw		int			flags;
+	public:ro,ro,rw,rw		int					flags;
 	@packed:16,version_and_flags,16
-	private					int			version;
+	private					int					version;
 	
-	protected AType(MetaType meta_type, int flags, TVar[] tvars, ArgType[] appls) {
+	protected AType(MetaType meta_type, int flags) {
 		this.meta_type = meta_type;
+		//this.type_template = meta_type.getTemplBindings();
 		this.flags = flags;
-		this.tvars = tvars;
-		this.appls = appls;
+		this.tvars = TVar.emptyArray;
+		this.appls = ArgType.emptyArray;
 	}
 	
 	protected AType(MetaType meta_type, int flags, TVarBld bld)
 	{
 		this.meta_type = meta_type;
+		//this.type_template = meta_type.getTemplBindings();
 		this.flags = flags;
 		this.setFromBld(bld);
 	}
@@ -82,14 +85,6 @@ public abstract class AType implements StdTypes, TVSet {
 		} else {
 			this.tvars = TVar.emptyArray;
 		}
-//		if (bld.appls != null && bld.appls.length > 0) {
-//			n = bld.appls.length;
-//			this.appls = new ArgType[n];
-//			for (int i=0; i < n; i++)
-//				this.appls[i] = bld.appls[i].copy(this);
-//		} else {
-//			this.appls = ArgType.emptyArray;
-//		}
 
 		flags &= ~(flAbstract|flValAppliable|flBindable);
 		foreach(TVar tv; this.tvars; !tv.isAlias()) {
@@ -150,12 +145,6 @@ public abstract class AType implements StdTypes, TVSet {
 		return this.tvars;
 	}
 
-	public ArgType[] getTArgs() {
-		if (this.appls == null)
-			buildApplayables();
-		return this.appls;
-	}
-
 	// find bound value for an abstract type
 	public final Type resolve(ArgType arg) {
 		TVar[] tvars = this.tvars;
@@ -167,61 +156,9 @@ public abstract class AType implements StdTypes, TVSet {
 		return arg;
 	}
 	
-	// Bind free (unbound) variables of current type to values
-	// from a set of var=value pairs, returning a new set.
-	//
-	// having a bind pair A -> V, will bind
-	// A:?      -> A:V			; bind
-	// B:A      -> B:A			; alias remains
-	// C:X<A:?> -> C X<A:?>		; non-recursive
-	//
-	// This operation is used in type extension/specification:
-	//
-	// class Bar<B> :- defines a free variable B
-	// class Foo<F> extends Bar<F> :- binds Bar.B to Foo.F
-	// new Foo<String> :- binds Foo.F to String
-	// new Foo<Bar<Foo<F>>> :- binds Foo.F with Bar<Foo<F>>
-	//
-	// my.var ≡ vs.var -> (my.var, vs.result())
-
-	public TVarBld bind_bld(TVSet vs) {
-		TVar[] my_vars = this.tvars;
-		TVar[] vs_vars = vs.getTVars();
-		final int my_size = my_vars.length;
-		final int vs_size = vs_vars.length;
-		TVarBld sr = new TVarBld(this);
-
-	next_my:
-		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i];
-			
-			// bind TVar
-			if (x.isFree()) {
-				// try known bind
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
-						sr.set(i, y.unalias(vs).result());
-						continue next_my;
-					}
-				}
-				// bind to itself
-				sr.set(i, sr.tvars[i].unalias(sr).result());
-				continue next_my;
-			}
-			// bind virtual aliases
-			if (x.isAlias() && x.var.isVirtual() && x.unalias(this).isFree()) {
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
-						sr.set(i, y.unalias(vs).result());
-						continue next_my;
-					}
-				}
-			}
-		}
-		return sr.close();
-	}
+	public int getArgsLength() { return this.tvars.length; }
+	public ArgType getArg(int i) { return this.tvars[i].var; }
+	public Type resolveArg(int i)  { return this.tvars[i].unalias(this).result(); }
 
 	// change bound types, for virtual args, outer args, etc
 	public TVarBld rebind_bld(TVSet vs) {
@@ -349,6 +286,12 @@ public abstract class AType implements StdTypes, TVSet {
 		return false;
 	}
 	
+	final ArgType[] getTArgs() {
+		if (this.appls == null)
+			buildApplayables();
+		return this.appls;
+	}
+
 	private void buildApplayables() {
 		this.appls = ArgType.emptyArray;
 		foreach (TVar tv; tvars; !tv.isAlias())
@@ -387,8 +330,6 @@ public abstract class AType implements StdTypes, TVSet {
 		return sb.toString();
 	}
 
-	// used by MetaType.make() to restore the type,
-	// so it's a reverse of bind_bld()
 	public String makeSignature() {
 		StringBuffer str = new StringBuffer();
 		TypeDecl tdecl = meta_type.tdecl;
@@ -397,7 +338,7 @@ public abstract class AType implements StdTypes, TVSet {
 		if (uuid != null)
 			str.append('@').append(uuid);
 		boolean hasArgs = false;
-		TVarSet templ = meta_type.getTemplBindings();
+		TemplateTVarSet templ = meta_type.getTemplBindings();
 		AType self = this.bindings();
 		for(int i=0; i < self.tvars.length; i++) {
 			TVar t = templ.tvars[i];
@@ -490,21 +431,6 @@ public abstract class AType implements StdTypes, TVSet {
 		return tdecl.xmeta_type.make(set);
 	}
 }
-
-public final class TVarSet extends AType {
-
-	public static final TVarSet emptySet = new TVarSet();
-
-	private TVarSet() {
-		super(MetaType.dummy, 0, TVar.emptyArray, ArgType.emptyArray);
-	}
-	
-	TVarSet(TVarBld bld) {
-		super(MetaType.dummy, 0, bld);
-	}
-	
-}
-
 
 public final class TVar {
 	
