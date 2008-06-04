@@ -11,6 +11,8 @@
 package kiev.vdom;
 
 import java.lang.annotation.*;
+import java.io.*;
+import java.util.zip.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import javax.xml.namespace.NamespaceContext;
@@ -68,7 +70,7 @@ public final class JobJob extends JobBase {
 	@XPathExpr(value="job:State", nsmap={@XPathNSMap(prefix="job",uri=JobBase.NAMESPACE_URI)})
 	public JobState getJobState();
 
-	@XPathExpr(value="wf:Workflow", nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
+	@XPathExpr(value="workflow/wf:Workflow", nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
 	public WorkflowWorkflow getWorkflow();
 }
 
@@ -78,6 +80,15 @@ public final class JobFile extends JobBase {
 	@AttrXMLDumpInfo(attr=true, name="arch")
 	@nodeAttr
 	public String		is_archive;
+	
+	public JobFile() {}
+	
+	public JobFile(String name) {
+		ADomElement name_el = new GenDomElement();
+		name_el.localName = "name";
+		name_el.elements += new DomText(name);
+		this.elements += name_el;
+	}
 	
 	public boolean isArchive() {
 		is_archive != null && Boolean.valueOf(is_archive).booleanValue()
@@ -213,8 +224,11 @@ public final class WorkflowFunction extends WorkflowBase {
 	
 	public String getFunc() { func }
 	
-	@XPathExpr("arg/text()")
-	public String[] getArgs();
+	@XPathExpr(value="wf:Param[@name=$name]",nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
+	public WorkflowParam getParam(String name);
+
+	@XPathExpr(value="wf:Param",nsmap={@XPathNSMap(prefix="wf",uri=WorkflowBase.NAMESPACE_URI)})
+	public WorkflowParam[] getParams();
 }
 
 @ThisIsANode(lang=WorkflowLang, name="Param")
@@ -238,6 +252,7 @@ public final class WorkflowInterpreter implements Runnable {
 	private final org.w3c.dom.Document doc;
 	private final JobJob job;
 	private final WorkflowWorkflow wf;
+	private int dump_version = 0;
 	
 	static class ReturnExit extends Error {
 		final int exit_code;
@@ -254,6 +269,7 @@ public final class WorkflowInterpreter implements Runnable {
 	}
 	
 	public void run() {
+		dumpXmlFile();
 		try {
 			if (this.wf == null)
 				throw new RuntimeException("Workflow not found in the job");
@@ -295,24 +311,71 @@ public final class WorkflowInterpreter implements Runnable {
 	private void exec(WorkflowFunction f) {
 		String name = f.getFunc();
 		if ("print".equals(name)) {
-			String[] args = f.getArgs();
-			foreach (String a; args)
-				System.out.print(a);
+			WorkflowParam[] params = f.getParams();
+			foreach (WorkflowParam p; params)
+				System.out.print(p.getValue());
 			System.out.println();
 			return;
 		}
 		if ("exit".equals(name)) {
-			String[] args = f.getArgs();
-			int code = 0;
-			if (args != null && args.length > 0)
-				code = Integer.parseInt(args[0]);
+			int code = 0; 
+			WorkflowParam pcode = f.getParam("code");
+			if (pcode != null) {
+				String val = pcode.getValue();
+				if (val != null)
+					code = Integer.parseInt(val);
+			}
 			throw new ReturnExit(code);
 		}
-		//if ("archive-files".equals(name)) {
-		//	JobFile[] files = this.job.getFiles();
-		//	foreach (JobFile f; files; !f.isArchive())
-		//		addToArchive(f);
-		//}
-		throw new RuntimeException("Uknown function '"+name+"'");
+		if ("archive-files".equals(name)) {
+			JobFile[] jfiles = this.job.getFiles();
+			Vector<JobFile> vect = new Vector<JobFile>();
+			foreach (JobFile jf; jfiles; !jf.isArchive())
+				vect.append(jf);
+			if (vect.size() > 0) {
+				File tmpf = File.createTempFile("wfarch", ".zip", new File("."));
+				JobFile archjf = new JobFile(tmpf.getName());
+				archjf.is_archive = "true";
+				ADomElement archived = new GenDomElement();
+				archived.localName = "archived";
+				archjf.elements += archived;
+				((ADomElement)vect.elementAt(0).parent()).elements += archjf;
+				ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(tmpf));
+				byte[] buf = new byte[2048];
+				foreach (JobFile jf; vect) {
+					String jfname = jf.getName();
+					FileInputStream fin = new FileInputStream(jfname);
+					zout.putNextEntry(new ZipEntry(jfname));
+					int sz;
+					while ( (sz=fin.read(buf)) > 0 )
+						zout.write(buf,0,sz);
+					zout.closeEntry();
+					jf.detach();
+					archived.elements.append(jf);
+				}
+				zout.close();
+			}
+			dumpXmlFile();
+			return;
+		}
+		throw new RuntimeException("Unknown function '"+name+"'");
 	}
+
+	private void dumpXmlFile() throws Exception {
+		// Prepare the DOM document for writing
+		javax.xml.transform.Source source = new javax.xml.transform.dom.DOMSource(this.doc);
+		
+		// Prepare the output file
+		File file = new File("dump"+this.dump_version+".xml");
+		javax.xml.transform.Result result = new javax.xml.transform.stream.StreamResult(file);
+		
+		// Write the DOM document to the file
+		javax.xml.transform.Transformer xformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer();
+		xformer.setOutputProperty(javax.xml.transform.OutputKeys.ENCODING, "UTF-8");
+		xformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+		xformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+		xformer.transform(source, result);
+		this.dump_version += 1;
+	}
+	
 }

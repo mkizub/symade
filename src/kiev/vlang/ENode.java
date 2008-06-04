@@ -34,10 +34,12 @@ public abstract class ENode extends ASTNode {
 	
 	@nodeAttr @abstract public String			ident;
 	@nodeAttr @abstract public boolean			qualified; // stored ident may be qualified name
+	@nodeAttr @abstract public boolean			primary_expr; // a primary expression; i.e. in parenthethis
+	@nodeAttr @abstract public boolean			super_expr; // a super-expression; i.e. super.something
 	@nodeData @abstract public ISymbol			symbol;
 	@nodeData @abstract public Type			type_lnk;
 	@nodeData @abstract public:ro DNode		dnode;
-	
+
 	@getter public final String get$ident() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
@@ -119,16 +121,19 @@ public abstract class ENode extends ASTNode {
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "qualified")
 			return this.qualified; // do not dump <qualified>false</qualified>
+		if (attr.name == "primary_expr")
+			return this.primary_expr; // do not dump <primary_expr>false</primary_expr>
+		if (attr.name == "super_expr")
+			return this.super_expr; // do not dump <super_expr>false</super_expr>
 		return super.includeInDump(dump, attr, val);
 	}
 
-	@getter public final boolean get$qualified() {
-		return is_qualified;
-	}
-
-	@setter public final void set$qualified(boolean val) {
-		is_qualified = val;
-	}
+	@getter public final boolean get$qualified() { is_qualified }
+	@setter public final void set$qualified(boolean val) { is_qualified = val; }
+	@getter public final boolean get$primary_expr() { is_expr_primary }
+	@setter public final void set$primary_expr(boolean val) { is_expr_primary = val; }
+	@getter public final boolean get$super_expr() { is_expr_super }
+	@setter public final void set$super_expr(boolean val) { is_expr_super = val; }
 
 	//
 	// Expr specific
