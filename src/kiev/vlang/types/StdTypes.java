@@ -96,6 +96,7 @@ public interface StdTypes {
 	public static final ArgType    tpWrapperArg;
 	public static final TypeConstr tdWrapperArg;
 	public static final ArgType    tpCallRetArg;
+	public static final ArgType    tpCallTupleArg;
 	public static final ArgType    tpCallThisArg;
 	public static final ArgType[]  tpCallParamArgs;
 	public static final ArgType[]  tpUnattachedArgs;
@@ -318,6 +319,11 @@ public interface StdTypes {
 		tdCallRetArg.setAbstract(true);
 		tpCallRetArg = tdCallRetArg.getAType();
 		tpCallRetArg.flags |= flHidden | flArgAppliable;
+		
+		TypeDef tdCallTupleArg = new TypeConstr("_tuple_", tpAny);
+		tdCallTupleArg.setAbstract(true);
+		tpCallTupleArg = tdCallTupleArg.getAType();
+		tpCallTupleArg.flags |= flHidden | flArgAppliable;
 		
 		TypeDef tdCallThisArg = new TypeConstr("_this_", tpAny);
 		tdCallThisArg.setAbstract(true);

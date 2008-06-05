@@ -107,21 +107,22 @@ public abstract class Type extends AType {
 			return true;
 		}
 		if (t1.meta_type.tdecl.instanceOf(t2.meta_type.tdecl)) {
-			AType b1 = t1.bindings();
-			AType b2 = t2.bindings();
-			for(int i=0; i < b2.tvars.length; i++) {
-				TVar v2 = b2.tvars[i];
-				if (v2.isAlias())
+			t1.bindings();
+			t2.bindings();
+			int n = t2.getArgsLength();
+			for(int i=0; i < n; i++) {
+				if (t2.isAliasArg(i))
 					continue;
-				Type r2 = v2.result();
-				if (v2.var ≡ r2)
+				ArgType a2 = t2.getArg(i);
+				Type r2 = t2.resolveArg(i);
+				if (a2 ≡ r2)
 					continue;
-				Type r1 = b1.resolve(v2.var);
+				Type r1 = t1.resolve(a2);
 				if (r1 ≈ r2)
 					continue;
-				if (v2.var.isCoVariant() && r1.isInstanceOf(r2))
+				if (a2.isCoVariant() && r1.isInstanceOf(r2))
 					continue;
-				if (v2.var.isContraVariant() && r2.isInstanceOf(r1))
+				if (a2.isContraVariant() && r2.isInstanceOf(r1))
 					continue;
 				// before we can declare N to be covariant in NodeSpace<+N extends ANode>
 				if (t1.isArray() && t2.isArray() && r1.isInstanceOf(r2))
@@ -483,11 +484,6 @@ public final class CoreType extends Type {
 }
 
 public final class ASTNodeType extends Type {
-	public static ASTNodeType newASTNodeType(Class clazz)
-		alias lfy operator new
-	{
-		return new ASTNodeType(ASTNodeMetaType.instance(clazz), TVarBld.emptySet);
-	}
 
 	public static ASTNodeType newASTNodeType(Type tp)
 		alias lfy operator new
@@ -994,6 +990,40 @@ public final class WrapperType extends CTimeType {
 
 }
 
+public final class TupleType extends Type {
+	public  final int		arity;
+	
+	TupleType(TupleMetaType meta_type, TVarBld bindings) {
+		super(meta_type,0,bindings);
+		this.arity = meta_type.arity;
+	}
+
+	public JType getJType() { StdTypes.tpVoid.getJType() }
+	public boolean checkResolved() { true }
+	public MetaType[] getAllSuperTypes() { MetaType.emptyArray }
+
+	public Type getErasedType() {
+		if (arity == 0)
+			return this;
+		TVarBld set = new TVarBld();
+		for (int i=0; i < arity; i++)
+			set.append(getArg(i), resolveArg(i).getErasedType());
+		return new TupleType((TupleMetaType)meta_type,set);
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append('(');
+		for (int i=0; i < arity; i++) {
+			if (i > 0)
+				sb.append(',');
+			sb.append(resolveArg(i));
+		}
+		sb.append(')');
+		return sb.toString();
+	}
+}
+
 public final class CallType extends Type {
 	private static MetaType[] allClosureSuperTypes = new MetaType[] { tpClosure.meta_type };
 
@@ -1003,6 +1033,10 @@ public final class CallType extends Type {
 	{
 		super((is_closure ? CallMetaType.closure_instance : CallMetaType.call_instance), 0, bld);
 		this.arity = arity;
+		assert(this.tvars.length >= 2);
+		assert(this.tvars[0].var == tpCallRetArg);
+		assert(this.tvars[1].var == tpCallTupleArg);
+		assert(this.tvars[1].val.meta_type == TupleMetaType.instancies[arity]);
 	}
 	
 	public static CallType createCallType(Type accessor, Type[] targs, Type[] args, Type ret, boolean is_closure)
@@ -1013,8 +1047,10 @@ public final class CallType extends Type {
 		ret   = (ret  == null) ? Type.tpAny : ret;
 		TVarBld vs = new TVarBld();
 		vs.append(tpCallRetArg, ret);
+		TVarBld ts = new TVarBld();
 		for (int i=0; i < args.length; i++)
-			vs.append(tpCallParamArgs[i], args[i]);
+			ts.append(tpCallParamArgs[i], args[i]);
+		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts.close()));
 		if (accessor != null)
 			vs.append(tpCallThisArg, accessor);
 		for (int i=0; i < targs.length; i++)
@@ -1028,8 +1064,10 @@ public final class CallType extends Type {
 		ret   = (ret  == null) ? Type.tpAny : ret;
 		TVarBld vs = new TVarBld();
 		vs.append(tpCallRetArg, ret);
+		TVarBld ts = new TVarBld();
 		for (int i=0; i < args.length; i++)
-			vs.append(tpCallParamArgs[i], args[i]);
+			ts.append(tpCallParamArgs[i], args[i]);
+		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts.close()));
 		vs.append(mvs);
 		return new CallType(vs.close(),args.length,is_closure);
 	}
@@ -1047,8 +1085,9 @@ public final class CallType extends Type {
 	
 	public Type arg(int idx) {
 		AType bindings = this.bindings();
-		assert (bindings.getArg(idx+1) ≡ tpCallParamArgs[idx]);
-		return bindings.resolveArg(idx+1).applay(bindings);
+		assert (bindings.getArg(1) ≡ tpCallTupleArg);
+		TupleType tp = bindings.resolveArg(1);
+		return tp.resolveArg(idx).applay(bindings);
 	}
 	
 	public Type[] params() {

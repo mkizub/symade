@@ -227,9 +227,8 @@ public abstract class AType extends TVSet implements StdTypes {
 	
 	public TVarBld applay_bld(TVSet vs)
 	{
-		TVar[] vs_vars = vs.getTVars();
 		final int my_size = this.getArgsLength();
-		final int vs_size = vs_vars.length;
+		final int vs_size = vs.getArgsLength();
 		TVarBld sr = new TVarBld(this);
 		if (!this.hasApplayables(vs))
 			return sr.close();
@@ -243,8 +242,8 @@ public abstract class AType extends TVSet implements StdTypes {
 				continue;
 			if (bnd instanceof ArgType) {
 				for(int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (bnd ≡ y.var) {
+					ArgType y = vs.getArg(j);
+					if (bnd ≡ y) {
 						// re-bind
 						sr.set(i, vs.resolveArg(j));
 						continue next_my;
@@ -266,13 +265,12 @@ public abstract class AType extends TVSet implements StdTypes {
 		final int my_size = appls.length;
 		if (my_size == 0)
 			return false;
-		TVar[] vs_vars = vs.getTVars();
-		final int tp_size = vs_vars.length;
+		final int tp_size = vs.getArgsLength();
 		if (tp_size == 0)
 			return false;
 		for (int i=0; i < my_size; i++) {
 			for (int j=0; j < tp_size; j++) {
-				if (appls[i] ≡ vs_vars[j].var)
+				if (appls[i] ≡ vs.getArg(j))
 					return true;
 			}
 		}

@@ -16,7 +16,6 @@ import kiev.be.java15.JStruct;
 import syntax kiev.Syntax;
 
 public abstract class TVSet {
-	public abstract TVar[] getTVars();
 	public abstract Type resolve(ArgType arg);
 	public abstract int getArgsLength();
 	public abstract ArgType getArg(int i);
@@ -35,13 +34,10 @@ public final class TemplateTVarSet extends TVSet {
 	TemplateTVarSet(TVarBld bld) {
 		TVar[] bld_tvars = bld.getTVars();
 		int n = bld_tvars.length;
-		if (n > 0) {
-			this.tvars = new TVar[n];
-			for (int i=0; i < n; i++)
-				this.tvars[i] = bld_tvars[i];
-		} else {
+		if (n > 0)
+			this.tvars = (TVar[])bld_tvars.clone();
+		else
 			this.tvars = TVar.emptyArray;
-		}
 
 		foreach(TVar tv; this.tvars; !tv.isAlias()) {
 			Type r = tv.result();
@@ -106,9 +102,8 @@ public final class TemplateTVarSet extends TVSet {
 
 	public TVarBld bind_bld(TVSet vs) {
 		TVar[] my_vars = this.tvars;
-		TVar[] vs_vars = vs.getTVars();
 		final int my_size = my_vars.length;
-		final int vs_size = vs_vars.length;
+		final int vs_size = vs.getArgsLength();
 		TVarBld sr = new TVarBld(this);
 
 	next_my:
@@ -119,8 +114,8 @@ public final class TemplateTVarSet extends TVSet {
 			if (x.isFree()) {
 				// try known bind
 				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
+					ArgType vs_arg = vs.getArg(j);
+					if (x.var ≡ vs_arg) {
 						sr.set(i, vs.resolveArg(j));
 						continue next_my;
 					}
@@ -129,24 +124,9 @@ public final class TemplateTVarSet extends TVSet {
 				sr.set(i, sr.resolveArg(i));
 				continue next_my;
 			}
-			// bind virtual aliases
-			if (x.isAlias() && x.var.isVirtual() && unaliasTVar(x).isFree()) {
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
-						sr.set(i, vs.resolveArg(j));
-						continue next_my;
-					}
-				}
-			}
 		}
 		return sr.close();
 	}
-	private TVar unaliasTVar(TVar r) {
-		while (r.ref >= 0) r = this.tvars[r.ref];
-		return r;
-	}
-	
 
 
 	// TVSet interface methods
@@ -176,10 +156,6 @@ public final class TemplateTVarSet extends TVSet {
 	}
 	public final boolean isAliasArg(int i) { return this.tvars[i].isAlias(); }
 
-	final TVar unaliasTVar(TVar r) {
-		while (r.ref >= 0) r = this.tvars[r.ref];
-		return r;
-	}
 }
 
 public final class TVarBld extends TVSet {
@@ -206,13 +182,7 @@ public final class TVarBld extends TVSet {
 	
 	public TVarBld(AType vset) {
 		this.tvars = TVar.emptyArray;
-		TVar[] tvars = vset.getTVars();
-		int n = tvars.length;
-		if (n > 0) {
-			this.tvars = new TVar[n];
-			for (int i=0; i < n; i++)
-				this.tvars[i] = tvars[i];
-		}
+		this.append(vset);
 	}
 	
 	public TVarBld(TemplateTVarSet vset) {
@@ -264,8 +234,9 @@ public final class TVarBld extends TVSet {
 
 	public void append(TVSet set)
 	{
-		foreach (TVar v; set.getTVars())
-			append(v.var, v.val);
+		int n = set.getArgsLength();
+		for (int i=0; i < n; i++)
+			append(set.getArg(i), set.resolveArg(i));
 	}
 	
 	public void append(ArgType var, Type value)

@@ -752,6 +752,60 @@ public class WrapperMetaType extends MetaType {
 	
 }
 
+public final class TupleMetaType extends MetaType {
+
+	public static MetaTypeDecl    tuple_tdecl;
+	public static TupleMetaType[] instancies;
+	static {
+		tuple_tdecl = new MetaTypeDecl(null);
+		tuple_tdecl.sname = "_tuple_";
+		tuple_tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tuple_tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tuple_tdecl.package_clazz.dnode.sub_decls.add(tuple_tdecl);
+		tuple_tdecl.super_types.add(new TypeRef(StdTypes.tpAny));
+
+		instancies = new TupleMetaType[128];
+		for (int i=0; i < instancies.length; i++)
+			instancies[i] = new TupleMetaType(tuple_tdecl,i);
+
+		tuple_tdecl.xmeta_type = instancies[0];
+		tuple_tdecl.xtype = new TupleType(instancies[0],TVarBld.emptySet);
+	}
+	
+	private final TemplateTVarSet		templ_bindings;
+	public  final int					arity;
+	
+	private TupleMetaType(TypeDecl tdecl, int arity) {
+		super(tdecl, 0);
+		this.arity = arity;
+		TVarBld bld = new TVarBld();
+		for (int i=0; i < arity; i++)
+			bld.append(StdTypes.tpCallParamArgs[i], null);
+		this.templ_bindings = new TemplateTVarSet(bld);
+	}
+	
+	public boolean checkTypeVersion(int version) {
+		return true;
+	}
+	
+	public Type make(TVSet bindings) {
+		return new TupleType(this, getTemplBindings().bind_bld(bindings));
+	}
+
+	public Type rebind(Type t, TVarBld set) {
+		return new TupleType(this, t.bindings().rebind_bld(set));
+	}
+	
+	public Type applay(Type t, TVSet bindings) {
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
+		return new TupleType(this, t.bindings().applay_bld(bindings));
+	}
+	
+	public TemplateTVarSet getTemplBindings() {
+		return templ_bindings;
+	}
+}
+
 public class CallMetaType extends MetaType {
 
 	public static final CallMetaType call_instance;
