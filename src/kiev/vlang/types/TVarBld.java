@@ -42,7 +42,6 @@ public final class TemplateTVarSet extends TVSet {
 		foreach(TVar tv; this.tvars; !tv.isAlias()) {
 			Type r = tv.result();
 			ArgType v = tv.var;
-			if (tv.isFree()) flags |= StdTypes.flBindable;
 			if (r.isAbstract()) flags |= StdTypes.flAbstract;
 			if (v.isUnerasable()) flags |= StdTypes.flUnerasable;
 			if (v.isArgAppliable() && r.isValAppliable()) flags |= StdTypes.flValAppliable;

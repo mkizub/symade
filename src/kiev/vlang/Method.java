@@ -172,20 +172,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	final void rebuildTypes() {
-		TVarBld type_set = new TVarBld();
-		TVarBld dtype_set = new TVarBld();
-		if (targs.length > 0) {
-			foreach (TypeDef td; targs) {
-				type_set.append(td.getAType(), null);
-				dtype_set.append(td.getAType(), null);
-			}
-		}
-		if (!meta.is_static && !is_mth_virtual_static) {
-			type_set.append(StdTypes.tpCallThisArg,null);
-			type_set.append(ctx_tdecl.xtype.meta_type.getTemplBindings());
-			dtype_set.append(StdTypes.tpCallThisArg,null);
-			dtype_set.append(ctx_tdecl.xtype.meta_type.getTemplBindings());
-		}
 		Vector<Type> args = new Vector<Type>();
 		Vector<Type> dargs = new Vector<Type>();
 		boolean is_varargs = false;
@@ -261,15 +247,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			tp_ret = Type.tpVoid;
 		else
 			tp_ret = type_ret.getType();
-		this._type = new CallType(type_set, args.toArray(), tp_ret, false);
 		if (dtype_ret == null)
 			dtp_ret = tp_ret;
 		else
 			dtp_ret = dtype_ret.getType();
-		this._dtype = new CallType(dtype_set, dargs.toArray(), dtp_ret, false);
+		
+		this._type = new CallType(this, args.toArray(), tp_ret);
+		this._dtype = new CallType(this, dargs.toArray(), dtp_ret);
 	}
 
-	@getter public Method get$child_ctx_method() { return (Method)this; }
+	@getter public Method get$child_ctx_method() { return this; }
 
 	public static final Method[]	emptyArray = new Method[0];
 
@@ -536,10 +523,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		CallType rt = (CallType)this.type.rebind(new TVarBld(tp.bindings()));
-		if (!this.isStatic() && tp != null && tp != Type.tpVoid) {
+		CallType rt = (CallType)this.type.applay(tp.bindings());
+		if (!this.isStatic() && tp != null && tp != Type.tpVoid)
 			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
-		}
 		
 		if ((mt.bindings().getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
@@ -553,7 +539,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				set.append(arg, bound);
 			}
 			if (set.getArgsLength() > 0)
-				rt = (CallType)rt.rebind(set);
+				rt = (CallType)rt.applay(set);
 		}
 		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
@@ -564,36 +550,30 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 
-		foreach (TypeDef td; this.targs) {
-			ArgType at = td.getAType();
-			Type bnd = rt.resolve(at);
-			if (bnd ≡ at) {
-				Vector<Type> bindings = new Vector<Type>();
-				// bind from mt
-				for (int i=0; i < rt.arity && i < mt.arity; i++)
-					addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
-				addBindingsFor(at, mt.ret(), rt.ret(), bindings);
-				if (bindings.length == 0) {
-					trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-						+" do not allow to infer type: "+at);
-					continue;
-				}
-				Type b = bindings.at(0);
-				for (int i=1; i < bindings.length; i++)
-					b = Type.leastCommonType(b, bindings.at(i));
+		foreach (ArgType at; rt.getTArgs()) {
+			Vector<Type> bindings = new Vector<Type>();
+			// bind from mt
+			for (int i=0; i < rt.arity && i < mt.arity; i++)
+				addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
+			addBindingsFor(at, mt.ret(), rt.ret(), bindings);
+			if (bindings.length == 0) {
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" infer argument: "+at+" to "+b);
-				if (b ≡ Type.tpAny)
-					return false;
-				rt = (CallType)rt.rebind(new TVarBld(at, b));
+					+" do not allow to infer type: "+at);
+				continue;
 			}
+			Type b = bindings.at(0);
+			for (int i=1; i < bindings.length; i++)
+				b = Type.leastCommonType(b, bindings.at(i));
+			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+				+" infer argument: "+at+" to "+b);
+			if (b ≡ Type.tpAny)
+				return false;
+			rt = (CallType)rt.applay(new TVarBld(at, b));
 		}
 		// check bindings are correct
 		int n = rt.getArgsLength();
 		for (int i=0; i < n; i++) {
 			ArgType var = rt.getArg(i);
-			//if (var ≡ StdTypes.tpCallRetArg)
-			//	continue;
 			Type val = rt.resolveArg(i);
 			if (!var.checkBindings(rt, val)) {
 				trace(Kiev.debug && Kiev.debugResolve,"Incorrect bindings for var "+var+" with value "+val+" in type "+rt);
@@ -619,12 +599,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			mt = new Type[args.length];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i].getType();
-			rt = this.type;
+			rt = (CallType)this.type;
 		} else {
 			mt = new Type[args.length-1];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i+1].getType();
-			rt = (CallType)this.type.rebind(new TVarBld(args[0].getType().bindings()));
+			rt = (CallType)this.type.applay(args[0].getType().bindings());
 		}
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();
@@ -633,31 +613,21 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				ArgType arg = this.targs[i].getAType();
 				set.append(arg, bound);
 			}
-			rt = (CallType)rt.rebind(set);
+			rt = (CallType)rt.applay(set);
 		}
-		foreach (TypeDef td; this.targs) {
-			ArgType at = td.getAType();
-			Type bnd = rt.resolve(at);
-			if (bnd ≡ at) {
-				Vector<Type> bindings = new Vector<Type>();
-				// bind from mt
-				for (int i=0; i < rt.arity; i++)
-					addBindingsFor(at, mt[i], rt.arg(i), bindings);
-				//addBindingsFor(at, mt.ret(), rt.ret(), bindings);
-				if (bindings.length == 0) {
-					//trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					//	+" do not allow to infer type: "+at);
-					continue;
-				}
-				Type b = bindings.at(0);
-				for (int i=1; i < bindings.length; i++)
-					b = Type.leastCommonType(b, bindings.at(i));
-				//trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-				//	+" infer argument: "+at+" to "+b);
-				if (b ≡ Type.tpAny)
-					continue;
-				rt = (CallType)rt.rebind(new TVarBld(at, b));
-			}
+		foreach (ArgType at; rt.getTArgs()) {
+			Vector<Type> bindings = new Vector<Type>();
+			// bind from mt
+			for (int i=0; i < rt.arity && i < mt.length; i++)
+				addBindingsFor(at, mt[i], rt.arg(i), bindings);
+			if (bindings.length == 0)
+				continue;
+			Type b = bindings.at(0);
+			for (int i=1; i < bindings.length; i++)
+				b = Type.leastCommonType(b, bindings.at(i));
+			if (b ≡ Type.tpAny)
+				continue;
+			rt = (CallType)rt.applay(new TVarBld(at, b));
 		}
 		return rt;
 	}

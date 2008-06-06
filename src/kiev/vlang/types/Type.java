@@ -120,6 +120,8 @@ public abstract class Type extends AType {
 				Type r1 = t1.resolve(a2);
 				if (r1 ≈ r2)
 					continue;
+				if (a2.name == "This" && r1.meta_type.tdecl.instanceOf(r2.meta_type.tdecl))
+					continue;
 				if (a2.isCoVariant() && r1.isInstanceOf(r2))
 					continue;
 				if (a2.isContraVariant() && r2.isInstanceOf(r1))
@@ -1029,14 +1031,14 @@ public final class CallType extends Type {
 
 	public  final int		arity;
 
-	CallType(TVarBld bld, int arity, boolean is_closure)
+	CallType(CallMetaType meta_type, TVarBld bld, int arity)
 	{
-		super((is_closure ? CallMetaType.closure_instance : CallMetaType.call_instance), 0, bld);
+		super(meta_type, 0, bld);
 		this.arity = arity;
-		assert(this.tvars.length >= 2);
-		assert(this.tvars[0].var == tpCallRetArg);
-		assert(this.tvars[1].var == tpCallTupleArg);
-		assert(this.tvars[1].val.meta_type == TupleMetaType.instancies[arity]);
+		assert(this.getArgsLength() >= 2);
+		assert(this.getArg(0) == tpCallRetArg);
+		assert(this.getArg(1) == tpCallTupleArg);
+		assert(this.resolveArg(1).meta_type == TupleMetaType.instancies[arity]);
 	}
 	
 	public static CallType createCallType(Type accessor, Type[] targs, Type[] args, Type ret, boolean is_closure)
@@ -1055,9 +1057,10 @@ public final class CallType extends Type {
 			vs.append(tpCallThisArg, accessor);
 		for (int i=0; i < targs.length; i++)
 			vs.append(tpUnattachedArgs[i], targs[i]);
-		return new CallType(vs.close(),args.length,is_closure);
+		return new CallType(CallMetaType.newCallMetaType(accessor==null,is_closure,targs), vs.close(), args.length);
 	}
-	public static CallType createCallType(TVarBld mvs, Type[] args, Type ret, boolean is_closure)
+
+	public static CallType createCallType(Method meth, Type[] args, Type ret)
 		alias lfy operator new
 	{
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
@@ -1068,13 +1071,27 @@ public final class CallType extends Type {
 		for (int i=0; i < args.length; i++)
 			ts.append(tpCallParamArgs[i], args[i]);
 		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts.close()));
-		vs.append(mvs);
-		return new CallType(vs.close(),args.length,is_closure);
+		Type accessor = null;
+		if (!meth.meta.is_static && !meth.is_mth_virtual_static)
+			accessor = meth.ctx_tdecl.xtype;
+		if (accessor != null)
+			vs.append(tpCallThisArg, accessor);
+		Type[] targs = Type.emptyArray;
+		if (meth.targs.length > 0) {
+			TypeConstr[] mtargs = meth.targs;
+			targs = new Type[mtargs.length];
+			for (int i=0; i < mtargs.length; i++) {
+				ArgType at = mtargs[i].getAType();
+				vs.append(at, null);
+				targs[i] = at;
+			}
+		}
+		return new CallType(CallMetaType.newCallMetaType(accessor==null,false,targs), vs.close(), args.length);
 	}
 
 	public CallType toCallTypeRetAny() {
 		TVarBld vs = bindings().rebind_bld(new TVarBld(tpCallRetArg, tpAny));
-		return new CallType(vs, this.arity, this.isReference());
+		return new CallType((CallMetaType)this.meta_type, vs, this.arity);
 	}
 	
 	public Type ret() {
@@ -1115,7 +1132,7 @@ public final class CallType extends Type {
 				}
 				JType jret = ret().getJType();
 				assert (!(jret instanceof JMethodType));
-				jtype = new JMethodType(jargs, jret);
+				jtype = new JMethodType((CallMetaType)meta_type, jargs, jret);
 			}
 		}
 		return jtype;

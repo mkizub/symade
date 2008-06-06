@@ -305,7 +305,10 @@ final class Signature {
 		Vector<Type> targs = new Vector<Type>();
 		foreach (TypeConstr targ; m.targs)
 			targs.append(targ.getAType());
-		return CallType.createCallType(null, targs.toArray(), args.toArray(), ret, false);
+		Type accessor = null;
+		if (!m.isStatic())
+			accessor = ((TypeDecl)m.parent()).xtype;
+		return new CallType(accessor, targs.toArray(), args.toArray(), ret, false);
 	}
 
 }

@@ -28,10 +28,8 @@ public interface StdTypes {
 	public static final int flFinal			= 1 <<  3;
 	public static final int flStatic			= 1 <<  4;
 	public static final int flForward			= 1 <<  5;
-	public static final int flHidden			= 1 <<  6;
-	public static final int flArgAppliable		= 1 <<  7;
-	public static final int flValAppliable		= 1 <<  8;
-	public static final int flBindable			= 1 <<  9;
+	public static final int flArgAppliable		= 1 <<  6;
+	public static final int flValAppliable		= 1 <<  7;
 
 	public static final CompaundType tpEnv;
 	public static final CoreType tpAny;
@@ -159,23 +157,23 @@ public interface StdTypes {
 		tdWildcardCoArg = new TypeConstr("_base_", tpAny);
 		tdWildcardCoArg.setAbstract(true);
 		tpWildcardCoArg = tdWildcardCoArg.getAType();
-		tpWildcardCoArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpWildcardCoArg.flags |= flArgAppliable | flValAppliable;
 		
 		tdWildcardContraArg = new TypeConstr("_base_", tpAny);
 		tdWildcardContraArg.setAbstract(true);
 		tpWildcardContraArg = tdWildcardContraArg.getAType();
-		tpWildcardContraArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpWildcardContraArg.flags |= flArgAppliable | flValAppliable;
 		
 		tdWrapperArg = new TypeConstr("_boxed_", tpObject);
 		tdWrapperArg.setAbstract(true);
 		tpWrapperArg = tdWrapperArg.getAType();
-		tpWrapperArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpWrapperArg.flags |= flArgAppliable | flValAppliable;
 		
 		tdArrayArg = new TypeConstr("_elem_", tpAny);
 		tdArrayArg.setAbstract(true);
 		tdArrayArg.variance = TypeVariance.CO_VARIANT;
 		tpArrayArg = tdArrayArg.getAType();
-		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpArrayArg.flags |= flArgAppliable | flValAppliable;
 		tpArray					= ArrayType.newArrayType(tpArrayArg);
 
 		TypeDecl tdVararg = env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
@@ -186,7 +184,7 @@ public interface StdTypes {
 		tdVarargArg.setAbstract(true);
 		tdVararg.args += tdVarargArg;
 		tpVarargArg = tdVarargArg.getAType();
-		tpVarargArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpVarargArg.flags |= flArgAppliable | flValAppliable;
 		tdVararg.super_types += new TypeRef(ArrayType.newArrayType(tpVarargArg));
 		tpVararg				= (XType)tdVararg.xtype;
 
@@ -199,7 +197,7 @@ public interface StdTypes {
 		tdASTNodeType.args += tdASTNodeTypeArg;
 		ArgType tpASTNodeTypeArg;
 		tpASTNodeTypeArg = tdASTNodeTypeArg.getAType();
-		tpASTNodeTypeArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpASTNodeTypeArg.flags |= flArgAppliable | flValAppliable;
 		tdASTNodeType.super_types += new TypeRef(StdTypes.tpAny);
 
 		Struct tpBooleanRefClazz = env.newStruct("Boolean",java_lang,ACC_PUBLIC,new JavaClass());
@@ -318,31 +316,31 @@ public interface StdTypes {
 		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);
 		tdCallRetArg.setAbstract(true);
 		tpCallRetArg = tdCallRetArg.getAType();
-		tpCallRetArg.flags |= flHidden | flArgAppliable;
+		tpCallRetArg.flags |= flArgAppliable;
 		
 		TypeDef tdCallTupleArg = new TypeConstr("_tuple_", tpAny);
 		tdCallTupleArg.setAbstract(true);
 		tpCallTupleArg = tdCallTupleArg.getAType();
-		tpCallTupleArg.flags |= flHidden | flArgAppliable;
+		tpCallTupleArg.flags |= flArgAppliable;
 		
 		TypeDef tdCallThisArg = new TypeConstr("_this_", tpAny);
 		tdCallThisArg.setAbstract(true);
 		tpCallThisArg = tdCallThisArg.getAType();
-		tpCallThisArg.flags |= flHidden | flArgAppliable;
+		tpCallThisArg.flags |= flArgAppliable;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {
 			TypeDef tdCallParamArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
 			tdCallParamArg.setAbstract(true);
 			tpCallParamArgs[i] = tdCallParamArg.getAType();
-			tpCallParamArgs[i].flags |= flHidden | flArgAppliable;
+			tpCallParamArgs[i].flags |= flArgAppliable;
 		}
 		
 		tpUnattachedArgs = new ArgType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
 			TypeDef tdUnattachedArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
 			tpUnattachedArgs[i] = tdUnattachedArg.getAType();
-			//tpUnattachedArgs[i].flags |= flHidden;
+			tpUnattachedArgs[i].flags |= flArgAppliable;
 		}
 		
 		tpAny.meta_type.tdecl.uuid =			"be8bba7f-b4f9-3991-8834-6552dcb237a0";

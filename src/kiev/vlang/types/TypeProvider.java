@@ -808,22 +808,74 @@ public final class TupleMetaType extends MetaType {
 
 public class CallMetaType extends MetaType {
 
-	public static final CallMetaType call_instance;
-	public static final CallMetaType closure_instance;
+	private static TemplateTVarSet   templ_bindings_static;
+	private static TemplateTVarSet   templ_bindings_this;
+	
+	public  static MetaTypeDecl      call_tdecl;
+	
+	private static final CallMetaType call_static_instance;
+	private static final CallMetaType call_this_instance;
+	private static final CallMetaType closure_static_instance;
+	private static final CallMetaType closure_this_instance;
+	
 	static {
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
-		if (tdecl == null) {
-			tdecl = new MetaTypeDecl();
-			tdecl.sname = "_call_type_";
-			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
+		TVarBld set = new TVarBld();
+		set.append(StdTypes.tpCallRetArg, null);
+		set.append(StdTypes.tpCallTupleArg, null);
+		templ_bindings_static = new TemplateTVarSet(set);
+
+		set = new TVarBld();
+		set.append(StdTypes.tpCallRetArg, null);
+		set.append(StdTypes.tpCallTupleArg, null);
+		set.append(StdTypes.tpCallThisArg, null);
+		templ_bindings_this = new TemplateTVarSet(set);
+
+		call_tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
+		if (call_tdecl == null) {
+			call_tdecl = new MetaTypeDecl();
+			call_tdecl.sname = "_call_type_";
+			call_tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
+			call_tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			call_tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
 		}
-		call_instance = new CallMetaType(tdecl, MetaType.flCallable);
-		closure_instance = new CallMetaType(tdecl, MetaType.flCallable | MetaType.flReference);
+
+		call_static_instance    = new CallMetaType(templ_bindings_static, MetaType.flCallable);
+		call_this_instance      = new CallMetaType(templ_bindings_this,   MetaType.flCallable);
+		closure_static_instance = new CallMetaType(templ_bindings_static, MetaType.flCallable | MetaType.flReference);
+		closure_this_instance   = new CallMetaType(templ_bindings_this,   MetaType.flCallable | MetaType.flReference);
 	}
-	private CallMetaType(TypeDecl tdecl, int flags) {
-		super(tdecl, flags);
+	
+	private TemplateTVarSet		templ_bindings;
+	
+	public static CallMetaType newCallMetaType(boolean is_static, boolean is_closure, Type[] targs) {
+		if (targs == null || targs.length == 0) {
+			if (is_static) {
+				if (is_closure)
+					return closure_static_instance;
+				else
+					return call_static_instance;
+			} else {
+				if (is_closure)
+					return closure_this_instance;
+				else
+					return call_this_instance;
+			}
+		}
+		TVarBld set = new TVarBld();
+		set.append(StdTypes.tpCallRetArg, null);
+		set.append(StdTypes.tpCallTupleArg, null);
+		if (!is_static)
+			set.append(StdTypes.tpCallThisArg, null);
+		int flags = MetaType.flCallable;
+		if (is_closure)
+			flags |= MetaType.flReference;
+		CallMetaType cmt = new CallMetaType(new TemplateTVarSet(set), flags);
+		return cmt;
+	}
+	
+	private CallMetaType(TemplateTVarSet templ_bindings, int flags) {
+		super(call_tdecl, flags);
+		this.templ_bindings = templ_bindings;
 	}
 
 	public boolean checkTypeVersion(int version) {
@@ -841,19 +893,22 @@ public class CallMetaType extends MetaType {
 		if (set.getArgsLength() == 0 || t.bindings().getArgsLength() == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
-		mt = new CallType(mt.bindings().rebind_bld(set),mt.arity,mt.isReference());
+		mt = new CallType((CallMetaType)mt.meta_type, mt.bindings().rebind_bld(set), mt.arity);
 		return mt;
 	}
 	public Type applay(Type t, TVSet bindings) {
 		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
 		CallType mt = (CallType)t;
-		mt = new CallType(mt.bindings().applay_bld(bindings),mt.arity,mt.isReference());
+		mt = new CallType((CallMetaType)mt.meta_type, mt.bindings().applay_bld(bindings), mt.arity);
 		return mt;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info) { false }
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }
 
+	public TemplateTVarSet getTemplBindings() {
+		return templ_bindings;
+	}
 }
 
 

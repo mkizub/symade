@@ -268,13 +268,13 @@ public class JMethodType extends JType {
 	public final JType[]			jargs;
 	public final JType				jret;
 	
-	private JMethodType(KString java_signature, JType[] jargs, JType jret) {
-		super(CallMetaType.call_instance, java_signature, 0);
+	private JMethodType(CallMetaType meta_type, KString java_signature, JType[] jargs, JType jret) {
+		super(meta_type, java_signature, 0);
 		this.jargs = jargs;
 		this.jret = jret;
 	}
 
-	public static JMethodType newJMethodType(JType[] jargs, JType jret)
+	public static JMethodType newJMethodType(CallMetaType meta_type, JType[] jargs, JType jret)
 		alias lfy operator new
 	{
 		KStringBuffer ksb = new KStringBuffer(64);
@@ -287,7 +287,7 @@ public class JMethodType extends JType {
 		JMethodType jmt = (JMethodType)jtypeHash.get(signature);
 		if (jmt != null)
 			return jmt;
-		return new JMethodType(signature,jargs,jret);
+		return new JMethodType(meta_type,signature,jargs,jret);
 	}
 
 	public JType getSuperType() {

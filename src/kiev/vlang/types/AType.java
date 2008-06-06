@@ -69,10 +69,8 @@ public abstract class AType extends TVSet implements StdTypes {
 	public final boolean isFinal()			{ return (flags & flFinal)								!= 0 ; }
 	public final boolean isStatic()		{ return (flags & flStatic)								!= 0 ; }
 	public final boolean isForward()		{ return (flags & flForward)							!= 0 ; }
-	public final boolean isHidden()		{ return (flags & flHidden)								!= 0 ; }
 	public final boolean isArgAppliable()	{ return (flags & flArgAppliable)						!= 0 ; }
 	public final boolean isValAppliable()	{ return (flags & flValAppliable)						!= 0 ; }
-	public final boolean isBindable()		{ return (flags & flBindable)							!= 0 ; }
 
 	private void setFromBld(TVarBld bld) {
 		bld.close();
@@ -80,17 +78,21 @@ public abstract class AType extends TVSet implements StdTypes {
 		int n = bld_tvars.length;
 		if (n > 0) {
 			this.tvars = new TVar[n];
-			for (int i=0; i < n; i++)
-				this.tvars[i] = bld_tvars[i];
+			for (int i=0; i < n; i++) {
+				TVar bv = bld_tvars[i];
+				if (bv.isFree())
+					this.tvars[i] = new TVar(bv.var, bv.var, TVar.MODE_BOUND); // bind to itself
+				else
+					this.tvars[i] = bv;
+			}
 		} else {
 			this.tvars = TVar.emptyArray;
 		}
 
-		flags &= ~(flAbstract|flValAppliable|flBindable);
+		flags &= ~(flAbstract|flValAppliable);
 		foreach(TVar tv; this.tvars; !tv.isAlias()) {
 			Type r = tv.result();
 			ArgType v = tv.var;
-			if (tv.isFree()) flags |= flBindable;
 			if (r.isAbstract()) flags |= flAbstract;
 			if (v.isUnerasable()) flags |= flUnerasable;
 			if (v.isArgAppliable() && r.isValAppliable()) flags |= flValAppliable;
@@ -289,7 +291,7 @@ public abstract class AType extends TVSet implements StdTypes {
 		return false;
 	}
 	
-	final ArgType[] getTArgs() {
+	public final ArgType[] getTArgs() {
 		if (this.appls == null)
 			buildApplayables();
 		return this.appls;
