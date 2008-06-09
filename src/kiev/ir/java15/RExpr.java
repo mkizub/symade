@@ -592,7 +592,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		}
 		return false;
 	}
-
+	
 	public final void tryTypeArgCast(Type reqType, Type tp, Type et) {
 		if (tp instanceof ArgType && tp.isUnerasable()) {
 			replaceWithNodeResolve(reqType,

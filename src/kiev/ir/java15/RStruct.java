@@ -486,7 +486,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	
 	public void autoGenerateConstructor() {
 		if (!isInterface() && !isPackage() && !isSyntax()) {
-			//updatePackageClazz();
+			updatePackageClazz();
 			// Default <init> method, if no one is declared
 			boolean init_found = false;
 			// Add outer hidden parameter to constructors for inner and non-static classes
@@ -540,6 +540,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public boolean preGenerate() {
 		getStruct().checkResolved();
+		getStruct().xtype.checkResolved();
 		if (isMembersPreGenerated() /*|| isLoadedFromBytecode()*/) return true;
 		if (isPackage()) return false;
 		setMembersPreGenerated(true);

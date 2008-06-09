@@ -80,11 +80,6 @@ public class Bytecoder implements JConstants {
 
 		MetaAccess.verifyDecl(cl);
 
-		cl.setTypeDeclNotLoaded(false);
-		cl.setFrontEndPassed();
-
-		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
-		
 		KString.KStringScanner cl_sign_sc = null;
 		KString cl_sign = bcclazz.getClazzSignature();
 		if (cl_sign != null) {
@@ -92,6 +87,12 @@ public class Bytecoder implements JConstants {
 			Signature.addTypeArgs(cl,cl_sign_sc);
 		}
 
+		cl.type_decl_version++;
+		cl.setTypeDeclNotLoaded(false);
+		cl.setFrontEndPassed();
+
+		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
+		
 		// This class's superclass name (load if not loaded)
 		if (bcclazz.getSuperClazzName() != null) {
 			assert(cl.super_types.length == 0);

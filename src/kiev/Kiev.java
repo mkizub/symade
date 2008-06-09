@@ -426,6 +426,7 @@ public final class Kiev {
 			Vector<TransfProcessor> processors = new Vector<TransfProcessor>();
 			processors.append(KievFE_Pass1);
 			processors.append(KievFE_Pass2);
+			processors.append(KievFE_CheckStdTypes);
 			processors.append(KievFE_MetaDecls);
 			processors.append(KievFE_MetaDefaults);
 			processors.append(KievFE_MetaValues);

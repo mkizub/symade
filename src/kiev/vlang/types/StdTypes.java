@@ -102,7 +102,7 @@ public interface StdTypes {
 	static {
 
 		Env env = Env.getRoot();
-		tpEnv				= new CompaundType((CompaundMetaType)env.xmeta_type, TVarBld.emptySet);
+		tpEnv				= new CompaundType((CompaundMetaType)env.xmeta_type, null, null);
 		env.xtype			= tpEnv;
 
 		tpAny		= new CoreType(Constants.nameAny,     null,  0);												tpAny.meta_type.tdecl.setTypeDeclNotLoaded(true);

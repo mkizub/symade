@@ -232,7 +232,8 @@ public abstract class Struct extends TypeDecl {
 			return this;
 		if !(obj instanceof Env) {
 			obj.xmeta_type = new CompaundMetaType(obj);
-			obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, TVarBld.emptySet);
+			obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, null, null);
+			obj.type_decl_version = 1;
 		}
 		return obj;
 	}
@@ -360,7 +361,7 @@ public abstract class Struct extends TypeDecl {
 		super(null);
 		if !(this instanceof Env) {
 			this.xmeta_type = new CompaundMetaType(this);
-			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
+			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
 		}
 	}
 
@@ -371,7 +372,7 @@ public abstract class Struct extends TypeDecl {
 		if (outer_idx < 0)
 			outer.sub_decls += this;
 		this.xmeta_type = new CompaundMetaType(this);
-		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
+		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
 		if (flags != 0) {
 			if!(this instanceof KievSyntax || this instanceof KievPackage) {
 				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));

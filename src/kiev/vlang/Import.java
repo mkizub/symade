@@ -238,9 +238,7 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
 	public boolean mainResolveIn() { return false; }
 
-	public boolean checkResolved() {
-		return type.getType().checkResolved();
-	}
+	public void checkResolved() { type.getType().checkResolved(); }
 	
 	public Struct getStruct() {
 		return getType().getStruct();

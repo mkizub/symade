@@ -579,7 +579,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			obj.package_clazz.symbol = null;
 		obj.super_meta_types = null;
 		obj.direct_extenders.delAll();
-		obj.type_decl_version = 1;
+		obj.type_decl_version = 0;
 		obj.q_name = null;
 		obj.xmeta_type = null;
 		obj.xtype = null;
@@ -656,7 +656,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public boolean checkResolved() {
+	public void checkResolved() {
 		if( isTypeDeclNotLoaded() ) {
 			if (Env.getRoot().loadTypeDecl(this).isTypeDeclNotLoaded()) {
 				if (isPackage())
@@ -667,7 +667,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			if (isTypeDeclNotLoaded())
 				throw new RuntimeException("TypeDecl "+this+" unresolved");
 		}
-		return true;
 	}
 	
 	public void resolveMetaDefaults() {
@@ -887,6 +886,7 @@ public final class MetaTypeDecl extends TypeDecl {
 		else
 			obj.xmeta_type = new MetaType(obj, 0);
 		obj.xtype = this.xmeta_type.make(TVarBld.emptySet);
+		obj.type_decl_version = 1;
 		return obj;
 	}
 }

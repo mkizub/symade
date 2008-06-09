@@ -25,13 +25,19 @@ public abstract class TVSet {
 
 public final class TemplateTVarSet extends TVSet {
 
-	public static final TemplateTVarSet emptySet = new TemplateTVarSet(TVarBld.emptySet);
+	public static final TemplateTVarSet emptySet = new TemplateTVarSet(-1, TVarBld.emptySet);
 
 	@access:no,no,ro,rw		TVar[]		tvars;
 	private					ArgType[]	appls;
 	private					int			flags;
+	public final			int			n_free;
 
-	TemplateTVarSet(TVarBld bld) {
+	TemplateTVarSet(int n_free, TVarBld bld) {
+		bld.close(n_free);
+		if (n_free < 0)
+			this.n_free = bld.getArgsLength();
+		else
+			this.n_free = n_free;
 		TVar[] bld_tvars = bld.getTVars();
 		int n = bld_tvars.length;
 		if (n > 0)
@@ -124,7 +130,7 @@ public final class TemplateTVarSet extends TVSet {
 				continue next_my;
 			}
 		}
-		return sr.close();
+		return sr;
 	}
 
 
@@ -161,11 +167,11 @@ public final class TVarBld extends TVSet {
 
 	private static final boolean ASSERT_MORE = true;
 
-	public static final TVarBld emptySet = new TVarBld().close();
+	public static final TVarBld emptySet = new TVarBld().close(-1);
 
 	@access:no,no,ro,rw		TVar[]		tvars;
 	private					ArgType[]	appls;
-	private					boolean		closed;
+							boolean		closed;
 
 	public TVarBld() {
 		tvars = TVar.emptyArray;
@@ -191,11 +197,23 @@ public final class TVarBld extends TVSet {
 			this.tvars = TVar.emptyArray;
 	}
 	
-	public TVarBld close() {
-		if (!closed) {
-			//this.buildApplayables();
-			//if (ASSERT_MORE) this.checkIntegrity(true);
+	// close the TVarBld, self-bind TVar-s with index >= n_free; or do not self-bind vars if n_free < 0
+	public TVarBld close(int n_free) {
+		if (this.tvars.length == 0) {
 			closed = true;
+			return this;
+		}
+		assert (!closed);
+		//this.buildApplayables();
+		//if (ASSERT_MORE) this.checkIntegrity(true);
+		closed = true;
+		if (n_free >= 0) {
+			TVar[] tvars = this.tvars;
+			for (int i=n_free; i < tvars.length; i++) {
+				TVar tv = tvars[i];
+				if (tv.isFree())
+					tvars[i] = new TVar(tv.var, tv.var, TVar.MODE_BOUND);
+			}
 		}
 		return this;
 	}

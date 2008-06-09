@@ -198,7 +198,7 @@ public view JTypeDecl of TypeDecl extends JDNode {
 	public final boolean isTypeDeclNotLoaded();
 	public final boolean isStructInner();
 
-	public boolean checkResolved();
+	public void checkResolved();
 	
 	public boolean instanceOf(JTypeDecl cl) {
 		if( cl == null ) return false;

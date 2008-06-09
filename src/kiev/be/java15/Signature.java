@@ -83,7 +83,7 @@ final class Signature {
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
 		ClazzName cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
 		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
-		return new CompaundType(cmt, TVarBld.emptySet);
+		return new CompaundType(cmt, null, null);
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
@@ -97,7 +97,7 @@ final class Signature {
 
 		ClazzName cname = ClazzName.fromBytecodeName(sc.str.substr(sc.pos));
 		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
-		return new CompaundType(cmt, TVarBld.emptySet);
+		return new CompaundType(cmt, null, null);
 	}
 	
 	private static TypeConstr getTypeArgDecl(DNode dn, String aname) {
@@ -244,8 +244,8 @@ final class Signature {
 			cname = sc.str.substr(pos,sc.pos-1).toString();
 			cmt = new CompaundMetaType(outer.meta_type.qname() + '\u001f' + cname);
 			cmt.tdecl.checkResolved();
+			vs = new TVarBld();
 			if (ch == '<') {
-				vs = new TVarBld();
 				int aidx = 0;
 				// type arguments
 				while (sc.hasMoreChars() && (ch=sc.peekChar()) != '>') {

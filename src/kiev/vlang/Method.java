@@ -637,6 +637,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	private static void addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
 		if (pt ≡ null || pt ≡ Type.tpAny || pt ≡ at)
 			return;
+		qt.checkResolved();
+		pt.checkResolved();
 		if (qt ≡ at) {
 			Type t = pt.getAutoCastTo(at);
 			if (t != null)

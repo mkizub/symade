@@ -28,8 +28,8 @@ import syntax kiev.Syntax;
 public abstract class AType extends TVSet implements StdTypes {
 	
 	public final			MetaType			meta_type;
-	//private					TemplateTVarSet		type_template;
-	@access:no,no,ro,rw		TVar[]				tvars;
+	private					TemplateTVarSet		template;
+	private					Type[]				binds;
 	private					ArgType[]			appls;
 	private					int					version_and_flags;
 	@packed:16,version_and_flags,0
@@ -37,20 +37,21 @@ public abstract class AType extends TVSet implements StdTypes {
 	@packed:16,version_and_flags,16
 	private					int					version;
 	
-	protected AType(MetaType meta_type, int flags) {
+	protected AType(MetaType meta_type, TemplateTVarSet template, int flags) {
 		this.meta_type = meta_type;
-		//this.type_template = meta_type.getTemplBindings();
+		this.template = template;
 		this.flags = flags;
-		this.tvars = TVar.emptyArray;
+		this.binds = Type.emptyArray;
 		this.appls = ArgType.emptyArray;
 	}
 	
-	protected AType(MetaType meta_type, int flags, TVarBld bld)
+	protected AType(MetaType meta_type, TemplateTVarSet template, int flags, TVarBld bld)
 	{
 		this.meta_type = meta_type;
-		//this.type_template = meta_type.getTemplBindings();
+		this.template = template;
 		this.flags = flags;
-		this.setFromBld(bld);
+		if (bld != null)
+			this.setFromBld(bld);
 	}
 	
 	public       boolean isReference()		{ return (meta_type.flags & MetaType.flReference)		!= 0 ; }
@@ -73,24 +74,43 @@ public abstract class AType extends TVSet implements StdTypes {
 	public final boolean isValAppliable()	{ return (flags & flValAppliable)						!= 0 ; }
 
 	private void setFromBld(TVarBld bld) {
-		bld.close();
+		bld.close(0);
+		TemplateTVarSet template = this.template;
+		TVar[] template_vars = template.getTVars();
+		int n_free = template.n_free;
+		if (n_free == 0)
+			this.binds = Type.emptyArray;
+		else
+			this.binds = new Type[n_free];
 		TVar[] bld_tvars = bld.getTVars();
-		int n = bld_tvars.length;
-		if (n > 0) {
-			this.tvars = new TVar[n];
-			for (int i=0; i < n; i++) {
-				TVar bv = bld_tvars[i];
-				if (bv.isFree())
-					this.tvars[i] = new TVar(bv.var, bv.var, TVar.MODE_BOUND); // bind to itself
-				else
-					this.tvars[i] = bv;
+		for (int i=0; i < bld_tvars.length; i++) {
+			if (bld_tvars[i].isFree()) {
+				this.binds[i] = template_vars[i].var;
+				continue;
 			}
-		} else {
-			this.tvars = TVar.emptyArray;
+			ArgType at = bld_tvars[i].var;
+			for (int j=0; j < template_vars.length; j++) {
+				if (at ≡ template_vars[j].var) {
+					while (template_vars[j].ref >= 0) j = template_vars[j].ref;
+					if (j >= n_free)
+						break;
+					if (this.binds[j] != null)
+						break;
+					this.binds[j] = bld.resolveArg(i);
+					break;
+				}
+			}
+		}
+		for (int j=0; j < n_free; j++) {
+			if (this.binds[j] == null)
+				this.binds[j] = template.resolveArg(j);
 		}
 
 		flags &= ~(flAbstract|flValAppliable);
-		foreach(TVar tv; this.tvars; !tv.isAlias()) {
+		for (int i=0; i < template_vars.length; i++) {
+			TVar tv = template_vars[i];
+			if (tv.isAlias())
+				continue;
 			Type r = tv.result();
 			ArgType v = tv.var;
 			if (r.isAbstract()) flags |= flAbstract;
@@ -100,13 +120,47 @@ public abstract class AType extends TVSet implements StdTypes {
 	}
 	
 	public final AType bindings() {
-		if (!this.meta_type.checkTypeVersion(this.version)) {
-			this.setFromBld(meta_type.getTemplBindings().bind_bld(this));
+		if (this.binds == null || !this.meta_type.checkTypeVersion(this.version)) {
+			TemplateTVarSet template = this.meta_type.getTemplBindings();
+			int n_free = template.n_free;
+			if (n_free == 0) {
+				this.binds = Type.emptyArray;
+			} else {
+				if (this.binds == null) {
+					this.binds = new Type[n_free];
+					for (int i=0; i < n_free; i++)
+						this.binds[i] = template.resolveArg(i);
+				} else {
+					Type[] new_binds = new Type[n_free];
+					for (int i=0; i < n_free; i++)
+						new_binds[i] = this.resolve(template.getArg(i));
+					this.binds = new_binds;
+				}
+			}
+			this.template = template;
 			this.version = this.meta_type.version;
+			TVar[] template_vars = template.getTVars();
+			int flags = this.flags & ~(flAbstract|flValAppliable);
+			for (int i=0; i < template_vars.length; i++) {
+				TVar tv = template_vars[i];
+				if (tv.isAlias())
+					continue;
+				Type r = tv.result();
+				ArgType v = tv.var;
+				if (r.isAbstract()) flags |= flAbstract;
+				if (v.isUnerasable()) flags |= flUnerasable;
+				if (v.isArgAppliable() && r.isValAppliable()) flags |= flValAppliable;
+			}
+			this.flags = flags;
 		}
 		return this;
 	}
 	
+	public final void checkResolved() {
+		meta_type.tdecl.checkResolved();
+		this.bindings();
+	}
+
 	public static boolean identity(AType t1, AType t2) alias xfx operator ≡ {
 		return t1 == t2;
 	}
@@ -123,7 +177,9 @@ public abstract class AType extends TVSet implements StdTypes {
 	public static boolean type_equals(AType t1, AType t2) alias xfx operator ≈ {
 		if (t1 == null || t2 == null) return false;
 		if (t1 == t2) return true;
-		if (t1.meta_type != t2.meta_type) return false;
+		if (t1.meta_type.tdecl != t2.meta_type.tdecl) return false;
+		t1.checkResolved();
+		t2.checkResolved();
 		if (t1.getArgsLength() != t2.getArgsLength()) return false;
 		final int n = t1.getArgsLength();
 		for (int i=0; i < n; i++) {
@@ -140,44 +196,45 @@ public abstract class AType extends TVSet implements StdTypes {
 		return false;
 	}
 
-	public TVar[] getTVars() {
-		return this.tvars;
-	}
-
 	// find bound value for an abstract type
 	public final Type resolve(ArgType arg) {
-		TVar[] tvars = this.tvars;
-		final int n = tvars.length;
+		TVar[] template_tvars = this.template.getTVars();
+		final int n = template_tvars.length;
 		for(int i=0; i < n; i++) {
-			TVar x = tvars[i];
-			if (x.var ≡ arg) {
-				while (x.ref >= 0) x = tvars[x.ref];
-				return x.result();
+			if (template_tvars[i].var ≡ arg) {
+				while (template_tvars[i].ref >= 0) i = template_tvars[i].ref;
+				Type tp = (i < this.binds.length) ? this.binds[i] : template_tvars[i].val;
+				if (tp == null)
+					tp = template_tvars[i].var;
+				return tp;
 			}
 		}
 		return arg;
 	}
 	
-	public final int getArgsLength() { return this.tvars.length; }
-	public final ArgType getArg(int i) { return this.tvars[i].var; }
+	public final int getArgsLength() { return this.template.getArgsLength(); }
+	public final ArgType getArg(int i) { return this.template.getArg(i); }
 	public final Type resolveArg(int i)  {
-		TVar[] tvars = this.tvars;
-		while (tvars[i].ref >= 0) i = tvars[i].ref;
-		return tvars[i].result();
+		TVar[] template_tvars = this.template.getTVars();
+		while (template_tvars[i].ref >= 0) i = template_tvars[i].ref;
+		Type tp = (i < this.binds.length) ? this.binds[i] : template_tvars[i].val;
+		if (tp == null)
+			tp = template_tvars[i].var;
+		return tp;
 	}
-	public final boolean isAliasArg(int i) { return this.tvars[i].isAlias(); }
+	public final boolean isAliasArg(int i) { return this.template.isAliasArg(i); }
 
 	// change bound types, for virtual args, outer args, etc
 	public TVarBld rebind_bld(TVarBld vs) {
-		TVar[] my_vars = this.tvars;
+		TVar[] my_vars = this.template.getTVars();
 		TVar[] vs_vars = vs.tvars;
-		final int my_size = this.getArgsLength();
+		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarBld sr = new TVarBld(this);
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
-			TVar x = this.tvars[i];
+			TVar x = my_vars[i];
 			// TVarBound already bound
 			if (!x.isAlias()) {
 				for (int j=0; j < vs_size; j++) {
@@ -201,7 +258,7 @@ public abstract class AType extends TVSet implements StdTypes {
 				continue next_my;
 			}
 		}
-		return sr.close();
+		return sr;
 	}
 
 	// Re-bind type set, replace all abstract types in current set
@@ -229,23 +286,25 @@ public abstract class AType extends TVSet implements StdTypes {
 	
 	public TVarBld applay_bld(TVSet vs)
 	{
-		final int my_size = this.getArgsLength();
-		final int vs_size = vs.getArgsLength();
 		TVarBld sr = new TVarBld(this);
 		if (!this.hasApplayables(vs))
-			return sr.close();
+			return sr;
+		final TVar[] template_vars = this.template.getTVars();
+		final int vs_size = vs.getArgsLength();
+		final int my_size = template_vars.length;
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
-			TVar x = this.tvars[i];
-			while (x.ref >= 0) x = this.tvars[x.ref];
-			Type bnd = x.val;
-			if (x.isFree() || !x.var.isArgAppliable())
+			int p = i;
+			while (template_vars[p].ref >= 0) p = template_vars[p].ref;
+			if (!template_vars[p].var.isArgAppliable())
+				continue;
+			Type bnd = (p < this.binds.length) ? this.binds[p] : null;
+			if (bnd == null)
 				continue;
 			if (bnd instanceof ArgType) {
 				for(int j=0; j < vs_size; j++) {
-					ArgType y = vs.getArg(j);
-					if (bnd ≡ y) {
+					if (bnd ≡ vs.getArg(j)) {
 						// re-bind
 						sr.set(i, vs.resolveArg(j));
 						continue next_my;
@@ -259,7 +318,7 @@ public abstract class AType extends TVSet implements StdTypes {
 					sr.set(i, t);
 			}
 		}
-		return sr.close();
+		return sr;
 	}
 	
 	private boolean hasApplayables(TVSet vs) {
@@ -299,8 +358,13 @@ public abstract class AType extends TVSet implements StdTypes {
 
 	private void buildApplayables() {
 		this.appls = ArgType.emptyArray;
-		foreach (TVar tv; tvars; !tv.isAlias())
-			addApplayables(tv.result());
+		final TVar[] template_vars = this.template.getTVars();
+		int n = template_vars.length;
+		for (int i=0; i < n; i++) {
+			if (template_vars[i].isAlias())
+				continue;
+			addApplayables(resolveArg(i));
+		}
 	}
 	
 	private void addApplayables(Type t) {
@@ -329,8 +393,8 @@ public abstract class AType extends TVSet implements StdTypes {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.getClass());
 		sb.append(" {\n");
-		for (int i=0; i < tvars.length; i++)
-			sb.append(i).append(": ").append(tvars[i]).append('\n');
+		for (int i=0; i < binds.length; i++)
+			sb.append(i).append(": ").append(binds[i]).append('\n');
 		sb.append("}");
 		return sb.toString();
 	}
@@ -342,30 +406,19 @@ public abstract class AType extends TVSet implements StdTypes {
 		String uuid = tdecl.uuid;
 		if (uuid != null)
 			str.append('@').append(uuid);
-		boolean hasArgs = false;
-		TemplateTVarSet templ = meta_type.getTemplBindings();
-		AType self = this.bindings();
-		for(int i=0; i < self.tvars.length; i++) {
-			TVar t = templ.tvars[i];
-			TVar x = self.tvars[i];
-			if (!t.isFree())
-				continue;
-			if (x.var == x.val)
-				continue; // self-bound
-			if (!hasArgs) {
-				str.append('(');
-				hasArgs = true;
-			} else {
+		this.bindings();
+		if (this.binds.length == 0)
+			return str.toString();
+		str.append('(');
+		TemplateTVarSet template = this.template;
+		for(int i=0; i < this.binds.length; i++) {
+			if (i > 0)
 				str.append(',');
-			}
-			str.append(x.var.name);
+			str.append(getArg(i).name);
 			str.append('=');
-			String val = x.val.makeSignature();
-			assert (val != null && !"null".equals(val));
-			str.append(x.val.makeSignature());
+			str.append(resolveArg(i).makeSignature());
 		}
-		if (hasArgs)
-			str.append(')');
+		str.append(')');
 		return str.toString();
 	}
 	
@@ -416,6 +469,7 @@ public abstract class AType extends TVSet implements StdTypes {
 				return tdecl.getAType();
 			return tdecl.xtype;
 		}
+		TVar[] template_vars = tdecl.xmeta_type.getTemplBindings().getTVars();
 		TVarBld set = new TVarBld();
 		while (!sep[0].equals(")")) {
 			String aname = st.nextToken();
@@ -423,7 +477,7 @@ public abstract class AType extends TVSet implements StdTypes {
 			assert (sep[0].equals("="));
 			Type tp = fromSignature(st,sep,full);
 			ArgType a = null;
-			foreach (TVar t; tdecl.xtype.bindings().tvars; t.var.name.equals(aname)) {
+			foreach (TVar t; template_vars; t.var.name.equals(aname)) {
 				a = t.var;
 				break;
 			}

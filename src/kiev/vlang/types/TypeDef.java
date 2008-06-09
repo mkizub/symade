@@ -73,9 +73,7 @@ public abstract class TypeDef extends TypeDecl {
 		return sname;
 	}
 
-	public boolean checkResolved() {
-		return true;
-	}
+	public void checkResolved() {}
 
 	public Type getType() {
 		return getAType();
