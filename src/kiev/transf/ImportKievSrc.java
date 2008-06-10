@@ -76,7 +76,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 	
-	public void processSyntax(TypeDecl:ASTNode node) {
+	public void processSyntax(ComplexTypeDecl:ASTNode node) {
 		node.updatePackageClazz();
 		foreach (ASTNode n; node.members) {
 			try {
@@ -191,11 +191,11 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 		else if!(me.parent() instanceof NameSpace) {
 			if (me.isStructInner() && !me.isStatic() && me.isClazz()) {
-				TypeDecl pkg = me.package_clazz.dnode;
+				ComplexTypeDecl pkg = me.package_clazz.dnode;
 				if (pkg.sname == nameIFaceImpl)
 					pkg = pkg.package_clazz.dnode;
 				int n = 0;
-				for(TypeDecl p=pkg; p.isStructInner() && !p.isStatic(); p=p.package_clazz.dnode) n++;
+				for(ComplexTypeDecl p=pkg; p.isStructInner() && !p.isStatic(); p=p.package_clazz.dnode) n++;
 				String fldName = (nameThisDollar+n).intern();
 				boolean found = false;
 				foreach (Field f; me.members; f.sname == fldName)
@@ -267,7 +267,23 @@ public final class KievFE_Pass2 extends TransfProcessor {
 
 	public void doProcess(TypeDecl:ASTNode astn) {
 		try {
-			TypeDecl td = (TypeDecl)astn;
+			TypeDecl tdecl = astn;
+			tdecl.meta.verify();
+			if (tdecl.isTypeResolved())
+				return;
+			tdecl.setTypeResolved(true);
+			foreach(TypeRef tr; tdecl.super_types) {
+				TypeDecl td = tr.getTypeDecl();
+				if (td instanceof ComplexTypeDecl)
+					getStructType((ComplexTypeDecl)td, new Stack<TypeDecl>());
+			}
+			tdecl.setArgsResolved(true);
+		} catch(Exception e ) { Kiev.reportError(astn,e); }
+	}
+	
+	public void doProcess(ComplexTypeDecl:ASTNode astn) {
+		try {
+			ComplexTypeDecl td = astn;
 			td.updatePackageClazz();
 			// Verify meta-data to the new structure
 			if (td.meta != null)
@@ -280,7 +296,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
-	private Type getStructType(TypeDecl tdecl, Stack<TypeDecl> path) {
+	private Type getStructType(ComplexTypeDecl tdecl, Stack<TypeDecl> path) {
 		tdecl.checkResolved();
 		if (tdecl.isTypeResolved()) {
 			//if (!tdecl.isArgsResolved())
@@ -291,7 +307,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		
 		tdecl.setTypeResolved(true);
 		
-		for (TypeDecl p = tdecl.package_clazz.dnode; p != null; p = p.package_clazz.dnode)
+		for (ComplexTypeDecl p = tdecl.package_clazz.dnode; p != null; p = p.package_clazz.dnode)
 			getStructType(p, path);
 
 		if (tdecl instanceof Struct) {
@@ -515,7 +531,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 			doProcess(n);
 	}
 
-	public void doProcess(TypeDecl:ASTNode astn) {
+	public void doProcess(ComplexTypeDecl:ASTNode astn) {
 		int pos = astn.pos;
 		TypeDecl me = astn;
 		trace(Kiev.debug && Kiev.debugResolve,"Pass 3 for class "+me);
@@ -985,10 +1001,10 @@ public final class KievME_PostGenerate extends BackendProcessor {
 		}
 	}
 	
-	private KString makeBytecodeName(TypeDecl s) {
+	private KString makeBytecodeName(ComplexTypeDecl s) {
 		if (s.bytecode_name != null)
 			return s.bytecode_name;
-		TypeDecl pkg = s.package_clazz.dnode;
+		ComplexTypeDecl pkg = s.package_clazz.dnode;
 		KString pkg_bc_name = KString.Empty;
 		if!(pkg instanceof Env)
 			pkg_bc_name = makeBytecodeName(pkg);
@@ -1014,7 +1030,7 @@ public final class KievME_PostGenerate extends BackendProcessor {
 		return s.bytecode_name;
 	}
 	
-	private String makeInnerIndex(TypeDecl pkg) {
+	private String makeInnerIndex(ComplexTypeDecl pkg) {
 		while !(pkg.package_clazz.dnode instanceof KievPackage)
 			pkg = pkg.package_clazz.dnode;
 		Integer i = pkg.inner_counter;

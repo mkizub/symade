@@ -88,7 +88,7 @@ class ClazzName implements Constants {
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
 
-	public static ClazzName fromOuterAndName(TypeDecl outer, KString short_name) {
+	public static ClazzName fromOuterAndName(ComplexTypeDecl outer, KString short_name) {
 		if(short_name.equals(KString.Empty)) return Empty;
 		String delim = outer.isPackage() ? "/" : "$" ;
 		KString bytecode_name;

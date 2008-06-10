@@ -172,7 +172,7 @@ public final class Env extends KievPackage {
 		return cl;
 	}
 
-	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, TypeDecl pkg, boolean cleanup, String uuid) {
+	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, ComplexTypeDecl pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
 			pkg = Env.getRoot();
 		assert (pkg.isPackage());
@@ -410,7 +410,7 @@ public final class Env extends KievPackage {
 		return (FileUnit)root;
 	}
 
-	public FileUnit loadFromXmlData(byte[] data, String tdname, TypeDecl pkg) {
+	public FileUnit loadFromXmlData(byte[] data, String tdname, ComplexTypeDecl pkg) {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
@@ -447,7 +447,7 @@ public final class Env extends KievPackage {
 	final static class SAXHandler extends DefaultHandler {
 		ASTNode root;
 		File file;
-		TypeDecl pkg;
+		ComplexTypeDecl pkg;
 		String tdname;
 		boolean expect_attr;
 		int ignore_count;
@@ -475,17 +475,17 @@ public final class Env extends KievPackage {
 						qname = pkg.qname() + '\u001f' + tdname;
 					FileUnit fu = FileUnit.makeFile(qname.replace('\u001f','/')+".xml", false);
 					fu.scanned_for_interface_only = true;
-					TypeDecl p = pkg;
+					ComplexTypeDecl p = pkg;
 					while (p != null && !p.isPackage())
 						p = p.package_clazz.dnode;
 					fu.srpkg.symbol = p;
 					root = fu;
-					TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(qname);
+					ComplexTypeDecl td = (ComplexTypeDecl)Env.getRoot().resolveGlobalDNode(qname);
 					if (td != null) {
 						assert(td.getClass().getName().equals(cl_name));
 						td.cleanupOnReload();
 					} else {
-						td = (TypeDecl)Class.forName(cl_name).newInstance();
+						td = (ComplexTypeDecl)Class.forName(cl_name).newInstance();
 					}
 					td.sname = tdname;
 					td.package_clazz.symbol = pkg;

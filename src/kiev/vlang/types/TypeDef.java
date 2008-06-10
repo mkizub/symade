@@ -59,7 +59,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	@virtual typedef This  ≤ TypeDef;
 
-	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
+	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
 
 	public TypeRef[] getUpperBounds() { return super_types; }
 	public TypeRef[] getLowerBounds() { return TypeRef.emptyArray; }
@@ -67,10 +67,6 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeDef(String name) {
 		super(name);
-	}
-
-	public String qname() {
-		return sname;
 	}
 
 	public void checkResolved() {}

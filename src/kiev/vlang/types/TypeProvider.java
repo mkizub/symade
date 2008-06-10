@@ -15,14 +15,9 @@ import kiev.be.java15.JStruct;
 
 import syntax kiev.Syntax;
 
-public class MetaType implements Constants {
-
-	public final static MetaType[] emptyArray = new MetaType[0];
-	static final MetaType dummy;
-	static {
-		dummy = new MetaType("<dummy>",0);
-		dummy.templ_bindings = TemplateTVarSet.emptySet;
-	}
+public abstract class MetaType implements Constants {
+	
+	@virtual typedef TDecl  ≤ TypeDecl;
 
 	public static final int flReference		= 1 <<  0;
 	public static final int flIntegerInCode	= 1 <<  1;
@@ -36,38 +31,30 @@ public class MetaType implements Constants {
 	public static final int flWrapper			= 1 <<  8;
 	public static final int flCallable			= 1 <<  9;
 
-	private String				descr;
-	public TypeDecl				tdecl;
+	public TDecl				tdecl;
 	public int					flags;
 	public int					version;
-	private TemplateTVarSet		templ_bindings;
 
-	@getter
-	public final TypeDecl get$tdecl() {
-		if (this.tdecl == null)
-			this.tdecl = Env.getRoot().loadTypeDecl(descr, true);
+	@getter public TDecl get$tdecl() {
 		return this.tdecl;
 	}
 	
-	@setter
-	private final void set$tdecl(TypeDecl tdecl) {
+	@setter final void set$tdecl(TDecl tdecl) {
 		this.tdecl = tdecl;
 	}
 	
 	public String qname() {
 		if (tdecl != null)
 			return tdecl.qname();
-		return descr;
+		return "<tdecl>";
 	}
 	
-	public MetaType(String name, int flags) {
-		this.descr = name;
-		this.flags = flags;
-	}
-	public MetaType(TypeDecl tdecl, int flags) {
+	public MetaType(TDecl tdecl, int flags) {
 		this.tdecl = tdecl;
 		this.flags = flags;
 	}
+
+	public abstract TemplateTVarSet getTemplBindings();
 
 	public Type[] getMetaSupers(Type tp) {
 		if (tdecl.super_types.length == 0)
@@ -92,29 +79,6 @@ public class MetaType implements Constants {
 		return new XType(this, getTemplBindings(), t.bindings().applay_bld(bindings));
 	}
 
-	public TemplateTVarSet getTemplBindings() {
-		if (this.version != tdecl.type_decl_version)
-			makeTemplBindings();
-		return templ_bindings;
-	}
-	private void makeTemplBindings() {
-		TVarBld vs = new TVarBld();
-		foreach (TypeDef ad; tdecl.args)
-			vs.append(ad.getAType(), null);
-		foreach (TypeDef td; tdecl.members) {
-			vs.append(td.getAType(), null);
-		}
-		int n_free = vs.getArgsLength();
-		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null) {
-			Type stp = st.getType();
-			vs.append(stp.bindings());
-			if ((stp.meta_type.flags & flReference) != 0) this.flags |= flReference;
-			if ((stp.meta_type.flags & flArray)     != 0) this.flags |= flArray;
-		}
-		templ_bindings = new TemplateTVarSet(n_free, vs);
-		this.version = tdecl.type_decl_version;
-	}
-
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 	{
 		trace(Kiev.debug && Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in "+tp),
@@ -133,7 +97,7 @@ public class MetaType implements Constants {
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 	{
-		n @= tdecl.members,
+		n @= tdecl.getMembers(),
 		n instanceof Field && info.checkNodeName(n) && info.check(n),
 		node ?= n
 	}
@@ -149,13 +113,13 @@ public class MetaType implements Constants {
 		ASTNode@ forw;
 		TypeRef@ sup;
 	{
-		forw @= tdecl.members,
+		forw @= tdecl.getMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).type.applay(tp).resolveNameAccessR(node,info)
 	;	info.isSuperAllowed(),
 		sup @= tdecl.super_types,
-		forw @= sup.getTypeDecl().members,
+		forw @= sup.getTypeDecl().getMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).type.applay(tp).resolveNameAccessR(node,info)
@@ -169,7 +133,7 @@ public class MetaType implements Constants {
 		tp.checkResolved(),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving method "+info.getName()+" in "+this),
 		{
-			member @= tdecl.members,
+			member @= tdecl.getMembers(),
 			member instanceof Method,
 			info.check(member),
 			node ?= ((Method)member),
@@ -181,14 +145,14 @@ public class MetaType implements Constants {
 			sup.getTypeDecl().xmeta_type.resolveCallAccessR(tp,node,info,mt)
 		;
 			info.isForwardsAllowed(),
-			member @= tdecl.members,
+			member @= tdecl.getMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			((Field)member).type.applay(tp).resolveCallAccessR(node,info,mt)
 		;
 			info.isForwardsAllowed(),
 			sup @= tdecl.super_types,
-			member @= sup.getTypeDecl().members,
+			member @= sup.getTypeDecl().getMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			((Field)member).type.applay(tp).resolveCallAccessR(node,info,mt)
@@ -198,6 +162,8 @@ public class MetaType implements Constants {
 }
 
 public final class CoreMetaType extends MetaType {
+
+	@virtual typedef TDecl = MetaTypeDecl;
 
 	CoreType core_type;
 	
@@ -231,6 +197,8 @@ public final class CoreMetaType extends MetaType {
 }
 
 public final class ASTNodeMetaType extends MetaType {
+
+	@virtual typedef TDecl = Struct;
 
 	public static Hashtable<Class,ASTNodeMetaType> allASTNodeMetaTypes;
 	public static final Hashtable<String,Class>	allNodes;
@@ -372,11 +340,78 @@ public final class ASTNodeMetaType extends MetaType {
 
 }
 
+public final class XMetaType extends MetaType {
+
+	@virtual typedef TDecl = MetaTypeDecl;
+
+	private TemplateTVarSet			templ_bindings;
+	
+	public XMetaType(MetaTypeDecl clazz, int flags) {
+		super(clazz, flags);
+	}
+	
+	public Type make(TVarBld set) {
+		if (set == null)
+			return new XType(this, null, null);
+		else
+			return new XType(this, getTemplBindings(), set);
+	}
+	public Type rebind(Type t, TVarBld set) {
+		throw new RuntimeException("rebind() in DummyType");
+	}
+	public Type applay(Type t, TVSet bindings) {
+		if (!t.isValAppliable() || bindings.getArgsLength() == 0) return t;
+		return new XType(this, getTemplBindings(), t.bindings().applay_bld(bindings));
+	}
+
+	public TemplateTVarSet getTemplBindings() {
+		if (this.version != tdecl.type_decl_version)
+			makeTemplBindings();
+		return templ_bindings;
+	}
+	private void makeTemplBindings() {
+		TVarBld vs = new TVarBld();
+		foreach (TypeDef ad; tdecl.args)
+			vs.append(ad.getAType(), null);
+		foreach (TypeDef td; tdecl.getMembers()) {
+			if (td instanceof TypeAssign && td.sname != "This")
+				vs.append(td.getAType(), td.type_ref.getType());
+			else
+				vs.append(td.getAType(), null);
+		}
+		int n_free = vs.getArgsLength();
+		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null) {
+			Type stp = st.getType();
+			vs.append(stp.bindings());
+			if ((stp.meta_type.flags & flReference) != 0) this.flags |= flReference;
+			if ((stp.meta_type.flags & flArray)     != 0) this.flags |= flArray;
+		}
+		templ_bindings = new TemplateTVarSet(n_free, vs);
+		this.version = tdecl.type_decl_version;
+	}
+
+}
+
 public final class CompaundMetaType extends MetaType {
+
+	@virtual typedef TDecl = Struct;
 
 	private static Hashtable<String,CompaundMetaType> compaundMetaTypes = new Hashtable<String,CompaundMetaType>();
 	
+	private String					descr;
 	private TemplateTVarSet			templ_bindings;
+	
+	@getter
+	public final TDecl get$tdecl() {
+		if (this.tdecl == null) {
+			TDecl td = (TDecl)Env.getRoot().loadTypeDecl(descr, true);
+			if (td != null) {
+				descr = null;
+				this.tdecl = td;
+			}
+		}
+		return this.tdecl;
+	}
 	
 	public static CompaundMetaType newCompaundMetaType(String clazz_name) alias lfy operator new {
 		TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(clazz_name);
@@ -403,7 +438,8 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	private CompaundMetaType(String clazz_name) {
-		super(clazz_name, MetaType.flReference);
+		super(null, MetaType.flReference);
+		this.descr = clazz_name;
 		this.templ_bindings = TemplateTVarSet.emptySet;
 	}
 	
@@ -411,6 +447,12 @@ public final class CompaundMetaType extends MetaType {
 		super(clazz, MetaType.flReference);
 		if (this.tdecl == Env.getRoot()) Env.getRoot().xmeta_type = this;
 		this.templ_bindings = TemplateTVarSet.emptySet;
+	}
+	
+	public String qname() {
+		if (descr != null)
+			return descr;
+		return tdecl.qname();
 	}
 	
 	public Type make(TVarBld set) {
@@ -439,8 +481,11 @@ public final class CompaundMetaType extends MetaType {
 		TVarBld vs = new TVarBld();
 		foreach (TypeDef ad; tdecl.args)
 			vs.append(ad.getAType(), null);
-		foreach (TypeDef td; tdecl.members) {
-			vs.append(td.getAType(), null);
+		foreach (TypeDef td; tdecl.getMembers()) {
+			if (td instanceof TypeAssign && td.sname != "This")
+				vs.append(td.getAType(), td.type_ref.getType());
+			else
+				vs.append(td.getAType(), null);
 		}
 		int n_free = vs.getArgsLength();
 		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null) {
@@ -453,6 +498,8 @@ public final class CompaundMetaType extends MetaType {
 }
 
 public final class ArrayMetaType extends MetaType {
+
+	@virtual typedef TDecl = MetaTypeDecl;
 
 	private static final TemplateTVarSet	templ_bindings;
 	public static final ArrayMetaType		instance;
@@ -502,6 +549,8 @@ public final class ArrayMetaType extends MetaType {
 }
 
 public class ArgMetaType extends MetaType {
+
+	@virtual typedef TDecl = TypeDecl;
 
 	public final ArgType atype;
 	
@@ -553,6 +602,8 @@ public class ArgMetaType extends MetaType {
 
 public class WildcardCoMetaType extends MetaType {
 
+	@virtual typedef TDecl = MetaTypeDecl;
+
 	private static final TemplateTVarSet		templ_bindings;
 	public static final WildcardCoMetaType		instance;
 	static {
@@ -597,6 +648,8 @@ public class WildcardCoMetaType extends MetaType {
 }
 
 public class WildcardContraMetaType extends MetaType {
+
+	@virtual typedef TDecl = MetaTypeDecl;
 
 	private static final TemplateTVarSet			templ_bindings;
 	public static final WildcardContraMetaType		instance;
@@ -643,6 +696,8 @@ public class WildcardContraMetaType extends MetaType {
 
 public class WrapperMetaType extends MetaType {
 
+	@virtual typedef TDecl = MetaTypeDecl;
+
 	private static final TemplateTVarSet	templ_bindings;
 	private static final MetaTypeDecl		wrapper_tdecl;
 	static {
@@ -662,8 +717,10 @@ public class WrapperMetaType extends MetaType {
 		tdecl.xmeta_type = WrapperMetaType.instance(StdTypes.tpWrapperArg);
 		tdecl.xtype = WrapperType.newWrapperType(StdTypes.tpWrapperArg);
 	}
+	
 	public final TypeDecl	clazz;
 	public final Field		field;
+	
 	public static WrapperMetaType instance(Type tp) {
 		TypeDecl td = tp.meta_type.tdecl;
 		if (td.wmeta_type == null)
@@ -702,7 +759,7 @@ public class WrapperMetaType extends MetaType {
 				return wf;
 		}
 		Field wf = null;
-		foreach(Field n; td.members; n.isForward()) {
+		foreach(Field n; td.getMembers(); n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else
@@ -755,6 +812,8 @@ public class WrapperMetaType extends MetaType {
 
 public final class TupleMetaType extends MetaType {
 
+	@virtual typedef TDecl = MetaTypeDecl;
+
 	public static MetaTypeDecl    tuple_tdecl;
 	public static TupleMetaType[] instancies;
 	static {
@@ -804,6 +863,8 @@ public final class TupleMetaType extends MetaType {
 }
 
 public class CallMetaType extends MetaType {
+
+	@virtual typedef TDecl = MetaTypeDecl;
 
 	private static TemplateTVarSet   templ_bindings_static;
 	private static TemplateTVarSet   templ_bindings_this;

@@ -464,7 +464,7 @@ public abstract class MetaAttr extends Attr {
 		}
 		else if (value instanceof UserMeta) {
 			UserMeta m = (UserMeta)value;
-			TypeDecl tdecl = m.getTypeDecl();
+			JavaAnnotation tdecl = m.getAnnotationDecl();
 			constPool.addAsciiCP(tdecl.xtype.getJType().java_signature);
 			foreach (Method mm; tdecl.members) {
 				MetaValue v = m.get(mm.sname); 
@@ -570,7 +570,7 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(ConstPool constPool, UserMeta m, kiev.bytecode.Annotation.annotation a) {
-		TypeDecl tdecl = m.getTypeDecl();
+		JavaAnnotation tdecl = m.getAnnotationDecl();
 		a.type_index = constPool.getAsciiCP(tdecl.xtype.getJType().java_signature).pos;
 		int n = 0;
 		foreach (Method mm; tdecl.members)

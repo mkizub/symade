@@ -25,6 +25,7 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true, iface=true)
 public final view JStruct of Struct extends JTypeDecl {
 
+	public:ro	JNode[]				members;
 	public:ro	KString				bytecode_name;
 	public:ro	SymbolRef<Struct>	package_clazz;
 	public:ro	JStruct				iface_impl;

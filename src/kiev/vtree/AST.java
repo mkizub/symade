@@ -57,11 +57,11 @@ public abstract class ANode implements INode {
 	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
 	
-	public:ro @virtual @abstract ANode			ctx_root;
-	public:ro @virtual @abstract FileUnit		ctx_file_unit;
-	public:ro @virtual @abstract NameSpace		ctx_name_space;
-	public:ro @virtual @abstract TypeDecl		ctx_tdecl;
-	public:ro @virtual @abstract Method		ctx_method;
+	public:ro @virtual @abstract ANode				ctx_root;
+	public:ro @virtual @abstract FileUnit			ctx_file_unit;
+	public:ro @virtual @abstract NameSpace			ctx_name_space;
+	public:ro @virtual @abstract ComplexTypeDecl	ctx_tdecl;
+	public:ro @virtual @abstract Method			ctx_method;
 
 	AttrSlot				p_slot;
 	ANode					p_parent;
@@ -346,13 +346,13 @@ public abstract class ANode implements INode {
 			return null;
 		return p.get$ctx_name_space();
 	}
-	@getter public TypeDecl get$ctx_tdecl() {
+	@getter public ComplexTypeDecl get$ctx_tdecl() {
 		ANode p = this.parent();
 		if (p == null)
 			return null;
 		return p.child_ctx_tdecl;
 	}
-	@getter public TypeDecl get$child_ctx_tdecl() {
+	@getter public ComplexTypeDecl get$child_ctx_tdecl() {
 		ANode p = this.parent();
 		if (p == null)
 			return null;

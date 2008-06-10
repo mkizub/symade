@@ -46,8 +46,8 @@ public final class FileUnit extends NameSpace {
 
 	@getter public FileUnit get$ctx_file_unit() { return this; }
 	@getter public NameSpace get$ctx_name_space() { return this; }
-	@getter public TypeDecl get$ctx_tdecl() { return null; }
-	@getter public TypeDecl get$child_ctx_tdecl() { return null; }
+	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
+	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
 	@getter public Method get$child_ctx_method() { return null; }
 
@@ -170,8 +170,8 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
 	@getter public NameSpace get$ctx_name_space() { return this; }
-	@getter public TypeDecl get$ctx_tdecl() { return null; }
-	@getter public TypeDecl get$child_ctx_tdecl() { return null; }
+	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
+	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
 	@getter public Method get$child_ctx_method() { return null; }
 

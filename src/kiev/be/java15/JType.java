@@ -14,15 +14,17 @@ import syntax kiev.Syntax;
 
 public class JPrimitiveMetaType extends MetaType {
 	JPrimitiveMetaType(int flags) {
-		super("<JPrimitiveMetaType>", flags);
+		super(null, flags);
 	}
+	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
 }
 
 public class JFakeMetaType extends MetaType {
 
 	JFakeMetaType(int flags) {
-		super("<JFakeMetaType>", flags);
+		super(null, flags);
 	}
+	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
 }
 
 public class JBaseMetaType extends MetaType {
@@ -33,6 +35,7 @@ public class JBaseMetaType extends MetaType {
 		super(clazz, flags);
 		this.clazz = clazz;
 	}
+	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
 }
 
 

@@ -27,7 +27,7 @@ public view RNode of ASTNode implements Constants {
 	@getter public final ANode get$ctx_root();
 	@getter public final FileUnit get$ctx_file_unit();
 	@getter public final NameSpace get$ctx_name_space();
-	@getter public final TypeDecl get$ctx_tdecl();
+	@getter public final ComplexTypeDecl get$ctx_tdecl();
 	@getter public final Method get$ctx_method();
 
 	public final ANode parent();
@@ -190,14 +190,21 @@ public final view RNopExpr of NopExpr extends RENode {
 @ViewOf(vcast=true, iface=true)
 public view RTypeDecl of TypeDecl extends RDNode {
 	public:ro			TypeRef[]				super_types;
-	public:ro			TypeDef[]				args;
-	public:ro			ASTNode[]				members;
 	public:ro			MetaType				xmeta_type;
 	public:ro			Type					xtype;
 
-	public final String qname();
 	public boolean isClazz();
 	public final boolean isStructInner();
+}
+
+@ViewOf(vcast=true, iface=true)
+public view RComplexTypeDecl of ComplexTypeDecl extends RTypeDecl {
+	public:ro			SymbolRef<TypeDecl>		package_clazz;
+	public:ro			TypeDef[]				args;
+	public:ro			ASTNode[]				members;
+	public:ro			DNode[]					sub_decls;
+
+	public final String qname();
 	public void updatePackageClazz();
 }
 

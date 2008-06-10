@@ -78,8 +78,8 @@ public final class TypeNameRef extends TypeRef {
 		TypeDecl td = getTypeDecl();
 		td.checkResolved();
 		Type tp = td.getType();
-		if (this.outer != null) {
-			TypeAssign ta = td.ometa_tdef;
+		if (this.outer != null && td instanceof ComplexTypeDecl) {
+			TypeAssign ta = ((ComplexTypeDecl)td).ometa_tdef;
 			if (ta != null)
 				tp = tp.rebind(new TVarBld(ta.getAType(), this.outer.getType()));
 		}

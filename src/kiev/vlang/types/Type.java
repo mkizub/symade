@@ -24,6 +24,9 @@ import syntax kiev.Syntax;
  */
 
 public abstract class Type extends AType {
+
+	@virtual typedef MType  ≤ MetaType;
+
 	public static Type[]	emptyArray = new Type[0];
 
 	public			JType				jtype;
@@ -61,13 +64,13 @@ public abstract class Type extends AType {
 	public Struct getStruct() { return null; }
 	public MNode getMeta(String name) { return null; }
 
-	protected Type(MetaType meta_type, TemplateTVarSet template, int flags, TVarBld bindings)
+	protected Type(MType meta_type, TemplateTVarSet template, int flags, TVarBld bindings)
 		require { meta_type != null; }
 	{
 		super(meta_type, template, flags, bindings);
 	}
 
-	protected Type(MetaType meta_type, TemplateTVarSet template, int flags)
+	protected Type(MType meta_type, TemplateTVarSet template, int flags)
 		require { meta_type != null; }
 	{
 		super(meta_type, template, flags);
@@ -295,8 +298,10 @@ public abstract class Type extends AType {
 
 public final class XType extends Type {
 
+	@virtual typedef MType = XMetaType;
+
 	@getter
-	public final TypeDecl get$tdecl() { return meta_type.tdecl; }
+	public final MetaTypeDecl get$tdecl() { return (MetaTypeDecl)meta_type.tdecl; }
 
 	public XType(MetaType meta_type, TemplateTVarSet template, TVarBld bindings) {
 		super(meta_type, template, 0, bindings);
@@ -348,6 +353,9 @@ public final class XType extends Type {
 }
 
 public final class CoreType extends Type {
+
+	@virtual typedef MType = CoreMetaType;
+
 	public final String name;
 	CoreType(String name, Type super_type, int meta_flags) {
 		super(new CoreMetaType(name,super_type,meta_flags), TemplateTVarSet.emptySet, 0);
@@ -464,6 +472,8 @@ public final class CoreType extends Type {
 
 public final class ASTNodeType extends Type {
 
+	@virtual typedef MType = ASTNodeMetaType;
+
 	public static ASTNodeType newASTNodeType(Type tp)
 		alias lfy operator new
 	{
@@ -530,6 +540,8 @@ public final class ASTNodeType extends Type {
 }
 
 public final class ArgType extends Type {
+
+	@virtual typedef MType = ArgMetaType;
 
 	public static final ArgType[] emptyArray = new ArgType[0];
 	
@@ -640,8 +652,11 @@ public final class ArgType extends Type {
 }
 
 public final class CompaundType extends Type {
+
+	@virtual typedef MType = CompaundMetaType;
+
 	@getter
-	public final TypeDecl get$tdecl() { return meta_type.tdecl; }
+	public final Struct get$tdecl() { return (Struct)meta_type.tdecl; }
 
 	public CompaundType(CompaundMetaType meta_type, TemplateTVarSet template, TVarBld bindings) {
 		super(meta_type, template, 0, bindings);
@@ -703,8 +718,8 @@ public final class CompaundType extends Type {
 
 public final class ArrayType extends Type {
 
-	private static MetaType[] allSuperTypes = new MetaType[] { tpObject.meta_type, tpCloneable.meta_type };
-	
+	@virtual typedef MType = ArrayMetaType;
+
 	@getter public Type get$arg() { return this.resolveArg(0); }
 	
 	public static ArrayType newArrayType(Type type)
@@ -745,7 +760,7 @@ public final class ArrayType extends Type {
 
 public abstract class CTimeType extends Type {
 
-	protected CTimeType(MetaType meta_type, int flags, ArgType arg, Type enclosed_type) {
+	protected CTimeType(MType meta_type, int flags, ArgType arg, Type enclosed_type) {
 		super(meta_type, meta_type.getTemplBindings(), flags, new TVarBld(arg, enclosed_type));
 	}
 
@@ -757,6 +772,8 @@ public abstract class CTimeType extends Type {
 }
 
 public final class WildcardCoType extends CTimeType {
+
+	@virtual typedef MType = WildcardCoMetaType;
 	
 	public WildcardCoType(Type base_type) {
 		super(WildcardCoMetaType.instance, 0, tpWildcardCoArg, base_type);
@@ -803,6 +820,8 @@ public final class WildcardCoType extends CTimeType {
 }
 
 public final class WildcardContraType extends CTimeType {
+
+	@virtual typedef MType = WildcardContraMetaType;
 	
 	public WildcardContraType(Type base_type) {
 		super(WildcardContraMetaType.instance, 0, tpWildcardContraArg, base_type);
@@ -849,6 +868,8 @@ public final class WildcardContraType extends CTimeType {
 }
 
 public final class WrapperType extends CTimeType {
+
+	@virtual typedef MType = WrapperMetaType;
 	
 	public static Type newWrapperType(Type type) {
 		return new WrapperType(type);
@@ -930,6 +951,9 @@ public final class WrapperType extends CTimeType {
 }
 
 public final class TupleType extends Type {
+
+	@virtual typedef MType = TupleMetaType;
+
 	public  final int		arity;
 	
 	TupleType(TupleMetaType meta_type, TVarBld bindings) {
@@ -962,7 +986,8 @@ public final class TupleType extends Type {
 }
 
 public final class CallType extends Type {
-	private static MetaType[] allClosureSuperTypes = new MetaType[] { tpClosure.meta_type };
+
+	@virtual typedef MType = CallMetaType;
 
 	public  final int		arity;
 

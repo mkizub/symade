@@ -106,11 +106,11 @@ final class Signature {
 				return tc;
 			return getTypeArgDecl((TypeDecl)dn.parent(), aname);
 		}
-		else if (dn instanceof TypeDecl) {
+		else if (dn instanceof ComplexTypeDecl) {
 			foreach (TypeConstr tc; dn.args; tc.sname == aname)
 				return tc;
 			if (dn.isStructInner())
-				return getTypeArgDecl((TypeDecl)dn.parent(), aname);
+				return getTypeArgDecl((ComplexTypeDecl)dn.parent(), aname);
 		}
 		return null;
 	}
@@ -129,7 +129,7 @@ final class Signature {
 			if (dn instanceof Method)
 				((Method)dn).targs += arg;
 			else
-				((TypeDecl)dn).args += arg;
+				((ComplexTypeDecl)dn).args += arg;
 			if (sc.peekChar() != ':' && sc.peekChar() != '>') {
 				Type bnd = getTypeFromFieldSignature(dn,sc);
 				arg.super_types += new TypeRef(bnd);
@@ -273,7 +273,7 @@ final class Signature {
 			}
 			ct = (CompaundType)cmt.make(vs);
 			ct.checkResolved();
-			TypeAssign ta = ct.meta_type.tdecl.ometa_tdef;
+			TypeAssign ta = ((ComplexTypeDecl)ct.meta_type.tdecl).ometa_tdef;
 			if (ta == null)
 				Kiev.reportWarning("in signature "+sc+" at pos "+sc.pos+": type "+ct+" inner of "+outer+" must have outer TypeAssign");
 			else

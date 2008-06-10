@@ -27,13 +27,15 @@ import syntax kiev.Syntax;
 
 public abstract class AType extends TVSet implements StdTypes {
 	
-	public final			MetaType			meta_type;
+	@virtual typedef MType  ≤ MetaType;
+
+	public final			MType				meta_type;
 	private					TemplateTVarSet		template;
 	private					Type[]				binds;
 	private					ArgType[]			appls;
 	public:ro,ro,rw,rw		int					flags;
 	
-	protected AType(MetaType meta_type, TemplateTVarSet template, int flags) {
+	protected AType(MType meta_type, TemplateTVarSet template, int flags) {
 		this.meta_type = meta_type;
 		this.template = template;
 		this.flags = flags;
@@ -41,7 +43,7 @@ public abstract class AType extends TVSet implements StdTypes {
 		this.appls = ArgType.emptyArray;
 	}
 	
-	protected AType(MetaType meta_type, TemplateTVarSet template, int flags, TVarBld bld)
+	protected AType(MType meta_type, TemplateTVarSet template, int flags, TVarBld bld)
 	{
 		this.meta_type = meta_type;
 		this.template = template;

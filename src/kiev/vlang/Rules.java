@@ -577,7 +577,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			mode = IsoneofMode.ELEMS;
 		} else if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();
-			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
+			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(((ComplexTypeDecl)Type.tpArray.meta_type.tdecl).args[0].getAType()));
 			itype = new TypeRef(Type.tpArrayEnumerator.meta_type.make(set));
 			mode = IsoneofMode.ARRAY;
 		} else {

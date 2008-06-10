@@ -14,6 +14,7 @@ import kiev.ir.java15.RDNode;
 import kiev.be.java15.JDNode;
 import kiev.be.java15.JTypeDecl;
 import kiev.ir.java15.RTypeDecl;
+import kiev.ir.java15.RComplexTypeDecl;
 
 import syntax kiev.Syntax;
 
@@ -346,11 +347,7 @@ public interface GlobalDNode {
 
 
 @ThisIsANode(lang=CoreLang)
-public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, GlobalDNode {
-
-	@DataFlowDefinition(in="root()") private static class DFI {
-	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
-	}
+public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  ≤ TypeDecl;
 	@virtual typedef JView ≤ JTypeDecl;
@@ -358,23 +355,16 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@nodeAttr public SymbolRef<TypeDecl>		package_clazz;
-	@nodeAttr public TypeConstr[]				args;
 	@nodeAttr public TypeRef[]					super_types;
-	@nodeAttr public ASTNode[]					members;
-	@nodeData public DNode[]					sub_decls;
-	          public int						type_decl_version;
-	          public String						q_name;	// qualified name
 	          public MetaType					xmeta_type;
 	          public Type						xtype;
 
-	@nodeData(ext_data=true, copyable=false) public KString			bytecode_name; // used by backend for anonymouse and inner declarations
 	@nodeData(ext_data=true, copyable=false) public WrapperMetaType	wmeta_type;
-	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
-	@nodeData(ext_data=true, copyable=false) public Integer			inner_counter;
 
-	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
+	@getter public ComplexTypeDecl get$child_ctx_tdecl()	{ null }
 
+	public ASTNode[] getMembers() { ASTNode.emptyArray }
+	
 	public boolean isClazz() {
 		return false;
 	}
@@ -487,61 +477,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.is_struct_fe_passed = true;
 	}
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "args" || attr.name == "super_types")
-			type_decl_version++;
-		super.callbackChildChanged(ct, attr, data);
-	}
-	
-	public void updatePackageClazz() {
-		TypeDecl pkg = null;
-		TypeDecl td = ctx_tdecl;
-		NameSpace ns;
-		if (td instanceof TypeDecl)
-			pkg = (TypeDecl)td;
-		else if ((ns=ctx_name_space) != null)
-			pkg = ns.getPackage();
-		TypeDecl cur = this.package_clazz.dnode;
-		if (cur == pkg)
-			return;
-		if (cur != null) {
-			int idx = cur.sub_decls.indexOf(this);
-			if (idx >= 0)
-				cur.sub_decls.del(idx);
-		}
-		this.package_clazz.symbol = pkg;
-		if (pkg != null) {
-			int idx = pkg.sub_decls.indexOf(this);
-			if (idx < 0)
-				pkg.sub_decls.append(this);
-		}
-	}
-
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
-			updatePackageClazz();
-		}
-		super.callbackAttached(pi);
-	}
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic()) {
-			if (package_clazz.dnode != null) {
-				int idx = package_clazz.dnode.sub_decls.indexOf(this);
-				if (idx >= 0)
-					package_clazz.dnode.sub_decls.del(idx);
-				package_clazz.symbol = null;
-			}
-		}
-		super.callbackDetached(parent, slot);
-	}
 	public Object copy(CopyContext cc) {
 		TypeDecl obj = (TypeDecl)super.copy(cc);
 		if (this == obj)
 			return this;
-		if (obj.package_clazz.symbol != null)
-			obj.package_clazz.symbol = null;
-		obj.type_decl_version = 0;
-		obj.q_name = null;
 		obj.xmeta_type = null;
 		obj.xtype = null;
 		return obj;
@@ -549,10 +488,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 
 	public TypeDecl(String name) {
-		package_clazz = new SymbolRef<TypeDecl>();
 		this.sname = name;
 	}
 	
+	public String qname() { sname }
+
 	public void initForEditor() {
 		if (sname == null)
 			sname = "<name>";
@@ -560,19 +500,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 
 	public void cleanupOnReload() {
-		this.type_decl_version++;
-		if (this.package_clazz.dnode != null) {
-			int idx = this.package_clazz.dnode.sub_decls.indexOf(this);
-			if (idx >= 0)
-				this.package_clazz.dnode.sub_decls.del(idx);
-			this.package_clazz.symbol = null;
-		}
 		this.super_types.delAll();
-		this.args.delAll();
-		foreach(Method m; this.members; m.isOperatorMethod() )
-			Operator.cleanupMethod(m);
-		this.members.delAll();
-		this.sub_decls.delAll();
 		this.meta.metas.delAll();
 		this.meta.mflags = 0;
 		this.compileflags &= 3;
@@ -587,35 +515,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final boolean isTypeStatic()		{ return !this.isStructInner() || this.isStatic(); }
 	public final boolean isTypeForward()		{ return this.isForward(); }
 
-	public String qname() {
-		if (q_name != null)
-			return q_name;
-		if (sname == null || sname == "")
-			return null;
-		ANode p = parent();
-		if (p instanceof NameSpace)
-			p = p.getPackage();
-		if (p == null)
-			p = package_clazz.dnode;
-		if (p instanceof Env || !(p instanceof TypeDecl))
-			q_name = sname;
-		else
-			q_name = (p.qname()+"\u001f"+sname).intern();
-		return q_name;
-	}
-
-	public String toString() {
-		String q = qname();
-		if (q == null)
-			return "<anonymouse>";
-		return q.replace('\u001f','.');
-	}
-
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		//if (dump == "api" && attr.name == "package_clazz")
-		//	return true;
-		return super.includeInDump(dump, attr, val);
-	}
+	public String toString() { return sname; }
 
 	public void checkResolved() {
 		if( isTypeDeclNotLoaded() ) {
@@ -630,60 +530,12 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 	}
 	
-	public void resolveMetaDefaults() {
-		if (isAnnotation()) {
-			foreach(Method m; members) {
-				try {
-					m.resolveMetaDefaults();
-				} catch(Exception e) {
-					Kiev.reportError(m,e);
-				}
-			}
-		}
-		if( this instanceof Struct && !isPackage() ) {
-			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
-				if (!sub.isAnonymouse())
-					sub.resolveMetaDefaults();
-			}
-		}
-	}
-
-	public void resolveMetaValues() {
-		this.meta.resolve();
-		foreach(DNode dn; members) {
-			dn.meta.resolve();
-			if (dn instanceof Method)
-				foreach (Var p; dn.params)
-					p.meta.resolve();
-		}
-		
-		if( this instanceof Struct && !isPackage() ) {
-			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
-				sub.resolveMetaValues();
-			}
-		}
-	}
+	public void resolveMetaDefaults() {}
+	public void resolveMetaValues() { this.meta.resolve(); }
 
 	public boolean preVerify() {
 		setFrontEndPassed();
 		return true;
-	}
-
-	static class TypeDeclDFFunc extends DFFunc {
-		final int res_idx;
-		TypeDeclDFFunc(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
-		}
-		DFState calc(DataFlowInfo dfi) {
-			DFState res = dfi.getResult(res_idx);
-			if (res != null) return res;
-			res = DFState.makeNewState();
-			dfi.setResult(res_idx, res);
-			return res;
-		}
-	}
-	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
-		return new TypeDeclDFFunc(dfi);
 	}
 
 	public final boolean instanceOf(TypeDecl tdecl) {
@@ -702,8 +554,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public Field resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (Field f; this.members; f.sname == name)
-			return f;
+		if (this instanceof ComplexTypeDecl) {
+			foreach (Field f; ((ComplexTypeDecl)this).members; f.sname == name)
+				return f;
+		}
 		foreach (TypeRef tr; this.super_types; tr.getTypeDecl() != null) {
 			Field f = tr.getTypeDecl().resolveField(name, false);
 			if (f != null)
@@ -749,21 +603,8 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	{
 			info.checkNodeName(this),
 			node ?= this
-		;	node @= args,
-			info.checkNodeName(node)
-		;	n @= members,
-			info.checkNodeName(n),
-			info.check(n),
-			node ?= n
 	}
-	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info)
-		ASTNode@ syn;
-	{
-		syn @= members,
-		syn instanceof Import,
-		trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+syn),
-		((Import)syn).resolveNameR(node,info)
-	}
+	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info) { false }
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)
 		TypeRef@ sup_ref;
 	{
@@ -771,6 +612,236 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		sup_ref.getTypeDecl() != null,
 		info.enterSuper() : info.leaveSuper(),
 		sup_ref.getTypeDecl().resolveNameR(node,info)
+	}
+
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+		TypeRef@ supref;
+	{
+		info.isStaticAllowed(),
+		info.isSuperAllowed(),
+		checkResolved(),
+		trace(Kiev.debug && Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
+		supref @= super_types,
+		info.enterSuper() : info.leaveSuper(),
+		supref.getType().meta_type.tdecl.resolveMethodR(node,info,mt)
+	}
+	
+}
+
+@ThisIsANode(lang=CoreLang)
+public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
+
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
+	}
+
+	@virtual typedef This  ≤ ComplexTypeDecl;
+	@virtual typedef JView ≤ JTypeDecl;
+	@virtual typedef RView ≤ RComplexTypeDecl;
+
+	@nodeAttr public SymbolRef<ComplexTypeDecl>	package_clazz;
+	@nodeAttr public TypeConstr[]					args;
+	@nodeAttr public ASTNode[]						members;
+	@nodeData public DNode[]						sub_decls;
+	          public String							q_name;	// qualified name
+	          public int							type_decl_version;
+
+	@nodeData(ext_data=true, copyable=false) public KString			bytecode_name; // used by backend for anonymouse and inner declarations
+	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
+	@nodeData(ext_data=true, copyable=false) public Integer			inner_counter;
+
+	@getter public ComplexTypeDecl get$child_ctx_tdecl()	{ return this; }
+
+	public final ASTNode[] getMembers() { this.members }
+	
+	public ComplexTypeDecl(String name) {
+		super(name);
+		package_clazz = new SymbolRef<ComplexTypeDecl>();
+	}
+	
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "super_types" || attr.name == "args")
+			type_decl_version++;
+		super.callbackChildChanged(ct, attr, data);
+	}
+	
+	public void updatePackageClazz() {
+		ComplexTypeDecl pkg = null;
+		ComplexTypeDecl td = ctx_tdecl;
+		NameSpace ns;
+		if (td != null)
+			pkg = td;
+		else if ((ns=ctx_name_space) != null)
+			pkg = ns.getPackage();
+		ComplexTypeDecl cur = this.package_clazz.dnode;
+		if (cur == pkg)
+			return;
+		if (cur != null) {
+			int idx = cur.sub_decls.indexOf(this);
+			if (idx >= 0)
+				cur.sub_decls.del(idx);
+		}
+		this.package_clazz.symbol = pkg;
+		if (pkg != null) {
+			int idx = pkg.sub_decls.indexOf(this);
+			if (idx < 0)
+				pkg.sub_decls.append(this);
+		}
+	}
+
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic()) {
+			updatePackageClazz();
+		}
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic()) {
+			if (package_clazz.dnode != null) {
+				int idx = package_clazz.dnode.sub_decls.indexOf(this);
+				if (idx >= 0)
+					package_clazz.dnode.sub_decls.del(idx);
+				package_clazz.symbol = null;
+			}
+		}
+		super.callbackDetached(parent, slot);
+	}
+
+	public Object copy(CopyContext cc) {
+		ComplexTypeDecl obj = (ComplexTypeDecl)super.copy(cc);
+		if (this == obj)
+			return this;
+		if (obj.package_clazz.symbol != null)
+			obj.package_clazz.symbol = null;
+		obj.q_name = null;
+		obj.type_decl_version = 0;
+		return obj;
+	}
+
+	public void cleanupOnReload() {
+		super.cleanupOnReload();
+		if (this.package_clazz.dnode != null) {
+			int idx = this.package_clazz.dnode.sub_decls.indexOf(this);
+			if (idx >= 0)
+				this.package_clazz.dnode.sub_decls.del(idx);
+			this.package_clazz.symbol = null;
+		}
+		this.args.delAll();
+		foreach(Method m; this.members; m.isOperatorMethod() )
+			Operator.cleanupMethod(m);
+		this.members.delAll();
+		this.sub_decls.delAll();
+		this.type_decl_version++;
+	}
+
+	public String qname() {
+		if (q_name != null)
+			return q_name;
+		if (sname == null || sname == "")
+			return null;
+		ANode p = parent();
+		if (p instanceof NameSpace)
+			p = p.getPackage();
+		if (p == null)
+			p = package_clazz.dnode;
+		if (p instanceof Env || !(p instanceof TypeDecl))
+			q_name = sname;
+		else
+			q_name = (p.qname()+"\u001f"+sname).intern();
+		return q_name;
+	}
+
+	public String toString() {
+		String q = qname();
+		if (q == null)
+			return "<anonymouse>";
+		return q.replace('\u001f','.');
+	}
+
+	public void resolveMetaDefaults() {
+		if (isAnnotation()) {
+			foreach(Method m; members) {
+				try {
+					m.resolveMetaDefaults();
+				} catch(Exception e) {
+					Kiev.reportError(m,e);
+				}
+			}
+		}
+		if( this instanceof Struct && !isPackage() ) {
+			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
+				if (!sub.isAnonymouse())
+					sub.resolveMetaDefaults();
+			}
+		}
+	}
+
+	public void resolveMetaValues() {
+		this.meta.resolve();
+		foreach(DNode dn; members) {
+			dn.meta.resolve();
+			if (dn instanceof Method)
+				foreach (Var p; dn.params)
+					p.meta.resolve();
+		}
+		
+		if( this instanceof Struct && !isPackage() ) {
+			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
+				sub.resolveMetaValues();
+			}
+		}
+	}
+
+	static class TypeDeclDFFunc extends DFFunc {
+		final int res_idx;
+		TypeDeclDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			res = DFState.makeNewState();
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new TypeDeclDFFunc(dfi);
+	}
+
+	public String allocateAccessName() {
+		int x = 0;
+		foreach (Method m; members; m.sname != null && m.sname.startsWith("access$")) {
+			int v = Integer.parseInt(m.sname.substring(7),10);
+			if (x <= v)
+				x = v+1;
+		}
+		String name = String.valueOf(x);
+		while (name.length() < 3)
+			name = "0"+name;
+		return "access$"+name;
+	}
+
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info)
+		ASTNode@ n;
+	{
+			info.checkNodeName(this),
+			node ?= this
+		;	node @= args,
+			info.checkNodeName(node)
+		;	n @= members,
+			info.checkNodeName(n),
+			info.check(n),
+			node ?= n
+	}
+
+	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info)
+		ASTNode@ syn;
+	{
+		syn @= members,
+		syn instanceof Import,
+		trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+syn),
+		((Import)syn).resolveNameR(node,info)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
@@ -801,24 +872,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			supref.getType().meta_type.tdecl.resolveMethodR(node,info,mt)
 		}
 	}
-	
-	public String allocateAccessName() {
-		int x = 0;
-		foreach (Method m; members; m.sname != null && m.sname.startsWith("access$")) {
-			int v = Integer.parseInt(m.sname.substring(7),10);
-			if (x <= v)
-				x = v+1;
-		}
-		String name = String.valueOf(x);
-		while (name.length() < 3)
-			name = "0"+name;
-		return "access$"+name;
-	}
-
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class MetaTypeDecl extends TypeDecl {
+public final class MetaTypeDecl extends ComplexTypeDecl {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
@@ -828,7 +885,7 @@ public final class MetaTypeDecl extends TypeDecl {
 	public MetaTypeDecl() {
 		super(null);
 		this.type_decl_version = 1;
-		this.xmeta_type = new MetaType(this, 0);
+		this.xmeta_type = new XMetaType(this, 0);
 		this.xtype = this.xmeta_type.make(TVarBld.emptySet);
 	}
 	public MetaTypeDecl(MetaType meta_type) {
@@ -839,13 +896,13 @@ public final class MetaTypeDecl extends TypeDecl {
 		}
 	}
 	public Object copy(CopyContext cc) {
-		Struct obj = (Struct)super.copy(cc);
+		MetaTypeDecl obj = (MetaTypeDecl)super.copy(cc);
 		if (this == obj)
 			return this;
 		if (this.xmeta_type != null)
-			obj.xmeta_type = new MetaType(obj, this.xmeta_type.flags);
+			obj.xmeta_type = new XMetaType(obj, this.xmeta_type.flags);
 		else
-			obj.xmeta_type = new MetaType(obj, 0);
+			obj.xmeta_type = new XMetaType(obj, 0);
 		obj.xtype = this.xmeta_type.make(TVarBld.emptySet);
 		obj.type_decl_version = 1;
 		return obj;

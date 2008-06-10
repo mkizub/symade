@@ -18,15 +18,13 @@ import syntax kiev.Syntax;
  */
 
 @ViewOf(vcast=true, iface=true)
-public final view RStruct of Struct extends RTypeDecl {
+public final view RStruct of Struct extends RComplexTypeDecl {
 
 	static final AttrSlot TI_ATTR = new ExtAttrSlot("rstruct ti field temp expr",ANode.nodeattr$parent,false,true,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			WrapperMetaType			wmeta_type;
-	public:ro			SymbolRef<TypeDecl>		package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
-	public:ro			DNode[]					sub_decls;
 
 	public final Struct getStruct() { return (Struct)this; }
 

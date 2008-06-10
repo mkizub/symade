@@ -407,7 +407,7 @@ public class ASTExpression extends ENode {
 				tr = (TypeRef)result[0];
 			if (op == Operator.TypeAccess) {
 				EToken id = (EToken)result[2];
-				TypeDecl@ td;
+				ComplexTypeDecl@ td;
 				if (!tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noImports|ResInfo.noForwards)))
 					return null;
 				if (td.package_clazz.dnode != tr.getTypeDecl())
@@ -451,7 +451,7 @@ public class ASTExpression extends ENode {
 				tr = (TypeRef)result[0];
 			if (tr != null) {
 				EToken id = (EToken)result[2];
-				TypeDecl@ td;
+				ComplexTypeDecl@ td;
 				if (tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noImports|ResInfo.noForwards))) {
 					if (td.package_clazz.dnode == tr.getTypeDecl())
 						return null;

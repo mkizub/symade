@@ -177,7 +177,6 @@ public static final view JNopExpr of NopExpr extends JENode {
 @ViewOf(vcast=true, iface=true)
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;
-	public:ro	JNode[]				members;
 
 	@getter public JTypeDecl get$child_jctx_tdecl() { return this; }
 

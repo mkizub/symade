@@ -220,7 +220,7 @@ public abstract class MetaFlag extends MNode {
 
 	@getter public abstract String get$qname();
 
-	public final TypeDecl getTypeDecl() { return (TypeDecl)Env.getRoot().resolveGlobalDNode(this.qname); }
+	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)Env.getRoot().resolveGlobalDNode(this.qname); }
 
 	public final void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {
@@ -461,8 +461,8 @@ public final class MetaAccess extends MetaFlag {
 	public static boolean accessedFromInner(ASTNode from, DNode n) {
 		if (!n.isPrivate())
 			return false;
-		TypeDecl outer1 = getStructOf(from);
-		TypeDecl outer2 = getStructOf(n);
+		ComplexTypeDecl outer1 = getStructOf(from);
+		ComplexTypeDecl outer2 = getStructOf(n);
 		if (outer1 == outer2)
 			return false;
 		while (!outer1.package_clazz.dnode.isPackage())
@@ -474,15 +474,15 @@ public final class MetaAccess extends MetaFlag {
 		return false;
 	}
 
-	private static TypeDecl getStructOf(ASTNode n) {
-		if( n instanceof TypeDecl ) return (TypeDecl)n;
+	private static ComplexTypeDecl getStructOf(ASTNode n) {
+		if (n instanceof ComplexTypeDecl) return (ComplexTypeDecl)n;
 		return n.ctx_tdecl;
 	}
 
-	private static Struct getPackageOf(ASTNode n) {
-		TypeDecl pkg = getStructOf(n);
-		while( !pkg.isPackage() ) pkg = pkg.package_clazz.dnode;
-		return (Struct)pkg;
+	private static KievPackage getPackageOf(ASTNode n) {
+		ComplexTypeDecl pkg = getStructOf(n);
+		while !(pkg instanceof KievPackage) pkg = pkg.package_clazz.dnode;
+		return (KievPackage)pkg;
 	}
 
 	private static void verifyAccess(ASTNode from, ASTNode n, int acc) {

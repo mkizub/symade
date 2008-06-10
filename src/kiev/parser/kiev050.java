@@ -36,7 +36,7 @@ public interface ParserConstants extends kiev050Constants {
 public abstract class kiev050 implements kiev050Constants {
 
         public FileUnit                 curFileUnit;
-        public TypeDecl                 curClazz;
+        public ComplexTypeDecl  curClazz;
         public Method                   curMethod;
         public boolean                  interface_only = false;
 
@@ -111,10 +111,10 @@ public abstract class kiev050 implements kiev050Constants {
         }
 
         /*{
-	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, NameSpace fu) {
-		TypeDecl pkg = fu.getPackage();
+	private ComplexTypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, NameSpace fu) {
+		KievPackage pkg = fu.getPackage();
 		String uuid = modifiers == null ? null : modifiers.getUUID();
-		TypeDecl tdecl = Env.getRoot().newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
+		MetaTypeDecl tdecl = Env.getRoot().newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(tdecl.meta);
 		return tdecl;
@@ -122,7 +122,7 @@ public abstract class kiev050 implements kiev050Constants {
 
 	private Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String nm;
-		TypeDecl outer;
+		ComplexTypeDecl outer;
 		boolean direct;
 		if (parent instanceof NameSpace) {
 			NameSpace ns = (NameSpace)parent;
@@ -419,7 +419,7 @@ public abstract class kiev050 implements kiev050Constants {
  * Program structuring syntax follows.
  */
   final public FileUnit FileUnit(String filename) throws ParseException {
-  FileUnit oldFileUnit; TypeDecl oldClazz;
+  FileUnit oldFileUnit; ComplexTypeDecl oldClazz;
                 oldFileUnit = curFileUnit;
                 FileUnit fu = FileUnit.makeFile(filename, false);
                 curFileUnit = fu;
@@ -463,7 +463,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) throws ParseException {
-  TypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); SymbolRef sr;
+  ComplexTypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); SymbolRef sr;
           declMode = true;
     try {
       if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace")) {
@@ -962,7 +962,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) throws ParseException {
-  KievSyntax stx; Symbol name; TypeDecl oldClazz;
+  KievSyntax stx; Symbol name; ComplexTypeDecl oldClazz;
     if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax")) {
 
     } else {
@@ -1027,8 +1027,8 @@ public abstract class kiev050 implements kiev050Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) throws ParseException {
-  TypeDecl tdecl; Symbol name; TypeRef tp; TypeDecl oldClazz; TypeConstr[] args;
+  final public ComplexTypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) throws ParseException {
+  ComplexTypeDecl tdecl; Symbol name; TypeRef tp; ComplexTypeDecl oldClazz; TypeConstr[] args;
     jj_consume_token(METATYPE);
     name = Name();
                 tdecl = mkMetaType(name, modifiers, (NameSpace)parent);
@@ -1072,7 +1072,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) throws ParseException {
-  Struct clazz; Symbol name; TypeDecl oldClazz; TypeConstr[] args;
+  Struct clazz; Symbol name; ComplexTypeDecl oldClazz; TypeConstr[] args;
     switch (jj_nt.kind) {
     case CLASS:
       jj_consume_token(CLASS);
@@ -1261,7 +1261,7 @@ public abstract class kiev050 implements kiev050Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public void TypeBodyDeclaration(TypeDecl clazz) throws ParseException {
+  final public void TypeBodyDeclaration(ComplexTypeDecl clazz) throws ParseException {
   ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members");
     jj_consume_token(LBRACE);
     if (clazz.isEnum()) {
@@ -4000,7 +4000,7 @@ ENode MaybeSkipBlock(ASTNode target) :
   final public NewExpr NewExpression(TypeRef tp) throws ParseException {
         boolean old_mode;
         Struct clazz;
-        TypeDecl oldClazz;
+        ComplexTypeDecl oldClazz;
         NewExpr ne = new NewExpr();
         ne.pos = tp.pos;
         ne.type = tp;

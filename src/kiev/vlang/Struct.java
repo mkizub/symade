@@ -210,7 +210,7 @@ public final class JavaEnum extends JavaClass {
 }
 
 @ThisIsANode(lang=CoreLang)
-public abstract class Struct extends TypeDecl {
+public abstract class Struct extends ComplexTypeDecl {
 	
 	@virtual typedef This  = Struct;
 	@virtual typedef JView = JStruct;
@@ -367,7 +367,7 @@ public abstract class Struct extends TypeDecl {
 		}
 	}
 
-	public void initStruct(String name, TypeDecl outer, int flags) {
+	public void initStruct(String name, ComplexTypeDecl outer, int flags) {
 		this.sname = name;
 		this.package_clazz.symbol = outer;
 		int outer_idx = outer.sub_decls.indexOf(this);

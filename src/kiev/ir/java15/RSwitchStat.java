@@ -320,7 +320,7 @@ public static final view RMatchStat of MatchStat extends RSwitchStat {
 				if( !has_unabrupted_case ) {
 					Type tp = sel.getType();
 					int caseno = 0;
-					TypeDecl tpclz = tp.meta_type.tdecl;
+					ComplexTypeDecl tpclz = (ComplexTypeDecl)tp.meta_type.tdecl;
 					foreach (Struct sub; tpclz.sub_decls) {
 						if (sub.isPizzaCase()) {
 							PizzaCase pcase = (PizzaCase)sub;

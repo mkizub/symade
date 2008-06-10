@@ -88,11 +88,12 @@ public final class CoreLang extends LangBase {
 		SymbolRef.class,
 		DNode.class,	// declaration nodes
 			TypeDecl.class,		// type declaration
-				MetaTypeDecl.class,		// abstract type declaration
 				TypeOpDef.class,		// declare a type using operator
 				TypeDef.class,			// typedef
 					TypeAssign.class,	// assign typedef (alias)
 					TypeConstr.class,	// constrained typedef (upper/lower bounds)
+				ComplexTypeDecl.class,
+					MetaTypeDecl.class,		// abstract type declaration
 				Struct.class,			// abstract structure
 					KievPackage.class,
 					KievSyntax.class,

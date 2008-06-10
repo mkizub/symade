@@ -131,7 +131,7 @@ public abstract class MNode extends ASTNode {
 
 	@getter
 	public abstract String get$qname();
-	public abstract TypeDecl getTypeDecl();
+	public abstract JavaAnnotation getAnnotationDecl();
 	public void resolve(Type reqType) {}
 	public void verify() {}
 	public boolean isRuntimeVisible() { return false; }
@@ -148,7 +148,7 @@ public class DummyMNode extends MNode {
 
 	@getter
 	public String get$qname() { "<dummy>" }
-	public TypeDecl getTypeDecl() { null }
+	public JavaAnnotation getAnnotationDecl() { null }
 }
 
 @ThisIsANode(name="UserMeta", lang=CoreLang)
@@ -156,9 +156,9 @@ public class UserMeta extends MNode {
 	@virtual typedef This  ≤ UserMeta;
 
 	@abstract
-	@nodeAttr public String					qname;
-	@nodeAttr public SymbolRef<Struct>		decl;
-	@nodeAttr public MetaValue[]			values;
+	@nodeAttr public String							qname;
+	@nodeAttr public SymbolRef<JavaAnnotation>		decl;
+	@nodeAttr public MetaValue[]					values;
 
 	public boolean equals(Object o) {
 		if!(o instanceof UserMeta)
@@ -166,7 +166,7 @@ public class UserMeta extends MNode {
 		UserMeta meta = (UserMeta)o;
 		if (qname != o.qname)
 			return false;
-		foreach (Method m; getTypeDecl().members) {
+		foreach (Method m; getAnnotationDecl().members) {
 			MetaValue v1 = this.get(m.sname);
 			MetaValue v2 = meta.get(m.sname);
 			if (v1 == null && v2 == null)
@@ -200,15 +200,15 @@ public class UserMeta extends MNode {
 	}
 
 	public UserMeta() {
-		this.decl = new SymbolRef<Struct>("");
+		this.decl = new SymbolRef<JavaAnnotation>("");
 	}
 
-	public UserMeta(Struct decl) {
-		this.decl = new SymbolRef<Struct>(decl);
+	public UserMeta(JavaAnnotation decl) {
+		this.decl = new SymbolRef<JavaAnnotation>(decl);
 	}
 	
 	public UserMeta(String name) {
-		this.decl = new SymbolRef<Struct>(name);
+		this.decl = new SymbolRef<JavaAnnotation>(name);
 	}
 	
 	@getter
@@ -224,18 +224,18 @@ public class UserMeta extends MNode {
 		decl.name = val;
 	}
 
-	public final TypeDecl getTypeDecl() {
-		TypeDecl td = decl.dnode;
+	public final JavaAnnotation getAnnotationDecl() {
+		JavaAnnotation td = decl.dnode;
 		if (td != null)
 			return td;
 		String name = decl.name;
 		if (name.indexOf('\u001f') < 0) {
-			Struct@ node;
+			JavaAnnotation@ node;
 			if( !PassInfo.resolveNameR(this,node,new ResInfo(this,name,ResInfo.noForwards)) )
 				Kiev.reportError(this,"Unresolved annotation name "+name);
-			this.decl.symbol = (Struct)node;
+			this.decl.symbol = (JavaAnnotation)node;
 			node.checkResolved();
-			return (Struct)node;
+			return (JavaAnnotation)node;
 		}
 		Struct scope = Env.getRoot();
 		int dot;
@@ -255,13 +255,13 @@ public class UserMeta extends MNode {
 			}
 			scope = (Struct)node;
 		} while (dot > 0);
-		this.decl.symbol = scope;
+		this.decl.symbol = (JavaAnnotation)scope;
 		scope.checkResolved();
-		return scope;
+		return (JavaAnnotation)scope;
 	}
 	
 	public boolean isRuntimeVisible() {
-		TypeDecl tdecl = getTypeDecl();
+		JavaAnnotation tdecl = getAnnotationDecl();
 		UserMeta retens = (UserMeta)tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
 		if (retens == null)
 			return false;
@@ -275,7 +275,7 @@ public class UserMeta extends MNode {
 	}
 
 	public boolean isRuntimeInvisible() {
-		TypeDecl tdecl = getTypeDecl();
+		JavaAnnotation tdecl = getAnnotationDecl();
 		UserMeta retens = (UserMeta)tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
 		if (retens == null)
 			return true;
@@ -289,7 +289,7 @@ public class UserMeta extends MNode {
 	}
 
 	public Type getType() {
-		TypeDecl td = getTypeDecl();
+		JavaAnnotation td = getAnnotationDecl();
 		if (td == null)
 			return Type.tpVoid;
 		return td.xtype;
@@ -303,7 +303,7 @@ public class UserMeta extends MNode {
 	}
 	
 	public void verify() {
-		TypeDecl tdecl = getTypeDecl();
+		JavaAnnotation tdecl = getAnnotationDecl();
 		if (tdecl == null || !tdecl.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
@@ -321,7 +321,7 @@ public class UserMeta extends MNode {
 	}
 	
 	public void resolve(Type reqType) {
-		TypeDecl tdecl = getTypeDecl();
+		JavaAnnotation tdecl = getAnnotationDecl();
 		tdecl.checkResolved();
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
@@ -435,7 +435,7 @@ public class UserMeta extends MNode {
 				return v;
 			}
 		}
-		TypeDecl td = getTypeDecl();
+		JavaAnnotation td = getAnnotationDecl();
 		foreach (Method m; td.members; m.hasName(name,true))
 			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+decl+" annotation");
