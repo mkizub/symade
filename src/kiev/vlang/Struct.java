@@ -220,9 +220,11 @@ public abstract class Struct extends TypeDecl {
 	@nodeData(ext_data=true)		public Struct				iface_impl;
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "package_clazz")
-			this.callbackSuperTypeChanged(this);
-		else if (attr.name == "sname")
+		//if (attr.name == "package_clazz")
+		//	this.callbackSuperTypeChanged(this);
+		//	type_decl_version++;
+		//else
+		if (attr.name == "sname")
 			resetNames();
 		super.callbackChildChanged(ct, attr, data);
 	}

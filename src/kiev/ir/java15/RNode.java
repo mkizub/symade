@@ -195,7 +195,6 @@ public view RTypeDecl of TypeDecl extends RDNode {
 	public:ro			MetaType				xmeta_type;
 	public:ro			Type					xtype;
 
-	public MetaType[] getAllSuperTypes();
 	public final String qname();
 	public boolean isClazz();
 	public final boolean isStructInner();

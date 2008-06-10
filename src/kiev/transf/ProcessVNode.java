@@ -196,7 +196,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		boolean isExtData = isAtt ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 		Type ft = f.getType();
-		Type clz_tp = isArr ? ft.bindings().resolveArg(0) : ft;
+		Type clz_tp = isArr ? ft.resolveArg(0) : ft;
 		String sname = ("NodeAttr_"+f.sname).intern();
 		foreach (TypeDecl td; snode.members; td.sname == sname) {
 			if (!f.isInterfaceOnly())
@@ -640,7 +640,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				continue;
 			}
 			Type ft = f.getType();
-			Type clz_tp = isArr ? ft.bindings().resolveArg(0) : ft;
+			Type clz_tp = isArr ? ft.resolveArg(0) : ft;
 			Field nodeattr_f = getField(iface,("nodeattr$"+f.sname).intern());
 			TypeInfoExpr clz_expr = new TypeInfoExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, nodeattr_f.getType(), new ENode[]{

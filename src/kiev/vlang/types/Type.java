@@ -30,7 +30,6 @@ public abstract class Type extends AType {
 	
 	public abstract JType getJType();
 	public abstract String toString();
-	public abstract MetaType[] getAllSuperTypes();
 	public abstract Type getErasedType();
 	
 	public final Type[] getMetaSupers() {
@@ -303,21 +302,6 @@ public final class XType extends Type {
 		super(meta_type, template, 0, bindings);
 	}
 	
-	public boolean isReference() {
-		if ((meta_type.flags & MetaType.flReference) != 0)
-			return true;
-		foreach (MetaType mt; tdecl.getAllSuperTypes(); (mt.flags & MetaType.flReference) != 0)
-			return true;
-		return false;
-	}
-	public boolean isArray() {
-		if ((meta_type.flags & MetaType.flArray) != 0)
-			return true;
-		foreach (MetaType mt; tdecl.getAllSuperTypes(); (mt.flags & MetaType.flArray) != 0)
-			return true;
-		return false;
-	}
-
 	public JType getJType() {
 		if (jtype == null) {
 			foreach (Type t; getMetaSupers()) {
@@ -361,10 +345,6 @@ public final class XType extends Type {
 		if( t.isInstanceOf(this) ) return true;
 		return super.isCastableTo(t);
 	}
-
-	public final MetaType[] getAllSuperTypes() {
-		return tdecl.getAllSuperTypes();
-	}
 }
 
 public final class CoreType extends Type {
@@ -377,7 +357,6 @@ public final class CoreType extends Type {
 	}
 	public MNode getMeta(String name)		{ return null; }
 	public Type getErasedType()				{ return this; }
-	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
 	public String toString()				{ return name.toString(); }
 
 	public JType getJType()					{ return this.jtype; }
@@ -535,7 +514,6 @@ public final class ASTNodeType extends Type {
 
 	public MNode getMeta(String name)		{ return null; }
 	public Type getErasedType()				{ return this; }
-	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
 	public String toString()				{ return ((ASTNodeMetaType)meta_type).clazz.getName()+"#"; }
 
 	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
@@ -583,7 +561,6 @@ public final class ArgType extends Type {
 	}
 
 	public MNode getMeta(String name)				{ return definer.meta == null ? null : definer.getMeta(name); }
-	public MetaType[] getAllSuperTypes()			{ return definer.getAllSuperTypes(); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public Type getErasedType() {
 		TypeRef[] up = definer.super_types;
@@ -722,10 +699,6 @@ public final class CompaundType extends Type {
 			return true;
 		return super.isCastableTo(t);
 	}
-
-	public final MetaType[] getAllSuperTypes() {
-		return tdecl.getAllSuperTypes();
-	}
 }
 
 public final class ArrayType extends Type {
@@ -753,10 +726,6 @@ public final class ArrayType extends Type {
 
 	public MNode getMeta(String name)				{ return null; }
 	
-	public MetaType[] getAllSuperTypes() {
-		return allSuperTypes;
-	}
-
 	public Type getErasedType() {
 		return newArrayType(arg.getErasedType());
 	}
@@ -827,10 +796,6 @@ public final class WildcardCoType extends CTimeType {
 		return false;
 	}
 
-	public MetaType[] getAllSuperTypes() {
-		return getEnclosedType().getAllSuperTypes();
-	}
-
 	public Type getErasedType() {
 		return getEnclosedType().getErasedType();
 	}
@@ -875,10 +840,6 @@ public final class WildcardContraType extends CTimeType {
 		if (t.isInstanceOf(getEnclosedType()))
 			return true;
 		return false;
-	}
-
-	public MetaType[] getAllSuperTypes() {
-		return getEnclosedType().getAllSuperTypes();
 	}
 
 	public Type getErasedType() {
@@ -962,10 +923,6 @@ public final class WrapperType extends CTimeType {
 		return false;
 	}
 
-	public MetaType[] getAllSuperTypes() {
-		return getEnclosedType().getAllSuperTypes();
-	}
-
 	public Type getErasedType() {
 		return getEnclosedType().getErasedType();
 	}
@@ -981,7 +938,6 @@ public final class TupleType extends Type {
 	}
 
 	public JType getJType() { StdTypes.tpVoid.getJType() }
-	public MetaType[] getAllSuperTypes() { MetaType.emptyArray }
 
 	public Type getErasedType() {
 		if (arity == 0)
@@ -1075,7 +1031,7 @@ public final class CallType extends Type {
 	}
 
 	public CallType toCallTypeRetAny() {
-		TVarBld vs = bindings().rebind_bld(new TVarBld(tpCallRetArg, tpAny));
+		TVarBld vs = rebind_bld(new TVarBld(tpCallRetArg, tpAny));
 		return new CallType((CallMetaType)this.meta_type, vs, this.arity);
 	}
 	
@@ -1200,12 +1156,6 @@ public final class CallType extends Type {
 				return false;
 		}
 		return true;
-	}
-
-	public MetaType[] getAllSuperTypes() {
-		if (this.isReference())
-			return allClosureSuperTypes;
-		return MetaType.emptyArray;
 	}
 
 	public Type getErasedType() {

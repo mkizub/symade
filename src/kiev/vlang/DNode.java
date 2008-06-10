@@ -358,14 +358,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@nodeData public SymbolRef<TypeDecl>		package_clazz;
+	@nodeAttr public SymbolRef<TypeDecl>		package_clazz;
 	@nodeAttr public TypeConstr[]				args;
 	@nodeAttr public TypeRef[]					super_types;
 	@nodeAttr public ASTNode[]					members;
 	@nodeData public DNode[]					sub_decls;
-	@nodeData public int						prefix_counter;	// for name_prefix auto-generation
-	          private MetaType[]				super_meta_types;
-	@nodeData private TypeDecl[]				direct_extenders;
 	          public int						type_decl_version;
 	          public String						q_name;	// qualified name
 	          public MetaType					xmeta_type;
@@ -490,43 +487,9 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.is_struct_fe_passed = true;
 	}
 
-	public final MetaType[] getAllSuperTypes() {
-		if (super_meta_types != null)
-			return super_meta_types;
-		Vector<MetaType> types = new Vector<MetaType>();
-		foreach (TypeRef it; super_types)
-			addSuperTypes(it, types);
-		if (types.length == 0)
-			super_meta_types = MetaType.emptyArray;
-		else
-			super_meta_types = types.toArray();
-		return super_meta_types;
-	}
-	
-	private void addSuperTypes(TypeRef suptr, Vector<MetaType> types) {
-		Type sup = suptr.getType();
-		if (sup == null)
-			return;
-		MetaType tt = sup.meta_type.tdecl.xmeta_type;
-		if (tt != null && !types.contains(tt))
-			types.append(tt);
-		MetaType[] sup_types = sup.meta_type.tdecl.getAllSuperTypes();
-		foreach (MetaType t; sup_types) {
-			if (!types.contains(t))
-				types.append(t);
-		}
-	}
-
-	public final void callbackSuperTypeChanged(TypeDecl chg) {
-		super_meta_types = null;
-		type_decl_version++;
-		foreach (TypeDecl td; direct_extenders)
-			td.callbackSuperTypeChanged(chg);
-	}
-	
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "args" || attr.name == "super_types")
-			this.callbackSuperTypeChanged(this);
+			type_decl_version++;
 		super.callbackChildChanged(ct, attr, data);
 	}
 	
@@ -577,8 +540,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			return this;
 		if (obj.package_clazz.symbol != null)
 			obj.package_clazz.symbol = null;
-		obj.super_meta_types = null;
-		obj.direct_extenders.delAll();
 		obj.type_decl_version = 0;
 		obj.q_name = null;
 		obj.xmeta_type = null;

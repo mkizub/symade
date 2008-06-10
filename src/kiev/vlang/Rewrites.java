@@ -568,7 +568,7 @@ public final class MacroAccessExpr extends ENode {
 		if!(ot instanceof ASTNodeType)
 			return StdTypes.tpVoid;
 		String name = ("attr$"+ident+"$type").intern();
-		int n = ot.bindings().getArgsLength();
+		int n = ot.getArgsLength();
 		for (int i=0; i < n; i++) {
 			if (ot.getArg(i).name == name)
 				return ot.resolveArg(i);

@@ -1031,7 +1031,11 @@ public abstract class ASTNode extends ANode implements Constants {
 	public boolean preVerify() { return true; }
 	public void postVerify() {}
 
-	public final boolean preGenerate() { return ((RView)this).preGenerate(); }
+	public final boolean preGenerate() {
+		if (!isAttached())
+			return false;
+		return ((RView)this).preGenerate();
+	}
 
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		return null;

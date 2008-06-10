@@ -31,11 +31,7 @@ public abstract class AType extends TVSet implements StdTypes {
 	private					TemplateTVarSet		template;
 	private					Type[]				binds;
 	private					ArgType[]			appls;
-	private					int					version_and_flags;
-	@packed:16,version_and_flags,0
 	public:ro,ro,rw,rw		int					flags;
-	@packed:16,version_and_flags,16
-	private					int					version;
 	
 	protected AType(MetaType meta_type, TemplateTVarSet template, int flags) {
 		this.meta_type = meta_type;
@@ -54,8 +50,8 @@ public abstract class AType extends TVSet implements StdTypes {
 			this.setFromBld(bld);
 	}
 	
-	public       boolean isReference()		{ return (meta_type.flags & MetaType.flReference)		!= 0 ; }
-	public       boolean isArray()			{ return (meta_type.flags & MetaType.flArray)			!= 0 ; }
+	public final boolean isReference()		{ return (meta_type.flags & MetaType.flReference)		!= 0 ; }
+	public final boolean isArray()			{ return (meta_type.flags & MetaType.flArray)			!= 0 ; }
 	public final boolean isIntegerInCode()	{ return (meta_type.flags & MetaType.flIntegerInCode)	!= 0 ; }
 	public final boolean isInteger()		{ return (meta_type.flags & MetaType.flInteger)		!= 0 ; }
 	public final boolean isFloatInCode()	{ return (meta_type.flags & MetaType.flFloatInCode)	!= 0 ; }
@@ -120,8 +116,8 @@ public abstract class AType extends TVSet implements StdTypes {
 	}
 	
 	public final AType bindings() {
-		if (this.binds == null || !this.meta_type.checkTypeVersion(this.version)) {
-			TemplateTVarSet template = this.meta_type.getTemplBindings();
+		TemplateTVarSet template = this.meta_type.getTemplBindings();
+		if (this.binds == null || this.template != template) {
 			int n_free = template.n_free;
 			if (n_free == 0) {
 				this.binds = Type.emptyArray;
@@ -138,7 +134,6 @@ public abstract class AType extends TVSet implements StdTypes {
 				}
 			}
 			this.template = template;
-			this.version = this.meta_type.version;
 			TVar[] template_vars = template.getTVars();
 			int flags = this.flags & ~(flAbstract|flValAppliable);
 			for (int i=0; i < template_vars.length; i++) {

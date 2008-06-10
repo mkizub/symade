@@ -523,11 +523,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		CallType rt = (CallType)this.type.applay(tp.bindings());
+		CallType rt = (CallType)this.type.applay(tp);
 		if (!this.isStatic() && tp != null && tp != Type.tpVoid)
 			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
 		
-		if ((mt.bindings().getArgsLength() - mt.arity - 1) > 0) {
+		if ((mt.getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
 			foreach (TypeConstr tc; this.targs) {
 				ArgType arg = tc.getAType();
@@ -604,7 +604,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			mt = new Type[args.length-1];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i+1].getType();
-			rt = (CallType)this.type.applay(args[0].getType().bindings());
+			rt = (CallType)this.type.applay(args[0].getType());
 		}
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();

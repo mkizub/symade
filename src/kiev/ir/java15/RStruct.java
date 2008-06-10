@@ -546,8 +546,8 @@ public final view RStruct of Struct extends RTypeDecl {
 		setMembersPreGenerated(true);
 		
 		// first, pre-generate super-types
-		foreach (CompaundMetaType sup; this.getAllSuperTypes())
-			((Struct)sup.tdecl).preGenerate();
+		foreach (TypeRef sup; this.super_types)
+			sup.getTypeDecl().preGenerate();
 
 		if (isMixin())
 			((Struct)this).meta.is_struct_interface = true;

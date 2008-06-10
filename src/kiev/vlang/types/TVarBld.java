@@ -70,7 +70,7 @@ public final class TemplateTVarSet extends TVSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			ArgType[] tappls = t.bindings().getTArgs();
+			ArgType[] tappls = t.getTArgs();
 			for (int i=0; i < tappls.length; i++)
 				addApplayable(tappls[i]);
 		}
@@ -165,7 +165,7 @@ public final class TemplateTVarSet extends TVSet {
 
 public final class TVarBld extends TVSet {
 
-	private static final boolean ASSERT_MORE = true;
+	private static final boolean ASSERT_MORE = false;
 
 	public static final TVarBld emptySet = new TVarBld().close(-1);
 
@@ -350,7 +350,7 @@ public final class TVarBld extends TVSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			ArgType[] tappls = t.bindings().getTArgs();
+			ArgType[] tappls = t.getTArgs();
 			for (int i=0; i < tappls.length; i++)
 				addApplayable(tappls[i]);
 		}
@@ -401,7 +401,7 @@ public final class TVarBld extends TVSet {
 						assert (j < this.appls.length);
 					}
 					else {
-						foreach (ArgType at; v.val.bindings().getTArgs()) {
+						foreach (ArgType at; v.val.getTArgs()) {
 							int j=0;
 							for (; j < this.appls.length; j++) {
 								if (this.appls[j] ≡ at)
@@ -431,7 +431,7 @@ public final class TVarBld extends TVSet {
 								break next_tvar;
 						}
 						else {
-							ArgType[] tappls = tv.val.bindings().getTArgs();
+							ArgType[] tappls = tv.val.getTArgs();
 							for (int k=0; k < tappls.length; k++) {
 								if (at ≡ tappls[k])
 									break next_tvar;
