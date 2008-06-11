@@ -212,7 +212,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				dargs.append(Type.tpInt);
 				break;
 			case Var.PARAM_TYPEINFO:
-				assert(this instanceof Constructor || (this.isStatic() && this.hasName(nameNewOp,true)));
+				assert(this instanceof Constructor || (this.isStatic() && this.hasName(nameNewOp)));
 				assert(fp.isFinal());
 				assert(fpdtype == null || fpdtype.getType() ≈ fp.getType());
 				dargs.append(fp.type);
@@ -301,17 +301,20 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public boolean hasName(String nm, boolean by_equals) {
+	public boolean hasName(String nm) {
 		String sname = this.sname;
-		if (by_equals || sname == null) {
-			if (sname == nm) return true;
-			foreach(Symbol s; aliases; s.sname == nm)
-				return true;
-		} else {
-			if (sname.startsWith(nm)) return true;
-			foreach(Symbol s; aliases; s.sname.startsWith(nm))
-				return true;
-		}
+		if (sname == nm) return true;
+		foreach(Symbol s; aliases; s.sname == nm)
+			return true;
+		return false;
+	}
+	public boolean hasNameStart(String nm) {
+		String sname = this.sname;
+		if (sname == null)
+			return false;
+		if (sname.startsWith(nm)) return true;
+		foreach(Symbol s; aliases; s.sname.startsWith(nm))
+			return true;
 		return false;
 	}
 
@@ -508,7 +511,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public boolean equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
-		if (!this.hasName(name,true)) return false;
+		if (!this.hasName(name)) return false;
 		int type_len = this.type.arity;
 		int args_len = mt.arity;
 		if( type_len != args_len ) {

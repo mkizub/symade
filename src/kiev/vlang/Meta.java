@@ -327,7 +327,7 @@ public class UserMeta extends MNode {
 			MetaValue v = values[n];
 			Method m = null;
 			foreach (Method sm; tdecl.members) {
-				if( sm.hasName(v.ident,true)) {
+				if( sm.hasName(v.ident)) {
 					m = sm;
 					break;
 				}
@@ -436,7 +436,7 @@ public class UserMeta extends MNode {
 			}
 		}
 		JavaAnnotation td = getAnnotationDecl();
-		foreach (Method m; td.members; m.hasName(name,true))
+		foreach (Method m; td.members; m.hasName(name))
 			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+decl+" annotation");
 	}

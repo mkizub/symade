@@ -82,14 +82,14 @@ public final view JStruct of Struct extends JTypeDecl {
 	private static JMethod resolveMethod(@forward JStruct self, String name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach (JMethod m; members) {
-			if( m.hasName(name,true) && m.type.getJType().java_signature.equals(sign))
+			if( m.hasName(name) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
 			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
 				foreach (JMethod m; defaults.members) {
-					if( m.hasName(name,true) && m.type.getJType().java_signature.equals(sign))
+					if( m.hasName(name) && m.type.getJType().java_signature.equals(sign))
 						return m;
 				}
 			}

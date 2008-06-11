@@ -118,7 +118,7 @@ public final class PVar<A> implements TypeInfoInterface
 		if !(var instanceof A)
 			return false;
 		this.$_pvar_ = null;
-		this.$_var_ = (A)var;
+		this.$_var_ = /*(A)*/var;
 		return true;
 	}
 
@@ -128,7 +128,7 @@ public final class PVar<A> implements TypeInfoInterface
 			return false;
 		this.$_var_ = null;
 		if (var.$is_bound) {
-			this.$_var_ = (A)var.$var;
+			this.$_var_ = /*(A)*/var.$var;
 			return true;
 		} else {
 			this.$_pvar_ = var;

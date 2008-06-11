@@ -668,7 +668,7 @@ public final class Kiev {
 		try {
 			Kiev.runProcessorsOn(node);
 		} catch (ReWalkNodeException e) {
-			runProcessorsWithRewalk(e.replacer);
+			runProcessorsWithRewalk((ASTNode)e.replacer);
 			return;
 		}
 	}

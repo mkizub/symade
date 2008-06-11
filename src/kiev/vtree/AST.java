@@ -506,40 +506,41 @@ public abstract class ANode implements INode {
 	}
 
 	public final void walkTree(TreeWalker walker) {
+//#ifndef OLD_WALKER
+//#		this.walkTreeFast(walker);
+//#else OLD_WALKER
 		if (walker.pre_exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_child) {
 				Object val = attr.get(this);
-				if (val == null)
-					continue;
-				if (attr.is_space) {
-					ANode[] vals = (ANode[])val;
-					for (int i=0; i < vals.length; i++) {
-						try {
-							vals[i].walkTree(walker);
-						} catch (ReWalkNodeException e) {
-							i--;
-							val = attr.get(this);
-							vals = (ANode[])val;
-						}
-					}
-				}
-				else if (val instanceof ANode) {
-				re_walk_node:;
-					try {
-						val.walkTree(walker);
-					} catch (ReWalkNodeException e) {
-						val = attr.get(this);
-						if (val != null)
-							goto re_walk_node;
-					}
-				}
+				if (attr.is_space)
+					walker.visitANodeSpace((ANode[])val);
+				else if (val instanceof ANode)
+					walker.visitANode((ANode)val);
 			}
 			if (ext_data != null) {
 				foreach (DataAttachInfo ai; ext_data; ai.p_slot.is_attr && ai.p_slot.is_external && ai.p_data instanceof ANode)
-					((ANode)ai.p_data).walkTree(walker);
+					walker.visitANode((ANode)ai.p_data);
 			}
 		}
 		walker.post_exec(this);
+//#endif OLD_WALKER
+	}
+
+	public final void walkTreeFast(TreeWalker walker) {
+		if (walker.pre_exec(this))
+			this.walkTreeFastVisit(walker);
+		walker.post_exec(this);
+	}
+	protected void walkTreeFastVisit(TreeWalker $walker) {
+		DataAttachInfo[] ext_data = this.ext_data;
+		if (ext_data == null)
+			return;
+		foreach (DataAttachInfo ai; ext_data; ai.p_slot.is_attr && ai.p_slot.is_child) {
+			if (ai.p_data instanceof ANode[])
+				$walker.visitANodeSpace((ANode[])ai.p_data);
+			else if (ai.p_data instanceof ANode)
+				$walker.visitANode((ANode)ai.p_data);
+		}
 	}
 
 	public void setFrom(Object from) {
@@ -710,6 +711,22 @@ public abstract class ANode implements INode {
 public class TreeWalker {
 	public boolean pre_exec(ANode n) { return true; }
 	public void post_exec(ANode n) {}
+
+	public final void visitANodeSpace(ANode[] vals) {
+		for (int i=0; i < vals.length; i++)
+			this.visitANode(vals[i]);
+	}
+
+	public final void visitANode(ANode val) {
+		while (val != null) {
+			try {
+				val.walkTree(this);
+				return;
+			} catch (ReWalkNodeException e) {
+				val = e.replacer;
+			}
+		}
+	}
 }
 
 public final class DataAttachInfo {
@@ -1015,9 +1032,8 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public ASTNode getDummyNode() { SNode.dummySNode }
 	
-	public boolean hasName(String name, boolean by_equals) {
-		return false;
-	}
+	public boolean hasName(String name) { false }
+	public boolean hasNameStart(String nm) { false }
 	
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncOut() for "+getClass()); }
@@ -1232,8 +1248,8 @@ public class CompilerException extends RuntimeException {
 }
 
 public class ReWalkNodeException extends RuntimeException {
-	public final ASTNode replacer;
-	public ReWalkNodeException(ASTNode replacer) {
+	public final ANode replacer;
+	public ReWalkNodeException(ANode replacer) {
 		this.replacer = replacer;
 	}
 }

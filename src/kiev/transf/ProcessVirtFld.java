@@ -254,11 +254,11 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		String get_name = (nameGet+f.sname).intern();
 
 		foreach(Method m; s.members) {
-			if( m.hasName(set_name,true) ) {
+			if( m.hasName(set_name) ) {
 				set_found = true;
 				if( get_found ) break;
 			}
-			else if( m.hasName(get_name,true) ) {
+			else if( m.hasName(get_name) ) {
 				get_found = true;
 				if( set_found ) break;
 			}
@@ -357,7 +357,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			return true;
 		String get_name = (nameGet+f.sname).intern();
 
-		if (fa.ctx_method != null && fa.ctx_method.hasName(get_name,true) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
+		if (fa.ctx_method != null && fa.ctx_method.hasName(get_name) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -382,7 +382,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			String set_name = (nameSet+f.sname).intern();
 	
-			if (ae.ctx_method != null && ae.ctx_method.hasName(set_name,true) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
+			if (ae.ctx_method != null && ae.ctx_method.hasName(set_name) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -463,7 +463,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			String get_name = (nameGet+f.sname).intern();
 	
 			if (ie.ctx_method != null
-			&& (ie.ctx_method.hasName(set_name,true) || ie.ctx_method.hasName(get_name,true))
+			&& (ie.ctx_method.hasName(set_name) || ie.ctx_method.hasName(get_name))
 			&& ie.ctx_tdecl.instanceOf(f.ctx_tdecl) )
 			{
 				fa.setAsField(true);

@@ -244,11 +244,17 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 		return getType().getStruct();
 	}
 
-	public boolean hasName(String nm, boolean by_equals) {
-		if (by_equals && op != null && op != "") {
-			return ("T "+op).equals(nm);
-		}
-		return false;
+	public boolean hasName(String nm) {
+		String op = this.op;
+		if (op == null || op == "")
+			return false;
+		if (nm.length() != 2+op.length())
+			return false;
+		if (!nm.startsWith("T "))
+			return false;
+		if (!nm.endsWith(op))
+			return false;
+		return true;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path) {

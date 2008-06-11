@@ -27,6 +27,7 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameANode				= getPropS(PROP_BASE,"nameANode","kiev\u001fvtree\u001fANode");
 	public static final String nameNode				= getPropS(PROP_BASE,"nameNode","kiev\u001fvtree\u001fASTNode"); 
 	public static final String nameNodeSpace			= getPropS(PROP_BASE,"nameNodeSpace","kiev\u001fvtree\u001fNodeSpace"); 
+	public static final String nameTreeWalker			= getPropS(PROP_BASE,"TreeWalker","kiev\u001fvtree\u001fTreeWalker"); 
 	public static final String nameAttrSlot			= getPropS(PROP_BASE,"nameAttrSlot","kiev\u001fvtree\u001fAttrSlot"); 
 	public static final String nameRefAttrSlot			= getPropS(PROP_BASE,"nameRefAttrSlot","kiev\u001fvtree\u001fRefAttrSlot"); 
 	public static final String nameAttAttrSlot			= getPropS(PROP_BASE,"nameAttAttrSlot","kiev\u001fvtree\u001fAttAttrSlot"); 
@@ -41,12 +42,16 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameExtData				= getPropS(PROP_BASE,"nameExtData","ext_data");
 	public static final String nameNodeName			= getPropS(PROP_BASE,"nameNodeName","name");
 	public static final String nameLangName			= getPropS(PROP_BASE,"nameLangName","lang");
+	public static final String nameWalkerVisitor		= getPropS(PROP_BASE,"nameWalkerVisitor","walkTreeFastVisit");
+	public static final String nameWalkerVisitNode		= getPropS(PROP_BASE,"nameWalkerVisitNode","visitANode");
+	public static final String nameWalkerVisitSpace	= getPropS(PROP_BASE,"nameWalkerVisitSpace","visitANodeSpace");
 	
 	static Type tpINode;
 	static Type tpANode;
 	static Type tpNode;
 	static Type tpNArray;
 	static Type tpNodeSpace;
+	static Type tpTreeWalker;
 	static Type tpAttrSlot;
 	static Type tpRefAttrSlot;
 	static Type tpAttAttrSlot;
@@ -97,6 +102,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpNode = Env.getRoot().loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
 			tpNodeSpace = Env.getRoot().loadTypeDecl(nameNodeSpace).xtype;
+			tpTreeWalker = Env.getRoot().loadTypeDecl(nameTreeWalker).xtype;
 			tpAttrSlot = Env.getRoot().loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.getRoot().loadTypeDecl(nameRefAttrSlot, true).xtype;
 			tpAttAttrSlot = Env.getRoot().loadTypeDecl(nameAttAttrSlot, true).xtype;
@@ -811,6 +817,59 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			}
 		}
 
+		// protected void walkTreeFastVisit(TreeWalker $walker) {
+		//  $walker.visitANode(obj);
+		//  $walker.visitANodeSpace(space);
+		//  super.walkTreeFastVisit($walker);
+		// }
+		if (hasMethod(iface, VNode_Base.nameWalkerVisitor)) {
+			Kiev.reportWarning(iface,"Method "+iface+"."+VNode_Base.nameWalkerVisitor+" already exists, @node member is not generated");
+		} else {
+			if (!s.isInterfaceOnly()) {
+				Method walker = new MethodImpl(VNode_Base.nameWalkerVisitor,StdTypes.tpVoid,ACC_PROTECTED | ACC_SYNTHETIC);
+				walker.params.append(new LVar(0,"$walker", VNode_Base.tpTreeWalker, Var.PARAM_NORMAL, 0));
+				walker.body = new Block(0);
+				foreach (Field f; aflds; f.parent() == iface) {
+					UserMeta matt = f.getMeta(VNode_Base.mnAtt);
+					if (matt == null)
+						continue;
+					if (matt.getZ(VNode_Base.nameExtData))
+						continue;
+					boolean isArr = f.getType().isInstanceOf(tpNArray);
+					if !(isArr || VNode_Base.isNodeKind(f.getType()))
+						continue;
+					String call_name = VNode_Base.nameWalkerVisitNode;
+					if (isArr)
+						call_name = VNode_Base.nameWalkerVisitSpace;
+					walker.block.stats.add(
+						new ExprStat(
+							new CallExpr(0,
+								new LVarExpr(0,walker.params[0]),
+								new SymbolRef<Method>(call_name),
+								TypeRef.emptyArray,
+								new ENode[]{ new IFldExpr(0, new ThisExpr(), f) }
+							)
+						)
+					);
+				}
+				if (walker.block.stats.length > 0) {
+					walker.block.stats.add(
+						new ExprStat(
+							new CallExpr(0,
+								new SuperExpr(),
+								new SymbolRef<Method>(VNode_Base.nameWalkerVisitor),
+								TypeRef.emptyArray,
+								new ENode[]{ new LVarExpr(0,walker.params[0]) }
+							)
+						)
+					);
+					walker.block.stats.add(new ReturnStat());
+					impl.addMethod(walker);
+					Kiev.runProcessorsOn(walker);
+				}
+			}
+		}
+
 		if (VNode_Base.GEN_VERSIONED) {
 			if (iface.xtype.isInstanceOf(tpNode))
 				makeNodeValuesClass(iface, impl);
@@ -958,7 +1017,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	private boolean hasMethod(Struct s, String name) {
 		s.checkResolved();
-		foreach (Method m; s.members; m.hasName(name,true)) return true;
+		foreach (Method m; s.members; m.hasName(name)) return true;
 		return false;
 	}
 	

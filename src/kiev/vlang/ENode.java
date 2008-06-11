@@ -253,7 +253,7 @@ public abstract class ENode extends ASTNode {
 		try {
 			Kiev.runProcessorsOn(node);
 		} catch (ReWalkNodeException e) {
-			do_resolve(reqType, e.replacer);
+			do_resolve(reqType, (ASTNode)e.replacer);
 			return;
 		}
 		((ENode)node).resolve(reqType);

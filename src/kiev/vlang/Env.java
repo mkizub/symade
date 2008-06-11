@@ -219,7 +219,7 @@ public final class Env extends KievPackage {
 	}
 	
 	private void addSpecialField(String name, Type tp, ENode init) {
-		foreach (Field f; this.members; f.hasName(name,true)) {
+		foreach (Field f; this.members; f.hasName(name)) {
 			f.init = init;
 			return;
 		}
@@ -253,7 +253,7 @@ public final class Env extends KievPackage {
 	}
 
 	public TypeDecl loadTypeDecl(String qname) {
-		if (qname == "") return Env.getRoot();
+		if (qname.length() == 0) return Env.getRoot();
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);

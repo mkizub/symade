@@ -125,7 +125,7 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	}
 
 	public boolean equals(DNode:Object nm) {
-		if (nm.hasName(this.sname,true)) return true;
+		if (nm.hasName(this.sname)) return true;
 		return false;
 	}
 
@@ -199,7 +199,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 
 	public boolean equals(Object nm) {
-		if (nm instanceof DNode) return nm.hasName(this.name,true);
+		if (nm instanceof DNode) return nm.hasName(this.name);
 		if (nm instanceof Symbol) return nm.equals(this.name);
 		if (nm instanceof SymbolRef) return nm.name == this.name;
 		if (nm instanceof String) return nm == this.name;

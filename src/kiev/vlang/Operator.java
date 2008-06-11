@@ -341,7 +341,7 @@ public final class Operator implements Constants {
 	}
 
 	public void addMethod(Method m) {
-		assert (m.hasName(this.name,true));
+		assert (m.hasName(this.name));
 		for(int i=0; i < methods.length; i++)
 			if (methods[i] == m)
 				return;

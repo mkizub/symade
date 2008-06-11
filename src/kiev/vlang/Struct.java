@@ -495,7 +495,7 @@ public abstract class Struct extends ComplexTypeDecl {
 		if (this instanceof Env)
 			cl = Env.getRoot().loadTypeDecl(qn);
 		else
-			cl = Env.getRoot().loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
+			cl = Env.getRoot().loadTypeDecl(qn=(this.qname()+"\u001f"+name));
 		trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+(cl != null ? cl+" found " : qn+" not found")+" in "+this);
 		return cl;
 	}

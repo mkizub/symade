@@ -131,7 +131,7 @@ public class TypeInfo implements Externalizable {
 
 	// obj instanceof List<A>.type
 	public boolean $instanceof(Object obj) {
-		if( obj == null ) return false;
+		//if( obj == null ) return false;
 		return clazz.isInstance(obj);
 	}
 

@@ -179,7 +179,7 @@ public final class NewExpr extends ENode {
 			CallType mt = (CallType)new CallType(null,null,ta,type,false);
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
-			if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp,true)) ) {
+			if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
 				ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 				if (PassInfo.resolveBestMethodR(type,m,info,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,((NewExpr)this).args.delToArray());

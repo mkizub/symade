@@ -290,13 +290,11 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return (short)(getFlags() & JAVA_ACC_MASK);
 	}
 
-	public boolean hasName(String nm, boolean by_equals) {
-		if (by_equals) {
-			if (this.sname == nm) return true;
-		} else {
-			if (this.sname != null && this.sname.startsWith(nm)) return true;
-		}
-		return false;
+	public boolean hasName(String nm) {
+		return (this.sname == nm);
+	}
+	public boolean hasNameStart(String nm) {
+		return (this.sname != null && this.sname.startsWith(nm));
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

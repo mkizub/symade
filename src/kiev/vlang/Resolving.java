@@ -55,8 +55,10 @@ public final class ResInfo {
 		this(from, nm, 0);
 	}
 	public ResInfo(ASTNode from, String nm, int fl) {
-		if (nm != null)
-			this.name = nm.intern();
+		if (nm != null) {
+			assert (nm.intern() == nm);
+			this.name = nm;
+		}
 		this.flags = fl;
 		this.flags_stack = new int[16];
 		this.forwards_stack = new Object[16];
@@ -145,7 +147,9 @@ public final class ResInfo {
 		return nm == name;
 	}
 	public boolean checkNodeName(ASTNode dn) {
-		return dn.hasName(name, isCmpByEquals());
+		if (!isCmpByEquals())
+			return dn.hasNameStart(name);
+		return dn.hasName(name);
 	}
 	public boolean check(ASTNode n) {
 		if (n instanceof Var || n instanceof SNode) {
