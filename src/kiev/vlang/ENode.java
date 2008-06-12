@@ -85,19 +85,18 @@ public abstract class ENode extends ASTNode {
 	
 	@getter public final Type get$type_lnk() {
 		Object id = this.ident_or_symbol_or_type;
+		if (id == null)
+			return null;
 		if (id instanceof Type) {
 			Type tp = (Type)id;
 			tp.bindings();
 			return tp;
 		}
-		if (this instanceof TypeRef) {
-			TypeRef tr = (TypeRef)this;
-			if (tr.signature != null) {
-				Type tp = AType.fromSignature(tr.signature,true);
-				tr.type_lnk = tp;
-				tr.signature = null;
-				return tp;
-			}
+		if (this.is_expr_id_signature) {
+			Type tp = AType.fromSignature((String)id,true);
+			this.type_lnk = tp;
+			this.is_expr_id_signature = false;
+			return tp;
 		}
 		return null;
 	}
@@ -119,6 +118,11 @@ public abstract class ENode extends ASTNode {
 	@setter public final void set$type_lnk(Type val) {
 		assert (this instanceof TypeRef);
 		ident_or_symbol_or_type = val;
+	}
+	
+	public void setTypeSignature(String signature) {
+		this.ident_or_symbol_or_type = signature;
+		this.is_expr_id_signature = true;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

@@ -977,7 +977,6 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 	"typedef"
 	(
 		LOOKAHEAD(3, <IDENTIFIER> "=" <IDENTIFIER>)
-		{ n = new TypeOpDef(); }
 		id = Name()
 		"="
 		tr = Type()
@@ -2146,23 +2145,34 @@ TypeRef TypeWithWildcard() :
 	{ return res; }
 }
 
-TypeNameRef TypeWithArgs() :
-{ TypeNameRef res, sub; }
+TypeRef TypeWithArgs() :
+{ SymbolRef qname; TypeRef res; }
 {
-	res = TypeQName()
-	[	LOOKAHEAD({ getToken(1).kind == LT || getToken(1).kind == LANGLE })
+	qname = QName()
+	(	LOOKAHEAD({ getToken(1).kind == LT || getToken(1).kind == LANGLE })
 		("<" | <LANGLE>)
+			{ res = new TypeNameArgsRef(qname.name); }
 			res.args += Type()
 			(	LOOKAHEAD({ getToken(1).kind == COMMA })
 				","
 				res.args += Type()
 			)*
 		(">" | <RANGLE>)
-		[	LOOKAHEAD("." <IDENTIFIER>)
+		(	LOOKAHEAD("." <IDENTIFIER>)
 			"."
-			sub = TypeWithArgs() { sub.outer = res; res = sub; }
-		]
-	]
+			qname = QName()
+			{ res = new TypeInnerNameRef(res, qname.name); }
+			("<" | <LANGLE>)
+				res.args += Type()
+				(	LOOKAHEAD({ getToken(1).kind == COMMA })
+					","
+					res.args += Type()
+				)*
+			(">" | <RANGLE>)
+		)*
+	|
+		{ res = new TypeNameRef(qname.name); }
+	)
 	{ return res; }
 }
 

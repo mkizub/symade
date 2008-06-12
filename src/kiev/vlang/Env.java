@@ -439,7 +439,7 @@ public final class Env extends KievPackage {
 			if (tp != null) {
 				attr.set(node,tp);
 			} else {
-				((TypeRef)node).signature = signature;
+				((ENode)node).setTypeSignature(signature);
 			}
 		}
 	}
@@ -631,8 +631,8 @@ public final class Env extends KievPackage {
 					else if (Type.class.isAssignableFrom(attr.clazz)) {
 						//attr.set(nodes.peek(),AType.fromSignature(text.trim()));
 						ANode node = nodes.peek();
-						if (node instanceof TypeRef && attr.name == "type_lnk") {
-							((TypeRef)node).signature = text.trim();
+						if (node instanceof ENode && attr.name == "type_lnk") {
+							((ENode)node).setTypeSignature(text.trim());
 						} else {
 							delayed_types.append(new DelayedTypeInfo(nodes.peek(), attr, text.trim()));
 						}

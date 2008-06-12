@@ -223,25 +223,29 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	@virtual typedef This  = TypeOpDef;
 
 	@nodeAttr public TypeDef			arg;
-	@nodeAttr public String			op;
+	@nodeAttr public String				op;
 	@nodeAttr public TypeRef			type;
-
+	
 	public TypeOpDef() { super(null); }
 	
 	public Type getType() { return type.getType(); }
 	
-//	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-//		if (dump == "api" && attr.name == "this")
-//			return false;
-//		return super.includeInDump(dump, attr, val);
-//	}
-
 	public boolean mainResolveIn() { return false; }
 
 	public void checkResolved() { type.getType().checkResolved(); }
 	
 	public Struct getStruct() {
 		return getType().getStruct();
+	}
+	
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "op") {
+			if (data == null)
+				this.sname = null;
+			else
+				this.sname = "T "+data;
+		}
+		super.callbackChildChanged(ct, attr, data);
 	}
 
 	public boolean hasName(String nm) {

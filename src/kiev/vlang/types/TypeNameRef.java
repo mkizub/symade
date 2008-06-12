@@ -24,9 +24,6 @@ public final class TypeNameRef extends TypeRef {
 
 	@virtual typedef This  = TypeNameRef;
 
-	@nodeAttr public TypeRef			outer;
-	@nodeAttr public TypeRef[]			args;
-
 	public TypeNameRef() {}
 
 	public TypeNameRef(String nm) {
@@ -35,13 +32,15 @@ public final class TypeNameRef extends TypeRef {
 
 	public TypeNameRef(String nm, Type tp) {
 		this.ident = nm;
-		this.type_lnk = tp;
+		if (tp != null)
+			this.type_lnk = tp;
 	}
 
 	public TypeNameRef(int pos, String nm, Type tp) {
 		this.pos = pos;
 		this.ident = nm;
-		this.type_lnk = tp;
+		if (tp != null)
+			this.type_lnk = tp;
 	}
 
 	public TypeNameRef(Type tp) {
@@ -50,9 +49,341 @@ public final class TypeNameRef extends TypeRef {
 		this.type_lnk = tp;
 	}
 
-	public TypeNameRef(TypeRef outer, String nm) {
+	public String qname() {
+		if (type_lnk != null)
+			return this.type_lnk.meta_type.qname();
+		return ident;
+	}
+	
+	public Type getType() {
+		if (this.type_lnk != null)
+			return this.type_lnk;
+		TypeDecl td = getTypeDecl();
+		td.checkResolved();
+		Type tp = td.getType();
+		this.type_lnk = tp;
+		return tp;
+	}
+
+	public Struct getStruct() {
+		TypeDecl td = getTypeDecl();
+		if (td instanceof Struct)
+			return (Struct)td;
+		return null;
+	}
+
+	public TypeDecl getTypeDecl() {
+		if (this.type_lnk != null) return this.type_lnk.meta_type.tdecl;
+		if (this.dnode instanceof TypeDecl)
+			return (TypeDecl)this.dnode;
+		TypeDecl scope;
+		String name = this.ident;
+		String head;
+		{
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name;
+				name = "";
+			}
+			TypeDecl@ td;
+			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+				throw new CompilerException(this,"Unresolved type "+head);
+			scope = (TypeDecl)td;
+		}
+		while (name.length() > 0) {
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name.intern();
+				name = "";
+			}
+			TypeDecl@ td;
+			if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
+			scope = (TypeDecl)td;
+		}
+		this.symbol = scope;
+		return scope;
+	}
+
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "ident") {
+			TypeDecl scope;
+			String head;
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name;
+				name = "";
+			}
+			if (dot < 0) {
+				int flags = ResInfo.noForwards;
+				if (!by_equals)
+					flags |= ResInfo.noEquals;
+				Vector<TypeDecl> vect = new Vector<TypeDecl>();
+				TypeDecl@ td;
+				ResInfo info = new ResInfo(this,head,flags);
+				foreach (PassInfo.resolveNameR(this,td,info)) {
+					if (!vect.contains(td))
+						vect.append(td);
+				}
+				return vect.toArray();
+			} else {
+				TypeDecl@ td;
+				if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+					return new TypeDecl[0];
+				scope = (TypeDecl)td;
+			}
+			while (dot >= 0) {
+				dot = name.indexOf('\u001f');
+				if (dot > 0) {
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1);
+				} else {
+					head = name.intern();
+					name = "";
+				}
+				if (dot < 0) {
+					int flags = ResInfo.noForwards;
+					if (!by_equals)
+						flags |= ResInfo.noEquals;
+					Vector<TypeDecl> vect = new Vector<TypeDecl>();
+					TypeDecl@ td;
+					ResInfo info = new ResInfo(this,head,flags);
+					foreach (scope.resolveNameR(td,info)) {
+						if (!vect.contains(td))
+							vect.append(td);
+					}
+					return vect.toArray();
+				} else {
+					TypeDecl@ td;
+					if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+						return new TypeDecl[0];
+					scope = (TypeDecl)td;
+				}
+			}
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
+	public String toString() {
+		return ident.replace('\u001f','.');
+	}
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class TypeNameArgsRef extends TypeRef {
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
+
+	@virtual typedef This  = TypeNameArgsRef;
+
+	@nodeAttr public TypeRef[]			args;
+
+	public TypeNameArgsRef() {}
+
+	public TypeNameArgsRef(String nm) {
+		this.ident = nm;
+	}
+
+	public TypeNameArgsRef(int pos, String nm, TypeDecl td) {
+		this.pos = pos;
+		this.ident = nm;
+		if (td != null)
+			this.symbol = td;
+	}
+
+	public String qname() {
+		if (type_lnk != null)
+			return this.type_lnk.meta_type.qname();
+		return ident;
+	}
+	
+	public Type getType() {
+		if (this.type_lnk != null)
+			return this.type_lnk;
+		TypeDecl td = getTypeDecl();
+		td.checkResolved();
+		Type tp = td.getType();
+		if (args.length > 0) {
+			TemplateTVarSet tpset = tp.meta_type.getTemplBindings();
+			TVarBld set = new TVarBld();
+			int a = 0;
+			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
+				if (tpset.tvars[b].val != null)
+					continue;
+				Type bound = args[a].getType();
+				if (bound == null)
+					throw new CompilerException(this,"Type "+args[a]+" is not found");
+				if!(bound.isInstanceOf(tpset.tvars[b].var)) {
+					if (!(bound instanceof ArgType) || ((ArgType)bound).definer.super_types.length > 0)
+						throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+				}
+				set.append(tpset.tvars[b].var, bound);
+				a++;
+			}
+			if (a < args.length)
+				Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
+			tp = tp.meta_type.make(set);
+		}
+		this.type_lnk = tp;
+		return tp;
+	}
+
+	public Struct getStruct() {
+		TypeDecl td = getTypeDecl();
+		if (td instanceof Struct)
+			return (Struct)td;
+		return null;
+	}
+
+	public TypeDecl getTypeDecl() {
+		if (this.type_lnk != null) return this.type_lnk.meta_type.tdecl;
+		if (this.dnode instanceof TypeDecl)
+			return (TypeDecl)this.dnode;
+		TypeDecl scope;
+		String name = this.ident;
+		String head;
+		{
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name;
+				name = "";
+			}
+			TypeDecl@ td;
+			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+				throw new CompilerException(this,"Unresolved type "+head);
+			scope = (TypeDecl)td;
+		}
+		while (name.length() > 0) {
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name.intern();
+				name = "";
+			}
+			TypeDecl@ td;
+			if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
+			scope = (TypeDecl)td;
+		}
+		this.symbol = scope;
+		return scope;
+	}
+
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "ident") {
+			TypeDecl scope;
+			String head;
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name;
+				name = "";
+			}
+			{
+				if (dot < 0) {
+					int flags = ResInfo.noForwards;
+					if (!by_equals)
+						flags |= ResInfo.noEquals;
+					Vector<TypeDecl> vect = new Vector<TypeDecl>();
+					TypeDecl@ td;
+					ResInfo info = new ResInfo(this,head,flags);
+					foreach (PassInfo.resolveNameR(this,td,info)) {
+						if (!vect.contains(td))
+							vect.append(td);
+					}
+					return vect.toArray();
+				} else {
+					TypeDecl@ td;
+					if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+						return new TypeDecl[0];
+					scope = (TypeDecl)td;
+				}
+			}
+			while (dot >= 0) {
+				dot = name.indexOf('\u001f');
+				if (dot > 0) {
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1);
+				} else {
+					head = name.intern();
+					name = "";
+				}
+				if (dot < 0) {
+					int flags = ResInfo.noForwards;
+					if (!by_equals)
+						flags |= ResInfo.noEquals;
+					Vector<TypeDecl> vect = new Vector<TypeDecl>();
+					TypeDecl@ td;
+					ResInfo info = new ResInfo(this,head,flags);
+					foreach (scope.resolveNameR(td,info)) {
+						if (!vect.contains(td))
+							vect.append(td);
+					}
+					return vect.toArray();
+				} else {
+					TypeDecl@ td;
+					if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+						return new TypeDecl[0];
+					scope = (TypeDecl)td;
+				}
+			}
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
+	public String toString() {
+		if (args.length == 0)
+			return ident.replace('\u001f','.');
+		StringBuffer sb = new StringBuffer();
+		sb.append(ident.replace('\u001f','.'));
+		sb.append('<');
+		for (int i=0; i < args.length; i++) {
+			sb.append(args[i]);
+			if (i < args.length-1) sb.append(',');
+		}
+		sb.append('>');
+		return sb.toString();
+	}
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class TypeInnerNameRef extends TypeRef {
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
+
+	@virtual typedef This  = TypeInnerNameRef;
+
+	@nodeAttr public TypeRef			outer;
+	@nodeAttr public TypeRef[]			args;
+
+	public TypeInnerNameRef() {}
+
+	public TypeInnerNameRef(TypeRef outer, String nm) {
 		this.outer = outer;
 		this.ident = nm;
+	}
+
+	public TypeInnerNameRef(TypeRef outer, String nm, TypeDecl td) {
+		this.outer = outer;
+		this.ident = nm;
+		if (td != null)
+			this.symbol = td;
 	}
 
 	public String qname() {

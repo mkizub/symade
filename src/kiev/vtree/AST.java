@@ -877,6 +877,8 @@ public abstract class ASTNode extends ANode implements Constants {
 	public @packed:1,compileflags,8  boolean is_expr_gen_void;
 	public @packed:1,compileflags,9  boolean is_expr_for_wrapper;
 	public @packed:1,compileflags,10 boolean is_expr_cast_call;
+	
+	public @packed:1,compileflags,11 boolean is_expr_id_signature;
 
 	public @packed:1,nodeflags,17 boolean is_expr_as_field;
 	public @packed:1,nodeflags,18 boolean is_expr_primary;

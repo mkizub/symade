@@ -246,13 +246,11 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	{
 		syn @= members,
 		{
-			syn instanceof DNode && path.checkNodeName(syn),
+			path.checkNodeName(syn),
 			node ?= syn
 		;	syn instanceof Import,
 			trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
 			((Import)syn).resolveNameR(node,path)
-		;	syn instanceof Opdef && path.checkNodeName(syn),
-			node ?= syn
 		}
 	;
 		path.space_prev.pslot().name != "srpkg",

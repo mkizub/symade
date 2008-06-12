@@ -45,7 +45,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
 		if (s.isInterface() && s.isMixin() && clazz == null) {
 			s = s.iface_impl;
-			this.type = new TypeNameRef(~this.type, s.sname);
+			this.type = new TypeInnerNameRef(~this.type, s.sname);
 			type = this.type.getType();
 		}
 		if (s.isEnum())

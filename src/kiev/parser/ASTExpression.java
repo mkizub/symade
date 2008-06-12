@@ -413,31 +413,51 @@ public class ASTExpression extends ENode {
 				if (td.package_clazz.dnode != tr.getTypeDecl())
 					return null;
 				TypeRef ret;
-				if (tr instanceof TypeNameRef && tr.args.length == 0) {
-					if (tr.outer != null)
-						ret = new TypeNameRef(tr.outer.ncopy(),tr.ident+"\u001f"+id.ident);
-					else
-						ret = new TypeNameRef(tr.ident+"\u001f"+id.ident);
+				if (tr instanceof TypeNameRef) {
+					ret = new TypeNameRef(tr.ident+"\u001f"+id.ident);
 				} else {
-					ret = new TypeNameRef(tr.ncopy(),id.ident);
+					ret = new TypeInnerNameRef(tr.ncopy(),id.ident);
 				}
 				ret.symbol = (TypeDecl)td;
 				ret.pos = id.pos;
 				return ret;
 			}
 			if (op == Operator.PostTypeArgs || op == Operator.PostTypeArgs2) {
-				if (!(tr instanceof TypeNameRef) || ((TypeNameRef)tr).args.length > 0)
-					return null;
-				TypeNameRef tnr = (TypeNameRef)tr;
-				tnr = tnr.ncopy();
-				tnr.symbol = tr.symbol;
-				foreach (ENode e; ((UnresSeqs)result[2]).exprs) {
-					if (e instanceof EToken)
-						tnr.args += e.asType();
-					else
-						tnr.args += ((TypeRef)e).ncopy();
+				if (tr instanceof TypeNameArgsRef) {
+					if (tr.args.length > 0)
+						return null;
+					TypeNameArgsRef ret = new TypeNameArgsRef(tr.pos,tr.ident,tr.getTypeDecl());
+					foreach (ENode e; ((UnresSeqs)result[2]).exprs) {
+						if (e instanceof EToken)
+							ret.args += e.asType();
+						else
+							ret.args += ((TypeRef)e).ncopy();
+					}
+					return ret;
 				}
-				return tnr;
+				if (tr instanceof TypeInnerNameRef) {
+					if (tr.args.length > 0)
+						return null;
+					TypeInnerNameRef ret = new TypeInnerNameRef(tr.outer, tr.ident, tr.getTypeDecl());
+					foreach (ENode e; ((UnresSeqs)result[2]).exprs) {
+						if (e instanceof EToken)
+							ret.args += e.asType();
+						else
+							ret.args += ((TypeRef)e).ncopy();
+					}
+					return ret;
+				}
+				if (tr instanceof TypeNameRef) {
+					TypeNameArgsRef ret = new TypeNameArgsRef(tr.pos,tr.ident,tr.getTypeDecl());
+					foreach (ENode e; ((UnresSeqs)result[2]).exprs) {
+						if (e instanceof EToken)
+							ret.args += e.asType();
+						else
+							ret.args += ((TypeRef)e).ncopy();
+					}
+					return ret;
+				}
+				return null;
 			}
 			TypeExpr ret = new TypeExpr(tr.ncopy(), op);
 			ret.pos = pos;
