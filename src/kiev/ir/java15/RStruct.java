@@ -326,7 +326,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				targs.append(new IFldExpr(pos,new ThisExpr(pos), f));
 			}
 			mrr.block.stats.add(new ReturnStat(pos,
-				new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpTypeInfo,Operator.PostTypeArray),1,targs.toArray())
+				new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpTypeInfo,Operator.PostTypeArray),targs.toArray())
 				));
 		}
 		

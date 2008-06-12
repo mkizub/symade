@@ -175,7 +175,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.tdecl.resolveMethod("newArray",Type.tpObject,new ArrayType(Type.tpInt)),
 						new ENode[]{
-							new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpInt,Operator.PostTypeArray),1,((NewArrayExpr)this).args.delToArray())
+							new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpInt,Operator.PostTypeArray),((NewArrayExpr)this).args.delToArray())
 						}
 					)));
 				return;
@@ -191,10 +191,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
 	public		TypeRef				type;
 	public:ro	ENode[]				args;
-	public		int[]				dims;
 	
-	@getter public final int	get$dim();
-
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -209,14 +206,10 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 			Type art = reqType;
 			int dim = 0;
 			while (art instanceof ArrayType) { dim++; art = art.arg; }
-			this.dims = new int[dim];
-			this.dims[0] = args.length;
-			{
-				TypeRef tp = new TypeRef(art);
-				for (int i=0; i < dim; i++)
-					tp = new TypeExpr(tp, Operator.PostTypeArray);
-				this.type = (TypeExpr)tp;
-			}
+			TypeRef tp = new TypeRef(art);
+			for (int i=0; i < dim; i++)
+				tp = new TypeExpr(tp, Operator.PostTypeArray);
+			this.type = (TypeExpr)tp;
 		} else {
 			type = this.getType();
 		}
@@ -224,16 +217,6 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 			throw new CompilerException(this,"Type "+type+" is not an array type");
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(((ArrayType)type).arg);
-		for(int i=1; i < dims.length; i++) {
-			int n;
-			for(int j=0; j < args.length; j++) {
-				if( args[j] instanceof NewInitializedArrayExpr )
-					n = ((NewInitializedArrayExpr)args[j]).getElementsNumber(i-1);
-				else
-					n = 1;
-				if( dims[i] < n ) dims[i] = n;
-			}
-		}
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);

@@ -55,7 +55,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
 				new ArrayType(clazz.xtype), ACC_SYNTHETIC|ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			vals.init = new NewInitializedArrayExpr(pos, new TypeExpr(clazz.xtype,Operator.PostTypeArray), 1, ENode.emptyArray);
+			vals.init = new NewInitializedArrayExpr(pos, new TypeExpr(clazz.xtype,Operator.PostTypeArray), ENode.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
 				ENode e = new SFldExpr(eflds[i].pos,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);

@@ -21,6 +21,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+//import org.xmlpull.v1.XmlPullParser;
+//import org.xmlpull.v1.XmlPullParserException;
+//import org.xmlpull.v1.XmlPullParserFactory;
+
 import kiev.be.java15.JEnv;
 
 import syntax kiev.Syntax;
@@ -371,11 +375,20 @@ public final class Env extends KievPackage {
 
 	private Project loadProject(File f) {
 		assert (Thread.currentThread() instanceof WorkerThread);
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser saxParser = factory.newSAXParser();
-		SAXHandler handler = new SAXHandler();
-		saxParser.parse(f, handler);
-		Project prj = (Project)handler.root;
+		XMLDeSerializer deserializer = new XMLDeSerializer();
+		if (true) {
+			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
+			//XmlPullParser xpp = factory.newPullParser();
+			/*XmlPullParser*/org.xmlpull.mxp1.MXParser xpp = new org.xmlpull.mxp1.MXParser();
+			xpp.setInput(new FileInputStream(f), "UTF-8");
+			new PullHandler(deserializer).processDocument(xpp);
+		} else {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(f, new SAXHandler(deserializer));
+		}
+		Project prj = (Project)deserializer.root;
 		prj.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
 				if (n instanceof FileUnit) {
@@ -390,37 +403,57 @@ public final class Env extends KievPackage {
 
 	public FileUnit loadFromXmlFile(File f, byte[] data) {
 		assert (Thread.currentThread() instanceof WorkerThread);
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser saxParser = factory.newSAXParser();
-		SAXHandler handler = new SAXHandler();
-		handler.file = f;
-		if (data != null)
-			saxParser.parse(new ByteArrayInputStream(data), handler);
-		else
-			saxParser.parse(f, handler);
-		foreach (DelayedTypeInfo dti; handler.delayed_types)
+		XMLDeSerializer deserializer = new XMLDeSerializer();
+		deserializer.file = f;
+		if (true) {
+			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
+			//XmlPullParser xpp = factory.newPullParser();
+			/*XmlPullParser*/org.xmlpull.mxp1.MXParser xpp = new org.xmlpull.mxp1.MXParser();
+			if (data != null)
+				xpp.setInput(new ByteArrayInputStream(data), "UTF-8");
+			else
+				xpp.setInput(new FileInputStream(f), "UTF-8");
+			new PullHandler(deserializer).processDocument(xpp);
+		} else {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			if (data != null)
+				saxParser.parse(new ByteArrayInputStream(data), new SAXHandler(deserializer));
+			else
+				saxParser.parse(f, new SAXHandler(deserializer));
+		}
+		foreach (DelayedTypeInfo dti; deserializer.delayed_types)
 			dti.applay();
-		ANode root = handler.root;
+		ANode root = deserializer.root;
 		if!(root instanceof FileUnit) {
 			root = FileUnit.makeFile(getRelativePath(f), false);
 			root.current_syntax = "stx-fmt\u001fsyntax-dump-full";
-			root.members += handler.root;
+			root.members += deserializer.root;
 		}
-		//Kiev.runProcessorsOn((ASTNode)root);
 		return (FileUnit)root;
 	}
 
 	public FileUnit loadFromXmlData(byte[] data, String tdname, ComplexTypeDecl pkg) {
 		assert (Thread.currentThread() instanceof WorkerThread);
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser saxParser = factory.newSAXParser();
-		SAXHandler handler = new SAXHandler();
-		handler.tdname = tdname;
-		handler.pkg = pkg;
-		saxParser.parse(new ByteArrayInputStream(data), handler);
-		foreach (DelayedTypeInfo dti; handler.delayed_types)
+		XMLDeSerializer deserializer = new XMLDeSerializer();
+		deserializer.tdname = tdname;
+		deserializer.pkg = pkg;
+		if (true) {
+			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
+			//XmlPullParser xpp = factory.newPullParser();
+			/*XmlPullParser*/org.xmlpull.mxp1.MXParser xpp = new org.xmlpull.mxp1.MXParser();
+			xpp.setInput(new ByteArrayInputStream(data), "UTF-8");
+			new PullHandler(deserializer).processDocument(xpp);
+		} else {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(new ByteArrayInputStream(data), new SAXHandler(deserializer));
+		}
+		foreach (DelayedTypeInfo dti; deserializer.delayed_types)
 			dti.applay();
-		FileUnit root = (FileUnit)handler.root;
+		FileUnit root = (FileUnit)deserializer.root;
 		Kiev.runProcessorsOn(root);
 		return root;
 	}
@@ -443,8 +476,15 @@ public final class Env extends KievPackage {
 			}
 		}
 	}
-		
-	final static class SAXHandler extends DefaultHandler {
+	
+	
+	static abstract class XMLAttributeSet {
+		public abstract int getCount();
+		public abstract String getName(int i);
+		public abstract String getValue(int i);
+	}
+	
+	final static class XMLDeSerializer {
 		ASTNode root;
 		File file;
 		ComplexTypeDecl pkg;
@@ -456,17 +496,16 @@ public final class Env extends KievPackage {
 		String text;
 		Vector<DelayedTypeInfo> delayed_types = new Vector<DelayedTypeInfo>();
 		
-		public void startElement(String uri, String sName, String qName, Attributes attributes)
-			throws SAXException
-		{
+		public void startElement(String elUri, String elName, XMLAttributeSet attributes) {
 			if (ignore_count > 0) {
 				ignore_count++;
 				return;
 			}
 			if (root == null) {
 				assert (!expect_attr);
-				assert (qName.equals("a-node"));
-				String cl_name = attributes.getValue("class");
+				assert (elName.equals("a-node"));
+				assert (attributes.getCount() == 1 && attributes.getName(0).equals("class"));
+				String cl_name = attributes.getValue(0);
 				if (pkg != null) {
 					String qname;
 					if (pkg instanceof Env)
@@ -518,9 +557,10 @@ public final class Env extends KievPackage {
 				//System.out.println("push root");
 				return;
 			}
-			if (qName.equals("a-node")) {
+			if (elName.equals("a-node")) {
 				assert (!expect_attr);
-				String cl_name = attributes.getValue("class");
+				assert (attributes.getCount() == 1 && attributes.getName(0).equals("class"));
+				String cl_name = attributes.getValue(0);
 				ANode n;
 				AttrSlot attr = attrs.peek();
 				if (!attr.isWrittable() || cl_name.equals("kiev.vlang.SymbolRef") || cl_name.equals("kiev.vlang.Symbol") || cl_name.equals("kiev.vlang.MetaSet")) {
@@ -553,34 +593,27 @@ public final class Env extends KievPackage {
 			}
 			assert (expect_attr);
 			ANode n = nodes.peek();
-			foreach (AttrSlot attr; n.values(); attr.name.equals(qName)) {
+			foreach (AttrSlot attr; n.values(); attr.name.equals(elName)) {
 				//System.out.println("push attr "+attr.name);
 				attrs.push(attr);
 				expect_attr = false;
 				return;
 			}
 			//throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
-			System.out.println("Attribute '"+qName+"' not found in "+n.getClass());
+			System.out.println("Attribute '"+elName+"' not found in "+n.getClass());
 			ignore_count = 1;
 		}
-		public void endElement(String uri, String sName, String qName)
-			throws SAXException
-		{
+
+		public void endElement(String elUri, String elName) {
 			if (ignore_count > 0) {
 				ignore_count--;
 				return;
 			}
 			if (expect_attr) {
-				assert(qName.equals("a-node"));
+				assert(elName.equals("a-node"));
 				ANode n = nodes.pop();
 				if (n instanceof TypeDecl) {
 					n.setTypeDeclNotLoaded(false);
-					//if (n instanceof Struct) {
-					//	Struct s = (Struct)n;
-					//	s.xmeta_type = new CompaundMetaType(s);
-					//	s.xtype = new CompaundType((CompaundMetaType)s.xmeta_type, TVarBld.emptySet);
-					//	//s.package_clazz.symbol = outer;
-					//}
 				}
 				if (nodes.isEmpty()) {
 					//System.out.println("pop  root");
@@ -645,6 +678,17 @@ public final class Env extends KievPackage {
 				expect_attr = true;
 			}
 		}
+		public void addText(String str) {
+			if (ignore_count > 0 || expect_attr || attrs.length <= 0)
+				return;
+			AttrSlot attr = attrs.peek();
+			if (ANode.class.isAssignableFrom(attr.clazz))
+				return;
+			if (text == null)
+				text = str;
+			else
+				text += str;
+		}
 		private long parseLong(String text) {
 			text = text.trim();
 			int radix;
@@ -659,16 +703,63 @@ public final class Env extends KievPackage {
 			long l = ConstExpr.parseLong(text,radix);
 			return l;
 		}
+	}
+		
+	final static class PullHandler {
+		XMLDeSerializer deserializer;
+		
+		PullHandler(XMLDeSerializer deserializer) {
+			this.deserializer = deserializer;
+		}
+
+		public void processDocument(/*XmlPullParser*/ org.xmlpull.mxp1.MXParser xpp) // throws XmlPullParserException, IOException
+		{
+			XMLAttributeSet attrs = new XMLAttributeSet() {
+				public int getCount() { return xpp.getAttributeCount(); }
+				public String getName(int i) { return xpp.getAttributeName(i); }
+				public String getValue(int i) { return xpp.getAttributeValue(i); }
+			};
+			int eventType = xpp.getEventType();
+			for (;;) {
+				if(eventType == xpp.START_DOCUMENT)
+					;
+				else if(eventType == xpp.END_DOCUMENT)
+					return;
+				else if(eventType == xpp.START_TAG)
+					deserializer.startElement(xpp.getNamespace(), xpp.getName(), attrs);
+				else if(eventType == xpp.END_TAG)
+					deserializer.endElement(xpp.getNamespace(), xpp.getName());
+				else if(eventType == xpp.TEXT)
+					deserializer.addText(xpp.getText());
+				eventType = xpp.next();
+			}
+		}
+	}
+		
+	final static class SAXHandler extends DefaultHandler {
+		XMLDeSerializer deserializer;
+		
+		SAXHandler(XMLDeSerializer deserializer) {
+			this.deserializer = deserializer;
+		}
+
+		public void startElement(String uri, String sName, String qName, Attributes attributes)
+			throws SAXException
+		{
+			deserializer.startElement(uri, sName, new XMLAttributeSet() {
+				public int getCount() { return attributes.getLength(); }
+				public String getName(int i) { return attributes.getLocalName(i); }
+				public String getValue(int i) { return attributes.getValue(i); }
+			});
+		}
+		public void endElement(String uri, String sName, String qName)
+			throws SAXException
+		{
+			deserializer.endElement(uri, sName);
+		}
+
 		public void characters(char[] ch, int start, int length) {
-			if (ignore_count > 0 || expect_attr || attrs.length <= 0)
-				return;
-			AttrSlot attr = attrs.peek();
-			if (ANode.class.isAssignableFrom(attr.clazz))
-				return;
-			if (text == null)
-				text = new String(ch, start, length);
-			else
-				text += new String(ch, start, length);
+			deserializer.addText(new String(ch, start, length));
 		}
 	}
 

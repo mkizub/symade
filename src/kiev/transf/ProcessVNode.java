@@ -657,7 +657,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Kiev.runProcessorsOn(e);
 			vals_init[i] = new SFldExpr(nodeattr_f.pos, nodeattr_f);
 		}
-		vals.init = new NewInitializedArrayExpr(0, new TypeExpr(tpAttrSlot,Operator.PostTypeArray), 1, vals_init);
+		vals.init = new NewInitializedArrayExpr(0, new TypeExpr(tpAttrSlot,Operator.PostTypeArray), vals_init);
 		Kiev.runProcessorsOn(vals.init);
 
 		// AttrSlot[] values() { return $values; }

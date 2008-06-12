@@ -145,25 +145,15 @@ public final view JNewArrayExpr of NewArrayExpr extends JENode {
 public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JENode[]			args;
-	public:ro	int					dim;
-	public:ro	int[]				dims;
 
-	@getter public final int	get$dim()	{ return this.dims.length; }
-	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
 		Type type = this.type;
 		JENode[] args = this.args;
 		code.setLinePos(this);
-		if( dim == 1 ) {
-			type = ((ArrayType)type).arg;
-			code.addConst(args.length);
-			code.addInstr(Instr.op_newarray,type);
-		} else {
-			for(int i=0; i < dim; i++)
-				code.addConst(dims[i]);
-			code.addInstr(Instr.op_multianewarray,type,dim);
-		}
+		type = ((ArrayType)type).arg;
+		code.addConst(args.length);
+		code.addInstr(Instr.op_newarray,type);
 		for(int i=0; i < args.length; i++) {
 			code.addInstr(Instr.op_dup);
 			code.addConst(i);

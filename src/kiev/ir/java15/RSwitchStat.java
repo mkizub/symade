@@ -242,7 +242,7 @@ public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 			types[j] = new TypeClassExpr(typenames[j].pos,typenames[j]);
 		if( defindex < 0 ) defindex = types.length;
 		typehash.init = new NewExpr(ctx_tdecl.pos,Type.tpTypeSwitchHash,
-			new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeExpr(Type.tpClass,Operator.PostTypeArray),1,types),
+			new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeExpr(Type.tpClass,Operator.PostTypeArray),types),
 				new ConstIntExpr(defindex)
 			});
 		Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();

@@ -353,40 +353,30 @@ public final class NewInitializedArrayExpr extends ENode {
 	@virtual typedef RView = RNewInitializedArrayExpr;
 
 	@nodeAttr public TypeExpr			type;
-	@nodeAttr public ENode[]				args;
-	@nodeData public int[]				dims;
+	@nodeAttr public ENode[]			args;
 
 	public NewInitializedArrayExpr() {}
 
-	public NewInitializedArrayExpr(int pos, TypeExpr type, int dim, ENode[] args) {
+	public NewInitializedArrayExpr(int pos, TypeExpr type, ENode[] args) {
 		this.pos = pos;
 		this.type = type;
-		this.dims = new int[dim];
-		if (args != null) {
-			this.dims[0] = args.length;
+		if (args != null)
 			this.args.addAll(args);
-		}
 	}
-
-	@getter public final int	get$dim()	{ return this.dims.length; }
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Type getType() { return type.getType(); }
-
+	
 	public void setType(ArrayType reqType) {
 		assert (this.type == null);
 		Type art = reqType;
 		int dim = 0;
 		while (art instanceof ArrayType) { dim++; art = art.arg; }
-		this.dims = new int[dim];
-		this.dims[0] = args.length;
-		{
-			TypeRef tp = new TypeRef(art);
-			for (int i=0; i < dim; i++)
-				tp = new TypeExpr(tp, Operator.PostTypeArray);
-			this.type = (TypeExpr)tp;
-		}
+		TypeRef tp = new TypeRef(art);
+		for (int i=0; i < dim; i++)
+			tp = new TypeExpr(tp, Operator.PostTypeArray);
+		this.type = (TypeExpr)tp;
 
 		foreach (NewInitializedArrayExpr arg; args; arg.type == null) {
 			Type tp = reqType.arg;
@@ -423,8 +413,6 @@ public final class NewInitializedArrayExpr extends ENode {
 		sb.append('}');
 		return sb.toString();
 	}
-
-	public int getElementsNumber(int i) { return dims[i]; }
 }
 
 @ThisIsANode(name="NewClosure", lang=CoreLang)

@@ -2746,15 +2746,15 @@ NewArrayExpr NewArrayExpression(TypeRef tp) :
 }
 
 NewInitializedArrayExpr NewInitializedArrayExpression(TypeRef tp) :
-{ int dim=0; NewInitializedArrayExpr ne; Token t; }
+{ NewInitializedArrayExpr ne; Token t; }
 {
 	//tn="new"
 	//tr = NArrType()
 	(
 		t=<OPERATOR_LRBRACKETS> 
-		{ dim += 1; tp = new TypeExpr(tp,t); }
+		{ tp = new TypeExpr(tp,t); }
 	)+
-	{ ne = new NewInitializedArrayExpr(tp.pos, (TypeExpr)tp, dim, null); }
+	{ ne = new NewInitializedArrayExpr(tp.pos, (TypeExpr)tp, null); }
 	"{"
 	[
 		ne.args += VariableInitializer()
@@ -2765,10 +2765,7 @@ NewInitializedArrayExpr NewInitializedArrayExpression(TypeRef tp) :
 		[ "," ]
 	]
 	"}"
-	{
-		ne.dims[0] = ne.args.length;
-		return ne;
-	}
+	{ return ne; }
 }
 
 

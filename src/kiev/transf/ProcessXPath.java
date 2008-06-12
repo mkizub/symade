@@ -110,12 +110,12 @@ public class XPathME_PreGenerate extends BackendProcessor implements Constants {
 				return;
 			}
 			
-			NewInitializedArrayExpr nsctx = new NewInitializedArrayExpr(m.pos, new TypeExpr(tpNamespaceMap,Operator.PostTypeArray), 1, ENode.emptyArray);
+			NewInitializedArrayExpr nsctx = new NewInitializedArrayExpr(m.pos, new TypeExpr(tpNamespaceMap,Operator.PostTypeArray), ENode.emptyArray);
 			foreach (UserMeta nsmap; ((MetaValueArray)xpe.get("nsmap")).values) {
 				nsctx.args += new NewExpr(m.pos, tpNamespaceMap, new ENode[]{new ConstStringExpr(nsmap.getS("prefix")),new ConstStringExpr(nsmap.getS("uri"))});
 			}
 			
-			NewInitializedArrayExpr evars = new NewInitializedArrayExpr(m.pos, new TypeExpr(tpQNameValue,Operator.PostTypeArray), 1, ENode.emptyArray);
+			NewInitializedArrayExpr evars = new NewInitializedArrayExpr(m.pos, new TypeExpr(tpQNameValue,Operator.PostTypeArray), ENode.emptyArray);
 			foreach (Var par; m.params; par.kind == Var.PARAM_NORMAL) {
 				evars.args += new NewExpr(m.pos, tpQNameValue, new ENode[]{new ConstStringExpr(par.sname),new LVarExpr(0,par)});
 			}
