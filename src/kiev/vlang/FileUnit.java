@@ -36,6 +36,7 @@ public final class FileUnit extends NameSpace {
 
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
+	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public String					fname;
 	@nodeAttr public boolean				project_file;
 	

@@ -545,7 +545,7 @@ public class Draw_SyntaxSwitch extends Draw_SyntaxElem {
 		ThisIsANode node_data = (ThisIsANode)for_node.getClass().getAnnotation(ThisIsANode.class);
 		Class lng_class = node_data.lang();
 		Language lng = (Language)lng_class.getField(Constants.nameInstance).get(null);
-		return lng.getDefaultEditorSyntax();
+		return SyntaxManager.getDefaultEditorSyntax(lng);
 	}
 
 	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
@@ -850,7 +850,7 @@ public class Draw_ATextSyntax implements Serializable {
 				Class lng_class = node_data.lang();
 				if (lng_class != null && Language.class.isAssignableFrom(lng_class)) {
 					Language lng = (Language)lng_class.getField(Constants.nameInstance).get(null);
-					Draw_ATextSyntax stx = lng.getDefaultEditorSyntax();
+					Draw_ATextSyntax stx = SyntaxManager.getDefaultEditorSyntax(lng);
 					if (stx != this) {
 						String text = lng.getClass().getName();
 						Draw_SyntaxSwitch ssw = (Draw_SyntaxSwitch)badSyntax.get(text);

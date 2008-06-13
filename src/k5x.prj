@@ -9,749 +9,755 @@
  Contributors:
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
-<a-node class='kiev.vlang.Project'>
+<a-node class="kiev.vlang.Project">
  <root_dir>
-  <a-node class='kiev.vlang.DirUnit'>
+  <a-node class="kiev.vlang.DirUnit">
    <name>.</name>
    <members>
-    <a-node class='kiev.vlang.DirUnit'>
+    <a-node class="kiev.vlang.DirUnit">
      <name>kiev</name>
      <members>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>be</name>
        <members>
-        <a-node class='kiev.vlang.DirUnit'>
+        <a-node class="kiev.vlang.DirUnit">
          <name>java15</name>
          <members>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>Attr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>Bytecoder.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>ClazzName.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>Code.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>CodeSupport.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>ConstPool.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>CoreFunc.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>Instr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JBoolExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JCallExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JComplexStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JConstants.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JConstExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JEnv.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JFieldView.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JFileUnit.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JLoopStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JLvalueExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JMethod.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JNewExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JNode.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JStatement.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JStruct.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JType.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>JVar.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>OpCodeRules.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>Signature.java</fname>
           </a-node>
          </members>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>bytecode</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Attribute.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Classpath.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Clazz.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Constants.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Field.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Method.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>PoolConstant.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>fmt</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Compiled.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Drawable.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawContext.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawCtrl.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawDevice.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawJava.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawNonTerm.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DrawTerm.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ExprSyntax.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Formatter.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>JavaSyntax.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Language.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>SyntaxLayout.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
+         <fname>SyntaxManager.java</fname>
+        </a-node>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TreeSyntax.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>XmlDumpSyntax.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>gui</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Actions.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Canvas.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Editor.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>InfoView.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TreeView.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>UIView.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Window.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>ir</name>
        <members>
-        <a-node class='kiev.vlang.DirUnit'>
+        <a-node class="kiev.vlang.DirUnit">
          <name>java15</name>
          <members>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RBlockStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RBoolExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RCallExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RConstExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RField.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RFileUnit.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RLoopStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RLvalueExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RMethod.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RNewExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RNode.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RRules.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RStruct.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RSwitchStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RTryStat.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>RVar.java</fname>
           </a-node>
          </members>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>RuleTemplates.xml</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>parser</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ASTExpression.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ASTModifiers.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ASTOperatorAlias.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ASTPragma.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>EToken.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>kiev050.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>kiev050Constants.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>kiev050TokenManager.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Opdef.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ParseError.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ParseException.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>SimpleCharStream.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TempExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Token.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TokenManager.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TokenMgrError.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>stdlib</name>
        <members>
-        <a-node class='kiev.vlang.DirUnit'>
+        <a-node class="kiev.vlang.DirUnit">
          <name>meta</name>
          <members>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>abstract.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>access.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>alias.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>bridge.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>CompilerNode.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>extern.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>final.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>forward.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>macro.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>mixin.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>packed.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>pcase.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>singleton.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>static.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>synchronized.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>synthetic.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>throws.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>transient.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>unerasable.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>uuid.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>varargs.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>ViewOf.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>virtual.java</fname>
           </a-node>
          </members>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ArrayEnumerator.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Arrays.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Debug.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Dictionary.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Enumeration.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Hash.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Hashtable.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>KString.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>KStringBuffer.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>List.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>MatchError.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>MetaTypes.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>MetaTypesInternal.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>NoSuchElementException.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Pair.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>PVar.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Ref.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Stack.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>SupportTypes.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Syntax.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TypeInfo.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TypeSwitchHash.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Vector.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>transf</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>BackendProcessor.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ImportKievSrc.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessEnum.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessInner.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessPackedFld.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessPizzaCase.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessRewrite.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessView.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessVirtFld.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessVNode.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ProcessXPath.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TemplatVNode.xml</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>TransfProcessor.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>vdom</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ACharacterData.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ADomAttr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ADomDocument.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ADomElement.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ADomNode.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ADomNodeMixin.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DomBuilder.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Workflow.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>XPathUtils.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>vlang</name>
        <members>
-        <a-node class='kiev.vlang.DirUnit'>
+        <a-node class="kiev.vlang.DirUnit">
          <name>types</name>
          <members>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>AType.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>StdTypes.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TVarBld.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>Type.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TypeClosure.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TypeDef.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TypeExpr.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TypeNameRef.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TypeProvider.java</fname>
           </a-node>
-          <a-node class='kiev.vlang.FileUnit'>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>TypeRef.java</fname>
           </a-node>
          </members>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>BooleanExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>CallExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ComplexStatement.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Constants.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ConstExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>CoreMethod.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DataFlow.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>DNode.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
+         <fname>DumpUtils.java</fname>
+        </a-node>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>ENode.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Env.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Expr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>FileUnit.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Globals.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Import.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Language.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>LoopStatement.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>LvalueExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>MemberFlags.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Meta.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>MetaSpecial.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Method.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>NewExpr.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Operator.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>PassInfo.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Project.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Resolving.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Rewrites.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Rules.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>SNode.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Statement.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Struct.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Symbol.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Var.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.DirUnit'>
+      <a-node class="kiev.vlang.DirUnit">
        <name>vtree</name>
        <members>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>AST.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>metas.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>MetaTypes.java</fname>
         </a-node>
-        <a-node class='kiev.vlang.FileUnit'>
+        <a-node class="kiev.vlang.FileUnit">
          <fname>Tree.java</fname>
         </a-node>
        </members>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>Compiler.java</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>Errors.java</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>Kiev.java</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>Main.java</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>SopTest.java</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>Syntax.java</fname>
       </a-node>
      </members>
     </a-node>
-    <a-node class='kiev.vlang.DirUnit'>
+    <a-node class="kiev.vlang.DirUnit">
      <name>stx-fmt</name>
      <members>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>syntax-dump-api.xml</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>syntax-dump-full.xml</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>syntax-for-java.xml</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>syntax-for-project-tree.xml</fname>
       </a-node>
-      <a-node class='kiev.vlang.FileUnit'>
+      <a-node class="kiev.vlang.FileUnit">
        <fname>syntax-for-syntax.xml</fname>
       </a-node>
      </members>

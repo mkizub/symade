@@ -10,9 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.fmt.ATextSyntax;
-import kiev.fmt.Draw_ATextSyntax;
-
 import syntax kiev.Syntax;
 
 /**
@@ -25,22 +22,23 @@ public interface Language {
 	public String getURI();
 	public Class[] getSuperLanguages();
 	public Class[] getNodeClasses();
-	public Draw_ATextSyntax getDefaultEditorSyntax();
-	public Draw_ATextSyntax getDefaultInfoSyntax();
+	public String getDefaultEditorSyntax();
+	public String getDefaultInfoSyntax();
+	public String getClassByNodeName(String name);
 	public ANode makeNode(String name);
 }
 
 public abstract class LangBase implements Language {
 	
 	public static final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
-	private static Draw_ATextSyntax defaultEditorSyntax;
-	private static Draw_ATextSyntax defaultInfoSyntax;
 	protected static String defaultEditorSyntaxName;
 	protected static String defaultInfoSyntaxName;
+	protected final String langURI;
 
-	public String getURI() { return "sop://languages/"+getName(); }
+	public final String getURI() { return langURI; }
 
 	public LangBase() {
+		langURI = "sop://languages/"+getName()+"?class="+getClass().getName().intern();
 		foreach (Class c; getNodeClasses()) {
 			ThisIsANode um = (ThisIsANode)c.getAnnotation(ThisIsANode.class);
 			if (um == null)
@@ -52,6 +50,12 @@ public abstract class LangBase implements Language {
 		}
 	}
 	
+	public String getClassByNodeName(String name) {
+		Class c = allNodesMap.get(name);
+		if (c == null)
+			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
+		return c.getName();
+	}
 	public ANode makeNode(String name) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
@@ -59,15 +63,11 @@ public abstract class LangBase implements Language {
 		return (ANode)c.newInstance();
 	}
 
-	public Draw_ATextSyntax getDefaultEditorSyntax() {
-		if (defaultEditorSyntax == null)
-			defaultEditorSyntax = Env.getRoot().loadLanguageSyntax(defaultEditorSyntaxName);
-		return defaultEditorSyntax;
+	public String getDefaultEditorSyntax() {
+		return defaultEditorSyntaxName;
 	}
-	public Draw_ATextSyntax getDefaultInfoSyntax() {
-		if (defaultInfoSyntax == null)
-			defaultInfoSyntax = Env.getRoot().loadLanguageSyntax(defaultInfoSyntaxName);
-		return defaultInfoSyntax;
+	public String getDefaultInfoSyntax() {
+		return defaultInfoSyntaxName;
 	}
 }
 
@@ -81,6 +81,12 @@ public final class CoreLang extends LangBase {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 	
+	public ANode makeNode(String name) {
+		if (name.equals("ASTOperatorAlias"))
+			return new ASTOperatorAlias();
+		return super.makeNode(name);
+	}
+
 	private static Class[] superLanguages = {};
 	private static Class[] nodeClasses = {
 	ASTNode.class,

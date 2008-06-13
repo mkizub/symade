@@ -83,6 +83,7 @@ public final class DirUnit extends SNode {
 
 	public static final DirUnit[] emptyArray = new DirUnit[0];
 
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public String			name;
 	@nodeAttr public ASTNode[]		members;
 	

@@ -183,6 +183,9 @@
          <fname>SyntaxLayout.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
+         <fname>SyntaxManager.java</fname>
+        </a-node>
+        <a-node class='kiev.vlang.FileUnit'>
          <fname>TreeSyntax.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
@@ -589,6 +592,9 @@
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
          <fname>DNode.java</fname>
+        </a-node>
+        <a-node class='kiev.vlang.FileUnit'>
+         <fname>DumpUtils.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
          <fname>ENode.java</fname>

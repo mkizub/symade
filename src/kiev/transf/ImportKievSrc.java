@@ -13,11 +13,6 @@ package kiev.transf;
 import java.io.*;
 
 import kiev.be.java15.JFileUnit;
-import kiev.fmt.XmlDumpSyntax;
-import kiev.fmt.ATextSyntax;
-import kiev.fmt.TextFormatter;
-import kiev.fmt.TextPrinter;
-import kiev.fmt.Drawable;
 
 import syntax kiev.Syntax;
 
@@ -854,7 +849,7 @@ public final class KievFE_Verify extends TransfProcessor {
 @singleton
 public final class KievME_DumpAPI extends BackendProcessor {
 
-	private ATextSyntax stx;
+	//private ATextSyntax stx;
 
 	private KievME_DumpAPI() { super(KievBackend.Generic); }
 	public String getDescr() { "Dump API files" }
@@ -869,36 +864,36 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		FileUnit fu = (FileUnit)node;
 		if (fu.scanned_for_interface_only)
 			return;
-		if (this.stx == null)
-			this.stx = new XmlDumpSyntax("api");
+		//if (this.stx == null)
+		//	this.stx = new XmlDumpSyntax("api");
 		try {
-			dumpSrc(fu);
+			dumpAPI(fu);
 		} catch (Exception rte) { Kiev.reportError(rte); }
 	}
 
-	public void dumpSrc(FileUnit fu) {
+	public void dumpAPI(FileUnit fu) {
 		if( Kiev.verbose ) System.out.println("Dumping API of source file "+fu);
 
 		foreach (ASTNode n; fu.members) {
 			if (n instanceof TypeDecl)
-				dumpSrc((TypeDecl)n);
+				dumpAPI((TypeDecl)n);
 			else if (n instanceof NameSpace)
-				dumpSrc((NameSpace)n);
-			else if (n instanceof ATextSyntax)
-				dumpSrc((ATextSyntax)n);
+				dumpAPI((NameSpace)n);
+			else if (n instanceof DumpSerialized)
+				dumpAPI((DumpSerialized)n);
 		}
 	}
-	public void dumpSrc(NameSpace ns) {
+	public void dumpAPI(NameSpace ns) {
 		foreach (ASTNode n; ns.members) {
 			if (n instanceof TypeDecl)
-				dumpSrc((TypeDecl)n);
+				dumpAPI((TypeDecl)n);
 			else if (n instanceof NameSpace)
-				dumpSrc((NameSpace)n);
-			else if (n instanceof ATextSyntax)
-				dumpSrc((ATextSyntax)n);
+				dumpAPI((NameSpace)n);
+			else if (n instanceof DumpSerialized)
+				dumpAPI((DumpSerialized)n);
 		}
 	}
-	public void dumpSrc(TypeDecl td) {
+	public void dumpAPI(TypeDecl td) {
 		if (td.isPrivate() || (td instanceof TypeDef))
 			return;
 		String output_dir = Kiev.output_dir;
@@ -906,12 +901,12 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		try {
 			String out_file = td.qname().replace('\u001f',File.separatorChar)+".xml";
 			File f = new File(output_dir,out_file);
-			Env.getRoot().dumpTextFile(td, f, stx.getCompiled().init());
+			DumpUtils.dumpToXMLFile("api", td, f);
 		} catch (IOException e) {
 			System.out.println("Create/write error while API dump: "+e);
 		}
 	}
-	public void dumpSrc(ATextSyntax stx) {
+	public void dumpAPI(DumpSerialized stx) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir==null ) output_dir = "classes";
 		FileOutputStream fo = null;
@@ -925,7 +920,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 			}
 			FileOutputStream fo = new FileOutputStream(f);
 			ObjectOutput so = new ObjectOutputStream(fo);
-			so.writeObject(stx.getCompiled().init());
+			so.writeObject(stx.getDataToSerialize());
 			so.flush();
 		} catch (IOException e) {
 			System.out.println("Create/write error while API dump: "+e);
@@ -1121,7 +1116,7 @@ public final class KievBE_Generate extends BackendProcessor {
 ////////////////////////////////////////////////////
 //	   PASS - backend generate                    //
 ////////////////////////////////////////////////////
-
+/*
 @singleton
 public final class ExportBE_Generate extends BackendProcessor {
 	private ExportBE_Generate() { super(KievBackend.VSrc); }
@@ -1157,7 +1152,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 		}
 	}
 }
-
+*/
 ////////////////////////////////////////////////////
 //	   PASS - cleanup after backend               //
 ////////////////////////////////////////////////////

@@ -13,8 +13,6 @@ package kiev.vlang;
 import kiev.ir.java15.RRuleMethod;
 import kiev.ir.java15.RRuleBlock;
 
-import kiev.fmt.ATextSyntax;
-
 import syntax kiev.Syntax;
 
 /**
@@ -295,8 +293,8 @@ public final class RuleBlock extends ENode {
 			foreach(Var v; rule_method.localvars)
 				frame.members += new Field(v.sname, v.type, 0);
 			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
-			if (Kiev.debug && Kiev.debugRules)
-				Env.getRoot().dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt\u001fsyntax-for-java")).getCompiled());
+			//if (Kiev.debug && Kiev.debugRules)
+			//	SyntaxManager.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt\u001fsyntax-for-java")).getCompiled());
 			this.replaceWithNode(rn);
 			frame.updatePackageClazz(); 
 		} catch (Throwable t) {

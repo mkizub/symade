@@ -11,7 +11,6 @@
 package kiev;
 
 import kiev.stdlib.Arrays;
-import kiev.fmt.ATextSyntax;
 
 import java.util.IdentityHashMap;
 import java.io.*;
@@ -163,7 +162,7 @@ public abstract class WorkerThread extends Thread {
 				try {
 					this.curFile = cpi.fname.replace('/', File.separatorChar);
 					if (this.curFile.toLowerCase().endsWith(".xml")) {
-						cpi.fu = Env.getRoot().loadFromXmlFile(new File(this.curFile), cpi.fdata);
+						cpi.fu = DumpUtils.loadFromXmlFile(new File(this.curFile), cpi.fdata);
 						Kiev.runProcessorsOn(cpi.fu);
 					} else {
 						java.io.InputStreamReader file_reader = null;
@@ -858,7 +857,8 @@ public class Compiler {
 		runFrontEnd(thr, (CompilerParseInfo[])cargs.toArray(new CompilerParseInfo[cargs.size()]), null, true);
 
 		if (Kiev.run_gui) {
-			kiev.gui.Window wnd = new kiev.gui.Window();
+			//kiev.gui.Window wnd = new kiev.gui.Window();
+			Object wnd = Class.forName("kiev.gui.Window").newInstance();
 			for(;;) Thread.sleep(10*1000);
 		} else {
 			if (thr.errCount == 0)

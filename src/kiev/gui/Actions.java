@@ -502,8 +502,8 @@ public final class FileActions implements Runnable {
 				return;
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
-				Draw_ATextSyntax stx = Env.getRoot().loadLanguageSyntax(dff.syntax_qname);
-				Env.getRoot().dumpTextFile(fu, jfc.getSelectedFile(), stx);
+				Draw_ATextSyntax stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
+				SyntaxManager.dumpTextFile(fu, jfc.getSelectedFile(), stx);
 				fu.current_syntax = stx.q_name;
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
@@ -517,7 +517,7 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			try {
-				Env.getRoot().dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled().init());
+				SyntaxManager.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled().init());
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml API exporting: "+e);
 			}
@@ -530,7 +530,7 @@ public final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
 			Draw_ATextSyntax stx = null;
 			if (fu.current_syntax != null)
-				stx = Env.getRoot().loadLanguageSyntax(fu.current_syntax);
+				stx = SyntaxManager.loadLanguageSyntax(fu.current_syntax);
 			File f = new File(fu.pname());
 			if (stx == null || stx != uiv.syntax) {
 				JFileChooser jfc = new JFileChooser(".");
@@ -547,11 +547,11 @@ public final class FileActions implements Runnable {
 				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
 					return;
 				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
-				stx = Env.getRoot().loadLanguageSyntax(dff.syntax_qname);
+				stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
 				f = jfc.getSelectedFile();
 			}
 			try {
-				Env.getRoot().dumpTextFile(fu, f, stx);
+				SyntaxManager.dumpTextFile(fu, f, stx);
 				fu.current_syntax = stx.q_name;
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
@@ -892,7 +892,7 @@ public final class RenderActions implements Runnable {
 				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}
-			Draw_ATextSyntax stx = Env.getRoot().getLanguageSyntax(qname, in_project);
+			Draw_ATextSyntax stx = SyntaxManager.getLanguageSyntax(qname, in_project);
 			this.uiv.setSyntax(stx);
 		}
 	}

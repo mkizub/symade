@@ -1255,3 +1255,9 @@ public class ReWalkNodeException extends RuntimeException {
 		this.replacer = replacer;
 	}
 }
+
+public interface DumpSerialized {
+	public String qname();
+	public Object getDataToSerialize();
+}
+

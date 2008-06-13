@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 @ThisIsANode(lang=SyntaxLang)
-public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
+public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalDNode, DumpSerialized {
 	@virtual typedef This  ≤ ATextSyntax;
 	
 	@nodeAttr public SymbolRef<ATextSyntax>	parent_syntax;
@@ -33,6 +33,10 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 
 	public ATextSyntax() {
 		this.parent_syntax = new SymbolRef<ATextSyntax>();
+	}
+	
+	public Object getDataToSerialize() {
+		return this.getCompiled().init();
 	}
 
 	public String qname() {
