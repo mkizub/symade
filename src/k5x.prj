@@ -532,38 +532,6 @@
        </members>
       </a-node>
       <a-node class="kiev.vlang.DirUnit">
-       <name>vdom</name>
-       <members>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>ACharacterData.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>ADomAttr.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>ADomDocument.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>ADomElement.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>ADomNode.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>ADomNodeMixin.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>DomBuilder.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>Workflow.java</fname>
-        </a-node>
-        <a-node class="kiev.vlang.FileUnit">
-         <fname>XPathUtils.java</fname>
-        </a-node>
-       </members>
-      </a-node>
-      <a-node class="kiev.vlang.DirUnit">
        <name>vlang</name>
        <members>
         <a-node class="kiev.vlang.DirUnit">

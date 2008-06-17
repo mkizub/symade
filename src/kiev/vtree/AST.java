@@ -35,6 +35,27 @@ public enum ChildChangeType {
 	MODIFIED
 }
 
+public final class DataAttachInfo {
+	public final   AttrSlot		p_slot;
+	public final   Object		p_data;
+	DataAttachInfo(Object data, AttrSlot slot) {
+		this.p_slot = slot;
+		this.p_data = data;
+	}
+}
+
+public final class ParentInfo {
+	public final   ANode			p_parent;
+	public final   AttrSlot			p_slot;
+	ParentInfo(ANode parent, AttrSlot slot) {
+		this.p_parent = parent;
+		this.p_slot = slot;
+	}
+	public boolean isSemantic() {
+		return this.p_slot.isSemantic();
+	}
+}
+
 public abstract class ANode implements INode {
 
 	@virtual typedef This  ≤ ANode;
@@ -54,7 +75,7 @@ public abstract class ANode implements INode {
 	public static final ParentAttrSlot nodeattr$syntax_parent =
 			new ParentAttrSlot("syntax_parent", true, true, TypeInfo.newTypeInfo(ANode.class,null));
 
-	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
+	private static final AttrSlot[] $values = {}; // {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
 	
 	public:ro @virtual @abstract ANode				ctx_root;
@@ -63,10 +84,10 @@ public abstract class ANode implements INode {
 	public:ro @virtual @abstract ComplexTypeDecl	ctx_tdecl;
 	public:ro @virtual @abstract Method			ctx_method;
 
-	AttrSlot				p_slot;
-	ANode					p_parent;
-	DataAttachInfo[]		ext_data;
-	ParentInfo[]			ext_parent;
+	@access:no,no,ro,rw AttrSlot				p_slot;
+	@access:no,no,ro,rw ANode					p_parent;
+	@access:no,no,ro,rw Object[]				ext_data;
+
 	@abstract
 	public:ro ANode			parent;
 
@@ -84,14 +105,12 @@ public abstract class ANode implements INode {
 		ASTNode.VVV				vvv_next;
 		AttrSlot				p_slot;
 		ANode					p_parent;
-		DataAttachInfo[]		ext_data;
-		ParentInfo[]			ext_parent;
+		Object[]				ext_data;
 		
 		public VVV(ANode node) {
 			this.p_slot = node.p_slot;
 			this.p_parent = node.p_parent;
 			this.ext_data = node.ext_data;
-			this.ext_parent = node.ext_parent;
 		}
 		public Object clone() { super.clone() }
 	}
@@ -200,7 +219,7 @@ public abstract class ANode implements INode {
 			ASTNode.openEdt((ASTNode)this).p_parent = value;
 	}
 	
-	@getter @nodeData final DataAttachInfo[] get$ext_data() {
+	@getter @nodeData final Object[] get$ext_data() {
 		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread() == CompilerThread)
 			return this.ext_data;
 		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
@@ -208,7 +227,7 @@ public abstract class ANode implements INode {
 		return this.ext_data;
 	}
 	
-	@setter @nodeData final void set$ext_data(DataAttachInfo[] value) {
+	@setter @nodeData final void set$ext_data(Object[] value) {
 		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
 			this.ext_data = value;
 		else if (Thread.currentThread() == CompilerThread)
@@ -229,24 +248,28 @@ public abstract class ANode implements INode {
 			this.p_parent = parent;
 			this.callbackAttached(new ParentInfo(parent,slot));
 		} else {
-			if (ext_parent != null) {
-				ParentInfo[] data = this.ext_parent;
-				int sz = data.length;
+			Object[] ext_data = this.ext_data;
+			if (ext_data != null) {
+				int sz = ext_data.length;
 				for (int i=0; i < sz; i++) {
-					ParentInfo pi = data[i];
-					if (pi.p_parent == parent && pi.p_slot == slot)
-						return;
-					assert (!pi.p_slot.parent_attr_slot.is_unique || pi.p_slot.parent_attr_slot != slot.parent_attr_slot);
+					Object dat = ext_data[i];
+					if (dat instanceof ParentInfo) {
+						ParentInfo pi = (ParentInfo)dat;
+						if (pi.p_parent == parent && pi.p_slot == slot)
+							return;
+						assert (!pi.p_slot.parent_attr_slot.is_unique || pi.p_slot.parent_attr_slot != slot.parent_attr_slot);
+					}
 				}
-				ParentInfo[] tmp = new ParentInfo[sz+1];
+				Object[] tmp = new Object[sz+1];
 				for (int i=0; i < sz; i++)
-					tmp[i] = data[i];
-				tmp[sz] = new ParentInfo(parent,slot);
-				ext_parent = tmp;
-				this.callbackAttached(tmp[sz]);
+					tmp[i] = ext_data[i];
+				ParentInfo pi = new ParentInfo(parent,slot);
+				tmp[sz] = pi;
+				this.ext_data = tmp;
+				this.callbackAttached(pi);
 			} else {
 				ParentInfo pi = new ParentInfo(parent,slot);
-				ext_parent = new ParentInfo[]{pi};
+				this.ext_data = new Object[]{pi};
 				this.callbackAttached(pi);
 			}
 		}
@@ -267,26 +290,30 @@ public abstract class ANode implements INode {
 			// notify parent about the changed slot
 			parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
 		} else {
-			ParentInfo[] data = this.ext_parent;
-			if (data == null)
+			Object[] ext_data = this.ext_data;
+			if (ext_data == null)
 				return;
-			int sz = data.length-1;
-			for (int idx=0; idx <= sz; idx++) {
-				ParentInfo pi = data[idx];
-				if (pi.p_parent == parent && pi.p_slot == slot) {
-					if (sz == 0) {
-						this.ext_parent = null;
-					} else {
-						ParentInfo[] tmp = new ParentInfo[sz];
-						int i;
-						for (i=0; i < idx; i++) tmp[i] = data[i];
-						for (   ; i <  sz; i++) tmp[i] = data[i+1];
-						this.ext_parent = tmp;
-					}
-					pi.p_parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
-					return;
+			int sz = ext_data.length-1;
+			int idx = 0;
+			for (; idx <= sz; idx++) {
+				Object dat = ext_data[idx];
+				if (dat instanceof ParentInfo) {
+					ParentInfo pi = (ParentInfo)dat;
+					if (pi.p_parent == parent && pi.p_slot == slot)
+						break;
 				}
 			}
+			ParentInfo pi = (ParentInfo)ext_data[idx];
+			if (sz == 0) {
+				this.ext_data = null;
+			} else {
+				Object[] tmp = new Object[sz];
+				int i;
+				for (i=0; i < idx; i++) tmp[i] = ext_data[i];
+				for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
+				this.ext_data = tmp;
+			}
+			pi.p_parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
 		}
 	}
 
@@ -389,8 +416,12 @@ public abstract class ANode implements INode {
 		foreach (AttrSlot a; this.values(); a.name == name)
 			return a.get(this);
 		if (ext_data != null) {
-			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == name)
-				return ai.p_data;
+			foreach (Object dat; ext_data) {
+				if (dat instanceof DataAttachInfo && dat.p_slot.name == name)
+					return dat.p_data;
+				else if (dat instanceof ANode && dat.pslot().name == name)
+					return dat;
+			}
 		}
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
@@ -398,83 +429,144 @@ public abstract class ANode implements INode {
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 
-	public final DataAttachInfo[] getAllExtData() {
-		if (ext_data == null)
-			return null;
-		return (DataAttachInfo[])ext_data.clone();
-	}
+	//public final Object[] getAllExtData() {
+	//	if (ext_data == null)
+	//		return null;
+	//	return (Object[])ext_data.clone();
+	//}
 	
 	public final Object getExtData(AttrSlot attr) {
 		if (ext_data != null) {
-			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == attr.name)
-				return ai.p_data;
+			foreach (Object dat; ext_data) {
+				if (dat instanceof DataAttachInfo && dat.p_slot == attr)
+					return dat.p_data;
+				else if (dat instanceof ANode && dat.pslot() == attr)
+					return dat;
+			}
 		}
 		return null;
 	}
 	
 	public final ANode getExtParent(ParentAttrSlot attr) {
 		assert (attr.is_unique);
-		if (ext_parent != null) {
-			foreach (ParentInfo pi; ext_parent; pi.p_slot.parent_attr_slot == attr)
+		if (ext_data != null) {
+			foreach (ParentInfo pi; ext_data; pi.p_slot.parent_attr_slot == attr)
 				return pi.p_parent;
 		}
 		return null;
 	}
 	
 	public final void setExtData(Object d, AttrSlot attr) {
-		if (ext_data != null) {
-			DataAttachInfo[] data = this.ext_data;
-			int sz = data.length;
+		if (d == null) {
+			delExtData(attr);
+			return;
+		}
+
+		Object[] ext_data = this.ext_data;
+		if (attr.is_child && !attr.is_space) {
+			ANode n = (ANode)d;
+			assert(!n.isAttached());
+			if (ext_data == null) {
+				this.ext_data = new Object[]{n};
+				n.callbackAttached(this, attr);
+				return;
+			}
+			int sz = ext_data.length;
 			for (int i=0; i < sz; i++) {
-				DataAttachInfo ai = data[i];
-				if (ai.p_slot.name == attr.name) {
-					assert(ai.p_slot == attr);
-					if (ai.p_data == d)
+				Object dat = ext_data[i];
+				if !(dat instanceof ANode)
+					continue;
+				if (dat.p_slot == attr) {
+					if (dat == n)
 						return;
-					ext_data = (DataAttachInfo[])data.clone();
-					ext_data[i] = new DataAttachInfo(d,attr);
-					if (attr.is_attr) {
-						if (ai.p_data instanceof ANode)
-							((ANode)ai.p_data).callbackDetached(this, attr);
-						if (d instanceof ANode)
-							d.callbackAttached(this, attr);
-					}
+					ext_data = (Object[])ext_data.clone();
+					ext_data[i] = n;
+					this.ext_data = ext_data;
+					n.callbackAttached(this, attr);
 					return;
 				}
 			}
-			DataAttachInfo[] tmp = new DataAttachInfo[sz+1];
+			Object[] tmp = new Object[sz+1];
 			for (int i=0; i < sz; i++)
-				tmp[i] = data[i];
-			tmp[sz] = new DataAttachInfo(d,attr);
-			ext_data = tmp;
-			if (attr.is_attr && d instanceof ANode)
-				d.callbackAttached(this, attr);
-		} else {
-			ext_data = new DataAttachInfo[]{new DataAttachInfo(d,attr)};
-			if (attr.is_attr && d instanceof ANode)
-				d.callbackAttached(this, attr);
+				tmp[i] = ext_data[i];
+			tmp[sz] = n;
+			this.ext_data = tmp;
+			n.callbackAttached(this, attr);
+			return;
 		}
+		
+		if (attr.is_space && ((ANode[])d).length == 0) {
+			delExtData(attr);
+			return;
+		}
+		
+		if (ext_data == null) {
+			this.ext_data = new Object[]{new DataAttachInfo(d,attr)};
+			return;
+		}
+		int sz = ext_data.length;
+		for (int i=0; i < sz; i++) {
+			Object dat = ext_data[i];
+			if !(dat instanceof DataAttachInfo)
+				continue;
+			DataAttachInfo ai = (DataAttachInfo)dat;
+			if (ai.p_slot == attr) {
+				if (ai.p_data == d)
+					return;
+				ext_data = (Object[])ext_data.clone();
+				ext_data[i] = new DataAttachInfo(d,attr);
+				this.ext_data = ext_data;
+				return;
+			}
+		}
+		Object[] tmp = new Object[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = ext_data[i];
+		tmp[sz] = new DataAttachInfo(d,attr);
+		this.ext_data = tmp;
+		return;
 	}
 
 	public final void delExtData(AttrSlot attr) {
-		DataAttachInfo[] data = this.ext_data;
-		if (data != null) {
-			int sz = data.length-1;
+		Object[] ext_data = this.ext_data;
+		if (ext_data == null)
+			return;
+		int sz = ext_data.length-1;
+		if (attr.is_child && !attr.is_space) {
 			for (int idx=0; idx <= sz; idx++) {
-				DataAttachInfo ai = data[idx];
-				if (ai.p_slot.name == attr.name) {
-					assert(ai.p_slot == attr);
+				Object dat = ext_data[idx];
+				if (dat instanceof ANode) {
+					ANode n = (ANode)dat;
+					if (n.p_slot == attr) {
+						if (sz == 0) {
+							this.ext_data = null;
+						} else {
+							Object[] tmp = new Object[sz];
+							int i;
+							for (i=0; i < idx; i++) tmp[i] = ext_data[i];
+							for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
+							this.ext_data = tmp;
+						}
+						n.callbackDetached(this, attr);
+						return;
+					}
+				}
+			}
+		}
+		for (int idx=0; idx <= sz; idx++) {
+			Object dat = ext_data[idx];
+			if (dat instanceof DataAttachInfo) {
+				DataAttachInfo ai = (DataAttachInfo)dat;
+				if (ai.p_slot == attr) {
 					if (sz == 0) {
 						this.ext_data = null;
 					} else {
-						DataAttachInfo[] tmp = new DataAttachInfo[sz];
+						Object[] tmp = new Object[sz];
 						int i;
-						for (i=0; i < idx; i++) tmp[i] = data[i];
-						for (   ; i <  sz; i++) tmp[i] = data[i+1];
+						for (i=0; i < idx; i++) tmp[i] = ext_data[i];
+						for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
 						this.ext_data = tmp;
 					}
-					if (attr.is_attr && ai.p_data instanceof ANode)
-						((ANode)ai.p_data).callbackDetached(this, attr);
 					return;
 				}
 			}
@@ -483,20 +575,23 @@ public abstract class ANode implements INode {
 
 	public final void delExtParent(ParentAttrSlot attr) {
 		assert (attr.is_unique);
-		ParentInfo[] data = this.ext_parent;
-		if (data != null) {
-			int sz = data.length-1;
-			for (int idx=0; idx <= sz; idx++) {
-				ParentInfo pi = data[idx];
+		Object[] ext_data = this.ext_data;
+		if (ext_data == null)
+			return;
+		int sz = ext_data.length-1;
+		for (int idx=0; idx <= sz; idx++) {
+			Object dat = ext_data[idx];
+			if (dat instanceof ParentInfo) {
+				ParentInfo pi = (ParentInfo)dat;
 				if (pi.p_slot.parent_attr_slot == attr) {
 					if (sz == 0) {
-						this.ext_parent = null;
+						this.ext_data = null;
 					} else {
-						ParentInfo[] tmp = new ParentInfo[sz];
+						Object[] tmp = new Object[sz];
 						int i;
-						for (i=0; i < idx; i++) tmp[i] = data[i];
-						for (   ; i <  sz; i++) tmp[i] = data[i+1];
-						this.ext_parent = tmp;
+						for (i=0; i < idx; i++) tmp[i] = ext_data[i];
+						for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
+						this.ext_data = tmp;
 					}
 					pi.p_parent.callbackDetached(this, pi.p_slot);
 					return;
@@ -517,9 +612,10 @@ public abstract class ANode implements INode {
 				else if (val instanceof ANode)
 					walker.visitANode((ANode)val);
 			}
+			Object[] ext_data = this.ext_data;
 			if (ext_data != null) {
-				foreach (DataAttachInfo ai; ext_data; ai.p_slot.is_attr && ai.p_slot.is_external && ai.p_data instanceof ANode)
-					walker.visitANode((ANode)ai.p_data);
+				foreach (ANode n; ext_data; n.p_slot.is_external)
+					walker.visitANode(n);
 			}
 		}
 		walker.post_exec(this);
@@ -532,14 +628,14 @@ public abstract class ANode implements INode {
 		walker.post_exec(this);
 	}
 	protected void walkTreeFastVisit(TreeWalker $walker) {
-		DataAttachInfo[] ext_data = this.ext_data;
+		Object[] ext_data = this.ext_data;
 		if (ext_data == null)
 			return;
-		foreach (DataAttachInfo ai; ext_data; ai.p_slot.is_attr && ai.p_slot.is_child) {
-			if (ai.p_data instanceof ANode[])
-				$walker.visitANodeSpace((ANode[])ai.p_data);
-			else if (ai.p_data instanceof ANode)
-				$walker.visitANode((ANode)ai.p_data);
+		foreach (Object dat; ext_data) {
+			if (dat instanceof ANode)
+				$walker.visitANode((ANode)dat);
+			else if (dat instanceof DataAttachInfo && dat.p_slot.is_attr && dat.p_slot.is_space)
+				$walker.visitANodeSpace((ANode[])dat.p_data);
 		}
 	}
 
@@ -575,18 +671,40 @@ public abstract class ANode implements INode {
 
 	public Object copyTo(Object to$node, CopyContext in$context) {
 		ANode node = (ANode)to$node;
-		if (this.ext_data != null) {
-			int N = this.ext_data.length;
-			node.ext_data = new DataAttachInfo[N];
-			for (int i=0; i < N; i++) {
-				DataAttachInfo ai = this.ext_data[i];
-				if (ai.p_slot.is_attr && ai.p_data instanceof ASTNode) {
-					ASTNode nd = ((ASTNode)ai.p_data).ncopy(in$context);
-					node.ext_data[i] = new DataAttachInfo(nd,ai.p_slot);
-					nd.callbackAttached(node, ai.p_slot);
-				} else {
-					node.ext_data[i] = ai;
+		Object[] this_ext_data = this.ext_data;
+		if (this_ext_data != null) {
+			int sz = this_ext_data.length;
+			node.ext_data = new Object[sz];
+			int j=0;
+			for (int i=0; i < sz; i++) {
+				Object dat = this_ext_data[i];
+				if (dat instanceof ANode) {
+					ANode n = (ANode)dat;
+					ANode nd = n.ncopy(in$context);
+					node.ext_data[j++] = nd;
+					nd.callbackAttached(node, n.p_slot);
 				}
+				else if (dat instanceof DataAttachInfo) {
+					DataAttachInfo ai = (DataAttachInfo)dat;
+					if (ai.p_slot.is_attr && ai.p_slot.is_space) {
+						ANode[] sarr = (ANode[])ai.p_data;
+						ANode[] narr = (ANode[])sarr.clone();
+						for (int x=0; x < narr.length; x++) {
+							ANode n = sarr[x].ncopy(in$context);
+							narr[x] = n;
+							n.callbackAttached(node, ai.p_slot);
+						}
+						node.ext_data[j++] = new DataAttachInfo(narr,ai.p_slot);
+					} else {
+						node.ext_data[j++] = ai;
+					}
+				}
+			}
+			if (j < sz) {
+				if (j == 0)
+					node.ext_data = null;
+				else
+					node.ext_data = (Object[])Arrays.cloneToSize(node.ext_data,j);
 			}
 		}
 		if (this instanceof ISymbol)
@@ -691,13 +809,10 @@ public abstract class ANode implements INode {
 				attr.set(rn,ctx.fixup(attr,val));
 		}
 		if (this.ext_data != null) {
-			foreach (DataAttachInfo ai; this.ext_data; ai.p_slot.is_attr && ai.p_slot.is_external) {
-				if (ai.p_data instanceof ANode) {
-					Object o = ctx.fixup(ai.p_slot,((ANode)ai.p_data).doRewrite(ctx));
-					if (o != null)
-						this.setExtData(o,ai.p_slot);
-				} else
-					this.setExtData(ctx.fixup(ai.p_slot,ai.p_data),ai.p_slot);
+			foreach (ANode n; this.ext_data) {
+				AttrSlot attr = n.p_slot;
+				if (attr.is_external)
+					this.setExtData(ctx.fixup(attr,n.doRewrite(ctx)),attr);
 			}
 		}
 		return rn;
@@ -726,27 +841,6 @@ public class TreeWalker {
 				val = e.replacer;
 			}
 		}
-	}
-}
-
-public final class DataAttachInfo {
-	public final   AttrSlot		p_slot;
-	public final   Object		p_data;
-	DataAttachInfo(Object data, AttrSlot slot) {
-		this.p_slot = slot;
-		this.p_data = data;
-	}
-}
-
-public final class ParentInfo {
-	public final   ANode			p_parent;
-	public final   AttrSlot			p_slot;
-	ParentInfo(ANode parent, AttrSlot slot) {
-		this.p_parent = parent;
-		this.p_slot = slot;
-	}
-	public boolean isSemantic() {
-		return this.p_slot.isSemantic();
 	}
 }
 
@@ -787,7 +881,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	
 	public static final ASTNode[] emptyArray = new ASTNode[0];
 
-	private static final AttrSlot[] $values = {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
+	private static final AttrSlot[] $values = {}; // {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
 //#ifndef UNVERSIONED
 	@UnVersioned
