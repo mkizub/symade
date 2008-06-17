@@ -410,7 +410,6 @@ public final class Kiev {
 	// Scanning & parsing
 	public static Parser				k;
 
-	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;
 
 	public static KievBackend useBackend = Compiler.useBackend;

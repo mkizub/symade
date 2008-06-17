@@ -149,11 +149,6 @@ public final class FileUnit extends NameSpace {
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
 		Env.getRoot().resolveNameR(node,path)
 	}
-
-	public boolean backendCleanup() {
-        Kiev.parserAddresses.clear();
-		return super.backendCleanup();
-	}
 }
 
 

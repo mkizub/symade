@@ -40,7 +40,7 @@ public class CallExpr extends ENode {
 	@nodeAttr				public ENode				obj;
 	@nodeAttr				public TypeRef[]			targs;
 	@nodeAttr				public ENode[]				args;
-	@nodeAttr(ext_data=true)	public ENode[]				eargs;
+	@nodeAttr				public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;
@@ -370,10 +370,10 @@ public class CtorCallExpr extends ENode {
 	@virtual typedef JView = JCtorCallExpr;
 	@virtual typedef RView = RCtorCallExpr;
 
-	@nodeAttr				public ENode				obj;
+	@nodeAttr					public ENode				obj;
 	@nodeAttr(ext_data=true)	public ENode				tpinfo;
-	@nodeAttr				public ENode[]				args;
-	@nodeAttr(ext_data=true)	public ENode[]				eargs;
+	@nodeAttr					public ENode[]				args;
+	@nodeAttr					public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;

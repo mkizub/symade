@@ -845,8 +845,8 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
 						if (idx < 0)
 							idx = 0;
-						else if (idx > sas.get(node).length)
-							idx = sas.get(node).length;
+						else if (idx > sas.getArray(node).length)
+							idx = sas.getArray(node).length;
 						sas.insert(node,idx,obj);
 					} else {
 						a.set(node, obj);

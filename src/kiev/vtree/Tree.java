@@ -45,7 +45,7 @@ public final class SpacePtr {
 	public int size()
 		alias get$length
 	{
-		return slot.get(node).length;
+		return slot.getArray(node).length;
 	}
 
 	public ANode get(int idx)
@@ -134,6 +134,8 @@ public abstract class AttrSlot {
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
 	public void clear(ANode parent) { this.set(parent, defaultValue); }
+	public void detach(ANode parent, ANode old) { this.set(parent, null); }
+
 	public boolean isWrittable() { return true; }
 	
 	public boolean isXmlIgnore() { return is_xml_ignore; }
@@ -185,6 +187,9 @@ public class ExtAttrSlot extends AttrSlot {
 	public final void clear(ANode parent) {
 		return parent.delExtData(this);
 	}
+	public final void detach(ANode parent, ANode old) {
+		return parent.delExtData(this);
+	}
 }
 
 public abstract class RefAttrSlot extends AttrSlot {
@@ -221,24 +226,13 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public SpaceAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
 		super(name, p_attr, true, false, typeinfo);
 	}
-	// by default, set as extended data
-	public void set(ANode parent, Object value) {
-		parent.setExtData((N[])value, this);
-	}
-	// by default, get as extended data
-	public N[] get(ANode parent) {
-		Object value = parent.getExtData(this);
-		if (value == null)
-			return (N[])defaultValue;
-		return (N[])value;
-	}
 
 	public final N[] getArray(ANode parent) {
-		return this.get(parent);
+		return (N[])this.get(parent);
 	}
 
 	public final int indexOf(ANode parent, ANode node) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
 			if (narr[i] == node)
@@ -249,7 +243,7 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 
 	public final void detach(ANode parent, ANode old)
 	{
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
 			if (narr[i] == old) {
@@ -267,7 +261,7 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	}
 
 	public final N get(ANode parent, int idx) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		return narr[idx];
 	}
 
@@ -288,14 +282,14 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final N set(ANode parent, int idx, N node) {
-		N[] narr = (N[])get(parent).clone();
+		N[] narr = (N[])getArray(parent).clone();
 		narr[idx] = node;
 		set(parent,narr);
 		return node;
 	}
 
 	public final N add(ANode parent, N node) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
 		for (int i=0; i < sz; i++)
@@ -306,7 +300,7 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void del(ANode parent, int idx) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
 		int i;
@@ -318,7 +312,7 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void insert(ANode parent, int idx, N node) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length;
 		if (idx > sz) idx = sz;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -342,14 +336,14 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 	
 	public final void delAll(ANode parent) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		if (narr.length == 0)
 			return;
 		set(parent,(N[])defaultValue);
 	}
 	
 	public final N[] delToArray(ANode parent) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		if (narr.length > 0)
 			set(parent,(N[])defaultValue);
 		return narr;
@@ -369,7 +363,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 
 	public final N set(ANode parent, int idx, N node) {
 		assert(!this.isSemantic() || !node.isAttached());
-		N[] narr = (N[])get(parent).clone();
+		N[] narr = (N[])getArray(parent).clone();
 		narr[idx].callbackDetached(parent, this);
 		narr[idx] = node;
 		set(parent,narr);
@@ -380,7 +374,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final N add(ANode parent, N node) {
 		assert(!this.isSemantic() || !node.isAttached());
 		assert(indexOf(parent,node) < 0);
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
 		for (int i=0; i < sz; i++)
@@ -392,7 +386,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void del(ANode parent, int idx) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		narr[idx].callbackDetached(parent, this);
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
@@ -407,7 +401,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final void insert(ANode parent, int idx, N node) {
 		assert(!this.isSemantic() || !node.isAttached());
 		assert(indexOf(parent,node) < 0);
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		int sz = narr.length;
 		if (idx > sz) idx = sz;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -432,7 +426,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 	
 	public final void delAll(ANode parent) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		if (narr.length == 0)
 			return;
 		set(parent,(N[])defaultValue);
@@ -441,7 +435,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 	
 	public final N[] delToArray(ANode parent) {
-		N[] narr = get(parent);
+		N[] narr = getArray(parent);
 		if (narr.length > 0) {
 			set(parent,(N[])defaultValue);
 			for (int i=0; i < narr.length; i++)

@@ -721,12 +721,7 @@ public abstract class ANode implements INode {
 	{
 		if (!isAttached())
 			return this;
-		ANode parent = parent();
-		AttrSlot pslot = pslot();
-		if (pslot instanceof SpaceAttrSlot)
-			pslot.detach(parent, this);
-		else
-			pslot.clear(parent);
+		this.pslot().detach(this.parent(), this);
 		assert(!isAttached());
 		return this;
 	}
