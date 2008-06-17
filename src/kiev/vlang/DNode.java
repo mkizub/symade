@@ -11,10 +11,6 @@
 package kiev.vlang;
 
 import kiev.ir.java15.RDNode;
-import kiev.be.java15.JDNode;
-import kiev.be.java15.JTypeDecl;
-import kiev.ir.java15.RTypeDecl;
-import kiev.ir.java15.RComplexTypeDecl;
 
 import syntax kiev.Syntax;
 
@@ -25,8 +21,6 @@ import syntax kiev.Syntax;
 public abstract class DNode extends ASTNode implements ISymbol {
 
 	@virtual typedef This  ≤ DNode;
-	@virtual typedef JView ≤ JDNode;
-	@virtual typedef RView ≤ RDNode;
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
@@ -281,7 +275,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 
 	public String toString() { return sname; }
 
-	public final void resolveDecl() { ((RView)this).resolveDecl(); }
+	public final void resolveDecl() { ((RDNode)this).resolveDecl(); }
 
 	public int getFlags() {
 		return this.meta.mflags;
@@ -348,8 +342,6 @@ public interface GlobalDNode {
 public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  ≤ TypeDecl;
-	@virtual typedef JView ≤ JTypeDecl;
-	@virtual typedef RView ≤ RTypeDecl;
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
@@ -634,8 +626,6 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	}
 
 	@virtual typedef This  ≤ ComplexTypeDecl;
-	@virtual typedef JView ≤ JTypeDecl;
-	@virtual typedef RView ≤ RComplexTypeDecl;
 
 	@nodeAttr public SymbolRef<ComplexTypeDecl>	package_clazz;
 	@nodeAttr public TypeConstr[]					args;

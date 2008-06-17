@@ -545,7 +545,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		
 		// first, pre-generate super-types
 		foreach (TypeRef sup; this.super_types)
-			sup.getTypeDecl().preGenerate();
+			((RTypeDecl)sup.getTypeDecl()).preGenerate();
 
 		if (isMixin())
 			((Struct)this).meta.is_struct_interface = true;
@@ -559,8 +559,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		autoGenerateConstructor();
 		
 		if (this.isInterfaceOnly()) {
-			foreach (Struct s; sub_decls)
-				s.preGenerate();
+			foreach (TypeDecl s; sub_decls)
+				((RTypeDecl)s).preGenerate();
 			return false;
 		}
 		
@@ -991,7 +991,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 		cc.updateLinks();
 		Kiev.runProcessorsOn(defaults);
-		defaults.preGenerate();
+		((RStruct)defaults).preGenerate();
 		boolean has_abstract_methods = false;
 		foreach (Method m; defaults.members; m.isAbstract()) {
 			has_abstract_methods = true;

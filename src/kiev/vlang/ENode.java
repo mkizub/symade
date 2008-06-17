@@ -11,9 +11,6 @@
 package kiev.vlang;
 
 import kiev.ir.java15.RENode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RNopExpr;
-import kiev.be.java15.JNopExpr;
 
 import syntax kiev.Syntax;
 
@@ -27,8 +24,6 @@ public abstract class ENode extends ASTNode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  ≤ ENode;
-	@virtual typedef JView ≤ JENode;
-	@virtual typedef RView ≤ RENode;
 
 	private Object	ident_or_symbol_or_type;
 	
@@ -333,7 +328,7 @@ public abstract class ENode extends ASTNode {
 	public ENode closeBuild() { return this; }
 
 	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
+		((RENode)this).resolve(reqType);
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
@@ -354,8 +349,6 @@ public final class NopExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = NopExpr;
-	@virtual typedef RView = RNopExpr;
-	@virtual typedef JView = JNopExpr;
 
 	public NopExpr() {}
 	

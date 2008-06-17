@@ -29,9 +29,11 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public boolean preGenerate() {
 		Var penv = params[0];
 		assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
-		if( body instanceof RuleBlock ) {
-			body.preGenerate();
-			Kiev.runProcessorsOn(body);
+		ENode b = this.body;
+		if (b instanceof RuleBlock) {
+			RuleBlock rb = (RuleBlock)b;
+			((RRuleBlock)rb).preGenerate();
+			Kiev.runProcessorsOn(this.body);
 		}
 		return true;
 	}

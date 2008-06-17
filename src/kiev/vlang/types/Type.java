@@ -14,7 +14,6 @@ import kiev.be.java15.JType;
 import kiev.be.java15.JBaseType;
 import kiev.be.java15.JArrayType;
 import kiev.be.java15.JMethodType;
-import kiev.be.java15.JStruct;
 
 import syntax kiev.Syntax;
 
@@ -55,12 +54,6 @@ public abstract class Type extends AType {
 		return meta_type.rebind(this,set);
 	}
 	
-	public final JStruct getJStruct() {
-		Struct s = getStruct();
-		if (s == null)
-			return null;
-		return (JStruct)s;
-	}
 	public Struct getStruct() { return null; }
 	public MNode getMeta(String name) { return null; }
 

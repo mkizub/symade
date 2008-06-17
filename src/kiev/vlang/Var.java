@@ -10,13 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JDNode;
-import kiev.ir.java15.RVar;
-import kiev.be.java15.JVar;
-import kiev.ir.java15.RField;
-import kiev.be.java15.JField;
-
 import syntax kiev.Syntax;
 
 /**
@@ -29,8 +22,6 @@ import syntax kiev.Syntax;
 public abstract class Var extends DNode implements GlobalDNode {
 	
 	@virtual typedef This  ≤ Var;
-	@virtual typedef JView ≤ JVar;
-	@virtual typedef RView ≤ RVar;
 
 	public static final int VAR_LOCAL          = 0;
 	public static final int VAR_RULE           = 1;
@@ -331,8 +322,6 @@ public class Field extends Var {
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
 
 	@virtual typedef This  ≤ Field;
-	@virtual typedef JView = JField;
-	@virtual typedef RView = RField;
 
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		getter_from_inner;

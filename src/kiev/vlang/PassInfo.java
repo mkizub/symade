@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JLabel;
-
 import syntax kiev.Syntax;
 
 /**

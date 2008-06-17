@@ -10,34 +10,7 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.ir.java15.RNode;
-import kiev.be.java15.JNode;
 import kiev.ir.java15.RENode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RInlineMethodStat;
-import kiev.be.java15.JInlineMethodStat;
-import kiev.ir.java15.RBlock;
-import kiev.be.java15.JBlock;
-import kiev.ir.java15.RExprStat;
-import kiev.be.java15.JExprStat;
-import kiev.ir.java15.RReturnStat;
-import kiev.be.java15.JReturnStat;
-import kiev.ir.java15.RThrowStat;
-import kiev.be.java15.JThrowStat;
-import kiev.ir.java15.RIfElseStat;
-import kiev.be.java15.JIfElseStat;
-import kiev.ir.java15.RCondStat;
-import kiev.be.java15.JCondStat;
-import kiev.ir.java15.RLabeledStat;
-import kiev.be.java15.JLabeledStat;
-import kiev.ir.java15.RBreakStat;
-import kiev.be.java15.JBreakStat;
-import kiev.ir.java15.RContinueStat;
-import kiev.be.java15.JContinueStat;
-import kiev.ir.java15.RGotoStat;
-import kiev.be.java15.JGotoStat;
-import kiev.ir.java15.RGotoCaseStat;
-import kiev.be.java15.JGotoCaseStat;
 
 import syntax kiev.Syntax;
 
@@ -53,8 +26,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	@DataFlowDefinition(in="root()", out="this:out()") private static class DFI {}
 
 	@virtual typedef This  = InlineMethodStat;
-	@virtual typedef JView = JInlineMethodStat;
-	@virtual typedef RView = RInlineMethodStat;
 
 	@nodeAttr public Method					dispatched;
 	@nodeData public Method					dispatcher;
@@ -141,8 +112,6 @@ public class ExprStat extends ENode {
 	}
 
 	@virtual typedef This  = ExprStat;
-	@virtual typedef JView = JExprStat;
-	@virtual typedef RView = RExprStat;
 
 	@nodeAttr public ENode	expr;
 
@@ -175,8 +144,6 @@ public class ReturnStat extends ENode {
 	}
 
 	@virtual typedef This  = ReturnStat;
-	@virtual typedef JView = JReturnStat;
-	@virtual typedef RView = RReturnStat;
 
 	@nodeAttr public ENode	expr;
 
@@ -211,8 +178,6 @@ public class ThrowStat extends ENode {
 	}
 
 	@virtual typedef This  = ThrowStat;
-	@virtual typedef JView = JThrowStat;
-	@virtual typedef RView = RThrowStat;
 
 	@nodeAttr public ENode	expr;
 
@@ -235,8 +200,6 @@ public class IfElseStat extends ENode {
 	}
 
 	@virtual typedef This  = IfElseStat;
-	@virtual typedef JView = JIfElseStat;
-	@virtual typedef RView = RIfElseStat;
 
 	@nodeAttr public ENode			cond;
 	@nodeAttr public ENode			thenSt;
@@ -281,8 +244,6 @@ public class CondStat extends ENode {
 	}
 
 	@virtual typedef This  = CondStat;
-	@virtual typedef JView = JCondStat;
-	@virtual typedef RView = RCondStat;
 
 	@nodeAttr public ENode		enabled;
 	@nodeAttr public ENode		cond;
@@ -308,8 +269,6 @@ public class LabeledStat extends ENode {
 	public static final LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	@virtual typedef This  = LabeledStat;
-	@virtual typedef JView = JLabeledStat;
-	@virtual typedef RView = RLabeledStat;
 
 	@nodeAttr public Label			lbl;
 	@nodeAttr public ENode			stat;
@@ -325,8 +284,6 @@ public class BreakStat extends ENode {
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = BreakStat;
-	@virtual typedef JView = JBreakStat;
-	@virtual typedef RView = RBreakStat;
 
 	@nodeData(copyable=false) public Label		dest;
 
@@ -398,8 +355,6 @@ public class ContinueStat extends ENode {
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = ContinueStat;
-	@virtual typedef JView = JContinueStat;
-	@virtual typedef RView = RContinueStat;
 
 	@nodeData(copyable=false) public Label		dest;
 
@@ -471,8 +426,6 @@ public class GotoStat extends ENode {
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = GotoStat;
-	@virtual typedef JView = JGotoStat;
-	@virtual typedef RView = RGotoStat;
 
 	@nodeData(copyable=false) public Label		dest;
 
@@ -534,8 +487,6 @@ public class GotoCaseStat extends ENode {
 	}
 
 	@virtual typedef This  = GotoCaseStat;
-	@virtual typedef JView = JGotoCaseStat;
-	@virtual typedef RView = RGotoCaseStat;
 
 	@nodeAttr public ENode		expr;
 	@nodeData public SwitchStat	sw;

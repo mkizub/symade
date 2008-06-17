@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.be.java15.JType;
-import kiev.be.java15.JBaseType;
-import kiev.be.java15.JArrayType;
-import kiev.be.java15.JMethodType;
-import kiev.be.java15.JStruct;
-
 import java.util.StringTokenizer;
 
 import syntax kiev.Syntax;

@@ -10,29 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RCaseLabel;
-import kiev.be.java15.JCaseLabel;
-import kiev.ir.java15.RSwitchStat;
-import kiev.be.java15.JSwitchStat;
-import kiev.ir.java15.RSwitchEnumStat;
-import kiev.be.java15.JSwitchEnumStat;
-import kiev.ir.java15.RSwitchTypeStat;
-import kiev.be.java15.JSwitchTypeStat;
-import kiev.ir.java15.RMatchStat;
-import kiev.be.java15.JMatchStat;
-import kiev.ir.java15.RCatchInfo;
-import kiev.be.java15.JCatchInfo;
-import kiev.ir.java15.RFinallyInfo;
-import kiev.be.java15.JFinallyInfo;
-import kiev.ir.java15.RTryStat;
-import kiev.be.java15.JTryStat;
-import kiev.ir.java15.RSynchronizedStat;
-import kiev.be.java15.JSynchronizedStat;
-import kiev.ir.java15.RWithStat;
-import kiev.be.java15.JWithStat;
-
 import kiev.be.java15.CodeLabel;
 import kiev.be.java15.CodeSwitch;
 import kiev.be.java15.CodeCatchInfo;
@@ -56,8 +33,6 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
 	@virtual typedef This  = CaseLabel;
-	@virtual typedef JView = JCaseLabel;
-	@virtual typedef RView = RCaseLabel;
 
 	@nodeAttr public ENode			val;
 	@nodeData public Type			type;
@@ -155,8 +130,6 @@ public class SwitchStat extends Block {
 	}
 	
 	@virtual typedef This  ≤ SwitchStat;
-	@virtual typedef JView ≤ JSwitchStat;
-	@virtual typedef RView ≤ RSwitchStat;
 
 	@nodeAttr public ENode					sel;
 	@nodeData public CaseLabel[]				cases;
@@ -250,8 +223,6 @@ public class SwitchEnumStat extends SwitchStat {
 	}
 	
 	@virtual typedef This  = SwitchEnumStat;
-	@virtual typedef JView = JSwitchEnumStat;
-	@virtual typedef RView = RSwitchEnumStat;
 
 	public SwitchEnumStat() {
 	}
@@ -281,8 +252,6 @@ public class SwitchTypeStat extends SwitchStat {
 	}
 	
 	@virtual typedef This  = SwitchTypeStat;
-	@virtual typedef JView = JSwitchTypeStat;
-	@virtual typedef RView = RSwitchTypeStat;
 
 	public SwitchTypeStat() {
 	}
@@ -308,8 +277,6 @@ public class MatchStat extends SwitchStat {
 	}
 	
 	@virtual typedef This  = MatchStat;
-	@virtual typedef JView = JMatchStat;
-	@virtual typedef RView = RMatchStat;
 
 	@nodeAttr public Var					tmp_var;
 
@@ -337,8 +304,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	public static final CatchInfo[] emptyArray = new CatchInfo[0];
 
 	@virtual typedef This  = CatchInfo;
-	@virtual typedef JView = JCatchInfo;
-	@virtual typedef RView = RCatchInfo;
 
 	@nodeAttr public Var				arg;
 	@nodeAttr public ENode			body;
@@ -384,8 +349,6 @@ public class FinallyInfo extends ENode {
 	}
 	
 	@virtual typedef This  = FinallyInfo;
-	@virtual typedef JView = JFinallyInfo;
-	@virtual typedef RView = RFinallyInfo;
 
 	@nodeAttr public ENode			body;
 	@nodeAttr public Var				ret_arg;
@@ -423,8 +386,6 @@ public class TryStat extends ENode {
 	}
 	
 	@virtual typedef This  = TryStat;
-	@virtual typedef JView = JTryStat;
-	@virtual typedef RView = RTryStat;
 
 	@nodeAttr public ENode				body;
 	@nodeAttr public CatchInfo[]			catchers;
@@ -464,8 +425,6 @@ public class SynchronizedStat extends ENode {
 	}
 	
 	@virtual typedef This  = SynchronizedStat;
-	@virtual typedef JView = JSynchronizedStat;
-	@virtual typedef RView = RSynchronizedStat;
 
 	@nodeAttr public ENode			expr;
 	@nodeAttr public Var				expr_var;
@@ -505,8 +464,6 @@ public class WithStat extends ENode {
 	}
 	
 	@virtual typedef This  = WithStat;
-	@virtual typedef JView = JWithStat;
-	@virtual typedef RView = RWithStat;
 
 	@nodeAttr public ENode		expr;
 	@nodeAttr public ENode		body;

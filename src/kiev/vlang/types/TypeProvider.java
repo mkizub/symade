@@ -10,9 +10,6 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.be.java15.JBaseMetaType;
-import kiev.be.java15.JStruct;
-
 import syntax kiev.Syntax;
 
 public abstract class MetaType implements Constants {

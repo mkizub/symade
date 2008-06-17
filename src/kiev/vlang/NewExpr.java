@@ -10,19 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RNewExpr;
-import kiev.be.java15.JNewExpr;
-import kiev.ir.java15.RNewEnumExpr;
-import kiev.be.java15.JNewEnumExpr;
-import kiev.ir.java15.RNewArrayExpr;
-import kiev.be.java15.JNewArrayExpr;
-import kiev.ir.java15.RNewInitializedArrayExpr;
-import kiev.be.java15.JNewInitializedArrayExpr;
-import kiev.be.java15.JNewClosure;
-import kiev.ir.java15.RNewClosure;
-
 import syntax kiev.Syntax;
 
 /**
@@ -42,8 +29,6 @@ public final class NewExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewExpr;
-	@virtual typedef JView = JNewExpr;
-	@virtual typedef RView = RNewExpr;
 
 	@nodeAttr				public TypeRef				type;
 	@nodeAttr				public ENode				outer;
@@ -231,8 +216,6 @@ public final class NewEnumExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewEnumExpr;
-	@virtual typedef JView = JNewEnumExpr;
-	@virtual typedef RView = RNewEnumExpr;
 
 	@nodeAttr public ENode[]				args;
 
@@ -298,8 +281,6 @@ public final class NewArrayExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewArrayExpr;
-	@virtual typedef JView = JNewArrayExpr;
-	@virtual typedef RView = RNewArrayExpr;
 
 	@nodeAttr public TypeRef				type;
 	@nodeAttr public ENode[]				args;
@@ -349,8 +330,6 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewInitializedArrayExpr;
-	@virtual typedef JView = JNewInitializedArrayExpr;
-	@virtual typedef RView = RNewInitializedArrayExpr;
 
 	@nodeAttr public TypeExpr			type;
 	@nodeAttr public ENode[]			args;
@@ -424,8 +403,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 
 	@virtual typedef This  = NewClosure;
-	@virtual typedef JView = JNewClosure;
-	@virtual typedef RView = RNewClosure;
 
 	@nodeAttr public TypeRef				type_ret;
 	@nodeAttr public Var[]				params;

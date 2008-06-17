@@ -10,21 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RBoolExpr;
-import kiev.be.java15.JBoolExpr;
-import kiev.ir.java15.RBinaryBooleanOrExpr;
-import kiev.be.java15.JBinaryBooleanOrExpr;
-import kiev.ir.java15.RBinaryBooleanAndExpr;
-import kiev.be.java15.JBinaryBooleanAndExpr;
-import kiev.ir.java15.RBinaryBoolExpr;
-import kiev.be.java15.JBinaryBoolExpr;
-import kiev.ir.java15.RInstanceofExpr;
-import kiev.be.java15.JInstanceofExpr;
-import kiev.ir.java15.RBooleanNotExpr;
-import kiev.be.java15.JBooleanNotExpr;
-
 import syntax kiev.Syntax;
 
 /**
@@ -36,8 +21,6 @@ import syntax kiev.Syntax;
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef This  ≤ BoolExpr;
-	@virtual typedef JView ≤ JBoolExpr;
-	@virtual typedef RView ≤ RBoolExpr;
 
 	public BoolExpr() {}
 
@@ -89,8 +72,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBooleanOrExpr;
-	@virtual typedef JView = JBinaryBooleanOrExpr;
-	@virtual typedef RView = RBinaryBooleanOrExpr;
 
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -163,8 +144,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBooleanAndExpr;
-	@virtual typedef JView = JBinaryBooleanAndExpr;
-	@virtual typedef RView = RBinaryBooleanAndExpr;
 
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -236,8 +215,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBoolExpr;
-	@virtual typedef JView = JBinaryBoolExpr;
-	@virtual typedef RView = RBinaryBoolExpr;
 
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
@@ -310,8 +287,6 @@ public class InstanceofExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = InstanceofExpr;
-	@virtual typedef JView = JInstanceofExpr;
-	@virtual typedef RView = RInstanceofExpr;
 
 	@nodeAttr public ENode		expr;
 	@nodeAttr public TypeRef		type;
@@ -396,8 +371,6 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BooleanNotExpr;
-	@virtual typedef JView = JBooleanNotExpr;
-	@virtual typedef RView = RBooleanNotExpr;
 
 	@nodeAttr public ENode		expr;
 

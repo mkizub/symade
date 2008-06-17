@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.ir.java15.RCoreExpr;
 import kiev.be.java15.BEndFunc;
 
 import syntax kiev.Syntax;
@@ -24,7 +23,6 @@ import syntax kiev.Syntax;
 public final class CoreExpr extends ENode {
 	
 	@virtual typedef This  = CoreExpr;
-	@virtual typedef RView = RCoreExpr;
 
 	public CoreFunc core_func;
 	public BEndFunc bend_func;

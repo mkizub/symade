@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JDNode;
-import kiev.be.java15.JTypeDecl;
-import kiev.be.java15.JStruct;
-import kiev.ir.java15.RStruct;
-
 import syntax kiev.Syntax;
 
 /**
@@ -213,8 +207,6 @@ public final class JavaEnum extends JavaClass {
 public abstract class Struct extends ComplexTypeDecl {
 	
 	@virtual typedef This  = Struct;
-	@virtual typedef JView = JStruct;
-	@virtual typedef RView = RStruct;
 
 	@nodeData(ext_data=true)		public Struct				typeinfo_clazz;
 	@nodeData(ext_data=true)		public Struct				iface_impl;

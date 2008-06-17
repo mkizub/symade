@@ -10,9 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.ir.java15.RENode;
-import kiev.be.java15.JENode;
-
 import java.util.StringTokenizer;
 
 import syntax kiev.Syntax;
@@ -380,8 +377,6 @@ public class IfElseRewr extends ENode {
 	}
 
 	@virtual typedef This  = IfElseRewr;
-	@virtual typedef JView = JENode;
-	@virtual typedef RView = RENode;
 
 	@nodeAttr public ENode			cond;
 	@nodeAttr public ENode			thenSt;
@@ -498,8 +493,6 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 	}
 
 	@virtual typedef This  = ForEachRewr;
-	@virtual typedef JView = JENode;
-	@virtual typedef RView = RENode;
 
 	@nodeAttr public Var			var;
 	@nodeAttr public ASTNode		container;
@@ -644,8 +637,6 @@ public class MacroSubstExpr extends ENode {
 	}
 
 	@virtual typedef This  = MacroSubstExpr;
-	@virtual typedef JView = JENode;
-	@virtual typedef RView = RENode;
 
 	@nodeAttr public ENode			expr;
 

@@ -10,10 +10,6 @@
  *******************************************************************************/
 package kiev.vtree;
 
-import kiev.be.java15.JType;
-import kiev.ir.java15.RNode;
-import kiev.be.java15.JNode;
-
 import syntax kiev.Syntax;
 
 /**
@@ -869,8 +865,6 @@ class CurrentVersionInfo extends VersionInfo {
 public abstract class ASTNode extends ANode implements Constants {
 
 	@virtual typedef This  ≤ ASTNode;
-	@virtual typedef JView ≤ JNode;
-	@virtual typedef RView ≤ RNode;
 	
 	public static final boolean EXECUTE_UNVERSIONED = Boolean.valueOf(System.getProperty("symade.unversioned","true")).booleanValue();
 	
@@ -1138,12 +1132,6 @@ public abstract class ASTNode extends ANode implements Constants {
 	public boolean preVerify() { return true; }
 	public void postVerify() {}
 
-	public final boolean preGenerate() {
-		if (!isAttached())
-			return false;
-		return ((RView)this).preGenerate();
-	}
-
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		return null;
 	}
@@ -1325,15 +1313,6 @@ public class CompilerException extends RuntimeException {
 	public CompilerException(ASTNode from, CError err_id, String msg) {
 		super(msg);
 		this.from = from;
-		this.err_id = err_id;
-	}
-	public CompilerException(JNode from, String msg) {
-		super(msg);
-		this.from = (ASTNode)from;
-	}
-	public CompilerException(JNode from, CError err_id, String msg) {
-		super(msg);
-		this.from = (ASTNode)from;
 		this.err_id = err_id;
 	}
 }

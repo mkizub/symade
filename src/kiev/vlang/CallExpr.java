@@ -10,15 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RCallExpr;
-import kiev.be.java15.JCallExpr;
-import kiev.ir.java15.RCtorCallExpr;
-import kiev.be.java15.JCtorCallExpr;
-import kiev.ir.java15.RClosureCallExpr;
-import kiev.be.java15.JClosureCallExpr;
-
 import syntax kiev.Syntax;
 
 /**
@@ -34,8 +25,6 @@ public class CallExpr extends ENode {
 	}
 	
 	@virtual typedef This  = CallExpr;
-	@virtual typedef JView = JCallExpr;
-	@virtual typedef RView = RCallExpr;
 
 	@nodeAttr				public ENode				obj;
 	@nodeAttr				public TypeRef[]			targs;
@@ -367,8 +356,6 @@ public class CtorCallExpr extends ENode {
 	}
 	
 	@virtual typedef This  = CtorCallExpr;
-	@virtual typedef JView = JCtorCallExpr;
-	@virtual typedef RView = RCtorCallExpr;
 
 	@nodeAttr					public ENode				obj;
 	@nodeAttr(ext_data=true)	public ENode				tpinfo;
@@ -464,8 +451,6 @@ public class ClosureCallExpr extends ENode {
 	}
 	
 	@virtual typedef This  = ClosureCallExpr;
-	@virtual typedef JView = JClosureCallExpr;
-	@virtual typedef RView = RClosureCallExpr;
 
 	@nodeAttr public ENode				expr;
 	@nodeAttr public ENode[]				args;

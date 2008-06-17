@@ -20,6 +20,11 @@ import syntax kiev.Syntax;
 
 public final class JEnv {
 
+	public void generateFile(FileUnit fu) {
+		((JFileUnit)fu).generate();
+	}
+	
+
 	Struct loadStruct(ClazzName name) {
 		if (name.name == KString.Empty) return Env.getRoot();
 		// Check class is already loaded

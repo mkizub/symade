@@ -124,7 +124,7 @@ public final view JMethod of Method extends JDNode {
 						msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					JMethod func = Type.tpError.getJStruct().resolveMethod(null,KString.from("(Ljava/lang/String;)V"));
+					JMethod func = Type.tpError.getJType().getJStruct().resolveMethod(null,KString.from("(Ljava/lang/String;)V"));
 					code.addInstr(Instr.op_call,func,true);
 					code.addInstr(Instr.op_throw);
 				}

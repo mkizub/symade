@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.be.java15.JTypeRef;
-import kiev.be.java15.JType;
-
 import syntax kiev.Syntax;
 
 /**
@@ -31,7 +26,6 @@ public class TypeRef extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  ≤ TypeRef;
-	@virtual typedef JView = JTypeRef;
 	
 	public TypeRef() {}
 	
@@ -88,7 +82,6 @@ public class TypeRef extends ENode {
 	public void checkResolved() { getType().checkResolved(); } 
 	public Struct getStruct() { if (type_lnk == null) return null; return type_lnk.getStruct(); }
 	public TypeDecl getTypeDecl() { if (type_lnk == null) return null; return type_lnk.meta_type.tdecl; }
-	public JType getJType() { return getType().getJType(); }
 
 	public boolean preResolveIn() {
 		((TypeRef)this).getType(); // calls resolving

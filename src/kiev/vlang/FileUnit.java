@@ -12,13 +12,6 @@ package kiev.vlang;
 
 import java.io.*;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JDNode;
-import kiev.ir.java15.RFileUnit;
-import kiev.be.java15.JFileUnit;
-import kiev.ir.java15.RNameSpace;
-import kiev.be.java15.JNameSpace;
-
 import syntax kiev.Syntax;
 
 /**
@@ -31,8 +24,6 @@ import syntax kiev.Syntax;
 public final class FileUnit extends NameSpace {
 
 	@virtual typedef This  = FileUnit;
-	@virtual typedef JView = JFileUnit;
-	@virtual typedef RView = RFileUnit;
 
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
@@ -156,8 +147,6 @@ public final class FileUnit extends NameSpace {
 public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  ≤ NameSpace;
-	@virtual typedef RView ≤ RNameSpace;
-	@virtual typedef JView ≤ JNameSpace;
 
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 

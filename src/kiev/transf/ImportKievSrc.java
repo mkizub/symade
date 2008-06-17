@@ -10,9 +10,9 @@
  *******************************************************************************/
 package kiev.transf;
 
-import java.io.*;
+import kiev.ir.java15.RNode;
 
-import kiev.be.java15.JFileUnit;
+import java.io.*;
 
 import syntax kiev.Syntax;
 
@@ -944,7 +944,13 @@ public final class KievME_PreGenartion extends BackendProcessor {
 		tr = Transaction.enter(tr,"KievME_PreGenartion");
 		try {
 			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
+				public boolean pre_exec(ANode n) {
+					if (n instanceof ASTNode) {
+						ASTNode astn = (ASTNode)n;
+						return ((RNode)astn).preGenerate();
+					}
+					return false;
+				}
 			});
 		} finally { tr.leave(); }
 	}
@@ -1106,7 +1112,7 @@ public final class KievBE_Generate extends BackendProcessor {
 			tr = Transaction.enter(tr,"KievBE_Generate");
 			try {
 				try {
-					((JFileUnit)fu).generate();
+					Env.getRoot().getBackendEnv().generateFile(fu);
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			} finally { tr.leave(); }
 		}

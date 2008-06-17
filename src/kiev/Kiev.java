@@ -13,7 +13,6 @@ package kiev;
 import java.io.*;
 
 import kiev.be.java15.Code;
-import kiev.be.java15.JNode;
 
 import syntax kiev.Syntax;
 
@@ -83,10 +82,6 @@ public final class Kiev {
 			throw (CompilationAbortError)e;
 		ASTNode dummy = null;
 		reportError(dummy, e);
-	}
-	
-   	public static void reportError(JNode from, Throwable e) {
-		reportError((ASTNode)from,e);
 	}
 	
    	public static void reportError(ASTNode from, Throwable e) {
@@ -183,10 +178,6 @@ public final class Kiev {
    	public static void reportError(String msg) {
 		ASTNode dummy = null;
 		reportError(dummy, msg);
-	}
-	
-   	public static void reportError(JNode from, String msg) {
-		reportError((ASTNode)from,msg);
 	}
 	
 	public static void reportError(ASTNode from, String msg) {

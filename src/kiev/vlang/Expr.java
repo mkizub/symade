@@ -10,35 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.be.java15.JLvalueExpr;
-import kiev.ir.java15.RShadow;
-import kiev.be.java15.JShadow;
-import kiev.ir.java15.RTypeClassExpr;
-import kiev.be.java15.JTypeClassExpr;
-import kiev.ir.java15.RTypeInfoExpr;
-import kiev.be.java15.JTypeInfoExpr;
-import kiev.ir.java15.RAssertEnabledExpr;
-import kiev.ir.java15.RAssignExpr;
-import kiev.be.java15.JAssignExpr;
-import kiev.ir.java15.RBinaryExpr;
-import kiev.be.java15.JBinaryExpr;
-import kiev.ir.java15.RStringConcatExpr;
-import kiev.be.java15.JStringConcatExpr;
-import kiev.ir.java15.RCommaExpr;
-import kiev.be.java15.JCommaExpr;
-import kiev.ir.java15.RBlock;
-import kiev.be.java15.JBlock;
-import kiev.ir.java15.RUnaryExpr;
-import kiev.be.java15.JUnaryExpr;
-import kiev.ir.java15.RIncrementExpr;
-import kiev.be.java15.JIncrementExpr;
-import kiev.ir.java15.RConditionalExpr;
-import kiev.be.java15.JConditionalExpr;
-import kiev.ir.java15.RCastExpr;
-import kiev.be.java15.JCastExpr;
-
 import kiev.be.java15.CodeLabel;
 
 import syntax kiev.Syntax;
@@ -56,8 +27,6 @@ public class Shadow extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = Shadow;
-	@virtual typedef JView = JShadow;
-	@virtual typedef RView = RShadow;
 
 	@nodeData public ASTNode	rnode;
 
@@ -85,8 +54,6 @@ public class TypeClassExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeClassExpr;
-	@virtual typedef JView = JTypeClassExpr;
-	@virtual typedef RView = RTypeClassExpr;
 
 	@nodeAttr public TypeRef		type;
 
@@ -116,8 +83,6 @@ public class TypeInfoExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeInfoExpr;
-	@virtual typedef JView = JTypeInfoExpr;
-	@virtual typedef RView = RTypeInfoExpr;
 
 	@nodeAttr public TypeRef				type;
 	@nodeAttr public ENode				cl_expr;
@@ -150,7 +115,6 @@ public class AssertEnabledExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = AssertEnabledExpr;
-	@virtual typedef RView = RAssertEnabledExpr;
 
 	public AssertEnabledExpr() {}
 
@@ -175,8 +139,6 @@ public class AssignExpr extends ENode {
 	}
 	
 	@virtual typedef This  = AssignExpr;
-	@virtual typedef JView = JAssignExpr;
-	@virtual typedef RView = RAssignExpr;
 
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			lval;
@@ -293,8 +255,6 @@ public class BinaryExpr extends ENode {
 	}
 	
 	@virtual typedef This  = BinaryExpr;
-	@virtual typedef JView = JBinaryExpr;
-	@virtual typedef RView = RBinaryExpr;
 
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
@@ -386,8 +346,6 @@ public class UnaryExpr extends ENode {
 	}
 
 	@virtual typedef This  = UnaryExpr;
-	@virtual typedef JView = JUnaryExpr;
-	@virtual typedef RView = RUnaryExpr;
 
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr;
@@ -479,8 +437,6 @@ public class StringConcatExpr extends ENode {
 	}
 
 	@virtual typedef This  = StringConcatExpr;
-	@virtual typedef JView = JStringConcatExpr;
-	@virtual typedef RView = RStringConcatExpr;
 
 	@nodeAttr public ENode[]				args;
 
@@ -533,8 +489,6 @@ public class CommaExpr extends ENode {
 	}
 
 	@virtual typedef This  = CommaExpr;
-	@virtual typedef JView = JCommaExpr;
-	@virtual typedef RView = RCommaExpr;
 
 	@nodeAttr public ENode[]			exprs;
 
@@ -568,8 +522,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	@virtual typedef This  ≤ Block;
-	@virtual typedef JView ≤ JBlock;
-	@virtual typedef RView ≤ RBlock;
 
 	@nodeAttr public ASTNode[]			stats;
 	@nodeAttr(copyable=false, ext_data=true)
@@ -689,8 +641,6 @@ public class IncrementExpr extends ENode {
 	}
 
 	@virtual typedef This  = IncrementExpr;
-	@virtual typedef JView = JIncrementExpr;
-	@virtual typedef RView = RIncrementExpr;
 
 	@nodeAttr public Operator			op;
 	@nodeAttr public ENode				lval;
@@ -740,8 +690,6 @@ public class ConditionalExpr extends ENode {
 	}
 
 	@virtual typedef This  = ConditionalExpr;
-	@virtual typedef JView = JConditionalExpr;
-	@virtual typedef RView = RConditionalExpr;
 
 	@nodeAttr public ENode			cond;
 	@nodeAttr public ENode			expr1;
@@ -787,8 +735,6 @@ public class CastExpr extends ENode {
 	}
 
 	@virtual typedef This  = CastExpr;
-	@virtual typedef JView = JCastExpr;
-	@virtual typedef RView = RCastExpr;
 
 	@nodeAttr public TypeRef		type;
 	@nodeAttr public ENode		expr;

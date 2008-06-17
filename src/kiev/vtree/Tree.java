@@ -10,9 +10,6 @@
  *******************************************************************************/
 package kiev.vtree;
 
-import kiev.be.java15.JType;
-import kiev.be.java15.JNode;
-
 import java.lang.annotation.*;
 
 import syntax kiev.Syntax;

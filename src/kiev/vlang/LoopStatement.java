@@ -10,22 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JDNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RLoopStat;
-import kiev.be.java15.JLoopStat;
-import kiev.ir.java15.RLabel;
-import kiev.be.java15.JLabel;
-import kiev.ir.java15.RWhileStat;
-import kiev.be.java15.JWhileStat;
-import kiev.ir.java15.RDoWhileStat;
-import kiev.be.java15.JDoWhileStat;
-import kiev.ir.java15.RForStat;
-import kiev.be.java15.JForStat;
-import kiev.ir.java15.RForEachStat;
-import kiev.be.java15.JForEachStat;
-
 import kiev.be.java15.CodeLabel;
 
 import syntax kiev.Syntax;
@@ -39,8 +23,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public abstract class LoopStat extends ENode {
 	@virtual typedef This  ≤ LoopStat;
-	@virtual typedef JView ≤ JLoopStat;
-	@virtual typedef RView ≤ RLoopStat;
 
 	@nodeAttr(copyable=false)	public Label		lblcnt;
 	@nodeAttr(copyable=false)	public Label		lblbrk;
@@ -59,8 +41,6 @@ public final class Label extends DNode {
 	@DataFlowDefinition(out="this:out()") private static class DFI {}
 
 	@virtual typedef This  = Label;
-	@virtual typedef JView = JLabel;
-	@virtual typedef RView = RLabel;
 
 	@nodeData(copyable=false)	public ASTNode[]		links;
 							public CodeLabel		label;
@@ -144,8 +124,6 @@ public class WhileStat extends LoopStat {
 	}
 
 	@virtual typedef This  = WhileStat;
-	@virtual typedef JView = JWhileStat;
-	@virtual typedef RView = RWhileStat;
 
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
@@ -182,8 +160,6 @@ public class DoWhileStat extends LoopStat {
 	}
 
 	@virtual typedef This  = DoWhileStat;
-	@virtual typedef JView = JDoWhileStat;
-	@virtual typedef RView = RDoWhileStat;
 
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
@@ -222,8 +198,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 	
 	@virtual typedef This  = ForStat;
-	@virtual typedef JView = JForStat;
-	@virtual typedef RView = RForStat;
 
 	@nodeAttr public ASTNode[]	inits;
 	@nodeAttr public ENode		cond;
@@ -288,8 +262,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public static final int	RULE  = 4;
 
 	@virtual typedef This  = ForEachStat;
-	@virtual typedef JView = JForEachStat;
-	@virtual typedef RView = RForEachStat;
 
 	@nodeAttr public int			mode;
 	@nodeAttr public ENode		container;

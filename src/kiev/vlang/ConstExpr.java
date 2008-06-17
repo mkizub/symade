@@ -10,22 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RConstExpr;
-import kiev.be.java15.JConstExpr;
-import kiev.be.java15.JConstBoolExpr;
-import kiev.be.java15.JConstNullExpr;
-import kiev.be.java15.JConstByteExpr;
-import kiev.be.java15.JConstShortExpr;
-import kiev.be.java15.JConstIntExpr;
-import kiev.be.java15.JConstLongExpr;
-import kiev.be.java15.JConstCharExpr;
-import kiev.be.java15.JConstFloatExpr;
-import kiev.be.java15.JConstDoubleExpr;
-import kiev.be.java15.JConstStringExpr;
-import kiev.be.java15.JConstEnumExpr;
-
 import syntax kiev.Syntax;
 
 /**
@@ -45,7 +29,6 @@ public final class ConstBoolExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstBoolExpr;
-	@virtual typedef JView = JConstBoolExpr;
 
 	@nodeAttr public boolean value;
 
@@ -71,7 +54,6 @@ public final class ConstNullExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstNullExpr;
-	@virtual typedef JView = JConstNullExpr;
 
 	public ConstNullExpr() {}
 
@@ -94,7 +76,6 @@ public final class ConstByteExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstByteExpr;
-	@virtual typedef JView = JConstByteExpr;
 
 	@nodeAttr public byte		value;
 	@nodeAttr public IntRadix	radix;
@@ -127,7 +108,6 @@ public final class ConstShortExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstShortExpr;
-	@virtual typedef JView = JConstShortExpr;
 
 	@nodeAttr public short		value;
 	@nodeAttr public IntRadix	radix;
@@ -160,7 +140,6 @@ public final class ConstIntExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstIntExpr;
-	@virtual typedef JView = JConstIntExpr;
 
 	@nodeAttr public int			value;
 	@nodeAttr public IntRadix	radix;
@@ -193,7 +172,6 @@ public final class ConstLongExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstLongExpr;
-	@virtual typedef JView = JConstLongExpr;
 
 	@nodeAttr public long		value;
 	@nodeAttr public IntRadix	radix;
@@ -226,7 +204,6 @@ public final class ConstCharExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstCharExpr;
-	@virtual typedef JView = JConstCharExpr;
 
 	@nodeAttr public char value;
 
@@ -253,7 +230,6 @@ public final class ConstFloatExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstFloatExpr;
-	@virtual typedef JView = JConstFloatExpr;
 
 	@nodeAttr public float value;
 
@@ -280,7 +256,6 @@ public final class ConstDoubleExpr extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstDoubleExpr;
-	@virtual typedef JView = JConstDoubleExpr;
 
 	@nodeAttr public double value;
 
@@ -308,7 +283,6 @@ public final class ConstStringExpr extends ConstExpr {
 	public static final ConstStringExpr[] emptyArray = new ConstStringExpr[0];
 	
 	@virtual typedef This  = ConstStringExpr;
-	@virtual typedef JView = JConstStringExpr;
 
 	@nodeAttr public String value;
 
@@ -334,7 +308,6 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstEnumExpr;
-	@virtual typedef JView = JConstEnumExpr;
 
 	@nodeAttr public E value;
 
@@ -359,8 +332,6 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 public abstract class ConstExpr extends ENode {
 
 	@virtual typedef This  ≤ ConstExpr;
-	@virtual typedef JView ≤ JConstExpr;
-	@virtual typedef RView = RConstExpr;
 
 	public ConstExpr() {
 		setResolved(true);

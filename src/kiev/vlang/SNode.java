@@ -11,7 +11,6 @@
 package kiev.vlang;
 
 import kiev.ir.java15.RSNode;
-import kiev.be.java15.JSNode;
 
 import syntax kiev.Syntax;
 
@@ -22,8 +21,6 @@ import syntax kiev.Syntax;
 public class SNode extends ASTNode {
 
 	@virtual typedef This  ≤ SNode;
-	@virtual typedef JView ≤ JSNode;
-	@virtual typedef RView ≤ RSNode;
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
@@ -33,7 +30,7 @@ public class SNode extends ASTNode {
 
 	public ASTNode getDummyNode() { SNode.dummySNode }
 	
-	public final void resolveDecl() { ((RView)this).resolveDecl(); }
+	public final void resolveDecl() { ((RSNode)this).resolveDecl(); }
 
 }
 

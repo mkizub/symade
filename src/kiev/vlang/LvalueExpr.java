@@ -10,29 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JENode;
-import kiev.ir.java15.RLvalueExpr;
-import kiev.be.java15.JLvalueExpr;
-import kiev.ir.java15.RAccessExpr;
-import kiev.be.java15.JAccessExpr;
-import kiev.ir.java15.RIFldExpr;
-import kiev.be.java15.JIFldExpr;
-import kiev.ir.java15.RContainerAccessExpr;
-import kiev.be.java15.JContainerAccessExpr;
-import kiev.ir.java15.RThisExpr;
-import kiev.be.java15.JThisExpr;
-import kiev.ir.java15.RSuperExpr;
-import kiev.be.java15.JSuperExpr;
-import kiev.ir.java15.RLVarExpr;
-import kiev.be.java15.JLVarExpr;
-import kiev.ir.java15.RSFldExpr;
-import kiev.be.java15.JSFldExpr;
-import kiev.ir.java15.ROuterThisAccessExpr;
-import kiev.be.java15.JOuterThisAccessExpr;
-import kiev.ir.java15.RReinterpExpr;
-import kiev.be.java15.JReinterpExpr;
-
 import syntax kiev.Syntax;
 
 /**
@@ -45,8 +22,6 @@ import syntax kiev.Syntax;
 public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef This  ≤ LvalueExpr;
-	@virtual typedef JView ≤ JLvalueExpr;
-	@virtual typedef RView ≤ RLvalueExpr;
 
 	public LvalueExpr() {}
 }
@@ -59,8 +34,6 @@ public final class AccessExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = AccessExpr;
-	@virtual typedef JView = JAccessExpr;
-	@virtual typedef RView = RAccessExpr;
 
 	@nodeAttr public ENode			obj;
 
@@ -200,8 +173,6 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = IFldExpr;
-	@virtual typedef JView = JIFldExpr;
-	@virtual typedef RView = RIFldExpr;
 
 	@nodeAttr public ENode			obj;
 	@abstract
@@ -407,8 +378,6 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = ContainerAccessExpr;
-	@virtual typedef JView = JContainerAccessExpr;
-	@virtual typedef RView = RContainerAccessExpr;
 
 	@nodeAttr public ENode		obj;
 	@nodeAttr public ENode		index;
@@ -471,8 +440,6 @@ public final class ThisExpr extends LvalueExpr {
 	static public final LVar thisPar = new LVar(0,Constants.nameThis,Type.tpVoid,Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 	
 	@virtual typedef This  = ThisExpr;
-	@virtual typedef JView = JThisExpr;
-	@virtual typedef RView = RThisExpr;
 
 	public ThisExpr() {}
 	public ThisExpr(int pos) {
@@ -514,8 +481,6 @@ public final class SuperExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SuperExpr;
-	@virtual typedef JView = JSuperExpr;
-	@virtual typedef RView = RSuperExpr;
 
 	public SuperExpr() {
 		setSuperExpr(true);
@@ -545,8 +510,6 @@ public final class LVarExpr extends LvalueExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = LVarExpr;
-	@virtual typedef JView = JLVarExpr;
-	@virtual typedef RView = RLVarExpr;
 
 	@getter public Var get$var() {
 		DNode sym = this.dnode;
@@ -638,8 +601,6 @@ public final class SFldExpr extends LvalueExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SFldExpr;
-	@virtual typedef JView = JSFldExpr;
-	@virtual typedef RView = RSFldExpr;
 
 	@nodeAttr public TypeRef			obj;
 
@@ -781,8 +742,6 @@ public final class OuterThisAccessExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = OuterThisAccessExpr;
-	@virtual typedef JView = JOuterThisAccessExpr;
-	@virtual typedef RView = ROuterThisAccessExpr;
 
 	@nodeAttr public TypeRef			outer;
 	@nodeData public Var[]			outer_refs;
@@ -848,8 +807,6 @@ public final class ReinterpExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = ReinterpExpr;
-	@virtual typedef JView = JReinterpExpr;
-	@virtual typedef RView = RReinterpExpr;
 
 	@nodeAttr public TypeRef		type;
 	@nodeAttr public ENode		expr;

@@ -10,9 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.ir.java15.RRuleMethod;
-import kiev.ir.java15.RRuleBlock;
-
 import syntax kiev.Syntax;
 
 /**
@@ -31,7 +28,6 @@ public class RuleMethod extends Method {
 	}
 
 	@virtual typedef This  = RuleMethod;
-	@virtual typedef RView = RRuleMethod;
 
 	@nodeAttr public Var[]				localvars;
 	          public int				base = 1;
@@ -255,7 +251,6 @@ public final class RuleBlock extends ENode {
 	}
 
 	@virtual typedef This  = RuleBlock;
-	@virtual typedef RView = RRuleBlock;
 
 	@nodeAttr public ASTRuleNode		rnode;
 

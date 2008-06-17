@@ -10,16 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.JNode;
-import kiev.be.java15.JDNode;
-import kiev.ir.java15.RMethod;
-import kiev.be.java15.JMethod;
-import kiev.ir.java15.RConstructor;
-import kiev.ir.java15.RInitializer;
-import kiev.be.java15.JInitializer;
-import kiev.ir.java15.RWBCCondition;
-import kiev.be.java15.JWBCCondition;
-
 import kiev.be.java15.CodeAttr;
 
 import syntax kiev.Syntax;
@@ -32,8 +22,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,GlobalDNode {
 	@virtual typedef This  ≤ Method;
-	@virtual typedef JView = JMethod;
-	@virtual typedef RView ≤ RMethod;
 	
 	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
@@ -885,7 +873,6 @@ public final class MethodImpl extends Method {
 	}
 	
 	@virtual typedef This  = MethodImpl;
-	@virtual typedef RView = RMethod;
 
 	public MethodImpl() {}
 
@@ -910,7 +897,6 @@ public final class Constructor extends Method {
 	}
 
 	@virtual typedef This  = Constructor;
-	@virtual typedef RView = RConstructor;
 
 	@nodeAttr public ENode[]				addstats;
 
@@ -958,8 +944,6 @@ public final class Initializer extends DNode {
 	}
 
 	@virtual typedef This  = Initializer;
-	@virtual typedef JView = JInitializer;
-	@virtual typedef RView = RInitializer;
 
 	@nodeAttr public ENode				body;
 
@@ -996,8 +980,6 @@ public final class WBCCondition extends DNode {
 	public static final WBCCondition[]	emptyArray = new WBCCondition[0];
 
 	@virtual typedef This  = WBCCondition;
-	@virtual typedef JView = JWBCCondition;
-	@virtual typedef RView = RWBCCondition;
 
 	@nodeAttr public WBCType				cond;
 	@nodeAttr public ENode				body;
