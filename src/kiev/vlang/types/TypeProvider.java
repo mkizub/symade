@@ -113,13 +113,13 @@ public abstract class MetaType implements Constants {
 		forw @= tdecl.getMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).type.applay(tp).resolveNameAccessR(node,info)
+		((Field)forw).getType().applay(tp).resolveNameAccessR(node,info)
 	;	info.isSuperAllowed(),
 		sup @= tdecl.super_types,
 		forw @= sup.getTypeDecl().getMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).type.applay(tp).resolveNameAccessR(node,info)
+		((Field)forw).getType().applay(tp).resolveNameAccessR(node,info)
 	}
 
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
@@ -145,14 +145,14 @@ public abstract class MetaType implements Constants {
 			member @= tdecl.getMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).type.applay(tp).resolveCallAccessR(node,info,mt)
+			((Field)member).getType().applay(tp).resolveCallAccessR(node,info,mt)
 		;
 			info.isForwardsAllowed(),
 			sup @= tdecl.super_types,
 			member @= sup.getTypeDecl().getMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).type.applay(tp).resolveCallAccessR(node,info,mt)
+			((Field)member).getType().applay(tp).resolveCallAccessR(node,info,mt)
 		}
 	}
 

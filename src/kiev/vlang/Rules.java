@@ -286,7 +286,7 @@ public final class RuleBlock extends ENode {
 				frame.members += new Field("bt$"+i, StdTypes.tpInt, 0);
 			// Local variables
 			foreach(Var v; rule_method.localvars)
-				frame.members += new Field(v.sname, v.type, 0);
+				frame.members += new Field(v.sname, v.getType(), 0);
 			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
 			//if (Kiev.debug && Kiev.debugRules)
 			//	SyntaxManager.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt\u001fsyntax-for-java")).getCompiled());
@@ -566,7 +566,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noImports),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = new TypeRef(Type.getRealType(xtype,elems.type.ret()));
+			itype = new TypeRef(Type.getRealType(xtype,elems.mtype.ret()));
 			mode = IsoneofMode.ELEMS;
 		} else if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();
@@ -731,7 +731,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
-			if( e.func.type.ret() ≡ Type.tpRule ) {
+			if( e.func.mtype.ret() ≡ Type.tpRule ) {
 				replaceWithNode(new RuleCallExpr(~e));
 				return;
 			}

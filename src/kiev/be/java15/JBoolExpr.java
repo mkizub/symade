@@ -266,13 +266,13 @@ public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 @ViewOf(vcast=true, iface=true)
 public final view JInstanceofExpr of InstanceofExpr extends JBoolExpr {
 	public:ro JENode		expr;
-	public:ro Type			type;
+	public:ro Type			itype;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
 		code.setLinePos(this);
 		expr.generate(code,Type.tpBoolean);
-		code.addInstr(Instr.op_instanceof,type);
+		code.addInstr(Instr.op_instanceof,itype);
 		code.addInstr(Instr.op_ifne,label);
 	}
 
@@ -280,7 +280,7 @@ public final view JInstanceofExpr of InstanceofExpr extends JBoolExpr {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
 		code.setLinePos(this);
 		expr.generate(code,Type.tpBoolean);
-		code.addInstr(Instr.op_instanceof,type);
+		code.addInstr(Instr.op_instanceof,itype);
 		code.addInstr(Instr.op_ifeq,label);
 	}
 }

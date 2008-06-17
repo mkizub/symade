@@ -605,7 +605,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					}
 				}
 				MetaAccess.verifyDecl(f); // recheck access
-				Type ftype = fdecl.type;
+				Type ftype = fdecl.getType();
 				MetaPacked pack = f.getMetaPacked();
 				if( pack != null ) {
 					if( f.isStatic() ) {
@@ -714,7 +714,7 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 					m.setPublic();
 					m.setAbstract(true);
 					m.pass3();
-					if (m.type.ret() ≡ Type.tpVoid || m.type.ret() ≡ Type.tpRule)
+					if (m.mtype.ret() ≡ Type.tpVoid || m.mtype.ret() ≡ Type.tpRule)
 						Kiev.reportError(m, "Annotation methods must return a value");
 				}
 				else if( n instanceof Field )

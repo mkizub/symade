@@ -176,7 +176,6 @@ public final class RewritePattern extends Var {
 		super(name, new TypeRef(tp), REWRITE_PATTERN, 0);
 	}
 
-	@getter public Type get$type() { return new ASTNodeType(this); }
 	public Type	getType() { return new ASTNodeType(this); }
 
 	public boolean match(ASTNode node) {
@@ -651,20 +650,20 @@ public class MacroSubstExpr extends ENode {
 @ThisIsANode(lang=MacroLang)
 public class MacroSubstTypeRef extends TypeRef {
 	
-	@DataFlowDefinition(out="type") private static class DFI {
-	@DataFlowDefinition(in="this:in")	ENode		type;
-	@DataFlowDefinition(in="type")		ENode		req_type;
+	@DataFlowDefinition(out="mtype") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode		mtype;
+	@DataFlowDefinition(in="mtype")	ENode		req_type;
 	}
 
 	@virtual typedef This  = MacroSubstTypeRef;
 
-	@nodeAttr public ENode			type;
-	@nodeAttr public TypeRef			req_type;
+	@nodeAttr public ENode			mtype;
+	@nodeAttr public TypeRef		req_type;
 
 	public MacroSubstTypeRef() {}
 	
 	public ANode doRewrite(RewriteContext ctx) {
-		return (ANode)ctx.fixup(this.pslot(),type.doRewrite(ctx));
+		return (ANode)ctx.fixup(this.pslot(),mtype.doRewrite(ctx));
 	}
 	
 	public Type getType() {

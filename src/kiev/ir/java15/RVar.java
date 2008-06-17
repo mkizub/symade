@@ -22,8 +22,6 @@ public static view RVar of Var extends RDNode {
 	public	TypeRef		vtype;
 	public	ENode		init;
 
-	@getter public final Type get$type();
-	
 	// init wrapper
 	public final boolean isInitWrapper();
 	public final void setInitWrapper(boolean on);
@@ -33,7 +31,7 @@ public static view RVar of Var extends RDNode {
 
 	public void resolveDecl() {
 		if( isResolved() ) return;
-		Type tp = this.type;
+		Type tp = this.getType();
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(tp);
 		if (tp instanceof CTimeType) {

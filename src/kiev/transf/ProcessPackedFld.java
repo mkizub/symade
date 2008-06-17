@@ -67,7 +67,7 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 				Kiev.reportError(f,"Packer field "+mp_in+" not found");
 				return;
 			}
-			if( p.type ≢ Type.tpInt ) {
+			if( p.getType() ≢ Type.tpInt ) {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
@@ -131,7 +131,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						~mp;
 						continue;
 					}
-					if( p.type ≢ Type.tpInt ) {
+					if( p.getType() ≢ Type.tpInt ) {
 						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 						~mp;
 						continue;
@@ -167,7 +167,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					set_var.setFinal(false);
 				s.addMethod(set_var);
 				set_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaSetter)).resolve(null);
-				LVar value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
+				LVar value = new LVar(f.pos,"value",f.getType(),Var.PARAM_NORMAL,0);
 				set_var.params.add(value);
 				if (!f.isInterfaceOnly()) {
 					Block body = new Block(f.pos);
@@ -181,7 +181,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						fval.init = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
 					body.addSymbol(fval);
 					Var tmp = new LVar(0,"tmp$val",Type.tpInt,Var.VAR_LOCAL,0);
-					if (f.type ≡ Type.tpBoolean)
+					if (f.getType() ≡ Type.tpBoolean)
 						tmp.init = new ReinterpExpr(f.pos, Type.tpInt, new LVarExpr(f.pos,value));
 					else
 						tmp.init = new LVarExpr(f.pos,value);
@@ -207,7 +207,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
-				Method get_var = new MethodImpl(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC |ACC_FINAL);
+				Method get_var = new MethodImpl(get_name,f.getType(),f.getJavaFlags() | ACC_SYNTHETIC |ACC_FINAL);
 				if (s.isInterface())
 					get_var.setFinal(false);
 				s.addMethod(get_var);
@@ -228,13 +228,13 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						expr = new BinaryExpr(f.pos, Operator.UnsignedRightShift, expr, sexpr);
 					}
 					expr = new BinaryExpr(f.pos, Operator.BitAnd, expr, mexpr);
-					if( mp.size == 8 && f.type ≡ Type.tpByte )
+					if( mp.size == 8 && f.getType() ≡ Type.tpByte )
 						expr = new CastExpr(f.pos, Type.tpByte, expr);
-					else if( mp.size == 16 && f.type ≡ Type.tpShort )
+					else if( mp.size == 16 && f.getType() ≡ Type.tpShort )
 						expr = new CastExpr(f.pos, Type.tpShort, expr);
-					else if( mp.size == 16 && f.type ≡ Type.tpChar )
+					else if( mp.size == 16 && f.getType() ≡ Type.tpChar )
 						expr = new ReinterpExpr(f.pos, Type.tpChar, expr);
-					else if( mp.size == 1 && f.type ≡ Type.tpBoolean )
+					else if( mp.size == 1 && f.getType() ≡ Type.tpBoolean )
 						expr = new ReinterpExpr(f.pos, Type.tpBoolean, expr);
 					
 					body.stats.add(new ReturnStat(f.pos,expr));
@@ -332,13 +332,13 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			expr = new BinaryExpr(fa.pos, Operator.UnsignedRightShift, expr, sexpr);
 		}
 		expr = new BinaryExpr(fa.pos, Operator.BitAnd, expr, mexpr);
-		if( mp.size == 8 && f.type ≡ Type.tpByte )
+		if( mp.size == 8 && f.getType() ≡ Type.tpByte )
 			expr = new CastExpr(fa.pos, Type.tpByte, expr);
-		else if( mp.size == 16 && f.type ≡ Type.tpShort )
+		else if( mp.size == 16 && f.getType() ≡ Type.tpShort )
 			expr = new CastExpr(fa.pos, Type.tpShort, expr);
-		else if( mp.size == 16 && f.type ≡ Type.tpChar )
+		else if( mp.size == 16 && f.getType() ≡ Type.tpChar )
 			expr = new ReinterpExpr(fa.pos, Type.tpChar, expr);
-		else if( mp.size == 1 && f.type ≡ Type.tpBoolean )
+		else if( mp.size == 1 && f.getType() ≡ Type.tpBoolean )
 			expr = new ReinterpExpr(fa.pos, Type.tpBoolean, expr);
 
 		fa.replaceWithNodeReWalk(expr);
@@ -379,9 +379,9 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 				ConstExpr sexpr = new ConstIntExpr(mp.offset);
 				expr = new BinaryExpr(fa.pos, Operator.UnsignedRightShift, expr, sexpr);
 			}
-			if( mp.size == 8 && f.type ≡ Type.tpByte )
+			if( mp.size == 8 && f.getType() ≡ Type.tpByte )
 				expr = new CastExpr(fa.pos, Type.tpByte, expr);
-			else if( mp.size == 16 && f.type ≡ Type.tpShort )
+			else if( mp.size == 16 && f.getType() ≡ Type.tpShort )
 				expr = new CastExpr(fa.pos, Type.tpShort, expr);
 			tmp.init = expr;
 			be.stats.add(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ~ae.value)));
@@ -459,9 +459,9 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 					ConstExpr sexpr = new ConstIntExpr(mp.offset);
 					expr = new BinaryExpr(fa.pos, Operator.UnsignedRightShift, expr, sexpr);
 				}
-				if( mp.size == 8 && f.type ≡ Type.tpByte )
+				if( mp.size == 8 && f.getType() ≡ Type.tpByte )
 					expr = new CastExpr(fa.pos, Type.tpByte, expr);
-				else if( mp.size == 16 && f.type ≡ Type.tpShort )
+				else if( mp.size == 16 && f.getType() ≡ Type.tpShort )
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
 				ConstExpr ce;
 				if (ie.op == Operator.PreIncr)

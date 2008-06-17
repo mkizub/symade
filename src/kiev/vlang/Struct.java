@@ -304,12 +304,12 @@ public abstract class Struct extends ComplexTypeDecl {
 		trace(Kiev.debug && Kiev.debugMembers,"Method "+m+" added to class "+this);
 		if (m instanceof Constructor) {
 			foreach (Constructor mm; members; mm != m) {
-				if (mm.type.equals(m.type))
+				if (mm.mtype.equals(m.mtype))
 					Kiev.reportError(m,"Constructor "+m+" already exists in class "+this);
 			}
 		} else {
 			foreach (Method mm; members; mm != m) {
-				if (mm.sname == m.sname && mm.type.equals(m.type))
+				if (mm.sname == m.sname && mm.mtype.equals(m.mtype))
 					Kiev.reportError(m,"Method "+m+" already exists in class "+this);
 			}
 		}

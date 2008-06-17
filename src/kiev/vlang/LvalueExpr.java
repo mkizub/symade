@@ -353,7 +353,7 @@ public final class IFldExpr extends LvalueExpr {
 			DNode@ v;
 			ResInfo info;
 			if (tp.resolveNameAccessR(v,info=new ResInfo(this,f.sname,ResInfo.noStatic | ResInfo.noImports)) ) {
-				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
+				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).getType() != f.getType()) {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
 					f = (Field)v;
@@ -405,7 +405,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(t,v,info,mt) )
 				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
-			return Type.getRealType(t,((Method)v).type.ret());
+			return Type.getRealType(t,((Method)v).mtype.ret());
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -428,7 +428,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(t,v,info,mt) )
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
-		return new Type[]{Type.getRealType(t,((Method)v).type.ret())};
+		return new Type[]{Type.getRealType(t,((Method)v).mtype.ret())};
 	}
 }
 
@@ -720,7 +720,7 @@ public final class SFldExpr extends LvalueExpr {
 			DNode@ v;
 			ResInfo info;
 			if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,f.sname))) {
-				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
+				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).getType() != f.getType()) {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
 					f = (Field)v;
@@ -762,7 +762,7 @@ public final class OuterThisAccessExpr extends ENode {
 				return outer.getType();
 			Type tp = ctx_tdecl.xtype;
 			foreach (Field f; outer_refs)
-				tp = f.type.applay(tp);
+				tp = f.getType().applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
@@ -789,10 +789,10 @@ public final class OuterThisAccessExpr extends ENode {
 			throw new CompilerException(this, "Outer 'this' reference in non-inner or static inner class "+ctx_tdecl);
 		do {
 			outer_refs.append(ou_ref);
-			if( ou_ref.type.isInstanceOf(outer.getType()) ) break;
-			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.type.getStruct());
+			if( ou_ref.getType().isInstanceOf(outer.getType()) ) break;
+			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.getType().getStruct());
 		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.getType()) )
+		if( !outer_refs[outer_refs.length-1].getType().isInstanceOf(outer.getType()) )
 			throw new CompilerException(this, "Outer class "+outer+" not found for inner class "+ctx_tdecl);
 		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() )
 			throw new CompilerException(this, "Access to 'this' in static method "+ctx_method);
@@ -808,33 +808,33 @@ public final class ReinterpExpr extends LvalueExpr {
 
 	@virtual typedef This  = ReinterpExpr;
 
-	@nodeAttr public TypeRef		type;
-	@nodeAttr public ENode		expr;
+	@nodeAttr public TypeRef		ctype;
+	@nodeAttr public ENode			expr;
 
 	public ReinterpExpr() {}
 
-	public ReinterpExpr(int pos, Type type, ENode expr) {
+	public ReinterpExpr(int pos, Type ctype, ENode expr) {
 		this.pos = pos;
-		this.type = new TypeRef(type);
+		this.ctype = new TypeRef(ctype);
 		this.expr = expr;
 	}
 
-	public ReinterpExpr(int pos, TypeRef type, ENode expr) {
+	public ReinterpExpr(int pos, TypeRef ctype, ENode expr) {
 		this.pos = pos;
-		this.type = type;
+		this.ctype = ctype;
 		this.expr = expr;
 	}
 
 	public Operator getOp() { return Operator.Reinterp; }
 
-	public ENode[] getArgs() { return new ENode[]{type, expr}; }
+	public ENode[] getArgs() { return new ENode[]{ctype, expr}; }
 
 	public String toString() { return getOp().toString(this); }
 
 	public int getPriority() { return opCastPriority; }
 
 	public Type getType() {
-		return this.type.getType();
+		return this.ctype.getType();
 	}
 }
 

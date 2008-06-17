@@ -40,10 +40,10 @@ public final view RShadow of Shadow extends RENode {
 
 @ViewOf(vcast=true, iface=true)
 public final view RTypeClassExpr of TypeClassExpr extends RENode {
-	public TypeRef		type;
+	public TypeRef		ttype;
 
 	public void resolve(Type reqType) {
-		Type tp = type.getType();
+		Type tp = ttype.getType();
 		if (!tp.isReference()) {
 			Type rt = ((CoreType)tp).getRefTypeForPrimitive();
 			Field f = rt.tdecl.resolveField("TYPE");
@@ -58,21 +58,21 @@ public final view RTypeClassExpr of TypeClassExpr extends RENode {
 
 @ViewOf(vcast=true, iface=true)
 public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
-	public		TypeRef				type;
+	public		TypeRef				ttype;
 	public		ENode				cl_expr;
 	public:ro	ENode[]				cl_args;
 
 	public void resolve(Type reqType) {
 		if (isResolved())
 			return;
-		Type type = this.type.getType();
-		Struct clazz = type.getStruct();
+		Type ttype = this.ttype.getType();
+		Struct clazz = ttype.getStruct();
 		if (clazz == null) {
-			if (type instanceof CoreType || type.isArray()) {
-				cl_expr = new TypeClassExpr(pos,new TypeRef(type));
+			if (ttype instanceof CoreType || ttype.isArray()) {
+				cl_expr = new TypeClassExpr(pos,new TypeRef(ttype));
 				cl_expr.resolve(Type.tpClass);
 			} else {
-				Kiev.reportError(this,"Cannot make typeinfo expression for type "+type);
+				Kiev.reportError(this,"Cannot make typeinfo expression for type "+ttype);
 			}
 		} else {
 			if (clazz.isTypeUnerasable()) {
@@ -82,7 +82,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 			cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
 			cl_expr.resolve(Type.tpClass);
 			foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs()) {
-				ENode tie = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false);
+				ENode tie = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, ttype.resolve(at),false);
 				((TypeInfoExpr)this).cl_args.add(tie);
 				Kiev.runProcessorsWithRewalk(tie);
 			}
@@ -500,21 +500,21 @@ public static final view RConditionalExpr of ConditionalExpr extends RENode {
 @ViewOf(vcast=true, iface=true)
 public static final view RCastExpr of CastExpr extends RENode {
 	public ENode	expr;
-	public TypeRef	type;
+	public TypeRef	ctype;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		Type type = this.type.getType();
-		expr.resolve(type);
+		Type ctype = this.ctype.getType();
+		expr.resolve(ctype);
 		if (expr instanceof TypeRef)
-			((TypeRef)expr).toExpr(type);
-		Type extp = Type.getRealType(type,expr.getType());
-		if( type ≡ Type.tpBoolean && extp ≡ Type.tpRule ) {
+			((TypeRef)expr).toExpr(ctype);
+		Type extp = Type.getRealType(ctype,expr.getType());
+		if( ctype ≡ Type.tpBoolean && extp ≡ Type.tpRule ) {
 			replaceWithNodeResolve(reqType,~expr);
 			return;
 		}
 		// Try to find $cast method
-		if (extp.getAutoCastTo(type) == null) {
+		if (extp.getAutoCastTo(ctype) == null) {
 			if( tryOverloadedCast(extp) )
 				return;
 			if (extp instanceof CTimeType) {
@@ -526,7 +526,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 				}
 			}
 		}
-		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(type) != null) {
+		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(ctype) != null) {
 			if( tryOverloadedCast(extp) )
 				return;
 			ENode e = extp.makeUnboxedExpr(expr);
@@ -536,30 +536,30 @@ public static final view RCastExpr of CastExpr extends RENode {
 				return;
 			}
 		}
-		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView()
-				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(type) != null)
+		else if (!extp.isInstanceOf(ctype) && extp.getStruct() != null && extp.getStruct().isStructView()
+				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(ctype) != null)
 		{
 			if( tryOverloadedCast(extp) )
 				return;
-			this.resolve2(type);
+			this.resolve2(ctype);
 			return;
 		}
 		else {
-			this.resolve2(type);
+			this.resolve2(ctype);
 			return;
 		}
-		if( extp.isCastableTo(type) ) {
-			this.resolve2(type);
+		if( extp.isCastableTo(ctype) ) {
+			this.resolve2(ctype);
 			return;
 		}
-		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+type);
+		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+ctype);
 	}
 
 	public final boolean tryOverloadedCast(Type et) {
 		Method@ v;
 		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
-		CallType mt = new CallType(et,null,null,this.type.getType(),false);
+		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
 			Method m = (Method)v;
 			TypeRef[] targs = new TypeRef[m.targs.length];
@@ -569,14 +569,14 @@ public static final view RCastExpr of CastExpr extends RENode {
 				targs[i] = new TypeRef(tp);
 			}
 			ENode call = info.buildCall((ASTNode)this,~expr,m,targs,ENode.emptyArray).closeBuild();
-			if (this.type.getType().isReference())
+			if (this.ctype.getType().isReference())
 				call.setCastCall(true);
-			replaceWithNodeResolve(type.getType(),call);
+			replaceWithNodeResolve(ctype.getType(),call);
 			return true;
 		}
 		v.$unbind();
 		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noImports);
-		mt = new CallType(null,null,new Type[]{expr.getType()},this.type.getType(),false);
+		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
 			Method m = (Method)v;
 			TypeRef[] targs = new TypeRef[m.targs.length];
@@ -587,7 +587,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			}
 			assert(m.isStatic());
 			ENode call = new CallExpr(pos,null,m,targs,new ENode[]{~expr});
-			replaceWithNodeResolve(type.getType(),call);
+			replaceWithNodeResolve(ctype.getType(),call);
 			return true;
 		}
 		return false;
@@ -619,14 +619,14 @@ public static final view RCastExpr of CastExpr extends RENode {
 	}
 
 	public final void resolve2(Type reqType) {
-		Type type = this.type.getType();
-		expr.resolve(type);
+		Type ctype = this.ctype.getType();
+		expr.resolve(ctype);
 		if (reqType ≡ Type.tpVoid) {
 			setResolved(true);
 		}
-		Type et = Type.getRealType(type,expr.getType());
+		Type et = Type.getRealType(ctype,expr.getType());
 		// Try wrapped field
-		if (et instanceof CTimeType && et.getUnboxedType().equals(type)) {
+		if (et instanceof CTimeType && et.getUnboxedType().equals(ctype)) {
 			expr = et.makeUnboxedExpr(expr);
 			resolve(reqType);
 			return;
@@ -634,20 +634,20 @@ public static final view RCastExpr of CastExpr extends RENode {
 		// try null to something...
 		if (et ≡ Type.tpNull && reqType.isReference())
 			return;
-		if( type ≡ Type.tpBoolean && et ≡ Type.tpRule ) {
-			replaceWithNodeResolve(type, new BinaryBoolExpr(pos,Operator.NotEquals,expr,new ConstNullExpr()));
+		if( ctype ≡ Type.tpBoolean && et ≡ Type.tpRule ) {
+			replaceWithNodeResolve(ctype, new BinaryBoolExpr(pos,Operator.NotEquals,expr,new ConstNullExpr()));
 			return;
 		}
-		if( type.isBoolean() && et.isBoolean() )
+		if( ctype.isBoolean() && et.isBoolean() )
 			return;
-		if( type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
-			if (type.isIntegerInCode())
+		if( ctype.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
+			if (ctype.isIntegerInCode())
 				return;
-			Method cm = ((CompaundType)type).tdecl.resolveMethod(nameCastOp,type,Type.tpInt);
+			Method cm = ((CompaundType)ctype).tdecl.resolveMethod(nameCastOp,ctype,Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{~expr}));
 			return;
 		}
-		if( type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
+		if( ctype.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
 			Method cf = Type.tpEnum.tdecl.resolveMethod(nameEnumOrdinal, Type.tpInt);
@@ -655,42 +655,42 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return;
 		}
 		// Try to find $cast method
-		if( et.getAutoCastTo(type) == null && tryOverloadedCast(et))
+		if( et.getAutoCastTo(ctype) == null && tryOverloadedCast(et))
 			return;
 
-		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
-			if( !et.isReference() && type instanceof ArgType )
+		if( et.isReference() != ctype.isReference() && !(expr instanceof ClosureCallExpr) )
+			if( !et.isReference() && ctype instanceof ArgType )
 				Kiev.reportWarning(this,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			else if (et.getStruct() == null || !et.getStruct().isEnum())
-				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
-		if( !et.isCastableTo((Type)type) ) {
-			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
+				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+ctype);
+		if( !et.isCastableTo(ctype) ) {
+			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+ctype);
 		}
 		if( Kiev.verify && expr.getType() ≉ et ) {
-			tryTypeArgCast(reqType,type,et);
+			tryTypeArgCast(reqType,ctype,et);
 			setResolved(true);
 			return;
 		}
-		if( et.isReference() && et.isInstanceOf((Type)type) ) {
-			tryTypeArgCast(reqType,type,et);
+		if( et.isReference() && et.isInstanceOf(ctype) ) {
+			tryTypeArgCast(reqType,ctype,et);
 			setResolved(true);
 			return;
 		}
-		if( et.isReference() && type.isReference() && et.getStruct() != null
+		if( et.isReference() && ctype.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.dnode.isClazz()
 		 && !(et instanceof ArgType)
 		 && (et.getStruct().isStructInner() && !et.getStruct().isStatic())
-		 && et.getStruct().package_clazz.dnode.xtype.getAutoCastTo(type) != null
+		 && et.getStruct().package_clazz.dnode.xtype.getAutoCastTo(ctype) != null
 		) {
 			replaceWithNodeResolve(reqType,
-				new CastExpr(pos,type,
+				new CastExpr(pos,ctype,
 					new IFldExpr(pos,~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
 				));
 			return;
 		}
 		if( expr.isConstantExpr() ) {
 			Object val = expr.getConstValue();
-			Type t = type;
+			Type t = ctype;
 			if( val instanceof Number ) {
 				Number num = (Number)val;
 				if     ( t ≡ Type.tpDouble ) { replaceWithNodeResolve(new ConstDoubleExpr ((double)num.doubleValue())); return; }
@@ -722,12 +722,12 @@ public static final view RCastExpr of CastExpr extends RENode {
 				else if( t ≡ Type.tpChar )   { replaceWithNodeResolve(new ConstCharExpr   ((char)  num)); return; }
 			}
 		}
-		if( !et.equals(type) && expr instanceof ClosureCallExpr && et instanceof CallType ) {
-			if( et.getAutoCastTo(type) != null ) {
+		if( !et.equals(ctype) && expr instanceof ClosureCallExpr && et instanceof CallType ) {
+			if( et.getAutoCastTo(ctype) != null ) {
 				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
 				return;
 			}
-			else if( et.isCastableTo(type) ) {
+			else if( et.isCastableTo(ctype) ) {
 				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
 			}
 		}

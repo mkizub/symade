@@ -108,7 +108,7 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 @ViewOf(vcast=true, iface=true)
 public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 	public ENode	expr;
-	public TypeRef	type;
+	public TypeRef	itype;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -117,7 +117,7 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 		if( expr instanceof TypeRef )
 			tp = ((TypeRef)expr).getType();
 		if( tp != null ) {
-			replaceWithNode(new ConstBoolExpr(tp.isInstanceOf(type.getType())));
+			replaceWithNode(new ConstBoolExpr(tp.isInstanceOf(itype.getType())));
 			return;
 		} else {
 			Type et = expr.getType();
@@ -127,9 +127,9 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 				expr.resolve(null);
 			}
 		}
-		tp = type.getType();
+		tp = itype.getType();
 		if( !expr.getType().isCastableTo(tp) ) {
-			throw new CompilerException(this,"Type "+expr.getType()+" is not castable to "+type);
+			throw new CompilerException(this,"Type "+expr.getType()+" is not castable to "+itype);
 		}
 		if (expr.getType().isInstanceOf(tp) && !tp.isUnerasable()) {
 			replaceWithNodeResolve(reqType,
@@ -140,7 +140,7 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 			tp = tp.getEnclosedType();
 		if (tp.isUnerasable()) {
 			replaceWithNodeResolve(reqType, new CallExpr(pos,
-					((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((InstanceofExpr)this,type.getType(), false),
+					((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((InstanceofExpr)this,itype.getType(), false),
 					Type.tpTypeInfo.tdecl.resolveMethod("$instanceof",Type.tpBoolean,Type.tpObject),
 					new ENode[]{~expr}
 					)

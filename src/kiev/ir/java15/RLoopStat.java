@@ -186,11 +186,11 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noImports),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = Type.getRealType(xtype,elems.type.ret());
+			itype = Type.getRealType(xtype,elems.mtype.ret());
 			mode = ForEachStat.ELEMS;
 		} else if( xtype ≡ Type.tpRule &&
 			(
-			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret() ≡ Type.tpRule )
+			   ( container instanceof CallExpr && ((CallExpr)container).func.mtype.ret() ≡ Type.tpRule )
 			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
 			)
 		  ) {
@@ -235,14 +235,14 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
-			iter_init.resolve(iter.type);
+			iter_init.resolve(iter.getType());
 			break;
 		case ForEachStat.JENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
-			iter_init.resolve(iter.type);
+			iter_init.resolve(iter.getType());
 			break;
 		case ForEachStat.ELEMS:
 			/* iter = container.elements(); */
@@ -250,7 +250,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new LVarExpr(iter.pos,iter),
 				new CallExpr(container.pos,container.ncopy(),elems,ENode.emptyArray)
 				);
-			iter_init.resolve(iter.type);
+			iter_init.resolve(iter.getType());
 			break;
 		case ForEachStat.RULE:
 			/* iter = rule(iter/hidden,...); */

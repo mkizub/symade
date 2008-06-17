@@ -51,8 +51,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 	@nodeData(ext_data=true)
 	public ConstExpr				const_value;
 
-	@getter public Type get$type() { return this.vtype.getType(); }
-	
 	@getter public int get$kind() { return this.meta.var_kind; }
 
 	// init wrapper
@@ -180,7 +178,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 		if (meta != null)
 			meta.verify();
 		ENode init = this.init;
-		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
+		if (init != null && init instanceof NewInitializedArrayExpr && init.ntype == null) {
 			Type tp = getType();
 			if!(tp instanceof ArrayType)
 				Kiev.reportError(this,"Scalar var is initialized by array");
@@ -230,7 +228,12 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return sname.hashCode();
 	}
 
-	public Type	getType() { return type; }
+	public Type	getType() {
+		TypeRef vtype = this.vtype;
+		if (vtype == null)
+			return StdTypes.tpVoid;
+		return vtype.getType();
+	}
 	
 	public Method getGetterMethod() {
 		SymbolRef<Method> g = this.getter;
@@ -289,10 +292,10 @@ public class LVar extends Var {
 
 	public LVar() { super(VAR_LOCAL); }
 
-	public LVar(int pos, String name, Type type, int kind, int flags)
-		require type != null;
+	public LVar(int pos, String name, Type tp, int kind, int flags)
+		require tp != null;
 	{
-		super(name,new TypeRef(type),kind,flags);
+		super(name,new TypeRef(tp),kind,flags);
 		this.pos = pos;
 	}
 
@@ -303,10 +306,10 @@ public class LVar extends Var {
 		this.pos = pos;
 	}
 
-	public LVar(String name, Type type)
-		require type != null;
+	public LVar(String name, Type tp)
+		require tp != null;
 	{
-		super(name,new TypeRef(type),VAR_LOCAL,0);
+		super(name,new TypeRef(tp),VAR_LOCAL,0);
 	}
 }
 
@@ -334,12 +337,12 @@ public class Field extends Var {
 	
 	public Field(int kind) { super(kind); }
 	
-	public Field(String name, Type type, int flags) {
-		super(name, new TypeRef(type), FIELD_NORMAL, flags);
+	public Field(String name, Type tp, int flags) {
+		super(name, new TypeRef(tp), FIELD_NORMAL, flags);
 	}
 
-	public Field(String name, TypeRef type, int flags) {
-		super(name, type, FIELD_NORMAL, flags);
+	public Field(String name, TypeRef vtype, int flags) {
+		super(name, vtype, FIELD_NORMAL, flags);
 	}
 
 	public ASTNode getDummyNode() {

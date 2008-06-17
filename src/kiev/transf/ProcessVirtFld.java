@@ -83,7 +83,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc == null) f.setMeta(acc = new MetaAccess());
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
-			s.addField(f=new Field(name,m.type.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
+			s.addField(f=new Field(name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
@@ -143,7 +143,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc == null) f.setMeta(acc = new MetaAccess());
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
-			s.addField(f=new Field(name,m.type.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
+			s.addField(f=new Field(name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
@@ -271,7 +271,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				set_var.setFinal(true);
 			s.addMethod(set_var);
 			set_var.setMeta(new UserMeta(nameMetaSetter)).resolve(null);
-			LVar value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
+			LVar value = new LVar(f.pos,"value",f.getType(),Var.PARAM_NORMAL,0);
 			set_var.params.add(value);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
@@ -297,7 +297,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		if (!f.isVirtual())
 			return;		// no need to generate getter
 		if( !get_found && MetaAccess.readable(f)) {
-			Method get_var = new MethodImpl(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC);
+			Method get_var = new MethodImpl(get_name,f.getType(),f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				get_var.setFinal(false);
 			if (f.getMeta(VNode_Base.mnAtt) != null)

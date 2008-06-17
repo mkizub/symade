@@ -82,14 +82,14 @@ public final view JStruct of Struct extends JTypeDecl {
 	private static JMethod resolveMethod(@forward JStruct self, String name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach (JMethod m; members) {
-			if( m.hasName(name) && m.type.getJType().java_signature.equals(sign))
+			if( m.hasName(name) && m.mtype.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
 			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
 				foreach (JMethod m; defaults.members) {
-					if( m.hasName(name) && m.type.getJType().java_signature.equals(sign))
+					if( m.hasName(name) && m.mtype.getJType().java_signature.equals(sign))
 						return m;
 				}
 			}
@@ -170,7 +170,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			jattrs[i].generate(constPool);
 		foreach (JField f; this.members) {
 			constPool.addAsciiCP(f.sname);
-			constPool.addAsciiCP(f.type.getJType().java_signature);
+			constPool.addAsciiCP(f.vtype.getJType().java_signature);
 
 			if (f.meta.hasRuntimeVisibles())
 				f.addAttr(new RVMetaAttr(f.meta));
@@ -196,7 +196,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			} else {
 				constPool.addAsciiCP(m.sname);
 			}
-			constPool.addAsciiCP(m.type.getJType().java_signature);
+			constPool.addAsciiCP(m.mtype.getJType().java_signature);
 			if( m.etype != null )
 				constPool.addAsciiCP(m.etype.getJType().java_signature);
 

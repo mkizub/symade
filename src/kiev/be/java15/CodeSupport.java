@@ -283,11 +283,11 @@ public class CodeCatchInfo {
 	public int			start_pc;
 	public int			end_pc;
 	public CodeLabel	handler;
-	public JType		type;
+	public JType		ctype;
 
-	public CodeCatchInfo(CodeLabel handler, JType type) {
+	public CodeCatchInfo(CodeLabel handler, JType ctype) {
 		this.handler = handler;
-		this.type = type;
+		this.ctype = ctype;
 	}
 }
 

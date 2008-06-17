@@ -169,11 +169,11 @@ public final class Code implements JConstants {
 		Automatically calculates max_stack value
 		Automatically expand stack array if needed
 	 */
-	public void stack_push(JType type) {
+	public void stack_push(JType jtype) {
 		if( stack.length <= (top + 2) ) stack = (JType[])Arrays.cloneToSize(stack,stack.length*2);
-		if( type==JType.tpLong || type==JType.tpDouble ) max_stack_top += 2;
+		if( jtype==JType.tpLong || jtype==JType.tpDouble ) max_stack_top += 2;
 		else max_stack_top++;
-		stack[top++] = type;
+		stack[top++] = jtype;
 		if( max_stack < max_stack_top ) max_stack = max_stack_top;
 		if( Kiev.debug && Kiev.debugInstrGen ) {
 			StringBuffer sb = new StringBuffer(); sb.append("stack is:");
@@ -185,8 +185,8 @@ public final class Code implements JConstants {
 	/** Pop value from stack.
 	 */
 	public void stack_pop() {
-		JType type = stack[--top];
-		if( type==JType.tpLong || type==JType.tpDouble ) max_stack_top -= 2;
+		JType jtype = stack[--top];
+		if( jtype==JType.tpLong || jtype==JType.tpDouble ) max_stack_top -= 2;
 		else max_stack_top--;
 		stack[top+1] = null;
 		if( top < 0 ) throw new RuntimeException("Top of stack is < 0 for pc="+pc);
@@ -611,7 +611,7 @@ public final class Code implements JConstants {
 			else if( t == JType.tpLong )		add_opcode(opc_lreturn);
 			else if( t.isReference() )			add_opcode(opc_areturn);
 			else
-				throw new RuntimeException("Unknown return type "+this.method.type.ret()+" of method");
+				throw new RuntimeException("Unknown return type "+this.method.mtype.ret()+" of method");
 		} catch(Exception e) {
 			throw new RuntimeException("Unresolved type at generation phase: "+e);
 		}
@@ -759,15 +759,15 @@ public final class Code implements JConstants {
 
 	/** Binary operation instanceof.
 	 */
-	private void generateInstanceofOp(JType type) {
+	private void generateInstanceofOp(JType jtype) {
 		JType pt1 = stack_at(0);
-		JType pt2 = type;
+		JType pt2 = jtype;
 
 		if( !pt1.isReference() )
             throw new RuntimeException("Instanceof operation on primitive type: "+pt1);
 		if( !pt2.isReference() )
             throw new RuntimeException("Type of instanceof operation is primtive type: "+pt2);
-		CP cpi = constPool.addClazzCP(type.java_signature);
+		CP cpi = constPool.addClazzCP(jtype.java_signature);
 		add_opcode_and_CP(opc_instanceof,cpi);
 	}
 
@@ -842,23 +842,23 @@ public final class Code implements JConstants {
 	}
 
 	/** New one-dimension array */
-	public void generateNewArray(JType type) {
+	public void generateNewArray(JType jtype) {
 		JType dim = stack_at(0);
 		if( !dim.isIntegerInCode() )
 			throw new RuntimeException("Array dimention must be of integer type, but "+dim+" found");
-		if( type == JType.tpBoolean )		add_opcode_and_byte(opc_newarray,4);
-		else if( type == JType.tpByte )		add_opcode_and_byte(opc_newarray,8);
-		else if( type == JType.tpChar )		add_opcode_and_byte(opc_newarray,5);
-		else if( type == JType.tpShort )	add_opcode_and_byte(opc_newarray,9);
-		else if( type == JType.tpInt )		add_opcode_and_byte(opc_newarray,10);
-		else if( type == JType.tpLong )		add_opcode_and_byte(opc_newarray,11);
-		else if( type == JType.tpFloat )	add_opcode_and_byte(opc_newarray,6);
-		else if( type == JType.tpDouble )	add_opcode_and_byte(opc_newarray,7);
-		else if( type.isReference() ) {
-			ClazzCP cpc = constPool.addClazzCP(type.java_signature);
+		if     ( jtype == JType.tpBoolean )	add_opcode_and_byte(opc_newarray,4);
+		else if( jtype == JType.tpByte )		add_opcode_and_byte(opc_newarray,8);
+		else if( jtype == JType.tpChar )		add_opcode_and_byte(opc_newarray,5);
+		else if( jtype == JType.tpShort )		add_opcode_and_byte(opc_newarray,9);
+		else if( jtype == JType.tpInt )		add_opcode_and_byte(opc_newarray,10);
+		else if( jtype == JType.tpLong )		add_opcode_and_byte(opc_newarray,11);
+		else if( jtype == JType.tpFloat )		add_opcode_and_byte(opc_newarray,6);
+		else if( jtype == JType.tpDouble )		add_opcode_and_byte(opc_newarray,7);
+		else if( jtype.isReference() ) {
+			ClazzCP cpc = constPool.addClazzCP(jtype.java_signature);
 			add_opcode_and_CP(opc_anewarray,cpc);
 		}
-		stack_push(new JArrayType(type));
+		stack_push(new JArrayType(jtype));
 	}
 
 
@@ -992,7 +992,7 @@ public final class Code implements JConstants {
 		cv.start_pc = pc;
 		vars[num_vars] =cv;
 		num_vars++;
-		JType t = v.type.getJType();
+		JType t = v.vtype.getJType();
 		if( t==JType.tpLong || t==JType.tpDouble )
 			cur_locals += 2;
 		else
@@ -1013,7 +1013,7 @@ public final class Code implements JConstants {
 			throw new RuntimeException("Var "+v+" not exists in the code");
 		trace(Kiev.debug && Kiev.debugInstrGen,"Code remove var "+cv+" from bc pos "+pc);
 		cv.end_pc = pc-1;
-		JType t = v.type.getJType();
+		JType t = v.jtype;
 		if (t==JType.tpLong || t==JType.tpDouble) {
 			if (cv.stack_pos != cur_locals-2)
 				throw new RuntimeException("Removing var "+v+" at pos "+cv.stack_pos+" but last inserted var was "
@@ -1053,8 +1053,8 @@ public final class Code implements JConstants {
 	}
 
 	/** Create new catcher and return it */
-	public CodeCatchInfo newCatcher(CodeLabel handler, JType type) {
-		CodeCatchInfo catcher = new CodeCatchInfo(handler,type);
+	public CodeCatchInfo newCatcher(CodeLabel handler, JType ctype) {
+		CodeCatchInfo catcher = new CodeCatchInfo(handler,ctype);
 		catchers = (CodeCatchInfo[])Arrays.insert(catchers,catcher,0);
 		return catcher;
 	}
@@ -1280,12 +1280,12 @@ public final class Code implements JConstants {
 		}
 		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_tdecl.xtype).getJType();
 		KString struct_sig = ttt.java_signature;
-		KString field_sig = Type.getRealType(f.jctx_tdecl.xtype,f.type).getJType().java_signature;
+		KString field_sig = Type.getRealType(f.jctx_tdecl.xtype,f.vtype).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.sname),field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
-			stack_push(Type.getRealType(tp,f.type).getJType());
+			stack_push(Type.getRealType(tp,f.getType()).getJType());
 			break;
         case op_putstatic:
 			add_opcode_and_CP(opc_putstatic,cpf);
@@ -1294,7 +1294,7 @@ public final class Code implements JConstants {
         case op_getfield:
 			add_opcode_and_CP(opc_getfield,cpf);
 			stack_pop();
-			stack_push(Type.getRealType(tp,f.type).getJType());
+			stack_push(Type.getRealType(tp,f.getType()).getJType());
 			break;
         case op_putfield:
 			add_opcode_and_CP(opc_putfield,cpf);
@@ -1309,35 +1309,35 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction with type for this code.
 	 */
-	public void addInstr(Instr i, Type type) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+type);
+	public void addInstr(Instr i, Type itype) {
+		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+itype);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
 		case op_x2y:
-			generatePrimitiveCast(type.getJType());
+			generatePrimitiveCast(itype.getJType());
 			break;
 		case op_new:
-			if( !type.isReference() )
-				throw new RuntimeException("New on non-reference type "+type);
-			add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getJType().java_signature));
-			stack_push(type.getJType());
+			if( !itype.isReference() )
+				throw new RuntimeException("New on non-reference type "+itype);
+			add_opcode_and_CP(opc_new,constPool.getClazzCP(itype.getJType().java_signature));
+			stack_push(itype.getJType());
 			break;
 		case op_newarray:
-			generateNewArray(type.getJType());
+			generateNewArray(itype.getJType());
 			break;
 		case op_checkcast:
-			if( !type.isReference() )
-				throw new RuntimeException("Type "+type+" must be a reference for cast checking");
-			if( !type.isReference() )
+			if( !itype.isReference() )
+				throw new RuntimeException("Type "+itype+" must be a reference for cast checking");
+			if( !itype.isReference() )
 				break;
-			add_opcode_and_CP(opc_checkcast,constPool.addClazzCP(type.getJType().java_signature));
-			stack_push(type.getJType());
+			add_opcode_and_CP(opc_checkcast,constPool.addClazzCP(itype.getJType().java_signature));
+			stack_push(itype.getJType());
 			break;
 		case op_instanceof:
-			generateInstanceofOp(type.getJType());
+			generateInstanceofOp(itype.getJType());
 			break;
 		default:
 			throw new RuntimeException("Bad type-use instruction");
@@ -1346,15 +1346,15 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction with type for this code.
 	 */
-	public void addInstr(Instr i, Type type, int dim) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" "+dim+" -> "+type);
+	public void addInstr(Instr i, Type itype, int dim) {
+		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" "+dim+" -> "+itype);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 		switch(i) {
 		case op_multianewarray:
-			generateNewMultiArray(dim,type.getJType());
+			generateNewMultiArray(dim,itype.getJType());
 			break;
 		default:
         	throw new RuntimeException("Bad type-use instruction");
@@ -1364,7 +1364,7 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with method call for this code.
 	 */
 	public void addInstr(Instr i, JMethod method, boolean super_flag) {
-		addInstr(i,method,super_flag,method.type);
+		addInstr(i,method,super_flag,method.mtype);
 	}
 	/** Add pseude-instruction with method call for this code.
 	 */
@@ -1435,7 +1435,7 @@ public final class Code implements JConstants {
 		case enter_catch_handler:
 			if( catcher != null ) {
 				catcher.handler.attachPosition();
-				stack_push(catcher.type);
+				stack_push(catcher.ctype);
 			} else {
 				stack_push(JType.tpThrowable);
 			}

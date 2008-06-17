@@ -75,7 +75,7 @@ public class CallExpr extends ENode {
 		Method m = this.func;
 		if (m == null)
 			return Type.tpVoid;
-		Type ret = m.type.ret();
+		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return getCallType().ret();
 	}
@@ -332,7 +332,7 @@ public class CallExpr extends ENode {
 		int idx = 0;
 		Hashtable<String,Object> args = new Hashtable<String,Object>();
 		foreach (Var fp; func.params; fp.kind == Var.PARAM_NORMAL) {
-			if (fp.type.getErasedType() instanceof ASTNodeType)
+			if (fp.getType().getErasedType() instanceof ASTNodeType)
 				args.put(fp.sname, this.args[idx++].doRewrite(ctx));
 			else
 				args.put(fp.sname, this.args[idx++]);

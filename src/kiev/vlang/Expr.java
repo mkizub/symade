@@ -55,25 +55,25 @@ public class TypeClassExpr extends ENode {
 	
 	@virtual typedef This  = TypeClassExpr;
 
-	@nodeAttr public TypeRef		type;
+	@nodeAttr public TypeRef		ttype;
 
 	public TypeClassExpr() {}
 
-	public TypeClassExpr(int pos, TypeRef type) {
+	public TypeClassExpr(int pos, TypeRef ttype) {
 		this.pos = pos;
-		this.type = type;
+		this.ttype = ttype;
 	}
 
 	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() {
-		if (this.type == null || StdTypes.tpClass.getArgsLength() == 0)
+		if (this.ttype == null || StdTypes.tpClass.getArgsLength() == 0)
 			return StdTypes.tpClass;
-		return Type.tpClass.make(new TVarBld(StdTypes.tpClass.getArg(0), this.type.getType()));
+		return Type.tpClass.make(new TVarBld(StdTypes.tpClass.getArg(0), this.ttype.getType()));
 	}
 
 	public String toString() {
-		return type.toString()+".class";
+		return ttype.toString()+".class";
 	}
 }
 
@@ -84,28 +84,28 @@ public class TypeInfoExpr extends ENode {
 	
 	@virtual typedef This  = TypeInfoExpr;
 
-	@nodeAttr public TypeRef				type;
-	@nodeAttr public ENode				cl_expr;
+	@nodeAttr public TypeRef				ttype;
+	@nodeAttr public ENode					cl_expr;
 	@nodeAttr public ENode[]				cl_args;
 
 	public TypeInfoExpr() {}
 
-	public TypeInfoExpr(int pos, TypeRef type) {
+	public TypeInfoExpr(int pos, TypeRef ttype) {
 		this.pos = pos;
-		this.type = type;
+		this.ttype = ttype;
 	}
 
 	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() {
-		Type t = type.getType().getErasedType();
+		Type t = ttype.getType().getErasedType();
 		if (t.isUnerasable())
 			return t.getStruct().typeinfo_clazz.xtype;
 		return Type.tpTypeInfo;
 	}
 
 	public String toString() {
-		return type+".type";
+		return ttype+".type";
 	}
 }
 
@@ -297,7 +297,7 @@ public class BinaryExpr extends ENode {
 				return Type.tpVoid;
 			this.symbol = m;
 		}
-		Type ret = m.type.ret();
+		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return m.makeType(null,getArgs()).ret();
 	}
@@ -385,7 +385,7 @@ public class UnaryExpr extends ENode {
 				return Type.tpVoid;
 			this.symbol = m;
 		}
-		Type ret = m.type.ret();
+		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return m.makeType(null,getArgs()).ret();
 	}
@@ -736,25 +736,25 @@ public class CastExpr extends ENode {
 
 	@virtual typedef This  = CastExpr;
 
-	@nodeAttr public TypeRef		type;
-	@nodeAttr public ENode		expr;
+	@nodeAttr public TypeRef		ctype;
+	@nodeAttr public ENode			expr;
 
 	public CastExpr() {}
 
-	public CastExpr(int pos, Type type, ENode expr) {
+	public CastExpr(int pos, Type ctype, ENode expr) {
 		this.pos = pos;
-		this.type = new TypeRef(type);
+		this.ctype = new TypeRef(ctype);
 		this.expr = expr;
 	}
 
-	public CastExpr(int pos, TypeRef type, ENode expr) {
+	public CastExpr(int pos, TypeRef ctype, ENode expr) {
 		this.pos = pos;
-		this.type = type;
+		this.ctype = ctype;
 		this.expr = expr;
 	}
 
-	public CastExpr(Type type, ENode expr) {
-		this.type = new TypeRef(type);
+	public CastExpr(Type ctype, ENode expr) {
+		this.ctype = new TypeRef(ctype);
 		this.expr = expr;
 	}
 
@@ -762,12 +762,12 @@ public class CastExpr extends ENode {
 
 	public int getPriority() { return opCastPriority; }
 
-	public ENode[] getArgs() { return new ENode[]{type, expr}; }
+	public ENode[] getArgs() { return new ENode[]{ctype, expr}; }
 
 	public String toString() { return getOp().toString(this); }
 
 	public Type getType() {
-		return type.getType();
+		return ctype.getType();
 	}
 
 	public Type[] getAccessTypes() {
@@ -775,16 +775,16 @@ public class CastExpr extends ENode {
 	}
 
 	public void mainResolveOut() {
-		Type type = this.type.getType();
-		Type extp = Type.getRealType(type,expr.getType());
-		if (extp.getAutoCastTo(type) == null) {
+		Type ctype = this.ctype.getType();
+		Type extp = Type.getRealType(ctype,expr.getType());
+		if (extp.getAutoCastTo(ctype) == null) {
 			resolveOverloadedCast(extp);
 		}
-		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(type) != null) {
+		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(ctype) != null) {
 			resolveOverloadedCast(extp);
 		}
-		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView()
-				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(type) != null)
+		else if (!extp.isInstanceOf(ctype) && extp.getStruct() != null && extp.getStruct().isStructView()
+				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(ctype) != null)
 		{
 			resolveOverloadedCast(extp);
 		}
@@ -793,14 +793,14 @@ public class CastExpr extends ENode {
 	private boolean resolveOverloadedCast(Type et) {
 		Method@ v;
 		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-		CallType mt = new CallType(et,null,null,this.type.getType(),false);
+		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
 			this.symbol = (Method)v;
 			return true;
 		}
 		v.$unbind();
 		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noImports);
-		mt = new CallType(null,null,new Type[]{expr.getType()},this.type.getType(),false);
+		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
 			this.symbol = (Method)v;
 			return true;

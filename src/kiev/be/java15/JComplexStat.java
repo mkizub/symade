@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true, iface=true)
 public final view JCaseLabel of CaseLabel extends JENode {
 	public:ro	JENode			val;
-	public:ro	Type			type;
+	public:ro	Type			ctype;
 	public:ro	JVar[]			pattern;
 	public		CodeLabel		case_label;
 
@@ -339,7 +339,7 @@ public final view JTryStat of TryStat extends JENode {
 		}
 		for(int i= catchers.length-1; i >= 0 ; i--) {
 			catchers[i].handler = code.newLabel();
-			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.type.getJType());
+			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.vtype.getJType());
 			code.addInstr(Instr.start_catcher,catchers[i].code_catcher);
 		}
 		end_label = code.newLabel();

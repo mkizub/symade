@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true, iface=true)
 public static final view RCaseLabel of CaseLabel extends RENode {
 	public		ENode			val;
-	public		Type			type;
+	public		Type			ctype;
 	public:ro	Var[]			pattern;
 
 	public void resolve(Type reqType) {
@@ -30,9 +30,9 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 			if( val != null ) {
 				val.resolve(null);
 				if( val instanceof TypeRef ) {
-					this.type = Type.getRealType(sw.sel.getType(),val.getType());
+					this.ctype = Type.getRealType(sw.sel.getType(),val.getType());
 					pizza_case = true;
-					TypeDecl cas = this.type.meta_type.tdecl;
+					TypeDecl cas = this.ctype.meta_type.tdecl;
 					if (cas.isPizzaCase()) {
 						if!(sw instanceof MatchStat)
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
@@ -44,12 +44,12 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+pcase.case_fields.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
-								if( p.type == Type.tpVoid || p.sname == nameUnderscore)
+								if( p.getType() == Type.tpVoid || p.sname == nameUnderscore)
 									continue;
 								Field f = pcase.case_fields[i];
-								Type tp = Type.getRealType(sw.sel.getType(),f.type);
-								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
-									throw new RuntimeException("Pattern variable "+p.sname+" has type "+p.type+" but type "+tp+" is expected");
+								Type tp = Type.getRealType(sw.sel.getType(),f.getType());
+								if( !p.getType().isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
+									throw new RuntimeException("Pattern variable "+p.sname+" has type "+p.getType()+" but type "+tp+" is expected");
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
 											Type.getRealType(sw.sel.getType(),cas.xtype),
@@ -92,8 +92,8 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 					assert (sw.cases.indexOf(this) >= 0);
 					sw.defCase = (CaseLabel)this;
 				}
-				if ((sw instanceof SwitchTypeStat) && this.type ≉ Type.tpObject) {
-					this.type = Type.tpObject;
+				if ((sw instanceof SwitchTypeStat) && this.ctype ≉ Type.tpObject) {
+					this.ctype = Type.tpObject;
 				}
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
@@ -229,9 +229,9 @@ public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 		int defindex = -1;
 		for(int i=0; i < cases.length; i++) {
 			CaseLabel c = cases[i];
-			if( c.type == null || !c.type.isReference() )
+			if( c.ctype == null || !c.ctype.isReference() )
 				throw new CompilerException(c,"Mixed switch and switch-type cases");
-			typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.type));
+			typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.ctype));
 			if( c.val != null )
 				c.val = new ConstIntExpr(i);
 			else

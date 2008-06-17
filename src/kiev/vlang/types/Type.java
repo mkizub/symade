@@ -715,10 +715,10 @@ public final class ArrayType extends Type {
 
 	@getter public Type get$arg() { return this.resolveArg(0); }
 	
-	public static ArrayType newArrayType(Type type)
+	public static ArrayType newArrayType(Type tp)
 		alias lfy operator new
 	{
-		return new ArrayType(type);
+		return new ArrayType(tp);
 	}
 	
 	private ArrayType(Type arg) {
@@ -864,8 +864,8 @@ public final class WrapperType extends CTimeType {
 
 	@virtual typedef MType = WrapperMetaType;
 	
-	public static Type newWrapperType(Type type) {
-		return new WrapperType(type);
+	public static Type newWrapperType(Type tp) {
+		return new WrapperType(tp);
 	}
 	
 	public WrapperType(Type unwrapped_type) {
@@ -908,7 +908,7 @@ public final class WrapperType extends CTimeType {
 		Field wf = wrapped_field;
 		if (wf == null)
 			return getEnclosedType();
-		return Type.getRealType(getEnclosedType(), wf.type);
+		return Type.getRealType(getEnclosedType(), wf.getType());
 	}
 	
 	public Struct getStruct()				{ return getEnclosedType().getStruct(); }

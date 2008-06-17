@@ -190,11 +190,11 @@
                </lval>
                <value>
                 <a-node class='kiev.vlang.NewExpr'>
-                 <ntype>
+                 <type>
                   <a-node class='kiev.vlang.types.TypeNameRef'>
                    <ident>frame$$</ident>
                   </a-node>
-                 </ntype>
+                 </type>
                 </a-node>
                </value>
                <ident>ref_assign</ident>
@@ -239,11 +239,11 @@
                </lval>
                <value>
                 <a-node class='kiev.vlang.CastExpr'>
-                 <ctype>
+                 <type>
                   <a-node class='kiev.vlang.types.TypeNameRef'>
                    <ident>frame$$</ident>
                   </a-node>
-                 </ctype>
+                 </type>
                  <expr>
                   <a-node class='kiev.vlang.LVarExpr'>
                    <ident>$env$</ident>
@@ -1627,9 +1627,9 @@
              </expr1>
              <expr2>
               <a-node class='kiev.vlang.NewExpr'>
-               <ntype>
+               <type>
                 <a-node class='kiev.vlang.MacroSubstTypeRef'>
-                 <mtype>
+                 <type>
                   <a-node class='kiev.vlang.MacroAccessExpr'>
                    <obj>
                     <a-node class='kiev.vlang.LVarExpr'>
@@ -1638,9 +1638,9 @@
                    </obj>
                    <ident>itype</ident>
                   </a-node>
-                 </mtype>
+                 </type>
                 </a-node>
-               </ntype>
+               </type>
                <args>
                 <a-node class='kiev.vlang.MacroSubstExpr'>
                  <expr>

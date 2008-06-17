@@ -92,8 +92,8 @@ public class CodeAttr extends Attr {
 		for(int i=0; code_attrs!=null && i < code_attrs.length; i++)
 			code_attrs[i].generate(constPool);
 		for(int i=0; catchers!=null && i < catchers.length; i++) {
-			if(catchers[i].type != null) {
-				ClazzCP cl_cp = constPool.addClazzCP(catchers[i].type.java_signature);
+			if(catchers[i].ctype != null) {
+				ClazzCP cl_cp = constPool.addClazzCP(catchers[i].ctype.java_signature);
 				constPool.addAsciiCP(cl_cp.asc.value);
 			}
 		}
@@ -112,9 +112,9 @@ public class CodeAttr extends Attr {
 			ca.catchers[i].start_pc = catchers[i].start_pc;
 			ca.catchers[i].end_pc = catchers[i].end_pc;
 			ca.catchers[i].handler_pc = catchers[i].handler.pc;
-			if(catchers[i].type != null)
+			if(catchers[i].ctype != null)
 				ca.catchers[i].cp_signature = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[
-						constPool.getClazzCP(catchers[i].type.java_signature).pos];
+						constPool.getClazzCP(catchers[i].ctype.java_signature).pos];
 		}
 		ca.attrs = new kiev.bytecode.Attribute[code_attrs.length];
 		for(int i=0; i < code_attrs.length; i++) {

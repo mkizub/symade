@@ -33,9 +33,9 @@ public static final view RField of Field extends RVar {
 
 	public void resolveDecl() {
 		meta.resolve();
-		Type tp = this.type;
+		Type tp = this.getType();
 		if (init instanceof TypeRef)
-			((TypeRef)init).toExpr(type);
+			((TypeRef)init).toExpr(getType());
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr(this,init);
 			try {

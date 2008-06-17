@@ -35,21 +35,21 @@ public final view RCallExpr of CallExpr extends RENode {
 		func.makeArgs(args, mt);
 		assert (!(func instanceof Constructor));
 		if (func.isVarArgs()) {
-			Type tn = func.getVarArgParam().type;
+			Type tn = func.getVarArgParam().getType();
 			Type varg_tp = tn.resolveArg(0);
 			int i=0;
-			for(; i < func.type.arity-1; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
+			for(; i < func.mtype.arity-1; i++)
+				args[i].resolve(Type.getRealType(obj.getType(),func.mtype.arg(i)));
 			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
-				args[i].resolve(func.getVarArgParam().type);
+				args[i].resolve(func.getVarArgParam().getType());
 			} else {
 				for(; i < args.length; i++)
 					args[i].resolve(varg_tp);
 			}
 		} else {
 			for (int i=0; i < args.length; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
+				args[i].resolve(Type.getRealType(obj.getType(),func.mtype.arg(i)));
 		}
 		if (func.isTypeUnerasable()) {
 			((CallExpr)this).eargs.delAll();
@@ -101,21 +101,21 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 			tpinfo.resolve(null);
 		}
 		if (func.isVarArgs()) {
-			Type tn = func.getVarArgParam().type;
+			Type tn = func.getVarArgParam().getType();
 			Type varg_tp = tn.resolveArg(0);
 			int i=0;
-			for(; i < func.type.arity-1; i++)
-				args[i].resolve(func.type.arg(i));
+			for(; i < func.mtype.arity-1; i++)
+				args[i].resolve(func.mtype.arg(i));
 			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
-				args[i].resolve(func.getVarArgParam().type);
+				args[i].resolve(func.getVarArgParam().getType());
 			} else {
 				for(; i < args.length; i++)
 					args[i].resolve(varg_tp);
 			}
 		} else {
 			for (int i=0; i < args.length; i++)
-				args[i].resolve(func.type.arg(i));
+				args[i].resolve(func.mtype.arg(i));
 		}
 		if (func.isTypeUnerasable()) {
 			foreach (TypeDef td; func.targs) {

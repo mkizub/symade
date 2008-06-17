@@ -188,7 +188,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 	public boolean preGenerate() {
 		if (getVar().kind == Var.VAR_RULE) {
 			RuleMethod rm = (RuleMethod)ctx_method;
-			assert(rm.params[0].type ≡ Type.tpRule);
+			assert(rm.params[0].getType() ≡ Type.tpRule);
 			Var pEnv = null;
 		lookup_penv:
 			foreach (ASTNode dn; rm.block.stats) {
@@ -204,7 +204,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 				Kiev.reportError(this, "Cannot find "+namePEnv);
 				return false;
 			}
-			assert(pEnv.type.isInstanceOf(Type.tpRule));
+			assert(pEnv.getType().isInstanceOf(Type.tpRule));
 			Struct s = (Struct)rm.block.stats[0];
 			Field f = s.resolveField(this.ident);
 			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), f));
@@ -275,30 +275,30 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 
 @ViewOf(vcast=true, iface=true)
 public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
-	public TypeRef		type;
+	public TypeRef		ctype;
 	public ENode		expr;
 
 	public void resolve(Type reqType) {
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving "+this);
 		expr.resolve(null);
-		Type type = this.getType();
+		Type ctype = this.getType();
 		Type extp = expr.getType();
-		if (type ≈ extp) {
+		if (ctype ≈ extp) {
 			replaceWithNodeResolve(reqType,~expr);
 			return;
 		}
-		if (type.isIntegerInCode() && extp.isIntegerInCode())
+		if (ctype.isIntegerInCode() && extp.isIntegerInCode())
 			;
-		else if (extp.isInstanceOf(type))
+		else if (extp.isInstanceOf(ctype))
 			;
-		else if (extp.getErasedType().isInstanceOf(type.getErasedType()))
+		else if (extp.getErasedType().isInstanceOf(ctype.getErasedType()))
 			;
-		else if (type instanceof CTimeType && type.getEnclosedType() ≈ extp)
+		else if (ctype instanceof CTimeType && ctype.getEnclosedType() ≈ extp)
 			;
-		else if (extp instanceof CTimeType && extp.getEnclosedType() ≈ type)
+		else if (extp instanceof CTimeType && extp.getEnclosedType() ≈ ctype)
 			;
 		else
-			Kiev.reportError(this, "Cannot reinterpret "+extp+" as "+type);
+			Kiev.reportError(this, "Cannot reinterpret "+extp+" as "+ctype);
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);

@@ -197,8 +197,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
 			if( Kiev.verify
-			 && func.type.ret().isReference()
-			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && func.mtype.ret().isReference()
+			 && ( !func.mtype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -272,8 +272,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
 			if( Kiev.verify
-			 && func.type.ret().isReference()
-			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && func.mtype.ret().isReference()
+			 && ( !func.mtype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -390,7 +390,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 				for(int i=0; i < code.method.params.length; i++) {
 					JVar v = code.method.params[i];
 					if (v.sname != var.sname) continue;
-					assert( var.getType().equals(v.type), "Type of vars in overriden methods missmatch" );
+					assert( var.getType().equals(v.vtype), "Type of vars in overriden methods missmatch" );
 					var = v;
 					break;
 				}

@@ -224,15 +224,15 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
 	@nodeAttr public TypeDef			arg;
 	@nodeAttr public String				op;
-	@nodeAttr public TypeRef			type;
+	@nodeAttr public TypeRef			dtype;
 	
 	public TypeOpDef() { super(null); }
 	
-	public Type getType() { return type.getType(); }
+	public Type getType() { return dtype.getType(); }
 	
 	public boolean mainResolveIn() { return false; }
 
-	public void checkResolved() { type.getType().checkResolved(); }
+	public void checkResolved() { dtype.getType().checkResolved(); }
 	
 	public Struct getStruct() {
 		return getType().getStruct();
@@ -262,13 +262,13 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path) {
-		path.space_prev == this.type,
+		path.space_prev == this.dtype,
 		path.checkNodeName(this.arg),
 		node ?= this.arg
 	}
 
 	public String toString() {
-		return "typedef "+arg+op+" "+type+";";
+		return "typedef "+arg+op+" "+dtype+";";
 	}
 }
 

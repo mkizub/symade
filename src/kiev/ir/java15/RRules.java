@@ -44,11 +44,11 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 			Var penv = params[0];
 			assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
-				if( type.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
+				if( mtype.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret() ≡ Type.tpVoid ) {
+				if( mtype.ret() ≡ Type.tpVoid ) {
 					block.stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {

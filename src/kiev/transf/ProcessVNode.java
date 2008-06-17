@@ -159,7 +159,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 				Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" is static and cannot have @nodeAttr or @nodeData");
 			boolean isArr = false;
 			{
-				Type ft = f.type;
+				Type ft = f.getType();
 				if (ft.isInstanceOf(tpNArray)) {
 					if !(ft.isInstanceOf(tpNodeSpace)) {
 						TypeExpr te = (TypeExpr)f.vtype;
@@ -177,9 +177,9 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			}
 		}
 		else if (!f.isStatic() && !f.isInterfaceOnly()) {
-			if (f.type.isInstanceOf(tpNArray))
+			if (f.getType().isInstanceOf(tpNArray))
 				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @nodeAttr or @nodeData");
-			else if (isNodeKind(f.type))
+			else if (isNodeKind(f.getType()))
 				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @nodeAttr or @nodeData");
 		}
 		if (!f.isStatic() && !f.isAbstract() && !f.isPackedField() && !f.isFinal() && f.getMeta(mnUnVersioned) == null)
@@ -432,7 +432,7 @@ public final class VNodeFE_Verify extends VNode_Base {
 		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
 		TypeDecl td;
 		if (langValue.value instanceof TypeClassExpr)
-			td = ((TypeClassExpr)langValue.value).type.getTypeDecl();
+			td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl();
 		else
 			td = ((TypeRef)langValue.value).getTypeDecl();
 		if (td.xtype ≡ StdTypes.tpVoid)
@@ -455,7 +455,7 @@ public final class VNodeFE_Verify extends VNode_Base {
 		NewInitializedArrayExpr init = (NewInitializedArrayExpr)nodeClasses.init;
 		boolean found = false;
 		foreach (TypeClassExpr tce; init.args) {
-			if (tce.type.getStruct() == s) {
+			if (tce.ttype.getStruct() == s) {
 				found = true;
 				break;
 			}
@@ -650,7 +650,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				MetaValueScalar langValue = (MetaValueScalar)m.get(VNode_Base.nameLangName);
 				TypeDecl td;
 				if (langValue.value instanceof TypeClassExpr)
-					td = ((TypeClassExpr)langValue.value).type.getTypeDecl();
+					td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl();
 				else
 					td = ((TypeRef)langValue.value).getTypeDecl();
 				ENode res = null;
@@ -944,7 +944,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		s.members += ctor;
 
 		foreach (Field f; impl.members; !f.isStatic() && !f.isAbstract() && !f.isPackedField() && !f.isFinal() && f.getMeta(VNode_Base.mnUnVersioned) == null) {
-			Field sf = new Field(f.sname,f.type,ACC_SYNTHETIC);
+			Field sf = new Field(f.sname,f.getType(),ACC_SYNTHETIC);
 			s.members += sf;
 			ctor.block.stats += new ExprStat(new AssignExpr(0,Operator.Assign,new IFldExpr(0,new ThisExpr(),sf),new IFldExpr(0,new LVarExpr(0,ctor.params[0]),f,true)));
 		}
@@ -1114,7 +1114,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			});
 		}
 		if (!isArr && isAtt) {
-			if (f.type.isInstanceOf(VNode_Base.tpANode)) {
+			if (f.getType().isInstanceOf(VNode_Base.tpANode)) {
 				ENode p_st = new IfElseStat(0,
 						new BinaryBoolExpr(0, Operator.NotEquals,
 							new IFldExpr(0,new ThisExpr(),f),
@@ -1158,7 +1158,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				body.stats.append(p_st);
 				Kiev.runProcessorsOn(p_st);
 			} else {
-				Var old = new LVar(body.pos,"$old",f.type,Var.VAR_LOCAL,ACC_FINAL);
+				Var old = new LVar(body.pos,"$old",f.getType(),Var.VAR_LOCAL,ACC_FINAL);
 				old.init = new IFldExpr(0,new ThisExpr(),f,!f.isAbstract());
 				body.stats.insert(0,old);
 				Kiev.runProcessorsOn(old);

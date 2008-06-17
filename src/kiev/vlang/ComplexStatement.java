@@ -35,9 +35,9 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef This  = CaseLabel;
 
 	@nodeAttr public ENode			val;
-	@nodeData public Type			type;
+	@nodeData public Type			ctype;
 	@nodeAttr public Var[]			pattern;
-	     public CodeLabel		case_label;
+	          public CodeLabel		case_label;
 
 	public CaseLabel() {}
 

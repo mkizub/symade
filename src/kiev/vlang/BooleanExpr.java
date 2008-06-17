@@ -288,21 +288,21 @@ public class InstanceofExpr extends BoolExpr {
 	
 	@virtual typedef This  = InstanceofExpr;
 
-	@nodeAttr public ENode		expr;
-	@nodeAttr public TypeRef		type;
+	@nodeAttr public ENode			expr;
+	@nodeAttr public TypeRef		itype;
 
 	public InstanceofExpr() {}
 
-	public InstanceofExpr(int pos, ENode expr, TypeRef type) {
+	public InstanceofExpr(int pos, ENode expr, TypeRef itype) {
 		this.pos = pos;
 		this.expr = expr;
-		this.type = type;
+		this.itype = itype;
 	}
 
-	public InstanceofExpr(int pos, ENode expr, Type type) {
+	public InstanceofExpr(int pos, ENode expr, Type itype) {
 		this.pos = pos;
 		this.expr = expr;
-		this.type = new TypeRef(type);
+		this.itype = new TypeRef(itype);
 	}
 
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
@@ -310,12 +310,12 @@ public class InstanceofExpr extends BoolExpr {
 		assert (op == Operator.InstanceOf);
 		this.symbol = cm.getSymbol(op.name);
 		this.expr = args[0];
-		this.type = (TypeRef)args[1];
+		this.itype = (TypeRef)args[1];
 	}
 	
 	public Operator getOp() { return Operator.InstanceOf; }
 
-	public ENode[] getArgs() { return new ENode[]{expr,type}; }
+	public ENode[] getArgs() { return new ENode[]{expr,itype}; }
 
 	public String toString() { return getOp().toString(this); }
 
@@ -353,7 +353,7 @@ public class InstanceofExpr extends BoolExpr {
 		}
 		if (path != null) {
 			Type et = expr.getType();
-			Type tp = type.getType();
+			Type tp = itype.getType();
 			if (et instanceof CTimeType && !(tp instanceof CTimeType)) {
 				tp = et.applay(new TVarBld(et.getArg(0), tp));
 			}

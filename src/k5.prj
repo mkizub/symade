@@ -282,7 +282,7 @@
          </members>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
-         <fname>RuleTemplates.xml</fname>
+         <fname>RuleTemplatesX.xml</fname>
         </a-node>
        </members>
       </a-node>
@@ -524,7 +524,7 @@
          <fname>ProcessXPath.java</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
-         <fname>TemplatVNode.xml</fname>
+         <fname>TemplatVNodeX.xml</fname>
         </a-node>
         <a-node class='kiev.vlang.FileUnit'>
          <fname>TransfProcessor.java</fname>

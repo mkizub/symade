@@ -518,6 +518,7 @@ public abstract class kiev050 implements kiev050Constants {
       case IMPORT:
         ns.members += Import(modifiers);
         break;
+      case TYPE:
       case TYPEDEF:
         ns.members += Typedef(modifiers);
         break;
@@ -828,7 +829,17 @@ public abstract class kiev050 implements kiev050Constants {
 
   final public TypeDecl Typedef(ASTModifiers modifiers) throws ParseException {
   Symbol id; TypeDecl n; TypeRef tr; Token t; EToken et;
-    jj_consume_token(TYPEDEF);
+    switch (jj_nt.kind) {
+    case TYPEDEF:
+      jj_consume_token(TYPEDEF);
+      break;
+    case TYPE:
+      jj_consume_token(TYPE);
+      break;
+    default:
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
     if (jj_2_4(3)) {
       id = Name();
       jj_consume_token(ASSIGN);
@@ -867,7 +878,7 @@ public abstract class kiev050 implements kiev050Constants {
         jj_consume_token(-1);
         throw new ParseException();
       }
-      n.type = Type();
+      n.dtype = Type();
     } else {
       switch (jj_nt.kind) {
       case IDENTIFIER:
@@ -1004,6 +1015,7 @@ public abstract class kiev050 implements kiev050Constants {
         }
         modifiers = Modifiers();
         switch (jj_nt.kind) {
+        case TYPE:
         case TYPEDEF:
           stx.members += Typedef(modifiers);
           break;
@@ -1327,6 +1339,7 @@ public abstract class kiev050 implements kiev050Constants {
             ;
           }
           break;
+        case TYPE:
         case TYPEDEF:
           clazz.members += MemberArgDecl(modifiers);
           break;
@@ -1347,7 +1360,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public DNode FieldOrMethodDecl(ASTModifiers modifiers) throws ParseException {
-  TypeConstr[] args; TypeRef type; DNode res = null;
+  TypeConstr[] args; TypeRef dtype; DNode res = null;
     switch (jj_nt.kind) {
     case LT:
     case LANGLE:
@@ -1359,8 +1372,8 @@ public abstract class kiev050 implements kiev050Constants {
         switch (jj_nt.kind) {
         case IDENTIFIER:
         case LPAREN:
-          type = Type();
-          res = MethodDeclaration(modifiers, args, type);
+          dtype = Type();
+          res = MethodDeclaration(modifiers, args, dtype);
           break;
         default:
           jj_consume_token(-1);
@@ -1376,12 +1389,12 @@ public abstract class kiev050 implements kiev050Constants {
         switch (jj_nt.kind) {
         case IDENTIFIER:
         case LPAREN:
-          type = Type();
+          dtype = Type();
           if (getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN) {
             // LOOKAHEAD (<IDENTIFIER> "(")
-                                    res = MethodDeclaration(modifiers, null, type);
+                                    res = MethodDeclaration(modifiers, null, dtype);
           } else {
-            res = FieldDecl(modifiers, type);
+            res = FieldDecl(modifiers, dtype);
           }
           break;
         default:
@@ -1525,7 +1538,17 @@ public abstract class kiev050 implements kiev050Constants {
 
   final public TypeDef MemberArgDecl(ASTModifiers modifiers) throws ParseException {
   Symbol name; TypeDef arg; TypeRef t;
-    jj_consume_token(TYPEDEF);
+    switch (jj_nt.kind) {
+    case TYPEDEF:
+      jj_consume_token(TYPEDEF);
+      break;
+    case TYPE:
+      jj_consume_token(TYPE);
+      break;
+    default:
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
     name      = Name();
     switch (jj_nt.kind) {
     case ASSIGN:
@@ -2170,7 +2193,7 @@ public abstract class kiev050 implements kiev050Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Field FieldDecl(ASTModifiers modifiers, TypeRef type) throws ParseException {
+  final public Field FieldDecl(ASTModifiers modifiers, TypeRef dtype) throws ParseException {
   boolean old_declMode; Symbol id; ENode init; Field fld;
                 old_declMode = declMode;
                 declMode = false;
@@ -2185,7 +2208,7 @@ public abstract class kiev050 implements kiev050Constants {
       default:
         ;
       }
-                        fld = mkField(id, modifiers, type, init);
+                        fld = mkField(id, modifiers, dtype, init);
       jj_consume_token(SEMICOLON);
                         {if (true) return fld;}
     } finally {
@@ -2195,9 +2218,9 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) throws ParseException {
-  TypeRef type;
-    type = Type();
-    meth.localvars += RuleVarDecl(modifiers, type, true);
+  TypeRef dtype;
+    dtype = Type();
+    meth.localvars += RuleVarDecl(modifiers, dtype, true);
     label_27:
     while (true) {
       switch (jj_nt.kind) {
@@ -2208,15 +2231,15 @@ public abstract class kiev050 implements kiev050Constants {
         break label_27;
       }
       jj_consume_token(COMMA);
-      meth.localvars += RuleVarDecl(modifiers, type, false);
+      meth.localvars += RuleVarDecl(modifiers, dtype, false);
     }
     jj_consume_token(SEMICOLON);
   }
 
-  final public LVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) throws ParseException {
+  final public LVar RuleVarDecl(ASTModifiers modifiers, TypeRef dtype, boolean first) throws ParseException {
   Token t; Symbol id; LVar lv;
     id = Name();
-          lv = mkRuleVar(id, modifiers, type, first);
+          lv = mkRuleVar(id, modifiers, dtype, first);
     switch (jj_nt.kind) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
@@ -2230,13 +2253,13 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public void VarDecls(ASTModifiers modifiers, SpacePtr stats) throws ParseException {
-  boolean old_declMode; TypeRef type; Symbol id; ENode init; Var var;
+  boolean old_declMode; TypeRef dtype; Symbol id; ENode init; Var var;
                 old_declMode = declMode;
                 declMode = false;
                 init = null;
                 var = null;
     try {
-      type = Type();
+      dtype = Type();
       id = Name();
       switch (jj_nt.kind) {
       case ASSIGN:
@@ -2246,7 +2269,7 @@ public abstract class kiev050 implements kiev050Constants {
       default:
         ;
       }
-                        var = mkVar(id, new ASTModifiers(), type);
+                        var = mkVar(id, new ASTModifiers(), dtype);
                         modifiers.copyToNode(var.meta);
                         var.init = init;
                         stats += var;
@@ -2269,7 +2292,7 @@ public abstract class kiev050 implements kiev050Constants {
         default:
           ;
         }
-                                var = mkVar(id, new ASTModifiers(), type.ncopy());
+                                var = mkVar(id, new ASTModifiers(), dtype.ncopy());
                                 modifiers.copyToNode(var.meta);
                                 var.init = init;
                                 stats += var;
@@ -4040,7 +4063,7 @@ ENode MaybeSkipBlock(ASTNode target) :
         ComplexTypeDecl oldClazz;
         NewExpr ne = new NewExpr();
         ne.pos = tp.pos;
-        ne.type = tp;
+        ne.ntype = tp;
     jj_consume_token(LPAREN);
     if (getToken(1).kind != RPAREN) {
       ne.args += ExpressionColon();
@@ -4083,7 +4106,7 @@ ENode MaybeSkipBlock(ASTNode target) :
   NewArrayExpr ne;
                 NewArrayExpr ne = new NewArrayExpr();
                 ne.pos = tp.pos;
-                ne.type = tp;
+                ne.ntype = tp;
     label_62:
     while (true) {
       jj_consume_token(LBRACKET);
@@ -5363,13 +5386,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_228() {
-    if (jj_scan_token(DO)) return true;
+  final private boolean jj_3R_187() {
+    if (jj_scan_token(VIEW)) return true;
     return false;
   }
 
-  final private boolean jj_3R_187() {
-    if (jj_scan_token(VIEW)) return true;
+  final private boolean jj_3R_228() {
+    if (jj_scan_token(DO)) return true;
     return false;
   }
 
@@ -5423,13 +5446,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_251() {
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
+  final private boolean jj_3R_184() {
+    if (jj_scan_token(INTERFACE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_184() {
-    if (jj_scan_token(INTERFACE)) return true;
+  final private boolean jj_3R_251() {
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
     return false;
   }
 
@@ -5448,9 +5471,9 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_250() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(102)) {
+    if (jj_scan_token(103)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(99)) return true;
+    if (jj_scan_token(100)) return true;
     }
     return false;
   }
@@ -5764,7 +5787,7 @@ ENode MaybeSkipBlock(ASTNode target) :
       if (jj_3_58()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(127)) jj_scanpos = xsp;
+    if (jj_scan_token(128)) jj_scanpos = xsp;
     return false;
   }
 
@@ -5822,9 +5845,9 @@ ENode MaybeSkipBlock(ASTNode target) :
     if (jj_3R_105()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(128)) {
+    if (jj_scan_token(129)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(130)) return true;
+    if (jj_scan_token(131)) return true;
     }
     if (jj_3R_103()) return true;
     while (true) {
@@ -5832,9 +5855,9 @@ ENode MaybeSkipBlock(ASTNode target) :
       if (jj_3R_264()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(129)) {
+    if (jj_scan_token(130)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(131)) return true;
+    if (jj_scan_token(132)) return true;
     }
     return false;
   }
@@ -5996,9 +6019,9 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_241() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(128)) {
+    if (jj_scan_token(129)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(130)) return true;
+    if (jj_scan_token(131)) return true;
     }
     if (jj_3R_103()) return true;
     while (true) {
@@ -6006,9 +6029,9 @@ ENode MaybeSkipBlock(ASTNode target) :
       if (jj_3R_260()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(129)) {
+    if (jj_scan_token(130)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(131)) return true;
+    if (jj_scan_token(132)) return true;
     }
     while (true) {
       xsp = jj_scanpos;
@@ -6033,7 +6056,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     xsp = jj_scanpos;
     if (jj_3R_84()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(139)) {
+    if (jj_scan_token(140)) {
     jj_scanpos = xsp;
     if (jj_scan_token(50)) return true;
     }
@@ -6180,6 +6203,12 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3_2() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_scan_token(OPERATOR)) return true;
+    return false;
+  }
+
   final private boolean jj_3_23() {
     if (jj_scan_token(DOT)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -6189,12 +6218,6 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_163() {
     if (jj_scan_token(LBRACKET)) return true;
     if (jj_3R_98()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_2() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
@@ -6242,6 +6265,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_83() {
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_161() {
     if (jj_3R_179()) return true;
     return false;
@@ -6249,16 +6277,6 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3_38() {
     if (jj_3R_102()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_83() {
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_160() {
-    if (jj_3R_178()) return true;
     return false;
   }
 
@@ -6277,6 +6295,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_3R_83()) return true;
     }
+    return false;
+  }
+
+  final private boolean jj_3R_160() {
+    if (jj_3R_178()) return true;
     return false;
   }
 
@@ -6351,7 +6374,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     xsp = jj_scanpos;
     if (jj_3R_243()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(139)) return true;
+    if (jj_scan_token(140)) return true;
     }
     return false;
   }
@@ -6511,7 +6534,7 @@ ENode MaybeSkipBlock(ASTNode target) :
       if (jj_3_14()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(127)) jj_scanpos = xsp;
+    if (jj_scan_token(128)) jj_scanpos = xsp;
     return false;
   }
 
@@ -6611,25 +6634,18 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_224() {
-    if (jj_scan_token(LBRACE)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_102() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(137)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(75)) {
+    if (jj_scan_token(138)) {
     jj_scanpos = xsp;
     if (jj_scan_token(76)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(78)) {
+    if (jj_scan_token(77)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(80)) {
+    if (jj_scan_token(79)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(59)) {
+    if (jj_scan_token(81)) {
     jj_scanpos = xsp;
     if (jj_scan_token(60)) {
     jj_scanpos = xsp;
@@ -6639,19 +6655,19 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_scan_token(63)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(65)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(39)) {
+    if (jj_scan_token(64)) {
     jj_scanpos = xsp;
     if (jj_scan_token(66)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(15)) {
+    if (jj_scan_token(39)) {
     jj_scanpos = xsp;
     if (jj_scan_token(67)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(25)) {
+    if (jj_scan_token(15)) {
     jj_scanpos = xsp;
     if (jj_scan_token(68)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(25)) {
     jj_scanpos = xsp;
     if (jj_scan_token(69)) {
     jj_scanpos = xsp;
@@ -6661,11 +6677,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_scan_token(72)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(64)) {
-    jj_scanpos = xsp;
     if (jj_scan_token(73)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(74)) return true;
+    if (jj_scan_token(65)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(74)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(75)) return true;
     }
     }
     }
@@ -6689,6 +6707,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_224() {
+    if (jj_scan_token(LBRACE)) return true;
     return false;
   }
 
@@ -6723,6 +6746,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_81() {
+    if (jj_3R_114()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_223() {
     if (jj_3R_104()) return true;
     return false;
@@ -6730,11 +6758,6 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_218() {
     if (jj_scan_token(ASSIGN2)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_81() {
-    if (jj_3R_114()) return true;
     return false;
   }
 
@@ -6810,17 +6833,17 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_200() {
-    if (jj_3R_235()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_86() {
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
       if (jj_3_1()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_200() {
+    if (jj_3R_235()) return true;
     return false;
   }
 
@@ -7011,21 +7034,21 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_258() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(132)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(128)) {
+    if (jj_scan_token(133)) {
     jj_scanpos = xsp;
     if (jj_scan_token(129)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(137)) {
+    if (jj_scan_token(130)) {
     jj_scanpos = xsp;
     if (jj_scan_token(138)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(142)) {
+    if (jj_scan_token(139)) {
     jj_scanpos = xsp;
     if (jj_scan_token(143)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(144)) return true;
+    if (jj_scan_token(144)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(145)) return true;
     }
     }
     }
@@ -7072,15 +7095,15 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_115() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(137)) {
-    jj_scanpos = xsp;
     if (jj_scan_token(138)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(140)) {
+    if (jj_scan_token(139)) {
     jj_scanpos = xsp;
     if (jj_scan_token(141)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(144)) return true;
+    if (jj_scan_token(142)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(145)) return true;
     }
     }
     }

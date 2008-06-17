@@ -16,14 +16,14 @@ import kiev.stdlib.*;
 import kiev.stdlib.meta.*;
 import java.lang.*;
 
-typedef type[] kiev.stdlib._array_<type>;
-typedef type... kiev.stdlib._vararg_<type>;
-typedef type⊛ kiev.stdlib._wrapper_<type>;
-//typedef type⁺ kiev.stdlib._wildcard_co_variant_<type>;
-//typedef type⁻ kiev.stdlib._wildcard_contra_variant_<type>;
-typedef type@ kiev.stdlib.PVar<type>⊛;
-typedef type& kiev.stdlib.Ref<type>;
-//typedef type| kiev.stdlib.List<type>;
+typedef elem[] kiev.stdlib._array_<elem>;
+typedef elem... kiev.stdlib._vararg_<elem>;
+typedef wtp⊛ kiev.stdlib._wrapper_<wtp>;
+//typedef wctp⁺ kiev.stdlib._wildcard_co_variant_<wctp>;
+//typedef wctp⁻ kiev.stdlib._wildcard_contra_variant_<wctp>;
+typedef pvtp@ kiev.stdlib.PVar<pvtp>⊛;
+typedef rtp& kiev.stdlib.Ref<rtp>;
+//typedef elem| kiev.stdlib.List<elem>;
 
 // assign operators
 operator  =    , lfy,   5;

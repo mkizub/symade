@@ -111,10 +111,10 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 				if( image.equals("[]") ) {
 					if( m.isStatic() )
 						throw new CompilerException(this,"'[]' operator can't be static");
-					if( m.type.arity != 2 )
+					if( m.mtype.arity != 2 )
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
-					if( m.type.ret() ≉ m.type.arg(1) )
-						throw new CompilerException(this,"Method "+m+" must return "+m.type.arg(1));
+					if( m.mtype.ret() ≉ m.mtype.arg(1) )
+						throw new CompilerException(this,"Method "+m+" must return "+m.mtype.arg(1));
 					setAliasName(nameArraySetOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
@@ -122,14 +122,14 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 				if( image.equals("new") ) {
 					if( !m.isStatic() )
 						throw new CompilerException(this,"'new' operator must be static");
-					if( m.type.ret() ≉ m.ctx_tdecl.xtype )
+					if( m.mtype.ret() ≉ m.ctx_tdecl.xtype )
 						throw new CompilerException(this,"Method "+m+" must return "+m.ctx_tdecl.xtype);
 					setAliasName(nameNewOp);
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
 				}
 
-				Type opret = m.type.ret();
+				Type opret = m.mtype.ret();
 				if( prior == 0 )
 					prior = Constants.opAssignPriority;
 				if( prior != Constants.opAssignPriority )
@@ -151,16 +151,16 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 				if( image.equals("[]") ) {
 					if( m.isStatic() )
 						throw new CompilerException(this,"'[]' operator can't be static");
-					if( m.type.arity != 1 )
+					if( m.mtype.arity != 1 )
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
-					if( m.type.ret() ≡ Type.tpVoid )
+					if( m.mtype.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
 					setAliasName(nameArrayGetOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
 
-				Type opret = m.type.ret();
+				Type opret = m.mtype.ret();
 				Operator op = Operator.getOperatorByName("V "+image+" V");
 				if (op == null)
 					op = Operator.getOperatorByName("V "+image+" T");
@@ -176,17 +176,17 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 			{
 				// Special case fo "$cast" operator
 				if( image.equals("$cast") ) {
-					if( m.isStatic() && m.type.arity != 1 )
+					if( m.isStatic() && m.mtype.arity != 1 )
 						throw new CompilerException(this,"Static cast method "+m+" must have 1 argument");
-					else if( !m.isStatic() && m.type.arity != 0 )
+					else if( !m.isStatic() && m.mtype.arity != 0 )
 						throw new CompilerException(this,"Virtual scast method "+m+" must have no arguments");
-					if( m.type.ret() ≡ Type.tpVoid )
+					if( m.mtype.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
 					setAliasName(nameCastOp);
 					return;
 				}
 
-				Type opret = m.type.ret();
+				Type opret = m.mtype.ret();
 				Operator op = Operator.getOperatorByName(image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Prefix operator "+image+" not found");
@@ -198,7 +198,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		case Opdef.XF:
 		case Opdef.YF:
 			{
-				Type opret = m.type.ret();
+				Type opret = m.mtype.ret();
 				Operator op = Operator.getOperatorByName("V "+image);
 				if (op == null)
 					throw new CompilerException(this,"Postfix operator "+image+" not found");

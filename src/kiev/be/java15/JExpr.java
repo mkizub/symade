@@ -30,12 +30,12 @@ public final view JShadow of Shadow extends JENode {
 
 @ViewOf(vcast=true, iface=true)
 public final view JTypeClassExpr of TypeClassExpr extends JENode {
-	public:ro	Type			type;
+	public:ro	Type			ttype;
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
-		code.addConst(type.getErasedType().getJType());
+		code.addConst(ttype.getErasedType().getJType());
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -43,7 +43,7 @@ public final view JTypeClassExpr of TypeClassExpr extends JENode {
 
 @ViewOf(vcast=true, iface=true)
 public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
-	public:ro	Type				type;
+	public:ro	Type				ttype;
 	public:ro	JENode				cl_expr;
 	public:ro	JENode[]			cl_args;
 
@@ -65,7 +65,7 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 		} else {
 			code.addNullConst();
 		}
-		Struct ti_clazz = type.getStruct();
+		Struct ti_clazz = ttype.getStruct();
 		if (ti_clazz == null || ti_clazz.typeinfo_clazz == null)
 			ti_clazz = (Struct)Type.tpTypeInfo.tdecl;
 		else
@@ -237,7 +237,7 @@ public view JBlock of Block extends JENode {
 				((JVar)n).removeVar(code);
 		}
 		JNode p = this.jparent;
-		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.type.ret() ≢ Type.tpVoid)
+		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.mtype.ret() ≢ Type.tpVoid)
 			code.stack_push(p.etype.ret().getJType());
 		if (lblbrk != null)
 			lblbrk.generate(code,null);
@@ -299,7 +299,7 @@ public view JConditionalExpr of ConditionalExpr extends JENode {
 @ViewOf(vcast=true, iface=true)
 public view JCastExpr of CastExpr extends JENode {
 	public:ro	JENode			expr;
-	public:ro	Type			type;
+	public:ro	Type			ctype;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating CastExpr: "+this);
@@ -307,12 +307,12 @@ public view JCastExpr of CastExpr extends JENode {
 		expr.generate(code,null);
 		Type t = expr.getType();
 		if( t.isReference() ) {
-			if( t.isReference() != type.isReference() )
-				throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
-			if( type.isReference() )
-				code.addInstr(Instr.op_checkcast,type);
+			if( t.isReference() != ctype.isReference() )
+				throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be casted to type "+ctype);
+			if( ctype.isReference() )
+				code.addInstr(Instr.op_checkcast,ctype);
 		} else {
-			code.addInstr(Instr.op_x2y,type);
+			code.addInstr(Instr.op_x2y,ctype);
 		}
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}

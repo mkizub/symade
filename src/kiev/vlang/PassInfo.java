@@ -183,13 +183,13 @@ public class PassInfo {
 					continue next_method;
 				}
 				if (m1_is_va) {
-					if (m1.type.arity < m2.type.arity) {
+					if (m1.mtype.arity < m2.mtype.arity) {
 						trace(Kiev.debug && Kiev.debugResolve,"Method "+m1+" is less specific because of arity then "+m2);
 						continue next_method;
 					}
 				}
 				if (m2_is_va) {
-					if (m2.type.arity < m1.type.arity) {
+					if (m2.mtype.arity < m1.mtype.arity) {
 						trace(Kiev.debug && Kiev.debugResolve,"Method "+m1+" is more specific because of arity then "+m2);
 						goto is_more_specific;
 					}
@@ -277,7 +277,7 @@ public class PassInfo {
 			if( from instanceof TryStat ) {
 				TryStat trySt = (TryStat)from;
 				for(int j=0; j < trySt.catchers.length; j++)
-					if( exc.isInstanceOf(trySt.catchers[j].arg.type) ) return true;
+					if( exc.isInstanceOf(trySt.catchers[j].arg.getType()) ) return true;
 			}
 			else if( from instanceof Method ) {
 				MetaThrows throwns = from.getMetaThrows();

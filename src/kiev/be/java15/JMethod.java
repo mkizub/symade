@@ -24,7 +24,7 @@ public final view JMethod of Method extends JDNode {
 	public:ro	JENode					body;
 	public:ro	JWBCCondition[]			conditions;
 
-	public:ro	CallType				type;
+	public:ro	CallType				mtype;
 	public:ro	CallType				dtype;
 	public:ro	CallType				etype;
 
@@ -94,7 +94,7 @@ public final view JMethod of Method extends JDNode {
 					}
 					body.generate(code,Type.tpVoid);
 					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
-						if( type.ret() ≢ Type.tpVoid ) {
+						if( mtype.ret() ≢ Type.tpVoid ) {
 							code.addVar(getRetVar());
 							code.addInstr(Instr.op_store,getRetVar());
 						}
@@ -106,7 +106,7 @@ public final view JMethod of Method extends JDNode {
 						}
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
 							code.importCode(cond.code_attr);
-						if( type.ret() ≢ Type.tpVoid ) {
+						if( mtype.ret() ≢ Type.tpVoid ) {
 							code.addInstr(Instr.op_load,getRetVar());
 							code.addInstr(Instr.op_return);
 							code.removeVar(getRetVar());
@@ -150,7 +150,7 @@ public final view JMethod of Method extends JDNode {
 	public void generateArgumentCheck(Code code) {
 		for(int i=0; i < params.length; i++) {
 			Type tp1 = etype.arg(i);
-			Type tp2 = params[i].type;
+			Type tp2 = params[i].vtype;
 			if !(tp2.getErasedType().isInstanceOf(tp1)) {
 				code.addInstr(Instr.op_load,params[i]);
 				code.addInstr(Instr.op_checkcast,tp1);
@@ -196,9 +196,9 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params);
-				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.addVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.mtype.ret() ≢ Type.tpVoid ) code.addVar(m.getRetVar());
 				body.generate(code,Type.tpVoid);
-				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.mtype.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
 				code.removeVars(m.params);
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode(this);

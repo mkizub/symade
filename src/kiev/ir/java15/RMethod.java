@@ -25,7 +25,7 @@ public view RMethod of Method extends RDNode {
 	public:ro			TypeDef[]			targs;
 	public				TypeRef				type_ret;
 	public				TypeRef				dtype_ret;
-	public:ro			CallType			type;
+	public:ro			CallType			mtype;
 	public:ro			CallType			dtype;
 	public:ro			CallType			etype;
 	public:ro			Var[]				params;
@@ -74,9 +74,9 @@ public view RMethod of Method extends RDNode {
 			}
 			if (body != null && !isMacro() && !(body instanceof MetaValue)) {
 				body.setAutoReturnable(true);
-				body.resolve(type.ret());
+				body.resolve(mtype.ret());
 				if (!body.isMethodAbrupted()) {
-					if (type.ret() ≡ Type.tpVoid) {
+					if (mtype.ret() ≡ Type.tpVoid) {
 						block.stats.append(new ReturnStat(pos,null));
 						body.setMethodAbrupted(true);
 					} else {
@@ -85,7 +85,7 @@ public view RMethod of Method extends RDNode {
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
-				if( type.ret() ≢ Type.tpVoid ) getRetVar();
+				if( mtype.ret() ≢ Type.tpVoid ) getRetVar();
 				cond.resolveDecl();
 			}
 		} catch(Exception e ) {

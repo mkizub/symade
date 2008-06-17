@@ -128,7 +128,7 @@ public class TypeExpr extends TypeRef {
 		Type t;
 		ArgType a;
 		if (PassInfo.resolveNameR(((TypeExpr)this),tod,new ResInfo(this,this.op_name))) {
-			t = tod.type.getType();
+			t = tod.dtype.getType();
 			a = tod.arg.getAType();
 		}
 		else if (op == Operator.PostTypeArray) {

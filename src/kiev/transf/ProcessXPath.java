@@ -78,7 +78,7 @@ public class XPathME_PreGenerate extends BackendProcessor implements Constants {
 				continue;
 			String xpath_expr = xpe.getS("value");
 			m.body = new Block(m.pos);
-			Type rettp = m.type.ret();
+			Type rettp = m.mtype.ret();
 			String callName = null;
 			TypeRef[] targs = null;
 			if (rettp.isInstanceOf(tpVDomNode)) {

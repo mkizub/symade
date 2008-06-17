@@ -530,6 +530,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < VARARGS: "..." >
 | < PCUT: "$cut" >
 | < ALIAS: "alias" >
+| < TYPE: "type" >
 | < TYPEDEF: "typedef" >
 | < ENUM: "enum" >
 
@@ -974,7 +975,7 @@ Import Import(ASTModifiers modifiers) :
 TypeDecl Typedef(ASTModifiers modifiers) :
 { Symbol id; TypeDecl n; TypeRef tr; Token t; EToken et; }
 {
-	"typedef"
+	("typedef"|"type")
 	(
 		LOOKAHEAD(3, <IDENTIFIER> "=" <IDENTIFIER>)
 		id = Name()
@@ -989,7 +990,7 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 		|	t    = <OPERATOR_LRBRACKETS> { n.op = "[]"; }
 		|	t    = "..."                 { n.op = "..."; }
 		)
-		n.type = Type()
+		n.dtype = Type()
 	|
 		tr = Type()
 		id = Name()
@@ -1194,7 +1195,7 @@ void TypeBodyDeclaration(ComplexTypeDecl clazz) :
 }
 
 DNode FieldOrMethodDecl(ASTModifiers modifiers) :
-{ TypeConstr[] args; TypeRef type; DNode res = null; }
+{ TypeConstr[] args; TypeRef dtype; DNode res = null; }
 {
 	(
 		args = ClazzArguments()
@@ -1202,20 +1203,20 @@ DNode FieldOrMethodDecl(ASTModifiers modifiers) :
 			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
 			res = ConstructorDeclaration(modifiers, args)
 		|
-			type = Type()
-			res = MethodDeclaration(modifiers, args, type)
+			dtype = Type()
+			res = MethodDeclaration(modifiers, args, dtype)
 		)
 	|
 		LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
 		res = ConstructorDeclaration(modifiers, null)
 	|
-		type = Type()
+		dtype = Type()
 		(
 			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
-			res = MethodDeclaration(modifiers, null, type)
+			res = MethodDeclaration(modifiers, null, dtype)
 		|
 			LOOKAHEAD(0)
-			res = FieldDecl(modifiers, type)
+			res = FieldDecl(modifiers, dtype)
 		)
 	)
 	{ return res; }
@@ -1292,8 +1293,7 @@ TypeConstr[] ClazzArguments() :
 TypeDef MemberArgDecl(ASTModifiers modifiers) :
 { Symbol name; TypeDef arg; TypeRef t; }
 {
-	"typedef"
-	
+	("typedef"|"type")
 	(
 		name      = Name()
 		(
@@ -1593,7 +1593,7 @@ MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
 }
 
 
-Field FieldDecl(ASTModifiers modifiers, TypeRef type) :
+Field FieldDecl(ASTModifiers modifiers, TypeRef dtype) :
 { boolean old_declMode; Symbol id; ENode init; Field fld; }
 {
 	{
@@ -1605,7 +1605,7 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type) :
 		id = Name()
 		[	"="	init = VariableInitializer()	]
 		{
-			fld = mkField(id, modifiers, type, init);
+			fld = mkField(id, modifiers, dtype, init);
 		}
 		";"
 		{	return fld;	}
@@ -1613,21 +1613,21 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type) :
 }
 
 void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
-{ TypeRef type; }
+{ TypeRef dtype; }
 {
-	type = Type()
-	meth.localvars += RuleVarDecl(modifiers, type, true)
+	dtype = Type()
+	meth.localvars += RuleVarDecl(modifiers, dtype, true)
 	(	","
-		meth.localvars += RuleVarDecl(modifiers, type, false)
+		meth.localvars += RuleVarDecl(modifiers, dtype, false)
 	)*
 	";"
 }
 
-LVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+LVar RuleVarDecl(ASTModifiers modifiers, TypeRef dtype, boolean first) :
 { Token t; Symbol id; LVar lv; }
 {
 	id = Name()
-	{ lv = mkRuleVar(id, modifiers, type, first); }
+	{ lv = mkRuleVar(id, modifiers, dtype, first); }
 	[
 		"="
 		lv.init = VariableInitializer()
@@ -1636,7 +1636,7 @@ LVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 }
 
 void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
-{ boolean old_declMode; TypeRef type; Symbol id; ENode init; Var var; }
+{ boolean old_declMode; TypeRef dtype; Symbol id; ENode init; Var var; }
 {
 	{
 		old_declMode = declMode;
@@ -1645,11 +1645,11 @@ void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
 		var = null;
 	}
 	try {
-		type = Type()
+		dtype = Type()
 		id = Name()
 		[	"="	init = VariableInitializer()	]
 		{
-			var = mkVar(id, new ASTModifiers(), type);
+			var = mkVar(id, new ASTModifiers(), dtype);
 			modifiers.copyToNode(var.meta);
 			var.init = init;
 			stats += var;
@@ -1659,7 +1659,7 @@ void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
 			id = Name()
 			[	"="	init = VariableInitializer()	]
 			{
-				var = mkVar(id, new ASTModifiers(), type.ncopy());
+				var = mkVar(id, new ASTModifiers(), dtype.ncopy());
 				modifiers.copyToNode(var.meta);
 				var.init = init;
 				stats += var;
@@ -2689,11 +2689,11 @@ NewExpr NewExpression(TypeRef tp) :
 	ComplexTypeDecl oldClazz;
 	NewExpr ne = new NewExpr();
 	ne.pos = tp.pos;
-	ne.type = tp;
+	ne.ntype = tp;
 }
 {
 	//"new"
-    //ne.type = NArrType()
+    //ne.ntype = NArrType()
 	"("
 		(
 			LOOKAHEAD({ getToken(1).kind != RPAREN })
@@ -2724,11 +2724,11 @@ NewArrayExpr NewArrayExpression(TypeRef tp) :
 { NewArrayExpr ne; }
 {
 	//"new"
-	//ne.type = NArrType()
+	//ne.ntype = NArrType()
 	{
 		NewArrayExpr ne = new NewArrayExpr();
 		ne.pos = tp.pos;
-		ne.type = tp;
+		ne.ntype = tp;
 	}
 	(
 		LOOKAHEAD(2)

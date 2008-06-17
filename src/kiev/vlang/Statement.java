@@ -73,7 +73,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < node.new_vars.length; i++) {
 				in = in.declNode((Var)node.new_vars[i].dnode);
-				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].type);
+				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].getType());
 			}
 			res = in;
 			dfi.setResult(res_idx, res);

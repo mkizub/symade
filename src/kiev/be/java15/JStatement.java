@@ -47,9 +47,9 @@ public final view JInlineMethodStat of InlineMethodStat extends JENode {
 		for (int i=0; i < old_vars.length; i++) {
 			JVar vold = (JVar)(Var)old_vars[i].dnode;
 			JVar vnew = (JVar)(Var)new_vars[i].dnode;
-			if( !vnew.equals(m.params[i].type) ) {
+			if( !vnew.equals(m.params[i].vtype) ) {
 				code.addInstr(Instr.op_load,vold);
-				code.addInstr(Instr.op_checkcast,m.params[i].type);
+				code.addInstr(Instr.op_checkcast,m.params[i].getType());
 				code.addInstr(Instr.op_store,vnew);
 			}
 		}
@@ -80,10 +80,10 @@ public final view JReturnStat of ReturnStat extends JENode {
 		code.setLinePos(this);
 		try {
 			if( expr != null ) {
-				expr.generate(code,code.method.type.ret());
-				if( !expr.getType().getJType().isInstanceOf(code.method.type.ret().getJType()) ) {
+				expr.generate(code,code.method.mtype.ret());
+				if( !expr.getType().getJType().isInstanceOf(code.method.mtype.ret().getJType()) ) {
 					trace( Kiev.debug && Kiev.debugNodeTypes, "Need checkcast for return");
-					code.addInstr(Instr.op_checkcast,code.method.type.ret());
+					code.addInstr(Instr.op_checkcast,code.method.mtype.ret());
 				}
 			}
 			generateReturn(code,this);
@@ -104,8 +104,8 @@ public final view JReturnStat of ReturnStat extends JENode {
 			}
 			else if (node instanceof JTryStat) {
 				if( node.finally_catcher != null ) {
-					if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
-						tmp_var = (JVar)new LVar(0,"",code.method.type.ret(),Var.VAR_LOCAL,0);
+					if( tmp_var==null && code.method.mtype.ret() ≢ Type.tpVoid ) {
+						tmp_var = (JVar)new LVar(0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -113,8 +113,8 @@ public final view JReturnStat of ReturnStat extends JENode {
 				}
 			}
 			else if (node instanceof JSynchronizedStat) {
-				if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
-					tmp_var = (JVar)new LVar(0,"",code.method.type.ret(),Var.VAR_LOCAL,0);
+				if( tmp_var==null && code.method.mtype.ret() ≢ Type.tpVoid ) {
+					tmp_var = (JVar)new LVar(0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -128,7 +128,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 		}
 		if( code.need_to_gen_post_cond ) {
 			code.addInstr(Instr.op_goto,code.method.getBrkLabel().getCodeLabel(code));
-			if( code.method.type.ret() ≢ Type.tpVoid )
+			if( code.method.mtype.ret() ≢ Type.tpVoid )
 				code.stack_pop();
 		} else
 			code.addInstr(Instr.op_return);

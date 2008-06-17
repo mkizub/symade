@@ -134,7 +134,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		foreach(Field f; this.members; f.isStatic()) {
 			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
 				continue;
-			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
+			if (((TypeInfoExpr)f.init).ttype.getType() ≈ t)
 				return new SFldExpr(from.pos,f);
 		}
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
@@ -466,7 +466,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// }
 		{
 			boolean ctor_exists = false;
-			foreach(Constructor c; this.members; !c.isStatic() && c.isPublic() && c.type.arity==0) {
+			foreach(Constructor c; this.members; !c.isStatic() && c.isPublic() && c.mtype.arity==0) {
 				ctor_exists = true;
 				break;
 			}
@@ -575,7 +575,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (vte.overloader != null)
 				trace("            overloaded by "+vte.overloader.name+vte.overloader.etype);
 				foreach (Method m; vte.methods)
-					trace("        "+m.ctx_tdecl+"."+m.sname+m.type);
+					trace("        "+m.ctx_tdecl+"."+m.sname+m.mtype);
 			}
 		}
 		
@@ -798,7 +798,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			((Struct)self).members.append(bridge);
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
 			bridge.body = new Block();
-			if (bridge.type.ret() ≢ Type.tpVoid)
+			if (bridge.mtype.ret() ≢ Type.tpVoid)
 				bridge.block.stats.append(new ReturnStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			else
 				bridge.block.stats.append(new ExprStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
@@ -1021,7 +1021,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (m.isRuleMethod())
 					mmm = new RuleMethod(m.sname, m.meta.mflags | ACC_SYNTHETIC);
 				else
-					mmm = new MethodImpl(m.sname, m.type.ret(), m.meta.mflags | ACC_SYNTHETIC);
+					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.meta.mflags | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				mmm.targs.copyFrom(m.targs);
 				foreach (Var fp; m.params) {
@@ -1029,11 +1029,11 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					if (stype != null)
 						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.meta.mflags));
 					else
-						mmm.params.add(new LVar(fp.pos,fp.sname,fp.type,fp.kind,fp.meta.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(),fp.kind,fp.meta.mflags));
 				}
 				((Struct)self).members.add(mmm);
 			}
-			CallType type1 = (CallType)mmm.type.getErasedType(); // erase type, like X... -> X[]
+			CallType type1 = (CallType)mmm.mtype.getErasedType(); // erase type, like X... -> X[]
 			CallType dtype1 = mmm.dtype;
 			CallType etype1 = mmm.etype;
 			mmm.detach();
@@ -1042,7 +1042,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			// find all methods with the same java type
 			Vector<Method> marr = new Vector<Method>();
 			foreach (Method mj; members; !mj.isMethodBridge() && mj.isStatic() == m.isStatic()) {
-				CallType type2 = (CallType)mj.type.getErasedType(); // erase type, like X... -> X[]
+				CallType type2 = (CallType)mj.mtype.getErasedType(); // erase type, like X... -> X[]
 				CallType dtype2 = mj.dtype;
 				CallType etype2 = mj.etype;
 				if( mj.sname != m.sname || etype2.arity != etype1.arity )
@@ -1053,7 +1053,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 						if (type1.equals(type2))
 							mm = mj;
 					} else {
-						if (((CallType)mm.type.getErasedType()).greater(type2))
+						if (((CallType)mm.mtype.getErasedType()).greater(type2))
 							mm = mj;
 					}
 					marr.append(mj);
@@ -1102,17 +1102,17 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					last_st = (IfElseStat)last_st.elseSt;
 				ENode[] vae = new ENode[mm.params.length];
 				for(int k=0; k < vae.length; k++) {
-					vae[k] = new CastExpr(0,mm.type.arg(k), new LVarExpr(0,mm.params[k]));
+					vae[k] = new CastExpr(0,mm.mtype.arg(k), new LVarExpr(0,mm.params[k]));
 				}
 				CallExpr ce = new CallExpr(0,new SuperExpr(),overwr,null,vae);
 				ce.setSuperExpr(true);
-				if( m.type.ret() ≢ Type.tpVoid ) {
-					if( overwr.type.ret() ≡ Type.tpVoid )
+				if( m.mtype.ret() ≢ Type.tpVoid ) {
+					if( overwr.mtype.ret() ≡ Type.tpVoid )
 						br = new Block(0,new ENode[]{
 							new ExprStat(0,ce),
 							new ReturnStat(0,new ConstNullExpr())
 						});
-					else if( !overwr.type.ret().isReference() && mm.type.ret().isReference() ) {
+					else if( !overwr.mtype.ret().isReference() && mm.mtype.ret().isReference() ) {
 						br = new ReturnStat(0,ce);
 						CastExpr.autoCastToReference(ce);
 					}
@@ -1153,7 +1153,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		trace(Kiev.debug && Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+clazz);
 		foreach (Method mi; clazz.members) {
 			if( mi.isStatic() || mi.isPrivate() || mi instanceof Constructor ) continue;
-			if( mi.sname != m.sname || mi.type.arity != m.type.arity ) {
+			if( mi.sname != m.sname || mi.mtype.arity != m.mtype.arity ) {
 //				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
@@ -1179,11 +1179,11 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		for(int i=0; i < mmt.uppers.length; i++) {
 			if( mmt.uppers[i] == null ) continue;
 			Method m = mmt.uppers[i].m;
-			for(int j=0; j < m.type.arity; j++) {
-				Type t = m.type.arg(j);
-				if( mmt.m != null && t.equals(mmt.m.type.arg(j)) ) continue;
+			for(int j=0; j < m.mtype.arity; j++) {
+				Type t = m.mtype.arg(j);
+				if( mmt.m != null && t.equals(mmt.m.mtype.arg(j)) ) continue;
 				ENode be = null;
-				if( mmt.m != null && !t.equals(mmt.m.type.arg(j)) ) {
+				if( mmt.m != null && !t.equals(mmt.m.mtype.arg(j)) ) {
 					if (!t.isReference())
 						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), ((CoreType)t).getRefTypeForPrimitive());
 					else
@@ -1273,9 +1273,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		MMTree[] uppers = MMTree.emptyArray;
 		MMTree(Method m) { this.m = m; }
 		void add(Method mm) {
-			if( m!=null && !mm.type.greater(m.type) ) {
+			if( m!=null && !mm.mtype.greater(m.mtype) ) {
 				trace(Kiev.debug && Kiev.debugMultiMethod,"method "+mm+" type <= "+m);
-				if( m.type.isMultimethodSuper(mm.type) ) {
+				if( m.mtype.isMultimethodSuper(mm.mtype) ) {
 					trace(Kiev.debug && Kiev.debugMultiMethod,"method "+mm+" type == "+m);
 					// dispatched method of equal type
 					MMTree mt = new MMTree(mm);
@@ -1287,7 +1287,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			}
 			for(int i=0; i < uppers.length; i++) {
 				if( uppers[i] == null ) continue;
-				if( mm.type.greater(uppers[i].m.type) ) {
+				if( mm.mtype.greater(uppers[i].m.mtype) ) {
 					trace(Kiev.debug && Kiev.debugMultiMethod,"method "+mm+" type > "+m);
 					uppers[i].add(mm);
 					return;
@@ -1295,7 +1295,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			}
 			int link_to = -1;
 			for(int i=0; i < uppers.length; i++) {
-				if( uppers[i].m.type.greater(mm.type) ) {
+				if( uppers[i].m.mtype.greater(mm.mtype) ) {
 					if( uppers[i] == null ) continue;
 					if( link_to < 0 ) {
 						MMTree mt = new MMTree(mm);
@@ -1593,17 +1593,17 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			// Verify access
 			foreach(Field f; this.members) {
 				try {
-					f.type.checkResolved();
-					if (f.type.getStruct()!=null)
-						MetaAccess.verifyReadWrite((Struct)this,f.type.getStruct());
+					f.getType().checkResolved();
+					if (f.getType().getStruct()!=null)
+						MetaAccess.verifyReadWrite((Struct)this,f.getType().getStruct());
 				} catch(Exception e ) { Kiev.reportError(f,e); }
 			}
 			foreach(Method m; members) {
 				try {
-					m.type.ret().checkResolved();
-					if (m.type.ret().getStruct()!=null)
-						MetaAccess.verifyReadWrite((Struct)this,m.type.ret().getStruct());
-					foreach(Type t; m.type.params()) {
+					m.mtype.ret().checkResolved();
+					if (m.mtype.ret().getStruct()!=null)
+						MetaAccess.verifyReadWrite((Struct)this,m.mtype.ret().getStruct());
+					foreach(Type t; m.mtype.params()) {
 						t.checkResolved();
 						if (t.getStruct()!=null)
 							MetaAccess.verifyReadWrite((Struct)this,t.getStruct());
@@ -1640,7 +1640,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
 							String nm = proxy_fields[j].sname;
-							m.params.append(new LVar(m.pos,nm,proxy_fields[j].type,Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
+							m.params.append(new LVar(m.pos,nm,proxy_fields[j].getType(),Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.block.stats.insert(
 								1,
 								new ExprStat(m.pos,

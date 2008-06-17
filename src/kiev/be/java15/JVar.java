@@ -30,13 +30,11 @@ public view JVar of Var extends JDNode {
 	public final boolean isInitWrapper();
 	public final boolean isNeedProxy();
 
-	@getter public final Type get$type() {
-		if (((Var)this).vtype == null)
-			return Type.tpVoid;
+	@getter public final Type get$vtype() {
 		return ((Var)this).vtype.getType();
 	}
 	@getter public final JType get$jtype() {
-		return this.get$type().getJType();
+		return ((Var)this).getType().getJType();
 	}
 	
 	public void generate(Code code, Type reqType) {
@@ -44,7 +42,7 @@ public view JVar of Var extends JDNode {
 		code.setLinePos(this);
 		try {
 			if( init != null ) {
-				init.generate(code,this.type);
+				init.generate(code,this.vtype);
 				code.addVar(this);
 				code.addInstr(Instr.op_store,this);
 			} else {

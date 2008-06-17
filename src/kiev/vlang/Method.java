@@ -37,10 +37,10 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@nodeData(ext_data=true)
 	public Method		caller_from_inner;
 
-	private				CallType		_type;
+	private				CallType		_mtype;
 	private				CallType		_dtype;
 	@abstract @virtual
-	public:ro			CallType		type;
+	public:ro			CallType		mtype;
 	@abstract @virtual
 	public:ro			CallType		dtype;
 	@abstract @virtual
@@ -61,13 +61,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
 		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "dtype_ret" || attr.name == "meta") {
-			_type = null;
+			_mtype = null;
 			_dtype = null;
 		}
 		super.callbackChildChanged(ct, attr, data);
 	}
 
-	@getter public final CallType				get$type()	{ if (this._type == null) rebuildTypes(); return this._type; }
+	@getter public final CallType				get$mtype()	{ if (this._mtype == null) rebuildTypes(); return this._mtype; }
 	@getter public final CallType				get$dtype()	{ if (this._dtype == null) rebuildTypes(); return this._dtype; }
 	@getter public final CallType				get$etype()	{ if (this._dtype == null) rebuildTypes(); return (CallType)this._dtype.getErasedType(); }
 
@@ -169,7 +169,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				fpdtype = fp.vtype;
 			switch (fp.kind) {
 			case Var.PARAM_NORMAL:
-				args.append(fp.type);
+				args.append(fp.getType());
 				dargs.append(fpdtype.getType());
 				break;
 			case Var.PARAM_OUTER_THIS:
@@ -179,50 +179,50 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(fp.isFinal());
 				assert(fp.sname == nameThisDollar);
 				//assert(fp.type ≈ this.ctx_tdecl.package_clazz.dnode.xtype); // not true for View-s
-				dargs.append(fp.type);
+				dargs.append(fp.getType());
 				break;
 			case Var.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
 				assert(fp.isForward());
 				assert(fp.isFinal());
-				assert(fp.type ≡ Type.tpRule);
+				assert(fp.getType() ≡ Type.tpRule);
 				assert(fp.sname == namePEnv);
 				dargs.append(Type.tpRule);
 				break;
 			case Var.PARAM_ENUM_NAME:
 				assert(this instanceof Constructor && !this.isStatic());
-				assert(fp.type ≈ Type.tpString);
+				assert(fp.getType() ≈ Type.tpString);
 				dargs.append(Type.tpString);
 				break;
 			case Var.PARAM_ENUM_ORD:
 				assert(this instanceof Constructor && !this.isStatic());
-				assert(fp.type ≈ Type.tpInt);
+				assert(fp.getType() ≈ Type.tpInt);
 				dargs.append(Type.tpInt);
 				break;
 			case Var.PARAM_TYPEINFO:
 				assert(this instanceof Constructor || (this.isStatic() && this.hasName(nameNewOp)));
 				assert(fp.isFinal());
 				assert(fpdtype == null || fpdtype.getType() ≈ fp.getType());
-				dargs.append(fp.type);
+				dargs.append(fp.getType());
 				break;
 			case Var.PARAM_VARARGS:
 				//assert(fp.isFinal());
-				assert(fp.type.isInstanceOf(Type.tpArray));
-				args.append(fp.type);
-				dargs.append(fp.type);
+				assert(fp.getType().isInstanceOf(Type.tpArray));
+				args.append(fp.getType());
+				dargs.append(fp.getType());
 				is_varargs = true;
 				break;
 			case Var.PARAM_LVAR_PROXY:
 				assert(this instanceof Constructor);
 				assert(fp.isFinal());
-				dargs.append(fp.type);
+				dargs.append(fp.getType());
 				break;
 			default:
 				if (fp.kind >= Var.PARAM_TYPEINFO_N && fp.kind < Var.PARAM_TYPEINFO_N+128) {
 					assert(this.meta.is_type_unerasable);
 					assert(fp.isFinal());
-					assert(fp.type ≈ Type.tpTypeInfo);
-					dargs.append(fp.type);
+					assert(fp.getType() ≈ Type.tpTypeInfo);
+					dargs.append(fp.getType());
 					break;
 				}
 				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
@@ -240,7 +240,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		else
 			dtp_ret = dtype_ret.getType();
 		
-		this._type = new CallType(this, args.toArray(), tp_ret);
+		this._mtype = new CallType(this, args.toArray(), tp_ret);
 		this._dtype = new CallType(this, dargs.toArray(), dtp_ret);
 	}
 
@@ -314,24 +314,24 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return null;
 	}
 
-	public Type	getType() { return type; }
+	public Type	getType() { return mtype; }
 
 	public Var getOuterThisParam() {
-		Type t = this.type; // rebuildTypes()
+		Type t = this.mtype; // rebuildTypes()
 		foreach (Var fp; params; fp.kind == Var.PARAM_OUTER_THIS)
 			return fp;
 		return null;
 	}
 	
 	public Var getTypeInfoParam(int kind) {
-		Type t = this.type; // rebuildTypes()
+		Type t = this.mtype; // rebuildTypes()
 		foreach (Var fp; params; fp.kind == kind)
 			return fp;
 		return null;
 	}
 	
 	public Var getVarArgParam() {
-		Type t = this.type; // rebuildTypes()
+		Type t = this.mtype; // rebuildTypes()
 		foreach (Var fp; params; fp.kind == Var.PARAM_VARARGS)
 			return fp;
 		return null;
@@ -357,12 +357,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public boolean preResolveIn() {
 		//foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
 		//	fp.meta.var_kind = Var.PARAM_NORMAL;
-		Type t = this.type; // rebuildTypes()
+		Type t = this.mtype; // rebuildTypes()
 		return true;
 	}
 
 	public boolean mainResolveIn() {
-		Type t = this.type; // rebuildTypes()
+		Type t = this.mtype; // rebuildTypes()
 		return true;
 	}
 
@@ -470,7 +470,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public void makeArgs(ENode[] args, Type t) {
-		CallType mt = this.type;
+		CallType mt = this.mtype;
 		//assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
@@ -479,7 +479,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
-			Type tn = Type.getRealType(t,getVarArgParam().type);
+			Type tn = Type.getRealType(t,getVarArgParam().getType());
 			Type varg_tp = tn.resolveArg(0);
 			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
@@ -500,7 +500,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public boolean equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
 		if (!this.hasName(name)) return false;
-		int type_len = this.type.arity;
+		int type_len = this.mtype.arity;
 		int args_len = mt.arity;
 		if( type_len != args_len ) {
 			if( !isVarArgs() ) {
@@ -514,7 +514,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		CallType rt = (CallType)this.type.applay(tp);
+		CallType rt = (CallType)this.mtype.applay(tp);
 		if (!this.isStatic() && tp != null && tp != Type.tpVoid)
 			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
 		
@@ -590,12 +590,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			mt = new Type[args.length];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i].getType();
-			rt = (CallType)this.type;
+			rt = (CallType)this.mtype;
 		} else {
 			mt = new Type[args.length-1];
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i+1].getType();
-			rt = (CallType)this.type.applay(args[0].getType());
+			rt = (CallType)this.mtype.applay(args[0].getType());
 		}
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();
@@ -758,7 +758,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			//	fp.meta.var_kind = Var.PARAM_NORMAL;
 		}
 
-		Type t = this.type; // rebuildTypes()
+		Type t = this.mtype; // rebuildTypes()
 		trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		meta.verify();
 		if (body instanceof MetaValue)
@@ -848,7 +848,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public void postVerify() {
 		if (!isStatic() && !isPrivate()) {
-			CallType ct = this.type;
+			CallType ct = this.mtype;
 			if (ct.ret() != StdTypes.tpVoid) {
 				// check return to be co-variant
 				VarianceCheckError err = ct.ret().checkVariance(ct,TypeVariance.CO_VARIANT);

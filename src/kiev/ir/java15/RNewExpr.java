@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true, iface=true)
 public static final view RNewExpr of NewExpr extends RENode {
 	public:ro	Method				func;
-	public		TypeRef				type;
+	public		TypeRef				ntype;
 	public		ENode				outer;
 	public:ro	ENode[]				args;
 	public		ENode				tpinfo;
@@ -33,20 +33,20 @@ public static final view RNewExpr of NewExpr extends RENode {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		Type type;
+		Type ntype;
 		if (this.clazz != null) {
 			this.clazz.resolveDecl();
-			type = this.clazz.xtype;
+			ntype = this.clazz.xtype;
 		} else {
-			type = this.type.getType();
+			ntype = this.ntype.getType();
 		}
-		Struct s = type.getStruct();
+		Struct s = ntype.getStruct();
 		if (s == null || (s.isInterface() && !s.isMixin() && clazz == null))
-			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
+			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.ntype+" ???");
 		if (s.isInterface() && s.isMixin() && clazz == null) {
 			s = s.iface_impl;
-			this.type = new TypeInnerNameRef(~this.type, s.sname);
-			type = this.type.getType();
+			this.ntype = new TypeInnerNameRef(~this.ntype, s.sname);
+			ntype = this.ntype.getType();
 		}
 		if (s.isEnum())
 			throw new CompilerException(this,"Forbidden enum value instantiation");
@@ -57,10 +57,10 @@ public static final view RNewExpr of NewExpr extends RENode {
 		}
 		if (outer != null) {
 			outer.resolve(null);
-			type = type.rebind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
+			ntype = ntype.rebind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
 		if (s.isTypeUnerasable()) {
-			tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
+			tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,ntype,false); // Create static field for this type typeinfo
 			tpinfo.resolve(null);
 		}
 		else if (tpinfo != null) {
@@ -71,28 +71,28 @@ public static final view RNewExpr of NewExpr extends RENode {
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
-		CallType mt = new CallType(null,null,ta,type,false); //(CallType)Type.getRealType(type,new CallType(null,null,ta,type,false));
+		CallType mt = new CallType(null,null,ta,ntype,false); //(CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
 		Method@ m;
 		// First try overloaded 'new', than real 'new'
 		if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
 			ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-			if (PassInfo.resolveBestMethodR(type,m,info,mt)) {
-				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,((NewExpr)this).args.delToArray());
+			if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
+				CallExpr n = new CallExpr(pos,new TypeRef(ntype),(Method)m,((NewExpr)this).args.delToArray());
 				replaceWithNodeResolve(n);
 				return;
 			}
 		}
-		mt = new CallType(type,null,ta,Type.tpVoid,false); //(CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
+		mt = new CallType(ntype,null,ta,Type.tpVoid,false); //(CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
+		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
 			this.symbol = m;
-			m.makeArgs(args,type);
+			m.makeArgs(args,ntype);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}
 		else {
 			throw new CompilerException(this,"Can't find apropriative initializer for "+
-				Method.toString("<constructor>",args,Type.tpVoid)+" for "+type);
+				Method.toString("<constructor>",args,Type.tpVoid)+" for "+ntype);
 		}
 		setResolved(true);
 		if (isAutoReturnable())
@@ -112,25 +112,25 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		Type type = this.getType();
+		Type ntype = this.getType();
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
-		CallType mt = (CallType)Type.getRealType(type,new CallType(null,null,ta,type,false));
+		CallType mt = (CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
 		Constructor@ m;
-		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
+		mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
+		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
 			this.symbol = m;
-			m.makeArgs(args,type);
+			m.makeArgs(args,ntype);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}
 		else {
 			throw new CompilerException(this,"Can't find apropriative initializer for "+
-				Method.toString("<constructor>",args,Type.tpVoid)+" for "+type);
+				Method.toString("<constructor>",args,Type.tpVoid)+" for "+ntype);
 		}
 		setResolved(true);
 		if (isAutoReturnable())
@@ -140,7 +140,7 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 
 @ViewOf(vcast=true, iface=true)
 public static final view RNewArrayExpr of NewArrayExpr extends RENode {
-	public		TypeRef				type;
+	public		TypeRef				ntype;
 	public:ro	ENode[]				args;
 	public		ArrayType			arrtype;
 
@@ -152,17 +152,17 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		Type type = this.type.getType();
+		Type ntype = this.ntype.getType();
 		ArrayType art = this.arrtype;
 		for(int i=0; i < args.length; i++)
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
-		if( type instanceof ArgType ) {
-			if( !type.isUnerasable())
-				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
+		if( ntype instanceof ArgType ) {
+			if( !ntype.isUnerasable())
+				throw new CompilerException(this,"Can't create an array of erasable argument type "+ntype);
 			//if( ctx_method==null || ctx_method.isStatic() )
-			//	throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewArrayExpr)this,type,false);
+			//	throw new CompilerException(this,"Access to argument "+ntype+" from static method");
+			ENode ti = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewArrayExpr)this,ntype,false);
 			if( args.length == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
@@ -189,7 +189,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 
 @ViewOf(vcast=true, iface=true)
 public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
-	public		TypeRef				type;
+	public		TypeRef				ntype;
 	public:ro	ENode[]				args;
 	
 	public void resolve(Type reqType) throws RuntimeException {
@@ -198,25 +198,25 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		Type type;
-		if( this.type == null ) {
+		Type ntype;
+		if( this.ntype == null ) {
 			if( !reqType.isArray() )
 				throw new CompilerException(this,"Type "+reqType+" is not an array type");
-			type = reqType;
+			ntype = reqType;
 			Type art = reqType;
 			int dim = 0;
 			while (art instanceof ArrayType) { dim++; art = art.arg; }
 			TypeRef tp = new TypeRef(art);
 			for (int i=0; i < dim; i++)
 				tp = new TypeExpr(tp, Operator.PostTypeArray);
-			this.type = (TypeExpr)tp;
+			this.ntype = (TypeExpr)tp;
 		} else {
-			type = this.getType();
+			ntype = this.getType();
 		}
-		if( !type.isArray() )
-			throw new CompilerException(this,"Type "+type+" is not an array type");
+		if( !ntype.isArray() )
+			throw new CompilerException(this,"Type "+ntype+" is not an array type");
 		for(int i=0; i < args.length; i++)
-			args[i].resolve(((ArrayType)type).arg);
+			args[i].resolve(((ArrayType)ntype).arg);
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);
@@ -281,13 +281,13 @@ public final view RNewClosure of NewClosure extends RENode {
 			ENode val = new ContainerAccessExpr(pos,
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
-			if( v.type.isReference() )
-				val = new CastExpr(v.pos,v.type,val);
+			if( v.getType().isReference() )
+				val = new CastExpr(v.pos,v.getType(),val);
 			else
-				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val);
+				val = new CastExpr(v.pos,((CoreType)v.getType()).getRefTypeForPrimitive(),val);
 			v.init = val;
 			body.insertSymbol(v,i);
-			if( !v.type.isReference() )
+			if( !v.getType().isReference() )
 				 CastExpr.autoCastToPrimitive(val);
 		}
 

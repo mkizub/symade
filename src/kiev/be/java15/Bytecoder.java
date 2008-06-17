@@ -767,7 +767,7 @@ public class Bytecoder implements JConstants {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.sname).pos];
-		JType tp = f.type.getJType();
+		JType tp = f.getType().getJType();
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes

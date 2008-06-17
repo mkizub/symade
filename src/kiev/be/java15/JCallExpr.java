@@ -79,7 +79,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			int N = func.params.length-1;
 			for(; i < N; i++)
 				args[i].generate(code,null);
-			Type tn = func.params[N].type;
+			Type tn = func.params[N].vtype;
 			Type varg_tp = tn.resolveArg(0);
 			if (args.length == func.params.length && args[N].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
@@ -107,7 +107,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			code.stack_push(JType.tpNull);
 			code.addInstr(Instr.set_label,null_cast_label);
 		}
-		if( func.type.ret() ≢ Type.tpVoid ) {
+		if( func.mtype.ret() ≢ Type.tpVoid ) {
 			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
@@ -178,7 +178,7 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			int N = func.params.length-1;
 			for(; i < N; i++)
 				args[i].generate(code,null);
-			Type tn = func.params[N].type;
+			Type tn = func.params[N].vtype;
 			Type varg_tp = tn.resolveArg(0);
 			if (args.length == func.params.length && args[N].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
@@ -237,15 +237,15 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		JMethod call_it = getCallIt(xtype);
 		// Check if we need to call
 		if( is_a_call.booleanValue() ) {
-			if( call_it.type.ret() ≡ Type.tpRule )
+			if( call_it.mtype.ret() ≡ Type.tpRule )
 				code.addNullConst(); //env_access.generate(code,null);
 			code.addInstr(op_call,call_it,false);
 		}
-		if( call_it.type.ret() ≢ Type.tpVoid ) {
+		if( call_it.mtype.ret() ≢ Type.tpVoid ) {
 			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
-			 && call_it.type.ret().isReference()
+			 && call_it.mtype.ret().isReference()
 			 && ( !call_it.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}

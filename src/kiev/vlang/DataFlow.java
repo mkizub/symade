@@ -79,12 +79,12 @@ public class DFState {
 		return dfs;
 	}
 
-	public DFState addNodeType(Var[] path, Type type) {
+	public DFState addNodeType(Var[] path, Type tp) {
 		ScopeNodeInfo sni = getNodeInfo(path);
 		if (sni == null) sni = makeNode(path);
 		if (sni == null) return this;
 		Type[] snits = sni.getTypes();
-		Type[] types = addAccessType(snits, type);
+		Type[] types = addAccessType(snits, tp);
 		if (types.length == snits.length) {
 			for (int i=0; i < types.length; i++) {
 				if (types[i] ≉ snits[i])
@@ -116,13 +116,13 @@ changed:;
 	 *  the access type array must has first element to be
 	 *  the class type (if exists), and others to be interface types
 	 */
-	static Type[] addAccessType(Type[] types, Type type) {
-		if( type ≡ null || type ≡ Type.tpVoid || type ≡ Type.tpNull ) return types;
-		if( types == null || !type.isReference() ) {
-			return new Type[]{type};
+	static Type[] addAccessType(Type[] types, Type tp) {
+		if( tp ≡ null || tp ≡ Type.tpVoid || tp ≡ Type.tpNull ) return types;
+		if( types == null || !tp.isReference() ) {
+			return new Type[]{tp};
 		}
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add type "+type+" to "+Arrays.toString(types));
-		Type[] newtypes = new Type[]{type};
+		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add type "+tp+" to "+Arrays.toString(types));
+		Type[] newtypes = new Type[]{tp};
 	next_type:
 		foreach(Type t1; types; t1 ≢ null && t1 ≢ Type.tpVoid && t1 ≢ Type.tpNull ) {
 			for( int i=0; i < newtypes.length; i++) {
@@ -310,7 +310,7 @@ public class ScopeStaticFieldInfo extends ScopeNodeInfo {
 	}
 
 	public Type getDeclType() {
-		return fld.type;
+		return fld.getType();
 	}
 	
 	public String toString() {
@@ -362,9 +362,9 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 	}
 	
 	public Type getDeclType() {
-		Type tp = ((Var)path[0]).type;
+		Type tp = ((Var)path[0]).getType();
 		for(int i=1; i < path.length; i++)
-			tp = Type.getRealType(tp, ((Field)path[i]).type);
+			tp = Type.getRealType(tp, ((Field)path[i]).getType());
 		return tp;
 	}
 	

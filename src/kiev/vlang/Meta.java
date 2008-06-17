@@ -335,7 +335,7 @@ public class UserMeta extends MNode {
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+tdecl);
 			v.symbol = m;
-			Type t = m.type.ret();
+			Type t = m.mtype.ret();
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
 					ASTNode val = ((MetaValueScalar)v).value;

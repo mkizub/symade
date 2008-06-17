@@ -28,8 +28,8 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 		Type[] types = new Type[new_vars.length];
 		for (int i=0; i < new_vars.length; i++) {
 			types[i] = new_vars[i].dnode.getType();
-			if (((Var)new_vars[i].dnode).vtype.type_lnk != dispatched.params[i].type)
-				((Var)new_vars[i].dnode).vtype.type_lnk = dispatched.params[i].type;
+			if (((Var)new_vars[i].dnode).vtype.type_lnk != dispatched.params[i].getType())
+				((Var)new_vars[i].dnode).vtype.type_lnk = dispatched.params[i].getType();
 		}
 		try {
 			dispatched.resolveDecl();
@@ -68,12 +68,12 @@ public final view RReturnStat of ReturnStat extends RENode {
 		setMethodAbrupted(true);
 		if( expr != null ) {
 			try {
-				expr.resolve(ctx_method.type.ret());
+				expr.resolve(ctx_method.mtype.ret());
 			} catch(Exception e ) {
 				Kiev.reportError(expr,e);
 			}
 		}
-		if( ctx_method.type.ret() ≡ Type.tpVoid ) {
+		if( ctx_method.mtype.ret() ≡ Type.tpVoid ) {
 			if( expr != null && expr.getType() ≢ Type.tpVoid) {
 				Kiev.reportError(this,"Can't return value in void method");
 				expr = null;
@@ -81,8 +81,8 @@ public final view RReturnStat of ReturnStat extends RENode {
 		} else {
 			if( expr == null )
 				Kiev.reportError(this,"Return must return a value in non-void method");
-			else if (!expr.getType().isInstanceOf(ctx_method.type.ret()) && expr.getType() != Type.tpNull)
-				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret());
+			else if (!expr.getType().isInstanceOf(ctx_method.mtype.ret()) && expr.getType() != Type.tpNull)
+				Kiev.reportError(this,"Return expression is not of type "+ctx_method.mtype.ret());
 		}
 	}
 }
