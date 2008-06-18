@@ -145,6 +145,7 @@ public final class Operator implements Constants {
 	public static final Operator CallTypesAccess;
 	public static final Operator NewAccess;
 	public static final Operator ClassAccess;
+	public static final Operator PathTypeAccess;
 	public static final Operator MacroAccess;
 	public static final Operator Comma;
 	public static final Operator ElemAccess;
@@ -245,6 +246,7 @@ public final class Operator implements Constants {
 		CallTypesAccess = newOperator(opAccessPriority, "Y . I < { T , }* > ( { Z , }* )");
 		NewAccess = newOperator(opAccessPriority, "Y . new T ( { Z , }* )");
 		ClassAccess = newOperator(opAccessPriority, "T . class");
+		PathTypeAccess = newOperator(opAccessPriority, "I . { I . }* type");
 		MacroAccess = newOperator(opAccessPriority, "Y \u21a3 I"); // ↣
 		Comma = newOperator(256, "{ X , }"); // 256 to disable usage in parsing
 		ElemAccess = newOperator(opAccessPriority, "Y [ Z ]");

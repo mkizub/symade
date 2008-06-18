@@ -541,6 +541,9 @@
            <fname>AType.java</fname>
           </a-node>
           <a-node class="kiev.vlang.FileUnit">
+           <fname>PathTypeRef.java</fname>
+          </a-node>
+          <a-node class="kiev.vlang.FileUnit">
            <fname>StdTypes.java</fname>
           </a-node>
           <a-node class="kiev.vlang.FileUnit">

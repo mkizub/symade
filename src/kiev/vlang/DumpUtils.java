@@ -29,6 +29,16 @@ import syntax kiev.Syntax;
  */
 
 public final class DumpUtils {
+	
+	private static final boolean XPP_PARSER;
+	static {
+		try {
+			Class.forName("org.xmlpull.mxp1.MXParser");
+			XPP_PARSER = true;
+		} catch (NoClassDefFoundError e) {
+			XPP_PARSER = false;
+		}
+	}
 	private DumpUtils() {}
 
 	private static void make_output_dir(File f) throws IOException {
@@ -229,7 +239,7 @@ public final class DumpUtils {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		deserializer.file = f;
-		if (true) {
+		if (XPP_PARSER) {
 			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
 			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
 			//XmlPullParser xpp = factory.newPullParser();
@@ -262,7 +272,7 @@ public final class DumpUtils {
 	public static Project loadProject(File f) {
 		assert (Thread.currentThread() instanceof WorkerThread);
 		XMLDeSerializer deserializer = new XMLDeSerializer();
-		if (true) {
+		if (XPP_PARSER) {
 			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
 			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
 			//XmlPullParser xpp = factory.newPullParser();
@@ -293,7 +303,7 @@ public final class DumpUtils {
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		deserializer.tdname = tdname;
 		deserializer.pkg = pkg;
-		if (true) {
+		if (XPP_PARSER) {
 			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
 			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
 			//XmlPullParser xpp = factory.newPullParser();
@@ -458,7 +468,7 @@ public final class DumpUtils {
 				}
 				ANode n;
 				AttrSlot attr = attrs.peek();
-				if (!attr.isWrittable()) {
+				if (!attr.isWrittable() || cl_name.equals("kiev.vlang.Symbol")) {
 					AttrSlot attr = attrs.peek();
 					if (attr.is_space) {
 						n = (ANode)attr.typeinfo.newInstance();

@@ -69,7 +69,15 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	@getter public final CallType				get$mtype()	{ if (this._mtype == null) rebuildTypes(); return this._mtype; }
 	@getter public final CallType				get$dtype()	{ if (this._dtype == null) rebuildTypes(); return this._dtype; }
-	@getter public final CallType				get$etype()	{ if (this._dtype == null) rebuildTypes(); return (CallType)this._dtype.getErasedType(); }
+	@getter public final CallType				get$etype()	{
+		if (this._dtype == null) rebuildTypes();
+		if (isStatic())
+			(CallType)this._dtype.getErasedType();
+		TypeDecl tdecl = this.ctx_tdecl;
+		if (tdecl == null)
+			(CallType)this._dtype.getErasedType();
+		return (CallType)this._dtype.applay(tdecl.xtype.bindings()).getErasedType();
+	}
 
 	@getter public final Block					get$block()	{ return (Block)this.body; }
 
@@ -516,7 +524,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		CallType rt = (CallType)this.mtype.applay(tp);
 		if (!this.isStatic() && tp != null && tp != Type.tpVoid)
-			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
+			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpSelfTypeArg, tp));
 		
 		if ((mt.getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();

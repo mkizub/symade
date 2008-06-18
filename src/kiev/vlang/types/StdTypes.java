@@ -80,6 +80,8 @@ public interface StdTypes {
 
 	public static final CompaundType tpTypeSwitchHash;
 
+	public static final ArgType    tpSelfTypeArg;
+
 	public static final ArrayType  tpArray;
 	public static final TypeConstr tdArrayArg;
 	public static final ArgType    tpArrayArg;
@@ -95,7 +97,6 @@ public interface StdTypes {
 	public static final TypeConstr tdWrapperArg;
 	public static final ArgType    tpCallRetArg;
 	public static final ArgType    tpCallTupleArg;
-	public static final ArgType    tpCallThisArg;
 	public static final ArgType[]  tpCallParamArgs;
 	public static final ArgType[]  tpUnattachedArgs;
 
@@ -323,10 +324,10 @@ public interface StdTypes {
 		tpCallTupleArg = tdCallTupleArg.getAType();
 		tpCallTupleArg.flags |= flArgAppliable;
 		
-		TypeDef tdCallThisArg = new TypeConstr("_this_", tpAny);
-		tdCallThisArg.setAbstract(true);
-		tpCallThisArg = tdCallThisArg.getAType();
-		tpCallThisArg.flags |= flArgAppliable;
+		TypeDef tdSelfTypeArg = new TypeConstr("_this_", tpAny);
+		tdSelfTypeArg.setAbstract(true);
+		tpSelfTypeArg = tdSelfTypeArg.getAType();
+		tpSelfTypeArg.flags |= flArgAppliable;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {

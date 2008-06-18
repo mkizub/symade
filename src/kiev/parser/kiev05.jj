@@ -2089,6 +2089,9 @@ TypeRef Type() :
 { TypeRef res; }
 {
 	(
+		LOOKAHEAD ( (<IDENTIFIER> ".")+ "type" )
+		res = PathType()
+	|
 		res = TypeExpr()
 	|
 		res = ClosureType()
@@ -2107,6 +2110,19 @@ TypeRef TypeExpr() :
 		{ res = new TypeExpr(res,t); }
 	)*
 	{ return res; }
+}
+
+PathTypeRef PathType() :
+{ Token t; ENode e; }
+{
+	t = <IDENTIFIER>			{ e = new EToken(t,ETokenKind.IDENTIFIER); }
+	"."
+	(
+		t = <IDENTIFIER>		{ e = new AccessExpr(t.getPos(),e,new EToken(t,ETokenKind.IDENTIFIER).ident); }
+		"."
+	)*
+	t="type"
+	{ PathTypeRef tr = new PathTypeRef(e); tr.pos = t.getPos(); return tr; }
 }
 
 TypeNameRef TypeQName() :

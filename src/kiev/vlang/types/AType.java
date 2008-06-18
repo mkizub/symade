@@ -293,7 +293,10 @@ public abstract class AType extends TVSet implements StdTypes {
 			Type bnd = (p < this.binds.length) ? this.binds[p] : null;
 			if (bnd == null)
 				continue;
-			if (bnd instanceof ArgType) {
+			if (bnd ≡ StdTypes.tpSelfTypeArg && vs instanceof Type) {
+				sr.set(i, (Type)vs);
+			}
+			else if (bnd instanceof ArgType) {
 				for(int j=0; j < vs_size; j++) {
 					if (bnd ≡ vs.getArg(j)) {
 						// re-bind
@@ -317,6 +320,10 @@ public abstract class AType extends TVSet implements StdTypes {
 		final int my_size = appls.length;
 		if (my_size == 0)
 			return false;
+		for (int i=0; i < my_size; i++) {
+			if (appls[i] ≡ StdTypes.tpSelfTypeArg)
+				return true;
+		}
 		final int tp_size = vs.getArgsLength();
 		if (tp_size == 0)
 			return false;
@@ -400,16 +407,25 @@ public abstract class AType extends TVSet implements StdTypes {
 		this.bindings();
 		if (this.binds.length == 0)
 			return str.toString();
-		str.append('(');
+		boolean params = false;
 		TemplateTVarSet template = this.template;
 		for(int i=0; i < this.binds.length; i++) {
-			if (i > 0)
+			ArgType at = getArg(i);
+			Type tp = resolveArg(i);
+			if (at ≡ tp)
+				continue;
+			if (!params) {
+				str.append('(');
+				params = true;
+			} else {
 				str.append(',');
-			str.append(getArg(i).name);
+			}
+			str.append(at.name);
 			str.append('=');
-			str.append(resolveArg(i).makeSignature());
+			str.append(tp.makeSignature());
 		}
-		str.append(')');
+		if (params)
+			str.append(')');
 		return str.toString();
 	}
 	

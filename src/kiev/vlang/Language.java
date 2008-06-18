@@ -166,6 +166,7 @@ public final class CoreLang extends LangBase {
 				TypeDeclRef.class,
 				TypeClosureRef.class,
 				TypeExpr.class,
+				PathTypeRef.class,
 				TypeArgRef.class,
 				TypeASTNodeRef.class,
 				TypeNameRef.class,

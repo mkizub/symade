@@ -626,7 +626,7 @@ public class WildcardCoMetaType extends MetaType {
 	}
 
 	public Type[] getMetaSupers(Type tp) {
-		WildcardCoMetaType wt = (WildcardCoMetaType)tp;
+		WildcardCoType wt = (WildcardCoType)tp;
 		return new Type[]{tp.getEnclosedType()};
 	}
 	public TemplateTVarSet getTemplBindings() { return templ_bindings; }
@@ -673,7 +673,7 @@ public class WildcardContraMetaType extends MetaType {
 	}
 
 	public Type[] getMetaSupers(Type tp) {
-		WildcardContraMetaType wt = (WildcardContraMetaType)tp;
+		WildcardContraType wt = (WildcardContraType)tp;
 		return new Type[]{tp.getEnclosedType()};
 	}
 	public TemplateTVarSet getTemplBindings() { return templ_bindings; }
@@ -882,7 +882,7 @@ public class CallMetaType extends MetaType {
 		set = new TVarBld();
 		set.append(StdTypes.tpCallRetArg, null);
 		set.append(StdTypes.tpCallTupleArg, null);
-		set.append(StdTypes.tpCallThisArg, null);
+		set.append(StdTypes.tpSelfTypeArg, null);
 		templ_bindings_this = new TemplateTVarSet(-1, set);
 
 		call_tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
@@ -920,7 +920,7 @@ public class CallMetaType extends MetaType {
 		set.append(StdTypes.tpCallRetArg, null);
 		set.append(StdTypes.tpCallTupleArg, null);
 		if (!is_static)
-			set.append(StdTypes.tpCallThisArg, null);
+			set.append(StdTypes.tpSelfTypeArg, null);
 		foreach (ArgType ta; targs)
 			set.append(ta, null);
 		int flags = MetaType.flCallable;
@@ -950,7 +950,7 @@ public class CallMetaType extends MetaType {
 		return mt;
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
+		if( !t.isValAppliable() /*|| bindings.getArgsLength() == 0*/ ) return t;
 		CallType mt = (CallType)t;
 		mt = new CallType((CallMetaType)mt.meta_type, mt.bindings().applay_bld(bindings), mt.arity);
 		return mt;
