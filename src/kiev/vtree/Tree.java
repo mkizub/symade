@@ -171,25 +171,6 @@ public final class ParentAttrSlot extends AttrSlot {
 	}
 }
 
-public class ExtAttrSlot extends AttrSlot {
-	public ExtAttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, boolean is_external, TypeInfo typeinfo) {
-		super(name,p_attr,is_space,is_external,typeinfo);
-	}
-
-	public final void set(ANode parent, Object value) {
-		parent.setExtData(value, this);
-	}
-	public final Object get(ANode parent) {
-		return parent.getExtData(this);
-	}
-	public final void clear(ANode parent) {
-		return parent.delExtData(this);
-	}
-	public final void detach(ANode parent, ANode old) {
-		return parent.delExtData(this);
-	}
-}
-
 public abstract class RefAttrSlot extends AttrSlot {
 	public RefAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, null, false, false, typeinfo);
@@ -207,16 +188,65 @@ public abstract class AttAttrSlot extends AttrSlot {
 	public abstract Object get(ANode parent);
 }
 
-public abstract class ExtRefAttrSlot extends ExtAttrSlot {
+public abstract class ExtRefAttrSlot extends AttrSlot {
 	public ExtRefAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, null, false, false, typeinfo);
 	}
+	public final void set(ANode parent, Object value) {
+		parent.setExtData(value, this);
+	}
+	public final Object get(ANode parent) {
+		return parent.getExtData(this);
+	}
+	public final void clear(ANode parent) {
+		return parent.delExtData(this);
+	}
+	public final void detach(ANode parent, ANode old) {
+		return parent.delExtData(this);
+	}
 }
 
-public abstract class ExtAttAttrSlot extends ExtAttrSlot {
+public abstract class ExtAttAttrSlot extends AttrSlot {
 	public ExtAttAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, ANode.nodeattr$parent, false, false, typeinfo);
 		assert (this.is_attr);
+	}
+	public final void set(ANode parent, Object value) {
+		parent.setExtData(value, this);
+	}
+	public final Object get(ANode parent) {
+		return parent.getExtData(this);
+	}
+	public final void clear(ANode parent) {
+		return parent.delExtData(this);
+	}
+	public final void detach(ANode parent, ANode old) {
+		return parent.delExtData(this);
+	}
+}
+
+public class ExtAttrSlot extends AttrSlot {
+	public ExtAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
+		super(name,p_attr,false,true,typeinfo);
+	}
+
+	public final void set(ANode parent, Object value) {
+		throw new RuntimeException("ExtAttrSlot.set()");
+	}
+	public final Object get(ANode parent) {
+		throw new RuntimeException("ExtAttrSlot.get()");
+	}
+	public final void clear(ANode parent) {
+		throw new RuntimeException("ExtAttrSlot.clear()");
+	}
+	public final ExtChildrenIterator iterate(ANode parent) {
+		return parent.getExtChildIterator(this);
+	}
+	public final void add(ANode parent, ANode value) {
+		parent.addExtData(value, this);
+	}
+	public final void detach(ANode parent, ANode old) {
+		return parent.delExtData(old);
 	}
 }
 

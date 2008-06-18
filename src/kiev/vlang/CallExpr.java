@@ -26,10 +26,11 @@ public class CallExpr extends ENode {
 	
 	@virtual typedef This  = CallExpr;
 
+	public static final ExtAttrSlot TI_EXT_ARG = new ExtAttrSlot("ti-call-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
+
 	@nodeAttr				public ENode				obj;
 	@nodeAttr				public TypeRef[]			targs;
 	@nodeAttr				public ENode[]				args;
-	@nodeAttr				public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;
@@ -351,16 +352,17 @@ public class CtorCallExpr extends ENode {
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		obj;
 	@DataFlowDefinition(in="obj")					ENode		tpinfo;
-	@DataFlowDefinition(in="tpinfo", seq="true")		ENode[]		args;
-	@DataFlowDefinition(in="args", seq="true")		ENode[]		eargs;
+	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
 	}
 	
+	public static final ExtAttrSlot TI_EXT_ARG = new ExtAttrSlot("ti-ctor-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
+	public static final ExtAttrSlot ENUM_EXT_ARG = new ExtAttrSlot("enum-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
+
 	@virtual typedef This  = CtorCallExpr;
 
 	@nodeAttr					public ENode				obj;
 	@nodeAttr(ext_data=true)	public ENode				tpinfo;
 	@nodeAttr					public ENode[]				args;
-	@nodeAttr					public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;

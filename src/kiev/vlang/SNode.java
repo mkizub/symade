@@ -41,12 +41,12 @@ public final class Comment extends SNode {
 	
 	@AttrXMLDumpInfo
 	static final class ExtAttrSlot_comment extends ExtAttrSlot {
-		ExtAttrSlot_comment() { super("comment", ANode.nodeattr$parent, false, true, TypeInfo.newTypeInfo(Comment.class,null)); }
+		ExtAttrSlot_comment() { super("comment", ANode.nodeattr$parent, TypeInfo.newTypeInfo(Comment.class,null)); }
 		public Language getCompilerLang() { return CoreLang; }
 		public String getXmlNamespaceURI() { return getCompilerLang().getURI(); }
 	}
 
-    public static final AttrSlot ATTR_COMMENT = new ExtAttrSlot_comment();
+    public static final ExtAttrSlot_comment ATTR_COMMENT = new ExtAttrSlot_comment();
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 

@@ -181,36 +181,17 @@ public final class DumpUtils {
 			out.endTag(null, attr.getXmlLocalName());
 		}
 		if (!OLD_XML_WRITE) {
-			Object ext_data = node.getAllExtData();
-			if (ext_data != null) {
-				foreach (Object dat; node.getAllExtData()) {
-					AttrSlot attr;
-					Object value;
-					if (dat instanceof ANode) {
-						attr = dat.pslot();
-						value = dat;
-					}
-					else if (dat instanceof DataAttachInfo) {
-						attr = dat.p_slot;
-						value = dat.p_data;
-					}
-					else
-						continue;
-					if (!attr.is_attr || !attr.is_external)
-						continue;
-					if (attr.getCompilerLang() == null)
-						continue;
-					if (!checkIncludeAttrInDump(dump,node,attr))
-						continue;
-					out.startTag(attr.getXmlNamespaceURI(), attr.getXmlLocalName());
-					if (value instanceof ANode)
-						writeNodeToXML(dump, (ANode)value, out);
-					else if (value instanceof Type)
-						out.text(((Type)value).makeSignature());
-					else
-						out.text(String.valueOf(value));
-					out.endTag(attr.getXmlNamespaceURI(), attr.getXmlLocalName());
-				}
+			foreach (ANode n; node.getExtChildIterator(null)) {
+				AttrSlot attr = n.pslot();
+				if (!attr.is_attr || !attr.is_external)
+					continue;
+				if (attr.getCompilerLang() == null)
+					continue;
+				if (!checkIncludeAttrInDump(dump,node,attr))
+					continue;
+				out.startTag(attr.getXmlNamespaceURI(), attr.getXmlLocalName());
+				writeNodeToXML(dump, n, out);
+				out.endTag(attr.getXmlNamespaceURI(), attr.getXmlLocalName());
 			}
 		}
 

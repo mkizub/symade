@@ -20,7 +20,6 @@ public final view JCallExpr of CallExpr extends JENode {
 	public:ro	JMethod			func;
 	public:ro	JENode			obj;
 	public:ro	JENode[]		args;
-	public:ro	JENode[]		eargs;
 
 	public final CallType getCallType();
 
@@ -96,8 +95,8 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 		}
 		if (func.isTypeUnerasable()) {
-			foreach (JENode earg; eargs)
-				earg.generate(code,null);
+			foreach (ENode earg; CallExpr.TI_EXT_ARG.iterate((CallExpr)this))
+				((JENode)earg).generate(code,null);
 		}
 
 		// Now, do the call instruction 		
@@ -127,7 +126,6 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 	public:ro	JENode			obj;
 	public:ro	JENode			tpinfo;
 	public:ro	JENode[]		args;
-	public:ro	JENode[]		eargs;
 
 	public final CallType getCallType();
 
@@ -168,8 +166,9 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 		}
 		if (func.jparent instanceof JStruct && ((JStruct)func.jparent).isEnum()) {
 			assert (!func.isTypeUnerasable());
-			eargs[0].generate(code,null); // enum field name
-			eargs[1].generate(code,null); // enum field ordinal
+			// enum field name & ordinal
+			foreach (ENode earg; CtorCallExpr.ENUM_EXT_ARG.iterate((CtorCallExpr)this))
+				((JENode)earg).generate(code,null);
 		}
 		if !(func.isVarArgs()) {
 			for(; i < args.length; i++)
@@ -195,9 +194,8 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			}
 		}
 		if (func.isTypeUnerasable()) {
-			CallType mt = this.getCallType();
-			foreach (JENode earg; eargs)
-				earg.generate(code,null);
+			foreach (ENode earg; CtorCallExpr.TI_EXT_ARG.iterate((CtorCallExpr)this))
+				((JENode)earg).generate(code,null);
 		}
 
 		// Now, do the call instruction 		

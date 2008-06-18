@@ -341,7 +341,7 @@ public abstract class kiev050 {
 		if (comments == null || comments.length == 0)
 			return;
 		for (int i=0; i < comments.length; i++)
-			Comment.ATTR_COMMENT.set(node, comments[i]);
+			Comment.ATTR_COMMENT.add(node, comments[i]);
 	}
 
 	Comment[] get_comments() {

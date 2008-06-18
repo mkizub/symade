@@ -52,6 +52,39 @@ public final class ParentInfo {
 	}
 }
 
+public final class ExtChildrenIterator implements Enumeration<ANode> {
+	public  final ANode    parent;
+	public  final AttrSlot attr;
+	private final Object[] ext_data;
+	private       int      next_pos;
+	
+	ExtChildrenIterator(ANode parent, AttrSlot attr) {
+		this.parent = parent;
+		this.attr = attr;
+		this.ext_data = parent.ext_data;
+		this.next_pos = -1;
+		if (ext_data != null)
+			setNextPos();
+	}
+	public boolean hasMoreElements() {
+		if (ext_data == null)
+			return false;
+		return next_pos < ext_data.length;
+	}
+	public ANode nextElement() {
+		ANode n = (ANode)ext_data[next_pos];
+		setNextPos();
+		return n;
+	}
+	private void setNextPos() {
+		for (next_pos++; next_pos < ext_data.length; next_pos++) {
+			Object dat = ext_data[next_pos];
+			if (dat instanceof ANode && (attr == null || dat.pslot() == attr))
+				return;
+		}
+	}
+}
+
 public abstract class ANode implements INode {
 
 	@virtual typedef This  ≤ ANode;
@@ -425,10 +458,8 @@ public abstract class ANode implements INode {
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 
-	public final Object[] getAllExtData() {
-		if (ext_data == null)
-			return null;
-		return (Object[])ext_data.clone();
+	public final ExtChildrenIterator getExtChildIterator(AttrSlot attr) {
+		return new ExtChildrenIterator(this, attr);
 	}
 	
 	public final Object getExtData(AttrSlot attr) {
@@ -523,6 +554,25 @@ public abstract class ANode implements INode {
 		return;
 	}
 
+	public final void addExtData(ANode n, AttrSlot attr) {
+		assert (!n.isAttached());
+		assert (attr.is_child && !attr.is_space);
+		Object[] ext_data = this.ext_data;
+		if (ext_data == null) {
+			this.ext_data = new Object[]{n};
+			n.callbackAttached(this, attr);
+			return;
+		}
+		int sz = ext_data.length;
+		Object[] tmp = new Object[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = ext_data[i];
+		tmp[sz] = n;
+		this.ext_data = tmp;
+		n.callbackAttached(this, attr);
+		return;
+	}
+
 	public final void delExtData(AttrSlot attr) {
 		Object[] ext_data = this.ext_data;
 		if (ext_data == null)
@@ -567,6 +617,31 @@ public abstract class ANode implements INode {
 				}
 			}
 		}
+	}
+
+	public final void delExtData(ANode n) {
+		assert (n.isAttached());
+		assert (n.parent() == this);
+		assert (n.pslot().is_child && !n.pslot().is_space);
+		Object[] ext_data = this.ext_data;
+		assert(ext_data != null);
+		int sz = ext_data.length-1;
+		for (int idx=0; idx <= sz; idx++) {
+			if (n == ext_data[idx]) {
+				if (sz == 0) {
+					this.ext_data = null;
+				} else {
+					Object[] tmp = new Object[sz];
+					int i;
+					for (i=0; i < idx; i++) tmp[i] = ext_data[i];
+					for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
+					this.ext_data = tmp;
+				}
+				n.callbackDetached(this, n.pslot());
+				return;
+			}
+		}
+		assert ("Child node not found in ext_data");
 	}
 
 	public final void delExtParent(ParentAttrSlot attr) {

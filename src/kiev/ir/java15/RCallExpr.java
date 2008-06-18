@@ -24,7 +24,6 @@ public final view RCallExpr of CallExpr extends RENode {
 	public		ENode			obj;
 	public:ro	TypeRef[]		targs;
 	public:ro	ENode[]			args;
-	public:ro	ENode[]			eargs;
 	
 	public final CallType getCallType();
 
@@ -52,11 +51,13 @@ public final view RCallExpr of CallExpr extends RENode {
 				args[i].resolve(Type.getRealType(obj.getType(),func.mtype.arg(i)));
 		}
 		if (func.isTypeUnerasable()) {
-			((CallExpr)this).eargs.delAll();
+			CallExpr ce = (CallExpr)this;
+			foreach (ANode earg; CallExpr.TI_EXT_ARG.iterate(ce))
+				earg.detach();
 			foreach (TypeDef td; func.targs) {
 				Type tp = mt.resolve(td.getAType());
-				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
-				((CallExpr)this).eargs += earg;
+				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField(ce,tp,false);
+				CallExpr.TI_EXT_ARG.add(ce,earg);
 				earg.resolve(null);
 			}
 		}
@@ -79,7 +80,6 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 	public:ro	ENode			obj;
 	public		ENode			tpinfo;
 	public:ro	ENode[]			args;
-	public:ro	ENode[]			eargs;
 	
 	public final CallType getCallType();
 
@@ -118,14 +118,23 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 				args[i].resolve(func.mtype.arg(i));
 		}
 		if (func.isTypeUnerasable()) {
+			CtorCallExpr ce = (CtorCallExpr)this;
+			foreach (ANode earg; CtorCallExpr.TI_EXT_ARG.iterate(ce))
+				earg.detach();
 			foreach (TypeDef td; func.targs) {
 				Type tp = mt.resolve(td.getAType());
-				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
-				((CtorCallExpr)this).eargs += earg;
+				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField(ce,tp,false);
+				CtorCallExpr.TI_EXT_ARG.add(ce,earg);
+				earg.resolve(null);
 			}
+			foreach (ENode earg; CtorCallExpr.TI_EXT_ARG.iterate(ce))
+				earg.resolve(null);
 		}
-		foreach (ENode earg; eargs)
-			earg.resolve(null);
+		{
+			CtorCallExpr ce = (CtorCallExpr)this;
+			foreach (ENode earg; CtorCallExpr.ENUM_EXT_ARG.iterate(ce))
+				earg.resolve(null);
+		}
 		if !(func.parent() instanceof TypeDecl) {
 			ANode n = func.parent();
 			while !(n instanceof Constructor) n = n.parent();

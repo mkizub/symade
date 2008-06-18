@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true, iface=true)
 public final view RStruct of Struct extends RComplexTypeDecl {
 
-	static final AttrSlot TI_ATTR = new ExtAttrSlot("rstruct ti field temp expr",ANode.nodeattr$parent,false,true,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
+	static final ExtAttrSlot TI_ATTR = new ExtAttrSlot("rstruct ti field temp expr",ANode.nodeattr$parent,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			WrapperMetaType			wmeta_type;
 	public				Struct					typeinfo_clazz;
@@ -139,7 +139,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		// check we can use a static field
-		TI_ATTR.set(from, ti_expr);
+		TI_ATTR.add(from, ti_expr);
 		try {
 			ti_expr.resolve(null);
 		} finally { ~ti_expr; }
@@ -1488,8 +1488,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					}
 					else if (isEnum()) {
 						if (ctor_call.obj instanceof ThisExpr) {
-							ctor_call.eargs.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
-							ctor_call.eargs.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
+							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
+							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
 						} else {
 							ctor_call.args.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
 							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
@@ -1501,8 +1501,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				} else {
 					if (isEnum()) {
 						if (ctor_call.obj instanceof ThisExpr) {
-							ctor_call.eargs.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
-							ctor_call.eargs.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
+							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
+							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
 						} else {
 							ctor_call.args.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
 							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
