@@ -38,19 +38,39 @@ public class SNode extends ASTNode {
 public final class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
+	
+	@AttrXMLDumpInfo
+	static final class ExtAttrSlot_comment extends ExtAttrSlot {
+		ExtAttrSlot_comment() { super("comment", ANode.nodeattr$parent, false, true, TypeInfo.newTypeInfo(Comment.class,null)); }
+		public Language getCompilerLang() { return CoreLang; }
+		public String getXmlNamespaceURI() { return getCompilerLang().getURI(); }
+	}
 
-    public static final AttrSlot ATTR_BEFORE = new ExtAttrSlot("comment before", ANode.nodeattr$parent, false, true, TypeInfo.newTypeInfo(Comment.class,null));
-    public static final AttrSlot ATTR_AFTER  = new ExtAttrSlot("comment after",  ANode.nodeattr$parent, false, true, TypeInfo.newTypeInfo(Comment.class,null));
+    public static final AttrSlot ATTR_COMMENT = new ExtAttrSlot_comment();
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public boolean eol_form;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public boolean multiline;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public boolean doc_form;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public boolean nl_before;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public boolean nl_after;
 	@nodeAttr public String  text;
 	
 	public Comment() {}
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "eol_form") return eol_form;
+		if (attr.name == "multiline") return multiline;
+		if (attr.name == "doc_form") return doc_form;
+		if (attr.name == "nl_before") return nl_before;
+		if (attr.name == "nl_after") return nl_after;
+		return super.includeInDump(dump, attr, val);
+	}
 }
 

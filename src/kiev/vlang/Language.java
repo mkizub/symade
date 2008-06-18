@@ -25,6 +25,7 @@ public interface Language {
 	public String getDefaultEditorSyntax();
 	public String getDefaultInfoSyntax();
 	public String getClassByNodeName(String name);
+	public AttrSlot getExtAttrByName(String name);
 	public ANode makeNode(String name);
 }
 
@@ -50,6 +51,7 @@ public abstract class LangBase implements Language {
 		}
 	}
 	
+	
 	public String getClassByNodeName(String name) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
@@ -61,6 +63,9 @@ public abstract class LangBase implements Language {
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
 		return (ANode)c.newInstance();
+	}
+	public AttrSlot getExtAttrByName(String name) {
+		return null;
 	}
 
 	public String getDefaultEditorSyntax() {
@@ -85,6 +90,11 @@ public final class CoreLang extends LangBase {
 		if (name.equals("ASTOperatorAlias"))
 			return new ASTOperatorAlias();
 		return super.makeNode(name);
+	}
+	public AttrSlot getExtAttrByName(String name) {
+		if (name.equals("comment"))
+			return Comment.ATTR_COMMENT;
+		return null;
 	}
 
 	private static Class[] superLanguages = {};

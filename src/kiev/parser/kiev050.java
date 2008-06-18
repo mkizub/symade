@@ -328,7 +328,7 @@ public abstract class kiev050 implements kiev050Constants {
                 if (comments == null || comments.length == 0)
                         return;
                 for (int i=0; i < comments.length; i++)
-                        Comment.ATTR_BEFORE.set(node, comments[i]);
+                        Comment.ATTR_COMMENT.set(node, comments[i]);
         }
 
         Comment[] get_comments() {

@@ -30,8 +30,20 @@ import syntax kiev.Syntax;
 
 public final class DumpUtils {
 	
+	public static final String SOP_URI = "sop://sop/";
+	
+	private static final boolean OLD_XML_READ;
+	private static final boolean OLD_XML_WRITE;
 	private static final boolean XPP_PARSER;
 	static {
+		String dump = System.getProperty("symade.dump.old",null);
+		if (dump != null) {
+			OLD_XML_READ = Boolean.valueOf(dump).booleanValue();
+			OLD_XML_WRITE = Boolean.valueOf(dump).booleanValue();
+		} else {
+			OLD_XML_READ = Boolean.valueOf(System.getProperty("symade.dump.read.old","true")).booleanValue();
+			OLD_XML_WRITE = Boolean.valueOf(System.getProperty("symade.dump.write.old","true")).booleanValue();
+		}
 		try {
 			Class.forName("org.xmlpull.mxp1.MXParser");
 			XPP_PARSER = true;
@@ -81,7 +93,7 @@ public final class DumpUtils {
 				" Contributors:\n"+
 				"     \"Maxim Kizub\" mkizub@symade.com - initial design and implementation\n"
 				;
-		if (false) {
+		if (!OLD_XML_WRITE) {
 			org.xmlpull.mxp1_serializer.MXSerializer out = new org.xmlpull.mxp1_serializer.MXSerializer();
 			out.setFeature("http://xmlpull.org/v1/doc/features.html#serializer-attvalue-use-apostrophe", true);
 			out.setFeature("http://xmlpull.org/v1/doc/features.html#names-interned", true);
@@ -91,13 +103,13 @@ public final class DumpUtils {
 			out.ignorableWhitespace("\n");
 			out.comment(comment);
 			out.ignorableWhitespace("\n");
-			out.setPrefix("sop", "sop://sop/");
+			out.setPrefix("sop", SOP_URI);
 			foreach (Language lng; collectLanguages(dump,node))
 				out.setPrefix(lng.getName(), lng.getURI());
-			out.startTag("sop://sop/","dump");
-			out.attribute("sop://sop/", "version", "1.0");
+			out.startTag(SOP_URI,"dump");
+			out.attribute(null, "version", "1.0");
 			writeNodeToXML(dump,node,out);
-			out.endTag("sop://sop/","dump");
+			out.endTag(SOP_URI,"dump");
 			out.endDocument();
 			out.getWriter().close();
 		} else {
@@ -117,25 +129,31 @@ public final class DumpUtils {
 		Language lng = node.getCompilerLang();
 		if (node.getCompilerNodeName() == "ASTNode" && node.getClass() != ASTNode.class)
 			lng = null;
-		if (lng != null) {
-			out.startTag(lng.getURI(),node.getCompilerNodeName());
-		} else {
+		if (OLD_XML_WRITE) {
 			out.startTag(null,"a-node");
 			out.attribute(null, "class", node.getClass().getName());
 		}
-		foreach (AttrSlot attr; node.values(); attr.isXmlAttr()) {
-			if (!checkIncludeAttrInDump(dump,node,attr))
-				continue;
-			Object obj = attr.get(node);
-			if (obj == null)
-				continue;
-			
-			if (obj instanceof Type)
-				out.attribute(null, attr.getXmlLocalName(), ((Type)obj).makeSignature());
-			else
-				out.attribute(null, attr.getXmlLocalName(), String.valueOf(obj));
+		else if (lng != null) {
+			out.startTag(lng.getURI(),node.getCompilerNodeName());
 		}
-		foreach (AttrSlot attr; node.values(); !attr.isXmlAttr() && !attr.isXmlIgnore() && attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
+		else {
+			out.startTag(SOP_URI,node.getClass().getName());
+		}
+		if (!OLD_XML_WRITE) {
+			foreach (AttrSlot attr; node.values(); attr.isXmlAttr()) {
+				if (!checkIncludeAttrInDump(dump,node,attr))
+					continue;
+				Object obj = attr.get(node);
+				if (obj == null)
+					continue;
+				
+				if (obj instanceof Type)
+					out.attribute(null, attr.getXmlLocalName(), ((Type)obj).makeSignature());
+				else
+					out.attribute(null, attr.getXmlLocalName(), String.valueOf(obj));
+			}
+		}
+		foreach (AttrSlot attr; node.values(); (OLD_XML_WRITE || !attr.isXmlAttr()) && !attr.isXmlIgnore()) {
 			if (!checkIncludeAttrInDump(dump,node,attr))
 				continue;
 			if (attr.is_space) {
@@ -162,12 +180,46 @@ public final class DumpUtils {
 				out.text(String.valueOf(obj));
 			out.endTag(null, attr.getXmlLocalName());
 		}
-
-		if (lng != null) {
-			out.endTag(lng.getURI(),node.getCompilerNodeName());
-		} else {
-			out.endTag(null,"a-node");
+		if (!OLD_XML_WRITE) {
+			Object ext_data = node.getAllExtData();
+			if (ext_data != null) {
+				foreach (Object dat; node.getAllExtData()) {
+					AttrSlot attr;
+					Object value;
+					if (dat instanceof ANode) {
+						attr = dat.pslot();
+						value = dat;
+					}
+					else if (dat instanceof DataAttachInfo) {
+						attr = dat.p_slot;
+						value = dat.p_data;
+					}
+					else
+						continue;
+					if (!attr.is_attr || !attr.is_external)
+						continue;
+					if (attr.getCompilerLang() == null)
+						continue;
+					if (!checkIncludeAttrInDump(dump,node,attr))
+						continue;
+					out.startTag(attr.getXmlNamespaceURI(), attr.getXmlLocalName());
+					if (value instanceof ANode)
+						writeNodeToXML(dump, (ANode)value, out);
+					else if (value instanceof Type)
+						out.text(((Type)value).makeSignature());
+					else
+						out.text(String.valueOf(value));
+					out.endTag(attr.getXmlNamespaceURI(), attr.getXmlLocalName());
+				}
+			}
 		}
+
+		if (OLD_XML_WRITE)
+			out.endTag(null,"a-node");
+		else if (lng != null)
+			out.endTag(lng.getURI(),node.getCompilerNodeName());
+		else
+			out.endTag(SOP_URI,node.getClass().getName());
 	}
 	
 	private static void writeNodeToXML(String dump, ANode node, XMLStreamWriter out, int indent) {
@@ -379,147 +431,178 @@ public final class DumpUtils {
 				ignore_count++;
 				return;
 			}
-			if (root == null && "dump".equals(elName) && "sop://sop/".equals(elUri))
+			if (root == null && "dump".equals(elName) && SOP_URI.equals(elUri))
 				return;
-			if (root == null) {
-				assert (!expect_attr);
-				Language lng = null;
-				String cl_name = null;
-				if (elUri.length() > 0) {
-					lng = getLanguage(elUri);
-					cl_name = lng.getClassByNodeName(elName);
-				} else {
-					assert (elName.equals("a-node"));
-					assert (attributes.getCount() >= 1 && attributes.getName(0).equals("class"));
-					cl_name = attributes.getValue(0);
-				}
-				if (pkg != null) {
-					String qname;
-					if (pkg instanceof Env)
-						qname = tdname;
-					else
-						qname = pkg.qname() + '\u001f' + tdname;
-					FileUnit fu = FileUnit.makeFile(qname.replace('\u001f','/')+".xml", false);
-					fu.scanned_for_interface_only = true;
-					ComplexTypeDecl p = pkg;
-					while (p != null && !p.isPackage())
-						p = p.package_clazz.dnode;
-					fu.srpkg.symbol = p;
-					root = fu;
-					ComplexTypeDecl td = (ComplexTypeDecl)Env.getRoot().resolveGlobalDNode(qname);
-					if (td != null) {
-						assert(td.getClass().getName().equals(cl_name));
-						td.cleanupOnReload();
+			if (!expect_attr) {
+				if (root == null) {
+					Language lng = null;
+					String cl_name = null;
+					if (elUri.length() > 0) {
+						if (elUri.equals(SOP_URI)) {
+							cl_name = elName;
+						} else {
+							lng = getLanguage(elUri);
+							cl_name = lng.getClassByNodeName(elName);
+						}
+					} else {
+						assert (elName.equals("a-node"));
+						assert (attributes.getCount() >= 1 && attributes.getName(0).equals("class"));
+						cl_name = attributes.getValue(0);
 					}
-					else if (lng != null) {
-						td = (ComplexTypeDecl)lng.makeNode(elName);
+					if (pkg != null) {
+						String qname;
+						if (pkg instanceof Env)
+							qname = tdname;
+						else
+							qname = pkg.qname() + '\u001f' + tdname;
+						FileUnit fu = FileUnit.makeFile(qname.replace('\u001f','/')+".xml", false);
+						fu.scanned_for_interface_only = true;
+						ComplexTypeDecl p = pkg;
+						while (p != null && !p.isPackage())
+							p = p.package_clazz.dnode;
+						fu.srpkg.symbol = p;
+						root = fu;
+						ComplexTypeDecl td = (ComplexTypeDecl)Env.getRoot().resolveGlobalDNode(qname);
+						if (td != null) {
+							assert(td.getClass().getName().equals(cl_name));
+							td.cleanupOnReload();
+						}
+						else if (lng != null) {
+							td = (ComplexTypeDecl)lng.makeNode(elName);
+						}
+						else {
+							td = (ComplexTypeDecl)Class.forName(cl_name).newInstance();
+						}
+						addAttributes(td, attributes);
+						td.sname = tdname;
+						td.package_clazz.symbol = pkg;
+						pkg.sub_decls += td;
+						if (td instanceof KievPackage) {
+							fu.setAutoGenerated(true);
+							if (td.parent() == null)
+								pkg.members += td;
+						} else {
+							fu.members += td;
+						}
+						td.meta.is_interface_only = true;
+						nodes.push(td);
+					}
+					else if (cl_name.equals("kiev.vlang.FileUnit")) {
+						if (file == null)
+							file = new File(tdname.replace('\u001f','/')+".xml");
+						FileUnit fu = FileUnit.makeFile(getRelativePath(file), false);
+						root = fu;
+						fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
+						addAttributes(fu, attributes);
+						nodes.push(root);
 					}
 					else {
-						td = (ComplexTypeDecl)Class.forName(cl_name).newInstance();
+						if (lng != null)
+							root = (ASTNode)lng.makeNode(elName);
+						else
+							root = (ASTNode)Class.forName(cl_name).newInstance();
+						addAttributes(root, attributes);
+						if (root instanceof DNode)
+							((DNode)root).meta.is_interface_only = true;
+						nodes.push(root);
 					}
-					addAttributes(td, attributes);
-					td.sname = tdname;
-					td.package_clazz.symbol = pkg;
-					pkg.sub_decls += td;
-					if (td instanceof KievPackage) {
-						fu.setAutoGenerated(true);
-						if (td.parent() == null)
-							pkg.members += td;
+					expect_attr = true;
+					//System.out.println("push root");
+					return;
+				}
+				if (elUri.length() == 0 && elName.equals("a-node") || elUri.length() > 0) {
+					Language lng = null;
+					String cl_name = null;
+					if (elUri.length() > 0) {
+						if (elUri.equals(SOP_URI)) {
+							cl_name = elName;
+						} else {
+							lng = getLanguage(elUri);
+							cl_name = lng.getClassByNodeName(elName);
+						}
 					} else {
-						fu.members += td;
+						assert (elName.equals("a-node"));
+						assert (attributes.getCount() >= 1 && attributes.getName(0).equals("class"));
+						cl_name = attributes.getValue(0);
 					}
-					td.meta.is_interface_only = true;
-					nodes.push(td);
-				}
-				else if (cl_name.equals("kiev.vlang.FileUnit")) {
-					if (file == null)
-						file = new File(tdname.replace('\u001f','/')+".xml");
-					FileUnit fu = FileUnit.makeFile(getRelativePath(file), false);
-					root = fu;
-					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
-					addAttributes(fu, attributes);
-					nodes.push(root);
-				}
-				else {
-					if (lng != null)
-						root = (ASTNode)lng.makeNode(elName);
-					else
-						root = (ASTNode)Class.forName(cl_name).newInstance();
-					addAttributes(root, attributes);
-					if (root instanceof DNode)
-						((DNode)root).meta.is_interface_only = true;
-					nodes.push(root);
-				}
-				expect_attr = true;
-				//System.out.println("push root");
-				return;
-			}
-			if (elUri.length() == 0 && elName.equals("a-node") || elUri.length() > 0) {
-				assert (!expect_attr);
-				Language lng = null;
-				String cl_name = null;
-				if (elUri.length() > 0) {
-					lng = getLanguage(elUri);
-					cl_name = lng.getClassByNodeName(elName);
-				} else {
-					assert (elName.equals("a-node"));
-					assert (attributes.getCount() >= 1 && attributes.getName(0).equals("class"));
-					cl_name = attributes.getValue(0);
-				}
-				ANode n;
-				AttrSlot attr = attrs.peek();
-				if (!attr.isWrittable() || cl_name.equals("kiev.vlang.Symbol")) {
+					ANode n;
 					AttrSlot attr = attrs.peek();
-					if (attr.is_space) {
-						n = (ANode)attr.typeinfo.newInstance();
-					} else {
-						n = (ANode)attr.get(nodes.peek());
-						if (n == null)
+					if (!attr.isWrittable() || cl_name.equals("kiev.vlang.Symbol")) {
+						AttrSlot attr = attrs.peek();
+						if (attr.is_space) {
 							n = (ANode)attr.typeinfo.newInstance();
-					}
-					addAttributes(n, attributes);
-				}
-				else if (lng != null) {
-					n = lng.makeNode(elName);
-					addAttributes(n, attributes);
-				}
-				else if (cl_name.equals("kiev.parser.ASTOperatorAlias")) {
-					n = new kiev.parser.ASTOperatorAlias();
-					addAttributes(n, attributes);
-				}
-				else {
-					try {
-						n = (ANode)Class.forName(cl_name).newInstance();
+						} else {
+							n = (ANode)attr.get(nodes.peek());
+							if (n == null)
+								n = (ANode)attr.typeinfo.newInstance();
+						}
 						addAttributes(n, attributes);
-					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
-						n = null;
 					}
+					else if (lng != null) {
+						n = lng.makeNode(elName);
+						addAttributes(n, attributes);
+					}
+					else if (cl_name.equals("kiev.parser.ASTOperatorAlias")) {
+						n = new kiev.parser.ASTOperatorAlias();
+						addAttributes(n, attributes);
+					}
+					else {
+						try {
+							n = (ANode)Class.forName(cl_name).newInstance();
+							addAttributes(n, attributes);
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+							n = null;
+						}
+					}
+					if (n instanceof DNode)
+						n.meta.is_interface_only = true;
+					//System.out.println("push node "+nodes.length);
+					nodes.push(n);
+					expect_attr = true;
+					return;
 				}
-				if (n instanceof DNode)
-					n.meta.is_interface_only = true;
-				//System.out.println("push node "+nodes.length);
-				nodes.push(n);
-				expect_attr = true;
-				return;
+			} else {
+				Language lng = null;
+				AttrSlot attr = null;
+				if (!OLD_XML_READ && elUri.length() > 0) {
+					lng = getLanguage(elUri);
+					if (lng != null)
+						attr = lng.getExtAttrByName(elName);
+					if (attr != null) {
+						//System.out.println("push attr "+attr.name);
+						attrs.push(attr);
+						expect_attr = false;
+						return;
+					}
+					//throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
+					System.out.println("Attribute '"+elName+"' not found in language "+(lng!=null?lng.getName():"?")+" URI "+elUri);
+					ignore_count = 1;
+				} else {
+					ANode n = nodes.peek();
+					if (!OLD_XML_READ) {
+						foreach (AttrSlot a; n.values(); !a.isXmlIgnore() && a.getXmlLocalName().equals(elName)) {
+							attr = a;
+							break;
+						}
+					}
+					if (attr == null) {
+						foreach (AttrSlot a; n.values(); !a.isXmlIgnore() && a.name.equals(elName)) {
+							attr = a;
+							break;
+						}
+					}
+					if (attr != null) {
+						//System.out.println("push attr "+attr.name);
+						attrs.push(attr);
+						expect_attr = false;
+						return;
+					}
+					//throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
+					System.out.println("Attribute '"+elName+"' not found in "+n.getClass());
+					ignore_count = 1;
+				}
 			}
-			assert (expect_attr);
-			ANode n = nodes.peek();
-			foreach (AttrSlot attr; n.values(); !attr.isXmlIgnore() && attr.getXmlLocalName().equals(elName)) {
-				//System.out.println("push attr "+attr.name);
-				attrs.push(attr);
-				expect_attr = false;
-				return;
-			}
-			foreach (AttrSlot attr; n.values(); !attr.isXmlIgnore() && attr.name.equals(elName)) {
-				//System.out.println("push attr "+attr.name);
-				attrs.push(attr);
-				expect_attr = false;
-				return;
-			}
-			//throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
-			System.out.println("Attribute '"+elName+"' not found in "+n.getClass());
-			ignore_count = 1;
 		}
 
 		public void endElement(String elUri, String elName) {
@@ -527,13 +610,18 @@ public final class DumpUtils {
 				ignore_count--;
 				return;
 			}
-			if (nodes.isEmpty() && "dump".equals(elName) && "sop://sop/".equals(elUri))
+			if (nodes.isEmpty() && "dump".equals(elName) && SOP_URI.equals(elUri))
 				return;
 			if (expect_attr) {
 				ANode n = nodes.pop();
 				if (elUri.length() > 0) {
-					assert (n.getCompilerLang().getURI().equals(elUri));
-					assert(n.getCompilerNodeName().equals(elName));
+					if (elUri.equals(SOP_URI)) {
+						assert(n.getCompilerLang() == null);
+						assert(n.getClass().getName().equals(elName));
+					} else {
+						assert(n.getCompilerLang().getURI().equals(elUri));
+						assert(n.getCompilerNodeName().equals(elName));
+					}
 				} else {
 					assert(elName.equals("a-node"));
 				}

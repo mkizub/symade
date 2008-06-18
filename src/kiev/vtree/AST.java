@@ -425,11 +425,11 @@ public abstract class ANode implements INode {
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 
-	//public final Object[] getAllExtData() {
-	//	if (ext_data == null)
-	//		return null;
-	//	return (Object[])ext_data.clone();
-	//}
+	public final Object[] getAllExtData() {
+		if (ext_data == null)
+			return null;
+		return (Object[])ext_data.clone();
+	}
 	
 	public final Object getExtData(AttrSlot attr) {
 		if (ext_data != null) {

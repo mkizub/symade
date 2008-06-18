@@ -140,6 +140,7 @@ public abstract class AttrSlot {
 	public String getXmlLocalName() { return xml_attr_name; }
 	public String getXmlFullName() { return xml_attr_name; }
 	public String getXmlNamespaceURI() { return null; }
+	public Language getCompilerLang() { return null; }
 }
 
 public final class ParentAttrSlot extends AttrSlot {
