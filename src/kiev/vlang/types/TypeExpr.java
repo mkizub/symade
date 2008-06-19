@@ -22,8 +22,6 @@ public class TypeExpr extends TypeRef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = TypeExpr;
-
 	private Object op_or_name;
 	
 	@nodeAttr           public TypeRef		arg;

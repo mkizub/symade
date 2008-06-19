@@ -135,8 +135,6 @@ public final class RewriteMatch extends ENode {
 	@DataFlowDefinition(in="this:in", seq="false")	RewriteCase[]		cases;
 	}
 
-	@virtual typedef This  = RewriteMatch;
-
 	@nodeAttr public RewriteCase∅		cases;
 
 	public RewriteMatch() {}
@@ -164,8 +162,6 @@ public final class RewritePattern extends Var {
 
 	public static final RewritePattern[] emptyArray = new RewritePattern[0];
 	
-	@virtual typedef This  = RewritePattern;
-
 	@nodeAttr public RewritePattern∅		vars;
 
 	public RewritePattern() { super(REWRITE_PATTERN); }
@@ -196,8 +192,6 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 
 	public static final RewriteCase[] emptyArray = new RewriteCase[0];
 	
-	@virtual typedef This  = RewriteCase;
-
 	@nodeAttr public RewritePattern		var;
 	@nodeAttr public ASTNode∅				stats;
 
@@ -231,8 +225,6 @@ public final class RewriteNodeFactory extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")	RewriteNodeArg[]	args;
 	}
 	
-	@virtual typedef This  = RewriteNodeFactory;
-
 	@nodeAttr public RewriteNodeArg∅		args;
 	          private Class					node_class;
 
@@ -310,8 +302,6 @@ public final class RewriteNodeArg extends ENode {
 	
 	public static final RewriteNodeArg[] emptyArray = new RewriteNodeArg[0];
 	
-	@virtual typedef This  = RewriteNodeArg;
-
 	@nodeAttr public ENode		anode;
 	@nodeAttr public String		attr;
 
@@ -339,8 +329,6 @@ public final class RewriteNodeArgArray extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
-	@virtual typedef This  = RewriteNodeArgArray;
-
 	@nodeAttr public ASTNode∅				args;
 
 	public RewriteNodeArgArray() {}
@@ -365,8 +353,6 @@ public class BlockRewr extends Block {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		stats;
 	}
 
-	@virtual typedef This  ≤ BlockRewr;
-
 	public BlockRewr() {}
 
 	public BlockRewr(ENode[] stats) {
@@ -383,8 +369,6 @@ public class IfElseRewr extends ENode {
 	@DataFlowDefinition(in="cond:true")	ENode		thenSt;
 	@DataFlowDefinition(in="cond:false")	ENode		elseSt;
 	}
-
-	@virtual typedef This  = IfElseRewr;
 
 	@nodeAttr public ENode			cond;
 	@nodeAttr public ENode			thenSt;
@@ -429,8 +413,6 @@ public class SwitchRewr extends SwitchStat {
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
-	@virtual typedef This  ≤ SwitchRewr;
-
 
 	public SwitchRewr() {}
 	
@@ -500,8 +482,6 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 	@DataFlowDefinition(in="cond")		ASTNode		body;
 	}
 
-	@virtual typedef This  = ForEachRewr;
-
 	@nodeAttr public Var			var;
 	@nodeAttr public ASTNode		container;
 	@nodeAttr public ASTNode		cond;
@@ -555,8 +535,6 @@ public final class MacroAccessExpr extends ENode {
 	@DataFlowDefinition(out="obj") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
-
-	@virtual typedef This  = MacroAccessExpr;
 
 	@nodeAttr public ENode			obj;
 
@@ -644,8 +622,6 @@ public class MacroSubstExpr extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
 
-	@virtual typedef This  = MacroSubstExpr;
-
 	@nodeAttr public ENode			expr;
 
 	public MacroSubstExpr() {}
@@ -663,8 +639,6 @@ public class MacroSubstTypeRef extends TypeRef {
 	@DataFlowDefinition(in="this:in")	ENode		mtype;
 	@DataFlowDefinition(in="mtype")	ENode		req_type;
 	}
-
-	@virtual typedef This  = MacroSubstTypeRef;
 
 	@nodeAttr public ENode			mtype;
 	@nodeAttr public TypeRef		req_type;
@@ -699,8 +673,6 @@ public class MacroBinaryBoolExpr extends ENode {
 	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
 	
-	@virtual typedef This  = MacroBinaryBoolExpr;
-
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -775,8 +747,6 @@ public class MacroHasMetaExpr extends ENode {
 	@DataFlowDefinition(in="expr")			MNode			meta;
 	}
 	
-	@virtual typedef This  = MacroHasMetaExpr;
-
 	@nodeAttr public ENode			expr;
 	@nodeAttr public MNode			meta;
 

@@ -20,8 +20,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public abstract class DNode extends ASTNode implements ISymbol {
 
-	@virtual typedef This  ≤ DNode;
-	
 	public static final DNode[] emptyArray = new DNode[0];
 	
 	public static final int MASK_ACC_DEFAULT   = 0;
@@ -326,8 +324,6 @@ public interface GlobalDNode {
 @ThisIsANode(lang=CoreLang)
 public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 
-	@virtual typedef This  ≤ TypeDecl;
-
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
 	@nodeAttr public TypeRef∅					super_types;
@@ -610,8 +606,6 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@virtual typedef This  ≤ ComplexTypeDecl;
-
 	@nodeAttr public SymbolRef<ComplexTypeDecl>	package_clazz;
 	@nodeAttr public TypeConstr∅					args;
 	@nodeAttr public ASTNode∅						members;
@@ -853,8 +847,6 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@virtual typedef This  = MetaTypeDecl;
-	
 	public MetaTypeDecl() {
 		super(null);
 		this.type_decl_version = 1;

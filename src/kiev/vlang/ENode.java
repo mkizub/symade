@@ -23,8 +23,6 @@ public abstract class ENode extends ASTNode {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  ≤ ENode;
-
 	private Object	ident_or_symbol_or_type;
 	
 	@nodeAttr @abstract public String			ident;
@@ -343,8 +341,6 @@ public final class NopExpr extends ENode {
 	public static final ENode dummyNode = new NopExpr();
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = NopExpr;
 
 	public NopExpr() {}
 	

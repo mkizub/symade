@@ -20,8 +20,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public abstract class SNode extends ASTNode {
 
-	@virtual typedef This  ≤ SNode;
-
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public SNode() {}
@@ -33,8 +31,6 @@ public abstract class SNode extends ASTNode {
 @ThisIsANode(name="Comment", lang=CoreLang)
 public final class Comment extends SNode {
 
-	@virtual typedef This  = Comment;
-	
 	@AttrXMLDumpInfo
 	static final class ExtSpaceAttrSlot_comment extends ExtSpaceAttrSlot {
 		ExtSpaceAttrSlot_comment() { super("comment", ANode.nodeattr$parent, TypeInfo.newTypeInfo(Comment.class,null)); }

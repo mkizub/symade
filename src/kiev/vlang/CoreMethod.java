@@ -22,8 +22,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public final class CoreExpr extends ENode {
 	
-	@virtual typedef This  = CoreExpr;
-
 	public CoreFunc core_func;
 	public BEndFunc bend_func;
 	

@@ -18,8 +18,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExprTemplate extends ASyntaxElemDecl {
-	@virtual typedef This  = SyntaxExprTemplate;
-
 	@nodeAttr public SyntaxToken		l_paren;
 	@nodeAttr public SyntaxToken		bad_op;
 	@nodeAttr public SyntaxToken		r_paren;
@@ -48,8 +46,6 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpr extends SyntaxElem {
-	@virtual typedef This  = SyntaxExpr;
-
 	@nodeAttr public SyntaxAttr∅					attrs;
 	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
 
@@ -97,8 +93,6 @@ public class SyntaxExpr extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxAutoParenth extends SyntaxElem {
-	@virtual typedef This  = SyntaxAutoParenth;
-
 	@nodeAttr public SyntaxAttr						attr;
 	@nodeAttr public int							priority;
 	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;

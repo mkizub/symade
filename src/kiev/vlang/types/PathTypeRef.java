@@ -22,8 +22,6 @@ public class PathTypeRef extends TypeRef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = PathTypeRef;
-
 	@nodeAttr public ENode		path;
 
 	public PathTypeRef() {}

@@ -21,8 +21,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(name="Var", lang=CoreLang)
 public abstract class Var extends DNode implements GlobalDNode {
 	
-	@virtual typedef This  ≤ Var;
-
 	public static final int VAR_LOCAL          = 0;
 	public static final int VAR_RULE           = 1;
 	public static final int FIELD_NORMAL       = 2;
@@ -282,8 +280,6 @@ public class LVar extends Var {
 	@DataFlowDefinition(in="this:in")	ENode			init;
 	}
 
-	@virtual typedef This  = LVar;
-
 	public LVar() { super(VAR_LOCAL); }
 
 	public LVar(int pos, String name, Type tp, int kind, int flags)
@@ -316,8 +312,6 @@ public class Field extends Var {
 	}
 
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
-
-	@virtual typedef This  ≤ Field;
 
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		getter_from_inner;

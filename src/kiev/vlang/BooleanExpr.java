@@ -20,8 +20,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public abstract class BoolExpr extends ENode {
 
-	@virtual typedef This  ≤ BoolExpr;
-
 	public BoolExpr() {}
 
 	public Type getType() { return Type.tpBoolean; }
@@ -71,8 +69,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@DataFlowDefinition(in="expr1:false")		ENode			expr2;
 	}
 	
-	@virtual typedef This  = BinaryBooleanOrExpr;
-
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
@@ -143,8 +139,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@DataFlowDefinition(in="expr1:true")		ENode			expr2;
 	}
 	
-	@virtual typedef This  = BinaryBooleanAndExpr;
-
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
@@ -214,8 +208,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
 	
-	@virtual typedef This  = BinaryBoolExpr;
-
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -286,8 +278,6 @@ public class InstanceofExpr extends BoolExpr {
 	@DataFlowDefinition(in="this:in")		ENode			expr;
 	}
 	
-	@virtual typedef This  = InstanceofExpr;
-
 	@nodeAttr public ENode			expr;
 	@nodeAttr public TypeRef		itype;
 
@@ -370,8 +360,6 @@ public class BooleanNotExpr extends BoolExpr {
 	@DataFlowDefinition(in="this:in")		ENode			expr;
 	}
 	
-	@virtual typedef This  = BooleanNotExpr;
-
 	@nodeAttr public ENode		expr;
 
 	public BooleanNotExpr() {}

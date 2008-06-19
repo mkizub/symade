@@ -18,8 +18,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
-	@virtual typedef This  = SyntaxJavaCommentTemplate;
-
 	@nodeAttr public SyntaxElem		newline;
 	@nodeAttr public SyntaxElem		lin_beg;
 	@nodeAttr public SyntaxElem		doc_beg;
@@ -40,8 +38,6 @@ public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaAccessExpr extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaAccessExpr;
-
 	@nodeAttr public SyntaxElem			obj_elem;
 	@nodeAttr public SyntaxToken		separator;
 	@nodeAttr public SyntaxElem			fld_elem;
@@ -64,8 +60,6 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaAccess extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaAccess;
-
 	public SyntaxJavaAccess() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -77,8 +71,6 @@ public class SyntaxJavaAccess extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaPackedField extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaPackedField;
-
 	public SyntaxJavaPackedField() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -91,8 +83,6 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaComment extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaComment;
-
 	@nodeAttr public SymbolRef<SyntaxJavaCommentTemplate>	template;
 
 	public SyntaxJavaComment() {
@@ -136,8 +126,6 @@ public class SyntaxJavaComment extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaConstructorName extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaConstructorName;
-
 	public SyntaxJavaConstructorName() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -149,8 +137,6 @@ public class SyntaxJavaConstructorName extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class KievTextSyntax extends ATextSyntax {
-	@virtual typedef This  = KievTextSyntax;
-
 	public KievTextSyntax() {}
 
 	public Draw_ATextSyntax getCompiled() {

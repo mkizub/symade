@@ -32,8 +32,6 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@virtual typedef This  = CaseLabel;
-
 	@nodeAttr public ENode			val;
 	@nodeData public Type			ctype;
 	@nodeAttr public Var∅			pattern;
@@ -129,8 +127,6 @@ public class SwitchStat extends Block {
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
-	@virtual typedef This  ≤ SwitchStat;
-
 	@nodeAttr public ENode					sel;
 	@nodeData public CaseLabel∅				cases;
 	@nodeData public CaseLabel				defCase;
@@ -222,8 +218,6 @@ public class SwitchEnumStat extends SwitchStat {
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
-	@virtual typedef This  = SwitchEnumStat;
-
 	public SwitchEnumStat() {
 	}
 
@@ -251,8 +245,6 @@ public class SwitchTypeStat extends SwitchStat {
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
-	@virtual typedef This  = SwitchTypeStat;
-
 	public SwitchTypeStat() {
 	}
 
@@ -276,8 +268,6 @@ public class MatchStat extends SwitchStat {
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
 	
-	@virtual typedef This  = MatchStat;
-
 	@nodeAttr public Var					tmp_var;
 
 	public MatchStat() {
@@ -302,8 +292,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 	
 	public static final CatchInfo[] emptyArray = new CatchInfo[0];
-
-	@virtual typedef This  = CatchInfo;
 
 	@nodeAttr public Var				arg;
 	@nodeAttr public ENode			body;
@@ -348,8 +336,6 @@ public class FinallyInfo extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode			body;
 	}
 	
-	@virtual typedef This  = FinallyInfo;
-
 	@nodeAttr public ENode			body;
 	@nodeAttr public Var				ret_arg;
 	     public CodeLabel		subr_label;
@@ -385,8 +371,6 @@ public class TryStat extends ENode {
 	@DataFlowDefinition(in="this:in")				FinallyInfo		finally_catcher;
 	}
 	
-	@virtual typedef This  = TryStat;
-
 	@nodeAttr public ENode				body;
 	@nodeAttr public CatchInfo∅		catchers;
 	@nodeAttr public FinallyInfo		finally_catcher;
@@ -424,8 +408,6 @@ public class SynchronizedStat extends ENode {
 	@DataFlowDefinition(in="expr")		ENode		body;
 	}
 	
-	@virtual typedef This  = SynchronizedStat;
-
 	@nodeAttr public ENode			expr;
 	@nodeAttr public Var				expr_var;
 	@nodeAttr public ENode			body;
@@ -463,8 +445,6 @@ public class WithStat extends ENode {
 	@DataFlowDefinition(in="expr")		ENode		body;
 	}
 	
-	@virtual typedef This  = WithStat;
-
 	@nodeAttr public ENode		expr;
 	@nodeAttr public ENode		body;
 	@nodeData public Var			var_or_field;

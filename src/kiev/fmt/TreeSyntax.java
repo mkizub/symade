@@ -17,8 +17,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=SyntaxLang)
 public class TreeSyntax extends ATextSyntax {
-	@virtual typedef This  = TreeSyntax;
-
 	public TreeSyntax() {}
 
 	public Draw_ATextSyntax getCompiled() {

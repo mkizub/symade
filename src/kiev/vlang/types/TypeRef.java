@@ -24,8 +24,6 @@ public class TypeRef extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  ≤ TypeRef;
-	
 	public TypeRef() {}
 	
 	public static TypeRef newTypeRef(Type tp)
@@ -140,8 +138,6 @@ public class TypeRef extends ENode {
 /*
 @ThisIsANode(lang=CoreLang)
 public class TypeCoreRef extends TypeRef {
-	@virtual typedef This  = TypeCoreRef;
-	
 	public TypeCoreRef() {}
 	public TypeCoreRef(CoreType tp) {
 		this.type_lnk = tp;
@@ -150,8 +146,6 @@ public class TypeCoreRef extends TypeRef {
 */
 @ThisIsANode(lang=CoreLang)
 public class TypeArgRef extends TypeRef {
-	@virtual typedef This  = TypeArgRef;
-	
 	public TypeArgRef() {}
 	public TypeArgRef(ArgType tp) {
 		this.type_lnk = tp;
@@ -159,8 +153,6 @@ public class TypeArgRef extends TypeRef {
 }
 @ThisIsANode(lang=CoreLang)
 public class TypeASTNodeRef extends TypeRef {
-	@virtual typedef This  = TypeASTNodeRef;
-	
 	public TypeASTNodeRef() {}
 	public TypeASTNodeRef(ASTNodeType tp) {
 		this.type_lnk = tp;
@@ -169,8 +161,6 @@ public class TypeASTNodeRef extends TypeRef {
 
 @ThisIsANode(lang=CoreLang)
 public class TypeDeclRef extends TypeRef {
-	@virtual typedef This  = TypeDeclRef;
-	
 	public TypeDeclRef() {}
 
 	public Type getType()

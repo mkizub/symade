@@ -20,8 +20,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=void)
 public final class ASTModifiers extends ASTNode {
 	
-	@virtual typedef This  = ASTModifiers;
-
 	@nodeData public ANode∅				annotations;
 
 	public ASTModifiers() {}

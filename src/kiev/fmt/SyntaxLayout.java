@@ -22,8 +22,6 @@ import java.util.regex.PatternSyntaxException;
 
 @ThisIsANode(lang=SyntaxLang)
 public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalDNode, DumpSerialized {
-	@virtual typedef This  ≤ ATextSyntax;
-	
 	@nodeAttr public SymbolRef<ATextSyntax>	parent_syntax;
 	@nodeAttr public ASTNode∅					members;
 	          public String						q_name;	// qualified name
@@ -165,8 +163,6 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 
 @ThisIsANode(lang=SyntaxLang)
 public final class TextSyntax extends ATextSyntax {
-	@virtual typedef This  = TextSyntax;
-	
 	public TextSyntax() {
 		this.sname = "<text-syntax>";
 	}
@@ -194,8 +190,6 @@ public enum SpaceAction {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SpaceInfo extends DNode {
-	@virtual typedef This  = SpaceInfo;
-
 	@nodeAttr SpaceKind		kind;
 	@nodeAttr int			text_size;
 	@nodeAttr int			pixel_size;
@@ -211,8 +205,6 @@ public class SpaceInfo extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SpaceCmd extends ASTNode {
-	@virtual typedef This  = SpaceCmd;
-
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
 	@nodeAttr public SymbolRef<SpaceInfo>		si;
@@ -261,8 +253,6 @@ public final class SpaceCmd extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public abstract class AParagraphLayout extends DNode {
-	@virtual typedef This  ≤ AParagraphLayout;
-
 	@nodeAttr int indent_text_size;
 	@nodeAttr int indent_pixel_size;
 	@nodeAttr int next_indent_text_size;
@@ -298,8 +288,6 @@ public abstract class AParagraphLayout extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class ParagraphLayout extends AParagraphLayout {
-	@virtual typedef This  = ParagraphLayout;
-
 	public ParagraphLayout() {}
 	public ParagraphLayout(String name, int ind_txt, int ind_pix) {
 		this.sname = name;
@@ -322,8 +310,6 @@ public final class ParagraphLayout extends AParagraphLayout {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class ParagraphLayoutBlock extends AParagraphLayout {
-	@virtual typedef This  = ParagraphLayoutBlock;
-
 	@nodeAttr public String token_text;
 
 	public Draw_Paragraph getCompiled() {
@@ -346,8 +332,6 @@ public final class ParagraphLayoutBlock extends AParagraphLayout {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class DrawColor extends DNode {
-	@virtual typedef This  = DrawColor;
-
 	@nodeAttr
 	public int rgb_color;
 
@@ -360,8 +344,6 @@ public final class DrawColor extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class DrawFont extends DNode {
-	@virtual typedef This  = DrawFont;
-
 	@nodeAttr
 	public String font_name;
 
@@ -374,8 +356,6 @@ public final class DrawFont extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public abstract class ASyntaxElemDecl extends DNode {
-	@virtual typedef This  ≤ ASyntaxElemDecl;
-
 	@nodeAttr public SyntaxElem				elem;
 
 	public ASyntaxElemDecl() {}
@@ -386,13 +366,10 @@ public abstract class ASyntaxElemDecl extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class PartialSyntaxElemDecl extends ASyntaxElemDecl {
-	@virtual typedef This  = PartialSyntaxElemDecl;
 }
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemDecl extends ASyntaxElemDecl {
-	@virtual typedef This  = SyntaxElemDecl;
-
 	@nodeAttr public SymbolRef<Struct>		rnode;
 
 	public SyntaxElemDecl() {
@@ -439,8 +416,6 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxIdentTemplate extends ASyntaxElemDecl {
-	@virtual typedef This  = SyntaxIdentTemplate;
-
 	@nodeAttr public String				regexp_ok;
 	@nodeAttr public String				esc_prefix;
 	@nodeAttr public String				esc_suffix;
@@ -488,8 +463,6 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
-	@virtual typedef This  = SyntaxExpectedTemplate;
-
 	@nodeAttr public String				title;
 	@nodeAttr public SymbolRef∅		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
 
@@ -525,8 +498,6 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemFormatDecl extends DNode {
-	@virtual typedef This  = SyntaxElemFormatDecl;
-
 	@nodeAttr public SpaceCmd∅				spaces;
 	@nodeAttr public SymbolRef<DrawColor>	color;
 	@nodeAttr public SymbolRef<DrawFont>	font;
@@ -616,8 +587,6 @@ public final class SyntaxElemFormatDecl extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxFunction extends ASTNode {
-	@virtual typedef This  = SyntaxFunction;
-
 	public static SyntaxFunction[] emptyArray = new SyntaxFunction[0];
 
 	@nodeAttr public String				title;
@@ -631,8 +600,6 @@ public final class SyntaxFunction extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxFunctions extends ASTNode {
-	@virtual typedef This  = SyntaxFunctions;
-
 	@nodeAttr public SyntaxFunction∅	funcs;
 
 	public SyntaxFunctions() {}
@@ -653,8 +620,6 @@ public final class SyntaxFunctions extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public abstract class SyntaxElem extends ASTNode {
-	@virtual typedef This  ≤ SyntaxElem;
-
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
 	@nodeAttr
@@ -730,8 +695,6 @@ public abstract class SyntaxElem extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemRef extends SyntaxElem {
-	@virtual typedef This  = SyntaxElemRef;
-
 	@nodeAttr public SymbolRef<ASyntaxElemDecl>	decl;
 	@nodeAttr public String							text;
 
@@ -780,8 +743,6 @@ public final class SyntaxElemRef extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxToken extends SyntaxElem {
-	@virtual typedef This  = SyntaxToken;
-
 	public static enum TokenKind {
 		UNKNOWN, KEYWORD, OPERATOR, SEPARATOR
 	}
@@ -826,8 +787,6 @@ public final class SyntaxToken extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxPlaceHolder extends SyntaxElem {
-	@virtual typedef This  = SyntaxPlaceHolder;
-
 	@nodeAttr public String					text;
 
 	@setter
@@ -852,8 +811,6 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public abstract class SyntaxAttr extends SyntaxElem {
-	@virtual typedef This  ≤ SyntaxAttr;
-
 	public static final SyntaxAttr[] emptyArray = new SyntaxAttr[0];
 
 	@nodeAttr public String							name;
@@ -971,8 +928,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxSubAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxSubAttr;
-
 	public SyntaxSubAttr() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1005,8 +960,6 @@ public final class SyntaxSubAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxList extends SyntaxAttr {
-	@virtual typedef This  = SyntaxList;
-
 	@nodeAttr public SyntaxElem						folded;
 	@nodeAttr public SyntaxElem						element;
 	@nodeAttr public SyntaxElem						separator;
@@ -1059,8 +1012,6 @@ public class SyntaxList extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxIdentAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxIdentAttr;
-
 	@nodeAttr public SymbolRef<SyntaxIdentTemplate>		decl;
 
 	public SyntaxIdentAttr() {
@@ -1106,8 +1057,6 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxCharAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxCharAttr;
-
 	public SyntaxCharAttr() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1119,8 +1068,6 @@ public class SyntaxCharAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxStrAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxStrAttr;
-
 	public SyntaxStrAttr() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1132,8 +1079,6 @@ public class SyntaxStrAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxXmlStrAttr extends SyntaxAttr {
-	@virtual typedef This  = SyntaxXmlStrAttr;
-
 	public SyntaxXmlStrAttr() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1146,8 +1091,6 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxSet extends SyntaxElem {
-	@virtual typedef This  ≤ SyntaxSet;
-
 	@nodeAttr public SyntaxElem		folded;
 	@nodeAttr public SyntaxElem∅	elements;
 	@nodeAttr public boolean		folded_by_default;
@@ -1174,8 +1117,6 @@ public class SyntaxSet extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxNode extends SyntaxAttr {
-	@virtual typedef This  = SyntaxNode;
-
 
 	public SyntaxNode() {
 		this.name = "";
@@ -1191,8 +1132,6 @@ public class SyntaxNode extends SyntaxAttr {
 
 @ThisIsANode(copyable=false,lang=SyntaxLang)
 public class SyntaxSwitch extends SyntaxElem {
-	@virtual typedef This  = SyntaxSwitch;
-
 	@nodeAttr SyntaxToken	prefix;
 	@nodeData ATextSyntax	target_syntax;
 	@nodeAttr SyntaxToken	suffix;
@@ -1224,8 +1163,6 @@ public class SyntaxSwitch extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxSpace extends SyntaxElem {
-	@virtual typedef This  = SyntaxSpace;
-
 	public SyntaxSpace() {}
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1237,8 +1174,6 @@ public class SyntaxSpace extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public abstract class CalcOption extends ASTNode {
-	@virtual typedef This  ≤ CalcOption;
-
 	public static final CalcOption[] emptyArray = new CalcOption[0];
 
 	@nodeAttr public String name;
@@ -1259,8 +1194,6 @@ public abstract class CalcOption extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionAnd extends CalcOption {
-	@virtual typedef This  = CalcOptionAnd;
-
 	@nodeAttr public CalcOption∅ opts;
 	
 	public CalcOptionAnd() {}
@@ -1276,8 +1209,6 @@ public final class CalcOptionAnd extends CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionOr extends CalcOption {
-	@virtual typedef This  = CalcOptionOr;
-
 	@nodeAttr public CalcOption∅ opts;
 	
 	public CalcOptionOr() {}
@@ -1293,8 +1224,6 @@ public final class CalcOptionOr extends CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionNot extends CalcOption {
-	@virtual typedef This  = CalcOptionNot;
-
 	@nodeAttr public CalcOption opt;
 	
 	public CalcOptionNot() {}
@@ -1308,8 +1237,6 @@ public final class CalcOptionNot extends CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionNotNull extends CalcOption {
-	@virtual typedef This  = CalcOptionNotNull;
-
 	public CalcOptionNotNull() {}
 	public CalcOptionNotNull(String name) {
 		super(name);
@@ -1324,8 +1251,6 @@ public final class CalcOptionNotNull extends CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionNotEmpty implements CalcOption {
-	@virtual typedef This  = CalcOptionNotEmpty;
-
 	public CalcOptionNotEmpty() {}
 	public CalcOptionNotEmpty(String name) {
 		super(name);
@@ -1340,8 +1265,6 @@ public final class CalcOptionNotEmpty implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionTrue implements CalcOption {
-	@virtual typedef This  = CalcOptionTrue;
-
 	public CalcOptionTrue() {}
 	public CalcOptionTrue(String name) {
 		super(name);
@@ -1356,8 +1279,6 @@ public class CalcOptionTrue implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionClass implements CalcOption {
-	@virtual typedef This  = CalcOptionClass;
-
 	private Class clazz;
 	
 	public CalcOptionClass() {}
@@ -1382,8 +1303,6 @@ public class CalcOptionClass implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionHasMeta implements CalcOption {
-	@virtual typedef This  = CalcOptionHasMeta;
-
 	public CalcOptionHasMeta() {}
 	public CalcOptionHasMeta(String name) {
 		super(name);
@@ -1405,8 +1324,6 @@ public class CalcOptionHasMeta implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionIsHidden implements CalcOption {
-	@virtual typedef This  = CalcOptionIsHidden;
-
 	public CalcOptionIsHidden() {}
 	public CalcOptionIsHidden(String name) {
 		super(name);
@@ -1421,8 +1338,6 @@ public class CalcOptionIsHidden implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionHasNoSyntaxParent implements CalcOption {
-	@virtual typedef This  = CalcOptionHasNoSyntaxParent;
-
 	public CalcOptionHasNoSyntaxParent() {}
 
 	public Draw_CalcOption getCompiled() {
@@ -1434,8 +1349,6 @@ public class CalcOptionHasNoSyntaxParent implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionIncludeInDump implements CalcOption {
-	@virtual typedef This  = CalcOptionIncludeInDump;
-
 	@nodeAttr public String dump;
 
 	@setter
@@ -1459,8 +1372,6 @@ public class CalcOptionIncludeInDump implements CalcOption {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxOptional extends SyntaxElem {
-	@virtual typedef This  = SyntaxOptional;
-
 	@nodeAttr public CalcOption			calculator;
 	@nodeAttr public SyntaxElem			opt_true;
 	@nodeAttr public SyntaxElem			opt_false;
@@ -1491,8 +1402,6 @@ public class SyntaxOptional extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxEnumChoice extends SyntaxAttr {
-	@virtual typedef This  = SyntaxEnumChoice;
-
 	@nodeAttr public SyntaxElem∅ elements;
 
 	public SyntaxEnumChoice() {}
@@ -1514,8 +1423,6 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxFolder extends SyntaxElem {
-	@virtual typedef This  = SyntaxFolder;
-
 	@nodeAttr public boolean folded_by_default;
 	@nodeAttr public SyntaxElem folded;
 	@nodeAttr public SyntaxElem unfolded;

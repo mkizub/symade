@@ -27,8 +27,6 @@ public class RuleMethod extends Method {
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	@virtual typedef This  = RuleMethod;
-
 	@nodeAttr public Var∅				localvars;
 	          public int				base = 1;
 	          public int				max_depth;
@@ -205,8 +203,6 @@ object, if fails - returns null.
 public abstract class ASTRuleNode extends ENode {
 	public static final ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
-	@virtual typedef This  ≤ ASTRuleNode;
-
 	@virtual @final @abstract
 	@nodeData public:ro	boolean			more_check;
 	@UnVersioned
@@ -249,8 +245,6 @@ public final class RuleBlock extends ENode {
 	@DataFlowDefinition(out="rnode") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ASTRuleNode		rnode;
 	}
-
-	@virtual typedef This  = RuleBlock;
 
 	@nodeAttr public ASTRuleNode		rnode;
 
@@ -306,8 +300,6 @@ public final class RuleOrExpr extends ASTRuleNode {
 	@DataFlowDefinition(out="rules") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	ASTRuleNode[]	rules;
 	}
-
-	@virtual typedef This  = RuleOrExpr;
 
 	@nodeAttr public ASTRuleNode∅			rules;
 
@@ -367,8 +359,6 @@ public final class RuleAndExpr extends ASTRuleNode {
 	@DataFlowDefinition(out="rules") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ASTRuleNode[]	rules;
 	}
-
-	@virtual typedef This  = RuleAndExpr;
 
 	@nodeAttr public ASTRuleNode∅			rules;
 
@@ -451,8 +441,6 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
 
-	@virtual typedef This  = RuleIstheExpr;
-
 	@nodeAttr public LVarExpr	var;		// variable of type PVar<...>
 	@nodeAttr public ENode		expr;		// expression to check/unify
 
@@ -512,8 +500,6 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 
 	public enum IsoneofMode { ARRAY, KENUM, JENUM, ELEMS };
-
-	@virtual typedef This  = RuleIsoneofExpr;
 
 	@nodeAttr public LVarExpr		var;		// variable of type PVar<...>
 	@nodeAttr public ENode			expr;		// expression to check/unify
@@ -607,8 +593,6 @@ public final class RuleCutExpr extends ASTRuleNode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = RuleCutExpr;
-
 	public RuleCutExpr() {}
 
 	public RuleCutExpr(int pos) {
@@ -646,8 +630,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
 	
-	@virtual typedef This  = RuleCallExpr;
-
 	@nodeAttr public ENode				obj;
 	@nodeAttr public ENode∅			args;
 	@nodeAttr public int				env_var;
@@ -715,8 +697,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 @ThisIsANode(lang=LogicLang)
 public abstract class RuleExprBase extends ASTRuleNode {
 
-	@virtual typedef This  ≤ RuleExprBase;
-
 	@nodeAttr public ENode				expr;
 	@nodeAttr public ENode				bt_expr;
 
@@ -755,8 +735,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 	@DataFlowDefinition(in="this:in")	ENode		bt_expr;
 	}
 	
-	@virtual typedef This  = RuleWhileExpr;
-
 	public RuleWhileExpr() {}
 
 	public RuleWhileExpr(ENode expr) {
@@ -808,8 +786,6 @@ public final class RuleExpr extends RuleExprBase {
 	@DataFlowDefinition(in="this:in")	ENode		bt_expr;
 	}
 
-	@virtual typedef This  = RuleExpr;
-	
 	public RuleExpr() {}
 
 	public RuleExpr(ENode expr) {

@@ -22,8 +22,6 @@ public final class TypeNameRef extends TypeRef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = TypeNameRef;
-
 	public TypeNameRef() {}
 
 	public TypeNameRef(String nm) {
@@ -182,8 +180,6 @@ public final class TypeNameRef extends TypeRef {
 public final class TypeNameArgsRef extends TypeRef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = TypeNameArgsRef;
 
 	@nodeAttr public TypeRef∅			args;
 
@@ -366,8 +362,6 @@ public final class TypeNameArgsRef extends TypeRef {
 public final class TypeInnerNameRef extends TypeRef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = TypeInnerNameRef;
 
 	@nodeAttr public TypeRef			outer;
 	@nodeAttr public TypeRef∅			args;

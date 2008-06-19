@@ -22,8 +22,6 @@ public class TypeClosureRef extends TypeRef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = TypeClosureRef;
-
 	@nodeAttr public TypeRef∅		args;
 	@nodeAttr public TypeRef		ret;
 

@@ -87,8 +87,6 @@ public final class ExtChildrenIterator implements Enumeration<ANode> {
 
 public abstract class ANode implements INode {
 
-	@virtual typedef This  ≤ ANode;
-	
 	public static final ANode[] emptyArray = new ANode[0];
 	
 	static final class RefAttrSlot_this extends RefAttrSlot {
@@ -749,14 +747,14 @@ public abstract class ANode implements INode {
 	}
 	
 
-	public final This ncopy() {
+	public final this.type ncopy() {
 		CopyContext cc = new CopyContext();
-		This t = (This)this.copy(cc);
+		ANode t = (ANode)this.copy(cc);
 		cc.updateLinks();
 		return t;
 	}
-	public final This ncopy(CopyContext cc) {
-		return (This)this.copy(cc);
+	public final this.type ncopy(CopyContext cc) {
+		return (ANode)this.copy(cc);
 	}
 
 	public Object copy(CopyContext cc) {
@@ -813,7 +811,7 @@ public abstract class ANode implements INode {
 		return node;
 	}
 	
-	public final This detach()
+	public final this.type detach()
 		alias fy operator ~
 	{
 		if (!isAttached())
@@ -984,8 +982,6 @@ class CurrentVersionInfo extends VersionInfo {
 @ThisIsANode(lang=CoreLang)
 public abstract class ASTNode extends ANode implements Constants {
 
-	@virtual typedef This  ≤ ASTNode;
-	
 	public static final boolean EXECUTE_UNVERSIONED = Boolean.valueOf(System.getProperty("symade.unversioned","true")).booleanValue();
 	
 	public static final ASTNode[] emptyArray = new ASTNode[0];

@@ -22,8 +22,6 @@ import syntax kiev.Syntax;
 @unerasable
 public final class ASTOperatorAlias extends Symbol<Method> {
 
-	@virtual typedef This  = ASTOperatorAlias;
-
 	@nodeAttr public int					prior;
 	@nodeAttr public int					opmode;
 	@nodeAttr public String				image;

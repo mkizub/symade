@@ -42,8 +42,6 @@ public final class EToken extends ENode {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = EToken;
-	
 	public static final Pattern patternIdent = Pattern.compile("[\\p{Alpha}_$][\\p{Alnum}_$]*");
 	public static final Pattern patternOper = Pattern.compile("[\\!\\#\\%-\\/\\:\\;\\<\\=\\>\\?\\[\\\\\\]\\^\\{\\|\\}\\~\\u2190-\\u22F1]+");
 	public static final Pattern patternIntConst = Pattern.compile("\\p{Digit}+");

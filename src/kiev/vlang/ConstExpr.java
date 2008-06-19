@@ -28,8 +28,6 @@ public final class ConstBoolExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstBoolExpr;
-
 	@nodeAttr public boolean value;
 
 	public ConstBoolExpr() {}
@@ -53,8 +51,6 @@ public final class ConstNullExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstNullExpr;
-
 	public ConstNullExpr() {}
 
 	public Type		getType()			{ return Type.tpNull; }
@@ -75,8 +71,6 @@ public final class ConstByteExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstByteExpr;
-
 	@nodeAttr public byte		value;
 	@nodeAttr public IntRadix	radix;
 
@@ -107,8 +101,6 @@ public final class ConstShortExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstShortExpr;
-
 	@nodeAttr public short		value;
 	@nodeAttr public IntRadix	radix;
 
@@ -139,8 +131,6 @@ public final class ConstIntExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstIntExpr;
-
 	@nodeAttr public int			value;
 	@nodeAttr public IntRadix	radix;
 
@@ -171,8 +161,6 @@ public final class ConstLongExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstLongExpr;
-
 	@nodeAttr public long		value;
 	@nodeAttr public IntRadix	radix;
 
@@ -203,8 +191,6 @@ public final class ConstCharExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstCharExpr;
-
 	@nodeAttr public char value;
 
 	public ConstCharExpr() {}
@@ -229,8 +215,6 @@ public final class ConstFloatExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstFloatExpr;
-
 	@nodeAttr public float value;
 
 	public ConstFloatExpr() {}
@@ -255,8 +239,6 @@ public final class ConstDoubleExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstDoubleExpr;
-
 	@nodeAttr public double value;
 
 	public ConstDoubleExpr() {}
@@ -282,8 +264,6 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	public static final ConstStringExpr[] emptyArray = new ConstStringExpr[0];
 	
-	@virtual typedef This  = ConstStringExpr;
-
 	@nodeAttr public String value;
 
 	public ConstStringExpr() {}
@@ -307,8 +287,6 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ConstEnumExpr;
-
 	@nodeAttr public E value;
 
 	public ConstEnumExpr() {}
@@ -330,8 +308,6 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 
 @ThisIsANode(lang=CoreLang)
 public abstract class ConstExpr extends ENode {
-
-	@virtual typedef This  ≤ ConstExpr;
 
 	public ConstExpr() {
 		setResolved(true);

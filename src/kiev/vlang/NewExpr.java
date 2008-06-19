@@ -28,8 +28,6 @@ public final class NewExpr extends ENode {
 	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
 	}
 
-	@virtual typedef This  = NewExpr;
-
 	@nodeAttr				public TypeRef				ntype;
 	@nodeAttr				public ENode				outer;
 	@nodeAttr(ext_data=true)public ENode				tpinfo;
@@ -215,8 +213,6 @@ public final class NewEnumExpr extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
-	@virtual typedef This  = NewEnumExpr;
-
 	@nodeAttr public ENode∅				args;
 
 	@getter public Method get$func() {
@@ -280,8 +276,6 @@ public final class NewArrayExpr extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
 
-	@virtual typedef This  = NewArrayExpr;
-
 	@nodeAttr public TypeRef				ntype;
 	@nodeAttr public ENode∅				args;
 	          public ArrayType				arrtype;
@@ -328,8 +322,6 @@ public final class NewInitializedArrayExpr extends ENode {
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
-
-	@virtual typedef This  = NewInitializedArrayExpr;
 
 	@nodeAttr public TypeExpr			ntype;
 	@nodeAttr public ENode∅			args;
@@ -401,8 +393,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@DataFlowDefinition(in="this:in")	ENode		body;
 	}
 
-
-	@virtual typedef This  = NewClosure;
 
 	@nodeAttr public TypeRef			type_ret;
 	@nodeAttr public Var∅				params;

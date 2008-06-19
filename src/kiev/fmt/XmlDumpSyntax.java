@@ -17,8 +17,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=SyntaxLang)
 public class XmlDumpSyntax extends ATextSyntax {
-	@virtual typedef This  = XmlDumpSyntax;
-
 	@nodeAttr public String dump;
 
 	@setter
@@ -45,8 +43,6 @@ public class XmlDumpSyntax extends ATextSyntax {
 
 @ThisIsANode(lang=SyntaxLang)
 public class NsXmlDumpSyntax extends ATextSyntax {
-	@virtual typedef This  = NsXmlDumpSyntax;
-
 	@nodeAttr public String dump;
 
 	@setter

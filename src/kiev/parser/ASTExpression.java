@@ -27,8 +27,6 @@ public class ASTExpression extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")		ENode[]		nodes;
 	}
 	
-	@virtual typedef This  = ASTExpression;
-
 	@nodeAttr public ENode∅	nodes;
 
 	private int cur_pos;

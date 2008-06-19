@@ -25,8 +25,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@DataFlowDefinition(in="root()", out="this:out()") private static class DFI {}
 
-	@virtual typedef This  = InlineMethodStat;
-
 	@nodeAttr public Method					dispatched;
 	@nodeData public Method					dispatcher;
 	@nodeAttr public SymbolRef∅			old_vars;
@@ -111,8 +109,6 @@ public class ExprStat extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
-	@virtual typedef This  = ExprStat;
-
 	@nodeAttr public ENode	expr;
 
 	public ExprStat() {}
@@ -142,8 +138,6 @@ public class ReturnStat extends ENode {
 	@DataFlowDefinition(jmp="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
-
-	@virtual typedef This  = ReturnStat;
 
 	@nodeAttr public ENode	expr;
 
@@ -177,8 +171,6 @@ public class ThrowStat extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
 
-	@virtual typedef This  = ThrowStat;
-
 	@nodeAttr public ENode	expr;
 
 	public ThrowStat() {}
@@ -198,8 +190,6 @@ public class IfElseStat extends ENode {
 	@DataFlowDefinition(in="cond:true")	ENode		thenSt;
 	@DataFlowDefinition(in="cond:false")	ENode		elseSt;
 	}
-
-	@virtual typedef This  = IfElseStat;
 
 	@nodeAttr public ENode			cond;
 	@nodeAttr public ENode			thenSt;
@@ -243,8 +233,6 @@ public class CondStat extends ENode {
 	@DataFlowDefinition(in="cond:false")		ENode		message;
 	}
 
-	@virtual typedef This  = CondStat;
-
 	@nodeAttr public ENode		enabled;
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		message;
@@ -268,8 +256,6 @@ public class LabeledStat extends ENode {
 
 	public static final LabeledStat[]	emptyArray = new LabeledStat[0];
 
-	@virtual typedef This  = LabeledStat;
-
 	@nodeAttr public Label			lbl;
 	@nodeAttr public ENode			stat;
 
@@ -282,8 +268,6 @@ public class LabeledStat extends ENode {
 public class BreakStat extends ENode {
 	
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
-
-	@virtual typedef This  = BreakStat;
 
 	@nodeData(copyable=false) public Label		dest;
 
@@ -354,8 +338,6 @@ public class ContinueStat extends ENode {
 	
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
-	@virtual typedef This  = ContinueStat;
-
 	@nodeData(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
@@ -425,8 +407,6 @@ public class GotoStat extends ENode {
 	
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
-	@virtual typedef This  = GotoStat;
-
 	@nodeData(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
@@ -485,8 +465,6 @@ public class GotoCaseStat extends ENode {
 	@DataFlowDefinition(jmp="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
-
-	@virtual typedef This  = GotoCaseStat;
 
 	@nodeAttr public ENode		expr;
 	@nodeData public SwitchStat	sw;

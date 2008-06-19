@@ -21,8 +21,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=CoreLang)
 public abstract class LvalueExpr extends ENode {
 
-	@virtual typedef This  ≤ LvalueExpr;
-
 	public LvalueExpr() {}
 }
 
@@ -32,8 +30,6 @@ public final class AccessExpr extends LvalueExpr {
 	@DataFlowDefinition(out="obj") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
-
-	@virtual typedef This  = AccessExpr;
 
 	@nodeAttr public ENode			obj;
 
@@ -171,8 +167,6 @@ public final class IFldExpr extends LvalueExpr {
 	@DataFlowDefinition(out="obj") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
-
-	@virtual typedef This  = IFldExpr;
 
 	@nodeAttr public ENode			obj;
 	@abstract
@@ -377,8 +371,6 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	@DataFlowDefinition(in="obj")		ENode		index;
 	}
 
-	@virtual typedef This  = ContainerAccessExpr;
-
 	@nodeAttr public ENode		obj;
 	@nodeAttr public ENode		index;
 
@@ -439,8 +431,6 @@ public final class ThisExpr extends LvalueExpr {
 
 	static public final LVar thisPar = new LVar(0,Constants.nameThis,Type.tpVoid,Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 	
-	@virtual typedef This  = ThisExpr;
-
 	public ThisExpr() {}
 	public ThisExpr(int pos) {
 		this.pos = pos;
@@ -480,8 +470,6 @@ public final class SuperExpr extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = SuperExpr;
-
 	public SuperExpr() {
 		setSuperExpr(true);
 	}
@@ -508,8 +496,6 @@ public final class SuperExpr extends ENode {
 public final class LVarExpr extends LvalueExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = LVarExpr;
 
 	@getter public Var get$var() {
 		DNode sym = this.dnode;
@@ -599,8 +585,6 @@ public final class LVarExpr extends LvalueExpr {
 public final class SFldExpr extends LvalueExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = SFldExpr;
 
 	@nodeAttr public TypeRef			obj;
 
@@ -741,8 +725,6 @@ public final class OuterThisAccessExpr extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = OuterThisAccessExpr;
-
 	@nodeAttr public TypeRef			outer;
 	@nodeData public Var∅			outer_refs;
 
@@ -805,8 +787,6 @@ public final class ReinterpExpr extends LvalueExpr {
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
-
-	@virtual typedef This  = ReinterpExpr;
 
 	@nodeAttr public TypeRef		ctype;
 	@nodeAttr public ENode			expr;

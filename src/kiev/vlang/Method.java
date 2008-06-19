@@ -21,8 +21,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,GlobalDNode {
-	@virtual typedef This  ≤ Method;
-	
 	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
 	@nodeAttr public TypeConstr∅			targs;
@@ -880,8 +878,6 @@ public final class MethodImpl extends Method {
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 	
-	@virtual typedef This  = MethodImpl;
-
 	public MethodImpl() {}
 
 	public MethodImpl(String name, Type ret) {
@@ -903,8 +899,6 @@ public final class Constructor extends Method {
 	@DataFlowDefinition(in="this:in")				Block			body;
 	@DataFlowDefinition(in="this:in")				WBCCondition[] 	conditions;
 	}
-
-	@virtual typedef This  = Constructor;
 
 	@nodeAttr public ENode∅				addstats;
 
@@ -951,8 +945,6 @@ public final class Initializer extends DNode {
 	@DataFlowDefinition(in="this:in")		ENode		body;
 	}
 
-	@virtual typedef This  = Initializer;
-
 	@nodeAttr public ENode				body;
 
 	@getter public final Block get$block()	{ return (Block)this.body; }
@@ -986,8 +978,6 @@ public final class WBCCondition extends DNode {
 	}
 	
 	public static final WBCCondition[]	emptyArray = new WBCCondition[0];
-
-	@virtual typedef This  = WBCCondition;
 
 	@nodeAttr public WBCType				cond;
 	@nodeAttr public ENode				body;

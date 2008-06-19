@@ -20,8 +20,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=void)
 public interface ISymbol extends INode {
-	@virtual typedef This  ≤ ISymbol;
-
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
 	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
@@ -33,8 +31,6 @@ public interface ISymbol extends INode {
 public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  ≤ Symbol;
 
 	public static final Symbol[] emptyArray = new Symbol[0];
 	
@@ -144,8 +140,6 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = SymbolRef;
 
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 

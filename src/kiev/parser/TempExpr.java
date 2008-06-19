@@ -23,8 +23,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=void)
 public abstract class UnresExpr extends ENode {
 
-	@virtual typedef This  ≤ UnresExpr;
-
 	@nodeData public Operator				op;
 
 	public UnresExpr() {}
@@ -50,8 +48,6 @@ public abstract class UnresExpr extends ENode {
 @ThisIsANode(lang=void)
 public final class UnresOpExpr extends UnresExpr {
 	
-	@virtual typedef This  = UnresOpExpr;
-
 	@nodeData public ENode∅				exprs;
 
 	public UnresOpExpr() {}
@@ -167,8 +163,6 @@ public final class UnresOpExpr extends UnresExpr {
 @ThisIsANode(lang=void)
 public final class UnresSeqs extends UnresExpr {
 	
-	@virtual typedef This  = UnresSeqs;
-
 	@nodeData public String				sep;
 	@nodeData public ENode∅				exprs;
 
@@ -210,8 +204,6 @@ public final class UnresSeqs extends UnresExpr {
  */
 @ThisIsANode(lang=void)
 public final class UnresCallExpr extends UnresExpr {
-
-	@virtual typedef This  = UnresCallExpr;
 
 	@nodeData public ENode				obj;
 	@nodeData public SymbolRef<DNode>	func;
@@ -279,8 +271,6 @@ public final class UnresCallExpr extends UnresExpr {
  */
 @ThisIsANode(lang=void)
 public final class AccFldExpr extends UnresExpr {
-
-	@virtual typedef This  = AccFldExpr;
 
 	@nodeData public ENode				obj;
 	@nodeData public Field				fld;

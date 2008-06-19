@@ -31,8 +31,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		IMPORT_SYNTAX;
 	}
 
-	@virtual typedef This  = Import;
-
 	@nodeAttr public SymbolRef<DNode>	name;
 
 	@nodeAttr public ImportMode			mode = ImportMode.IMPORT_CLASS;
@@ -219,8 +217,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = TypeOpDef;
 
 	@nodeAttr public TypeDef			arg;
 	@nodeAttr public String				op;

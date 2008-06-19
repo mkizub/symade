@@ -23,8 +23,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(name="FileUnit", lang=CoreLang)
 public final class FileUnit extends NameSpace {
 
-	@virtual typedef This  = FileUnit;
-
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
 	@AttrXMLDumpInfo(attr=true, name="name")
@@ -145,8 +143,6 @@ public final class FileUnit extends NameSpace {
 
 @ThisIsANode(name="NameSpace", lang=CoreLang)
 public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
-
-	@virtual typedef This  ≤ NameSpace;
 
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 

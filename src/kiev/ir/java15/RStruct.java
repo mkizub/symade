@@ -1023,7 +1023,11 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				else
 					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.meta.mflags | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
-				mmm.targs.copyFrom(m.targs);
+				{
+					ANode.CopyContext cc = new ANode.CopyContext();
+					mmm.targs.copyFrom(m.targs, cc);
+					cc.updateLinks();
+				}
 				foreach (Var fp; m.params) {
 					TypeRef stype = fp.stype;
 					if (stype != null)

@@ -22,8 +22,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public abstract class LoopStat extends ENode {
-	@virtual typedef This  ≤ LoopStat;
-
 	@nodeAttr(copyable=false)	public Label		lblcnt;
 	@nodeAttr(copyable=false)	public Label		lblbrk;
 
@@ -39,8 +37,6 @@ public abstract class LoopStat extends ENode {
 public final class Label extends DNode {
 	
 	@DataFlowDefinition(out="this:out()") private static class DFI {}
-
-	@virtual typedef This  = Label;
 
 	@nodeData(copyable=false)	public ASTNode∅		links;
 								public CodeLabel		label;
@@ -123,8 +119,6 @@ public class WhileStat extends LoopStat {
 	@DataFlowDefinition(in="cond:false")					Label		lblbrk;
 	}
 
-	@virtual typedef This  = WhileStat;
-
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
 
@@ -158,8 +152,6 @@ public class DoWhileStat extends LoopStat {
 	@DataFlowDefinition(in="lblcnt")							ENode		cond;
 	@DataFlowDefinition(in="cond:false")						Label		lblbrk;
 	}
-
-	@virtual typedef This  = DoWhileStat;
 
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
@@ -197,8 +189,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@DataFlowDefinition(in="cond:false")				Label		lblbrk;
 	}
 	
-	@virtual typedef This  = ForStat;
-
 	@nodeAttr public ASTNode∅	inits;
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
@@ -260,8 +250,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public static final int	JENUM = 2;
 	public static final int	ELEMS = 3;
 	public static final int	RULE  = 4;
-
-	@virtual typedef This  = ForEachStat;
 
 	@nodeAttr public int			mode;
 	@nodeAttr public ENode		container;

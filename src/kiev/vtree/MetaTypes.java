@@ -47,13 +47,6 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	}
 
 	@macro
-	public void copyFrom(N[] arr)
-	{
-		case Call# self(IFld# obj):
-			getAttr(self.obj.var).copyFrom(self.obj.obj, arr)
-	}
-
-	@macro
 	public void copyFrom(N[] arr, ANode.CopyContext cc)
 	{
 		case Call# self(IFld# obj):

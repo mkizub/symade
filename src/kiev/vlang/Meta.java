@@ -21,8 +21,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(name="MetaSet", lang=CoreLang)
 public final class MetaSet extends ASTNode {
 	
-	@virtual typedef This  = MetaSet;
-
 	@nodeAttr
 	public MNode∅		metas;
 
@@ -125,8 +123,6 @@ public final class MetaSet extends ASTNode {
 
 @ThisIsANode(lang=CoreLang)
 public abstract class MNode extends ASTNode {
-	@virtual typedef This  ≤ MNode;
-	
 	public static final MNode[] emptyArray = new MNode[0];
 
 	@getter
@@ -141,8 +137,6 @@ public abstract class MNode extends ASTNode {
 
 @ThisIsANode(name="UserMeta", lang=CoreLang)
 public class UserMeta extends MNode {
-	@virtual typedef This  ≤ UserMeta;
-
 	@abstract
 	@nodeAttr public String							qname;
 	@nodeAttr public SymbolRef<JavaAnnotation>		decl;
@@ -561,8 +555,6 @@ public class UserMeta extends MNode {
 public abstract class MetaValue extends ENode {
 	public static final MetaValue[] emptyArray = new MetaValue[0];
 
-	@virtual typedef This  ≤ MetaValue;
-
 	public MetaValue() {}
 
 	public MetaValue(SymbolRef<DNode> ident) {
@@ -621,8 +613,6 @@ public abstract class MetaValue extends ENode {
 @ThisIsANode(name="MetaVal", lang=CoreLang)
 public final class MetaValueScalar extends MetaValue {
 
-	@virtual typedef This  = MetaValueScalar;
-
 	@nodeAttr public ASTNode			value;
 
 	public MetaValueScalar() {}
@@ -665,8 +655,6 @@ public final class MetaValueScalar extends MetaValue {
 
 @ThisIsANode(name="MetaArr", lang=CoreLang)
 public final class MetaValueArray extends MetaValue {
-
-	@virtual typedef This  = MetaValueArray;
 
 	@nodeAttr public ASTNode∅				values;
 

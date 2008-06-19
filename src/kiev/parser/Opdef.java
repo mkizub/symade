@@ -20,8 +20,6 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public class Opdef extends SNode {
-	@virtual typedef This  = Opdef;
-
 	// Assign orders
 	public static final int LFY			= 0;
 

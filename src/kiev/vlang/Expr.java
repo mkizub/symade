@@ -26,8 +26,6 @@ public class Shadow extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = Shadow;
-
 	@nodeData public ASTNode	rnode;
 
 	public Shadow() {}
@@ -53,8 +51,6 @@ public class TypeClassExpr extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = TypeClassExpr;
-
 	@nodeAttr public TypeRef		ttype;
 
 	public TypeClassExpr() {}
@@ -82,8 +78,6 @@ public class TypeInfoExpr extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = TypeInfoExpr;
-
 	@nodeAttr public TypeRef				ttype;
 	@nodeAttr public ENode					cl_expr;
 	@nodeAttr public ENode∅				cl_args;
@@ -114,8 +108,6 @@ public class AssertEnabledExpr extends ENode {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = AssertEnabledExpr;
-
 	public AssertEnabledExpr() {}
 
 	public Type getType() {
@@ -138,8 +130,6 @@ public class AssignExpr extends ENode {
 	@DataFlowDefinition(in="lval")		ENode			value;
 	}
 	
-	@virtual typedef This  = AssignExpr;
-
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			lval;
 	@nodeAttr public ENode			value;
@@ -254,8 +244,6 @@ public class BinaryExpr extends ENode {
 	@DataFlowDefinition(in="expr1")		ENode				expr2;
 	}
 	
-	@virtual typedef This  = BinaryExpr;
-
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -344,8 +332,6 @@ public class UnaryExpr extends ENode {
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(out="this:in")			ENode		expr;
 	}
-
-	@virtual typedef This  = UnaryExpr;
 
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr;
@@ -436,8 +422,6 @@ public class StringConcatExpr extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]	args;
 	}
 
-	@virtual typedef This  = StringConcatExpr;
-
 	@nodeAttr public ENode∅				args;
 
 	public StringConcatExpr() {}
@@ -488,8 +472,6 @@ public class CommaExpr extends ENode {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]	exprs;
 	}
 
-	@virtual typedef This  = CommaExpr;
-
 	@nodeAttr public ENode∅			exprs;
 
 	public CommaExpr() {}
@@ -520,8 +502,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@DataFlowDefinition(out="this:out()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		stats;
 	}
-
-	@virtual typedef This  ≤ Block;
 
 	@nodeAttr public ASTNode∅			stats;
 	@nodeAttr(copyable=false, ext_data=true)
@@ -640,8 +620,6 @@ public class IncrementExpr extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode			lval;
 	}
 
-	@virtual typedef This  = IncrementExpr;
-
 	@nodeAttr public Operator			op;
 	@nodeAttr public ENode				lval;
 
@@ -689,8 +667,6 @@ public class ConditionalExpr extends ENode {
 	@DataFlowDefinition(in="cond:false")	ENode		expr2;
 	}
 
-	@virtual typedef This  = ConditionalExpr;
-
 	@nodeAttr public ENode			cond;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -733,8 +709,6 @@ public class CastExpr extends ENode {
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
-
-	@virtual typedef This  = CastExpr;
 
 	@nodeAttr public TypeRef		ctype;
 	@nodeAttr public ENode			expr;

@@ -206,8 +206,6 @@ public final class JavaEnum extends JavaClass {
 @ThisIsANode(lang=CoreLang)
 public abstract class Struct extends ComplexTypeDecl {
 	
-	@virtual typedef This  = Struct;
-
 	@nodeData(ext_data=true)		public Struct				typeinfo_clazz;
 	@nodeData(ext_data=true)		public Struct				iface_impl;
 

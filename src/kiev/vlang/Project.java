@@ -18,8 +18,6 @@ import syntax kiev.Syntax;
 @ThisIsANode(lang=void)
 public final class Project extends SNode {
 
-	@virtual typedef This  = Project;
-
 	@nodeAttr public DirUnit			root_dir;
 
 	public Project() {
@@ -78,8 +76,6 @@ public final class Project extends SNode {
 
 @ThisIsANode(lang=void)
 public final class DirUnit extends SNode {
-
-	@virtual typedef This  = DirUnit;
 
 	public static final DirUnit[] emptyArray = new DirUnit[0];
 
