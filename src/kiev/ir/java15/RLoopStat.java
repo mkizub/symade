@@ -228,6 +228,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 					new LVarExpr(iter.pos,iter),
 					new ConstIntExpr(0)
 				));
+			Kiev.runProcessorsOn(iter_init);
 			iter_init.resolve(Type.tpInt);
 			break;
 		case ForEachStat.KENUM:
@@ -235,6 +236,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
+			Kiev.runProcessorsOn(iter_init);
 			iter_init.resolve(iter.getType());
 			break;
 		case ForEachStat.JENUM:
@@ -242,6 +244,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
+			Kiev.runProcessorsOn(iter_init);
 			iter_init.resolve(iter.getType());
 			break;
 		case ForEachStat.ELEMS:
@@ -250,6 +253,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new LVarExpr(iter.pos,iter),
 				new CallExpr(container.pos,container.ncopy(),elems,ENode.emptyArray)
 				);
+			Kiev.runProcessorsOn(iter_init);
 			iter_init.resolve(iter.getType());
 			break;
 		case ForEachStat.RULE:
@@ -258,6 +262,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), new ConstNullExpr()
 				);
+			Kiev.runProcessorsOn(iter_init);
 			iter_init.resolve(Type.tpVoid);
 			}
 			break;
@@ -302,6 +307,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			break;
 		}
 		if( iter_cond != null ) {
+			Kiev.runProcessorsOn(iter_cond);
 			iter_cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(iter_cond);
 		}
@@ -358,6 +364,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				);
 				var_init = b;
 			}
+			Kiev.runProcessorsOn(var_init);
 			var_init.resolve(var.getType());
 			var_init.setGenVoidExpr(true);
 		}

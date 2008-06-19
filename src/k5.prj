@@ -282,7 +282,7 @@
          </members>
         </a-node>
         <a-node class="kiev.vlang.FileUnit">
-         <fname>RuleTemplatesX.xml</fname>
+         <fname>RuleTemplates.xml</fname>
         </a-node>
        </members>
       </a-node>
@@ -524,7 +524,7 @@
          <fname>ProcessXPath.java</fname>
         </a-node>
         <a-node class="kiev.vlang.FileUnit">
-         <fname>TemplatVNodeX.xml</fname>
+         <fname>TemplatVNode.xml</fname>
         </a-node>
         <a-node class="kiev.vlang.FileUnit">
          <fname>TransfProcessor.java</fname>
@@ -710,6 +710,26 @@
       </a-node>
       <a-node class="kiev.vlang.FileUnit">
        <fname>Syntax.java</fname>
+      </a-node>
+     </members>
+    </a-node>
+    <a-node class="kiev.vlang.DirUnit">
+     <name>stx-fmt</name>
+     <members>
+      <a-node class="kiev.vlang.FileUnit">
+       <fname>syntax-dump-api.xml</fname>
+      </a-node>
+      <a-node class="kiev.vlang.FileUnit">
+       <fname>syntax-dump-full.xml</fname>
+      </a-node>
+      <a-node class="kiev.vlang.FileUnit">
+       <fname>syntax-for-java.xml</fname>
+      </a-node>
+      <a-node class="kiev.vlang.FileUnit">
+       <fname>syntax-for-project-tree.xml</fname>
+      </a-node>
+      <a-node class="kiev.vlang.FileUnit">
+       <fname>syntax-for-syntax.xml</fname>
       </a-node>
      </members>
     </a-node>
