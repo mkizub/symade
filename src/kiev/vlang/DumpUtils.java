@@ -41,8 +41,8 @@ public final class DumpUtils {
 			OLD_XML_READ = Boolean.valueOf(dump).booleanValue();
 			OLD_XML_WRITE = Boolean.valueOf(dump).booleanValue();
 		} else {
-			OLD_XML_READ = Boolean.valueOf(System.getProperty("symade.dump.read.old","true")).booleanValue();
-			OLD_XML_WRITE = Boolean.valueOf(System.getProperty("symade.dump.write.old","true")).booleanValue();
+			OLD_XML_READ = Boolean.valueOf(System.getProperty("symade.dump.read.old","false")).booleanValue();
+			OLD_XML_WRITE = Boolean.valueOf(System.getProperty("symade.dump.write.old","false")).booleanValue();
 		}
 		try {
 			Class.forName("org.xmlpull.mxp1.MXParser");
