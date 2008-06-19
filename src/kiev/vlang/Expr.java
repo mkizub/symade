@@ -130,6 +130,7 @@ public class AssignExpr extends ENode {
 	@DataFlowDefinition(in="lval")		ENode			value;
 	}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			lval;
 	@nodeAttr public ENode			value;
@@ -244,6 +245,7 @@ public class BinaryExpr extends ENode {
 	@DataFlowDefinition(in="expr1")		ENode				expr2;
 	}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
@@ -333,6 +335,7 @@ public class UnaryExpr extends ENode {
 	@DataFlowDefinition(out="this:in")			ENode		expr;
 	}
 
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr;
 
@@ -620,6 +623,7 @@ public class IncrementExpr extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode			lval;
 	}
 
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public Operator			op;
 	@nodeAttr public ENode				lval;
 

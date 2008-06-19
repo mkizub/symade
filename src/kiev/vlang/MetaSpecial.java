@@ -19,6 +19,7 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaUUID extends UserMeta {
+	@AttrXMLDumpInfo(attr=true, name="uuid")
 	@nodeAttr public String				value;
 
 	public MetaUUID() { super("kiev\u001fstdlib\u001fmeta\u001fuuid"); }
@@ -79,8 +80,10 @@ public final class MetaUUID extends UserMeta {
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaPacked extends UserMeta {
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int					size;
 	@nodeAttr public SymbolRef<Field>		fld;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int					offset;
 
 	public MetaPacked() { super("kiev\u001fstdlib\u001fmeta\u001fpacked"); fld = new SymbolRef<Field>(); }
@@ -129,6 +132,7 @@ public final class MetaPacked extends UserMeta {
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaPacker extends UserMeta {
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int		 size = -1;
 
 	public MetaPacker() { super("kiev\u001fstdlib\u001fmeta\u001fpacker"); }
@@ -238,7 +242,9 @@ public abstract class MetaFlag extends MNode {
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaAccess extends MetaFlag {
-	@nodeAttr public String		simple;
+	@AttrXMLDumpInfo(attr=true, name="name")
+	@nodeAttr public String			simple;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int			flags;
 
 	public @packed:1,flags,7 boolean	r_public;

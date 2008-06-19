@@ -52,15 +52,18 @@ public class TypeRef extends ENode {
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && attr.name == "type_lnk") {
+		if (dump == "api" && (attr.name == "type_lnk" || attr.name == "ident")) {
+			boolean use_type = true;
 			Type t = type_lnk;
 			if (t == null)
-				return false;
-			if (t instanceof ArgType)
-				return false;
-			if (t instanceof ASTNodeType)
-				return false;
-			return true;
+				use_type = false;
+			else if (t instanceof ArgType)
+				use_type = false;
+			else if (t instanceof ASTNodeType)
+				use_type = false;
+			if (attr.name == "type_lnk")
+				return use_type;
+			return !use_type;
 		}
 		return super.includeInDump(dump, attr, val);
 	}

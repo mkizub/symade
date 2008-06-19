@@ -208,6 +208,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;

@@ -25,11 +25,16 @@ public abstract class ENode extends ASTNode {
 	
 	private Object	ident_or_symbol_or_type;
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr @abstract public String			ident;
+	@AttrXMLDumpInfo(attr=true, name="full")
 	@nodeAttr @abstract public boolean			qualified; // stored ident may be qualified name
+	@AttrXMLDumpInfo(attr=true, name="primary")
 	@nodeAttr @abstract public boolean			primary_expr; // a primary expression; i.e. in parenthethis
+	@AttrXMLDumpInfo(attr=true, name="super")
 	@nodeAttr @abstract public boolean			super_expr; // a super-expression; i.e. super.something
 	@nodeData @abstract public ISymbol			symbol;
+	@AttrXMLDumpInfo(attr=true, name="type")
 	@nodeData @abstract public Type			type_lnk;
 	@nodeData @abstract public:ro DNode		dnode;
 

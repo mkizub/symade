@@ -28,6 +28,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public boolean value;
 
 	public ConstBoolExpr() {}
@@ -71,7 +72,9 @@ public final class ConstByteExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public byte		value;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public IntRadix	radix;
 
 	public ConstByteExpr() {}
@@ -101,7 +104,9 @@ public final class ConstShortExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public short		value;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public IntRadix	radix;
 
 	public ConstShortExpr() {}
@@ -131,7 +136,9 @@ public final class ConstIntExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
-	@nodeAttr public int			value;
+	@AttrXMLDumpInfo(attr=true)
+	@nodeAttr public int		value;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public IntRadix	radix;
 
 	public ConstIntExpr() {}
@@ -161,7 +168,9 @@ public final class ConstLongExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public long		value;
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public IntRadix	radix;
 
 	public ConstLongExpr() {}
@@ -191,6 +200,7 @@ public final class ConstCharExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public char value;
 
 	public ConstCharExpr() {}
@@ -215,6 +225,7 @@ public final class ConstFloatExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public float value;
 
 	public ConstFloatExpr() {}
@@ -239,6 +250,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public double value;
 
 	public ConstDoubleExpr() {}
@@ -287,6 +299,7 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public E value;
 
 	public ConstEnumExpr() {}
