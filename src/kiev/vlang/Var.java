@@ -49,7 +49,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	@nodeData(ext_data=true)
 	public ConstExpr				const_value;
 
-	@getter public int get$kind() { return this.meta.var_kind; }
+	@getter public int get$kind() { return this.var_kind; }
 
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
@@ -70,7 +70,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 	// is a field of enum
 	public final boolean isEnumField() {
-		return this.meta.is_enum;
+		return this.is_enum;
 	}
 	// packer field (auto-generated for packed fields)
 	public final boolean isPackerField() {
@@ -110,7 +110,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 		if (isAttached()) {
 			if      (attr.name == "vtype" || attr.name == "stype")
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
-			else if (attr.name == "meta")
+			else if (attr.name == "metas")
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
 		super.callbackChildChanged(ct, attr, data);
@@ -119,7 +119,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final Var[]	emptyArray = new Var[0];
 
 	public Var(int kind) {
-		this.meta.var_kind = kind;
+		this.var_kind = kind;
 	}
 
 	public Var(String name, TypeRef vtype, int kind, int flags)
@@ -140,9 +140,9 @@ public abstract class Var extends DNode implements GlobalDNode {
 			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) setMeta(new MetaTransient());
 			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
 			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
-			this.meta.mflags = flags;
+			this.mflags = flags;
 		}
-		this.meta.var_kind = kind;
+		this.var_kind = kind;
 	}
 
 	public Var(String name, TypeRef vtype, int kind)
@@ -150,7 +150,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	{
 		this.sname = name;
 		this.vtype = vtype;
-		this.meta.var_kind = kind;
+		this.var_kind = kind;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -169,8 +169,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 
 	public boolean preResolveIn() {
-		if (meta != null)
-			meta.verify();
+		verifyMetas();
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.ntype == null) {
 			Type tp = getType();

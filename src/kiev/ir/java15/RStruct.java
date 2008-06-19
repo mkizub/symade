@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true, iface=true)
 public final view RStruct of Struct extends RComplexTypeDecl {
 
-	static final ExtSpaceAttrSlot TI_ATTR = new ExtSpaceAttrSlot("rstruct ti field temp expr",ANode.nodeattr$parent,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
+	static final ExtSpaceAttrSlot TI_ATTR = new ExtSpaceAttrSlot<TypeInfoExpr>("rstruct ti field temp expr",ANode.nodeattr$parent,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			WrapperMetaType			wmeta_type;
 	public				Struct					typeinfo_clazz;
@@ -198,7 +198,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		if (isInterface() || !isTypeUnerasable())
 			return;
 		// create typeinfo class
-		int flags = this.meta.mflags & JAVA_ACC_MASK;
+		int flags = this.getFlags() & JAVA_ACC_MASK;
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
 		typeinfo_clazz = Env.getRoot().newStruct(nameClTypeInfo,true,this.getStruct(),flags,new JavaClass(),true,null);
@@ -209,7 +209,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		else
 			typeinfo_clazz.super_types.insert(0, new TypeRef(Type.tpTypeInfo));
 		if (this.isInterfaceOnly())
-			typeinfo_clazz.meta.is_interface_only = true;
+			typeinfo_clazz.is_interface_only = true;
 		getStruct().addSubStruct(typeinfo_clazz);
 		typeinfo_clazz.pos = pos;
 
@@ -548,7 +548,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			((RTypeDecl)sup.getTypeDecl()).preGenerate();
 
 		if (isMixin())
-			((Struct)this).meta.is_struct_interface = true;
+			((Struct)this).is_struct_interface = true;
 		// generate typeinfo class, if needed
 		autoGenerateTypeinfoClazz();
 		// generate a class for interface non-abstract members
@@ -791,7 +791,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = new MethodImpl(m.sname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.meta.mflags);
+			Method bridge = new MethodImpl(m.sname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.mflags);
 			for (int i=0; i < vte.etype.arity; i++)
 				bridge.params.append(new LVar(mo.pos,m.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
@@ -824,7 +824,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		);
 		((Struct)self).members.add(defaults);
 		if (self.isInterfaceOnly())
-			defaults.meta.is_interface_only = true;
+			defaults.is_interface_only = true;
 		iface_impl = defaults;
 		// add the super-type
 		defaults.super_types += new TypeRef(self.xtype);
@@ -1019,9 +1019,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			{
 				// create dispatch method
 				if (m.isRuleMethod())
-					mmm = new RuleMethod(m.sname, m.meta.mflags | ACC_SYNTHETIC);
+					mmm = new RuleMethod(m.sname, m.mflags | ACC_SYNTHETIC);
 				else
-					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.meta.mflags | ACC_SYNTHETIC);
+					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.mflags | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				{
 					ANode.CopyContext cc = new ANode.CopyContext();
@@ -1031,9 +1031,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				foreach (Var fp; m.params) {
 					TypeRef stype = fp.stype;
 					if (stype != null)
-						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.meta.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.mflags));
 					else
-						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(),fp.kind,fp.meta.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(),fp.kind,fp.mflags));
 				}
 				((Struct)self).members.add(mmm);
 			}

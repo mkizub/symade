@@ -46,11 +46,11 @@ public class JavaInterface extends Struct {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 	public JavaInterface() {
-		this.meta.is_struct_interface = true;
+		this.is_struct_interface = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.meta.is_struct_interface = true;
+		this.is_struct_interface = true;
 	}
 }
 
@@ -63,11 +63,11 @@ public final class KievView extends Struct {
 	@nodeAttr public TypeRef						view_of;
 
 	public KievView() {
-		this.meta.is_virtual = true;
+		this.is_virtual = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.meta.is_virtual = true;
+		this.is_virtual = true;
 	}
 	
 	public Struct getViewImpl() {
@@ -81,11 +81,11 @@ public final class KievView extends Struct {
 @ThisIsANode(lang=CoreLang)
 public final class JavaAnnotation extends JavaInterface {
 	public JavaAnnotation() {
-		this.meta.is_struct_annotation = true;
+		this.is_struct_annotation = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.meta.is_struct_annotation = true;
+		this.is_struct_annotation = true;
 	}
 }
 
@@ -155,11 +155,11 @@ public final class JavaEnum extends JavaClass {
 	@nodeAttr public		Field∅			enum_fields;
 
 	public JavaEnum() {
-		this.meta.is_enum = true;
+		this.is_enum = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.meta.is_enum = true;
+		this.is_enum = true;
 	}
 	public Field[] getEnumFields() {
 		return enum_fields;
@@ -181,7 +181,7 @@ public final class JavaEnum extends JavaClass {
 				if (f.parent() == null)
 					this.members += f;
 				assert (f.parent() == this);
-				f.meta.is_enum = true;
+				f.is_enum = true;
 				f.setPublic();
 				f.setStatic(true);
 				f.setFinal(true);
@@ -195,7 +195,7 @@ public final class JavaEnum extends JavaClass {
 				if (f.parent() == this)
 					~f;
 				assert (f.parent() == null);
-				f.meta.is_enum = false;
+				f.is_enum = false;
 			}
 		}
 		super.callbackChildChanged(ct, attr, data);
@@ -379,15 +379,15 @@ public abstract class Struct extends ComplexTypeDecl {
 			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
 			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) setMeta(new MetaSingleton());
 			if ((flags & ACC_MIXIN) == ACC_MIXIN) setMeta(new MetaMixin());
-			this.meta.mflags = flags;
+			this.mflags = flags;
 		}
 	}
 
 	public Struct getStruct() { return this; }
 
 	public void cleanupOnReload() {
-		this.meta.metas.delAll();
-		this.meta.mflags = 0;
+		this.metas.delAll();
+		this.mflags = 0;
 		this.typeinfo_clazz = null;
 		super.cleanupOnReload();
 	}

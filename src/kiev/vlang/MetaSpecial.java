@@ -37,10 +37,7 @@ public final class MetaUUID extends UserMeta {
 		super.callbackDetached(parent, slot);
 	}
 	private void setFlag(boolean on) {
-		MetaSet ms = (MetaSet)parent();
-		ANode p = null;
-		if (ms != null)
-			p = ms.parent();
+		ANode p = parent();
 		if (p instanceof DNode) {
 			DNode dn = (DNode)p;
 			if (on) {
@@ -55,10 +52,7 @@ public final class MetaUUID extends UserMeta {
 	@setter public void set$value(String val) {
 		if (val != null)
 			val = val.intern();
-		MetaSet ms = (MetaSet)parent();
-		ANode p = null;
-		if (ms != null)
-			p = ms.parent();
+		ANode p = parent();
 		if (p instanceof DNode) {
 			DNode dn = (DNode)p;
 			if (dn.uuid != null)
@@ -101,7 +95,7 @@ public final class MetaPacked extends UserMeta {
 		super.callbackDetached(parent, slot);
 	}
 	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
+		ANode p = parent();
 		if (p instanceof Field) p.is_fld_packed = on;
 	}
 
@@ -150,7 +144,7 @@ public final class MetaPacker extends UserMeta {
 		super.callbackDetached(parent, slot);
 	}
 	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
+		ANode p = parent();
 		if (p instanceof Field) p.is_fld_packer = on;
 	}
 
@@ -179,8 +173,8 @@ public final class MetaThrows extends UserMeta {
 		super.callbackDetached(parent, slot);
 	}
 	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof Method) p.meta.is_has_throws = on;
+		ANode p = parent();
+		if (p instanceof Method) p.is_has_throws = on;
 	}
 
 	public void add(TypeRef thr) {
@@ -216,22 +210,22 @@ public abstract class MetaFlag extends MNode {
 
 	public final void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {
-			setFlag(getMetaSet(), true);
+			setFlag(getDNode(), true);
 		}
 		super.callbackAttached(pi);
 	}
 	public final void callbackDetached(ANode parent, AttrSlot slot) {
 		if (slot.isSemantic()) {
-			setFlag(getMetaSet(), false);
+			setFlag(getDNode(), false);
 		}
 		super.callbackDetached(parent, slot);
 	}
-	private MetaSet getMetaSet() {
+	private DNode getDNode() {
 		ANode p = parent();
-		if (p instanceof MetaSet) return (MetaSet)p;
+		if (p instanceof DNode) return (DNode)p;
 		return null;
 	}
-	abstract void setFlag(MetaSet dn, boolean on);
+	abstract void setFlag(DNode dn, boolean on);
 	
 	public boolean equals(Object o) {
 		if (o == null)
@@ -283,7 +277,7 @@ public final class MetaAccess extends MetaFlag {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	void setFlag(MetaSet dn, boolean on) {
+	void setFlag(DNode dn, boolean on) {
 		if (dn == null)
 			return;
 		if (on) {
@@ -300,8 +294,8 @@ public final class MetaAccess extends MetaFlag {
 	@setter public final void set$simple(String val) {
 		this.simple = val.intern();
 		ANode p = parent();
-		if (p instanceof MetaSet)
-			setFlag((MetaSet)p, true);
+		if (p instanceof DNode)
+			setFlag((DNode)p, true);
 	}
 
 	public final void setFlags(int val) {
@@ -580,96 +574,96 @@ public final class MetaAccess extends MetaFlag {
 @ThisIsANode(lang=CoreLang)
 public final class MetaUnerasable extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001funerasable"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_type_unerasable = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_type_unerasable = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSingleton extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsingleton"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_struct_singleton = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_struct_singleton = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaMixin extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmixin"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_struct_mixin = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_struct_mixin = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaForward extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fforward"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_forward = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_forward = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVirtual extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvirtual"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_virtual = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_virtual = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaMacro extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmacro"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_macro = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_macro = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaStatic extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fstatic"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_static = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_static = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaAbstract extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fabstract"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_abstract = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_abstract = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaFinal extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001ffinal"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_final = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_final = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaNative extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fnative"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_native = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_native = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSynchronized extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsynchronized"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_synchronized = on; }
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.is_mth_synchronized = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaTransient extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001ftransient"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Field) dn.is_fld_transient = on; }
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.is_fld_transient = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVolatile extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvolatile"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Field) dn.is_fld_volatile = on; }
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.is_fld_volatile = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaBridge extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fbridge"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_bridge = on; }
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.is_mth_bridge = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVarArgs extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvarargs"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_varargs = on; }
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.is_mth_varargs = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSynthetic extends MetaFlag {
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsynthetic"; }
-	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_synthetic = on; }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_synthetic = on; }
 }
 

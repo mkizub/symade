@@ -263,7 +263,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 	public void doProcess(TypeDecl:ASTNode astn) {
 		try {
 			TypeDecl tdecl = astn;
-			tdecl.meta.verify();
+			tdecl.verifyMetas();
 			if (tdecl.isTypeResolved())
 				return;
 			tdecl.setTypeResolved(true);
@@ -281,10 +281,9 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			ComplexTypeDecl td = astn;
 			td.updatePackageClazz();
 			// Verify meta-data to the new structure
-			if (td.meta != null)
-				td.meta.verify();
+			td.verifyMetas();
 			foreach (DNode dn; td.members)
-				dn.meta.verify();
+				dn.verifyMetas();
 			getStructType(td, new Stack<TypeDecl>());
 			foreach (TypeDecl s; td.members)
 				doProcess(s);
@@ -575,7 +574,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 			else if( me.members[i] instanceof Field ) {
 				Field fdecl = (Field)me.members[i];
 				Field f = fdecl;
-				f.meta.verify();
+				f.verifyMetas();
 				// TODO: check flags for fields
 				if( me.isPackage() )
 					f.setStatic(true);
@@ -650,7 +649,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				WBCCondition inv = (WBCCondition)me.members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new MethodImpl(inv.sname,Type.tpVoid,inv.meta.mflags);
+				Method m = new MethodImpl(inv.sname,Type.tpVoid,inv.mflags);
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m);

@@ -32,7 +32,7 @@ public abstract class SNode extends ASTNode {
 public final class Comment extends SNode {
 
 	@AttrXMLDumpInfo
-	static final class ExtSpaceAttrSlot_comment extends ExtSpaceAttrSlot {
+	static final class ExtSpaceAttrSlot_comment extends ExtSpaceAttrSlot<Comment> {
 		ExtSpaceAttrSlot_comment() { super("comment", ANode.nodeattr$parent, TypeInfo.newTypeInfo(Comment.class,null)); }
 		public Language getCompilerLang() { return CoreLang; }
 		public String getXmlNamespaceURI() { return getCompilerLang().getURI(); }

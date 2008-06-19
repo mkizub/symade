@@ -122,7 +122,7 @@ public final class Env extends KievPackage {
 				if (cl.uuid != uuid)
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
 				cl.cleanupOnReload();
-				cl.meta.mflags = acces;
+				cl.mflags = acces;
 				cl.package_clazz.symbol = outer;
 				outer.sub_decls += cl;
 			}
@@ -173,14 +173,14 @@ public final class Env extends KievPackage {
 			tdecl.pos = id.pos;
 			tdecl.sname = id.sname;
 			tdecl.package_clazz.symbol = pkg;
-			tdecl.meta.mflags = ACC_MACRO;
+			tdecl.mflags = ACC_MACRO;
 			pkg.sub_decls.add(tdecl);
 		}
 		else if( cleanup ) {
 			if (tdecl.uuid != uuid)
 				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.uuid+" != "+uuid);
 			tdecl.cleanupOnReload();
-			tdecl.meta.mflags = ACC_MACRO;
+			tdecl.mflags = ACC_MACRO;
 			tdecl.package_clazz.symbol = pkg;
 			pkg.sub_decls.add(tdecl);
 		}

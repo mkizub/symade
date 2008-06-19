@@ -67,7 +67,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
 
 		if (view_meta != null && view_meta.getZ("iface"))
-			clazz.meta.is_struct_interface = true; //clazz.setInterface();
+			clazz.is_struct_interface = true; //clazz.setInterface();
 		
 		// generate constructor
 		{
@@ -200,7 +200,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		if (view_meta != null && view_meta.getZ("iface")) {
 			impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
 			if (clazz.isInterfaceOnly())
-				impl.meta.is_interface_only = true;
+				impl.is_interface_only = true;
 			impl.pos = clazz.pos;
 			if (clazz.isAbstract()) {
 				clazz.setAbstract(false);

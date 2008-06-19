@@ -168,7 +168,7 @@ public final class CoreMetaType extends MetaType {
 		MetaTypeDecl tdecl = new MetaTypeDecl(null);
 		tdecl.sname = name;
 		tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 		return tdecl;
 	}
@@ -507,7 +507,7 @@ public final class ArrayMetaType extends MetaType {
 			tdecl = new MetaTypeDecl(null);
 			tdecl.sname = "_array_";
 			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
 			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
@@ -610,7 +610,7 @@ public class WildcardCoMetaType extends MetaType {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wildcard_co_variant_";
 			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
 			tdecl.args.add(StdTypes.tdWildcardCoArg);
 			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
@@ -657,7 +657,7 @@ public class WildcardContraMetaType extends MetaType {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wildcard_contra_variant_";
 			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
 			tdecl.args.add(StdTypes.tdWildcardContraArg);
 			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
@@ -704,7 +704,7 @@ public class WrapperMetaType extends MetaType {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wrapper_";
 			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
 			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
@@ -817,7 +817,7 @@ public final class TupleMetaType extends MetaType {
 		tuple_tdecl = new MetaTypeDecl(null);
 		tuple_tdecl.sname = "_tuple_";
 		tuple_tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-		tuple_tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tuple_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tuple_tdecl.package_clazz.dnode.sub_decls.add(tuple_tdecl);
 		tuple_tdecl.super_types.add(new TypeRef(StdTypes.tpAny));
 
@@ -890,7 +890,7 @@ public class CallMetaType extends MetaType {
 			call_tdecl = new MetaTypeDecl();
 			call_tdecl.sname = "_call_type_";
 			call_tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
-			call_tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			call_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			call_tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
 		}
 

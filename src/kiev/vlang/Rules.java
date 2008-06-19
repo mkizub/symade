@@ -38,9 +38,9 @@ public class RuleMethod extends Method {
 		if (attr.name == "localvars") {
 			Var p = (Var)data;
 			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
-				p.meta.var_kind = Var.VAR_RULE;
+				p.var_kind = Var.VAR_RULE;
 			else if (ct == ChildChangeType.DETACHED && p.kind == Var.VAR_RULE)
-				p.meta.var_kind = Var.VAR_LOCAL;
+				p.var_kind = Var.VAR_LOCAL;
 		}
 		super.callbackChildChanged(ct, attr, data);
 	}
@@ -125,8 +125,7 @@ public class RuleMethod extends Method {
 			fp.vtype.getType(); // resolve
 			if (fp.stype != null)
 				fp.stype.getType(); // resolve
-			if (fp.meta != null)
-				fp.meta.verify();
+			fp.verifyMetas();
 		}
 		trace(Kiev.debug && Kiev.debugMultiMethod,"Rule "+this+" has erased type "+this.etype);
 		foreach(ASTOperatorAlias al; aliases) al.pass3();

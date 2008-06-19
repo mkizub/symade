@@ -565,7 +565,7 @@ public final class ArgType extends Type {
 		return jtype;
 	}
 
-	public MNode getMeta(String name)				{ return definer.meta == null ? null : definer.getMeta(name); }
+	public MNode getMeta(String name)				{ return definer.getMeta(name); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public Type getErasedType() {
 		TypeRef[] up = definer.super_types;
@@ -1031,7 +1031,7 @@ public final class CallType extends Type {
 			ts.append(tpCallParamArgs[i], args[i]);
 		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts));
 		Type accessor = null;
-		if (!meth.meta.is_static && !meth.is_mth_virtual_static)
+		if (!meth.is_static && !meth.is_mth_virtual_static)
 			accessor = meth.ctx_tdecl.xtype;
 		if (accessor != null)
 			vs.append(tpSelfTypeArg, tpSelfTypeArg /*accessor*/);

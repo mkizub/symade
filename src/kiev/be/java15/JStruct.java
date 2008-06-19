@@ -161,10 +161,10 @@ public final view JStruct of Struct extends JTypeDecl {
 			}
 		}
 
-		if (meta.hasRuntimeVisibles())
-			this.addAttr(new RVMetaAttr(meta));
-		if (meta.hasRuntimeInvisibles())
-			this.addAttr(new RIMetaAttr(meta));
+		if (hasRuntimeVisibleMetas())
+			this.addAttr(new RVMetaAttr(this));
+		if (hasRuntimeInvisibleMetas())
+			this.addAttr(new RIMetaAttr(this));
 		
 		for(int i=0; jattrs!=null && i < jattrs.length; i++)
 			jattrs[i].generate(constPool);
@@ -172,10 +172,10 @@ public final view JStruct of Struct extends JTypeDecl {
 			constPool.addAsciiCP(f.sname);
 			constPool.addAsciiCP(f.vtype.getJType().java_signature);
 
-			if (f.meta.hasRuntimeVisibles())
-				f.addAttr(new RVMetaAttr(f.meta));
-			if (f.meta.hasRuntimeInvisibles())
-				f.addAttr(new RIMetaAttr(f.meta));
+			if (f.hasRuntimeVisibleMetas())
+				f.addAttr(new RVMetaAttr(f));
+			if (f.hasRuntimeInvisibleMetas())
+				f.addAttr(new RIMetaAttr(f));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
 				Object co = f.init.getConstValue();
 				if (co != null)
@@ -210,27 +210,18 @@ public final view JStruct of Struct extends JTypeDecl {
 					}
 				}
 
-				if (m.meta.hasRuntimeVisibles())
-					m.addAttr(new RVMetaAttr(m.meta));
-				if (m.meta.hasRuntimeInvisibles())
-					m.addAttr(new RIMetaAttr(m.meta));
+				if (m.hasRuntimeVisibleMetas())
+					m.addAttr(new RVMetaAttr(m));
+				if (m.hasRuntimeInvisibleMetas())
+					m.addAttr(new RIMetaAttr(m));
 				boolean has_vis_pmeta = false;
 				boolean has_invis_pmeta = false;
-				JVar[] params = m.params;
-				foreach (JVar p; params; p.meta.hasRuntimeVisibles()) {
-					MetaSet[] mss;
-					mss = new MetaSet[params.length];
-					for (int i=0; i < mss.length; i++)
-						mss[i] = params[i].meta;
-					m.addAttr(new RVParMetaAttr(mss));
+				foreach (Var p; ((Method)m).params; p.hasRuntimeVisibleMetas()) {
+					m.addAttr(new RVParMetaAttr(((Method)m).params));
 					break;
 				}
-				foreach (JVar p; params; p.meta.hasRuntimeInvisibles()) {
-					MetaSet[] mss;
-					mss = new MetaSet[params.length];
-					for (int i=0; i < mss.length; i++)
-						mss[i] = params[i].meta;
-					m.addAttr(new RIParMetaAttr(mss));
+				foreach (Var p; ((Method)m).params; p.hasRuntimeInvisibleMetas()) {
+					m.addAttr(new RIParMetaAttr(((Method)m).params));
 					break;
 				}
 				if (isAnnotation() && m.body instanceof MetaValue)

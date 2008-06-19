@@ -72,8 +72,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -85,13 +83,9 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env$</sname>
         </a-node>
         <a-node class='kiev.vlang.Label'>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -103,8 +97,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>enter$1</sname>
         </a-node>
         <a-node class='kiev.vlang.JavaClass'>
@@ -134,14 +126,10 @@
            <sname>bt$</sname>
           </a-node>
          </members>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.MetaStatic'>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>frame$$</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -321,14 +309,10 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleBlock</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -370,8 +354,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -383,8 +365,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -393,8 +373,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -406,13 +384,9 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.Label'>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -424,8 +398,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>enter${node&gt;next_back&gt;idx}</sname>
         </a-node>
         <a-node class='kiev.vlang.IfElseRewr'>
@@ -572,16 +544,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>createCodeBacktrack</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -623,8 +591,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -636,8 +602,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -646,8 +610,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -659,13 +621,9 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.Label'>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -677,8 +635,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>enter${node&gt;next_check&gt;idx}</sname>
         </a-node>
         <a-node class='kiev.vlang.IfElseRewr'>
@@ -801,16 +757,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>createCodeMoreCheck</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -844,8 +796,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -857,8 +807,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -867,8 +815,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -880,8 +826,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.LabeledStat'>
@@ -1172,16 +1116,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleIstheExpr</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -1425,16 +1365,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>createCodeContains</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -1468,8 +1404,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -1481,8 +1415,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -1491,8 +1423,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -1504,8 +1434,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.LabeledStat'>
@@ -2098,16 +2026,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleIsoneofExpr</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -2141,8 +2065,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2154,8 +2076,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.LabeledStat'>
@@ -2204,16 +2124,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleCutExpr</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -2255,8 +2171,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2268,8 +2182,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -2278,8 +2190,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2291,8 +2201,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.LabeledStat'>
@@ -2495,16 +2403,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleCallExpr</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -2554,8 +2458,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2567,8 +2469,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -2577,8 +2477,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2590,8 +2488,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.LabeledStat'>
@@ -2880,16 +2776,12 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleExpr</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -2931,8 +2823,6 @@
            <ident>rule</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2944,8 +2834,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>$env</sname>
         </a-node>
         <a-node class='kiev.vlang.LVar'>
@@ -2954,8 +2842,6 @@
            <ident>int</ident>
           </a-node>
          </vtype>
-         <meta>
-          <a-node class='kiev.vlang.MetaSet'>
            <metas>
             <a-node class='kiev.vlang.UserMeta'>
              <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
@@ -2967,8 +2853,6 @@
              </decl>
             </a-node>
            </metas>
-          </a-node>
-         </meta>
          <sname>bt$</sname>
         </a-node>
         <a-node class='kiev.vlang.LabeledStat'>
@@ -3124,27 +3008,19 @@
        </stats>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>mkRuleWhile</sname>
     </a-node>
    </members>
-   <meta>
-    <a-node class='kiev.vlang.MetaSet'>
      <metas>
       <a-node class='kiev.vlang.MetaStatic'>
       </a-node>
      </metas>
-    </a-node>
-   </meta>
    <sname>RuleTemplates</sname>
   </a-node>
  </members>

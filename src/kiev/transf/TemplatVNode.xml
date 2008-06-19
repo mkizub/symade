@@ -42,14 +42,10 @@
        <qualified>true</qualified>
       </a-node>
      </super_types>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>VVV</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -335,16 +331,12 @@
        </cases>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>codeSet</sname>
     </a-node>
     <a-node class='kiev.vlang.MethodImpl'>
@@ -508,16 +500,12 @@
        </cases>
       </a-node>
      </body>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
        <metas>
         <a-node class='kiev.vlang.MetaMacro'>
         </a-node>
         <a-node class='kiev.vlang.MetaStatic'>
         </a-node>
        </metas>
-      </a-node>
-     </meta>
      <sname>codeGet</sname>
     </a-node>
    </members>

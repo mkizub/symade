@@ -272,11 +272,11 @@
                 <a-node class='kiev.vlang.AccessExpr'>
                  <obj>
                   <a-node class='kiev.vlang.CastExpr'>
-                   <type>
+                   <ctype>
                     <a-node class='kiev.vlang.types.TypeNameRef'>
                      <ident>VVV</ident>
                     </a-node>
-                   </type>
+                   </ctype>
                    <expr>
                     <a-node class='kiev.vlang.CallExpr'>
                      <obj>
@@ -473,11 +473,11 @@
             <a-node class='kiev.vlang.AccessExpr'>
              <obj>
               <a-node class='kiev.vlang.CastExpr'>
-               <type>
+               <ctype>
                 <a-node class='kiev.vlang.types.TypeNameRef'>
                  <ident>VVV</ident>
                 </a-node>
-               </type>
+               </ctype>
                <expr>
                 <a-node class='kiev.vlang.AccessExpr'>
                  <obj>

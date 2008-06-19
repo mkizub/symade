@@ -58,10 +58,10 @@ public static view RSNode of SNode extends RNode {
 @ViewOf(vcast=true, iface=true)
 public static view RDNode of DNode extends RNode {
 
-	public:ro MetaSet	meta;
+	public:ro MNode[]	metas;
 	public:ro String	sname;
 
-	public final boolean isPublic()	;
+	public final boolean isPublic();
 	public final boolean isPrivate();
 	public final boolean isProtected();
 	public final boolean isPkgPrivate();
@@ -105,6 +105,13 @@ public static view RDNode of DNode extends RNode {
 
 	public final boolean isMacro();
 	public final boolean isInterfaceOnly();
+	
+	public final int getFlags();
+	
+	public final void resolveMetas();
+	public final void verifyMetas();
+	public final boolean hasRuntimeVisibleMetas();
+	public final boolean hasRuntimeInvisibleMetas();
 	
 	public boolean preGenerate() { return true; }
 	public void resolveDecl() { /* empty */ }

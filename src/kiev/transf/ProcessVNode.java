@@ -27,6 +27,7 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameANode				= getPropS(PROP_BASE,"nameANode","kiev\u001fvtree\u001fANode");
 	public static final String nameNode				= getPropS(PROP_BASE,"nameNode","kiev\u001fvtree\u001fASTNode"); 
 	public static final String nameNodeSpace			= getPropS(PROP_BASE,"nameNodeSpace","kiev\u001fvtree\u001fNodeSpace"); 
+	public static final String nameNodeExtSpace		= getPropS(PROP_BASE,"nameNodeExtSpace","kiev\u001fvtree\u001fNodeExtSpace"); 
 	public static final String nameTreeWalker			= getPropS(PROP_BASE,"TreeWalker","kiev\u001fvtree\u001fTreeWalker"); 
 	public static final String nameAttrSlot			= getPropS(PROP_BASE,"nameAttrSlot","kiev\u001fvtree\u001fAttrSlot"); 
 	public static final String nameRefAttrSlot			= getPropS(PROP_BASE,"nameRefAttrSlot","kiev\u001fvtree\u001fRefAttrSlot"); 
@@ -52,6 +53,7 @@ abstract class VNode_Base extends TransfProcessor {
 	static Type tpNode;
 	static Type tpNArray;
 	static Type tpNodeSpace;
+	static Type tpNodeExtSpace;
 	static Type tpTreeWalker;
 	static Type tpAttrSlot;
 	static Type tpRefAttrSlot;
@@ -104,6 +106,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpNode = Env.getRoot().loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
 			tpNodeSpace = Env.getRoot().loadTypeDecl(nameNodeSpace).xtype;
+			tpNodeExtSpace = Env.getRoot().loadTypeDecl(nameNodeExtSpace).xtype;
 			tpTreeWalker = Env.getRoot().loadTypeDecl(nameTreeWalker).xtype;
 			tpAttrSlot = Env.getRoot().loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.getRoot().loadTypeDecl(nameRefAttrSlot, true).xtype;
@@ -165,22 +168,32 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 				Type ft = f.getType();
 				if (ft.isInstanceOf(tpNArray)) {
 					boolean isExtData = fmatt != null ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
-					if !(ft.isInstanceOf(tpNodeSpace)) {
-						if (!isExtData) {
+					if (!isExtData) {
+						if (!ft.isInstanceOf(tpNodeSpace)) {
 							Kiev.reportWarning(f,"Use node space \u2205 instead of []"); // ∅
 							TypeExpr te = (TypeExpr)f.vtype;
 							te.op = Operator.PostTypeSpace;
 							te.ident = Operator.PostTypeSpace.name;
 							te.type_lnk = null;
 							te.getType();
-						} else {
+							ft = f.getType();
+						}
+					} else {
+						if (!ft.isInstanceOf(tpNodeExtSpace)) {
 							Kiev.reportWarning(f,"Use extended space \u22c8 instead of []"); // ⋈
 							TypeExpr te = (TypeExpr)f.vtype;
 							te.op = Operator.PostTypeExtSpace;
 							te.ident = Operator.PostTypeExtSpace.name;
 							te.type_lnk = null;
 							te.getType();
+							ft = f.getType();
 						}
+					}
+					if (ft.isInstanceOf(tpNodeExtSpace)) {
+						if (!f.isAbstract())
+							f.setAbstract(true);
+						if (f.isVirtual())
+							f.setVirtual(false);
 					}
 					isArr = true;
 				}
@@ -213,10 +226,11 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 		UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 		boolean isAtt = (fmatt != null);
-		boolean isArr = f.getType().isInstanceOf(tpNArray);
+		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
+		boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
 		boolean isExtData = isAtt ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 		Type ft = f.getType();
-		Type clz_tp = isArr ? ft.resolveArg(0) : ft;
+		Type clz_tp = (isArr || isSet) ? ft.resolveArg(0) : ft;
 		String sname = ("NodeAttr_"+f.sname).intern();
 		foreach (TypeDecl td; snode.members; td.sname == sname) {
 			if (!f.isInterfaceOnly())
@@ -227,16 +241,16 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		snode.members.add(s);
 		{
 			String nameTreePkg = nameANode.substring(0,nameANode.lastIndexOf('\u001f'));
-			foreach (UserMeta m; f.meta.metas; m.qname.startsWith(nameTreePkg))
-				s.meta.setMeta(m.ncopy());
+			foreach (UserMeta m; f.metas; m.qname.startsWith(nameTreePkg))
+				s.setMeta(m.ncopy());
 		}
-		if (isArr) {
-			if (isExtData && isAtt) {
-				TVarBld set = new TVarBld();
-				set.append(tpExtSpaceAttrSlot.getStruct().args[0].getAType(), clz_tp);
-				s.super_types.insert(0, new TypeRef(tpExtSpaceAttrSlot.applay(set)));
-			}
-			else if (isAtt) {
+		if (isSet) {
+			TVarBld set = new TVarBld();
+			set.append(tpExtSpaceAttrSlot.getStruct().args[0].getAType(), clz_tp);
+			s.super_types.insert(0, new TypeRef(tpExtSpaceAttrSlot.applay(set)));
+		}
+		else if (isArr) {
+			if (isAtt) {
 				TVarBld set = new TVarBld();
 				set.append(tpSpaceAttAttrSlot.getStruct().args[0].getAType(), clz_tp);
 				s.super_types.insert(0, new TypeRef(tpSpaceAttAttrSlot.applay(set)));
@@ -245,7 +259,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				set.append(tpSpaceRefAttrSlot.getStruct().args[0].getAType(), clz_tp);
 				s.super_types.insert(0, new TypeRef(tpSpaceRefAttrSlot.applay(set)));
 			}
-		} else {
+		}
+		else {
 			if (isAtt) {
 				if (isExtData)
 					s.super_types.insert(0, new TypeRef(tpExtAttAttrSlot));
@@ -347,9 +362,6 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				}
 			}
 		}
-		else if (isArr) {
-			//Kiev.reportError(f,"Space of nodes cannot be an ext_data");
-		}
 
 		Kiev.runProcessorsOn(s);
 		return s.xtype;
@@ -391,7 +403,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			aflds.append(f);
 		foreach (Field f; aflds) {
 			boolean isAtt = (f.getMeta(mnAtt) != null);
-			boolean isArr = f.getType().isInstanceOf(tpNArray);
+			boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+			boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 			Type tpa = makeNodeAttrClass(s,f);
 			String fname = ("nodeattr$"+f.sname).intern();
 			Field f_attr = null;
@@ -411,10 +424,10 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				if (emptyArray == null || emptyArray.ctx_tdecl != N)
 					Kiev.reportError(f, "Cannot find 'emptyArray' field in "+N);
 			}
-			if (isAtt && !isArr)
+			if (isAtt && !isArr && !isSet)
 				f.setVirtual(true);
 			UserMeta fmeta = (UserMeta) (isAtt ? f.getMeta(mnAtt) : f.getMeta(mnRef));
-			if (fmeta.getZ(nameExtData)) {
+			if (fmeta.getZ(nameExtData) && !isSet) {
 				f.setVirtual(true);
 				f.setAbstract(true);
 			}
@@ -495,7 +508,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	static Type tpINode;
 	static Type tpANode;
 	static Type tpNode;
-	static Type tpNArray;
+	static Type tpNodeSpace;
+	static Type tpNodeExtSpace;
 	static Type tpAttrSlot;
 	static Type tpSpaceAttrSlot;
 	static Type tpCopyContext;
@@ -527,7 +541,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			tpINode = VNode_Base.tpINode;
 			tpANode = VNode_Base.tpANode;
 			tpNode = VNode_Base.tpNode;
-			tpNArray = VNode_Base.tpNArray;
+			tpNodeSpace = VNode_Base.tpNodeSpace;
+			tpNodeExtSpace = VNode_Base.tpNodeExtSpace;
 			tpAttrSlot = VNode_Base.tpAttrSlot;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
 			tpCopyContext = VNode_Base.tpCopyContext;
@@ -622,13 +637,14 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
 			boolean isAtt = (f.getMeta(VNode_Base.mnAtt) != null);
-			boolean isArr = f.getType().isInstanceOf(tpNArray);
+			boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+			boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 			if (f.ctx_tdecl != iface) {
 				vals_init[i] = new SFldExpr(f.pos, iface.resolveField(("nodeattr$"+f.sname).intern(), true));
 				continue;
 			}
 			Type ft = f.getType();
-			Type clz_tp = isArr ? ft.resolveArg(0) : ft;
+			Type clz_tp = (isArr || isSet) ? ft.resolveArg(0) : ft;
 			Field nodeattr_f = getField(iface,("nodeattr$"+f.sname).intern());
 			TypeInfoExpr clz_expr = new TypeInfoExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, nodeattr_f.getType(), new ENode[]{
@@ -736,7 +752,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 							continue; // do not copy the field
 					}
 					boolean isNode = (VNode_Base.isNodeKind(f.getType()));
-					boolean isArr = f.getType().isInstanceOf(tpNArray);
+					boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+					boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 					if (f.getMeta(VNode_Base.mnAtt) != null && (isNode || isArr)) {
 						if (isArr) {
 							CallExpr cae = new CallExpr(0,
@@ -817,7 +834,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 						continue;
 					if (matt.getZ(VNode_Base.nameExtData))
 						continue;
-					boolean isArr = f.getType().isInstanceOf(tpNArray);
+					boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
 					if !(isArr || VNode_Base.isNodeKind(f.getType()))
 						continue;
 					String call_name = VNode_Base.nameWalkerVisitNode;
@@ -924,7 +941,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			UserMeta fmatt = (UserMeta)f.getMeta(VNode_Base.mnAtt);
 			UserMeta fmref = (UserMeta)f.getMeta(VNode_Base.mnRef);
 			if (fmatt != null || fmref != null) {
-				boolean isArr = f.getType().isInstanceOf(tpNArray);
+				boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
 				if (isArr && !f.isAbstract()) {
 					TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
 					Field emptyArray = N.resolveField("emptyArray", false);
@@ -1040,6 +1057,10 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 
 	private void fixGetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
+		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
+		
+		if (isSet)
+			return;
 
 		Method get_var = f.getGetterMethod();
 		if (get_var == null || get_var.isStatic())
@@ -1083,7 +1104,11 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 
 	private void fixSetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
-		boolean isArr = f.getType().isInstanceOf(tpNArray);
+		boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
+		
+		if (isSet)
+			return;
 
 		Method set_var = f.getSetterMethod();
 		if (set_var == null || set_var.isStatic())

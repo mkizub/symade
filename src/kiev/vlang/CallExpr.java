@@ -24,7 +24,7 @@ public class CallExpr extends ENode {
 	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
 	
-	public static final ExtSpaceAttrSlot TI_EXT_ARG = new ExtSpaceAttrSlot("ti-call-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
+	public static final ExtSpaceAttrSlot TI_EXT_ARG = new ExtSpaceAttrSlot<ENode>("ti-call-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
 
 	@nodeAttr				public ENode				obj;
 	@nodeAttr				public TypeRef∅			targs;
@@ -353,8 +353,8 @@ public class CtorCallExpr extends ENode {
 	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
 	}
 	
-	public static final ExtSpaceAttrSlot TI_EXT_ARG = new ExtSpaceAttrSlot("ti-ctor-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
-	public static final ExtSpaceAttrSlot ENUM_EXT_ARG = new ExtSpaceAttrSlot("enum-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
+	public static final ExtSpaceAttrSlot TI_EXT_ARG = new ExtSpaceAttrSlot<ENode>("ti-ctor-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
+	public static final ExtSpaceAttrSlot ENUM_EXT_ARG = new ExtSpaceAttrSlot<ENode>("enum-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
 
 	@nodeAttr					public ENode				obj;
 	@nodeAttr(ext_data=true)	public ENode				tpinfo;

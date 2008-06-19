@@ -48,9 +48,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		if (attr.name == "params") {
 			Var p = (Var)data;
 			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
-				p.meta.var_kind = Var.PARAM_NORMAL;
+				p.var_kind = Var.PARAM_NORMAL;
 			else if (ct == ChildChangeType.DETACHED && p.kind == Var.PARAM_NORMAL)
-				p.meta.var_kind = Var.VAR_LOCAL;
+				p.var_kind = Var.VAR_LOCAL;
 		}
 		if (isAttached()) {
 			if      (attr.name == "params")
@@ -58,7 +58,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			else if (attr.name == "conditions")
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
-		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "dtype_ret" || attr.name == "meta") {
+		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "dtype_ret" || attr.name == "metas") {
 			_mtype = null;
 			_dtype = null;
 		}
@@ -113,11 +113,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	// method with variable number of arguments	
 	public final boolean isVarArgs() {
-		return this.meta.is_mth_varargs;
+		return this.is_mth_varargs;
 	}
 	public final void setVarArgs(boolean on) {
-		if (this.meta.is_mth_varargs != on) {
-			this.meta.is_mth_varargs = on;
+		if (this.is_mth_varargs != on) {
+			this.is_mth_varargs = on;
 		}
 	}
 	// logic rule method
@@ -225,7 +225,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				break;
 			default:
 				if (fp.kind >= Var.PARAM_TYPEINFO_N && fp.kind < Var.PARAM_TYPEINFO_N+128) {
-					assert(this.meta.is_type_unerasable);
+					assert(this.is_type_unerasable);
 					assert(fp.isFinal());
 					assert(fp.getType() ≈ Type.tpTypeInfo);
 					dargs.append(fp.getType());
@@ -272,7 +272,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if ((flags & ACC_BRIDGE) == ACC_BRIDGE) setMeta(new MetaBridge());
 			if ((flags & ACC_VARARGS) == ACC_VARARGS) setMeta(new MetaVarArgs());
 			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
-			this.meta.mflags = flags;
+			this.mflags = flags;
 		}
 	}
 	
@@ -362,7 +362,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public boolean preResolveIn() {
 		//foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
-		//	fp.meta.var_kind = Var.PARAM_NORMAL;
+		//	fp.var_kind = Var.PARAM_NORMAL;
 		Type t = this.mtype; // rebuildTypes()
 		return true;
 	}
@@ -758,15 +758,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			fp.vtype.getType(); // resolve
 			if (fp.stype != null)
 				fp.stype.getType(); // resolve
-			if (fp.meta != null)
-				fp.meta.verify();
+			fp.verifyMetas();
 			//if (fp.kind == Var.VAR_LOCAL)
-			//	fp.meta.var_kind = Var.PARAM_NORMAL;
+			//	fp.var_kind = Var.PARAM_NORMAL;
 		}
 
 		Type t = this.mtype; // rebuildTypes()
 		trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
-		meta.verify();
+		verifyMetas();
 		if (body instanceof MetaValue)
 			((MetaValue)body).verify();
 		foreach(ASTOperatorAlias al; aliases) al.pass3();

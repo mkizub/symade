@@ -42,8 +42,7 @@ public final class Label extends DNode {
 								public CodeLabel		label;
 
 	public boolean preResolveIn() {
-		if (meta != null)
-			meta.verify();
+		verifyMetas();
 		return true;
 	}
 

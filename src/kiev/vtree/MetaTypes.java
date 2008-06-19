@@ -141,7 +141,7 @@ public class NodeSpaceEnumerator<N extends ANode> implements Enumeration<N>
 	}
 }
 
-public metatype NodeExtSpace<N extends ANode> extends N[] {
+public metatype NodeExtSpace<N extends ANode> extends Object {
 	
 	@macro
 	private static ENode# getAttr(Field# f) {
@@ -149,6 +149,13 @@ public metatype NodeExtSpace<N extends ANode> extends N[] {
 			(f.parent).#id"nodeattr$'f'"#	//new #SFldExpr(obj=f.parent, ident="nodeattr$'f'")
 	}
 	
+	@macro
+	public void delAll()
+	{
+		case Call# self(IFld# obj):
+			getAttr(self.obj.var).delAll(self.obj.obj)
+	}
+
 	@macro
 	public N add(N node)
 		alias append
@@ -189,7 +196,7 @@ public class NodeExtSpaceEnumerator<N extends ANode> implements Enumeration<N>
 	private final Object[]          ext_data;
 	private       int               next_pos;
 	
-	NodeExtSpaceEnumerator(ANode parent, ExtSpaceAttrSlot attr) {
+	public NodeExtSpaceEnumerator(ANode parent, ExtSpaceAttrSlot attr) {
 		this.parent = parent;
 		this.attr = attr;
 		this.ext_data = parent.ext_data;

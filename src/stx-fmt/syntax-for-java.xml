@@ -5597,7 +5597,7 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>MetaSet</name>
+       <name>DNode</name>
       </a-node>
      </rnode>
      <elem>
@@ -6272,7 +6272,7 @@
       <a-node class='kiev.fmt.SyntaxElemDecl'>
        <rnode>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>MetaSet</name>
+         <name>DNode</name>
         </a-node>
        </rnode>
        <elem>

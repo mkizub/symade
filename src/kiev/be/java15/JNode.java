@@ -68,7 +68,7 @@ public view JNode of ASTNode implements JConstants {
 @ViewOf(vcast=true, iface=true)
 public view JDNode of DNode extends JNode {
 
-	public:ro	MetaSet		meta;
+	public:ro	MNode[]		metas;
 	public:ro	String		sname;
 	public		Attr[]		jattrs;
 
@@ -89,6 +89,9 @@ public view JDNode of DNode extends JNode {
 
 	public final boolean isMacro();
 	public final boolean isInterfaceOnly();
+
+	public final boolean hasRuntimeVisibleMetas();
+	public final boolean hasRuntimeInvisibleMetas();
 
 	public short getJavaFlags();
 

@@ -32,7 +32,7 @@ public static final view RField of Field extends RVar {
 	public final void setAddedToInit(boolean on);
 
 	public void resolveDecl() {
-		meta.resolve();
+		resolveMetas();
 		Type tp = this.getType();
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(getType());

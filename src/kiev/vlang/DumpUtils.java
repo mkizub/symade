@@ -495,7 +495,7 @@ public final class DumpUtils {
 						} else {
 							fu.members += td;
 						}
-						td.meta.is_interface_only = true;
+						td.is_interface_only = true;
 						nodes.push(td);
 					}
 					else if (cl_name.equals("kiev.vlang.FileUnit")) {
@@ -514,7 +514,7 @@ public final class DumpUtils {
 							root = (ASTNode)Class.forName(cl_name).newInstance();
 						addAttributes(root, attributes);
 						if (root instanceof DNode)
-							((DNode)root).meta.is_interface_only = true;
+							((DNode)root).is_interface_only = true;
 						nodes.push(root);
 					}
 					expect_attr = true;
@@ -567,7 +567,7 @@ public final class DumpUtils {
 						}
 					}
 					if (n instanceof DNode)
-						n.meta.is_interface_only = true;
+						n.is_interface_only = true;
 					//System.out.println("push node "+nodes.length);
 					nodes.push(n);
 					expect_attr = true;

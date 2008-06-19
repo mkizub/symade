@@ -59,7 +59,7 @@ public class Bytecoder implements JConstants {
 			cl = variant;
 		}
 		cl.initStruct(clname.src_name.toString(), outer, bcclazz.flags);
-		cl.meta.is_interface_only = true;
+		cl.is_interface_only = true;
 		cl.bytecode_name = clname.bytecode_name;
 
 		if (!cl.isAttached()) {
@@ -177,11 +177,11 @@ public class Bytecoder implements JConstants {
 			ftype = Signature.getType(f_type);
 		if ((f_flags & ACC_ENUM)!=0) {
 			f = new Field(f_name.toString(),ftype,f_flags);
-			f.meta.is_enum = true;
+			f.is_enum = true;
 		} else {
 			f = new Field(f_name.toString(),ftype,f_flags);
 		}
-		f.meta.is_interface_only = true;
+		f.is_interface_only = true;
 		for(int i=0; i < bcf.attrs.length; i++) {
 			Attr at = readAttr(bcf.attrs[i],bcclazz,f);
 			if( at == null ) continue;
@@ -219,7 +219,7 @@ public class Bytecoder implements JConstants {
 				m = new Constructor(m_flags);
 			else
 				m = new MethodImpl(m_name.toString(),StdTypes.tpVoid,m_flags);
-			m.meta.is_interface_only = true;
+			m.is_interface_only = true;
 			cl.members.append(m);
 
 			CallType mtype;

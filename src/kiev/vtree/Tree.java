@@ -243,9 +243,12 @@ public abstract class ExtAttAttrSlot extends ScalarAttrSlot {
 	}
 }
 
-public class ExtSpaceAttrSlot extends AttrSlot {
+public class ExtSpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public ExtSpaceAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
 		super(name,p_attr,false,true,typeinfo);
+	}
+	public ExtSpaceAttrSlot(String name, TypeInfo typeinfo) {
+		super(name,ANode.nodeattr$parent,false,true,typeinfo);
 	}
 
 	public final ExtChildrenIterator iterate(ANode parent) {
@@ -257,6 +260,11 @@ public class ExtSpaceAttrSlot extends AttrSlot {
 	public final void detach(ANode parent, ANode old) {
 		return parent.delExtData(old);
 	}
+	public final void delAll(ANode parent) {
+		foreach (ANode n; iterate(parent); n.isAttached())
+			parent.delExtData(n);
+	}
+	
 }
 
 public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {

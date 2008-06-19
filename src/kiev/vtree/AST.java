@@ -901,12 +901,6 @@ public abstract class ANode implements INode {
 				Object val = attr.get(this);
 				if (val == null)
 					continue;
-				else if (attr.name == "meta" && val instanceof MetaSet) {
-					MetaSet ms = (MetaSet)ctx.fixup(attr,val.doRewrite(ctx));
-					MetaSet rs = (MetaSet)attr.get(rn);
-					foreach (MNode mn; ms.metas.delToArray())
-						rs.setMeta(mn);
-				}
 				else if (val instanceof ANode) {
 					ANode rw = val.doRewrite(ctx);
 					while (rw instanceof BlockRewr && rw.stats.length == 1)

@@ -37,12 +37,12 @@ public final class ASTModifiers extends ASTNode {
 		return m;
 	}
 	
-	public void moveToNode(MetaSet dn) {
+	public void moveToNode(DNode dn) {
 		ANode[] annotations = this.annotations.delToArray();
 		foreach (MNode m; annotations)
 			dn.setMeta(m);
 	}
-	public void copyToNode(MetaSet dn) {
+	public void copyToNode(DNode dn) {
 		ANode[] annotations = this.annotations;
 		foreach (MNode m; annotations)
 			dn.setMeta(m.ncopy());

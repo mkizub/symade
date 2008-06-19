@@ -75,8 +75,7 @@ public abstract class TypeDef extends TypeDecl {
 	public ArgType getAType() {
 		if (this.xtype != null)
 			return (ArgType)this.xtype;
-		if (this.meta != null)
-			this.meta.verify();
+		this.verifyMetas();
 		this.xmeta_type = new ArgMetaType(this);
 		return (ArgType)this.xtype;
 	}

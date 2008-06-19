@@ -593,8 +593,8 @@ public abstract class MetaAttr extends Attr {
 }
 
 public class RVMetaAttr extends MetaAttr {
-	public MetaSet      ms;
-	public RVMetaAttr(MetaSet metas) {
+	public DNode      ms;
+	public RVMetaAttr(DNode metas) {
 		super(JConstants.attrRVAnnotations);
 		this.ms = metas;
 	}
@@ -621,8 +621,8 @@ public class RVMetaAttr extends MetaAttr {
 }
 
 public class RIMetaAttr extends MetaAttr {
-	public MetaSet      ms;
-	public RIMetaAttr(MetaSet metas) {
+	public DNode      ms;
+	public RIMetaAttr(DNode metas) {
 		super(JConstants.attrRIAnnotations);
 		this.ms = metas;
 	}
@@ -649,14 +649,14 @@ public class RIMetaAttr extends MetaAttr {
 }
 
 public class RVParMetaAttr extends MetaAttr {
-	public MetaSet[]      mss;
-	public RVParMetaAttr(MetaSet[] metas) {
+	public DNode[]      mss;
+	public RVParMetaAttr(DNode[] metas) {
 		super(JConstants.attrRVParAnnotations);
 		this.mss = mss;
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
-		foreach (MetaSet ms; mss; ms != null) {
+		foreach (DNode ms; mss; ms != null) {
 			foreach (UserMeta m; ms.metas; m.isRuntimeVisible()) {
 				generateValue(constPool, m);
 			}
@@ -667,7 +667,7 @@ public class RVParMetaAttr extends MetaAttr {
 		a.annotations = new kiev.bytecode.Annotation.annotation[mss.length][];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
 		for (int i=0; i < mss.length; i++) {
-			MetaSet ms = mss[i];
+			DNode ms = mss[i];
 			if (ms != null) {
 				int size = 0;
 				foreach (UserMeta m; ms.metas; m.isRuntimeVisible())
@@ -687,14 +687,14 @@ public class RVParMetaAttr extends MetaAttr {
 
 
 public class RIParMetaAttr extends MetaAttr {
-	public MetaSet[]      mss;
-	public RIParMetaAttr(MetaSet[] metas) {
+	public DNode[]      mss;
+	public RIParMetaAttr(DNode[] metas) {
 		super(JConstants.attrRIParAnnotations);
 		this.mss = mss;
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
-		foreach (MetaSet ms; mss; ms != null) {
+		foreach (DNode ms; mss; ms != null) {
 			foreach (UserMeta m; ms.metas; m.isRuntimeInvisible()) {
 				generateValue(constPool, m);
 			}
@@ -705,7 +705,7 @@ public class RIParMetaAttr extends MetaAttr {
 		a.annotations = new kiev.bytecode.Annotation.annotation[mss.length][];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
 		for (int i=0; i < mss.length; i++) {
-			MetaSet ms = mss[i];
+			DNode ms = mss[i];
 			if (ms != null) {
 				int size = 0;
 				foreach (UserMeta m; ms.metas; m.isRuntimeInvisible())

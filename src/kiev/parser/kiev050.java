@@ -116,7 +116,7 @@ public abstract class kiev050 implements kiev050Constants {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		MetaTypeDecl tdecl = Env.getRoot().newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
-		modifiers.moveToNode(tdecl.meta);
+		modifiers.moveToNode(tdecl);
 		return tdecl;
 	}
 
@@ -154,7 +154,7 @@ public abstract class kiev050 implements kiev050Constants {
 		else
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
-		modifiers.moveToNode(clazz.meta);
+		modifiers.moveToNode(clazz);
 		if (parent instanceof NameSpace)
 			clazz.setLocal(false);
 		else if (parent instanceof Struct)
@@ -170,7 +170,7 @@ public abstract class kiev050 implements kiev050Constants {
 		TypeAssign arg = new TypeAssign(name.sname);
 		arg.pos = name.pos;
 		if (modifiers != null)
-			modifiers.moveToNode(arg.meta);
+			modifiers.moveToNode(arg);
 		if (uuid == null && mkUUID) {
 			String uuid = arg.UUID; // will auti-generate
 		}
@@ -185,7 +185,7 @@ public abstract class kiev050 implements kiev050Constants {
 			if (dn instanceof TypeConstr) {
 				arg = (TypeConstr)dn;
 				arg.sname = name.sname;
-				arg.meta.metas.delAll();
+				arg.metas.delAll();
 				arg.super_types.delAll();
 				arg.lower_bound.delAll();
 			}
@@ -194,7 +194,7 @@ public abstract class kiev050 implements kiev050Constants {
 			arg = new TypeConstr(name.sname);
 		arg.pos = name.pos;
 		if (modifiers != null)
-			modifiers.moveToNode(arg.meta);
+			modifiers.moveToNode(arg);
 		if (uuid == null && mkUUID) {
 			String uuid = arg.UUID; // will auti-generate
 		}
@@ -204,21 +204,21 @@ public abstract class kiev050 implements kiev050Constants {
 	private Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
 		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
-		modifiers.moveToNode(meth.meta);
+		modifiers.moveToNode(meth);
 		return meth;
 	}
 	
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		Method meth = new MethodImpl(id.sname, ret, 0);
 		meth.pos = id.pos;
-		modifiers.moveToNode(meth.meta);
+		modifiers.moveToNode(meth);
 		return meth;
 	}
 	
 	private RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		RuleMethod meth = new RuleMethod(id.sname, 0);
 		meth.pos = id.pos;
-		modifiers.moveToNode(meth.meta);
+		modifiers.moveToNode(meth);
 		return meth;
 	}
 	
@@ -227,16 +227,16 @@ public abstract class kiev050 implements kiev050Constants {
 			tp = new TypeDeclRef();
 		Field f = new Field(id.sname, tp, 0);
 		f.pos = id.pos;
-		modifiers.copyToNode(f.meta);
+		modifiers.copyToNode(f);
 		f.init = init;
 		return f;
 	}
 
 	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
 		Field f = new Field(id.sname,new TypeDeclRef(),0);
-		f.meta.is_enum = true;
+		f.is_enum = true;
 		f.pos = id.pos;
-		modifiers.moveToNode(f.meta);
+		modifiers.moveToNode(f);
 		f.setPublic();
 		f.setStatic(true);
 		f.setFinal(true);
@@ -246,7 +246,7 @@ public abstract class kiev050 implements kiev050Constants {
 	private Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		Field f = new Field(id.sname,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
-		modifiers.moveToNode(f.meta);
+		modifiers.moveToNode(f);
 		return f;
 	}
 	
@@ -254,7 +254,7 @@ public abstract class kiev050 implements kiev050Constants {
 		if (tp == null)
 			tp = new TypeDeclRef();
 		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
-		modifiers.copyToNode(v.meta);
+		modifiers.copyToNode(v);
 		return v;
 	}
 	
@@ -262,7 +262,7 @@ public abstract class kiev050 implements kiev050Constants {
 		if (!first)
 			tp = tp.ncopy();
 		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_RULE, 0);
-		modifiers.copyToNode(v.meta);
+		modifiers.copyToNode(v);
 		return v;
 	}
 	
@@ -270,27 +270,27 @@ public abstract class kiev050 implements kiev050Constants {
 		LVar v = new LVar(id.pos, id.sname, vt, LVar.PARAM_NORMAL, 0);
 		if (st != null)
 			v.stype = st;
-		modifiers.moveToNode(v.meta);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private LVar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
 		LVar v = new LVar(id.pos, id.sname, vt, LVar.PARAM_VARARGS, ACC_FINAL);
-		modifiers.moveToNode(v.meta);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		RewritePattern v = new RewritePattern(id.sname, tp);
 		v.pos = id.pos;
-		modifiers.moveToNode(v.meta);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
 		Initializer init = new Initializer();
 		init.pos = pos;
-		modifiers.moveToNode(init.meta);
+		modifiers.moveToNode(init);
 		return init;
 	}
 
@@ -2270,7 +2270,7 @@ public abstract class kiev050 implements kiev050Constants {
         ;
       }
                         var = mkVar(id, new ASTModifiers(), dtype);
-                        modifiers.copyToNode(var.meta);
+                        modifiers.copyToNode(var);
                         var.init = init;
                         stats += var;
       label_28:
@@ -2293,7 +2293,7 @@ public abstract class kiev050 implements kiev050Constants {
           ;
         }
                                 var = mkVar(id, new ASTModifiers(), dtype.ncopy());
-                                modifiers.copyToNode(var.meta);
+                                modifiers.copyToNode(var);
                                 var.init = init;
                                 stats += var;
       }

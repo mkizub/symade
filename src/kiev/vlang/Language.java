@@ -256,9 +256,7 @@ public final class CoreLang extends LangBase {
 		ASTExpression.class,
 		ASTOperatorAlias.class,
 		ASTPragma.class,
-		EToken.class,
-		// to be removed
-		MetaSet.class
+		EToken.class
 	};
 }
 
