@@ -104,7 +104,7 @@ public final class PizzaCase extends Struct {
 		}
 	}
 
-	@nodeAttr public Field[]	case_fields;
+	@nodeAttr public Field∅	case_fields;
 
 	public int tag;
 
@@ -152,7 +152,7 @@ public final class JavaEnum extends JavaClass {
 	}
 
 	// is a syntax_parent
-	@nodeAttr public		Field[]			enum_fields;
+	@nodeAttr public		Field∅			enum_fields;
 
 	public JavaEnum() {
 		this.meta.is_enum = true;

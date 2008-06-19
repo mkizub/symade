@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public final class DomAttrSlot extends ExtAttrSlot {
+public final class DomAttrSlot extends ExtSpaceAttrSlot {
 	
 	private static final Hashtable<String,DomAttrSlot> ALL_DOM_ATTRS;
 	public static final DomAttrSlot DEFAULT_NS_DOM_ATTR;

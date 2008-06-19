@@ -52,7 +52,7 @@ public final class UnresOpExpr extends UnresExpr {
 	
 	@virtual typedef This  = UnresOpExpr;
 
-	@nodeData public ENode[]				exprs;
+	@nodeData public ENode∅				exprs;
 
 	public UnresOpExpr() {}
 
@@ -170,7 +170,7 @@ public final class UnresSeqs extends UnresExpr {
 	@virtual typedef This  = UnresSeqs;
 
 	@nodeData public String				sep;
-	@nodeData public ENode[]				exprs;
+	@nodeData public ENode∅				exprs;
 
 	public UnresSeqs() {}
 
@@ -215,8 +215,8 @@ public final class UnresCallExpr extends UnresExpr {
 
 	@nodeData public ENode				obj;
 	@nodeData public SymbolRef<DNode>	func;
-	@nodeData public TypeRef[]			targs;
-	@nodeData public ENode[]				args;
+	@nodeData public TypeRef∅			targs;
+	@nodeData public ENode∅			args;
 
 	public UnresCallExpr() {}
 

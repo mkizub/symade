@@ -155,10 +155,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 		this.meta.var_kind = kind;
 	}
 
-	public ASTNode getDummyNode() {
-		return LVar.dummyNode;
-	}
-	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "init")
 			return false;
@@ -288,8 +284,6 @@ public class LVar extends Var {
 
 	@virtual typedef This  = LVar;
 
-	static final Var dummyNode = new LVar();
-
 	public LVar() { super(VAR_LOCAL); }
 
 	public LVar(int pos, String name, Type tp, int kind, int flags)
@@ -316,7 +310,6 @@ public class LVar extends Var {
 @ThisIsANode(name="Field", lang=CoreLang)
 public class Field extends Var {
 	public static final Field[]	emptyArray = new Field[0];
-	static final Field dummyNode = new Field();
 
 	@DataFlowDefinition(out="init") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			init;
@@ -343,10 +336,6 @@ public class Field extends Var {
 
 	public Field(String name, TypeRef vtype, int flags) {
 		super(name, vtype, FIELD_NORMAL, flags);
-	}
-
-	public ASTNode getDummyNode() {
-		return Field.dummyNode;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

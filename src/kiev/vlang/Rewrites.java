@@ -137,7 +137,7 @@ public final class RewriteMatch extends ENode {
 
 	@virtual typedef This  = RewriteMatch;
 
-	@nodeAttr public RewriteCase[]		cases;
+	@nodeAttr public RewriteCase∅		cases;
 
 	public RewriteMatch() {}
 
@@ -166,7 +166,7 @@ public final class RewritePattern extends Var {
 	
 	@virtual typedef This  = RewritePattern;
 
-	@nodeAttr public RewritePattern[]		vars;
+	@nodeAttr public RewritePattern∅		vars;
 
 	public RewritePattern() { super(REWRITE_PATTERN); }
 	public RewritePattern(String name, TypeRef tp) {
@@ -199,7 +199,7 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 	@virtual typedef This  = RewriteCase;
 
 	@nodeAttr public RewritePattern		var;
-	@nodeAttr public ASTNode[]			stats;
+	@nodeAttr public ASTNode∅				stats;
 
 	public RewriteCase() {}
 
@@ -233,8 +233,8 @@ public final class RewriteNodeFactory extends ENode {
 	
 	@virtual typedef This  = RewriteNodeFactory;
 
-	@nodeAttr public RewriteNodeArg[]		args;
-	     private Class					node_class;
+	@nodeAttr public RewriteNodeArg∅		args;
+	          private Class					node_class;
 
 	public RewriteNodeFactory() {}
 	public RewriteNodeFactory(String ident) {
@@ -284,7 +284,16 @@ public final class RewriteNodeFactory extends ENode {
 				} else {
 					attr.add(res, (ASTNode)ctx.fixup(attr,r));
 				}
-			} else {
+			}
+			else if (attr instanceof ExtSpaceAttrSlot) {
+				if (r instanceof RewriteNodeArgArray) {
+					foreach (ASTNode o; ((RewriteNodeArgArray)r).args)
+						attr.add(res, (ASTNode)ctx.fixup(attr,o));
+				} else {
+					attr.add(res, (ASTNode)ctx.fixup(attr,r));
+				}
+			}
+			else if (attr instanceof ScalarAttrSlot) {
 				attr.set(res, ctx.fixup(attr,r));
 			}
 		}
@@ -332,7 +341,7 @@ public final class RewriteNodeArgArray extends ENode {
 
 	@virtual typedef This  = RewriteNodeArgArray;
 
-	@nodeAttr public ASTNode[]				args;
+	@nodeAttr public ASTNode∅				args;
 
 	public RewriteNodeArgArray() {}
 

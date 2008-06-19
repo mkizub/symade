@@ -168,9 +168,9 @@ public class Editor extends InfoView implements KeyListener {
 		while (dr != null) {
 			Drawable p = (Drawable)dr.parent();
 			if (p instanceof DrawNonTermList)
-				return new ActionPoint(p,p.slst_attr,p.getInsertIndex(dr, next));
+				return new ActionPoint(p,((SpaceAttrSlot)p.slst_attr),p.getInsertIndex(dr, next));
 			if (p instanceof DrawWrapList)
-				return new ActionPoint(p,p.slst_attr,p.getInsertIndex(dr, next));
+				return new ActionPoint(p,((SpaceAttrSlot)p.slst_attr),p.getInsertIndex(dr, next));
 			dr = p;
 		}
 		return null;
@@ -445,17 +445,17 @@ public class ActionPoint {
 		this.slot = slot;
 		if (slot instanceof SpaceAttrSlot) {
 			this.index = 0;
-			this.length = ((ANode[])slot.get(node)).length;
+			this.length = slot.getArray(node).length;
 		} else {
 			this.index = -1;
 			this.length = -1;
 		}
 	}
-	public ActionPoint(Drawable dr, AttrSlot slot, int idx) {
+	public ActionPoint(Drawable dr, SpaceAttrSlot slot, int idx) {
 		this.dr = dr;
 		this.node = dr.drnode;
 		this.slot = slot;
-		this.length = ((ANode[])slot.get(node)).length;
+		this.length = slot.getArray(node).length;
 		if (idx <= 0) {
 			this.index = 0;
 		} else {
@@ -514,16 +514,16 @@ final class ChooseItemEditor implements UIActionFactory {
 		Drawable dr = context.dr;
 		if (dr instanceof DrawNodeTerm) {
 			DrawNodeTerm dt = (DrawNodeTerm)dr;
-			AttrPtr pattr = dt.getAttrPtr();
+			ScalarPtr pattr = dt.getScalarPtr();
 			Object obj = pattr.get();
 			if (obj instanceof SymbolRef)
-				return new TextEditor(editor, dt, ((SymbolRef)obj).getAttrPtr("name"));
+				return new TextEditor(editor, dt, ((SymbolRef)obj).getScalarPtr("name"));
 			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class)
 				return new TextEditor(editor, dt, pattr);
 			else if (obj instanceof Integer)
 				return new IntEditor(editor, dt, pattr);
 			else if (obj instanceof ConstIntExpr)
-				return new IntEditor(editor, dt, obj.getAttrPtr("value"));
+				return new IntEditor(editor, dt, obj.getScalarPtr("value"));
 			else if (obj instanceof Boolean || Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
 				return new EnumEditor(editor, dt, pattr);
 		}
@@ -536,12 +536,12 @@ final class ChooseItemEditor implements UIActionFactory {
 				if (dt == null)
 					dt = editor.cur_elem.dr.getNextLeaf();
 			}
-			return new EnumEditor(editor, dt, dec.drnode.getAttrPtr(stx.name));
+			return new EnumEditor(editor, dt, dec.drnode.getScalarPtr(stx.name));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
-			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getAttrPtr(stx.name));
+			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getScalarPtr(stx.name));
 		}
 		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxToken.TokenKind.OPERATOR) {
 			return new OperatorEditor(editor, (DrawToken)dr);
@@ -841,15 +841,18 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 				try {
 					ANode obj = (ANode)typeinfo.newInstance();
 					obj.initForEditor();
-					if (a.is_space) {
-						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
+					if (a instanceof SpaceAttrSlot) {
 						if (idx < 0)
 							idx = 0;
-						else if (idx > sas.getArray(node).length)
-							idx = sas.getArray(node).length;
-						sas.insert(node,idx,obj);
-					} else {
-						a.set(node, obj);
+						else if (idx > a.getArray(node).length)
+							idx = a.getArray(node).length;
+						a.insert(node,idx,obj);
+					}
+					else if (a instanceof ExtSpaceAttrSlot) {
+						a.add(node, obj);
+					}
+					else {
+						((ScalarAttrSlot)a).set(node, obj);
 					}
 				} catch (Throwable t) {
 					t.printStackTrace();
@@ -961,11 +964,11 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 }
 
 final class PasteElemHere implements Runnable {
-	final ANode paste_node;
-	final Editor editor;
-	final AttrPtr pattr;
+	final ANode      paste_node;
+	final Editor     editor;
+	final ScalarPtr  pattr;
 	final ActionPoint ap;
-	PasteElemHere(ANode paste_node, Editor editor, AttrPtr pattr) {
+	PasteElemHere(ANode paste_node, Editor editor, ScalarPtr pattr) {
 		this.paste_node = paste_node;
 		this.editor = editor;
 		this.pattr = pattr;
@@ -1009,14 +1012,14 @@ final class PasteElemHere implements Runnable {
 			// try paste as a node into null
 			if (dr instanceof DrawNodeTerm) {
 				DrawNodeTerm dt = (DrawNodeTerm)dr;
-				AttrPtr pattr = dt.getAttrPtr();
+				ScalarPtr pattr = dt.getScalarPtr();
 				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
 					return new PasteElemHere(node, editor, pattr);
 			}
 			// try paste as a node into placeholder
 			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
 				Draw_SyntaxAttr sa = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
-				AttrPtr pattr = dr.drnode.getAttrPtr(sa.name);
+				ScalarPtr pattr = dr.drnode.getScalarPtr(sa.name);
 				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
 					return new PasteElemHere(node, editor, pattr);
 				else if (pattr.slot.is_space && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
@@ -1076,7 +1079,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 	
 	protected final Editor		editor;
 	protected final DrawTerm	dr_term;
-	protected final AttrPtr		pattr;
+	protected final ScalarPtr	pattr;
 	protected       int			edit_offset;
 	protected       boolean		in_combo;
 	protected       JComboBox	combo;
@@ -1093,7 +1096,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 				return null;
 			if (dt.drnode != context.node)
 				return null;
-			AttrPtr pattr = dt.drnode.getAttrPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new TextEditor(editor, dt, pattr);
 		}
 	}
@@ -1109,7 +1112,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		showAutoComplete();
 	}
 
-	TextEditor(Editor editor, DrawTerm dr_term, AttrPtr pattr) {
+	TextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr) {
 		this.editor = editor;
 		this.dr_term = dr_term;
 		this.pattr = pattr;
@@ -1318,7 +1321,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 
 final class IntEditor extends TextEditor {
 	
-	IntEditor(Editor editor, DrawTerm dr_term, AttrPtr pattr) {
+	IntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr) {
 		super(editor, dr_term, pattr);
 	}
 	
@@ -1334,7 +1337,7 @@ final class IntEditor extends TextEditor {
 				return null;
 			if (dt.drnode != context.node)
 				return null;
-			AttrPtr pattr = dt.drnode.getAttrPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new IntEditor(editor, dt, pattr);
 		}
 	}
@@ -1363,9 +1366,9 @@ final class IntEditor extends TextEditor {
 class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 	private final Editor		editor;
 	private final DrawTerm		cur_elem;
-	private final AttrPtr		pattr;
+	private final ScalarPtr		pattr;
 	private final JPopupMenu	menu;
-	EnumEditor(Editor editor, DrawTerm cur_elem, AttrPtr pattr) {
+	EnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr) {
 		this.editor = editor;
 		this.cur_elem = cur_elem;
 		this.pattr = pattr;
@@ -1384,7 +1387,7 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 				return null;
 			if (dt.drnode != context.node)
 				return null;
-			AttrPtr pattr = dt.drnode.getAttrPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new EnumEditor(editor, dt, pattr);
 		}
 	}
@@ -1398,7 +1401,7 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 			//EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
 			//foreach (Enum e; ens.toArray())
 			//	menu.add(new JMenuItem(new SetSyntaxAction(e)));
-			Method vals = pattr.slot.typeinfo.clazz.getMethod("values");
+			java.lang.reflect.Method vals = pattr.slot.typeinfo.clazz.getMethod("values");
 			foreach (Enum e; (Enum[])vals.invoke(null))
 				menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		}

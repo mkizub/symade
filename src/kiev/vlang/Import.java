@@ -40,7 +40,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@AttrXMLDumpInfo(attr=true, name="all")
 	@nodeAttr public boolean			star;
 
-	@nodeAttr public TypeRef[]			args;
+	@nodeAttr public TypeRef∅			args;
 
 	@AttrXMLDumpInfo(attr=true, name="methods")
 	@nodeAttr public boolean			of_method;

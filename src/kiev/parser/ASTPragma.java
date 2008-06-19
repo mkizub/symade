@@ -17,8 +17,8 @@ public final class ASTPragma extends DNode {
 
 	@virtual typedef This  = ASTPragma;
 
-	@nodeAttr public boolean					enable;
-	@nodeAttr public ConstStringExpr[]		options;
+	@nodeAttr public boolean				enable;
+	@nodeAttr public ConstStringExpr∅		options;
 
 	public void resolve(Type reqType) {}
 }

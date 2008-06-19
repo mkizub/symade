@@ -300,10 +300,6 @@ public abstract class ENode extends ASTNode {
 		return new Type[]{getType()};
 	}
 
-	public ASTNode getDummyNode() {
-		return NopExpr.dummyNode;
-	}
-
 	public Operator getOp() { return null; }
 	public void setOp(Operator op) { throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass()); }
 	

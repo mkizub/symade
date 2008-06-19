@@ -140,10 +140,10 @@ public final class DumpUtils {
 			out.startTag(SOP_URI,node.getClass().getName());
 		}
 		if (!OLD_XML_WRITE) {
-			foreach (AttrSlot attr; node.values(); attr.isXmlAttr()) {
+			foreach (AttrSlot attr; node.values(); attr instanceof ScalarAttrSlot && attr.isXmlAttr()) {
 				if (!checkIncludeAttrInDump(dump,node,attr))
 					continue;
-				Object obj = attr.get(node);
+				Object obj = ((ScalarAttrSlot)attr).get(node);
 				if (obj == null)
 					continue;
 				
@@ -156,8 +156,8 @@ public final class DumpUtils {
 		foreach (AttrSlot attr; node.values(); (OLD_XML_WRITE || !attr.isXmlAttr()) && !attr.isXmlIgnore()) {
 			if (!checkIncludeAttrInDump(dump,node,attr))
 				continue;
-			if (attr.is_space) {
-				ANode[] elems = (ANode[])attr.get(node);
+			if (attr instanceof SpaceAttrSlot) {
+				ANode[] elems = attr.getArray(node);
 				foreach (ANode n; elems; checkIncludeNodeInDump(dump,n))
 					goto write_space;
 				continue;
@@ -168,17 +168,19 @@ public final class DumpUtils {
 				out.endTag(null, attr.getXmlLocalName());
 				continue;
 			}
-			Object obj = attr.get(node);
-			if (obj == null)
-				continue;
-			out.startTag(null, attr.getXmlLocalName());
-			if (obj instanceof ANode)
-				writeNodeToXML(dump, (ANode)obj, out);
-			else if (obj instanceof Type)
-				out.text(((Type)obj).makeSignature());
-			else
-				out.text(String.valueOf(obj));
-			out.endTag(null, attr.getXmlLocalName());
+			else if (attr instanceof ScalarAttrSlot) {
+				Object obj = attr.get(node);
+				if (obj == null)
+					continue;
+				out.startTag(null, attr.getXmlLocalName());
+				if (obj instanceof ANode)
+					writeNodeToXML(dump, (ANode)obj, out);
+				else if (obj instanceof Type)
+					out.text(((Type)obj).makeSignature());
+				else
+					out.text(String.valueOf(obj));
+				out.endTag(null, attr.getXmlLocalName());
+			}
 		}
 		if (!OLD_XML_WRITE) {
 			foreach (ANode n; node.getExtChildIterator(null)) {
@@ -211,8 +213,8 @@ public final class DumpUtils {
 		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
 			if (!checkIncludeAttrInDump(dump,node,attr))
 				continue;
-			if (attr.is_space) {
-				ANode[] elems = (ANode[])attr.get(node);
+			if (attr instanceof SpaceAttrSlot) {
+				ANode[] elems = attr.getArray(node);
 				foreach (ANode n; elems; checkIncludeNodeInDump(dump,n))
 					goto write_space;
 				continue;
@@ -225,20 +227,35 @@ public final class DumpUtils {
 				out.writeEndElement();
 				continue;
 			}
-			Object obj = attr.get(node);
-			if (obj == null)
+			else if (attr instanceof ExtSpaceAttrSlot) {
+				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
+					goto write_list;
 				continue;
-			writeXMLIndent(out,indent+1);
-			out.writeStartElement(attr.name);
-			if (obj instanceof ANode) {
-				writeNodeToXML(dump, (ANode)obj, out, indent+2);
+			write_list:
 				writeXMLIndent(out,indent+1);
+				out.writeStartElement(attr.name);
+				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
+					writeNodeToXML(dump, n, out, indent+2);
+				writeXMLIndent(out,indent+1);
+				out.writeEndElement();
+				continue;
 			}
-			else if (obj instanceof Type)
-				out.writeCharacters(((Type)obj).makeSignature());
-			else
-				out.writeCharacters(String.valueOf(obj));
-			out.writeEndElement();
+			else if (attr instanceof ScalarAttrSlot) {
+				Object obj = attr.get(node);
+				if (obj == null)
+					continue;
+				writeXMLIndent(out,indent+1);
+				out.writeStartElement(attr.name);
+				if (obj instanceof ANode) {
+					writeNodeToXML(dump, (ANode)obj, out, indent+2);
+					writeXMLIndent(out,indent+1);
+				}
+				else if (obj instanceof Type)
+					out.writeCharacters(((Type)obj).makeSignature());
+				else
+					out.writeCharacters(String.valueOf(obj));
+				out.writeEndElement();
+			}
 		}
 
 		writeXMLIndent(out,indent);
@@ -260,12 +277,25 @@ public final class DumpUtils {
 	private static boolean checkIncludeAttrInDump(String dump, ANode node, AttrSlot attr) {
 		if (node == null || attr == null)
 			return false;
-		Object val = attr.get(node);
-		if (val == null)
-			return false;
-		if (attr.is_space && ((Object[])val).length == 0)
-			return false;
-		return node.includeInDump(dump, attr, val);
+		if (attr instanceof ScalarAttrSlot) {
+			Object val = attr.get(node);
+			if (val == null)
+				return false;
+			return node.includeInDump(dump, attr, val);
+		}
+		else if (attr instanceof SpaceAttrSlot) {
+			ANode[] vals = attr.getArray(node);
+			if (vals.length == 0)
+				return false;
+			return node.includeInDump(dump, attr, vals);
+		}
+		else if (attr instanceof ExtSpaceAttrSlot) {
+			ExtChildrenIterator iter = attr.iterate(node);
+			if (!iter.hasMoreElements())
+				return false;
+			return node.includeInDump(dump, attr, iter);
+		}
+		return false;
 	}
 
 	public static FileUnit loadFromXmlFile(File f, byte[] data) {
@@ -358,9 +388,9 @@ public final class DumpUtils {
 	
 	final static class DelayedTypeInfo {
 		final ANode node;
-		final AttrSlot attr;
+		final ScalarAttrSlot attr;
 		final String signature;
-		DelayedTypeInfo(ANode node, AttrSlot attr, String signature) {
+		DelayedTypeInfo(ANode node, ScalarAttrSlot attr, String signature) {
 			this.node = node;
 			this.attr = attr;
 			this.signature = signature;
@@ -510,10 +540,10 @@ public final class DumpUtils {
 					AttrSlot attr = attrs.peek();
 					if (!attr.isWrittable() || cl_name.equals("kiev.vlang.Symbol")) {
 						AttrSlot attr = attrs.peek();
-						if (attr.is_space) {
+						if (attr instanceof SpaceAttrSlot || attr instanceof ExtSpaceAttrSlot) {
 							n = (ANode)attr.typeinfo.newInstance();
 						} else {
-							n = (ANode)attr.get(nodes.peek());
+							n = (ANode)((ScalarAttrSlot)attr).get(nodes.peek());
 							if (n == null)
 								n = (ANode)attr.typeinfo.newInstance();
 						}
@@ -617,11 +647,15 @@ public final class DumpUtils {
 				}
 				//System.out.println("pop  node "+nodes.length);
 				AttrSlot attr = attrs.peek();
-				if (attr.is_space) {
-					SpaceAttrSlot<ANode> sa = (SpaceAttrSlot<ANode>)attr;
+				if (attr instanceof SpaceAttrSlot) {
 					//System.out.println("add node to "+attr.name);
-					sa.add(nodes.peek(),n);
-				} else {
+					attr.add(nodes.peek(),n);
+				}
+				else if (attr instanceof ExtSpaceAttrSlot) {
+					//System.out.println("add node to "+attr.name);
+					attr.add(nodes.peek(),n);
+				}
+				else if (attr instanceof ScalarAttrSlot){
 					//System.out.println("set node to "+attr.name);
 					if (!n.isAttached())
 						attr.set(nodes.peek(),n);
@@ -630,8 +664,8 @@ public final class DumpUtils {
 			} else {
 				AttrSlot attr = attrs.pop();
 				//System.out.println("pop  attr "+attr.name);
-				if (text != null) {
-					writeAttribute(nodes.peek(), attr, text);
+				if (attr instanceof ScalarAttrSlot && text != null) {
+					writeAttribute(nodes.peek(), (ScalarAttrSlot)attr, text);
 					text = null;
 				}
 				expect_attr = true;
@@ -655,18 +689,18 @@ public final class DumpUtils {
 				String nm = attributes.getName(i);
 				if (nm.equals("class"))
 					continue;
-				foreach (AttrSlot attr; node.values(); !attr.isXmlIgnore() && attr.getXmlLocalName().equals(nm)) {
+				foreach (ScalarAttrSlot attr; node.values(); !attr.isXmlIgnore() && attr.getXmlLocalName().equals(nm)) {
 					writeAttribute(node, attr, attributes.getValue(i))
 					continue next_attr;
 				}
-				foreach (AttrSlot attr; node.values(); !attr.isXmlIgnore() && attr.name.equals(nm)) {
+				foreach (ScalarAttrSlot attr; node.values(); !attr.isXmlIgnore() && attr.name.equals(nm)) {
 					writeAttribute(node, attr, attributes.getValue(i))
 					continue next_attr;
 				}
 				System.out.println("Attribute '"+nm+"' not found in "+node.getClass());
 			}
 		}
-		private void writeAttribute(ANode node, AttrSlot attr, String value) {
+		private void writeAttribute(ANode node, ScalarAttrSlot attr, String value) {
 			if (attr.clazz == String.class)
 				attr.set(node,value);
 			else if (attr.clazz == Boolean.TYPE)

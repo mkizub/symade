@@ -29,7 +29,7 @@ public class RuleMethod extends Method {
 
 	@virtual typedef This  = RuleMethod;
 
-	@nodeAttr public Var[]				localvars;
+	@nodeAttr public Var∅				localvars;
 	          public int				base = 1;
 	          public int				max_depth;
 	          public int				state_depth;
@@ -309,7 +309,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 
 	@virtual typedef This  = RuleOrExpr;
 
-	@nodeAttr public ASTRuleNode[]			rules;
+	@nodeAttr public ASTRuleNode∅			rules;
 
 	@getter @nodeData public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
 	@getter @nodeData public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
@@ -370,7 +370,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 
 	@virtual typedef This  = RuleAndExpr;
 
-	@nodeAttr public ASTRuleNode[]			rules;
+	@nodeAttr public ASTRuleNode∅			rules;
 
 	@getter @nodeData public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
 	@getter @nodeData public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
@@ -649,8 +649,8 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@virtual typedef This  = RuleCallExpr;
 
 	@nodeAttr public ENode				obj;
-	@nodeAttr public ENode[]				args;
-	@nodeAttr public int					env_var;
+	@nodeAttr public ENode∅			args;
+	@nodeAttr public int				env_var;
 
 	public RuleCallExpr() {}
 

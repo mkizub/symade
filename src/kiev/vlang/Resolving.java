@@ -167,7 +167,7 @@ public final class ResInfo {
 			}
 			if (d.isPrivate()) {
 				// check visibility of this or inner classes
-				ComplexTypeDecl s = from_scope;
+				ComplexTypeDecl s = (ComplexTypeDecl)from_scope;
 				ComplexTypeDecl p = n.ctx_tdecl;
 				while (s != null && s != p && s.package_clazz.dnode.isClazz())
 					s = s.package_clazz.dnode;

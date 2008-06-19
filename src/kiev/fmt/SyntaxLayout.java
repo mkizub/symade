@@ -25,7 +25,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	@virtual typedef This  ≤ ATextSyntax;
 	
 	@nodeAttr public SymbolRef<ATextSyntax>	parent_syntax;
-	@nodeAttr public ASTNode[]					members;
+	@nodeAttr public ASTNode∅					members;
 	          public String						q_name;	// qualified name
 			  
 	@UnVersioned
@@ -444,7 +444,7 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	@nodeAttr public String				regexp_ok;
 	@nodeAttr public String				esc_prefix;
 	@nodeAttr public String				esc_suffix;
-	@nodeAttr public ConstStringExpr[]	keywords;
+	@nodeAttr public ConstStringExpr∅	keywords;
 	
 	@setter
 	public void set$esc_prefix(String value) {
@@ -491,7 +491,7 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxExpectedTemplate;
 
 	@nodeAttr public String				title;
-	@nodeAttr public SymbolRef[]		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
+	@nodeAttr public SymbolRef∅		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
 
 	public SyntaxExpectedTemplate() {
 		super(new SyntaxNode());
@@ -527,7 +527,7 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 public final class SyntaxElemFormatDecl extends DNode {
 	@virtual typedef This  = SyntaxElemFormatDecl;
 
-	@nodeAttr public SpaceCmd[]				spaces;
+	@nodeAttr public SpaceCmd∅				spaces;
 	@nodeAttr public SymbolRef<DrawColor>	color;
 	@nodeAttr public SymbolRef<DrawFont>	font;
 	
@@ -633,7 +633,7 @@ public final class SyntaxFunction extends ASTNode {
 public final class SyntaxFunctions extends ASTNode {
 	@virtual typedef This  = SyntaxFunctions;
 
-	@nodeAttr public SyntaxFunction[]	funcs;
+	@nodeAttr public SyntaxFunction∅	funcs;
 
 	public SyntaxFunctions() {}
 	
@@ -858,7 +858,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 	@nodeAttr public String							name;
 	@nodeAttr public SymbolRef<ATextSyntax>		in_syntax;
-	@nodeAttr public SymbolRef[]					expected_types;
+	@nodeAttr public SymbolRef∅					expected_types;
 	@nodeAttr public SyntaxElem						empty;
 	@nodeData public AttrSlot						attr_slot;
 
@@ -1149,7 +1149,7 @@ public class SyntaxSet extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxSet;
 
 	@nodeAttr public SyntaxElem		folded;
-	@nodeAttr public SyntaxElem[]	elements;
+	@nodeAttr public SyntaxElem∅	elements;
 	@nodeAttr public boolean		folded_by_default;
 	@nodeAttr public boolean		nested_function_lookup;
 
@@ -1261,7 +1261,7 @@ public abstract class CalcOption extends ASTNode {
 public final class CalcOptionAnd extends CalcOption {
 	@virtual typedef This  = CalcOptionAnd;
 
-	@nodeAttr public CalcOption[] opts;
+	@nodeAttr public CalcOption∅ opts;
 	
 	public CalcOptionAnd() {}
 
@@ -1278,7 +1278,7 @@ public final class CalcOptionAnd extends CalcOption {
 public final class CalcOptionOr extends CalcOption {
 	@virtual typedef This  = CalcOptionOr;
 
-	@nodeAttr public CalcOption[] opts;
+	@nodeAttr public CalcOption∅ opts;
 	
 	public CalcOptionOr() {}
 
@@ -1493,7 +1493,7 @@ public class SyntaxOptional extends SyntaxElem {
 public class SyntaxEnumChoice extends SyntaxAttr {
 	@virtual typedef This  = SyntaxEnumChoice;
 
-	@nodeAttr public SyntaxElem[] elements;
+	@nodeAttr public SyntaxElem∅ elements;
 
 	public SyntaxEnumChoice() {}
 

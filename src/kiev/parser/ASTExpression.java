@@ -29,7 +29,7 @@ public class ASTExpression extends ENode {
 	
 	@virtual typedef This  = ASTExpression;
 
-	@nodeAttr public ENode[]				nodes;
+	@nodeAttr public ENode∅	nodes;
 
 	private int cur_pos;
 

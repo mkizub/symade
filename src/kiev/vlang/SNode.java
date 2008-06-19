@@ -18,18 +18,14 @@ import syntax kiev.Syntax;
  * A node that is a syntax modifier: import, operator decl, separators, comments, etc.
  */
 @ThisIsANode(lang=CoreLang)
-public class SNode extends ASTNode {
+public abstract class SNode extends ASTNode {
 
 	@virtual typedef This  ≤ SNode;
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	public static final SNode dummySNode = new SNode();
-
 	public SNode() {}
 
-	public ASTNode getDummyNode() { SNode.dummySNode }
-	
 	public final void resolveDecl() { ((RSNode)this).resolveDecl(); }
 
 }
@@ -40,13 +36,13 @@ public final class Comment extends SNode {
 	@virtual typedef This  = Comment;
 	
 	@AttrXMLDumpInfo
-	static final class ExtAttrSlot_comment extends ExtAttrSlot {
-		ExtAttrSlot_comment() { super("comment", ANode.nodeattr$parent, TypeInfo.newTypeInfo(Comment.class,null)); }
+	static final class ExtSpaceAttrSlot_comment extends ExtSpaceAttrSlot {
+		ExtSpaceAttrSlot_comment() { super("comment", ANode.nodeattr$parent, TypeInfo.newTypeInfo(Comment.class,null)); }
 		public Language getCompilerLang() { return CoreLang; }
 		public String getXmlNamespaceURI() { return getCompilerLang().getURI(); }
 	}
 
-    public static final ExtAttrSlot_comment ATTR_COMMENT = new ExtAttrSlot_comment();
+    public static final ExtSpaceAttrSlot_comment ATTR_COMMENT = new ExtSpaceAttrSlot_comment();
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 

@@ -175,6 +175,7 @@ public final class Operator implements Constants {
 	public static final Operator PostTypeArray;
 	public static final Operator PostTypeVararg;
 	public static final Operator PostTypeSpace;
+	public static final Operator PostTypeExtSpace;
 
 	// Multi operators
 	public static final Operator Conditional;
@@ -277,6 +278,7 @@ public final class Operator implements Constants {
 		PostTypeArray   = newOperator(255, "T []");						PostTypeArray.is_type_operator = true;
 		PostTypeVararg  = newOperator(255, "T ...");						PostTypeVararg.is_type_operator = true;
 		PostTypeSpace   = newOperator(255, "T \u2205");					PostTypeSpace.is_type_operator = true; // ∅
+		PostTypeExtSpace= newOperator(255, "T \u22c8");					PostTypeExtSpace.is_type_operator = true; // ⋈
 
 		// Multi operators
 		Conditional = newOperator(opConditionalPriority, "X ? X : Y");

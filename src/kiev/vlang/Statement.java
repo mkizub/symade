@@ -29,8 +29,8 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 
 	@nodeAttr public Method					dispatched;
 	@nodeData public Method					dispatcher;
-	@nodeAttr public SymbolRef[]			old_vars;
-	@nodeAttr public SymbolRef[]			new_vars;
+	@nodeAttr public SymbolRef∅			old_vars;
+	@nodeAttr public SymbolRef∅			new_vars;
 
 	public InlineMethodStat() {}
 

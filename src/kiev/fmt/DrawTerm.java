@@ -232,12 +232,12 @@ public final class DrawPlaceHolder extends DrawTerm {
 public class DrawNodeTerm extends DrawTerm {
 
 	String attr;
-	AttrSlot attr_slot;
+	ScalarAttrSlot attr_slot;
 
 	public DrawNodeTerm(ANode node, Draw_SyntaxAttr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		this.attr = syntax.name.intern();
-		this.attr_slot = syntax.attr_slot;
+		this.attr_slot = (ScalarAttrSlot)syntax.attr_slot;
 	}
 
 	String makeText(Formatter fmt) {
@@ -257,10 +257,10 @@ public class DrawNodeTerm extends DrawTerm {
 			return attr_slot.get(drnode);
 		return drnode.getVal(attr);
 	}
-	public final AttrPtr getAttrPtr() {
+	public final ScalarPtr getScalarPtr() {
 		if (attr_slot != null)
-			return new AttrPtr(drnode, attr_slot);
-		return drnode.getAttrPtr(attr);
+			return new ScalarPtr(drnode, attr_slot);
+		return drnode.getScalarPtr(attr);
 	}
 }
 

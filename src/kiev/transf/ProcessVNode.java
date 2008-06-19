@@ -36,6 +36,7 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameSpaceAttrSlot		= getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev\u001fvtree\u001fSpaceAttrSlot"); 
 	public static final String nameSpaceRefAttrSlot	= getPropS(PROP_BASE,"nameSpaceRefAttrSlot","kiev\u001fvtree\u001fSpaceRefAttrSlot"); 
 	public static final String nameSpaceAttAttrSlot	= getPropS(PROP_BASE,"nameSpaceAttAttrSlot","kiev\u001fvtree\u001fSpaceAttAttrSlot"); 
+	public static final String nameExtSpaceAttrSlot	= getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev\u001fvtree\u001fExtSpaceAttrSlot"); 
 	public static final String nameLanguageIface		= getPropS(PROP_BASE,"nameLanguageIface","kiev\u001fvlang\u001fLanguage"); 
 	public static final String nameCopyContext			= getPropS(PROP_BASE,"nameCopyContext","kiev\u001fvtree\u001fANode\u001fCopyContext"); 
 	public static final String nameCopyable			= getPropS(PROP_BASE,"nameCopyable","copyable");
@@ -60,6 +61,7 @@ abstract class VNode_Base extends TransfProcessor {
 	static Type tpSpaceAttrSlot;
 	static Type tpSpaceRefAttrSlot;
 	static Type tpSpaceAttAttrSlot;
+	static Type tpExtSpaceAttrSlot;
 	static Type tpLanguageIface;
 	static Type tpCopyContext;
 
@@ -111,6 +113,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpSpaceAttrSlot = Env.getRoot().loadTypeDecl(nameSpaceAttrSlot, true).xtype;
 			tpSpaceRefAttrSlot = Env.getRoot().loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
 			tpSpaceAttAttrSlot = Env.getRoot().loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
+			tpExtSpaceAttrSlot = Env.getRoot().loadTypeDecl(nameExtSpaceAttrSlot, true).xtype;
 			tpLanguageIface = Env.getRoot().loadTypeDecl(nameLanguageIface, true).xtype;
 			tpCopyContext = Env.getRoot().loadTypeDecl(nameCopyContext, true).xtype;
 		}
@@ -161,12 +164,23 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			{
 				Type ft = f.getType();
 				if (ft.isInstanceOf(tpNArray)) {
+					boolean isExtData = fmatt != null ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 					if !(ft.isInstanceOf(tpNodeSpace)) {
-						TypeExpr te = (TypeExpr)f.vtype;
-						te.op = Operator.PostTypeSpace;
-						te.ident = Operator.PostTypeSpace.name;
-						te.type_lnk = null;
-						te.getType();
+						if (!isExtData) {
+							Kiev.reportWarning(f,"Use node space \u2205 instead of []"); // ∅
+							TypeExpr te = (TypeExpr)f.vtype;
+							te.op = Operator.PostTypeSpace;
+							te.ident = Operator.PostTypeSpace.name;
+							te.type_lnk = null;
+							te.getType();
+						} else {
+							Kiev.reportWarning(f,"Use extended space \u22c8 instead of []"); // ⋈
+							TypeExpr te = (TypeExpr)f.vtype;
+							te.op = Operator.PostTypeExtSpace;
+							te.ident = Operator.PostTypeExtSpace.name;
+							te.type_lnk = null;
+							te.getType();
+						}
 					}
 					isArr = true;
 				}
@@ -217,7 +231,12 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				s.meta.setMeta(m.ncopy());
 		}
 		if (isArr) {
-			if (isAtt) {
+			if (isExtData && isAtt) {
+				TVarBld set = new TVarBld();
+				set.append(tpExtSpaceAttrSlot.getStruct().args[0].getAType(), clz_tp);
+				s.super_types.insert(0, new TypeRef(tpExtSpaceAttrSlot.applay(set)));
+			}
+			else if (isAtt) {
 				TVarBld set = new TVarBld();
 				set.append(tpSpaceAttAttrSlot.getStruct().args[0].getAType(), clz_tp);
 				s.super_types.insert(0, new TypeRef(tpSpaceAttAttrSlot.applay(set)));
@@ -261,7 +280,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			if (isArr) {
 				// add public N[] get(ASTNode parent)
 				{
-					Method getArr = new MethodImpl("get",new ArrayType(tpANode),ACC_PUBLIC | ACC_SYNTHETIC);
+					Method getArr = new MethodImpl("getArray",new ArrayType(tpANode),ACC_PUBLIC | ACC_SYNTHETIC);
 					getArr.params.add(new LVar(0, "parent", tpANode, Var.PARAM_NORMAL, ACC_FINAL));
 					s.addMethod(getArr);
 					getArr.body = new Block(0);
@@ -270,7 +289,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				}
 				// add public void set(ASTNode parent, N[]:Object narr)
 				{
-					Method setArr = new MethodImpl("set",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+					Method setArr = new MethodImpl("setArray",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
 					setArr.params.add(new LVar(0, "parent", tpANode, Var.PARAM_NORMAL, ACC_FINAL));
 					setArr.params.add(new LVar(0, "narr", Type.tpObject /*new ArrayType(tpANode)*/, Var.PARAM_NORMAL, ACC_FINAL));
 					s.addMethod(setArr);
@@ -329,7 +348,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 		}
 		else if (isArr) {
-			Kiev.reportError(f,"Space of nodes cannot be an ext_data");
+			//Kiev.reportError(f,"Space of nodes cannot be an ext_data");
 		}
 
 		Kiev.runProcessorsOn(s);
@@ -793,7 +812,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				walker.params.append(new LVar(0,"$walker", VNode_Base.tpTreeWalker, Var.PARAM_NORMAL, 0));
 				walker.body = new Block(0);
 				foreach (Field f; aflds; f.parent() == iface) {
-					UserMeta matt = f.getMeta(VNode_Base.mnAtt);
+					UserMeta matt = (UserMeta)f.getMeta(VNode_Base.mnAtt);
 					if (matt == null)
 						continue;
 					if (matt.getZ(VNode_Base.nameExtData))

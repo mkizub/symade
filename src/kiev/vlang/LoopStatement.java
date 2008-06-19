@@ -42,8 +42,8 @@ public final class Label extends DNode {
 
 	@virtual typedef This  = Label;
 
-	@nodeData(copyable=false)	public ASTNode[]		links;
-							public CodeLabel		label;
+	@nodeData(copyable=false)	public ASTNode∅		links;
+								public CodeLabel		label;
 
 	public boolean preResolveIn() {
 		if (meta != null)
@@ -199,7 +199,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@virtual typedef This  = ForStat;
 
-	@nodeAttr public ASTNode[]	inits;
+	@nodeAttr public ASTNode∅	inits;
 	@nodeAttr public ENode		cond;
 	@nodeAttr public ENode		body;
 	@nodeAttr public ENode		iter;

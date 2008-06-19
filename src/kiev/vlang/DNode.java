@@ -262,10 +262,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		this.meta = new MetaSet();
 	}
 
-	public ASTNode getDummyNode() {
-		return DummyDNode.dummyNode;
-	}
-	
 	public Object copy(CopyContext cc) {
 		ANode obj = cc.hasCopyOf(this);
 		if (obj != null)
@@ -322,17 +318,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 }
 
-@ThisIsANode(lang=void)
-public final class DummyDNode extends DNode {
-	public static final DummyDNode dummyNode = new DummyDNode();
-
-	@virtual typedef This  = DummyDNode;
-
-	private DummyDNode() {
-		this.sname = "<dummy>";
-	}
-}
-
 public interface GlobalDNode {
 	public String qname();
 }
@@ -345,7 +330,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@nodeAttr public TypeRef[]					super_types;
+	@nodeAttr public TypeRef∅					super_types;
 	          public MetaType					xmeta_type;
 	          public Type						xtype;
 
@@ -628,9 +613,9 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	@virtual typedef This  ≤ ComplexTypeDecl;
 
 	@nodeAttr public SymbolRef<ComplexTypeDecl>	package_clazz;
-	@nodeAttr public TypeConstr[]					args;
-	@nodeAttr public ASTNode[]						members;
-	@nodeData public DNode[]						sub_decls;
+	@nodeAttr public TypeConstr∅					args;
+	@nodeAttr public ASTNode∅						members;
+	@nodeData public DNode∅						sub_decls;
 	          public String							q_name;	// qualified name
 	          public int							type_decl_version;
 

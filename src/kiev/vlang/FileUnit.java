@@ -151,7 +151,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 
 	@nodeAttr public SymbolRef<KievPackage>	srpkg;
-	@nodeAttr public ASTNode[]					members;
+	@nodeAttr public ASTNode∅					members;
 	
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
 	@getter public NameSpace get$ctx_name_space() { return this; }

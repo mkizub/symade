@@ -185,7 +185,7 @@ public final class TypeNameArgsRef extends TypeRef {
 
 	@virtual typedef This  = TypeNameArgsRef;
 
-	@nodeAttr public TypeRef[]			args;
+	@nodeAttr public TypeRef∅			args;
 
 	public TypeNameArgsRef() {}
 
@@ -370,7 +370,7 @@ public final class TypeInnerNameRef extends TypeRef {
 	@virtual typedef This  = TypeInnerNameRef;
 
 	@nodeAttr public TypeRef			outer;
-	@nodeAttr public TypeRef[]			args;
+	@nodeAttr public TypeRef∅			args;
 
 	public TypeInnerNameRef() {}
 

@@ -25,13 +25,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	
 	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
-	@nodeAttr public TypeConstr[]			targs;
+	@nodeAttr public TypeConstr∅			targs;
 	@nodeAttr public TypeRef				type_ret;
 	@nodeAttr public TypeRef				dtype_ret;
-	@nodeAttr public Var[]					params;
-	@nodeAttr public Symbol[]				aliases;
+	@nodeAttr public Var∅					params;
+	@nodeAttr public Symbol∅				aliases;
 	@nodeAttr public ENode					body;
-	@nodeAttr public WBCCondition[]	 	conditions;
+	@nodeAttr public WBCCondition∅		 	conditions;
 	@nodeAttr(ext_data=true) public Var	ret_var;
 
 	@nodeData(ext_data=true)
@@ -906,7 +906,7 @@ public final class Constructor extends Method {
 
 	@virtual typedef This  = Constructor;
 
-	@nodeAttr public ENode[]				addstats;
+	@nodeAttr public ENode∅				addstats;
 
 	public Constructor() {}
 

@@ -744,7 +744,7 @@ public final class OuterThisAccessExpr extends ENode {
 	@virtual typedef This  = OuterThisAccessExpr;
 
 	@nodeAttr public TypeRef			outer;
-	@nodeData public Var[]			outer_refs;
+	@nodeData public Var∅			outer_refs;
 
 	public OuterThisAccessExpr() {}
 

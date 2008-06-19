@@ -32,8 +32,8 @@ public final class NewExpr extends ENode {
 
 	@nodeAttr				public TypeRef				ntype;
 	@nodeAttr				public ENode				outer;
-	@nodeAttr(ext_data=true)	public ENode			tpinfo;
-	@nodeAttr				public ENode[]				args;
+	@nodeAttr(ext_data=true)public ENode				tpinfo;
+	@nodeAttr				public ENode∅				args;
 	@nodeAttr				public Struct				clazz; // if this new expression defines new class
 
 	@getter public Method get$func() {
@@ -217,7 +217,7 @@ public final class NewEnumExpr extends ENode {
 
 	@virtual typedef This  = NewEnumExpr;
 
-	@nodeAttr public ENode[]				args;
+	@nodeAttr public ENode∅				args;
 
 	@getter public Method get$func() {
 		DNode sym = this.dnode;
@@ -283,7 +283,7 @@ public final class NewArrayExpr extends ENode {
 	@virtual typedef This  = NewArrayExpr;
 
 	@nodeAttr public TypeRef				ntype;
-	@nodeAttr public ENode[]				args;
+	@nodeAttr public ENode∅				args;
 	          public ArrayType				arrtype;
 
 	public NewArrayExpr() {}
@@ -332,7 +332,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	@virtual typedef This  = NewInitializedArrayExpr;
 
 	@nodeAttr public TypeExpr			ntype;
-	@nodeAttr public ENode[]			args;
+	@nodeAttr public ENode∅			args;
 
 	public NewInitializedArrayExpr() {}
 
@@ -404,8 +404,8 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 	@virtual typedef This  = NewClosure;
 
-	@nodeAttr public TypeRef				type_ret;
-	@nodeAttr public Var[]				params;
+	@nodeAttr public TypeRef			type_ret;
+	@nodeAttr public Var∅				params;
 	@nodeAttr public ENode				body;
 	@nodeAttr public Struct				clazz;
 	@nodeData public CallType			xtype;

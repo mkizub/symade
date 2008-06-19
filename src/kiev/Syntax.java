@@ -21,6 +21,7 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 
 typedef elem∅ kiev.vtree.NodeSpace<elem>;
+typedef elem⋈ kiev.vtree.NodeExtSpace<elem>;
 
 operator ≡ , xfx, 60;	// == equiv
 operator ≢ , xfx, 60;	// !=

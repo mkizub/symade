@@ -24,8 +24,8 @@ public class TypeClosureRef extends TypeRef {
 
 	@virtual typedef This  = TypeClosureRef;
 
-	@nodeAttr public TypeRef[]		args;
-	@nodeAttr public TypeRef			ret;
+	@nodeAttr public TypeRef∅		args;
+	@nodeAttr public TypeRef		ret;
 
 	public TypeClosureRef() {}
 	

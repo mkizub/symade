@@ -100,14 +100,5 @@ public abstract class ADomNode extends ASTNode implements ADomNodeMixin, org.w3c
 	public boolean isEqualNode(org.w3c.dom.Node other) {
 		return this == other;
 	}
-
-	// ASTNode interface
-	public ASTNode getDummyNode() { DummyDomNode.dummyDomNode }
 }
 
-@ThisIsANode
-public final class DummyDomNode extends ADomNode {
-	public static final DummyDomNode dummyDomNode = new DummyDomNode();
-	public String getNodeName() { "<dummy>" }
-	public short getNodeType() { return (short)0; }
-}

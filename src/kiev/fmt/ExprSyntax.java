@@ -23,7 +23,7 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 	@nodeAttr public SyntaxToken		l_paren;
 	@nodeAttr public SyntaxToken		bad_op;
 	@nodeAttr public SyntaxToken		r_paren;
-	@nodeAttr public SyntaxToken[]		operators;
+	@nodeAttr public SyntaxToken∅		operators;
 
 	public SyntaxExprTemplate() {
 		super(new SyntaxNode());
@@ -50,7 +50,7 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 public class SyntaxExpr extends SyntaxElem {
 	@virtual typedef This  = SyntaxExpr;
 
-	@nodeAttr public SyntaxAttr[]					attrs;
+	@nodeAttr public SyntaxAttr∅					attrs;
 	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
 
 	public SyntaxExpr() {

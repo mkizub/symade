@@ -364,7 +364,7 @@ public final class DrawLayoutBlock extends ANode {
 	public static final DrawLayoutBlock[] emptyArray = new DrawLayoutBlock[0];
 
 	@nodeAttr
-	public DrawLayoutBlock[]	blocks;
+	public DrawLayoutBlock∅	blocks;
 	@nodeData
 	public Draw_Paragraph		par;
 	@nodeData

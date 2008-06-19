@@ -36,7 +36,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@nodeAttr public ENode			val;
 	@nodeData public Type			ctype;
-	@nodeAttr public Var[]			pattern;
+	@nodeAttr public Var∅			pattern;
 	          public CodeLabel		case_label;
 
 	public CaseLabel() {}
@@ -132,7 +132,7 @@ public class SwitchStat extends Block {
 	@virtual typedef This  ≤ SwitchStat;
 
 	@nodeAttr public ENode					sel;
-	@nodeData public CaseLabel[]				cases;
+	@nodeData public CaseLabel∅				cases;
 	@nodeData public CaseLabel				defCase;
 	@nodeAttr public ENode					sel_to_int;
 	@nodeAttr(copyable=false, ext_data=true)
@@ -388,9 +388,9 @@ public class TryStat extends ENode {
 	@virtual typedef This  = TryStat;
 
 	@nodeAttr public ENode				body;
-	@nodeAttr public CatchInfo[]			catchers;
-	@nodeAttr public FinallyInfo			finally_catcher;
-	     public CodeLabel			end_label;
+	@nodeAttr public CatchInfo∅		catchers;
+	@nodeAttr public FinallyInfo		finally_catcher;
+	          public CodeLabel			end_label;
 
 	public TryStat() {}
 

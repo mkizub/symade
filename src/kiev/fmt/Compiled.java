@@ -295,12 +295,25 @@ public final class Draw_CalcOptionIncludeInDump extends Draw_CalcOption {
 		}
 		if (attr == null)
 			return false;
-		Object val = attr.get(node);
-		if (val == null)
-			return false;
-		if (attr.is_space && ((Object[])val).length == 0)
-			return false;
-		return node.includeInDump(dump, attr, val);
+		if (attr instanceof SpaceAttrSlot) {
+			ANode[] vals = attr.getArray(node);
+			if (vals.length == 0)
+				return false;
+			return node.includeInDump(dump, attr, vals);
+		}
+		else if (attr instanceof ExtSpaceAttrSlot) {
+			ExtChildrenIterator iter = attr.iterate(node);
+			if (!iter.hasMoreElements())
+				return false;
+			return node.includeInDump(dump, attr, iter);
+		}
+		else if (attr instanceof ScalarAttrSlot) {
+			Object val = attr.get(node);
+			if (val == null)
+				return false;
+			return node.includeInDump(dump, attr, val);
+		}
+		return false;
 	}
 	Object readResolve() throws ObjectStreamException {
 		if (this.name != null) this.name = this.name.intern();

@@ -195,11 +195,11 @@ public class DrawOptional extends DrawCtrl {
 public class DrawEnumChoice extends DrawCtrl {
 
 	private Object drawed_en;
-	private AttrSlot attr;
+	private ScalarAttrSlot attr;
 
 	public DrawEnumChoice(ANode node, Draw_SyntaxEnumChoice syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
+		foreach (ScalarAttrSlot a; node.values(); a.name == syntax.name) {
 			attr = a;
 			break;
 		}

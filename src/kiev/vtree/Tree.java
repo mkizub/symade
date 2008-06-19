@@ -19,10 +19,10 @@ import syntax kiev.Syntax;
  *
  */
 
-public final class AttrPtr {
+public final class ScalarPtr {
 	public final ANode node;
-	public final AttrSlot slot;
-	public AttrPtr(ANode node, AttrSlot slot) {
+	public final ScalarAttrSlot slot;
+	public ScalarPtr(ANode node, ScalarAttrSlot slot) {
 		this.node = node;
 		this.slot = slot;
 	}
@@ -32,8 +32,8 @@ public final class AttrPtr {
 
 public final class SpacePtr {
 	public final ANode node;
-	public final SpaceAttrSlot<ANode> slot;
-	public SpacePtr(ANode node, SpaceAttrSlot<ANode> slot) {
+	public final SpaceAttrSlot slot;
+	public SpacePtr(ANode node, SpaceAttrSlot slot) {
 		this.node = node;
 		this.slot = slot;
 	}
@@ -128,10 +128,10 @@ public abstract class AttrSlot {
 		return this.parent_attr_slot == ANode.nodeattr$parent;
 	}
 
-	public abstract void set(ANode parent, Object value);
-	public abstract Object get(ANode parent);
-	public void clear(ANode parent) { this.set(parent, defaultValue); }
-	public void detach(ANode parent, ANode old) { this.set(parent, null); }
+	//public abstract void set(ANode parent, Object value);
+	//public abstract Object get(ANode parent);
+	//public void clear(ANode parent) { this.set(parent, defaultValue); }
+	public abstract void detach(ANode parent, ANode old);
 
 	public boolean isWrittable() { return true; }
 	
@@ -141,6 +141,16 @@ public abstract class AttrSlot {
 	public String getXmlFullName() { return xml_attr_name; }
 	public String getXmlNamespaceURI() { return null; }
 	public Language getCompilerLang() { return null; }
+}
+
+public abstract class ScalarAttrSlot extends AttrSlot {
+	public ScalarAttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, boolean is_external, TypeInfo typeinfo) {
+		super(name,p_attr,is_space,is_external,typeinfo);
+	}
+	public abstract void set(ANode parent, Object value);
+	public abstract Object get(ANode parent);
+	public void clear(ANode parent) { this.set(parent, defaultValue); }
+	public void detach(ANode parent, ANode old) { this.set(parent, null); }
 }
 
 public final class ParentAttrSlot extends AttrSlot {
@@ -169,9 +179,17 @@ public final class ParentAttrSlot extends AttrSlot {
 		else
 			throw new RuntimeException("@nodeParent '"+name+"' is not cleanable"); 
 	}
+	public void detach(ANode parent, ANode node) {
+		if (this == ANode.nodeattr$parent)
+			node.callbackDetached(node.p_parent, node.p_slot);
+		else if (this.is_unique)
+			node.delExtParent(this);
+		else
+			throw new RuntimeException("@nodeParent '"+name+"' is not cleanable"); 
+	}
 }
 
-public abstract class RefAttrSlot extends AttrSlot {
+public abstract class RefAttrSlot extends ScalarAttrSlot {
 	public RefAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, null, false, false, typeinfo);
 	}
@@ -179,7 +197,7 @@ public abstract class RefAttrSlot extends AttrSlot {
 	public abstract Object get(ANode parent);
 }
 
-public abstract class AttAttrSlot extends AttrSlot {
+public abstract class AttAttrSlot extends ScalarAttrSlot {
 	public AttAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, ANode.nodeattr$parent, false, false, typeinfo);
 		assert (this.is_attr);
@@ -188,7 +206,7 @@ public abstract class AttAttrSlot extends AttrSlot {
 	public abstract Object get(ANode parent);
 }
 
-public abstract class ExtRefAttrSlot extends AttrSlot {
+public abstract class ExtRefAttrSlot extends ScalarAttrSlot {
 	public ExtRefAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, null, false, false, typeinfo);
 	}
@@ -206,7 +224,7 @@ public abstract class ExtRefAttrSlot extends AttrSlot {
 	}
 }
 
-public abstract class ExtAttAttrSlot extends AttrSlot {
+public abstract class ExtAttAttrSlot extends ScalarAttrSlot {
 	public ExtAttAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, ANode.nodeattr$parent, false, false, typeinfo);
 		assert (this.is_attr);
@@ -225,20 +243,11 @@ public abstract class ExtAttAttrSlot extends AttrSlot {
 	}
 }
 
-public class ExtAttrSlot extends AttrSlot {
-	public ExtAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
+public class ExtSpaceAttrSlot extends AttrSlot {
+	public ExtSpaceAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
 		super(name,p_attr,false,true,typeinfo);
 	}
 
-	public final void set(ANode parent, Object value) {
-		throw new RuntimeException("ExtAttrSlot.set()");
-	}
-	public final Object get(ANode parent) {
-		throw new RuntimeException("ExtAttrSlot.get()");
-	}
-	public final void clear(ANode parent) {
-		throw new RuntimeException("ExtAttrSlot.clear()");
-	}
 	public final ExtChildrenIterator iterate(ANode parent) {
 		return parent.getExtChildIterator(this);
 	}
@@ -254,9 +263,16 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public SpaceAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
 		super(name, p_attr, true, false, typeinfo);
 	}
+	
+	protected void set(ANode parent, Object value) { throw new Error("SpaceAttrSlot.set()"); }
+	protected Object get(ANode parent) { throw new Error("SpaceAttrSlot.get()"); }
 
-	public final N[] getArray(ANode parent) {
+	public N[] getArray(ANode parent) {
 		return (N[])this.get(parent);
+	}
+
+	public void setArray(ANode parent, Object/*N[]*/ arr) {
+		return this.set(parent, arr);
 	}
 
 	public final int indexOf(ANode parent, ANode node) {
@@ -312,7 +328,7 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final N set(ANode parent, int idx, N node) {
 		N[] narr = (N[])getArray(parent).clone();
 		narr[idx] = node;
-		set(parent,narr);
+		setArray(parent,narr);
 		return node;
 	}
 
@@ -323,7 +339,7 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		for (int i=0; i < sz; i++)
 			tmp[i] = narr[i];
 		tmp[sz] = node;
-		set(parent,tmp);
+		setArray(parent,tmp);
 		return node;
 	}
 
@@ -336,7 +352,7 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 			tmp[i] = narr[i];
 		for (; i < sz; i++)
 			tmp[i] = narr[i+1];
-		set(parent,tmp);
+		setArray(parent,tmp);
 	}
 
 	public final void insert(ANode parent, int idx, N node) {
@@ -350,7 +366,7 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		tmp[idx] = node;
 		for (; i < sz; i++)
 			tmp[i+1] = narr[i];
-		set(parent,tmp);
+		setArray(parent,tmp);
 	}
 
 	public final void copyFrom(ANode parent, N[] arr) {
@@ -367,13 +383,13 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		N[] narr = getArray(parent);
 		if (narr.length == 0)
 			return;
-		set(parent,(N[])defaultValue);
+		setArray(parent,(N[])defaultValue);
 	}
 	
 	public final N[] delToArray(ANode parent) {
 		N[] narr = getArray(parent);
 		if (narr.length > 0)
-			set(parent,(N[])defaultValue);
+			setArray(parent,(N[])defaultValue);
 		return narr;
 	}
 }
@@ -394,7 +410,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		N[] narr = (N[])getArray(parent).clone();
 		narr[idx].callbackDetached(parent, this);
 		narr[idx] = node;
-		set(parent,narr);
+		setArray(parent,narr);
 		node.callbackAttached(parent, this);
 		return node;
 	}
@@ -408,7 +424,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		for (int i=0; i < sz; i++)
 			tmp[i] = narr[i];
 		tmp[sz] = node;
-		set(parent,tmp);
+		setArray(parent,tmp);
 		node.callbackAttached(parent, this);
 		return node;
 	}
@@ -423,7 +439,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 			tmp[i] = narr[i];
 		for (; i < sz; i++)
 			tmp[i] = narr[i+1];
-		set(parent,tmp);
+		setArray(parent,tmp);
 	}
 
 	public final void insert(ANode parent, int idx, N node) {
@@ -439,7 +455,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		tmp[idx] = node;
 		for (; i < sz; i++)
 			tmp[i+1] = narr[i];
-		set(parent,tmp);
+		setArray(parent,tmp);
 		node.callbackAttached(parent, this);
 	}
 
@@ -457,7 +473,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		N[] narr = getArray(parent);
 		if (narr.length == 0)
 			return;
-		set(parent,(N[])defaultValue);
+		setArray(parent,(N[])defaultValue);
 		for (int i=0; i < narr.length; i++)
 			narr[i].callbackDetached(parent, this);
 	}
@@ -465,7 +481,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final N[] delToArray(ANode parent) {
 		N[] narr = getArray(parent);
 		if (narr.length > 0) {
-			set(parent,(N[])defaultValue);
+			setArray(parent,(N[])defaultValue);
 			for (int i=0; i < narr.length; i++)
 				narr[i].callbackDetached(parent, this);
 		}

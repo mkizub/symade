@@ -148,3 +148,85 @@ public class NodeSpaceEnumerator<N extends ANode> implements Enumeration<N>
 	}
 }
 
+public metatype NodeExtSpace<N extends ANode> extends N[] {
+	
+	@macro
+	private static ENode# getAttr(Field# f) {
+		case Call# self():
+			(f.parent).#id"nodeattr$'f'"#	//new #SFldExpr(obj=f.parent, ident="nodeattr$'f'")
+	}
+	
+	@macro
+	public N add(N node)
+		alias append
+		alias lfy operator +=
+	{
+		case Call# self(IFld# obj):
+			getAttr(self.obj.var).add(self.obj.obj, node)
+		case Set# self(IFld# lval):
+			getAttr(self.lval.var).add(self.lval.obj, self.value)
+	}
+
+	@macro
+	public void detach(N node)
+		alias lfy operator -=
+	{
+		case Call# self(IFld# obj):
+			getAttr(self.obj.var).detach(self.obj.obj, node)
+	}
+
+	@macro
+	public NodeExtSpaceEnumerator<N> elements()
+	{
+		case Call# self(IFld# obj):
+			new NodeExtSpaceEnumerator((ANode)self.obj.obj, (ExtSpaceAttrSlot)getAttr(self.obj.var))
+	}
+
+	@macro
+	public boolean contains(ANode val) {
+		case Call# self(IFld# obj):
+			new NodeExtSpaceEnumerator((ANode)self.obj.obj, (ExtSpaceAttrSlot)getAttr(self.obj.var)).contains(val)
+	}
+}
+
+public class NodeExtSpaceEnumerator<N extends ANode> implements Enumeration<N>
+{
+	public  final ANode             parent;
+	public  final ExtSpaceAttrSlot  attr;
+	private final Object[]          ext_data;
+	private       int               next_pos;
+	
+	NodeExtSpaceEnumerator(ANode parent, ExtSpaceAttrSlot attr) {
+		this.parent = parent;
+		this.attr = attr;
+		this.ext_data = parent.ext_data;
+		this.next_pos = -1;
+		if (ext_data != null)
+			setNextPos();
+	}
+	public boolean hasMoreElements() {
+		if (ext_data == null)
+			return false;
+		return next_pos < ext_data.length;
+	}
+	public N nextElement() {
+		N n = (N)ext_data[next_pos];
+		setNextPos();
+		return n;
+	}
+	private void setNextPos() {
+		for (next_pos++; next_pos < ext_data.length; next_pos++) {
+			Object dat = ext_data[next_pos];
+			if (dat instanceof ANode && (attr == null || dat.pslot() == attr))
+				return;
+		}
+	}
+	public boolean contains(ANode val) {
+		if (val == null)
+			return false;
+		foreach (Object n; ext_data; n == val)
+			return true;
+		return false;
+	}
+}
+

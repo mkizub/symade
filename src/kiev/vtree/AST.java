@@ -361,30 +361,30 @@ public abstract class ANode implements INode {
 
 	public static ANode getPrevNode(ANode node) {
 		AttrSlot slot = node.p_slot;
-		if (slot == null || !slot.is_space)
-			return null;
-		ANode[] arr = (ANode[])slot.get(node.parent());
-		for (int i=arr.length-1; i >= 0; i--) {
-			ANode n = arr[i];
-			if (n == node) {
-				if (i == 0)
-					return null;
-				return arr[i-1];
+		if (slot instanceof SpaceAttrSlot) {
+			ANode[] arr = slot.getArray(node.parent());
+			for (int i=arr.length-1; i >= 0; i--) {
+				ANode n = arr[i];
+				if (n == node) {
+					if (i == 0)
+						return null;
+					return arr[i-1];
+				}
 			}
 		}
 		return null;
 	}
 	public static ANode getNextNode(ANode node) {
 		AttrSlot slot = node.p_slot;
-		if (slot == null || !slot.is_space)
-			return null;
-		ANode[] arr = (ANode[])slot.get(node.parent());
-		for (int i=arr.length-1; i >= 0; i--) {
-			ANode n = arr[i];
-			if (n == node) {
-				if (i >= arr.length-1)
-					return null;
-				return arr[i+1];
+		if (slot instanceof SpaceAttrSlot) {
+			ANode[] arr = slot.getArray(node.parent());
+			for (int i=arr.length-1; i >= 0; i--) {
+				ANode n = arr[i];
+				if (n == node) {
+					if (i >= arr.length-1)
+						return null;
+					return arr[i+1];
+				}
 			}
 		}
 		return null;
@@ -442,8 +442,18 @@ public abstract class ANode implements INode {
 	}
 
 	public Object getVal(String name) {
-		foreach (AttrSlot a; this.values(); a.name == name)
-			return a.get(this);
+		if (name == "this")
+			return this;
+		if (name == "parent")
+			return this.parent();
+		foreach (AttrSlot a; this.values(); a.name == name) {
+			if (a instanceof ScalarAttrSlot)
+				return a.get(this);
+			else if (a instanceof SpaceAttrSlot)
+				return a.getArray(this);
+			else if (a instanceof ExtSpaceAttrSlot)
+				return a.iterate(this);
+		}
 		if (ext_data != null) {
 			foreach (Object dat; ext_data) {
 				if (dat instanceof DataAttachInfo && dat.p_slot.name == name)
@@ -452,9 +462,6 @@ public abstract class ANode implements INode {
 					return dat;
 			}
 		}
-		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
-	}
-	public void setVal(String name, Object val) {
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
 
@@ -573,6 +580,26 @@ public abstract class ANode implements INode {
 		return;
 	}
 
+	public final void replaceExtData(ANode nold, ANode nnew, AttrSlot attr) {
+		assert (nold.isAttached());
+		assert (!nnew.isAttached());
+		assert (attr.is_child && !attr.is_space);
+		assert (ext_data != null);
+		Object[] ext_data = this.ext_data;
+		int sz = ext_data.length;
+		for (int i=0; i < sz; i++) {
+			if (ext_data[i] == nold) {
+				this.ext_data = (Object[])ext_data.clone();
+				this.ext_data[i] = nnew;
+				nold.callbackDetached(this, attr);
+				nnew.callbackAttached(this, attr);
+				return;
+			}
+		}
+		assert ("Node is not ext_data child");
+		return;
+	}
+
 	public final void delExtData(AttrSlot attr) {
 		Object[] ext_data = this.ext_data;
 		if (ext_data == null)
@@ -677,11 +704,10 @@ public abstract class ANode implements INode {
 //#else OLD_WALKER
 		if (walker.pre_exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_child) {
-				Object val = attr.get(this);
-				if (attr.is_space)
-					walker.visitANodeSpace((ANode[])val);
-				else if (val instanceof ANode)
-					walker.visitANode((ANode)val);
+				if (attr instanceof SpaceAttrSlot)
+					walker.visitANodeSpace(attr.getArray(this));
+				else if (attr instanceof ScalarAttrSlot && attr.is_child)
+					walker.visitANode((ANode)attr.get(this));
 			}
 			Object[] ext_data = this.ext_data;
 			if (ext_data != null) {
@@ -797,36 +823,41 @@ public abstract class ANode implements INode {
 		return this;
 	}
 	
-	public final AttrPtr getAttrPtr(String name) {
-		foreach (AttrSlot attr; this.values(); attr.name == name)
-			return new AttrPtr(this, attr);
+	public final ScalarPtr getScalarPtr(String name) {
+		foreach (ScalarAttrSlot attr; this.values(); attr.name == name)
+			return new ScalarPtr(this, attr);
 		throw new RuntimeException("No @nodeAttr/@nodeData attribute '"+name+"' in "+getClass());
 	}
 	
 	public final SpacePtr getSpacePtr(String name) {
-		foreach (AttrSlot attr; this.values(); attr.name == name && attr.is_space)
-			return new SpacePtr(this, (SpaceAttrSlot<ANode>)attr);
+		foreach (SpaceAttrSlot attr; this.values(); attr.name == name)
+			return new SpacePtr(this, attr);
 		throw new RuntimeException("No @nodeAttr/@nodeData space '"+name+"' in "+getClass());
 	}
 
 	public final <N extends ANode> N replaceWithNode(N node) {
 		assert(isAttached());
+		if (node == null) {
+			this.detach();
+			return null;
+		}
 		ANode parent = parent();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
-			assert(node != null);
 			int idx = pslot.indexOf(parent, this);
 			assert(idx >= 0);
-			if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
-				((ASTNode)node).pos = ((ASTNode)this).pos;
 			pslot.set(parent, idx, node);
-		} else {
+		}
+		else if (pslot instanceof ExtSpaceAttrSlot) {
+			parent.replaceExtData(this,node,pslot);
+		}
+		else if (pslot instanceof ScalarAttrSlot) {
 			assert(pslot.get(parent) == this);
-			if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
-				((ASTNode)node).pos = ((ASTNode)this).pos;
 			pslot.set(parent, node);
 		}
 		assert(node == null || node.isAttached());
+		if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
+			((ASTNode)node).pos = ((ASTNode)this).pos;
 		return node;
 	}
 	
@@ -835,15 +866,8 @@ public abstract class ANode implements INode {
 			return this.ncopy();
 		ANode rn = (ANode)getClass().newInstance();
 		foreach (AttrSlot attr; this.values(); attr.is_attr) {
-			Object val = attr.get(this);
-			if (val == null)
-				continue;
-			if (!attr.is_attr) {
-				//attr.set(rn,val);
-				continue;
-			}
-			if (attr.is_space) {
-				ANode[] vals = (ANode[])val;
+			if (attr instanceof SpaceAttrSlot) {
+				ANode[] vals = attr.getArray(this);
 				for (int i=0; i < vals.length; i++) {
 					ANode n = vals[i].doRewrite(ctx);
 					if (n instanceof BlockRewr) {
@@ -859,25 +883,46 @@ public abstract class ANode implements INode {
 					}
 				}
 			}
-			else if (attr.name == "meta" && val instanceof MetaSet) {
-				MetaSet ms = (MetaSet)ctx.fixup(attr,val.doRewrite(ctx));
-				MetaSet rs = (MetaSet)attr.get(rn);
-				foreach (MNode mn; ms.metas.delToArray())
-					rs.setMeta(mn);
+			else if (attr instanceof ExtSpaceAttrSlot) {
+				foreach (ANode n; attr.iterate(this)) {
+					Object obj = n.doRewrite(ctx);
+					if (obj instanceof BlockRewr) {
+						foreach (ASTNode st; obj.stats) {
+							n = (ANode)ctx.fixup(attr,st);
+							if (n != null)
+								attr.add(rn,n);
+						}
+					} else {
+						n = (ANode)ctx.fixup(attr,obj);
+						if (n != null)
+							attr.add(rn,n);
+					}
+				}
 			}
-			else if (val instanceof ANode) {
-				ANode rw = val.doRewrite(ctx);
-				while (rw instanceof BlockRewr && rw.stats.length == 1)
-					rw = rw.stats[0];
-				attr.set(rn,ctx.fixup(attr,rw));
+			else if (attr instanceof ScalarAttrSlot) {
+				Object val = attr.get(this);
+				if (val == null)
+					continue;
+				else if (attr.name == "meta" && val instanceof MetaSet) {
+					MetaSet ms = (MetaSet)ctx.fixup(attr,val.doRewrite(ctx));
+					MetaSet rs = (MetaSet)attr.get(rn);
+					foreach (MNode mn; ms.metas.delToArray())
+						rs.setMeta(mn);
+				}
+				else if (val instanceof ANode) {
+					ANode rw = val.doRewrite(ctx);
+					while (rw instanceof BlockRewr && rw.stats.length == 1)
+						rw = rw.stats[0];
+					attr.set(rn,ctx.fixup(attr,rw));
+				}
+				else
+					attr.set(rn,ctx.fixup(attr,val));
 			}
-			else
-				attr.set(rn,ctx.fixup(attr,val));
 		}
 		if (this.ext_data != null) {
 			foreach (ANode n; this.ext_data) {
 				AttrSlot attr = n.p_slot;
-				if (attr.is_external)
+				if (attr instanceof ScalarAttrSlot && attr.is_external)
 					this.setExtData(ctx.fixup(attr,n.doRewrite(ctx)),attr);
 			}
 		}
@@ -1121,14 +1166,17 @@ public abstract class ASTNode extends ANode implements Constants {
 		if (pslot instanceof SpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
 			assert(idx >= 0);
-			pslot.set(parent, idx, this.getDummyNode());
 			ASTNode n = fnode();
 			assert(n != null);
 			if (n.pos == 0) n.pos = this.pos;
-			pslot.set(parent, idx, n);
+			pslot.insert(parent, idx, n);
 			assert(n.isAttached());
 			return n;
-		} else {
+		}
+		else if (pslot instanceof ExtSpaceAttrSlot) {
+			throw new RuntimeException("replace external node");
+		}
+		else if (pslot instanceof ScalarAttrSlot) {
 			assert(pslot.get(parent) == this);
 			pslot.set(parent, null);
 			ASTNode n = fnode();
@@ -1137,6 +1185,7 @@ public abstract class ASTNode extends ANode implements Constants {
 			assert(n == null || n.isAttached());
 			return n;
 		}
+		throw new RuntimeException("replace unknown kind of AttrSlot");
 	}
 
 	// break target (ENodes)
@@ -1190,8 +1239,6 @@ public abstract class ASTNode extends ANode implements Constants {
 //#endif UNVERSIONED
 	}
 
-	public ASTNode getDummyNode() { SNode.dummySNode }
-	
 	public boolean hasName(String name) { false }
 	public boolean hasNameStart(String nm) { false }
 	

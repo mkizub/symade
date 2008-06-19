@@ -85,7 +85,7 @@ public final class DirUnit extends SNode {
 
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public String			name;
-	@nodeAttr public ASTNode[]		members;
+	@nodeAttr public ASTNode∅		members;
 	
 	@setter public void set$name(String value) {
 		this.name = (value == null) ? null : value.intern();

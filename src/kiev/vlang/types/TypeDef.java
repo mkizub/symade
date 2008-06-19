@@ -183,7 +183,7 @@ public final class TypeConstr extends TypeDef {
 
 	@virtual typedef This  = TypeConstr;
 
-	@nodeAttr public TypeRef[]			lower_bound;
+	@nodeAttr public TypeRef∅			lower_bound;
 	@nodeAttr public TypeVariance		variance;
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }

@@ -24,7 +24,7 @@ public final class MetaSet extends ASTNode {
 	@virtual typedef This  = MetaSet;
 
 	@nodeAttr
-	public MNode[]		metas;
+	public MNode∅		metas;
 
 	// public just because of bit-mapped fields implementation
 	public int			mflags;
@@ -136,19 +136,7 @@ public abstract class MNode extends ASTNode {
 	public void verify() {}
 	public boolean isRuntimeVisible() { return false; }
 	public boolean isRuntimeInvisible() { return false; }
-	public ASTNode getDummyNode() { DummyMNode.dummyMNode }
 
-}
-
-@ThisIsANode(lang=void)
-public class DummyMNode extends MNode {
-	@virtual typedef This  = DummyMNode;
-
-	public static final DummyMNode dummyMNode = new DummyMNode();
-
-	@getter
-	public String get$qname() { "<dummy>" }
-	public JavaAnnotation getAnnotationDecl() { null }
 }
 
 @ThisIsANode(name="UserMeta", lang=CoreLang)
@@ -158,7 +146,7 @@ public class UserMeta extends MNode {
 	@abstract
 	@nodeAttr public String							qname;
 	@nodeAttr public SymbolRef<JavaAnnotation>		decl;
-	@nodeAttr public MetaValue[]					values;
+	@nodeAttr public MetaValue∅					values;
 
 	public boolean equals(Object o) {
 		if!(o instanceof UserMeta)
@@ -680,7 +668,7 @@ public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef This  = MetaValueArray;
 
-	@nodeAttr public ASTNode[]				values;
+	@nodeAttr public ASTNode∅				values;
 
 	public MetaValueArray() {}
 

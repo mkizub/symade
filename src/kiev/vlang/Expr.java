@@ -86,7 +86,7 @@ public class TypeInfoExpr extends ENode {
 
 	@nodeAttr public TypeRef				ttype;
 	@nodeAttr public ENode					cl_expr;
-	@nodeAttr public ENode[]				cl_args;
+	@nodeAttr public ENode∅				cl_args;
 
 	public TypeInfoExpr() {}
 
@@ -438,7 +438,7 @@ public class StringConcatExpr extends ENode {
 
 	@virtual typedef This  = StringConcatExpr;
 
-	@nodeAttr public ENode[]				args;
+	@nodeAttr public ENode∅				args;
 
 	public StringConcatExpr() {}
 
@@ -490,7 +490,7 @@ public class CommaExpr extends ENode {
 
 	@virtual typedef This  = CommaExpr;
 
-	@nodeAttr public ENode[]			exprs;
+	@nodeAttr public ENode∅			exprs;
 
 	public CommaExpr() {}
 
@@ -523,9 +523,9 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  ≤ Block;
 
-	@nodeAttr public ASTNode[]			stats;
+	@nodeAttr public ASTNode∅			stats;
 	@nodeAttr(copyable=false, ext_data=true)
-	     public Label				lblbrk;
+	          public Label				lblbrk;
 
 	public Block() {}
 

@@ -21,7 +21,6 @@ import syntax kiev.Syntax;
 public class TypeRef extends ENode {
 
 	public static final TypeRef[] emptyArray = new TypeRef[0];
-	public static final TypeRef dummyNode = new TypeRef();
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
@@ -66,10 +65,6 @@ public class TypeRef extends ENode {
 			return true;
 		}
 		return super.includeInDump(dump, attr, val);
-	}
-
-	public ASTNode getDummyNode() {
-		return TypeRef.dummyNode;
 	}
 
 	public Type getType()

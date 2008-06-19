@@ -1062,7 +1062,7 @@ public final class CallType extends Type {
 	public Type arg(int idx) {
 		AType bindings = this.bindings();
 		assert (bindings.getArg(1) ≡ tpCallTupleArg);
-		TupleType tp = bindings.resolveArg(1);
+		TupleType tp = (TupleType)bindings.resolveArg(1);
 		return tp.resolveArg(idx).applay(bindings);
 	}
 	

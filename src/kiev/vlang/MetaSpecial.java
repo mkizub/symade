@@ -166,7 +166,7 @@ public final class MetaPacker extends UserMeta {
 public final class MetaThrows extends UserMeta {
 	@virtual typedef This  = MetaThrows;
 
-	@nodeData @abstract public ASTNode[]		 exceptions;
+	@nodeData @abstract public ASTNode∅		 exceptions;
 
 	public MetaThrows() { super("kiev\u001fstdlib\u001fmeta\u001fthrows"); }
 
