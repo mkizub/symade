@@ -23,10 +23,6 @@ public class KievPackage extends Struct {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class KievSyntax extends Struct {
-}
-
-@ThisIsANode(lang=CoreLang)
 public class JavaClass extends Struct {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
@@ -237,7 +233,7 @@ public abstract class Struct extends ComplexTypeDecl {
 	}
 	
 	public boolean isClazz() {
-		return !isPackage() && !isInterface() && !isSyntax();
+		return !isPackage() && !isInterface();
 	}
 	
 	// indicates that structure members were generated
@@ -366,7 +362,7 @@ public abstract class Struct extends ComplexTypeDecl {
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
 		if (flags != 0) {
-			if!(this instanceof KievSyntax || this instanceof KievPackage) {
+			if!(this instanceof KievPackage) {
 				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
 				if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
 				if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
@@ -401,13 +397,6 @@ public abstract class Struct extends ComplexTypeDecl {
 	public boolean preResolveIn() {
 		if (this.isLoadedFromBytecode())
 			return false;
-		foreach (Import imp; members) {
-			try {
-				imp.resolveImports();
-			} catch(Exception e ) {
-				Kiev.reportError(imp,e);
-			}
-		}
 		if (parent() instanceof Struct || parent() instanceof NameSpace)
 			return true;
 		if (ctx_method==null || ctx_method.isStatic())
@@ -476,18 +465,18 @@ public abstract class Struct extends ComplexTypeDecl {
 		}
 	}
 
-	public TypeDecl tryLoad(String name) {
+	public DNode tryLoad(String name) {
 		if (!isPackage())
 			return null;
-		trace(Kiev.debug && Kiev.debugResolve,"Struct: trying to load in package "+this);
-		TypeDecl cl;
+		trace(Kiev.debug && Kiev.debugResolve,"Package: trying to load in package "+this);
+		DNode dn;
 		String qn = name;
 		if (this instanceof Env)
-			cl = Env.getRoot().loadTypeDecl(qn);
+			dn = Env.getRoot().loadAnyDecl(qn);
 		else
-			cl = Env.getRoot().loadTypeDecl(qn=(this.qname()+"\u001f"+name));
-		trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+(cl != null ? cl+" found " : qn+" not found")+" in "+this);
-		return cl;
+			dn = Env.getRoot().loadAnyDecl(qn=(this.qname()+"\u001f"+name));
+		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
+		return dn;
 	}
 	
 	static class StructDFFunc extends DFFunc {

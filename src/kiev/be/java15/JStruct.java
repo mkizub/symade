@@ -251,7 +251,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		if( Kiev.safe && isBad() )
 			return;
-		if !(isPackage() || isSyntax() || isMacro())
+		if !(isPackage() || isMacro())
 			this.toBytecode(constPool);
 	}
 

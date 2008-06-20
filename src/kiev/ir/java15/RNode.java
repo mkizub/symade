@@ -82,7 +82,6 @@ public static view RDNode of DNode extends RNode {
 	public final boolean isStructView();
 	public final boolean isTypeUnerasable();
 	public final boolean isPackage();
-	public final boolean isSyntax();
 
 	public final void setPublic();
 	public final void setPrivate();

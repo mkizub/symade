@@ -196,7 +196,6 @@ public view JTypeDecl of TypeDecl extends JDNode {
 	public final boolean isAnonymouse();
 	public final boolean isAnnotation();
 	public final boolean isEnum();
-	public final boolean isSyntax()	;
 	public final boolean isLoadedFromBytecode();
 	public final boolean isTypeDeclNotLoaded();
 	public final boolean isStructInner();

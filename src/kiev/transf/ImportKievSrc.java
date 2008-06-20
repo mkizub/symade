@@ -84,7 +84,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		if (astn.of_method)
 			return;
 		String name = astn.name.name.replace('.','\u001f');
-		Struct scope = Env.getRoot();
+		ScopeOfNames scope = Env.getRoot();
 		DNode n;
 		int dot;
 		do {
@@ -102,8 +102,8 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				return;
 			}
 			n = node;
-			if (n instanceof Struct)
-				scope = (Struct)n;
+			if (n instanceof ScopeOfNames)
+				scope = (ScopeOfNames)n;
 		} while (dot > 0);
 		if		(astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
 			Kiev.reportError(astn,"Identifier "+name+" is not a class or package");
@@ -111,7 +111,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			Kiev.reportError(astn,"Import of packages is not supported");
 		else if (astn.mode == Import.ImportMode.IMPORT_STATIC && !(astn.star || (n instanceof Field)))
 			Kiev.reportError(astn,"Identifier "+name+" is not a field");
-		else if (astn.mode == Import.ImportMode.IMPORT_SYNTAX && !(n instanceof Struct && ((Struct)n).isSyntax()))
+		else if (astn.mode == Import.ImportMode.IMPORT_SYNTAX && !(n instanceof KievSyntax))
 			Kiev.reportError(astn,"Identifier "+name+" is not a syntax");
 		else {
 			assert (n != null);
@@ -174,10 +174,44 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		return;
 	}
 
+	public void processSyntax(KievSyntax:ASTNode astn) {
+	next_super_syntax:
+		foreach(SymbolRef sr; astn.super_syntax) {
+			String name = sr.name;
+			KievPackage scope = null;
+			int dot = name.indexOf('\u001f');
+			while (dot > 0) {
+				String head;
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1).intern();
+				if (scope == null)
+					scope = Env.getRoot();
+				KievPackage@ pkg;
+				if!(scope.resolveNameR(pkg,new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+					Kiev.reportError(sr,"Unresolved package "+head+" in "+scope);
+					continue next_super_syntax;
+				}
+				scope = (KievPackage)pkg;
+				dot = name.indexOf('\u001f');
+			}
+			KievSyntax@ stx;
+			if!(scope.resolveNameR(stx,new ResInfo(astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+				Kiev.reportError(sr,"Unresolved syntax "+name+" in "+scope);
+				continue next_super_syntax;
+			}
+			sr.symbol = (KievSyntax)stx;
+		}
+		foreach (ASTNode n; astn.members) {
+			try {
+				processSyntax(n);
+			} catch(Exception e ) { Kiev.reportError(n,e); }
+		}
+	}
+
 	public void processSyntax(Struct:ASTNode astn) {
 		Struct me = astn;
 		me.updatePackageClazz();
-		if (me.isAnnotation() || me.isEnum() || me.isSyntax()) {
+		if (me.isAnnotation() || me.isEnum()) {
 			if( me.args.length > 0 ) {
 				Kiev.reportError(me,"Type parameters are not allowed for "+me);
 				me.args.delAll();
@@ -348,18 +382,6 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				clazz.setMembersGenerated(true);
 				clazz.super_types.delAll();
 			}
-			else if (clazz.isSyntax()) {
-				clazz.setAbstract(true);
-				clazz.setMembersGenerated(true);
-				foreach(TypeRef tr; clazz.super_types) {
-					Struct s = tr.getType().getStruct();
-					if (s != null) {
-						getStructType(s, path);
-						if (!s.isSyntax())
-							Kiev.reportError(clazz,"Syntax "+clazz+" extends non-syntax "+s);
-					}
-				}
-			}
 			else if (clazz.isInterface()) {
 				if (clazz.super_types.length == 0) {
 					TypeRef tr = new TypeRef(Type.tpObject);
@@ -529,9 +551,6 @@ public final class KievFE_Pass3 extends TransfProcessor {
 		int pos = astn.pos;
 		TypeDecl me = astn;
 		trace(Kiev.debug && Kiev.debugResolve,"Pass 3 for class "+me);
-		if (me.isSyntax()) {
-			return;
-		}
 		// Process members
 		for(int i=0; i < me.members.length; i++) {
 			if( me.members[i] instanceof Initializer ) {

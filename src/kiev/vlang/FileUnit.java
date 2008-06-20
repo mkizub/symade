@@ -211,17 +211,6 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		}
 	}
 
-	public boolean preResolveIn() {
-		foreach (Import imp; members) {
-			try {
-				imp.resolveImports();
-			} catch(Exception e ) {
-				Kiev.reportError(imp,e);
-			}
-		}
-		return true;
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		ASTNode@ syn;
 	{

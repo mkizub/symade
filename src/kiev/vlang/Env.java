@@ -246,12 +246,12 @@ public final class Env extends KievPackage {
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
-			cl = jenv.loadClazz(qname);
+			cl = (TypeDecl)jenv.actuallyLoadClazz(qname);
 		else if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
 			if (cl instanceof Struct)
-				cl = jenv.loadClazz((Struct)cl);
+				cl = (TypeDecl)jenv.actuallyLoadClazz((Struct)cl);
 			else
-				cl = jenv.loadClazz(cl.qname());
+				cl = (TypeDecl)jenv.actuallyLoadClazz(cl.qname());
 		}
 		if (cl == null)
 			classHashOfFails.put(qname);
@@ -266,13 +266,32 @@ public final class Env extends KievPackage {
 		// Load if not loaded or not resolved
 		if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
 			if (cl instanceof Struct)
-				jenv.loadClazz((Struct)cl);
+				jenv.actuallyLoadClazz((Struct)cl);
 			else
-				jenv.loadClazz(cl.qname());
+				jenv.actuallyLoadClazz(cl.qname());
 		}
 		return cl;
 	}
 	
+	public DNode loadAnyDecl(String qname) {
+		if (qname.length() == 0) return Env.getRoot();
+		// Check class is already loaded
+		if (classHashOfFails.get(qname) != null) return null;
+		DNode dn = resolveGlobalDNode(qname);
+		// Load if not loaded or not resolved
+		if (dn == null)
+			dn = jenv.actuallyLoadClazz(qname);
+		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded() && !dn.isAnonymouse()) {
+			if (dn instanceof Struct)
+				dn = jenv.actuallyLoadClazz((Struct)dn);
+			else
+				dn = jenv.actuallyLoadClazz(dn.qname());
+		}
+		if (dn == null)
+			classHashOfFails.put(qname);
+		return dn;
+	}
+
 	public byte[] loadClazzFromClasspath(String name) {
 		trace(kiev.bytecode.Clazz.traceRules,"Loading data for clazz "+name);
 

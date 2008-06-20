@@ -139,8 +139,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isStructView()		{ return this instanceof KievView; }
 	public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
 	public final boolean isPackage()			{ return this instanceof KievPackage; }
-	public final boolean isSyntax()			{ return this instanceof KievSyntax; }
-	public final boolean isStructInner()		{ return !isPackage() && !isSyntax() && !(this.parent() instanceof NameSpace); }
+	public final boolean isStructInner()		{ return !isPackage() && !(this.parent() instanceof NameSpace); }
 
 	public final boolean isInterfaceOnly()		{ return this.is_interface_only; }
 
@@ -294,6 +293,16 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 
+	// resolved
+	public final boolean isTypeDeclNotLoaded() {
+		return this.is_tdecl_not_loaded;
+	}
+	public final void setTypeDeclNotLoaded(boolean on) {
+		if (this.is_tdecl_not_loaded != on) {
+			this.is_tdecl_not_loaded = on;
+		}
+	}
+
 	public DNode() {}
 
 	public Object copy(CopyContext cc) {
@@ -410,15 +419,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	
 	public boolean isClazz() {
 		return false;
-	}
-	// resolved
-	public final boolean isTypeDeclNotLoaded() {
-		return this.is_tdecl_not_loaded;
-	}
-	public final void setTypeDeclNotLoaded(boolean on) {
-		if (this.is_tdecl_not_loaded != on) {
-			this.is_tdecl_not_loaded = on;
-		}
 	}
 	// a structure with the only one instance (singleton)	
 	public final boolean isSingleton() {
@@ -632,9 +632,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in "+this),
 			resolveNameR_1(node,info) // resolve in this class
 		;
-			isSyntax(),
-			resolveNameR_Syntax(node,info)
-		;
 			info.isSuperAllowed(),
 			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
 			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in super-class of "+this),
@@ -647,7 +644,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			info.checkNodeName(this),
 			node ?= this
 	}
-	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info) { false }
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)
 		TypeRef@ sup_ref;
 	{
@@ -901,10 +897,6 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 			member instanceof Method,
 			node ?= ((Method)member),
 			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
-		;	isSyntax(),
-			member @= members,
-			member instanceof Import,
-			((Import)member).resolveMethodR(node,info,mt)
 		;	info.isSuperAllowed(),
 			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),
@@ -945,3 +937,113 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 		return obj;
 	}
 }
+
+@ThisIsANode(lang=CoreLang)
+public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames, ScopeOfMethods {
+	@nodeAttr public SymbolRef∅		super_syntax;
+	@nodeAttr public ASTNode∅			members;
+	          public String				q_name;	// qualified name
+
+	public KievSyntax() {}
+	
+	public Object copy(CopyContext cc) {
+		KievSyntax obj = (KievSyntax)super.copy(cc);
+		if (this == obj)
+			return this;
+		obj.q_name = null;
+		return obj;
+	}
+
+	public String qname() {
+		if (q_name != null)
+			return q_name;
+		if (sname == null || sname == "")
+			return null;
+		ANode p = parent();
+		while (p != null && !(p instanceof NameSpace))
+			p = p.parent();
+		if (p == null) {
+			q_name = sname;
+			return q_name;
+		}
+		p = ((NameSpace)p).getPackage();
+		if (p == null || p instanceof Env) {
+			q_name = sname;
+		} else {
+			q_name = (p.qname()+"\u001f"+sname).intern();
+		}
+		return q_name;
+	}
+
+	public String toString() {
+		String q = qname();
+		if (q == null)
+			return "<anonymouse>";
+		return q.replace('\u001f','.');
+	}
+
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
+		ASTNode@ n;
+	{
+		info.isStaticAllowed(),
+		trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: Resolving name "+info.getName()+" in "+this),
+		{
+			trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: resolving in "+this),
+			info.checkNodeName(this),
+			node ?= this
+		;	// resolve in this syntax
+			n @= members,
+			info.checkNodeName(n),
+			info.check(n),
+			node ?= n
+		;	// resolve in imports
+			n @= members,
+			n instanceof Import,
+			trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+n),
+			((Import)n).resolveNameR(node,info)
+		;
+			info.isSuperAllowed(),
+			info.space_prev == null || (info.space_prev.pslot().name != "super_syntax"),
+			trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: resolving in super-syntax of "+this),
+			resolveNameR_3(node,info) // resolve in super-syntax
+		}
+	}
+
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)
+		SymbolRef@	super_stx;
+	{
+		super_stx @= super_syntax,
+		info.enterSuper() : info.leaveSuper(),
+		super_stx.dnode instanceof KievSyntax,
+		((KievSyntax)super_stx.dnode).resolveNameR(node,info)
+	}
+
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+		ASTNode@ member;
+		SymbolRef<KievSyntax>@	super_stx;
+	{
+		info.isStaticAllowed(),
+		trace(Kiev.debug && Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
+		{
+			member @= members,
+			member instanceof Method,
+			info.check(member),
+			node ?= ((Method)member),
+			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
+		;	info.isImportsAllowed() && isPackage(),
+			member @= members,
+			member instanceof Method,
+			node ?= ((Method)member),
+			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
+		;	member @= members,
+			member instanceof Import,
+			((Import)member).resolveMethodR(node,info,mt)
+		;	info.isSuperAllowed(),
+			super_stx @= super_syntax,
+			super_stx.dnode != null,
+			info.enterSuper() : info.leaveSuper(),
+			super_stx.dnode.resolveMethodR(node,info,mt)
+		}
+	}
+}
+

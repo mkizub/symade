@@ -51,7 +51,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "this") {
 			ANode p = parent();
-			if (p instanceof Struct && p.isSyntax())
+			if (p instanceof KievSyntax)
 				return true;
 			return false;
 		}
@@ -70,9 +70,9 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		return str.toString();
 	}
 
-	public void resolveImports() {
+	public boolean preResolveIn() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star))
-			return;
+			return false;
 		String name = this.name.name;
 		TypeDecl scope = null;
 		int dot = name.indexOf('\u001f');
@@ -85,7 +85,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			TypeDecl@ node;
 			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
-				return;
+				return false;
 			}
 			scope = (TypeDecl)node;
 			dot = name.indexOf('\u001f');
@@ -105,9 +105,10 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		CallType mt = new CallType(null,null,types,Type.tpAny,false);
 		if( !scope.resolveMethodR(v,new ResInfo(this,name),mt) ) {
 			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
-			return;
+			return false;
 		}
 		this.name.symbol = (Method)v;
+		return false;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
@@ -152,8 +153,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			node instanceof Field && ((Field)node).isStatic() && !((Field)node).isPrivate()
 		}
 	;
-		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof Struct,
-		((Struct)this.name.dnode).resolveNameR(node,path)
+		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof KievSyntax,
+		((KievSyntax)this.name.dnode).resolveNameR(node,path)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
@@ -168,8 +169,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		((TypeDecl)this.name.dnode).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && !node.isPrivate()
 	;
-		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof Struct,
-		((Struct)this.name.dnode).resolveMethodR(node,path,mt),
+		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof KievSyntax,
+		((KievSyntax)this.name.dnode).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && !node.isPrivate()
 	}
 

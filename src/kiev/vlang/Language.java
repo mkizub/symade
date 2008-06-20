@@ -103,6 +103,7 @@ public final class CoreLang extends LangBase {
 		Symbol.class,
 		SymbolRef.class,
 		DNode.class,	// declaration nodes
+			KievSyntax.class,
 			TypeDecl.class,		// type declaration
 				TypeOpDef.class,		// declare a type using operator
 				TypeDef.class,			// typedef
@@ -112,7 +113,6 @@ public final class CoreLang extends LangBase {
 					MetaTypeDecl.class,		// abstract type declaration
 				Struct.class,			// abstract structure
 					KievPackage.class,
-					KievSyntax.class,
 					JavaClass.class,
 					JavaAnonymouseClass.class,
 					JavaInterface.class,

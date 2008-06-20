@@ -483,7 +483,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	}
 	
 	public void autoGenerateConstructor() {
-		if (!isInterface() && !isPackage() && !isSyntax()) {
+		if (!isInterface() && !isPackage()) {
 			updatePackageClazz();
 			// Default <init> method, if no one is declared
 			boolean init_found = false;
@@ -866,7 +866,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				Kiev.reportError(self,"Object must have no super-types");
 			return;
 		}
-		if (self.isPackage() || self.isSyntax() || self.isStructView())
+		if (self.isPackage() || self.isStructView())
 			return;
 		// first super-type must be java class
 		if (self.super_types.length == 0) {

@@ -165,6 +165,15 @@ public abstract class kiev050 implements kiev050Constants {
 		return clazz;
 	}
 
+	private KievSyntax mkSyntax(Symbol name, ASTModifiers modifiers, NameSpace ns) {
+		KievSyntax stx = new KievSyntax();
+		stx.sname = name.sname;
+		stx.pos = name.pos;
+		modifiers.moveToNode(stx);
+		ns.getPackage().sub_decls += stx;
+		return stx;
+	}
+
 	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers, boolean mkUUID) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		TypeAssign arg = new TypeAssign(name.sname);
@@ -972,7 +981,7 @@ public abstract class kiev050 implements kiev050Constants {
   }
 
   final public KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) throws ParseException {
-  KievSyntax stx; Symbol name; ComplexTypeDecl oldClazz;
+  KievSyntax stx; Symbol name; SymbolRef sr;
     if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax")) {
 
     } else {
@@ -982,11 +991,11 @@ public abstract class kiev050 implements kiev050Constants {
     jj_consume_token(IDENTIFIER);
     // "syntax"
             name = Name();
-                stx = (KievSyntax)mkStruct(name, new KievSyntax(), 0, modifiers, parent);
+                stx = mkSyntax(name, modifiers, parent);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
-      stx.super_types += Type();
+      stx.super_syntax += QName();
       label_6:
       while (true) {
         switch (jj_nt.kind) {
@@ -997,43 +1006,39 @@ public abstract class kiev050 implements kiev050Constants {
           break label_6;
         }
         jj_consume_token(COMMA);
-        stx.super_types += Type();
+        stx.super_syntax += QName();
       }
       break;
     default:
       ;
     }
-          parent.members += stx; oldClazz = curClazz; curClazz = stx;
-    try {
-      jj_consume_token(LBRACE);
-      label_7:
-      while (true) {
-        if (getToken(1).kind != RBRACE) {
-          ;
-        } else {
-          break label_7;
-        }
-        modifiers = Modifiers();
-        switch (jj_nt.kind) {
-        case TYPE:
-        case TYPEDEF:
-          stx.members += Typedef(modifiers);
-          break;
-        case OPERATOR_ID:
-          stx.members += Opdef(modifiers);
-          break;
-        case IMPORT:
-          stx.members += Import(modifiers);
-          break;
-        default:
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
+          parent.members += stx;
+    jj_consume_token(LBRACE);
+    label_7:
+    while (true) {
+      if (getToken(1).kind != RBRACE) {
+        ;
+      } else {
+        break label_7;
       }
-      jj_consume_token(RBRACE);
-    } finally {
-                    curClazz = oldClazz;
+      modifiers = Modifiers();
+      switch (jj_nt.kind) {
+      case TYPE:
+      case TYPEDEF:
+        stx.members += Typedef(modifiers);
+        break;
+      case OPERATOR_ID:
+        stx.members += Opdef(modifiers);
+        break;
+      case IMPORT:
+        stx.members += Import(modifiers);
+        break;
+      default:
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
     }
+    jj_consume_token(RBRACE);
           {if (true) return stx;}
     throw new Error("Missing return statement in function");
   }
@@ -5409,36 +5414,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3R_110() {
-    if (jj_3R_101()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_258() {
-    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_191() {
-    if (jj_scan_token(VIEW)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_232() {
-    if (jj_scan_token(WHILE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_45() {
-    if (jj_scan_token(OPERATOR)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_257() {
-    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_190() {
     if (jj_scan_token(ENUM)) return true;
     return false;
@@ -6118,6 +6093,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_174() {
+    if (jj_3R_129()) return true;
+    return false;
+  }
+
   final private boolean jj_3_5() {
     if (jj_scan_token(IDENTIFIER)) return true;
     Token xsp;
@@ -6130,11 +6110,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_174() {
-    if (jj_3R_129()) return true;
     return false;
   }
 
@@ -6164,13 +6139,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_4() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(ASSIGN)) return true;
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
   final private boolean jj_3_24() {
     if (jj_scan_token(DOT)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -6180,6 +6148,13 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_166() {
     if (jj_scan_token(LBRACKET)) return true;
     if (jj_3R_100()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_4() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(ASSIGN)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -6262,12 +6237,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_2() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_scan_token(OPERATOR)) return true;
-    return false;
-  }
-
   final private boolean jj_3_56() {
     if (jj_3R_102()) return true;
     return false;
@@ -6276,6 +6245,12 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_113() {
     if (jj_3R_87()) return true;
     if (jj_3R_105()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_2() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
@@ -6360,13 +6335,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_84() {
-    if (jj_scan_token(LPAREN)) return true;
+  final private boolean jj_3R_121() {
+    if (jj_3R_120()) return true;
     return false;
   }
 
-  final private boolean jj_3R_121() {
-    if (jj_3R_120()) return true;
+  final private boolean jj_3R_84() {
+    if (jj_scan_token(LPAREN)) return true;
     return false;
   }
 
@@ -6563,11 +6538,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_36() {
-    if (jj_3R_102()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_105() {
     Token xsp;
     xsp = jj_scanpos;
@@ -6578,6 +6548,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     if (jj_3R_128()) return true;
     }
     }
+    return false;
+  }
+
+  final private boolean jj_3_36() {
+    if (jj_3R_102()) return true;
     return false;
   }
 
@@ -6741,6 +6716,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_209() {
+    if (jj_3R_245()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_104() {
     Token xsp;
     xsp = jj_scanpos;
@@ -6817,11 +6797,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_209() {
-    if (jj_3R_245()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_222() {
     if (jj_3R_263()) return true;
     Token xsp;
@@ -6883,18 +6858,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_82() {
-    if (jj_3R_116()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_200() {
     if (jj_3R_236()) return true;
     return false;
   }
 
-  final private boolean jj_3R_81() {
-    if (jj_3R_115()) return true;
+  final private boolean jj_3R_82() {
+    if (jj_3R_116()) return true;
     return false;
   }
 
@@ -6925,6 +6895,16 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_81() {
+    if (jj_3R_115()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_198() {
+    if (jj_3R_234()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_80() {
     if (jj_3R_114()) return true;
     return false;
@@ -6943,11 +6923,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     if (!jj_semLA || jj_3R_82()) return true;
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_198() {
-    if (jj_3R_234()) return true;
     return false;
   }
 
@@ -6994,15 +6969,6 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3_21() {
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_scan_token(LBRACE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_87() {
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_1()) { jj_scanpos = xsp; break; }
-    }
     return false;
   }
 
@@ -7060,6 +7026,15 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_87() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_1()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -7323,6 +7298,36 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_259() {
     if (jj_scan_token(DOUBLE_POINT_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_110() {
+    if (jj_3R_101()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_258() {
+    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_191() {
+    if (jj_scan_token(VIEW)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_232() {
+    if (jj_scan_token(WHILE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_45() {
+    if (jj_scan_token(OPERATOR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_257() {
+    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
     return false;
   }
 

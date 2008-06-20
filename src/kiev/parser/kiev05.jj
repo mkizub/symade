@@ -178,6 +178,15 @@ public abstract class kiev050 {
 		return clazz;
 	}
 
+	private KievSyntax mkSyntax(Symbol name, ASTModifiers modifiers, NameSpace ns) {
+		KievSyntax stx = new KievSyntax();
+		stx.sname = name.sname;
+		stx.pos = name.pos;
+		modifiers.moveToNode(stx);
+		ns.getPackage().sub_decls += stx;
+		return stx;
+	}
+
 	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers, boolean mkUUID) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		TypeAssign arg = new TypeAssign(name.sname);
@@ -1023,32 +1032,33 @@ Opdef Opdef(ASTModifiers modifiers) :
 }
 
 KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) :
-{ KievSyntax stx; Symbol name; ComplexTypeDecl oldClazz; }
+{ KievSyntax stx; Symbol name; SymbolRef sr; }
 {
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
 	name = Name()
 	{
-		stx = (KievSyntax)mkStruct(name, new KievSyntax(), 0, modifiers, parent);
+		stx = mkSyntax(name, modifiers, parent);
 	}
 	[
 		"extends"
-		stx.super_types += Type()
-		( "," stx.super_types += Type()	)*
-	]
-	{ parent.members += stx; oldClazz = curClazz; curClazz = stx; }
-	try {
-		"{"
-		(	LOOKAHEAD({ getToken(1).kind != RBRACE })
-			modifiers = Modifiers()
-			(
-				stx.members += Typedef(modifiers)
-			|	stx.members += Opdef(modifiers)
-			|	stx.members += Import(modifiers)
-			)
+		stx.super_syntax += QName()
+		(
+			","
+			stx.super_syntax += QName()
 		)*
-		"}"
-	} finally { curClazz = oldClazz; }
+	]
+	{ parent.members += stx; }
+	"{"
+	(	LOOKAHEAD({ getToken(1).kind != RBRACE })
+		modifiers = Modifiers()
+		(
+			stx.members += Typedef(modifiers)
+		|	stx.members += Opdef(modifiers)
+		|	stx.members += Import(modifiers)
+		)
+	)*
+	"}"
 	{ return stx; }
 }
 

@@ -287,7 +287,7 @@ public class Bytecoder implements JConstants {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
 						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz));
-						outer[i] = (JStruct)Env.getRoot().getBackendEnv().loadStruct(cn);
+						outer[i] = (JStruct)(Struct)Env.getRoot().getBackendEnv().loadDecl(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
 					} else {
@@ -309,7 +309,7 @@ public class Bytecoder implements JConstants {
 						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
 							inner[i] == null;
 						} else {
-							Struct inn = Env.getRoot().getBackendEnv().loadStruct(cn);
+							Struct inn = (Struct)Env.getRoot().getBackendEnv().loadDecl(cn);
 							inner[i] = (JStruct)inn;
 							if( inn == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");
