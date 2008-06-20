@@ -985,7 +985,7 @@ final class PasteElemHere implements Runnable {
 			if (node.isAttached())
 				node = node.ncopy();
 			if (pattr != null) {
-				if (pattr.slot.is_space)
+				if (pattr.slot instanceof SpaceAttrSlot)
 					((SpaceAttrSlot)pattr.slot).insert(pattr.node, 0, node);
 				else
 					pattr.set(node);
@@ -1022,7 +1022,7 @@ final class PasteElemHere implements Runnable {
 				ScalarPtr pattr = dr.drnode.getScalarPtr(sa.name);
 				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
 					return new PasteElemHere(node, editor, pattr);
-				else if (pattr.slot.is_space && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
+				else if (pattr.slot instanceof SpaceAttrSlot && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
 					return new PasteElemHere(node, editor, pattr);
 			}
 			// try paste as an element of list

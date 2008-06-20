@@ -70,9 +70,8 @@ public abstract class AttrSlot {
 	
 	public final String          name; // field (property) name
 	public final ParentAttrSlot  parent_attr_slot;
-	public final boolean         is_attr; // @nodeAttr or @nodeData
-	public final boolean         is_space; // if Node[]
-	public final boolean         is_child; // @nodeAttr and Node
+	public final boolean         is_attr; // @nodeAttr, not @nodeData
+	public final boolean         is_child; // @nodeAttr and ANode
 	public final boolean         is_external; // not a field, declared externally of the node, not in values(), stored in ANode.ext_data[]
 	public final Class           clazz; // type of the fields
 	public final TypeInfo        typeinfo; // type of the fields
@@ -82,22 +81,21 @@ public abstract class AttrSlot {
 	private final boolean        is_xml_attr;
 	private final String         xml_attr_name;
 	
-	public AttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, boolean is_external, TypeInfo typeinfo) {
+	public AttrSlot(String name, ParentAttrSlot p_attr, boolean is_external, TypeInfo typeinfo) {
 		assert (name.intern() == name);
 		this.name = name;
 		this.parent_attr_slot = p_attr;
 		this.is_attr = (p_attr != null);
-		this.is_space = is_space;
 		this.is_external = is_external;
 		this.clazz = typeinfo.clazz;
 		this.typeinfo = typeinfo;
 		if (is_attr) {
-			if (is_space)
+			if (this instanceof SpaceAttrSlot || this instanceof ExtSpaceAttrSlot)
 				this.is_child = true;
 			else if (ANode.class.isAssignableFrom(typeinfo.clazz) || INode.class.isAssignableFrom(typeinfo.clazz))
 				this.is_child = true;
 		}
-		if (is_space) defaultValue = java.lang.reflect.Array.newInstance(clazz,0);
+		if (this instanceof SpaceAttrSlot) defaultValue = java.lang.reflect.Array.newInstance(clazz,0);
 		else if (clazz == Boolean.class) defaultValue = Boolean.FALSE;
 		else if (clazz == Character.class) defaultValue = new Character('\0');
 		else if (clazz == Byte.class) defaultValue = new Byte((byte)0);
@@ -144,8 +142,8 @@ public abstract class AttrSlot {
 }
 
 public abstract class ScalarAttrSlot extends AttrSlot {
-	public ScalarAttrSlot(String name, ParentAttrSlot p_attr, boolean is_space, boolean is_external, TypeInfo typeinfo) {
-		super(name,p_attr,is_space,is_external,typeinfo);
+	public ScalarAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
+		super(name,p_attr,false,typeinfo);
 	}
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
@@ -158,7 +156,7 @@ public final class ParentAttrSlot extends AttrSlot {
 	public final boolean is_unique;
 	
 	public ParentAttrSlot(String name, boolean is_external, boolean is_unique, TypeInfo typeinfo) {
-		super(name, null, false, is_external, typeinfo);
+		super(name, null, is_external, typeinfo);
 		this.is_unique = is_unique;
 	}
 	public void set(ANode node, Object value) {
@@ -191,7 +189,7 @@ public final class ParentAttrSlot extends AttrSlot {
 
 public abstract class RefAttrSlot extends ScalarAttrSlot {
 	public RefAttrSlot(String name, TypeInfo typeinfo) {
-		super(name, null, false, false, typeinfo);
+		super(name, null, typeinfo);
 	}
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
@@ -199,7 +197,7 @@ public abstract class RefAttrSlot extends ScalarAttrSlot {
 
 public abstract class AttAttrSlot extends ScalarAttrSlot {
 	public AttAttrSlot(String name, TypeInfo typeinfo) {
-		super(name, ANode.nodeattr$parent, false, false, typeinfo);
+		super(name, ANode.nodeattr$parent, typeinfo);
 		assert (this.is_attr);
 	}
 	public abstract void set(ANode parent, Object value);
@@ -208,7 +206,7 @@ public abstract class AttAttrSlot extends ScalarAttrSlot {
 
 public abstract class ExtRefAttrSlot extends ScalarAttrSlot {
 	public ExtRefAttrSlot(String name, TypeInfo typeinfo) {
-		super(name, null, false, false, typeinfo);
+		super(name, null, typeinfo);
 	}
 	public final void set(ANode parent, Object value) {
 		parent.setExtData(value, this);
@@ -226,7 +224,7 @@ public abstract class ExtRefAttrSlot extends ScalarAttrSlot {
 
 public abstract class ExtAttAttrSlot extends ScalarAttrSlot {
 	public ExtAttAttrSlot(String name, TypeInfo typeinfo) {
-		super(name, ANode.nodeattr$parent, false, false, typeinfo);
+		super(name, ANode.nodeattr$parent, typeinfo);
 		assert (this.is_attr);
 	}
 	public final void set(ANode parent, Object value) {
@@ -245,10 +243,10 @@ public abstract class ExtAttAttrSlot extends ScalarAttrSlot {
 
 public class ExtSpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public ExtSpaceAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
-		super(name,p_attr,false,true,typeinfo);
+		super(name,p_attr,true,typeinfo);
 	}
 	public ExtSpaceAttrSlot(String name, TypeInfo typeinfo) {
-		super(name,ANode.nodeattr$parent,false,true,typeinfo);
+		super(name,ANode.nodeattr$parent,false,typeinfo);
 	}
 
 	public final ExtChildrenIterator iterate(ANode parent) {
@@ -264,12 +262,11 @@ public class ExtSpaceAttrSlot<N extends ANode> extends AttrSlot {
 		foreach (ANode n; iterate(parent); n.isAttached())
 			parent.delExtData(n);
 	}
-	
 }
 
 public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public SpaceAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
-		super(name, p_attr, true, false, typeinfo);
+		super(name, p_attr, false, typeinfo);
 	}
 	
 	protected void set(ANode parent, Object value) { throw new Error("SpaceAttrSlot.set()"); }

@@ -489,13 +489,14 @@ public abstract class ANode implements INode {
 	}
 	
 	public final void setExtData(Object d, AttrSlot attr) {
+		assert (!(attr instanceof ExtSpaceAttrSlot));
 		if (d == null) {
 			delExtData(attr);
 			return;
 		}
 
 		Object[] ext_data = this.ext_data;
-		if (attr.is_child && !attr.is_space) {
+		if (attr.is_child && attr instanceof ScalarAttrSlot) {
 			ANode n = (ANode)d;
 			assert(!n.isAttached());
 			if (ext_data == null) {
@@ -527,7 +528,7 @@ public abstract class ANode implements INode {
 			return;
 		}
 		
-		if (attr.is_space && ((ANode[])d).length == 0) {
+		if (attr instanceof SpaceAttrSlot && ((ANode[])d).length == 0) {
 			delExtData(attr);
 			return;
 		}
@@ -561,7 +562,7 @@ public abstract class ANode implements INode {
 
 	public final void addExtData(ANode n, AttrSlot attr) {
 		assert (!n.isAttached());
-		assert (attr.is_child && !attr.is_space);
+		assert (attr.is_child && attr instanceof ExtSpaceAttrSlot);
 		Object[] ext_data = this.ext_data;
 		if (ext_data == null) {
 			this.ext_data = new Object[]{n};
@@ -581,7 +582,7 @@ public abstract class ANode implements INode {
 	public final void replaceExtData(ANode nold, ANode nnew, AttrSlot attr) {
 		assert (nold.isAttached());
 		assert (!nnew.isAttached());
-		assert (attr.is_child && !attr.is_space);
+		assert (attr.is_child && attr instanceof ExtSpaceAttrSlot);
 		assert (ext_data != null);
 		Object[] ext_data = this.ext_data;
 		int sz = ext_data.length;
@@ -603,7 +604,7 @@ public abstract class ANode implements INode {
 		if (ext_data == null)
 			return;
 		int sz = ext_data.length-1;
-		if (attr.is_child && !attr.is_space) {
+		if (attr.is_child && !(attr instanceof SpaceAttrSlot)) {
 			for (int idx=0; idx <= sz; idx++) {
 				Object dat = ext_data[idx];
 				if (dat instanceof ANode) {
@@ -647,7 +648,7 @@ public abstract class ANode implements INode {
 	public final void delExtData(ANode n) {
 		assert (n.isAttached());
 		assert (n.parent() == this);
-		assert (n.pslot().is_child && !n.pslot().is_space);
+		assert (n.pslot().is_child && !(n.pslot() instanceof SpaceAttrSlot));
 		Object[] ext_data = this.ext_data;
 		assert(ext_data != null);
 		int sz = ext_data.length-1;
@@ -704,12 +705,12 @@ public abstract class ANode implements INode {
 			foreach (AttrSlot attr; this.values(); attr.is_child) {
 				if (attr instanceof SpaceAttrSlot)
 					walker.visitANodeSpace(attr.getArray(this));
-				else if (attr instanceof ScalarAttrSlot && attr.is_child)
+				else if (attr instanceof ScalarAttrSlot)
 					walker.visitANode((ANode)attr.get(this));
 			}
 			Object[] ext_data = this.ext_data;
 			if (ext_data != null) {
-				foreach (ANode n; ext_data; n.p_slot.is_external)
+				foreach (ANode n; ext_data; n.p_slot.is_external || n.p_slot instanceof ExtSpaceAttrSlot)
 					walker.visitANode(n);
 			}
 		}
@@ -729,7 +730,7 @@ public abstract class ANode implements INode {
 		foreach (Object dat; ext_data) {
 			if (dat instanceof ANode)
 				$walker.visitANode((ANode)dat);
-			else if (dat instanceof DataAttachInfo && dat.p_slot.is_attr && dat.p_slot.is_space)
+			else if (dat instanceof DataAttachInfo && dat.p_slot.is_attr && (dat.p_slot instanceof SpaceAttrSlot))
 				$walker.visitANodeSpace((ANode[])dat.p_data);
 		}
 	}
@@ -781,7 +782,7 @@ public abstract class ANode implements INode {
 				}
 				else if (dat instanceof DataAttachInfo) {
 					DataAttachInfo ai = (DataAttachInfo)dat;
-					if (ai.p_slot.is_attr && ai.p_slot.is_space) {
+					if (ai.p_slot.is_attr && (ai.p_slot instanceof SpaceAttrSlot)) {
 						ANode[] sarr = (ANode[])ai.p_data;
 						ANode[] narr = (ANode[])sarr.clone();
 						for (int x=0; x < narr.length; x++) {
@@ -985,16 +986,10 @@ public abstract class ASTNode extends ANode implements Constants {
 //#ifndef UNVERSIONED
 	@UnVersioned
 	public VVV						v_editor;
-	@UnVersioned
-	public int						transaction_id;
 //#else UNVERSIONED
 //#	@UnVersioned @abstract
 //#	public:ro VVV						v_editor;
 //#	@getter public VVV get$v_editor() { return null;}
-//#	
-//#	@UnVersioned @abstract
-//#	public:ro int						transaction_id;
-//#	@getter public int get$transaction_id() { return 0;}
 //#endif UNVERSIONED
 
 	@UnVersioned
@@ -1122,7 +1117,6 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public void nodeRestore(ASTNode.VVV from) {
 //#ifndef UNVERSIONED
-		this.transaction_id = from.transaction_id;
 		this.compileflags = from.compileflags & ~3;
 		this.nodeflags = from.nodeflags;
 		super.nodeRestore(from);
@@ -1222,10 +1216,8 @@ public abstract class ASTNode extends ANode implements Constants {
 	public ASTNode() {
 //#ifndef UNVERSIONED
 		Transaction tr = Transaction.get();
-		if (tr != null) {
-			this.transaction_id = tr.version;
+		if (tr != null)
 			tr.add(this);
-		}
 //#endif UNVERSIONED
 	}
 
@@ -1259,7 +1251,6 @@ public abstract class ASTNode extends ANode implements Constants {
 //#ifndef UNVERSIONED
 	private static synchronized void openCmp2(ASTNode self) {
 		ASTNode.VVV v = self.nodeBackup();
-		v.transaction_id = self.transaction_id;
 		v.vvv_flags = VVV.IS_LOCKED|VVV.FOR_COMPILER;
 		if (self.v_editor == null) {
 			self.v_editor = v;
@@ -1272,7 +1263,6 @@ public abstract class ASTNode extends ANode implements Constants {
 		self.locked = false;
 		Transaction tr = Transaction.get();
 		assert (tr != null);
-		self.transaction_id = tr.version;
 		tr.add(self);
 	}
 //#endif UNVERSIONED
@@ -1297,9 +1287,6 @@ public abstract class ASTNode extends ANode implements Constants {
 			ve.vvv_next = v;
 			if (v.vvv_next != null)
 				v.vvv_next.vvv_prev = v;
-			Transaction tr = Transaction.get();
-			if (tr != null)
-				v.transaction_id = tr.version;
 			self.v_editor = ve = v;
 		} else {
 			ve = self.nodeBackup();
@@ -1319,7 +1306,6 @@ public abstract class ASTNode extends ANode implements Constants {
 		if (this.v_editor == null)
 			return;
 		if (Thread.currentThread() == CompilerThread) {
-			assert (this.transaction_id == tr.version);
 			// scan back from the end of the list, find the latest saved
 			VVV v = this.v_editor;
 			while (v.vvv_next != null)

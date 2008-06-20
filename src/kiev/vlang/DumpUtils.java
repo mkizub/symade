@@ -168,6 +168,17 @@ public final class DumpUtils {
 				out.endTag(null, attr.getXmlLocalName());
 				continue;
 			}
+			else if (attr instanceof ExtSpaceAttrSlot) {
+				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
+					goto write_list;
+				continue;
+			write_list:
+				out.startTag(null, attr.getXmlLocalName());
+				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
+					writeNodeToXML(dump, n, out);
+				out.endTag(null, attr.getXmlLocalName());
+				continue;
+			}
 			else if (attr instanceof ScalarAttrSlot) {
 				Object obj = attr.get(node);
 				if (obj == null)

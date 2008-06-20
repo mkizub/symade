@@ -989,7 +989,7 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 		ss.lout = loutNoNl;
 		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
 			Draw_SyntaxElem se = null;
-			if (attr.is_space) {
+			if (attr instanceof SpaceAttrSlot) {
 				Draw_SyntaxList sl = new Draw_SyntaxList();
 				sl.name = attr.name;
 				sl.element = new Draw_SyntaxNode();
@@ -1046,7 +1046,7 @@ public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
 				continue;
 			Draw_SyntaxElem se = null;
 			Draw_SyntaxElem ae = null;
-			if (attr.is_space) {
+			if (attr instanceof SpaceAttrSlot) {
 				Draw_SyntaxList sl = new Draw_SyntaxList();
 				sl.name = attr.name;
 				sl.element = new Draw_SyntaxNode();
@@ -1176,7 +1176,7 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 			ss.folded = new Draw_SyntaxToken(name);
 		}
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
-			if (attr.is_space) {
+			if (attr instanceof SpaceAttrSlot) {
 				Draw_SyntaxList lst = new Draw_SyntaxList();
 				lst.name = attr.name;
 				lst.element = new Draw_SyntaxNode();
