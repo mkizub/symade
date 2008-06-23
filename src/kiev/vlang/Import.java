@@ -130,7 +130,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			s ?= ((Struct)this.name.dnode),
 			{
 				!s.isPackage(),
-				sub @= s.sub_decls,
+				sub @= s.members,
 				path.checkNodeName(sub),
 				node ?= sub.$var
 			;	s.isPackage(), s.resolveNameR(node,path)

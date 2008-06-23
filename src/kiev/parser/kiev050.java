@@ -170,7 +170,7 @@ public abstract class kiev050 implements kiev050Constants {
 		stx.sname = name.sname;
 		stx.pos = name.pos;
 		modifiers.moveToNode(stx);
-		ns.getPackage().sub_decls += stx;
+		ns.getPackage().pkg_members += stx;
 		return stx;
 	}
 

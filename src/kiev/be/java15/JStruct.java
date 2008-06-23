@@ -29,7 +29,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public:ro	KString				bytecode_name;
 	public:ro	SymbolRef<Struct>	package_clazz;
 	public:ro	JStruct				iface_impl;
-	public:ro	JDNode[]			sub_decls;
+	public:ro	InnerStructInfo		inner_info;
 
 	public final boolean isPizzaCase();
 	public final boolean isHasCases();
@@ -109,23 +109,21 @@ public final view JStruct of Struct extends JTypeDecl {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
-		JDNode[] sub_decls = this.sub_decls;
+		InnerStructInfo inner_info = this.inner_info;
 		JNode[] members = this.members;
 		
-		if( !isPackage() ) {
-			foreach (JStruct sub; sub_decls)
-				sub.generate();
+		if (inner_info != null) {
+			foreach (Struct sub; inner_info.inners)
+				((JStruct)sub).generate();
 		}
 
 		ConstPool constPool = new ConstPool();
 		constPool.addClazzCP(this.xtype.getJType().java_signature);
 		foreach (JType jst; super_types)
 			constPool.addClazzCP(jst.java_signature);
-		if( !isPackage() ) {
-			foreach (JStruct sub; sub_decls) {
-				sub.checkResolved();
+		if (inner_info != null) {
+			foreach (Struct sub; inner_info.inners)
 				constPool.addClazzCP(sub.xtype.getJType().java_signature);
-			}
 		}
 		
 		if( !isPackage() ) {
@@ -134,23 +132,23 @@ public final view JStruct of Struct extends JTypeDecl {
 			this.addAttr(sfa);
 		}
 		
-		if( !isPackage() && sub_decls.length > 0 ) {
+		if (inner_info != null) {
 			int count = 0;
-			for(int j=0; j < sub_decls.length; j++) {
-				if (sub_decls[j] instanceof JStruct)
-					count ++;
-			}
+			DNode[] inners = inner_info.inners;
+			foreach (Struct s; inners)
+				count ++;
 			if (count > 0) {
 				InnerClassesAttr a = new InnerClassesAttr();
 				JStruct[] inner = new JStruct[count];
 				JStruct[] outer = new JStruct[count];
 				short[] inner_access = new short[count];
-				for(int i=0, j=0; j < sub_decls.length; j++) {
-					if (sub_decls[j] instanceof JStruct) {
-						inner[i] = (JStruct)sub_decls[j];
+				for(int i=0, j=0; j < inners.length; j++) {
+					if (inners[j] instanceof Struct) {
+						Struct inn = (Struct)inners[j];
+						inner[i] = (JStruct)inn;
 						outer[i] = this;
-						inner_access[i] = sub_decls[j].getJavaFlags();
-						constPool.addClazzCP(inner[i].xtype.getJType().java_signature);
+						inner_access[i] = inn.getJavaFlags();
+						constPool.addClazzCP(inn.xtype.getJType().java_signature);
 						i++;
 					}
 				}

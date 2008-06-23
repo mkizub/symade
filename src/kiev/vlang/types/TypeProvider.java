@@ -167,9 +167,10 @@ public final class CoreMetaType extends MetaType {
 	private static TypeDecl makeTypeDecl(String name) {
 		MetaTypeDecl tdecl = new MetaTypeDecl(null);
 		tdecl.sname = name;
-		tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(tdecl);
 		return tdecl;
 	}
 	
@@ -506,11 +507,12 @@ public final class ArrayMetaType extends MetaType {
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl(null);
 			tdecl.sname = "_array_";
-			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
-			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
+			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = pkg;
+			pkg.pkg_members.add(tdecl);
 			tdecl.uuid = "bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04";
 			Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
@@ -609,12 +611,13 @@ public class WildcardCoMetaType extends MetaType {
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wildcard_co_variant_";
-			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
 			tdecl.args.add(StdTypes.tdWildcardCoArg);
-			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 			tdecl.uuid = "6c99b10d-3003-3176-8086-71be6cee5c51";
+			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = pkg;
+			pkg.pkg_members.add(tdecl);
 		}
 		instance = new WildcardCoMetaType(tdecl);
 		tdecl.xmeta_type = instance;
@@ -656,12 +659,13 @@ public class WildcardContraMetaType extends MetaType {
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wildcard_contra_variant_";
-			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
 			tdecl.args.add(StdTypes.tdWildcardContraArg);
-			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 			tdecl.uuid = "933ac6b8-4d03-3799-9bb3-3c9bc1883707";
+			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = pkg;
+			pkg.pkg_members.add(tdecl);
 		}
 		instance = new WildcardContraMetaType(tdecl);
 		tdecl.xmeta_type = instance;
@@ -703,12 +707,13 @@ public class WrapperMetaType extends MetaType {
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.sname = "_wrapper_";
-			tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
-			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 			tdecl.uuid = "67544053-836d-3bac-b94d-0c4b14ae9c55";
+			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+			tdecl.package_clazz.symbol = pkg;
+			pkg.pkg_members.add(tdecl);
 		}
 		wrapper_tdecl = tdecl;
 		tdecl.xmeta_type = WrapperMetaType.instance(StdTypes.tpWrapperArg);
@@ -816,10 +821,11 @@ public final class TupleMetaType extends MetaType {
 	static {
 		tuple_tdecl = new MetaTypeDecl(null);
 		tuple_tdecl.sname = "_tuple_";
-		tuple_tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 		tuple_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tuple_tdecl.package_clazz.dnode.sub_decls.add(tuple_tdecl);
 		tuple_tdecl.super_types.add(new TypeRef(StdTypes.tpAny));
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tuple_tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(tuple_tdecl);
 
 		instancies = new TupleMetaType[128];
 		for (int i=0; i < instancies.length; i++)
@@ -889,9 +895,11 @@ public class CallMetaType extends MetaType {
 		if (call_tdecl == null) {
 			call_tdecl = new MetaTypeDecl();
 			call_tdecl.sname = "_call_type_";
-			call_tdecl.package_clazz.symbol = Env.getRoot().newPackage("kiev\u001fstdlib");
 			call_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			call_tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
+			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+			call_tdecl.package_clazz.symbol = pkg;
+			pkg.pkg_members.add(call_tdecl);
 		}
 
 		call_static_instance    = new CallMetaType(templ_bindings_static, MetaType.flCallable);

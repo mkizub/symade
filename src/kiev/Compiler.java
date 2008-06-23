@@ -253,6 +253,15 @@ stop:;
 				if( this.errCount > 0 ) goto stop;
 			} while (Kiev.nextFrontEndPass());
 
+			{
+				diff_time = curr_time = System.currentTimeMillis();
+				Kiev.runVerifyProcessors(root);
+				Compiler.runGC(this);
+				diff_time = System.currentTimeMillis() - curr_time;
+				if( Kiev.verbose) Kiev.reportInfo("Tree verification",diff_time);
+				if( this.errCount > 0 ) goto stop;
+			}
+
 		} catch( Throwable e) {
 			if (e instanceof Kiev.CompilationAbortError)
 				goto stop;

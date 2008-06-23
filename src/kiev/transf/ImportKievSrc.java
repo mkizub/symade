@@ -84,7 +84,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		if (astn.of_method)
 			return;
 		String name = astn.name.name.replace('.','\u001f');
-		ScopeOfNames scope = Env.getRoot();
+		ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 		DNode n;
 		int dot;
 		do {
@@ -710,43 +710,43 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 	
 	public void doProcess(ASTNode:ASTNode node) {
 	}
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
+	public void doProcess(FileUnit:ASTNode node) {
+		foreach(ASTNode n; node.members)
 			doProcess(n);
 	}
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
+	public void doProcess(NameSpace:ASTNode node) {
+		foreach(ASTNode n; node.members)
 			doProcess(n);
 	}
-	public void doProcess(Struct:ASTNode clazz) {
-		if (clazz.isAnnotation()) {
-			foreach(ASTNode n; clazz.members) {
-				if( n instanceof Method ) {
-					Method m = (Method)n;
-					if (m.params.length != 0)
-						Kiev.reportError(m, "Annotation methods may not have arguments");
-					if (m.body != null && !(m.body instanceof MetaValue))
-						Kiev.reportError(m, "Annotation methods may not have bodies");
-					if (m.conditions.length > 0)
-						Kiev.reportError(m, "Annotation methods may not have work-by-contruct conditions");
-					m.setPublic();
-					m.setAbstract(true);
-					m.pass3();
-					if (m.mtype.ret() ≡ Type.tpVoid || m.mtype.ret() ≡ Type.tpRule)
-						Kiev.reportError(m, "Annotation methods must return a value");
-				}
-				else if( n instanceof Field )
-					;
-				else if( n instanceof Struct )
-					;
-				else if( n instanceof Comment )
-					;
-				else
-					Kiev.reportError(n, "Annotations may only have methods and final fields");
-			}
-		}
-		foreach (Struct sub; clazz.sub_decls)
+	public void doProcess(Struct:ASTNode node) {
+		foreach (Struct sub; node.members)
 			doProcess(sub);
+	}
+	public void doProcess(JavaAnnotation:ASTNode clazz) {
+		foreach(ASTNode n; clazz.members) {
+			if( n instanceof Method ) {
+				Method m = (Method)n;
+				if (m.params.length != 0)
+					Kiev.reportError(m, "Annotation methods may not have arguments");
+				if (m.body != null && !(m.body instanceof MetaValue))
+					Kiev.reportError(m, "Annotation methods may not have bodies");
+				if (m.conditions.length > 0)
+					Kiev.reportError(m, "Annotation methods may not have work-by-contruct conditions");
+				m.setPublic();
+				m.setAbstract(true);
+				m.pass3();
+				if (m.mtype.ret() ≡ Type.tpVoid || m.mtype.ret() ≡ Type.tpRule)
+					Kiev.reportError(m, "Annotation methods must return a value");
+			}
+			else if( n instanceof Field )
+				;
+			else if( n instanceof Struct )
+				;
+			else if( n instanceof Comment )
+				;
+			else
+				Kiev.reportError(n, "Annotations may only have methods and final fields");
+		}
 	}
 }
 
@@ -765,16 +765,17 @@ public final class KievFE_MetaDefaults extends TransfProcessor {
 	
 	public void doProcess(ASTNode:ASTNode node) {
 	}
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
-			doProcess(n);
-	}
+
 	public void doProcess(NameSpace:ASTNode fu) {
 		foreach(ASTNode n; fu.members)
 			doProcess(n);
 	}
-	public void doProcess(TypeDecl:ASTNode clazz) {
-		clazz.resolveMetaDefaults();
+
+	public void doProcess(ComplexTypeDecl:ASTNode clazz) {
+		if (clazz instanceof JavaAnnotation)
+			clazz.resolveMetaDefaults();
+		foreach(ASTNode n; clazz.members)
+			doProcess(n);
 	}
 }
 
@@ -788,21 +789,15 @@ public final class KievFE_MetaValues extends TransfProcessor {
 	public String getDescr() { "Annotation values" }
 
 	public void process(ASTNode node, Transaction tr) {
-		doProcess(node);
-	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
-	}
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
-			doProcess(n);
-	}
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
-			doProcess(n);
-	}
-	public void doProcess(TypeDecl:ASTNode clazz) {
-		clazz.resolveMetaValues();
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) {
+				if !(n instanceof ASTNode)
+					return false;
+				if (n instanceof MNode)
+					n.resolve(null);
+				return true;
+			}
+		});
 	}
 }
 
@@ -837,24 +832,6 @@ public final class KievFE_MainResolve extends TransfProcessor {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.mainResolveIn(); return false; }
 			public void post_exec(ANode n) { if (n instanceof ASTNode) n.mainResolveOut(); }
-		});
-		return;
-	}
-}
-
-////////////////////////////////////////////////////
-//	   PASS 5 - verify                            //
-////////////////////////////////////////////////////
-
-@singleton
-public final class KievFE_Verify extends TransfProcessor {
-	private KievFE_Verify() { super(KievExt.JavaOnly); }
-	public String getDescr() { "Kiev verify" }
-
-	public void process(ASTNode node, Transaction tr) {
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preVerify(); return false; }
-			public void post_exec(ANode n) { if (n instanceof ASTNode) n.postVerify(); }
 		});
 		return;
 	}
@@ -971,122 +948,6 @@ public final class KievME_PreGenartion extends BackendProcessor {
 				}
 			});
 		} finally { tr.leave(); }
-	}
-}
-
-
-////////////////////////////////////////////////////
-//	   PASS - bytecode names generation           //
-////////////////////////////////////////////////////
-
-@singleton
-public final class KievME_PostGenerate extends BackendProcessor {
-	private KievME_PostGenerate() { super(KievBackend.Java15); }
-	public String getDescr() { "Kiev bytecode name generation" }
-
-	public void process(ASTNode node, Transaction tr) {
-		if!(node instanceof FileUnit)
-			return;
-		FileUnit fu = (FileUnit)node;
-		try {
-			doProcess(fu);
-		} catch (Exception rte) { Kiev.reportError(rte); }
-	}
-
-	public void doProcess(ASTNode:ASTNode node) {
-		return;
-	}
-	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(Struct:ASTNode s) {
-		makeBytecodeName(s);
-		cleanupMixins(s);
-		foreach (DNode dn; s.sub_decls) {
-			// check the class is still attached
-			if (dn.ctx_root != s.ctx_root) {
-				s.sub_decls.detach(dn);
-				continue;
-			}
-			this.doProcess(dn);
-		}
-	}
-	
-	private KString makeBytecodeName(ComplexTypeDecl s) {
-		if (s.bytecode_name != null)
-			return s.bytecode_name;
-		ComplexTypeDecl pkg = s.package_clazz.dnode;
-		KString pkg_bc_name = KString.Empty;
-		if!(pkg instanceof Env)
-			pkg_bc_name = makeBytecodeName(pkg);
-		String name = s.sname;
-		String bc_name = null;
-		if (s instanceof JavaAnonymouseClass) {
-			name = makeInnerIndex(pkg);
-		}
-		else if (!(s.parent() instanceof TypeDecl) && !(s.parent() instanceof NameSpace)) {
-			name = makeInnerIndex(pkg) + '$' + name;
-		}
-		
-		if (pkg instanceof Env) {
-			bc_name = name;
-		}
-		else if (pkg instanceof KievPackage) {
-			bc_name = pkg_bc_name + "/" + name;
-		}
-		else {
-			bc_name = pkg_bc_name + "$" + name;
-		}
-		s.bytecode_name = KString.from(bc_name);
-		return s.bytecode_name;
-	}
-	
-	private String makeInnerIndex(ComplexTypeDecl pkg) {
-		while !(pkg.package_clazz.dnode instanceof KievPackage)
-			pkg = pkg.package_clazz.dnode;
-		Integer i = pkg.inner_counter;
-		if (i == null)
-			i = new Integer(0);
-		else
-			i = new Integer(i.intValue() + 1);
-		pkg.inner_counter = i;
-		return String.valueOf(i.intValue());
-	}
-
-	private void cleanupMixins(Struct s) {
-		if (!s.isInterface() || s.isAnnotation())
-			return;
-		if (s.super_types.length > 0 && s.super_types[0].getType() ≉ StdTypes.tpObject) {
-			TypeRef tr = new TypeRef(Type.tpObject);
-			tr.setAutoGenerated(true);
-			s.super_types[0] = tr;
-		}
-		foreach (DNode dn; s.members) {
-			if (dn instanceof Constructor) {
-				if (!dn.isStatic())
-					~dn;
-			}
-			else if (dn.isPrivate())
-				~dn;
-			else if (!dn.isAbstract()) {
-				if (dn instanceof Method) {
-					dn.setAbstract(true);
-					((Method)dn).body = null;
-				}
-				else if (dn instanceof Field) {
-					if !(dn.isStatic() && dn.isFinal())
-						dn.setAbstract(true);
-				}
-			}
-		}
 	}
 }
 

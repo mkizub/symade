@@ -184,7 +184,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.sname == nameThisDollar);
-				//assert(fp.type ≈ this.ctx_tdecl.package_clazz.dnode.xtype); // not true for View-s
 				dargs.append(fp.getType());
 				break;
 			case Var.PARAM_RULE_ENV:

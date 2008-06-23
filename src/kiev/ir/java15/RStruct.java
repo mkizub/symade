@@ -64,7 +64,6 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	public final boolean isLoadedFromBytecode();
 	public final void setLoadedFromBytecode(boolean on);
 
-	public Struct addSubStruct(Struct sub);
 	public Method addMethod(Method m);
 	public Field addField(Field f);
 	public PizzaCase addCase(PizzaCase cas);
@@ -202,7 +201,6 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
 		typeinfo_clazz = Env.getRoot().newStruct(nameClTypeInfo,true,this.getStruct(),flags,new JavaClass(),true,null);
-		((Struct)this).members.add(typeinfo_clazz);
 		typeinfo_clazz.setPublic();
 		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
 			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.xtype));
@@ -210,7 +208,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			typeinfo_clazz.super_types.insert(0, new TypeRef(Type.tpTypeInfo));
 		if (this.isInterfaceOnly())
 			typeinfo_clazz.is_interface_only = true;
-		getStruct().addSubStruct(typeinfo_clazz);
+		getStruct().members += typeinfo_clazz;
+		getStruct().typeinfo_clazz = typeinfo_clazz;
+		typeinfo_clazz.package_clazz.symbol = getStruct();
 		typeinfo_clazz.pos = pos;
 
 		// create constructor method
@@ -558,11 +558,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// generate default constrctor if needed
 		autoGenerateConstructor();
 		
-		if (this.isInterfaceOnly()) {
-			foreach (TypeDecl s; sub_decls)
-				((RTypeDecl)s).preGenerate();
-			return false;
-		}
+		if (this.isInterfaceOnly())
+			return true;
 		
 		// build vtable
 		List<Struct> processed = List.Nil;

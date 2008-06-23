@@ -321,13 +321,8 @@ public static final view RMatchStat of MatchStat extends RSwitchStat {
 					Type tp = sel.getType();
 					int caseno = 0;
 					ComplexTypeDecl tpclz = (ComplexTypeDecl)tp.meta_type.tdecl;
-					foreach (Struct sub; tpclz.sub_decls) {
-						if (sub.isPizzaCase()) {
-							PizzaCase pcase = (PizzaCase)sub;
-							if (pcase.tag > caseno)
-								caseno = pcase.tag;
-						}
-					}
+					foreach (PizzaCase pcase; tpclz.members; pcase.tag > caseno)
+						caseno = pcase.tag;
 					if( caseno == cases.length ) setMethodAbrupted(true);
 				}
 			} else {

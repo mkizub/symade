@@ -65,16 +65,26 @@ public final class Env extends KievPackage {
 
 	public DNode resolveGlobalDNode(String qname) {
 		//assert(qname.indexOf('.') < 0);
-		TypeDecl pkg = Env.getRoot();
+		DNode pkg = (DNode)Env.getRoot();
 		int start = 0;
 		int end = qname.indexOf('\u001f', start);
 		while (end > 0) {
 			String nm = qname.substring(start, end).intern();
-			TypeDecl ss = null;
-			foreach (TypeDecl s; pkg.sub_decls; s.sname == nm) {
-				ss = s;
-				break;
+			DNode ss = null;
+			if (pkg instanceof KievPackage) {
+				foreach (DNode s; pkg.pkg_members; s.sname == nm) {
+					ss = s;
+					break;
+				}
 			}
+			else if (pkg instanceof ComplexTypeDecl) {
+				foreach (DNode s; pkg.members; s.sname == nm) {
+					ss = s;
+					break;
+				}
+			}
+			else
+				return null;
 			if (ss == null)
 				return null;
 			pkg = ss;
@@ -82,8 +92,14 @@ public final class Env extends KievPackage {
 			end = qname.indexOf('\u001f', start);
 		}
 		String nm = qname.substring(start).intern();
-		foreach (DNode dn; pkg.sub_decls; dn.sname == nm)
-			return dn;
+		if (pkg instanceof KievPackage) {
+			foreach (DNode dn; pkg.pkg_members; dn.sname == nm)
+				return dn;
+		}
+		else if (pkg instanceof ComplexTypeDecl) {
+			foreach (DNode dn; pkg.members; dn.sname == nm)
+				return dn;
+		}
 		return null;
 	}
 	
@@ -110,9 +126,16 @@ public final class Env extends KievPackage {
 		assert(outer != null);
 		Struct bcl = null;
 		if (direct && sname != null) {
-			foreach (Struct s; outer.sub_decls; s.sname == sname) {
-				bcl = s;
-				break;
+			if (outer instanceof KievPackage) {
+				foreach (Struct s; outer.pkg_members; s.sname == sname) {
+					bcl = s;
+					break;
+				}
+			} else {
+				foreach (Struct s; outer.members; s.sname == sname) {
+					bcl = s;
+					break;
+				}
 			}
 		}
 		if( bcl != null ) {
@@ -123,14 +146,15 @@ public final class Env extends KievPackage {
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
 				cl.cleanupOnReload();
 				cl.mflags = acces;
-				cl.package_clazz.symbol = outer;
-				outer.sub_decls += cl;
 			}
-			outer.addSubStruct((Struct)cl);
+			cl.package_clazz.symbol = outer;
+			if (outer instanceof KievPackage) {
+				if (outer.pkg_members.indexOf(cl) < 0)
+					outer.pkg_members += cl;
+			}
 			return cl;
 		}
 		cl.initStruct(sname,outer,acces);
-		outer.addSubStruct(cl);
 		return cl;
 	}
 
@@ -147,7 +171,7 @@ public final class Env extends KievPackage {
 
 	public KievPackage newPackage(String sname, KievPackage outer) {
 		KievPackage cl = null;
-		foreach (KievPackage s; outer.sub_decls; s.sname == sname) {
+		foreach (KievPackage s; outer.pkg_members; s.sname == sname) {
 			cl = s;
 			break;
 		}
@@ -159,12 +183,12 @@ public final class Env extends KievPackage {
 		return cl;
 	}
 
-	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, ComplexTypeDecl pkg, boolean cleanup, String uuid) {
+	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, KievPackage pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
 			pkg = Env.getRoot();
 		assert (pkg.isPackage());
 		MetaTypeDecl tdecl = null;
-		foreach (MetaTypeDecl pmt; pkg.sub_decls; pmt.sname == id.sname) {
+		foreach (MetaTypeDecl pmt; pkg.pkg_members; pmt.sname == id.sname) {
 			tdecl = pmt;
 			break;
 		}
@@ -174,7 +198,7 @@ public final class Env extends KievPackage {
 			tdecl.sname = id.sname;
 			tdecl.package_clazz.symbol = pkg;
 			tdecl.mflags = ACC_MACRO;
-			pkg.sub_decls.add(tdecl);
+			pkg.pkg_members.add(tdecl);
 		}
 		else if( cleanup ) {
 			if (tdecl.uuid != uuid)
@@ -182,7 +206,7 @@ public final class Env extends KievPackage {
 			tdecl.cleanupOnReload();
 			tdecl.mflags = ACC_MACRO;
 			tdecl.package_clazz.symbol = pkg;
-			pkg.sub_decls.add(tdecl);
+			pkg.pkg_members.add(tdecl);
 		}
 
 		return tdecl;

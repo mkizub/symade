@@ -20,6 +20,37 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public class KievPackage extends Struct {
+
+	@nodeData public DNode∅						pkg_members;
+
+	public final rule resolveNameR(ASTNode@ node, ResInfo info)
+	{
+		info.isStaticAllowed(),
+		{
+			super.resolveNameR(node, info)
+		;
+			node @= pkg_members,
+			info.checkNodeName(node)
+		;
+			info.isCmpByEquals(),
+			node ?= tryLoad(info.getName())
+		}
+	}
+
+	public DNode tryLoad(String name) {
+		if (!isPackage())
+			return null;
+		trace(Kiev.debug && Kiev.debugResolve,"Package: trying to load in package "+this);
+		DNode dn;
+		String qn = name;
+		if (this instanceof Env)
+			dn = Env.getRoot().loadAnyDecl(qn);
+		else
+			dn = Env.getRoot().loadAnyDecl(qn=(this.qname()+"\u001f"+name));
+		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
+		return dn;
+	}
+	
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -83,6 +114,17 @@ public final class JavaAnnotation extends JavaInterface {
 		super.cleanupOnReload();
 		this.is_struct_annotation = true;
 	}
+
+	public void resolveMetaDefaults() {
+		foreach(Method m; members) {
+			try {
+				m.resolveMetaDefaults();
+			} catch(Exception e) {
+				Kiev.reportError(m,e);
+			}
+		}
+	}
+
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -196,24 +238,21 @@ public final class JavaEnum extends JavaClass {
 		}
 		super.callbackChildChanged(ct, attr, data);
 	}
+}
 
+@ThisIsANode(lang=void)
+public final class InnerStructInfo extends ASTNode {
+	@nodeAttr public int			inner_count; 
+	@nodeData public DNode∅		inners;	// structures, static fields in methods, etc
 }
 
 @ThisIsANode(lang=CoreLang)
 public abstract class Struct extends ComplexTypeDecl {
 	
+	@nodeData(ext_data=true)		public InnerStructInfo		inner_info;
 	@nodeData(ext_data=true)		public Struct				typeinfo_clazz;
 	@nodeData(ext_data=true)		public Struct				iface_impl;
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		//if (attr.name == "package_clazz")
-		//	this.callbackSuperTypeChanged(this);
-		//	type_decl_version++;
-		//else
-		if (attr.name == "sname")
-			resetNames();
-		super.callbackChildChanged(ct, attr, data);
-	}
 	public Object copy(CopyContext cc) {
 		Struct obj = (Struct)super.copy(cc);
 		if (this == obj)
@@ -226,12 +265,6 @@ public abstract class Struct extends ComplexTypeDecl {
 		return obj;
 	}
 
-	private void resetNames() {
-		q_name = null;
-		foreach (Struct s; sub_decls)
-			s.resetNames();
-	}
-	
 	public boolean isClazz() {
 		return !isPackage() && !isInterface();
 	}
@@ -265,32 +298,6 @@ public abstract class Struct extends ComplexTypeDecl {
 		}
 	}
 	
-	/** Add information about new sub structure, this class (package) containes */
-	public Struct addSubStruct(Struct sub) {
-		// Check we already have this sub-class
-		for(int i=0; i < sub_decls.length; i++) {
-			if( sub_decls[i].equals(sub) ) {
-				// just ok
-				return sub;
-			}
-		}
-		// Check package class is null or equals to this
-		if( sub.package_clazz.symbol == null ) sub.package_clazz.symbol = this;
-		else if( sub.package_clazz.symbol != this ) {
-			throw new RuntimeException("Sub-structure "+sub+" already has package class "
-				+sub.package_clazz+" that differs from "+this);
-		}
-
-		sub_decls.append(sub);
-
-		trace(Kiev.debug && Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
-		if (sub.sname == nameClTypeInfo) {
-			typeinfo_clazz = sub;
-			trace(Kiev.debug && Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
-		}
-		return sub;
-	}
-
 	/** Add information about new method that belongs to this class */
 	public Method addMethod(Method m) {
 		// Check we already have this method
@@ -356,9 +363,11 @@ public abstract class Struct extends ComplexTypeDecl {
 	public void initStruct(String name, ComplexTypeDecl outer, int flags) {
 		this.sname = name;
 		this.package_clazz.symbol = outer;
-		int outer_idx = outer.sub_decls.indexOf(this);
-		if (outer_idx < 0)
-			outer.sub_decls += this;
+		if (outer instanceof KievPackage) {
+			int outer_idx = outer.pkg_members.indexOf(this);
+			if (outer_idx < 0)
+				outer.pkg_members += this;
+		}
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
 		if (flags != 0) {
@@ -386,12 +395,6 @@ public abstract class Struct extends ComplexTypeDecl {
 		this.mflags = 0;
 		this.typeinfo_clazz = null;
 		super.cleanupOnReload();
-	}
-
-	public int countAnonymouseInnerStructs() {
-		int i=0;
-		foreach(Struct s; sub_decls; s.isAnonymouse() || s.isLocal()) i++;
-		return i;
 	}
 
 	public boolean preResolveIn() {
@@ -449,36 +452,6 @@ public abstract class Struct extends ComplexTypeDecl {
 		}
 	}
 
-	public final rule resolveNameR(ASTNode@ node, ResInfo info)
-	{
-		info.isStaticAllowed(),
-		{
-			super.resolveNameR(node, info)
-		;
-			isPackage(),
-			node @= sub_decls,
-			info.checkNodeName(node)
-		;
-			isPackage(),
-			info.isCmpByEquals(),
-			node ?= tryLoad(info.getName())
-		}
-	}
-
-	public DNode tryLoad(String name) {
-		if (!isPackage())
-			return null;
-		trace(Kiev.debug && Kiev.debugResolve,"Package: trying to load in package "+this);
-		DNode dn;
-		String qn = name;
-		if (this instanceof Env)
-			dn = Env.getRoot().loadAnyDecl(qn);
-		else
-			dn = Env.getRoot().loadAnyDecl(qn=(this.qname()+"\u001f"+name));
-		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
-		return dn;
-	}
-	
 	static class StructDFFunc extends DFFunc {
 		final int res_idx;
 		StructDFFunc(DataFlowInfo dfi) {

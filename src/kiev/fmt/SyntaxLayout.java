@@ -60,9 +60,9 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			resetNames();
 			if (parent() instanceof NameSpace) {
 				NameSpace fu = (NameSpace)parent();
-				int idx = fu.getPackage().sub_decls.indexOf(this);
+				int idx = fu.getPackage().pkg_members.indexOf(this);
 				if (idx < 0)
-					fu.getPackage().sub_decls.add(this);
+					fu.getPackage().pkg_members.add(this);
 			}
 		}
 		super.callbackAttached(pi);
@@ -72,9 +72,9 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			resetNames();
 			if (parent() instanceof NameSpace) {
 				NameSpace fu = (NameSpace)parent();
-				int idx = fu.getPackage().sub_decls.indexOf(this);
+				int idx = fu.getPackage().pkg_members.indexOf(this);
 				if (idx >= 0)
-					fu.getPackage().sub_decls.del(idx);
+					fu.getPackage().pkg_members.del(idx);
 			}
 		}
 		super.callbackDetached(parent, slot);

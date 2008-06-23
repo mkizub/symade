@@ -379,11 +379,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return meta;
 	}
 
-	public void resolveMetas() {
-		foreach (MNode m; metas)
-			m.resolve(null);
-	}
-
 	public void verifyMetas() {
 		foreach (MNode m; metas) {
 			try {
@@ -573,9 +568,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 	}
 	
-	public void resolveMetaDefaults() {}
-	public void resolveMetaValues() { this.resolveMetas(); }
-
 	public boolean preVerify() {
 		setFrontEndPassed();
 		return true;
@@ -677,13 +669,11 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	@nodeAttr public SymbolRef<ComplexTypeDecl>	package_clazz;
 	@nodeAttr public TypeConstr∅					args;
 	@nodeAttr public ASTNode∅						members;
-	@nodeData public DNode∅						sub_decls;
 	          public String							q_name;	// qualified name
 	          public int							type_decl_version;
 
 	@nodeData(ext_data=true, copyable=false) public KString			bytecode_name; // used by backend for anonymouse and inner declarations
 	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
-	@nodeData(ext_data=true, copyable=false) public Integer			inner_counter;
 
 	@getter public ComplexTypeDecl get$child_ctx_tdecl()	{ return this; }
 
@@ -695,9 +685,17 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	}
 	
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "sname")
+			resetNames();
 		if (attr.name == "super_types" || attr.name == "args")
 			type_decl_version++;
 		super.callbackChildChanged(ct, attr, data);
+	}
+	
+	private void resetNames() {
+		q_name = null;
+		foreach (ComplexTypeDecl s; members)
+			s.resetNames();
 	}
 	
 	public void updatePackageClazz() {
@@ -711,16 +709,16 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 		ComplexTypeDecl cur = this.package_clazz.dnode;
 		if (cur == pkg)
 			return;
-		if (cur != null) {
-			int idx = cur.sub_decls.indexOf(this);
+		if (cur instanceof KievPackage) {
+			int idx = cur.pkg_members.indexOf(this);
 			if (idx >= 0)
-				cur.sub_decls.del(idx);
+				cur.pkg_members.del(idx);
 		}
 		this.package_clazz.symbol = pkg;
-		if (pkg != null) {
-			int idx = pkg.sub_decls.indexOf(this);
+		if (pkg instanceof KievPackage) {
+			int idx = pkg.pkg_members.indexOf(this);
 			if (idx < 0)
-				pkg.sub_decls.append(this);
+				pkg.pkg_members.append(this);
 		}
 	}
 
@@ -732,12 +730,13 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	}
 	public void callbackDetached(ANode parent, AttrSlot slot) {
 		if (slot.isSemantic()) {
-			if (package_clazz.dnode != null) {
-				int idx = package_clazz.dnode.sub_decls.indexOf(this);
+			DNode pkg = this.package_clazz.dnode;
+			if (pkg instanceof KievPackage) {
+				int idx = pkg.pkg_members.indexOf(this);
 				if (idx >= 0)
-					package_clazz.dnode.sub_decls.del(idx);
-				package_clazz.symbol = null;
+					pkg.pkg_members.del(idx);
 			}
+			this.package_clazz.symbol = null;
 		}
 		super.callbackDetached(parent, slot);
 	}
@@ -755,17 +754,20 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		if (this.package_clazz.dnode != null) {
-			int idx = this.package_clazz.dnode.sub_decls.indexOf(this);
-			if (idx >= 0)
-				this.package_clazz.dnode.sub_decls.del(idx);
+		DNode pkg = this.package_clazz.dnode;
+		if (pkg != null) {
+			if (pkg instanceof KievPackage) {
+				int idx = pkg.pkg_members.indexOf(this);
+				if (idx >= 0)
+					pkg.pkg_members.del(idx);
+				this.package_clazz.symbol = null;
+			}
 			this.package_clazz.symbol = null;
 		}
 		this.args.delAll();
 		foreach(Method m; this.members; m.isOperatorMethod() )
 			Operator.cleanupMethod(m);
 		this.members.delAll();
-		this.sub_decls.delAll();
 		this.type_decl_version++;
 	}
 
@@ -791,40 +793,6 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 		if (q == null)
 			return "<anonymouse>";
 		return q.replace('\u001f','.');
-	}
-
-	public void resolveMetaDefaults() {
-		if (isAnnotation()) {
-			foreach(Method m; members) {
-				try {
-					m.resolveMetaDefaults();
-				} catch(Exception e) {
-					Kiev.reportError(m,e);
-				}
-			}
-		}
-		if( this instanceof Struct && !isPackage() ) {
-			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
-				if (!sub.isAnonymouse())
-					sub.resolveMetaDefaults();
-			}
-		}
-	}
-
-	public void resolveMetaValues() {
-		this.resolveMetas();
-		foreach(DNode dn; members) {
-			dn.resolveMetas();
-			if (dn instanceof Method)
-				foreach (Var p; dn.params)
-					p.resolveMetas();
-		}
-		
-		if( this instanceof Struct && !isPackage() ) {
-			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
-				sub.resolveMetaValues();
-			}
-		}
 	}
 
 	static class TypeDeclDFFunc extends DFFunc {

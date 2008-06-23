@@ -31,30 +31,21 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	////////////////////////////////////////////////////
 
 	public void process(ASTNode node, Transaction tr) {
-		doProcess(node);
+		tr = Transaction.enter(tr,"VirtFldFE_GenMembers");
+		try {
+			node.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) {
+					if !(n instanceof ASTNode)
+						return false;
+					if (n instanceof ComplexTypeDecl)
+						addAbstractFields((ComplexTypeDecl)n);
+					return true;
+				}
+			});
+		} finally { tr.leave(); }
 	}
 	
-	public void doProcess(ASTNode:ASTNode node) {
-		return;
-	}
-	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(Struct:ASTNode s) {
-		addAbstractFields(s);
-		foreach(Struct sub; s.sub_decls)
-			doProcess(sub);
-	}
-	
-	public void addAbstractFields(Struct s) {
+	public void addAbstractFields(ComplexTypeDecl s) {
 		foreach(Method m; s.members; m.sname != null) {
 			if (m.sname.startsWith(nameSet))
 				addSetterForAbstractField(s, m.sname.substring(nameSet.length()), m);
@@ -69,7 +60,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 	}
 	
-	private void addSetterForAbstractField(Struct s, String name, Method m) {
+	private void addSetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
 		Field f = s.resolveField( name, false );
 		MetaAccess acc;
@@ -83,7 +74,8 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc == null) f.setMeta(acc = new MetaAccess());
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
-			s.addField(f=new Field(name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
+			f = new Field(name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
+			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
@@ -129,7 +121,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		MetaAccess.verifyDecl(f);
 	}
 	
-	private void addGetterForAbstractField(Struct s, String name, Method m) {
+	private void addGetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
 		Field f = s.resolveField( name, false );
 		MetaAccess acc;
@@ -143,7 +135,8 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc == null) f.setMeta(acc = new MetaAccess());
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
-			s.addField(f=new Field(name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
+			f = new Field(name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
+			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
@@ -206,38 +199,28 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 	public void process(ASTNode node, Transaction tr) {
 		tr = Transaction.enter(tr,"VirtFldME_PreGenerate");
 		try {
-			doProcess(node);
+			node.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) {
+					if !(n instanceof ASTNode)
+						return false;
+					if (n instanceof ComplexTypeDecl)
+						doProcess((ComplexTypeDecl)n);
+					return true;
+				}
+			});
 		} finally { tr.leave(); }
 	}
 	
-	public void doProcess(ASTNode:ASTNode node) {
-		return;
-	}
-	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(Struct:ASTNode s) {
+	private void doProcess(ComplexTypeDecl s) {
 		foreach(Field f; s.members)
 			addMethodsForVirtualField(s, f);
-		foreach(Field f; s.members) {
-			if (!f.isVirtual())
-				continue;
+		foreach(Field f; s.members; f.isVirtual()) {
 			if (s.isInterface() && !f.isAbstract())
 				f.setAbstract(true);
 		}
-		foreach(Struct sub; s.sub_decls)
-			this.doProcess(sub);
 	}
 	
-	private static void addMethodsForVirtualField(Struct s, Field f) {
+	private static void addMethodsForVirtualField(ComplexTypeDecl s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
 			Kiev.reportError(f,"Static fields can't be virtual");
 			f.setVirtual(false);
@@ -269,7 +252,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				set_var.setFinal(false);
 			else if (f.getMeta(VNode_Base.mnAtt) != null)
 				set_var.setFinal(true);
-			s.addMethod(set_var);
+			s.members += set_var;
 			set_var.setMeta(new UserMeta(nameMetaSetter)).resolve(null);
 			LVar value = new LVar(f.pos,"value",f.getType(),Var.PARAM_NORMAL,0);
 			set_var.params.add(value);
@@ -302,7 +285,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				get_var.setFinal(false);
 			if (f.getMeta(VNode_Base.mnAtt) != null)
 				get_var.setFinal(true);
-			s.addMethod(get_var);
+			s.members += get_var;
 			get_var.setMeta(new UserMeta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
@@ -334,7 +317,11 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 		tr = Transaction.enter(tr,"VirtFldBE_Rewrite");
 		try {
 			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return VirtFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
+				public boolean pre_exec(ANode n) {
+					if (n instanceof ASTNode)
+						return VirtFldBE_Rewrite.this.rewrite((ASTNode)n);
+					return false;
+				}
 			});
 		} finally { tr.leave(); }
 	}

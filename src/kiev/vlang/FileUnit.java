@@ -35,7 +35,6 @@ public final class FileUnit extends NameSpace {
 	public String							current_syntax;
 
 	@getter public FileUnit get$ctx_file_unit() { return this; }
-	@getter public NameSpace get$ctx_name_space() { return this; }
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
@@ -88,28 +87,6 @@ public final class FileUnit extends NameSpace {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public void resolveMetaDefaults() {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving meta defaults in file "+fname);
-		String curr_file = Kiev.getCurFile();
-		Kiev.setCurFile(pname());
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			super.resolveMetaDefaults();
-		} finally { Kiev.setCurFile(curr_file); Kiev.setExtSet(exts); }
-	}
-
-	public void resolveMetaValues() {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving meta values in file "+fname);
-		String curr_file = Kiev.getCurFile();
-		Kiev.setCurFile(pname());
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			super.resolveMetaValues();
-		} finally { Kiev.setCurFile(curr_file); Kiev.setExtSet(exts); }
-	}
-
 	public void setPragma(ASTPragma pr) {
 		foreach (ConstStringExpr e; pr.options)
 			setExtension(e,pr.enable,e.value.toString());
@@ -149,7 +126,6 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	@nodeAttr public SymbolRef<KievPackage>	srpkg;
 	@nodeAttr public ASTNode∅					members;
 	
-	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
 	@getter public NameSpace get$ctx_name_space() { return this; }
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
@@ -184,32 +160,6 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	}
 
 	public String toString() { return srpkg.name; }
-
-	public void resolveMetaDefaults() {
-		foreach(ASTNode n; members) {
-			try {
-				if (n instanceof NameSpace)
-					n.resolveMetaDefaults();
-				else if (n instanceof Struct)
-					n.resolveMetaDefaults();
-			} catch(Exception e) {
-				Kiev.reportError(n,e);
-			}
-		}
-	}
-
-	public void resolveMetaValues() {
-		foreach(Struct n; members) {
-			try {
-				if (n instanceof NameSpace)
-					n.resolveMetaValues();
-				else if (n instanceof Struct)
-					n.resolveMetaValues();
-			} catch(Exception e) {
-				Kiev.reportError(n,e);
-			}
-		}
-	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		ASTNode@ syn;

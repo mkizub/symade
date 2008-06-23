@@ -215,6 +215,7 @@
          <core:FileUnit name='ProcessXPath.java' />
          <core:FileUnit name='TemplatVNode.xml' />
          <core:FileUnit name='TransfProcessor.java' />
+         <core:FileUnit name='VerifyProcessor.java' />
         </members>
        </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='vlang'>

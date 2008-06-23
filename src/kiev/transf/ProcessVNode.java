@@ -130,7 +130,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
-		foreach (Struct sub; s.sub_decls)
+		foreach (Struct sub; s.members)
 			doProcess(sub);
 		if (isNodeKind(s)) {
 			s.setCompilerNode(true);
@@ -446,27 +446,18 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 ////////////////////////////////////////////////////
 
 @singleton
-public final class VNodeFE_Verify extends VNode_Base {
-	public String getDescr() { "VNode verify" }
+public final class VNodeFE_Verify extends VerifyProcessor {
 
-	public void process(ASTNode node, Transaction tr) { doProcess(node); }
-	public void doProcess(ASTNode:ASTNode node) {}
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode n; fu.members)
-			doProcess(n);
-	}
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
+	public VNodeFE_Verify() { super(KievExt.VNode); }
+
+	public void verify(ASTNode node) {
+		if (node instanceof Struct && VNode_Base.isNodeKind((Struct)node))
+			verifyStruct((Struct)node);
 	}
 	
-	public void doProcess(Struct:ASTNode s) {
-		foreach (Struct sub; s.sub_decls)
-			doProcess(sub);
-		if!(isNodeKind(s))
-			return;
-		UserMeta m = (UserMeta)s.getMeta(mnNode);
-		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
+	private void verifyStruct(Struct s) {
+		UserMeta m = (UserMeta)s.getMeta(VNode_Base.mnNode);
+		MetaValueScalar langValue = (MetaValueScalar)m.get(VNode_Base.nameLangName);
 		TypeDecl td;
 		if (langValue.value instanceof TypeClassExpr)
 			td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl();
@@ -608,7 +599,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 
 	public void doProcess(Struct:ASTNode s) {
 		if (s.isInterface() && !s.isMixin() || !isNodeImpl(s)) {
-			foreach(Struct sub; s.sub_decls)
+			foreach(Struct sub; s.members)
 				doProcess(sub);
 			return;
 		}

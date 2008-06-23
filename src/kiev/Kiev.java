@@ -409,6 +409,7 @@ public final class Kiev {
 	private static int					me_pass_no;
 	private static int					be_pass_no;
 	private static TransfProcessor[]	feProcessors;
+	private static VerifyProcessor[]	vfProcessors;
 	private static BackendProcessor[]	meProcessors;
 	private static BackendProcessor[]	beProcessors;
 	static {
@@ -429,10 +430,14 @@ public final class Kiev {
 			processors.append(VNodeFE_GenMembers);
 			processors.append(KievFE_PreResolve);
 			processors.append(KievFE_MainResolve);
-			processors.append(KievFE_Verify);
+			feProcessors = processors.toArray();
+		}
+		
+		{
+			Vector<VerifyProcessor> processors = new Vector<VerifyProcessor>();
 			processors.append(VNodeFE_Verify);
 			processors.append(PackedFldFE_Verify);
-			feProcessors = processors.toArray();
+			vfProcessors = processors.toArray();
 		}
 		
 		{
@@ -446,16 +451,14 @@ public final class Kiev {
 			processors.append(PizzaME_PreGenerate);
 			processors.append(ViewME_PreGenerate);
 			processors.append(VNodeME_PreGenerate);
-			processors.append(KievME_PostGenerate);
+			processors.append(InnerBE_Rewrite);
 			meProcessors = processors.toArray();
 		}
 
 		{
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
 			processors.append(KievBE_Resolve);
-			processors.append(InnerBE_Rewrite);
 			processors.append(VirtFldBE_Rewrite);
-			//processors.append(PackedFldBE_Rewrite);
 			processors.append(KievBE_Generate);
 			//processors.append(ExportBE_Generate);
 			processors.append(KievBE_Cleanup);
@@ -565,6 +568,26 @@ public final class Kiev {
 			Kiev.setCurFile(curr_file);
 			Kiev.setExtSet(exts);
 		}
+	}
+
+	public static void runVerifyProcessors(ANode root) {
+		Transaction tr = Transaction.enter(null,"Verification");
+		try {
+			root.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) {
+					if !(n instanceof ASTNode)
+						return false;
+					ASTNode astn = (ASTNode)n;
+					foreach (VerifyProcessor vp; vfProcessors; vp.isEnabled())
+						vp.verify(astn);
+					return n.preVerify();
+				}
+				public void post_exec(ANode n) {
+					if (n instanceof ASTNode)
+						n.postVerify();
+				}
+			});
+		} finally { tr.leave(); }
 	}
 
 	public static String runCurrentMidEndProcessor() {

@@ -107,7 +107,6 @@ public static view RDNode of DNode extends RNode {
 	
 	public final int getFlags();
 	
-	public final void resolveMetas();
 	public final void verifyMetas();
 	public final boolean hasRuntimeVisibleMetas();
 	public final boolean hasRuntimeInvisibleMetas();
@@ -208,7 +207,6 @@ public view RComplexTypeDecl of ComplexTypeDecl extends RTypeDecl {
 	public:ro			SymbolRef<TypeDecl>		package_clazz;
 	public:ro			TypeDef[]				args;
 	public:ro			ASTNode[]				members;
-	public:ro			DNode[]					sub_decls;
 
 	public final String qname();
 	public void updatePackageClazz();
