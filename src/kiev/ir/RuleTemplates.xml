@@ -99,7 +99,7 @@
            </metas>
          <sname>enter$1</sname>
         </a-node>
-        <a-node class='kiev.vlang.JavaClass'>
+        <a-node class='kiev.vlang.JavaClass' name='frame$$'>
          <super_types>
           <a-node class='kiev.vlang.types.TypeNameRef'>
            <ident>rule</ident>

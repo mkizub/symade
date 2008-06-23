@@ -582,6 +582,18 @@ public final class DumpUtils {
 						n.is_interface_only = true;
 					//System.out.println("push node "+nodes.length);
 					nodes.push(n);
+					if (n instanceof Struct) {
+						ComplexTypeDecl outer = null;
+						for (int i=nodes.length-2; i >= 0; i--) {
+							if (nodes[i] instanceof ComplexTypeDecl) {
+								outer = (ComplexTypeDecl)nodes[i];
+								break;
+							}
+						}
+						if (outer == null)
+							outer = this.pkg;
+						n.initStruct(n.sname,outer,0);
+					}
 					expect_attr = true;
 					return;
 				}
@@ -639,7 +651,7 @@ public final class DumpUtils {
 				ANode n = nodes.pop();
 				if (elUri.length() > 0) {
 					if (elUri.equals(SOP_URI)) {
-						assert(n.getCompilerLang() == null);
+						//assert(n.getCompilerLang() == null);
 						assert(n.getClass().getName().equals(elName));
 					} else {
 						assert(n.getCompilerLang().getURI().equals(elUri));

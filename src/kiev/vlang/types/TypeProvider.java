@@ -30,7 +30,6 @@ public abstract class MetaType implements Constants {
 
 	public TDecl				tdecl;
 	public int					flags;
-	public int					version;
 
 	@getter public TDecl get$tdecl() {
 		return this.tdecl;
@@ -52,6 +51,8 @@ public abstract class MetaType implements Constants {
 	}
 
 	public abstract TemplateTVarSet getTemplBindings();
+	
+	public void callbackTypeVersionChanged() { /* ignore */ }
 
 	public Type[] getMetaSupers(Type tp) {
 		if (tdecl.super_types.length == 0)
@@ -249,6 +250,7 @@ public final class ASTNodeMetaType extends MetaType {
 	private TypeAssign[]		types;
 	private Field[]				fields;
 	private TemplateTVarSet		templ_bindings;
+	private boolean            built;
 
 	public static ASTNodeMetaType instance(Class clazz) {
 		ASTNodeMetaType mt = allASTNodeMetaTypes.get(clazz);
@@ -284,7 +286,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public TemplateTVarSet getTemplBindings() {
-		if (this.version != 1)
+		if (!built)
 			makeTemplBindings();
 		return templ_bindings;
 	}
@@ -324,7 +326,7 @@ public final class ASTNodeMetaType extends MetaType {
 		foreach (TypeAssign ta; this.types /*; ta.sname.matches("attr\\$.*\\$type")*/)
 			vs.append(ta.getAType(), null);
 		templ_bindings = new TemplateTVarSet(-1, vs);
-		this.version = 1;
+		built = true;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
@@ -362,8 +364,13 @@ public final class XMetaType extends MetaType {
 		return new XType(this, getTemplBindings(), t.bindings().applay_bld(bindings));
 	}
 
+	public void callbackTypeVersionChanged() {
+		templ_bindings = null;
+	}
+
 	public TemplateTVarSet getTemplBindings() {
-		if (this.version != tdecl.type_decl_version)
+		assert (tdecl.xmeta_type == this);
+		if (this.templ_bindings == null)
 			makeTemplBindings();
 		return templ_bindings;
 	}
@@ -384,8 +391,10 @@ public final class XMetaType extends MetaType {
 			if ((stp.meta_type.flags & flReference) != 0) this.flags |= flReference;
 			if ((stp.meta_type.flags & flArray)     != 0) this.flags |= flArray;
 		}
-		templ_bindings = new TemplateTVarSet(n_free, vs);
-		this.version = tdecl.type_decl_version;
+		if (vs.tvars.length == 0)
+			templ_bindings = TemplateTVarSet.emptySet;
+		else
+			templ_bindings = new TemplateTVarSet(n_free, vs);
 	}
 
 }
@@ -406,15 +415,24 @@ public final class CompaundMetaType extends MetaType {
 			if (td != null) {
 				descr = null;
 				this.tdecl = td;
+				assert (td.xmeta_type == this);
 			}
 		}
 		return this.tdecl;
 	}
 	
+	public static void checkNotDeferred(Struct clazz) {
+		String qname = clazz.qname();
+		if (qname != null)
+			assert (compaundMetaTypes.get(qname) == null);
+	}
+	
 	public static CompaundMetaType newCompaundMetaType(String clazz_name) alias lfy operator new {
 		TypeDecl td = (TypeDecl)Env.getRoot().resolveGlobalDNode(clazz_name);
-		if (td != null)
+		if (td != null) {
+			assert (td.xmeta_type != null);
 			return (CompaundMetaType)td.xmeta_type;
+		}
 		CompaundMetaType mt = compaundMetaTypes.get(clazz_name);
 		if (mt != null)
 			return mt;
@@ -424,13 +442,14 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	public static CompaundMetaType newCompaundMetaType(Struct clazz) alias lfy operator new {
-		if (clazz.xmeta_type != null)
-			return (CompaundMetaType)clazz.xmeta_type;
+		assert (clazz.xmeta_type == null);
 		String qname = clazz.qname();
 		if (qname != null) {
 			CompaundMetaType mt = compaundMetaTypes.get(qname);
-			if (mt != null)
+			if (mt != null) {
+				compaundMetaTypes.remove(qname);
 				return mt;
+			}
 		}
 		return new CompaundMetaType(clazz);
 	}
@@ -469,8 +488,13 @@ public final class CompaundMetaType extends MetaType {
 		return new CompaundType(this, getTemplBindings(), t.bindings().applay_bld(bindings));
 	}
 	
+	public void callbackTypeVersionChanged() {
+		templ_bindings = null;
+	}
+
 	public TemplateTVarSet getTemplBindings() {
-		if (this.version != tdecl.type_decl_version)
+		assert (tdecl.xmeta_type == this);
+		if (this.templ_bindings == null)
 			makeTemplBindings();
 		return templ_bindings;
 	}
@@ -489,8 +513,10 @@ public final class CompaundMetaType extends MetaType {
 		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null) {
 			vs.append(st.getType().bindings());
 		}
-		templ_bindings = new TemplateTVarSet(n_free, vs);
-		this.version = tdecl.type_decl_version;
+		if (vs.tvars.length == 0)
+			templ_bindings = TemplateTVarSet.emptySet;
+		else
+			templ_bindings = new TemplateTVarSet(n_free, vs);
 	}
 
 }
@@ -504,29 +530,28 @@ public final class ArrayMetaType extends MetaType {
 	static {
 		templ_bindings = new TemplateTVarSet(-1, new TVarBld(StdTypes.tpArrayArg, null));
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
-		if (tdecl == null) {
-			tdecl = new MetaTypeDecl(null);
-			tdecl.sname = "_array_";
-			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
-			tdecl.args.add(StdTypes.tdArrayArg);
-			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.package_clazz.symbol = pkg;
-			pkg.pkg_members.add(tdecl);
-			tdecl.uuid = "bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04";
-			Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
-			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
-			tdecl.members.add(length);
-			Method get = new MethodImpl("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
-			get.params.add(new LVar(0,"idx",StdTypes.tpInt,Var.PARAM_NORMAL,0));
-			get.aliases += new ASTOperatorAlias(Constants.nameArrayGetOp);
-			//get.body = CoreExpr.makeInstance("");
-			tdecl.members.add(get);
-		}
-		
+		assert  (tdecl == null);
+		tdecl = new MetaTypeDecl(null);
+		tdecl.sname = "_array_";
+		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
+		tdecl.args.add(StdTypes.tdArrayArg);
+		tdecl.uuid = "bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04";
 		instance = new ArrayMetaType(tdecl);
 		tdecl.xmeta_type = instance;
 		tdecl.xtype = ArrayType.newArrayType(Type.tpAny);
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(tdecl);
+		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
+		length.setMeta(new MetaAccess("public",0xAA)); //public:ro
+		tdecl.members.add(length);
+		Method get = new MethodImpl("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
+		get.params.add(new LVar(0,"idx",StdTypes.tpInt,Var.PARAM_NORMAL,0));
+		get.aliases += new ASTOperatorAlias(Constants.nameArrayGetOp);
+		//get.body = CoreExpr.makeInstance("");
+		tdecl.members.add(get);
+		
 	}
 	private ArrayMetaType(TypeDecl tdecl) {
 		super(tdecl, MetaType.flArray | MetaType.flReference);
@@ -608,20 +633,19 @@ public class WildcardCoMetaType extends MetaType {
 	static {
 		templ_bindings = new TemplateTVarSet(-1, new TVarBld(StdTypes.tpWildcardCoArg, null));
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wildcard_co_variant_");
-		if (tdecl == null) {
-			tdecl = new MetaTypeDecl();
-			tdecl.sname = "_wildcard_co_variant_";
-			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
-			tdecl.args.add(StdTypes.tdWildcardCoArg);
-			tdecl.uuid = "6c99b10d-3003-3176-8086-71be6cee5c51";
-			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.package_clazz.symbol = pkg;
-			pkg.pkg_members.add(tdecl);
-		}
+		assert (tdecl == null);
+		tdecl = new MetaTypeDecl(null);
+		tdecl.sname = "_wildcard_co_variant_";
+		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
+		tdecl.args.add(StdTypes.tdWildcardCoArg);
+		tdecl.uuid = "6c99b10d-3003-3176-8086-71be6cee5c51";
 		instance = new WildcardCoMetaType(tdecl);
 		tdecl.xmeta_type = instance;
 		tdecl.xtype = new WildcardCoType(Type.tpAny);
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(tdecl);
 	}
 
 	private WildcardCoMetaType(TypeDecl td) {
@@ -656,20 +680,19 @@ public class WildcardContraMetaType extends MetaType {
 	static {
 		templ_bindings = new TemplateTVarSet(-1, new TVarBld(StdTypes.tpWildcardContraArg, null));
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wildcard_contra_variant_");
-		if (tdecl == null) {
-			tdecl = new MetaTypeDecl();
-			tdecl.sname = "_wildcard_contra_variant_";
-			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
-			tdecl.args.add(StdTypes.tdWildcardContraArg);
-			tdecl.uuid = "933ac6b8-4d03-3799-9bb3-3c9bc1883707";
-			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.package_clazz.symbol = pkg;
-			pkg.pkg_members.add(tdecl);
-		}
+		assert (tdecl == null);
+		tdecl = new MetaTypeDecl(null);
+		tdecl.sname = "_wildcard_contra_variant_";
+		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
+		tdecl.args.add(StdTypes.tdWildcardContraArg);
+		tdecl.uuid = "933ac6b8-4d03-3799-9bb3-3c9bc1883707";
 		instance = new WildcardContraMetaType(tdecl);
 		tdecl.xmeta_type = instance;
 		tdecl.xtype = new WildcardContraType(Type.tpAny);
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(tdecl);
 	}
 
 	private WildcardContraMetaType(TypeDecl td) {
@@ -700,24 +723,23 @@ public class WrapperMetaType extends MetaType {
 	@virtual typedef TDecl = MetaTypeDecl;
 
 	private static final TemplateTVarSet	templ_bindings;
-	private static final MetaTypeDecl		wrapper_tdecl;
+	public static final MetaTypeDecl		wrapper_tdecl;
 	static {
 		templ_bindings = new TemplateTVarSet(-1, new TVarBld(StdTypes.tpWrapperArg, null));
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
-		if (tdecl == null) {
-			tdecl = new MetaTypeDecl();
-			tdecl.sname = "_wrapper_";
-			tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
-			tdecl.args.add(StdTypes.tdWrapperArg);
-			tdecl.uuid = "67544053-836d-3bac-b94d-0c4b14ae9c55";
-			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
-			tdecl.package_clazz.symbol = pkg;
-			pkg.pkg_members.add(tdecl);
-		}
+		assert (tdecl == null);
+		tdecl = new MetaTypeDecl(null);
+		tdecl.sname = "_wrapper_";
+		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
+		tdecl.args.add(StdTypes.tdWrapperArg);
+		tdecl.uuid = "67544053-836d-3bac-b94d-0c4b14ae9c55";
 		wrapper_tdecl = tdecl;
 		tdecl.xmeta_type = WrapperMetaType.instance(StdTypes.tpWrapperArg);
 		tdecl.xtype = WrapperType.newWrapperType(StdTypes.tpWrapperArg);
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(tdecl);
 	}
 	
 	public final TypeDecl	clazz;
@@ -819,6 +841,8 @@ public final class TupleMetaType extends MetaType {
 	public static MetaTypeDecl    tuple_tdecl;
 	public static TupleMetaType[] instancies;
 	static {
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_tuple_");
+		assert (tdecl == null);
 		tuple_tdecl = new MetaTypeDecl(null);
 		tuple_tdecl.sname = "_tuple_";
 		tuple_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
@@ -892,20 +916,18 @@ public class CallMetaType extends MetaType {
 		templ_bindings_this = new TemplateTVarSet(-1, set);
 
 		call_tdecl = (MetaTypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
-		if (call_tdecl == null) {
-			call_tdecl = new MetaTypeDecl();
-			call_tdecl.sname = "_call_type_";
-			call_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-			call_tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
-			KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
-			call_tdecl.package_clazz.symbol = pkg;
-			pkg.pkg_members.add(call_tdecl);
-		}
-
+		assert (call_tdecl == null);
+		call_tdecl = new MetaTypeDecl();
+		call_tdecl.sname = "_call_type_";
+		call_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		call_tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
 		call_static_instance    = new CallMetaType(templ_bindings_static, MetaType.flCallable);
 		call_this_instance      = new CallMetaType(templ_bindings_this,   MetaType.flCallable);
 		closure_static_instance = new CallMetaType(templ_bindings_static, MetaType.flCallable | MetaType.flReference);
 		closure_this_instance   = new CallMetaType(templ_bindings_this,   MetaType.flCallable | MetaType.flReference);
+		KievPackage pkg = Env.getRoot().newPackage("kiev\u001fstdlib");
+		call_tdecl.package_clazz.symbol = pkg;
+		pkg.pkg_members.add(call_tdecl);
 	}
 	
 	private TemplateTVarSet		templ_bindings;

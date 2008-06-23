@@ -35,7 +35,7 @@
     </a-node>
    </super_types>
    <members>
-    <a-node class='kiev.vlang.JavaClass'>
+    <a-node class='kiev.vlang.JavaClass' name='VVV'>
      <super_types>
       <a-node class='kiev.vlang.types.TypeNameRef'>
        <ident>java&#31;lang&#31;Object</ident>

@@ -260,7 +260,7 @@ public abstract class Struct extends ComplexTypeDecl {
 		if !(obj instanceof Env) {
 			obj.xmeta_type = new CompaundMetaType(obj);
 			obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, null, null);
-			obj.type_decl_version = 1;
+			obj.callbackTypeVersionChanged();
 		}
 		return obj;
 	}
@@ -354,10 +354,10 @@ public abstract class Struct extends ComplexTypeDecl {
 
 	public Struct() {
 		super(null);
-		if !(this instanceof Env) {
-			this.xmeta_type = new CompaundMetaType(this);
-			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
-		}
+		//if !(this instanceof Env) {
+		//	this.xmeta_type = new CompaundMetaType(this);
+		//	this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
+		//}
 	}
 
 	public void initStruct(String name, ComplexTypeDecl outer, int flags) {
@@ -368,8 +368,6 @@ public abstract class Struct extends ComplexTypeDecl {
 			if (outer_idx < 0)
 				outer.pkg_members += this;
 		}
-		this.xmeta_type = new CompaundMetaType(this);
-		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
 		if (flags != 0) {
 			if!(this instanceof KievPackage) {
 				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
@@ -386,6 +384,14 @@ public abstract class Struct extends ComplexTypeDecl {
 			if ((flags & ACC_MIXIN) == ACC_MIXIN) setMeta(new MetaMixin());
 			this.mflags = flags;
 		}
+		if (this.xmeta_type == null) {
+			CompaundMetaType cmt = new CompaundMetaType(this);
+			this.xmeta_type = cmt;
+			this.xtype = new CompaundType(cmt, null, null);
+		} else {
+			CompaundMetaType.checkNotDeferred(this);
+		}
+		callbackTypeVersionChanged();
 	}
 
 	public Struct getStruct() { return this; }

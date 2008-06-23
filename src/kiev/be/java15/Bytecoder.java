@@ -87,7 +87,7 @@ public class Bytecoder implements JConstants {
 			Signature.addTypeArgs(cl,cl_sign_sc);
 		}
 
-		cl.type_decl_version++;
+		cl.callbackTypeVersionChanged();
 		cl.setTypeDeclNotLoaded(false);
 		cl.setFrontEndPassed();
 
@@ -141,7 +141,7 @@ public class Bytecoder implements JConstants {
 			td.setSynthetic(true);
 			cl.members.append(td);
 			cl.ometa_tdef = td;
-			cl.type_decl_version++;
+			cl.callbackTypeVersionChanged();
 		}
 
 		for(int i=0; i < bcclazz.fields.length; i++) {

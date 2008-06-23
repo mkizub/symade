@@ -104,9 +104,7 @@ public class Classpath implements BytecodeFileConstants {
 		}
 		String data =
 		"<?xml version='1.1' encoding='UTF-8' standalone='yes'?>\n"+
-		"<a-node class='kiev.vlang.KievPackage'>\n"+
-		" <sname>"+name+"</sname>\n"+
-		"</a-node>";
+		"<sop:kiev.vlang.KievPackage xmlns:sop='sop://sop/' name='"+name+"' />";
 		return data.getBytes("UTF-8");
 	}
 

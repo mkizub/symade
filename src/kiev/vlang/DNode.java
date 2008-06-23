@@ -402,15 +402,29 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@nodeAttr public TypeRef∅					super_types;
-	          public MetaType					xmeta_type;
-	          public Type						xtype;
+	@nodeAttr
+	public TypeRef∅					super_types;
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData(copyable=false)
+	public MetaType						xmeta_type;
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData(copyable=false)
+	public Type							xtype;
 
 	@nodeData(ext_data=true, copyable=false) public WrapperMetaType	wmeta_type;
 
 	@getter public ComplexTypeDecl get$child_ctx_tdecl()	{ null }
 
 	public ASTNode[] getMembers() { ASTNode.emptyArray }
+
+	@setter public final void set$xmeta_type(MetaType mt) {
+		assert (this.xmeta_type == null || this.xmeta_type == mt);
+		this.xmeta_type = mt;
+	}
+	@setter public final void set$xtype(Type tp) {
+		assert (this.xtype == null);
+		this.xtype = tp;
+	}
 	
 	public boolean isClazz() {
 		return false;
@@ -519,8 +533,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		TypeDecl obj = (TypeDecl)super.copy(cc);
 		if (this == obj)
 			return this;
-		obj.xmeta_type = null;
-		obj.xtype = null;
 		return obj;
 	}
 
@@ -670,7 +682,6 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 	@nodeAttr public TypeConstr∅					args;
 	@nodeAttr public ASTNode∅						members;
 	          public String							q_name;	// qualified name
-	          public int							type_decl_version;
 
 	@nodeData(ext_data=true, copyable=false) public KString			bytecode_name; // used by backend for anonymouse and inner declarations
 	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
@@ -684,11 +695,16 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 		package_clazz = new SymbolRef<ComplexTypeDecl>();
 	}
 	
+	public void callbackTypeVersionChanged() {
+		if (xmeta_type != null)
+			xmeta_type.callbackTypeVersionChanged();
+	}
+	
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "sname")
 			resetNames();
 		if (attr.name == "super_types" || attr.name == "args")
-			type_decl_version++;
+			callbackTypeVersionChanged();
 		super.callbackChildChanged(ct, attr, data);
 	}
 	
@@ -748,7 +764,6 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 		if (obj.package_clazz.symbol != null)
 			obj.package_clazz.symbol = null;
 		obj.q_name = null;
-		obj.type_decl_version = 0;
 		return obj;
 	}
 
@@ -768,7 +783,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 		foreach(Method m; this.members; m.isOperatorMethod() )
 			Operator.cleanupMethod(m);
 		this.members.delAll();
-		this.type_decl_version++;
+		this.callbackTypeVersionChanged();
 	}
 
 	public String qname() {
@@ -881,7 +896,7 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 
 	public MetaTypeDecl() {
 		super(null);
-		this.type_decl_version = 1;
+		this.callbackTypeVersionChanged();
 		this.xmeta_type = new XMetaType(this, 0);
 		this.xtype = this.xmeta_type.make(TVarBld.emptySet);
 	}
@@ -901,7 +916,7 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 		else
 			obj.xmeta_type = new XMetaType(obj, 0);
 		obj.xtype = this.xmeta_type.make(TVarBld.emptySet);
-		obj.type_decl_version = 1;
+		obj.callbackTypeVersionChanged();
 		return obj;
 	}
 }

@@ -344,6 +344,12 @@ public interface StdTypes {
 			tpUnattachedArgs[i].flags |= flArgAppliable;
 		}
 		
+		WildcardCoMetaType.instance;
+		WildcardContraMetaType.instance;
+		WrapperMetaType.wrapper_tdecl;
+		TupleMetaType.tuple_tdecl;
+		CallMetaType.call_tdecl;
+		
 		tpAny.meta_type.tdecl.uuid =			"be8bba7f-b4f9-3991-8834-6552dcb237a0";
 		tpVoid.meta_type.tdecl.uuid =			"ec98468f-75f6-3811-ab77-6b0a8458b3ad";
 		tpBoolean.meta_type.tdecl.uuid =		"9c517365-318e-307c-acdf-6682cf309b3f";

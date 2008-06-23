@@ -427,7 +427,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			}
 		}
 		
-		tdecl.type_decl_version++;
+		tdecl.callbackTypeVersionChanged();
 		if (tdecl instanceof Struct) {
 			Struct clazz = (Struct)tdecl;
 			clazz.xtype.bindings(); // update the type
