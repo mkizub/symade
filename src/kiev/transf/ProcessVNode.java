@@ -147,7 +147,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 			UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 			if (fmatt != null || fmref != null) {
-				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.ctx_tdecl+" may not be @nodeAttr or @nodeData");
+				Kiev.reportWarning(f,"Field "+f+" of non-@node class "+f.ctx_tdecl+" may not be @nodeAttr or @nodeData");
 			}
 		}
 	}
@@ -222,6 +222,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 public final class VNodeFE_GenMembers extends VNode_Base {
 	public String getDescr() { "VNode members generation" }
 
+	private Vector<Struct> processed;
+	
 	private Type makeNodeAttrClass(Struct snode, Field f) {
 		UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 		UserMeta fmref = (UserMeta)f.getMeta(mnRef);
@@ -368,7 +370,9 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 	}
 	
 	public void process(ASTNode node, Transaction tr) {
+		processed = null;
 		doProcess(node);
+		processed = null;
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
@@ -386,11 +390,12 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 	}
 	
 	private void doProcess(Struct:ASTNode s) {
+		if (processed == null)
+			processed = new Vector<Struct>();
+		processed.append(s);
 		foreach (Struct dn; s.members)
 			this.doProcess(dn);
-		if (!s.isClazz())
-			return;
-		if (s.isInterface() || !isNodeImpl(s))
+		if (!isNodeImpl(s) || (s.isInterface() && !s.isMixin()))
 			return;
 		foreach (Field f; s.members; f.sname == nameEnumValuesFld)
 			return; // already generated
@@ -1009,7 +1014,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 
 	private Field getField(Struct s, String name) {
-		foreach (Field f; s.members; f.sname == name)
+		Field f = s.resolveField(name, false);
+		if (f != null)
 			return f;
 		throw new CompilerException(s,"Auto-generated field with name "+name+" is not found");
 	}
