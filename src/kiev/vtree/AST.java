@@ -466,8 +466,10 @@ public abstract class ANode implements INode {
 			return false;
 		if (attr.is_attr)
 			return true;
-		if (attr.name == "this")
-			return pslot().is_attr;
+		if (attr.name == "this") {
+			AttrSlot slot = pslot();
+			return slot == null || slot.is_attr;
+		}
 		return false;
 	}
 
@@ -847,10 +849,15 @@ public abstract class ANode implements INode {
 	public final this.type detach()
 		alias fy operator ~
 	{
-		if (!isAttached())
-			return this;
-		this.pslot().detach(this.parent(), this);
-		assert(!isAttached());
+		if (isAttached()) {
+			this.pslot().detach(this.parent(), this);
+			assert(!isAttached());
+		}
+		Object[] ext_data = this.ext_data;
+		if (ext_data != null) {
+			foreach (ParentInfo pi; ext_data)
+				delExtParent(pi.p_slot.parent_attr_slot);
+		}
 		return this;
 	}
 	

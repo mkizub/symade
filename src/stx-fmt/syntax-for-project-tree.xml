@@ -9,929 +9,827 @@
  Contributors:
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
-<a-node class='kiev.vlang.FileUnit'>
- <srpkg>
-  <a-node class='kiev.vlang.SymbolRef'>
-   <name>stx-fmt</name>
-  </a-node>
- </srpkg>
- <members>
-  <a-node class='kiev.vlang.Import'>
-   <name>
-    <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;vlang</name>
-     <qualified>true</qualified>
-    </a-node>
-   </name>
-   <mode>IMPORT_CLASS</mode>
-   <star>true</star>
-   <of_method>false</of_method>
-  </a-node>
-  <a-node class='kiev.vlang.Import'>
-   <name>
-    <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;vlang&#31;types</name>
-     <qualified>true</qualified>
-    </a-node>
-   </name>
-   <mode>IMPORT_CLASS</mode>
-   <star>true</star>
-   <of_method>false</of_method>
-  </a-node>
-  <a-node class='kiev.vlang.Import'>
-   <name>
-    <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;parser</name>
-     <qualified>true</qualified>
-    </a-node>
-   </name>
-   <mode>IMPORT_CLASS</mode>
-   <star>true</star>
-   <of_method>false</of_method>
-  </a-node>
-  <a-node class='kiev.vlang.Import'>
-   <name>
-    <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;fmt</name>
-     <qualified>true</qualified>
-    </a-node>
-   </name>
-   <mode>IMPORT_CLASS</mode>
-   <star>true</star>
-   <of_method>false</of_method>
-  </a-node>
-  <a-node class='kiev.fmt.TreeSyntax'>
-   <members>
-    <a-node class='kiev.fmt.SpaceInfo'>
-     <kind>SP_SPACE</kind>
-     <text_size>2</text_size>
-     <pixel_size>4</pixel_size>
-     <sname>sp</sname>
-    </a-node>
-    <a-node class='kiev.fmt.DrawColor'>
-     <rgb_color>0</rgb_color>
-     <sname>color-default</sname>
-    </a-node>
-    <a-node class='kiev.fmt.DrawFont'>
-     <font_name>Dialog-PLAIN-12</font_name>
-     <sname>font-default</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
-     <spaces>
-      <a-node class='kiev.fmt.SpaceCmd'>
-       <si>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>sp</name>
-        </a-node>
-       </si>
-       <action_before>SP_ADD</action_before>
-       <action_after>SP_ADD</action_after>
-       <from_attempt>0</from_attempt>
-      </a-node>
-     </spaces>
-     <color>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>color-default</name>
-      </a-node>
-     </color>
-     <font>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>font-default</name>
-      </a-node>
-     </font>
-     <sname>fmt-default</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxIdentTemplate'>
-     <regexp_ok>.*</regexp_ok>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxNode'>
-      </a-node>
-     </elem>
-     <sname>ident-template</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxExprTemplate'>
-     <l_paren>
-      <a-node class='kiev.fmt.SyntaxToken'>
-       <text>(</text>
-      </a-node>
-     </l_paren>
-     <bad_op>
-      <a-node class='kiev.fmt.SyntaxToken'>
-       <text>◙</text>
-       <kind>OPERATOR</kind>
-      </a-node>
-     </bad_op>
-     <r_paren>
-      <a-node class='kiev.fmt.SyntaxToken'>
-       <text>)</text>
-      </a-node>
-     </r_paren>
-     <operators>
-      <a-node class='kiev.fmt.SyntaxToken'>
-       <text>DEFAULT</text>
-      </a-node>
-     </operators>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxNode'>
-      </a-node>
-     </elem>
-     <sname>type-expr-template</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>Env</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>Project</text>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <folded_by_default>true</folded_by_default>
-       <name>files</name>
-      </a-node>
-     </elem>
-     <sname>stx-env</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>DirUnit</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>name</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>/</text>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-dir</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>FileUnit</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>fname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionClass'>
-         <name>kiev.vlang.DNode</name>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-file</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>JavaEnum</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>Enum: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-enum</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>PizzaCase</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>case: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-case</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>KievSyntax</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>syntax: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-syntax</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>KievView</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>View: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text> of </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>view_of</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-view</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>JavaAnnotation</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>Annot: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-annotation</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>JavaInterface</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>Iface: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-interface</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>JavaClass</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>Class: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-struct-class</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>MetaTypeDecl</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxList'>
-       <folded>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>TypeDecl: </text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>sname</name>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </folded>
-       <element>
-        <a-node class='kiev.fmt.SyntaxNode'>
-        </a-node>
-       </element>
-       <filter>
-        <a-node class='kiev.fmt.CalcOptionNot'>
-         <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMeta'>
-           <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-          </a-node>
-         </opt>
-        </a-node>
-       </filter>
-       <folded_by_default>true</folded_by_default>
-       <name>members</name>
-      </a-node>
-     </elem>
-     <sname>stx-metatype</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>Field</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>fld: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text> : </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>vtype</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-field</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>Constructor</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>ctor: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxList'>
-         <element>
-          <a-node class='kiev.fmt.SyntaxNode'>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-form-par</name>
-            </a-node>
-           </in_syntax>
-          </a-node>
-         </element>
-         <separator>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>,</text>
-          </a-node>
-         </separator>
-         <prefix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>(</text>
-          </a-node>
-         </prefix>
-         <sufix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>)</text>
-          </a-node>
-         </sufix>
-         <folded_by_default>false</folded_by_default>
-         <name>params</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-ctor</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>MethodImpl</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>meth: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxList'>
-         <element>
-          <a-node class='kiev.fmt.SyntaxNode'>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-form-par</name>
-            </a-node>
-           </in_syntax>
-          </a-node>
-         </element>
-         <separator>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>,</text>
-          </a-node>
-         </separator>
-         <prefix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>(</text>
-          </a-node>
-         </prefix>
-         <sufix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>)-&gt;</text>
-          </a-node>
-         </sufix>
-         <folded_by_default>false</folded_by_default>
-         <name>params</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>type_ret</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-method</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>RuleMethod</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>rule: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxList'>
-         <element>
-          <a-node class='kiev.fmt.SyntaxNode'>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-form-par</name>
-            </a-node>
-           </in_syntax>
-          </a-node>
-         </element>
-         <separator>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>,</text>
-          </a-node>
-         </separator>
-         <prefix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>(</text>
-          </a-node>
-         </prefix>
-         <sufix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>)-&gt;rule</text>
-          </a-node>
-         </sufix>
-         <folded_by_default>false</folded_by_default>
-         <name>params</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-rule</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>TypeConstr</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>type: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-type-constr</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>TypeAssign</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>type: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-type-assign</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>TypeRef</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxIdentAttr'>
-       <decl>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>ident-template</name>
-        </a-node>
-       </decl>
-       <name>ident</name>
-      </a-node>
-     </elem>
-     <sname>stx-type-ref</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>TypeNameRef</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxIdentAttr'>
-       <decl>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>ident-template</name>
-        </a-node>
-       </decl>
-       <name>ident</name>
-      </a-node>
-     </elem>
-     <sname>stx-type-nam</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>TypeExpr</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxExpr'>
-       <attrs>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>arg</name>
-        </a-node>
-       </attrs>
-       <template>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>type-expr-template</name>
-        </a-node>
-       </template>
-      </a-node>
-     </elem>
-     <sname>stx-type-expr</sname>
-    </a-node>
-    <a-node class='kiev.fmt.TextSyntax'>
-     <members>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>LVar</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>vtype</name>
-        </a-node>
-       </elem>
-       <sname>stx-form-par</sname>
-      </a-node>
-     </members>
-     <sname>syntax-form-par</sname>
-    </a-node>
-   </members>
-   <sname>syntax-for-project-tree</sname>
-  </a-node>
- </members>
-</a-node>
+<sop:dump version='1.0' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <core:FileUnit>
+  <project_file>true</project_file>
+  <srpkg>
+   <core:SymbolRef name='stx-fmt' full='true' />
+  </srpkg>
+  <members>
+   <core:Import all='false' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;stdlib&#31;Syntax' full='true' />
+    </name>
+    <mode>IMPORT_SYNTAX</mode>
+   </core:Import>
+   <core:Import all='true' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;vlang' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <core:Import all='true' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;vlang&#31;types' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <core:Import all='true' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;parser' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <core:Import all='true' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;fmt' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <syntax:TreeSyntax name='syntax-for-project-tree'>
+    <members>
+     <syntax:SpaceInfo name='sp'>
+      <kind>SP_SPACE</kind>
+      <text_size>2</text_size>
+      <pixel_size>4</pixel_size>
+     </syntax:SpaceInfo>
+     <syntax:DrawColor name='color-default'>
+      <rgb_color>0</rgb_color>
+     </syntax:DrawColor>
+     <syntax:DrawFont name='font-default'>
+      <font_name>Dialog-PLAIN-12</font_name>
+     </syntax:DrawFont>
+     <syntax:SyntaxElemFormatDecl name='fmt-default'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-default' />
+      </color>
+      <font>
+       <core:SymbolRef name='font-default' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxIdentTemplate name='ident-template'>
+      <regexp_ok>.*</regexp_ok>
+      <elem>
+       <syntax:SyntaxNode>
+        <name></name>
+       </syntax:SyntaxNode>
+      </elem>
+     </syntax:SyntaxIdentTemplate>
+     <syntax:SyntaxExprTemplate name='type-expr-template'>
+      <l_paren>
+       <syntax:SyntaxToken>
+        <text>(</text>
+       </syntax:SyntaxToken>
+      </l_paren>
+      <bad_op>
+       <syntax:SyntaxToken>
+        <text>◙</text>
+        <kind>OPERATOR</kind>
+       </syntax:SyntaxToken>
+      </bad_op>
+      <r_paren>
+       <syntax:SyntaxToken>
+        <text>)</text>
+       </syntax:SyntaxToken>
+      </r_paren>
+      <operators>
+       <syntax:SyntaxToken>
+        <text>DEFAULT</text>
+       </syntax:SyntaxToken>
+      </operators>
+      <elem>
+       <syntax:SyntaxNode>
+        <name></name>
+       </syntax:SyntaxNode>
+      </elem>
+     </syntax:SyntaxExprTemplate>
+     <syntax:SyntaxElemDecl name='stx-env'>
+      <rnode>
+       <core:SymbolRef name='Env' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxToken>
+          <text>Project</text>
+         </syntax:SyntaxToken>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <folded_by_default>true</folded_by_default>
+        <name>files</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-dir'>
+      <rnode>
+       <core:SymbolRef name='DirUnit' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>name</name>
+           </syntax:SyntaxIdentAttr>
+           <syntax:SyntaxToken>
+            <text>/</text>
+           </syntax:SyntaxToken>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-file'>
+      <rnode>
+       <core:SymbolRef name='FileUnit' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>fname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionClass>
+          <name>kiev.vlang.DNode</name>
+         </syntax:CalcOptionClass>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-enum'>
+      <rnode>
+       <core:SymbolRef name='JavaEnum' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>Enum: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-case'>
+      <rnode>
+       <core:SymbolRef name='PizzaCase' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>case: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-syntax'>
+      <rnode>
+       <core:SymbolRef name='KievSyntax' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>syntax: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-view'>
+      <rnode>
+       <core:SymbolRef name='KievView' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>View: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+           <syntax:SyntaxToken>
+            <text> of </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>view_of</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-annotation'>
+      <rnode>
+       <core:SymbolRef name='JavaAnnotation' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>Annot: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-interface'>
+      <rnode>
+       <core:SymbolRef name='JavaInterface' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>Iface: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-struct-class'>
+      <rnode>
+       <core:SymbolRef name='JavaClass' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>Class: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-metatype'>
+      <rnode>
+       <core:SymbolRef name='MetaTypeDecl' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxList>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>TypeDecl: </text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>sname</name>
+           </syntax:SyntaxIdentAttr>
+          </elements>
+          <folded_by_default>false</folded_by_default>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <element>
+         <syntax:SyntaxNode>
+          <name></name>
+         </syntax:SyntaxNode>
+        </element>
+        <filter>
+         <syntax:CalcOptionNot>
+          <opt>
+           <syntax:CalcOptionHasMeta>
+            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+           </syntax:CalcOptionHasMeta>
+          </opt>
+         </syntax:CalcOptionNot>
+        </filter>
+        <folded_by_default>true</folded_by_default>
+        <name>members</name>
+       </syntax:SyntaxList>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-field'>
+      <rnode>
+       <core:SymbolRef name='Field' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>fld: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxToken>
+          <text> : </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>vtype</name>
+         </syntax:SyntaxSubAttr>
+        </elements>
+        <folded_by_default>false</folded_by_default>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-ctor'>
+      <rnode>
+       <core:SymbolRef name='Constructor' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>ctor: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <in_syntax>
+             <core:SymbolRef name='syntax-form-par' />
+            </in_syntax>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>(</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>)</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <folded_by_default>false</folded_by_default>
+          <name>params</name>
+         </syntax:SyntaxList>
+        </elements>
+        <folded_by_default>false</folded_by_default>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-method'>
+      <rnode>
+       <core:SymbolRef name='MethodImpl' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>meth: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <in_syntax>
+             <core:SymbolRef name='syntax-form-par' />
+            </in_syntax>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>(</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>)-></text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <folded_by_default>false</folded_by_default>
+          <name>params</name>
+         </syntax:SyntaxList>
+         <syntax:SyntaxSubAttr>
+          <name>type_ret</name>
+         </syntax:SyntaxSubAttr>
+        </elements>
+        <folded_by_default>false</folded_by_default>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-rule'>
+      <rnode>
+       <core:SymbolRef name='RuleMethod' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>rule: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <in_syntax>
+             <core:SymbolRef name='syntax-form-par' />
+            </in_syntax>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>(</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>)->rule</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <folded_by_default>false</folded_by_default>
+          <name>params</name>
+         </syntax:SyntaxList>
+        </elements>
+        <folded_by_default>false</folded_by_default>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-type-constr'>
+      <rnode>
+       <core:SymbolRef name='TypeConstr' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>type: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+        </elements>
+        <folded_by_default>false</folded_by_default>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-type-assign'>
+      <rnode>
+       <core:SymbolRef name='TypeAssign' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>type: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+        </elements>
+        <folded_by_default>false</folded_by_default>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-type-ref'>
+      <rnode>
+       <core:SymbolRef name='TypeRef' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxIdentAttr>
+        <decl>
+         <core:SymbolRef name='ident-template' />
+        </decl>
+        <name>ident</name>
+       </syntax:SyntaxIdentAttr>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-type-nam'>
+      <rnode>
+       <core:SymbolRef name='TypeNameRef' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxIdentAttr>
+        <decl>
+         <core:SymbolRef name='ident-template' />
+        </decl>
+        <name>ident</name>
+       </syntax:SyntaxIdentAttr>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-type-expr'>
+      <rnode>
+       <core:SymbolRef name='TypeExpr' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxExpr>
+        <attrs>
+         <syntax:SyntaxSubAttr>
+          <name>arg</name>
+         </syntax:SyntaxSubAttr>
+        </attrs>
+        <template>
+         <core:SymbolRef name='type-expr-template' />
+        </template>
+       </syntax:SyntaxExpr>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:TextSyntax name='syntax-form-par'>
+      <members>
+       <syntax:SyntaxElemDecl name='stx-form-par'>
+        <rnode>
+         <core:SymbolRef name='LVar' />
+        </rnode>
+        <elem>
+         <syntax:SyntaxSubAttr>
+          <name>vtype</name>
+         </syntax:SyntaxSubAttr>
+        </elem>
+       </syntax:SyntaxElemDecl>
+      </members>
+     </syntax:TextSyntax>
+    </members>
+   </syntax:TreeSyntax>
+  </members>
+ </core:FileUnit>
+</sop:dump>

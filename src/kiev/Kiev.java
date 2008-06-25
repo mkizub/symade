@@ -571,7 +571,7 @@ public final class Kiev {
 	}
 
 	public static void runVerifyProcessors(ANode root) {
-		Transaction tr = Transaction.enter(null,"Verification");
+		Transaction tr = Transaction.enter(Transaction.get(),"Verification");
 		try {
 			root.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) {

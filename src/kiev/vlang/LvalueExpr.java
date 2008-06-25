@@ -493,7 +493,7 @@ public final class SuperExpr extends ENode {
 	public String toString() { return "super"; }
 }
 
-@ThisIsANode(name="LVar", lang=CoreLang)
+@ThisIsANode(name="LVarExpr", lang=CoreLang)
 public final class LVarExpr extends LvalueExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}

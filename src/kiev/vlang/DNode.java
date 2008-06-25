@@ -852,37 +852,16 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames, ScopeOfMethods {
 	@nodeAttr public SymbolRef∅		super_syntax;
 	@nodeAttr public ASTNode∅			members;
-	          public String				q_name;	// qualified name
 
 	public KievSyntax() {}
 	
-	public Object copy(CopyContext cc) {
-		KievSyntax obj = (KievSyntax)super.copy(cc);
-		if (this == obj)
-			return this;
-		obj.q_name = null;
-		return obj;
-	}
-
 	public String qname() {
-		if (q_name != null)
-			return q_name;
 		if (sname == null || sname == "")
 			return null;
 		ANode p = parent();
-		while (p != null && !(p instanceof NameSpace))
-			p = p.parent();
-		if (p == null) {
-			q_name = sname;
-			return q_name;
-		}
-		p = ((NameSpace)p).getPackage();
-		if (p == null || p instanceof Env) {
-			q_name = sname;
-		} else {
-			q_name = (p.qname()+"\u001f"+sname).intern();
-		}
-		return q_name;
+		if (p instanceof GlobalDNode)
+			return (p.qname()+"\u001f"+sname).intern();
+		return sname;
 	}
 
 	public String toString() {

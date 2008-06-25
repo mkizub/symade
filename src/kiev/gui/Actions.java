@@ -502,9 +502,14 @@ public final class FileActions implements Runnable {
 				return;
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
-				Draw_ATextSyntax stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
-				SyntaxManager.dumpTextFile(fu, jfc.getSelectedFile(), stx);
-				fu.current_syntax = stx.q_name;
+				if ("stx-fmt\u001fsyntax-dump-full".equals(dff.syntax_qname)) {
+					DumpUtils.dumpToXMLFile("full", fu, jfc.getSelectedFile());
+					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
+				} else {
+					Draw_ATextSyntax stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
+					SyntaxManager.dumpTextFile(fu, jfc.getSelectedFile(), stx);
+					fu.current_syntax = stx.q_name;
+				}
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}
@@ -517,7 +522,11 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			try {
-				SyntaxManager.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled().init());
+				if (true) {
+					DumpUtils.dumpToXMLFile("api", (ASTNode)uiv.the_root, jfc.getSelectedFile());
+				} else {
+					SyntaxManager.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled().init());
+				}
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml API exporting: "+e);
 			}
@@ -528,9 +537,12 @@ public final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root;
 			else
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
+			String stx_name = null;
 			Draw_ATextSyntax stx = null;
-			if (fu.current_syntax != null)
+			if (fu.current_syntax != null) {
 				stx = SyntaxManager.loadLanguageSyntax(fu.current_syntax);
+				stx_name = fu.current_syntax;
+			}
 			File f = new File(fu.pname());
 			if (stx == null || stx != uiv.syntax) {
 				JFileChooser jfc = new JFileChooser(".");
@@ -548,11 +560,16 @@ public final class FileActions implements Runnable {
 					return;
 				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 				stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
+				stx_name = dff.syntax_qname;
 				f = jfc.getSelectedFile();
 			}
 			try {
-				SyntaxManager.dumpTextFile(fu, f, stx);
-				fu.current_syntax = stx.q_name;
+				if ("stx-fmt\u001fsyntax-dump-full".equals(stx_name)) {
+					DumpUtils.dumpToXMLFile("full", fu, f);
+				} else {
+					SyntaxManager.dumpTextFile(fu, f, stx);
+				}
+				fu.current_syntax = stx_name;
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}

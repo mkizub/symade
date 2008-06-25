@@ -9,62 +9,60 @@
  Contributors:
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
-<a-node class='kiev.vlang.FileUnit'>
- <srpkg>
-  <a-node class='kiev.vlang.SymbolRef'>
-   <name>stx-fmt</name>
-  </a-node>
- </srpkg>
- <members>
-  <a-node class='kiev.fmt.XmlDumpSyntax'>
-   <dump>api</dump>
-   <members>
-    <a-node class='kiev.fmt.SpaceInfo'>
-     <kind>SP_NEW_LINE</kind>
-     <text_size>1</text_size>
-     <pixel_size>1</pixel_size>
-     <sname>nl</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
-     <sname>fmt-default</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
-     <spaces>
-      <a-node class='kiev.fmt.SpaceCmd'>
-       <si>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>nl</name>
-        </a-node>
-       </si>
-       <action_before>SP_ADD</action_before>
-       <action_after>SP_ADD</action_after>
-       <from_attempt>0</from_attempt>
-      </a-node>
-     </spaces>
-     <sname>fmt-nl-nl</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
-     <spaces>
-      <a-node class='kiev.fmt.SpaceCmd'>
-       <si>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>nl</name>
-        </a-node>
-       </si>
-       <action_before>SP_NOP</action_before>
-       <action_after>SP_ADD</action_after>
-       <from_attempt>0</from_attempt>
-      </a-node>
-     </spaces>
-     <sname>fmt-no-nl</sname>
-    </a-node>
-    <a-node class='kiev.fmt.ParagraphLayout'>
-     <indent_text_size>1</indent_text_size>
-     <indent_pixel_size>10</indent_pixel_size>
-     <sname>par-indented</sname>
-    </a-node>
-   </members>
-   <sname>syntax-dump-api</sname>
-  </a-node>
- </members>
-</a-node>
+<sop:dump version='1.0' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <core:FileUnit>
+  <project_file>true</project_file>
+  <srpkg>
+   <core:SymbolRef name='stx-fmt' full='true' />
+  </srpkg>
+  <members>
+   <core:Import all='false' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;stdlib&#31;Syntax' full='true' />
+    </name>
+    <mode>IMPORT_SYNTAX</mode>
+   </core:Import>
+   <syntax:XmlDumpSyntax name='syntax-dump-api'>
+    <dump>api</dump>
+    <members>
+     <syntax:SpaceInfo name='nl'>
+      <kind>SP_NEW_LINE</kind>
+      <text_size>1</text_size>
+      <pixel_size>1</pixel_size>
+     </syntax:SpaceInfo>
+     <syntax:SyntaxElemFormatDecl name='fmt-default' />
+     <syntax:SyntaxElemFormatDecl name='fmt-nl-nl'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-no-nl'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl' />
+        </si>
+        <action_before>SP_NOP</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:ParagraphLayout name='par-indented'>
+      <indent_text_size>1</indent_text_size>
+      <indent_pixel_size>10</indent_pixel_size>
+     </syntax:ParagraphLayout>
+    </members>
+   </syntax:XmlDumpSyntax>
+  </members>
+ </core:FileUnit>
+</sop:dump>
