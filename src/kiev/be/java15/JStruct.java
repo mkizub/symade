@@ -203,7 +203,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				JWBCCondition[] conditions = m.conditions;
 				for(int j=0; j < conditions.length; j++) {
 					if( conditions[j].definer.equals(m) ) {
-						m.addAttr(conditions[j].code_attr);
+						m.addAttr(conditions[j].getCodeAttr());
 					}
 				}
 

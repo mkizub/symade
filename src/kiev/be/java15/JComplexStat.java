@@ -16,20 +16,31 @@ import syntax kiev.Syntax;
 
 @ViewOf(vcast=true, iface=true)
 public final view JCaseLabel of CaseLabel extends JENode {
+
+	public static final class ExtRefAttrSlot_case_label extends ExtRefAttrSlot {
+		ExtRefAttrSlot_case_label() { super("case-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		public CodeLabel getLabel(JNode parent) { return (CodeLabel)get((ASTNode)parent); }
+	}
+	public static final ExtRefAttrSlot_case_label CASE_LABEL_ATTR = new ExtRefAttrSlot_case_label();
+	
+
 	public:ro	JENode			val;
 	public:ro	Type			ctype;
 	public:ro	JVar[]			pattern;
-	public		CodeLabel		case_label;
 
 	public CodeLabel getLabel(Code code) {
-		if (case_label == null || case_label.code != code) case_label = code.newLabel();
-		return case_label;
+		CodeLabel label = JCaseLabel.CASE_LABEL_ATTR.getLabel(this);
+		if (label == null || label.code != code) {
+			label = code.newLabel();
+			JCaseLabel.CASE_LABEL_ATTR.set((CaseLabel)this,label);
+		}
+		return label;
 	}
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
-		case_label = getLabel(code);
-		CodeSwitch cosw = ((JSwitchStat)this.jparent).cosw;
+		CodeLabel case_label = getLabel(code);
+		CodeSwitch cosw = JSwitchStat.CODE_SWITCH_ATTR.getCodeSwitch((JSwitchStat)this.jparent);
 		code.addInstr(Instr.set_label,case_label);
 		if( val == null ) cosw.addDefault(case_label);
 		else {
@@ -54,6 +65,11 @@ public final view JCaseLabel of CaseLabel extends JENode {
 			code.removeVars(vars.toArray());
 		}
 	}
+
+	public void backendCleanup() {
+		JCaseLabel.CASE_LABEL_ATTR.clear((CaseLabel)this);
+	}
+
 }
 
 class SwitchInfo {
@@ -65,12 +81,18 @@ class SwitchInfo {
 
 @ViewOf(vcast=true, iface=true)
 public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
+
+	public static final class ExtRefAttrSlot_code_switch extends ExtRefAttrSlot {
+		ExtRefAttrSlot_code_switch() { super("code-switch", TypeInfo.newTypeInfo(CodeSwitch.class,null)); }
+		public CodeSwitch getCodeSwitch(JSwitchStat parent) { return (CodeSwitch)get((SwitchStat)parent); }
+	}
+	public static final ExtRefAttrSlot_code_switch CODE_SWITCH_ATTR = new ExtRefAttrSlot_code_switch();
+	
 	public:ro	JENode				sel;
 	public:ro	JCaseLabel[]		cases;
 	public:ro	JCaseLabel			defCase;
 	public:ro	JENode				sel_to_int;
 	public:ro	JLabel				lblcnt;
-	public		CodeSwitch			cosw;
 
 	public JLabel getCntLabel() {
 		if( lblcnt == null )
@@ -87,6 +109,7 @@ public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 			sel.generate(code,null);
 			getCntLabel().generate(code,null);
 
+			CodeSwitch cosw;
 			if( si.tabswitch ) {
 				cosw = code.newTableSwitch(si.lo,si.hi);
 				code.addInstr(Instr.op_tableswitch,cosw);
@@ -94,6 +117,7 @@ public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 				cosw = code.newLookupSwitch(si.tags);
 				code.addInstr(Instr.op_lookupswitch,cosw);
 			}
+			CODE_SWITCH_ATTR.set((SwitchStat)this,cosw);
 
 			generateStats(code,Type.tpVoid);
 
@@ -159,6 +183,12 @@ public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 		if (lo < j) qsort(keys, lo, j);
 		if (i < hi) qsort(keys, i, hi);
 	}
+
+	public void backendCleanup() {
+		CODE_SWITCH_ATTR.clear((SwitchStat)this);
+		((SwitchStat)this).lblbrk = null;
+		((SwitchStat)this).lblcnt = null;
+	}
 }
 
 @ViewOf(vcast=true, iface=true)
@@ -173,6 +203,7 @@ public view JSwitchEnumStat of SwitchEnumStat extends JSwitchStat {
 		getCntLabel().generate(code,null);
 		sel_to_int.generate(code,null);
 
+		CodeSwitch cosw;
 		if( si.tabswitch ) {
 			cosw = code.newTableSwitch(si.lo,si.hi);
 			code.addInstr(Instr.op_tableswitch,cosw);
@@ -180,6 +211,7 @@ public view JSwitchEnumStat of SwitchEnumStat extends JSwitchStat {
 			cosw = code.newLookupSwitch(si.tags);
 			code.addInstr(Instr.op_lookupswitch,cosw);
 		}
+		CODE_SWITCH_ATTR.set((SwitchStat)this,cosw);
 
 		generateStats(code,Type.tpVoid);
 
@@ -201,8 +233,10 @@ public view JSwitchTypeStat of SwitchTypeStat extends JSwitchStat {
 			getCntLabel().generate(code,null);
 			sel_to_int.generate(code,null);
 
+			CodeSwitch cosw;
 			cosw = code.newTableSwitch(si.lo,si.hi);
 			code.addInstr(Instr.op_tableswitch,cosw);
+			CODE_SWITCH_ATTR.set((SwitchStat)this,cosw);
 
 			generateStats(code,Type.tpVoid);
 
@@ -232,6 +266,7 @@ public view JMatchStat of MatchStat extends JSwitchStat {
 			code.addInstr(Instr.op_store,tmp_var);
 			sel_to_int.generate(code,null);
 
+			CodeSwitch cosw;
 			if( si.tabswitch ) {
 				cosw = code.newTableSwitch(si.lo,si.hi);
 				code.addInstr(Instr.op_tableswitch,cosw);
@@ -239,6 +274,7 @@ public view JMatchStat of MatchStat extends JSwitchStat {
 				cosw = code.newLookupSwitch(si.tags);
 				code.addInstr(Instr.op_lookupswitch,cosw);
 			}
+			CODE_SWITCH_ATTR.set((SwitchStat)this,cosw);
 
 			generateStats(code,Type.tpVoid);
 
@@ -254,10 +290,9 @@ public view JMatchStat of MatchStat extends JSwitchStat {
 
 @ViewOf(vcast=true, iface=true)
 public view JCatchInfo of CatchInfo extends JENode {
+
 	public:ro	JVar			arg;
 	public:ro	JENode			body;
-	public		CodeLabel		handler;
-	public		CodeCatchInfo	code_catcher;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -265,24 +300,29 @@ public view JCatchInfo of CatchInfo extends JENode {
 		JTryStat tr = (JTryStat)this.jparent;
 		try {
 			// This label must be created by TryStat's generate routine;
-			code.addInstr(Instr.enter_catch_handler,code_catcher);
+			code.addInstr(Instr.enter_catch_handler,JTryStat.CODE_CATCHER_ATTR.getCatcher(this));
 			code.addInstr(Instr.op_store,arg);
 			body.generate(code,Type.tpVoid);
 			if( !body.isAbrupted() ) {
 				if( tr.finally_catcher != null ) {
-					code.addInstr(Instr.op_jsr, tr.finally_catcher.subr_label);
+					code.addInstr(Instr.op_jsr, JTryStat.SUBR_LABEL_ATTR.getLabel(tr.finally_catcher));
 				}
 				if( isAutoReturnable() )
 					JReturnStat.generateReturn(code,this);
 				else
-					code.addInstr(Instr.op_goto, tr.end_label);
+					code.addInstr(Instr.op_goto, JTryStat.END_LABEL_ATTR.getLabel(tr));
 			}
-			code.addInstr(Instr.exit_catch_handler,code_catcher);
+			code.addInstr(Instr.exit_catch_handler,JTryStat.CODE_CATCHER_ATTR.getCatcher(this));
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		} finally {
 			code.removeVar(arg);
 		}
+	}
+
+	public void backendCleanup() {
+		JTryStat.HANDLER_ATTR.clear((CatchInfo)this);
+		JTryStat.CODE_CATCHER_ATTR.clear((CatchInfo)this);
 	}
 }
 
@@ -290,26 +330,23 @@ public view JCatchInfo of CatchInfo extends JENode {
 public view JFinallyInfo of FinallyInfo extends JENode {
 	public:ro	JVar			ret_arg;
 	public:ro	JENode			body;
-	public		CodeLabel		subr_label;
-	public		CodeLabel		handler;
-	public		CodeCatchInfo	code_catcher;
 
 	public void generate(Code code, Type reqType) {
 		JVar arg = (JVar)new LVar(pos,"",Type.tpThrowable,Var.VAR_LOCAL,0);
 		try {
 			CodeCatchInfo null_ci = null;
 			// This label must be created by TryStat's generate routine;
-			code.addInstr(Instr.set_label,handler);
+			code.addInstr(Instr.set_label,JTryStat.HANDLER_ATTR.getLabel(this));
 			code.addInstr(Instr.enter_catch_handler,null_ci);
 			code.addVar(arg);
 			code.addInstr(Instr.op_store,arg);
-			code.addInstr(Instr.op_jsr,subr_label);
+			code.addInstr(Instr.op_jsr,JTryStat.SUBR_LABEL_ATTR.getLabel(this));
 			code.addInstr(Instr.op_load,arg);
 			code.addInstr(Instr.op_throw);
 			code.addInstr(Instr.exit_catch_handler,null_ci);
 
 			// This label must be created by TryStat's generate routine;
-			code.addInstr(Instr.set_label,subr_label);
+			code.addInstr(Instr.set_label,JTryStat.SUBR_LABEL_ATTR.getLabel(this));
 			code.addInstr(Instr.enter_catch_handler,null_ci);
 			code.addInstr(Instr.op_store,ret_arg);
 
@@ -318,31 +355,67 @@ public view JFinallyInfo of FinallyInfo extends JENode {
 		} catch(Exception e ) { Kiev.reportError(this,e);
 		} finally { code.removeVar(arg); }
 	}
+
+	public void backendCleanup() {
+		JTryStat.HANDLER_ATTR.clear((FinallyInfo)this);
+		JTryStat.SUBR_LABEL_ATTR.clear((FinallyInfo)this);
+		JTryStat.CODE_CATCHER_ATTR.clear((FinallyInfo)this);
+	}
 }
 
 @ViewOf(vcast=true, iface=true)
 public final view JTryStat of TryStat extends JENode {
+
+	public static final class ExtRefAttrSlot_handler extends ExtRefAttrSlot {
+		ExtRefAttrSlot_handler() { super("handler-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		public CodeLabel getLabel(JNode parent) { return (CodeLabel)get((ASTNode)parent); }
+	}
+	public static final ExtRefAttrSlot_handler HANDLER_ATTR = new ExtRefAttrSlot_handler();
+	
+	public static final class ExtRefAttrSlot_end_label extends ExtRefAttrSlot {
+		ExtRefAttrSlot_end_label() { super("end-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		public CodeLabel getLabel(JNode parent) { return (CodeLabel)get((ASTNode)parent); }
+	}
+	public static final ExtRefAttrSlot_end_label END_LABEL_ATTR = new ExtRefAttrSlot_end_label();
+
+	public static final class ExtRefAttrSlot_subr_label extends ExtRefAttrSlot {
+		ExtRefAttrSlot_subr_label() { super("end-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		public CodeLabel getLabel(JNode parent) { return (CodeLabel)get((ASTNode)parent); }
+	}
+	public static final ExtRefAttrSlot_subr_label SUBR_LABEL_ATTR = new ExtRefAttrSlot_subr_label();
+
+	public static final class ExtRefAttrSlot_code_catcher extends ExtRefAttrSlot {
+		ExtRefAttrSlot_code_catcher() { super("end-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		public CodeCatchInfo getCatcher(JNode parent) { return (CodeCatchInfo)get((ASTNode)parent); }
+	}
+	public static final ExtRefAttrSlot_code_catcher CODE_CATCHER_ATTR = new ExtRefAttrSlot_code_catcher();
+
 	public:ro	JENode				body;
 	public:ro	JCatchInfo[]		catchers;
 	public:ro	JFinallyInfo		finally_catcher;
-	public		CodeLabel			end_label;
 
 	public void generate(Code code, Type reqType) {
 		// Generate labels for handlers
 		if(finally_catcher != null) {
 			code.addVar(finally_catcher.ret_arg);
-			finally_catcher.handler = code.newLabel();
-			finally_catcher.subr_label = code.newLabel();
-			finally_catcher.subr_label.check = false;
-			finally_catcher.code_catcher = code.newCatcher(finally_catcher.handler,null);
-			code.addInstr(Instr.start_catcher,finally_catcher.code_catcher);
+			CodeLabel handler = code.newLabel();
+			HANDLER_ATTR.set((FinallyInfo)finally_catcher, handler);
+			CodeLabel subr_label = code.newLabel();
+			subr_label.check = false;
+			SUBR_LABEL_ATTR.set((FinallyInfo)finally_catcher, subr_label);
+			CodeCatchInfo code_catcher = code.newCatcher(handler,null);
+			CODE_CATCHER_ATTR.set((FinallyInfo)finally_catcher,code_catcher);
+			code.addInstr(Instr.start_catcher,code_catcher);
 		}
 		for(int i= catchers.length-1; i >= 0 ; i--) {
-			catchers[i].handler = code.newLabel();
-			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.vtype.getJType());
-			code.addInstr(Instr.start_catcher,catchers[i].code_catcher);
+			CodeLabel handler = code.newLabel();
+			HANDLER_ATTR.set((CatchInfo)catchers[i], handler);
+			CodeCatchInfo code_catcher = code.newCatcher(handler,catchers[i].arg.vtype.getJType());
+			CODE_CATCHER_ATTR.set((CatchInfo)catchers[i],code_catcher);
+			code.addInstr(Instr.start_catcher,code_catcher);
 		}
-		end_label = code.newLabel();
+		CodeLabel end_label = code.newLabel();
+		END_LABEL_ATTR.set((TryStat)this,end_label);
 
 		try {
 			try {
@@ -357,12 +430,12 @@ public final view JTryStat of TryStat extends JENode {
 					JReturnStat.generateReturn(code,this);
 				} else {
 					if( finally_catcher != null )
-						code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
+						code.addInstr(Instr.op_jsr,SUBR_LABEL_ATTR.getLabel(finally_catcher));
 					code.addInstr(Instr.op_goto,end_label);
 				}
 			}
 			for(int i=0; i < catchers.length; i++) {
-				code.addInstr(Instr.stop_catcher,catchers[i].code_catcher);
+				code.addInstr(Instr.stop_catcher,CODE_CATCHER_ATTR.getCatcher(catchers[i]));
 			}
 
 			for(int i=0; i < catchers.length; i++) {
@@ -376,7 +449,7 @@ public final view JTryStat of TryStat extends JENode {
 			}
 			if(finally_catcher != null) {
 				try {
-					code.addInstr(Instr.stop_catcher,finally_catcher.code_catcher);
+					code.addInstr(Instr.stop_catcher,CODE_CATCHER_ATTR.getCatcher(finally_catcher));
 					finally_catcher.generate(code,Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(finally_catcher,e);
@@ -388,6 +461,10 @@ public final view JTryStat of TryStat extends JENode {
 				code.removeVar(finally_catcher.ret_arg);
 		}
 	}
+
+	public void backendCleanup() {
+		END_LABEL_ATTR.clear((TryStat)this);
+	}
 }
 
 @ViewOf(vcast=true, iface=true)
@@ -395,9 +472,6 @@ public final view JSynchronizedStat of SynchronizedStat extends JENode {
 	public:ro	JENode			expr;
 	public:ro	JVar			expr_var;
 	public:ro	JENode			body;
-	public		CodeLabel		handler;
-	public		CodeCatchInfo	code_catcher;
-	public		CodeLabel		end_label;
 
 	public void generate(Code code, Type reqType) {
 		expr.generate(code,null);
@@ -406,9 +480,11 @@ public final view JSynchronizedStat of SynchronizedStat extends JENode {
 			code.addInstr(Instr.op_dup);
 			code.addInstr(Instr.op_store,expr_var);
 			code.addInstr(Instr.op_monitorenter);
-			handler = code.newLabel();
-			end_label = code.newLabel();
-			code_catcher = code.newCatcher(handler,null);
+			CodeLabel handler = code.newLabel();
+			JTryStat.HANDLER_ATTR.set((SynchronizedStat)this, handler);
+			CodeLabel end_label = code.newLabel();
+			CodeCatchInfo code_catcher = code.newCatcher(handler,null);
+			JTryStat.CODE_CATCHER_ATTR.set((SynchronizedStat)this,code_catcher);
 			code.addInstr(Instr.start_catcher,code_catcher);
 			try {
 				if( isAutoReturnable() )
@@ -439,6 +515,11 @@ public final view JSynchronizedStat of SynchronizedStat extends JENode {
 			code.removeVar(expr_var);
 		}
 	}
+
+	public void backendCleanup() {
+		JTryStat.HANDLER_ATTR.clear((SynchronizedStat)this);
+		JTryStat.CODE_CATCHER_ATTR.clear((SynchronizedStat)this);
+	}
 }
 
 @ViewOf(vcast=true, iface=true)
@@ -446,10 +527,9 @@ public final view JWithStat of WithStat extends JENode {
 	public:ro	JENode		expr;
 	public:ro	JENode		body;
 	public:ro	JVar		var_or_field;
-	public		CodeLabel	end_label;
 
 	public void generate(Code code, Type reqType) {
-		end_label = code.newLabel();
+		CodeLabel end_label = code.newLabel();
 		try {
 			if (expr instanceof JAssignExpr)
 				expr.generate(code,Type.tpVoid);

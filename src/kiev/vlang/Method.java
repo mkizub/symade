@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.CodeAttr;
-
 import syntax kiev.Syntax;
 
 /**
@@ -385,12 +383,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		return true;
-	}
-
-	public boolean backendCleanup() {
-		//if (Method.ATTR_VIOLATED_FIELDS.get(this) != null)
-		//	Method.ATTR_VIOLATED_FIELDS.clear(this);
-		return super.backendCleanup();
 	}
 
 	public String toString() {
@@ -979,7 +971,6 @@ public final class WBCCondition extends DNode {
 	@nodeAttr public WBCType				cond;
 	@nodeAttr public ENode				body;
 	@nodeData public Method				definer;
-	     public CodeAttr			code_attr;
 
 	public WBCCondition() {}
 

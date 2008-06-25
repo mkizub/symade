@@ -1027,11 +1027,12 @@ public final class KievBE_Cleanup extends BackendProcessor {
 	public String getDescr() { "Kiev cleanup after backend" }
 
 	public void process(ASTNode node, Transaction tr) {
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { return n.backendCleanup(); }
-			public void post_exec(ANode n) {}
-		});
-		return;
+		tr = Transaction.enter(tr,"KievBE_Cleanup");
+		try {
+			try {
+				Env.getRoot().getBackendEnv().backendCleanup(node);
+			} catch (Exception rte) { Kiev.reportError(rte); }
+		} finally { tr.leave(); }
 	}
 }
 

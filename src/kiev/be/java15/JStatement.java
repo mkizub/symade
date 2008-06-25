@@ -109,7 +109,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
-					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
+					code.addInstr(Instr.op_jsr,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
 				}
 			}
 			else if (node instanceof JSynchronizedStat) {
@@ -319,7 +319,7 @@ public final view JBreakStat of BreakStat extends JENode {
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
@@ -342,7 +342,7 @@ public final view JBreakStat of BreakStat extends JENode {
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
@@ -396,7 +396,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
@@ -411,7 +411,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
@@ -469,7 +469,7 @@ public final view JGotoStat of GotoStat extends JENode {
 			else if( st instanceof JTryStat ) {
 				JTryStat ts = (JTryStat)st;
 				if( ts.finally_catcher != null )
-					cl1 = (Object[])Arrays.append(cl1,ts.finally_catcher.subr_label);
+					cl1 = (Object[])Arrays.append(cl1,JTryStat.SUBR_LABEL_ATTR.getLabel(ts.finally_catcher));
 			}
 			else if( st instanceof JSynchronizedStat ) {
 				cl1 = (Object[])Arrays.append(cl1,st.expr_var);
@@ -485,7 +485,7 @@ public final view JGotoStat of GotoStat extends JENode {
 			if( st instanceof JTryStat ) {
 				JTryStat ts = (JTryStat)st;
 				if( ts.finally_catcher != null )
-					cl2 = (Object[])Arrays.append(cl2,ts.finally_catcher.subr_label);
+					cl2 = (Object[])Arrays.append(cl2,JTryStat.SUBR_LABEL_ATTR.getLabel(ts.finally_catcher));
 			}
 			else if( st instanceof JSynchronizedStat ) {
 				cl2 = (Object[])Arrays.append(cl2, st.expr_var);
@@ -529,7 +529,7 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
 						}
-						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
+						code.addInstr(Instr.op_jsr,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
 					}
 				}
 				else if (node instanceof JSynchronizedStat) {

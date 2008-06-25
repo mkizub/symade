@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.ir.java15;
 
-import kiev.be.java15.CodeAttr;
-
 import syntax kiev.Syntax;
 
 /**
@@ -152,11 +150,11 @@ public final view RWBCCondition of WBCCondition extends RDNode {
 	public WBCType				cond;
 	public ENode				body;
 	public Method				definer;
-	public CodeAttr				code_attr;
 
 	public void resolveDecl() {
-		if( code_attr != null ) return;
-		body.resolve(Type.tpVoid);
+		//if (code_attr != null) return;
+		if (body != null)
+			body.resolve(Type.tpVoid);
 	}
 }
 

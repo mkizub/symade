@@ -961,8 +961,6 @@ public abstract class ANode implements INode {
 		return rn;
 	}
 	
-	public boolean backendCleanup() { return true; }
-
 	public void initForEditor() { /* by default do nothing */ }
 }
 

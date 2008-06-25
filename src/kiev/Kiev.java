@@ -12,8 +12,6 @@ package kiev;
 
 import java.io.*;
 
-import kiev.be.java15.Code;
-
 import syntax kiev.Syntax;
 
 /**
@@ -281,11 +279,11 @@ public final class Kiev {
 		}
 	}
 
-	public static void reportCodeWarning(Code code, String msg) {
+	public static void reportCodeWarning(int last_lineno, FileUnit fu, TypeDecl clazz, Method method, String msg) {
 		if (Kiev.code_nowarn)
 			return;
-		if( debug && verbose) new Exception().printStackTrace(System.out);
-		report(code.last_lineno<<11, (FileUnit)code.clazz.jctx_file_unit, (TypeDecl)code.clazz, (Method)code.method, SeverError.Warning, msg);
+		if (Kiev.debug && Kiev.verbose) new Exception().printStackTrace(System.out);
+		report(last_lineno<<11, fu, clazz, method, SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {

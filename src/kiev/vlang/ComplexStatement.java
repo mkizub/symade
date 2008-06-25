@@ -10,10 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.CodeLabel;
-import kiev.be.java15.CodeSwitch;
-import kiev.be.java15.CodeCatchInfo;
-
 import syntax kiev.Syntax;
 
 /**
@@ -35,7 +31,6 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@nodeAttr public ENode			val;
 	@nodeData public Type			ctype;
 	@nodeAttr public Var∅			pattern;
-	          public CodeLabel		case_label;
 
 	public CaseLabel() {}
 
@@ -92,11 +87,6 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return "case "+val+':';
 	}
 
-	public boolean backendCleanup() {
-		this.case_label = null;
-		return true;
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 	{
@@ -123,17 +113,16 @@ public class SwitchStat extends Block {
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode			sel;
 	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
-	@DataFlowDefinition(in="stats")				Label			lblcnt;
-	@DataFlowDefinition(in="stats")				Label			lblbrk;
+	@DataFlowDefinition(in="stats")			Label			lblcnt;
+	@DataFlowDefinition(in="stats")			Label			lblbrk;
 	}
 	
-	@nodeAttr public ENode					sel;
-	@nodeData public CaseLabel∅				cases;
-	@nodeData public CaseLabel				defCase;
-	@nodeAttr public ENode					sel_to_int;
+	@nodeAttr public ENode                 sel;
+	@nodeData public CaseLabel∅           cases;
+	@nodeData public CaseLabel             defCase;
+	@nodeAttr public ENode                 sel_to_int;
 	@nodeAttr(copyable=false, ext_data=true)
-	     public Label					lblcnt;
-	     public CodeSwitch				cosw;
+	          public Label                 lblcnt;
 
 	public SwitchStat() {
 		setBreakTarget(true);
@@ -200,12 +189,6 @@ public class SwitchStat extends Block {
 			Kiev.reportError(this, "Type of switch selector must be int");
 	}
 
-	public boolean backendCleanup() {
-		this.cosw = null;
-		this.lblbrk = null;
-		this.lblcnt = null;
-		return true;
-	}
 }
 
 @ThisIsANode(name="SwitchEnum", lang=CoreLang)
@@ -293,10 +276,8 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	public static final CatchInfo[] emptyArray = new CatchInfo[0];
 
-	@nodeAttr public Var				arg;
+	@nodeAttr public Var			arg;
 	@nodeAttr public ENode			body;
-	     public CodeLabel		handler;
-	     public CodeCatchInfo	code_catcher;
 
 	public CatchInfo() {}
 
@@ -321,12 +302,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		node ?= arg,
 		info.checkNodeName(node)
 	}
-
-	public boolean backendCleanup() {
-		this.handler = null;
-		this.code_catcher = null;
-		return true;
-	}
 }
 
 @ThisIsANode(name="Finally", lang=CoreLang)
@@ -337,10 +312,7 @@ public class FinallyInfo extends ENode {
 	}
 	
 	@nodeAttr public ENode			body;
-	@nodeAttr public Var				ret_arg;
-	     public CodeLabel		subr_label;
-	     public CodeLabel		handler;
-	     public CodeCatchInfo	code_catcher;
+	@nodeAttr public Var			ret_arg;
 
 	public FinallyInfo() {}
 
@@ -353,13 +325,6 @@ public class FinallyInfo extends ENode {
 	}
 
 	public String toString() { return "finally"; }
-
-	public boolean backendCleanup() {
-		this.subr_label = null;
-		this.handler = null;
-		this.code_catcher = null;
-		return true;
-	}
 }
 
 @ThisIsANode(name="Try", lang=CoreLang)
@@ -374,7 +339,6 @@ public class TryStat extends ENode {
 	@nodeAttr public ENode				body;
 	@nodeAttr public CatchInfo∅		catchers;
 	@nodeAttr public FinallyInfo		finally_catcher;
-	          public CodeLabel			end_label;
 
 	public TryStat() {}
 
@@ -393,11 +357,6 @@ public class TryStat extends ENode {
 		}
 		super.initForEditor();
 	}
-
-	public boolean backendCleanup() {
-		this.end_label = null;
-		return true;
-	}
 }
 
 @ThisIsANode(name="Synchronized", lang=CoreLang)
@@ -411,9 +370,6 @@ public class SynchronizedStat extends ENode {
 	@nodeAttr public ENode			expr;
 	@nodeAttr public Var				expr_var;
 	@nodeAttr public ENode			body;
-	     public CodeLabel		handler;
-	     public CodeCatchInfo	code_catcher;
-	     public CodeLabel		end_label;
 
 	public SynchronizedStat() {}
 
@@ -428,13 +384,6 @@ public class SynchronizedStat extends ENode {
 		}
 		super.initForEditor();
 	}
-
-	public boolean backendCleanup() {
-		this.handler = null;
-		this.code_catcher = null;
-		this.end_label = null;
-		return true;
-	}
 }
 
 @ThisIsANode(name="With", lang=CoreLang)
@@ -448,7 +397,6 @@ public class WithStat extends ENode {
 	@nodeAttr public ENode		expr;
 	@nodeAttr public ENode		body;
 	@nodeData public Var			var_or_field;
-	     public CodeLabel	end_label;
 
 	public WithStat() {}
 
@@ -462,11 +410,6 @@ public class WithStat extends ENode {
 			expr.initForEditor();
 		}
 		super.initForEditor();
-	}
-
-	public boolean backendCleanup() {
-		this.end_label = null;
-		return true;
 	}
 }
 

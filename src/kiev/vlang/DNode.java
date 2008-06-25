@@ -335,11 +335,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public boolean backendCleanup() {
-		this.jattrs = null;
-		return true;
-	}
-
 	public ANode doRewrite(RewriteContext ctx) {
 		DNode dn = (DNode)super.doRewrite(ctx);
 		String id = this.sname;

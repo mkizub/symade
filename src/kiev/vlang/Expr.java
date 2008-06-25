@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.CodeLabel;
-
 import syntax kiev.Syntax;
 
 /**
@@ -531,11 +529,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		foreach(ASTNode n; stats; n.hasName(sym.sname))
 			Kiev.reportError((ASTNode)sym,"Symbol "+sym.sname+" already declared in this scope");
 		stats.insert(idx,(ASTNode)sym);
-	}
-
-	public boolean backendCleanup() {
-		this.lblbrk = null;
-		return true;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)

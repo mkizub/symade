@@ -241,7 +241,7 @@ public class Bytecoder implements JConstants {
 					wbc.cond = WBCType.CondRequire;
 				else
 					wbc.cond = WBCType.CondEnsure;
-				wbc.code_attr = (ContractAttr)at;
+				((JWBCCondition)wbc).setCodeAttr((ContractAttr)at);
 				wbc.definer = m;
 				if (m.conditions.indexOf(wbc) < 0)
 					m.conditions.add(wbc);

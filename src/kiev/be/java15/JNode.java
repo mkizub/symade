@@ -61,6 +61,7 @@ public view JNode of ASTNode implements JConstants {
 	public void generate(Code code, Type reqType) {
 		throw new CompilerException(this,"Unresolved node ("+((ASTNode)this).getClass()+") generation");
 	}
+	public void backendCleanup() {}
 }
 
 @ViewOf(vcast=true, iface=true)
@@ -123,6 +124,10 @@ public view JDNode of DNode extends JNode {
 					return jattrs[i];
 		}
 		return null;
+	}
+
+	public void backendCleanup() {
+		this.jattrs = null;
 	}
 
 }

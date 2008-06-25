@@ -24,6 +24,17 @@ public final class JEnv {
 		((JFileUnit)fu).generate();
 	}
 	
+	public void backendCleanup(ASTNode node) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) {
+				if (n instanceof ASTNode)
+					((JNode)(ASTNode)n).backendCleanup();
+				return true;
+			}
+			public void post_exec(ANode n) {}
+		});
+	}
+	
 
 	public DNode loadDecl(ClazzName name) {
 		if (name.name == KString.Empty) return Env.getRoot();

@@ -141,6 +141,12 @@ public final class Code implements JConstants {
 
 	}
 
+	private void reportCodeWarning(String msg) {
+		if (Kiev.code_nowarn)
+			return;
+		Kiev.reportCodeWarning(last_lineno, (FileUnit)this.clazz.jctx_file_unit, (TypeDecl)this.clazz, (Method)this.method, msg);
+	}
+	
 	public void pushStackPos() {};
 
 	public void popStackPos() {};
@@ -1116,7 +1122,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1184,7 +1190,7 @@ public final class Code implements JConstants {
 	public void addInstrIncr(JVar v, int val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": op_incr "+v+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\"op_incr\" ingnored as unreachable");
+			this.reportCodeWarning("\"op_incr\" ingnored as unreachable");
 			return;
 		}
 		CodeVar cv = lookupCodeVar(v);
@@ -1199,7 +1205,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, CodeLabel l) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+l);
 		if( !reachable && !isInfoInstr(i) ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1251,7 +1257,7 @@ public final class Code implements JConstants {
 		if (cv == null)
 			throw new RuntimeException("Var "+v+" not exists in the code");
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1275,7 +1281,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, JField f, Type tp) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+f);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_tdecl.xtype).getJType();
@@ -1312,7 +1318,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, Type itype) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+itype);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1349,7 +1355,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, Type itype, int dim) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" "+dim+" -> "+itype);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 		switch(i) {
@@ -1371,7 +1377,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, JMethod method, boolean super_flag, Type tp) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+(super_flag?"super.":"")+method);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1388,7 +1394,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, JMethod method, int nargs, Type tp) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+method);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
        	throw new RuntimeException("Bad call-use instruction");
@@ -1399,7 +1405,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, CodeSwitch sw) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1422,7 +1428,7 @@ public final class Code implements JConstants {
 	public void addInstr(Instr i, CodeCatchInfo catcher) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i);
 		if( !reachable && !isInfoInstr(i) ) {
-			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1453,7 +1459,7 @@ public final class Code implements JConstants {
 	public void addConst(int val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_iconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_iconst+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_iconst+"\" ingnored as unreachable");
 			return;
 		}
 		switch(val) {
@@ -1482,7 +1488,7 @@ public final class Code implements JConstants {
 	public void addConst(long val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_lconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_lconst+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_lconst+"\" ingnored as unreachable");
 			return;
 		}
 		if( val == 0L )			add_opcode(opc_lconst_0);
@@ -1497,7 +1503,7 @@ public final class Code implements JConstants {
 	public void addConst(float val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_fconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_fconst+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_fconst+"\" ingnored as unreachable");
 			return;
 		}
 		if( val == 0.0f )		add_opcode(opc_fconst_0);
@@ -1513,7 +1519,7 @@ public final class Code implements JConstants {
 	public void addConst(double val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_dconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_dconst+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_dconst+"\" ingnored as unreachable");
 			return;
 		}
 		if( val == 0.0D )		add_opcode(opc_dconst_0);
@@ -1528,7 +1534,7 @@ public final class Code implements JConstants {
 	public void addConst(KString val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_sconst+" \""+val+"\"");
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_sconst+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_sconst+"\" ingnored as unreachable");
 			return;
 		}
 		CP c = constPool.addStringCP(val);
@@ -1539,7 +1545,7 @@ public final class Code implements JConstants {
 	public void addConst(JType val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_tconst+" \""+val+"\"");
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_tconst+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_tconst+"\" ingnored as unreachable");
 			return;
 		}
 		CP c = constPool.addClazzCP(val.java_signature);
@@ -1550,7 +1556,7 @@ public final class Code implements JConstants {
 	public void addNullConst() {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_null);
 		if( !reachable ) {
-			Kiev.reportCodeWarning(this,"\""+Instr.op_push_null+"\" ingnored as unreachable");
+			this.reportCodeWarning("\""+Instr.op_push_null+"\" ingnored as unreachable");
 			return;
 		}
 		add_opcode(opc_aconst_null);
@@ -1563,7 +1569,7 @@ public final class Code implements JConstants {
 	}
 
 	public void generateCode(JWBCCondition wbc) {
-		wbc.code_attr = generateCodeAttr(wbc.cond);
+		wbc.setCodeAttr(generateCodeAttr(wbc.cond));
 	}
 
 	private CodeAttr generateCodeAttr(int cond) {

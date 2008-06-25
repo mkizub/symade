@@ -73,7 +73,7 @@ public final view JMethod of Method extends JDNode {
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
-							code.importCode(cond.code_attr);
+							code.importCode(cond.getCodeAttr());
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							assert( cond.jparent instanceof JMethod && ((JMethod)cond.jparent).isInvariantMethod() );
 							if( !isConstructor() ) {
@@ -103,7 +103,7 @@ public final view JMethod of Method extends JDNode {
 							code.need_to_gen_post_cond = true;
 						}
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
-							code.importCode(cond.code_attr);
+							code.importCode(cond.getCodeAttr());
 						if( mtype.ret() ≢ Type.tpVoid ) {
 							code.addInstr(Instr.op_load,getRetVar());
 							code.addInstr(Instr.op_return);
@@ -171,11 +171,21 @@ public final view JInitializer of Initializer extends JDNode {
 
 @ViewOf(vcast=true, iface=true)
 public final final view JWBCCondition of WBCCondition extends JDNode {
+
+	public static final class ExtRefAttrSlot_wbc_code_attr extends ExtRefAttrSlot {
+		ExtRefAttrSlot_wbc_code_attr() { super("end-label", TypeInfo.newTypeInfo(CodeAttr.class,null)); }
+		public CodeAttr getCode(JWBCCondition parent) { return (CodeAttr)get((WBCCondition)parent); }
+	}
+	public static final ExtRefAttrSlot_wbc_code_attr WBC_CODE_ATTR = new ExtRefAttrSlot_wbc_code_attr();
+
+
 	public:ro	WBCType				cond;
 	public:ro	JENode				body;
 	public:ro	JMethod				definer;
-	public		CodeAttr			code_attr;
 
+	public CodeAttr getCodeAttr() { return WBC_CODE_ATTR.getCode(this); }
+	public void setCodeAttr(CodeAttr ca) { WBC_CODE_ATTR.set((WBCCondition)this, ca); }
+	
 	public void generate(ConstPool constPool, Type reqType) {
 		Code code = new Code((JStruct)jctx_tdecl, jctx_method, constPool);
 		code.generation = true;
@@ -185,6 +195,7 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 			code.addInstr(Instr.op_return);
 			return;
 		}
+		CodeAttr code_attr = getCodeAttr();
 		if( code_attr == null ) {
 			JMethod m = code.method;
 			try {

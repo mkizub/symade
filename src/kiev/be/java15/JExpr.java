@@ -248,6 +248,10 @@ public view JBlock of Block extends JENode {
 			((Block)this).lblbrk = new Label();
 		return lblbrk;
 	}
+	public void backendCleanup() {
+		((Block)this).lblbrk = null;
+	}
+
 }
 
 @ViewOf(vcast=true, iface=true)

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.be.java15.CodeLabel;
-
 import syntax kiev.Syntax;
 
 /**
@@ -39,7 +37,6 @@ public final class Label extends DNode {
 	@DataFlowDefinition(out="this:out()") private static class DFI {}
 
 	@nodeData(copyable=false)	public ASTNode∅		links;
-								public CodeLabel		label;
 
 	public boolean preResolveIn() {
 		verifyMetas();
@@ -68,11 +65,6 @@ public final class Label extends DNode {
 
 	public void delLink(ASTNode lnk) {
 		links.detach(lnk);
-	}
-
-	public boolean backendCleanup() {
-		this.label = null;
-		return true;
 	}
 
 	static class LabelDFFunc extends DFFunc {

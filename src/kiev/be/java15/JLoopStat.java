@@ -33,15 +33,29 @@ public abstract view JLoopStat of LoopStat extends JENode implements BreakTarget
 
 @ViewOf(vcast=true, iface=true)
 public final view JLabel of Label extends JDNode {
+
+	public static final class ExtRefAttrSlot_code_label extends ExtRefAttrSlot {
+		ExtRefAttrSlot_code_label() { super("code-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		public CodeLabel getLabel(ANode parent) { return (CodeLabel)get(parent); }
+	}
+	public static final ExtRefAttrSlot_code_label ATTR = new ExtRefAttrSlot_code_label();
+	
+
 	public:ro	List<ASTNode>		links;
-	public		CodeLabel			label;
 
 	public CodeLabel getCodeLabel(Code code) {
-		if( label == null  || label.code != code) label = code.newLabel();
+		CodeLabel label = JLabel.ATTR.getLabel((Label)this);
+		if (label == null || label.code != code) {
+			label = code.newLabel();
+			JLabel.ATTR.set((Label)this,label);
+		}
 		return label;
 	}
 	public void generate(Code code, Type reqType) {
 		code.addInstr(Instr.set_label,getCodeLabel(code));
+	}
+	public void backendCleanup() {
+		JLabel.ATTR.clear((Label)this);
 	}
 }
 
@@ -54,11 +68,11 @@ public final view JWhileStat of WhileStat extends JLoopStat {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating WhileStat");
 		code.setLinePos(this);
 		try {
-			lblcnt.label = code.newLabel();
-			lblbrk.label = code.newLabel();
+			lblcnt.getCodeLabel(code);
+			lblbrk.getCodeLabel(code);
 			CodeLabel body_label = code.newLabel();
 
-			code.addInstr(Instr.op_goto,lblcnt.label);
+			code.addInstr(Instr.op_goto,lblcnt.getCodeLabel(code));
 			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
@@ -88,8 +102,8 @@ public final view JDoWhileStat of DoWhileStat extends JLoopStat {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating DoWhileStat");
 		code.setLinePos(this);
 		try {
-			lblcnt.label = code.newLabel();
-			lblbrk.label = code.newLabel();
+			lblcnt.getCodeLabel(code);
+			lblbrk.getCodeLabel(code);
 			CodeLabel body_label = code.newLabel();
 
 // Differ from WhileStat in this:	code.addInstr(Instr.op_goto,continue_label);
@@ -122,8 +136,8 @@ public final view JForStat of ForStat extends JLoopStat {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ForStat");
-		lblcnt.label = code.newLabel();
-		lblbrk.label = code.newLabel();
+		lblcnt.getCodeLabel(code);
+		lblbrk.getCodeLabel(code);
 		CodeLabel body_label = code.newLabel();
 		CodeLabel check_label = code.newLabel();
 
@@ -189,8 +203,8 @@ public final view JForEachStat of ForEachStat extends JLoopStat {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ForEachStat");
-		lblcnt.label = code.newLabel();
-		lblbrk.label = code.newLabel();
+		lblcnt.getCodeLabel(code);
+		lblbrk.getCodeLabel(code);
 		CodeLabel body_label = code.newLabel();
 		CodeLabel check_label = code.newLabel();
 
@@ -215,7 +229,7 @@ public final view JForEachStat of ForEachStat extends JLoopStat {
 			if( var_init != null)
 				var_init.generate(code,Type.tpVoid);
 			if( cond != null )
-				JBoolExpr.gen_iffalse(code, cond, lblcnt.label);
+				JBoolExpr.gen_iffalse(code, cond, lblcnt.getCodeLabel(code));
 
 			body.generate(code,Type.tpVoid);
 
