@@ -448,10 +448,10 @@ public final class MetaAccess extends MetaFlag {
 		ComplexTypeDecl outer2 = getStructOf(n);
 		if (outer1 == outer2)
 			return false;
-		while (!outer1.package_clazz.dnode.isPackage())
-			outer1 = outer1.package_clazz.dnode;
-		while (!outer2.package_clazz.dnode.isPackage())
-			outer2 = outer2.package_clazz.dnode;
+		while !(outer1.parent() instanceof KievPackage)
+			outer1 = outer1.ctx_tdecl;
+		while !(outer2.parent() instanceof KievPackage)
+			outer2 = outer2.ctx_tdecl;
 		if (outer1 == outer2)
 			return true;
 		return false;
@@ -463,9 +463,10 @@ public final class MetaAccess extends MetaFlag {
 	}
 
 	private static KievPackage getPackageOf(ASTNode n) {
-		ComplexTypeDecl pkg = getStructOf(n);
-		while !(pkg instanceof KievPackage) pkg = pkg.package_clazz.dnode;
-		return (KievPackage)pkg;
+		ANode p = n;
+		while (p != null && !(p instanceof KievPackage))
+			p = p.parent();
+		return (KievPackage)p;
 	}
 
 	private static void verifyAccess(ASTNode from, ASTNode n, int acc) {
@@ -486,12 +487,12 @@ public final class MetaAccess extends MetaFlag {
 
 		// Check for private access from inner class
 		if (((DNode)n).isPrivate()) {
-			TypeDecl outer1 = getStructOf(from);
-			TypeDecl outer2 = getStructOf(n);
-			while (!outer1.package_clazz.dnode.isPackage())
-				outer1 = outer1.package_clazz.dnode;
-			while (!outer2.package_clazz.dnode.isPackage())
-				outer2 = outer2.package_clazz.dnode;
+			ComplexTypeDecl outer1 = getStructOf(from);
+			ComplexTypeDecl outer2 = getStructOf(n);
+			while !(outer1.parent() instanceof KievPackage)
+				outer1 = outer1.ctx_tdecl;
+			while !(outer2.parent() instanceof KievPackage)
+				outer2 = outer2.ctx_tdecl;
 			if (outer1 == outer2) {
 				if( (flags & acc) == acc ) {
 					checkFinalWrite(from,n,acc);

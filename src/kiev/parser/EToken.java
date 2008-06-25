@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public static enum ETokenKind { UNKNOWN, IDENTIFIER, TYPE_DECL, OPERATOR, EXPR_IDENT, EXPR_NUMBER, EXPR_STRING, EXPR_CHAR };
+public static enum ETokenKind { UNKNOWN, IDENTIFIER, TYPE_DECL, SCOPE_DECL, OPERATOR, EXPR_IDENT, EXPR_NUMBER, EXPR_STRING, EXPR_CHAR };
 	
 @ThisIsANode(name="EToken", lang=CoreLang)
 public final class EToken extends ENode {
@@ -116,7 +116,7 @@ public final class EToken extends ENode {
 	public boolean isIdentifier() {
 		if (base_kind == ETokenKind.UNKNOWN)
 			guessKind();
-		return base_kind == ETokenKind.IDENTIFIER || base_kind == ETokenKind.TYPE_DECL;
+		return base_kind == ETokenKind.IDENTIFIER || base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL;
 	}
 
 	public boolean isOperator()   {
@@ -130,6 +130,14 @@ public final class EToken extends ENode {
 			guessKind();
 		if (base_kind == ETokenKind.TYPE_DECL && value instanceof TypeDecl)
 			return new TypeNameRef(pos, ident, ((TypeDecl)value).xtype);
+		return null;
+	}
+	
+	public DNode asScope() {
+		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
+			guessKind();
+		if ((base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL) && value instanceof DNode)
+			return (DNode)value;
 		return null;
 	}
 	
@@ -213,13 +221,18 @@ public final class EToken extends ENode {
 		ASTNode@ v;
 		ResInfo info = new ResInfo(this,ident);
 		if (PassInfo.resolveNameR(this,v,info)) {
-			if (v instanceof Opdef) {
+			ASTNode n = (ASTNode)v;
+			if (n instanceof Opdef) {
 				this.base_kind = ETokenKind.OPERATOR;
-				value = v.$var;
+				value = n;
 			}
-			if (v instanceof TypeDecl) {
+			if (n instanceof KievPackage) {
+				this.base_kind = ETokenKind.SCOPE_DECL;
+				value = n;
+			}
+			if (n instanceof TypeDecl) {
 				this.base_kind = ETokenKind.TYPE_DECL;
-				value = v.$var;
+				value = n;
 			}
 		}
 	}

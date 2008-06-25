@@ -24,8 +24,6 @@ public final view JFileUnit of FileUnit extends JNameSpace {
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
-	@getter public JFileUnit get$jctx_file_unit() { return this; }
-	
 	public String pname();
 
 	public void generate() {
@@ -56,8 +54,6 @@ public view JNameSpace of NameSpace extends JSNode {
 	public		SymbolRef<KievPackage>	srpkg;
 	public:ro	JNode[]					members;
 
-	@getter public JNameSpace get$jctx_name_space() { return this; }
-	
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
 		foreach (JNode n; members) {

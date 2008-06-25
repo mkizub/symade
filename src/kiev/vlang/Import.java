@@ -27,7 +27,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public enum ImportMode {
 		IMPORT_CLASS,
 		IMPORT_STATIC,
-		IMPORT_PACKAGE,
 		IMPORT_SYNTAX;
 	}
 
@@ -63,7 +62,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
 		if (mode == ImportMode.IMPORT_STATIC)  str.append("static ");
-		if (mode == ImportMode.IMPORT_PACKAGE) str.append("package ");
 		if (mode == ImportMode.IMPORT_SYNTAX)  str.append("syntax ");
 		str.append(name);
 		if (star) str.append(".*");
@@ -74,21 +72,25 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star))
 			return false;
 		String name = this.name.name;
-		TypeDecl scope = null;
+		ScopeOfNames scope = null;
 		int dot = name.indexOf('\u001f');
 		while (dot > 0) {
 			String head;
 			head = name.substring(0,dot).intern();
 			name = name.substring(dot+1).intern();
 			if (scope == null)
-				scope = Env.getRoot();
-			TypeDecl@ node;
-			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+				scope = (ScopeOfNames)Env.getRoot();
+			DNode@ node;
+			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
 				return false;
 			}
-			scope = (TypeDecl)node;
+			scope = (ScopeOfNames)node;
 			dot = name.indexOf('\u001f');
+		}
+		if !(scope instanceof ScopeOfMethods) {
+			Kiev.reportError(this,"Scope "+scope+" has no methods");
+			return false;
 		}
 		
 		int i = 0;
@@ -103,7 +105,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			types[j] = args[i].getType();
 		Method@ v;
 		CallType mt = new CallType(null,null,types,Type.tpAny,false);
-		if( !scope.resolveMethodR(v,new ResInfo(this,name),mt) ) {
+		if( !((ScopeOfMethods)scope).resolveMethodR(v,new ResInfo(this,name),mt) ) {
 			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
 			return false;
 		}
@@ -112,29 +114,31 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
-		Struct@ s;
 		DNode@ sub;
 	{
 		this.name.dnode instanceof Method, $cut, false
 	;
-		mode == ImportMode.IMPORT_CLASS, this.name.dnode instanceof Struct,
+		mode == ImportMode.IMPORT_CLASS, this.name.dnode instanceof ComplexTypeDecl,
 		{
 			!star && !path.doImportStar(),
-			//((Struct)this.name.dnode).checkResolved(),
-			s ?= ((Struct)this.name.dnode),
-			!s.isPackage(),
-			path.checkNodeName(s), node ?= s.$var
+			path.checkNodeName((ComplexTypeDecl)this.name.dnode),
+			node ?= (ComplexTypeDecl)this.name.dnode
 		;
 			star && path.doImportStar(),
-			((Struct)this.name.dnode).checkResolved(),
-			s ?= ((Struct)this.name.dnode),
-			{
-				!s.isPackage(),
-				sub @= s.members,
-				path.checkNodeName(sub),
-				node ?= sub.$var
-			;	s.isPackage(), s.resolveNameR(node,path)
-			}
+			((ComplexTypeDecl)this.name.dnode).checkResolved(),
+			sub @= ((ComplexTypeDecl)this.name.dnode).members,
+			path.checkNodeName(sub),
+			node ?= sub.$var
+		}
+	;
+		mode == ImportMode.IMPORT_CLASS, this.name.dnode instanceof KievPackage,
+		{
+			!star && !path.doImportStar(),
+			path.checkNodeName((KievPackage)this.name.dnode),
+			node ?= (KievPackage)this.name.dnode
+		;
+			star && path.doImportStar(),
+			((KievPackage)this.name.dnode).resolveNameR(node,path)
 		}
 	;
 		mode == ImportMode.IMPORT_STATIC,
@@ -148,7 +152,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			star && path.doImportStar(),
 			path.isStaticAllowed(),
 			((TypeDecl)this.name.dnode).checkResolved(),
-			path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+			path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
 			((TypeDecl)this.name.dnode).resolveNameR(node,path),
 			node instanceof Field && ((Field)node).isStatic() && !((Field)node).isPrivate()
 		}
@@ -165,7 +169,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	;
 		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.name.dnode instanceof TypeDecl,
 		((TypeDecl)this.name.dnode).checkResolved(),
-		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
 		((TypeDecl)this.name.dnode).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && !node.isPrivate()
 	;
@@ -184,7 +188,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
 					DNode@ node;
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 					if !(scope.resolveNameR(node,info))
 						return new DNode[0];
 					if (node instanceof TypeDecl)
@@ -197,7 +201,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 					head = name.intern();
 					Vector<DNode> vect = new Vector<DNode>();
 					DNode@ node;
-					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
 					if (!by_equals)
 						flags |= ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);

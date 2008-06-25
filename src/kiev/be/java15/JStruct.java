@@ -27,7 +27,6 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	JNode[]				members;
 	public:ro	KString				bytecode_name;
-	public:ro	SymbolRef<Struct>	package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	InnerStructInfo		inner_info;
 
@@ -126,7 +125,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				constPool.addClazzCP(sub.xtype.getJType().java_signature);
 		}
 		
-		if( !isPackage() ) {
+		{
 			String fu = jctx_file_unit.fname;
 			SourceFileAttr sfa = new SourceFileAttr(KString.from(fu));
 			this.addAttr(sfa);
@@ -249,7 +248,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		if( Kiev.safe && isBad() )
 			return;
-		if !(isPackage() || isMacro())
+		if (!isMacro())
 			this.toBytecode(constPool);
 	}
 
@@ -264,11 +263,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public void toBytecode(ConstPool constPool) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = "classes";
-		String out_file;
-		if( this.isPackage() )
-			out_file = (this.bname()+"/package").replace('/',File.separatorChar);
-		else
-			out_file = this.bname().replace('/',File.separatorChar).toString();
+		String out_file = this.bname().replace('/',File.separatorChar).toString();
 		try {
 			DataOutputStream out;
 			JStruct.make_output_dir(output_dir,out_file);

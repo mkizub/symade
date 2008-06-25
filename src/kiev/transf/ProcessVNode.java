@@ -105,9 +105,9 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpANode = Env.getRoot().loadTypeDecl(nameANode, true).xtype;
 			tpNode = Env.getRoot().loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
-			tpNodeSpace = Env.getRoot().loadTypeDecl(nameNodeSpace).xtype;
-			tpNodeExtSpace = Env.getRoot().loadTypeDecl(nameNodeExtSpace).xtype;
-			tpTreeWalker = Env.getRoot().loadTypeDecl(nameTreeWalker).xtype;
+			tpNodeSpace = Env.getRoot().loadTypeDecl(nameNodeSpace, true).xtype;
+			tpNodeExtSpace = Env.getRoot().loadTypeDecl(nameNodeExtSpace, true).xtype;
+			tpTreeWalker = Env.getRoot().loadTypeDecl(nameTreeWalker, true).xtype;
 			tpAttrSlot = Env.getRoot().loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.getRoot().loadTypeDecl(nameRefAttrSlot, true).xtype;
 			tpAttAttrSlot = Env.getRoot().loadTypeDecl(nameAttAttrSlot, true).xtype;
@@ -203,7 +203,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 				Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" may not have initializer");
 			}
 		}
-		else if (!f.isStatic() && !f.isInterfaceOnly()) {
+		else if (!f.isStatic() && !f.isInterfaceOnly() && !f.isAbstract()) {
 			if (f.getType().isInstanceOf(tpNArray))
 				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @nodeAttr or @nodeData");
 			else if (isNodeKind(f.getType()))
@@ -240,7 +240,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			return td.xtype;
 		}
 		Struct s = Env.getRoot().newStruct(sname,true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
-		snode.members.add(s);
+		if (!s.isAttached())
+			snode.members.add(s);
 		{
 			String nameTreePkg = nameANode.substring(0,nameANode.lastIndexOf('\u001f'));
 			foreach (UserMeta m; f.metas; m.qname.startsWith(nameTreePkg))
@@ -550,7 +551,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeSet() {
 		if (_codeSet == null) {
-			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode");
+			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode", true);
 			_codeSet = td.resolveMethod("codeSet", StdTypes.tpVoid)
 		}
 		return _codeSet;
@@ -558,7 +559,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeGet() {
 		if (_codeGet == null) {
-			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode");
+			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode", true);
 			_codeGet = td.resolveMethod("codeGet", StdTypes.tpVoid)
 		}
 		return _codeGet;
@@ -959,7 +960,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				return s;
 		}
 		Struct s = Env.getRoot().newStruct("VVV",true,iface,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
-		iface.members += s;
+		if (!s.isAttached())
+			iface.members += s;
 	super_vvv:
 		foreach (TypeRef st; iface.super_types; isNodeKind(st.getStruct()) || VNode_Base.nameNode.equals(st.getStruct().qname()) || VNode_Base.nameANode.equals(st.getStruct().qname())) {
 			Struct stv = null;

@@ -48,12 +48,10 @@ public view JNode of ASTNode implements JConstants {
 	public final boolean isBad();
 	
 	@getter public final JNode get$jparent() { return (JNode)(ASTNode)((ASTNode)this).parent(); }
-	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
-	@getter public JNameSpace get$jctx_name_space() { return this.jparent.get$jctx_name_space(); }
-	@getter public JTypeDecl get$jctx_tdecl() { return this.jparent.child_jctx_tdecl; }
-	@getter public JTypeDecl get$child_jctx_tdecl() { return this.jparent.get$child_jctx_tdecl(); }
-	@getter public JMethod get$jctx_method() { return this.jparent.child_jctx_method; }
-	@getter public JMethod get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
+	@getter public final JFileUnit get$jctx_file_unit() { return (JFileUnit)((ASTNode)this).ctx_file_unit; }
+	@getter public final JNameSpace get$jctx_name_space() { return (JNameSpace)((ASTNode)this).ctx_name_space; }
+	@getter public final JTypeDecl get$jctx_tdecl() { return (JTypeDecl)((ASTNode)this).ctx_tdecl; }
+	@getter public final JMethod get$jctx_method() { return (JMethod)((ASTNode)this).ctx_method; }
 
 	public boolean equals(Object:Object obj) { return false; }
 	public boolean equals(JNode:Object jnv) { return (ASTNode)this == (ASTNode)jnv; }
@@ -182,8 +180,6 @@ public static final view JNopExpr of NopExpr extends JENode {
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;
 
-	@getter public JTypeDecl get$child_jctx_tdecl() { return this; }
-
 	public:ro	Type				xtype;
 	public:ro	JType				jtype;
 	@getter
@@ -191,7 +187,6 @@ public view JTypeDecl of TypeDecl extends JDNode {
 
 
 	public final boolean isClazz();
-	public final boolean isPackage();
 	public final boolean isLocal();
 	public final boolean isAnonymouse();
 	public final boolean isAnnotation();

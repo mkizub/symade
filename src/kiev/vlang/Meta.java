@@ -115,9 +115,11 @@ public class UserMeta extends MNode {
 			node.checkResolved();
 			return (JavaAnnotation)node;
 		}
-		Struct scope = Env.getRoot();
+		DNode scope = Env.getRoot();
 		int dot;
 		do {
+			if !(scope instanceof ScopeOfNames)
+				Kiev.reportError(this,"Unresolved identifier "+name+" in "+scope);
 			dot = name.indexOf('\u001f');
 			String head;
 			if (dot > 0) {
@@ -126,13 +128,17 @@ public class UserMeta extends MNode {
 			} else {
 				head = name;
 			}
-			Struct@ node;
-			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+			DNode@ node;
+			if!(((ScopeOfNames)scope).resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
 				return null;
 			}
-			scope = (Struct)node;
+			scope = (DNode)node;
 		} while (dot > 0);
+		if !(scope instanceof JavaAnnotation) {
+			Kiev.reportError(this,"Unresolved annotation "+decl.name);
+			return null;
+		}
 		this.decl.symbol = (JavaAnnotation)scope;
 		scope.checkResolved();
 		return (JavaAnnotation)scope;

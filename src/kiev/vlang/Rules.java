@@ -78,11 +78,11 @@ public class RuleMethod extends Method {
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		Var@ var;
 	{
-		isInlinedByDispatcherMethod() || path.space_prev.pslot().name == "targs",$cut,false
+		isInlinedByDispatcherMethod() || path.getPrevSlotName() == "targs",$cut,false
 	;
-		path.space_prev.pslot().name == "params" ||
-		path.space_prev.pslot().name == "type_ref" ||
-		path.space_prev.pslot().name == "dtype_ref",
+		path.getPrevSlotName() == "params" ||
+		path.getPrevSlotName() == "type_ref" ||
+		path.getPrevSlotName() == "dtype_ref",
 		$cut,
 		node @= targs,
 		path.checkNodeName(node)
@@ -111,7 +111,6 @@ public class RuleMethod extends Method {
 			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = (Struct)this.parent();
 		// TODO: check flags for fields
-		if( clazz.isPackage() ) setStatic(true);
 		if( (getFlags() & ACC_PRIVATE) != 0 ) setFinal(false);
 		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
 		else if( clazz.isInterface() ) {
@@ -284,7 +283,6 @@ public final class RuleBlock extends ENode {
 			//if (Kiev.debug && Kiev.debugRules)
 			//	SyntaxManager.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt\u001fsyntax-for-java")).getCompiled());
 			this.replaceWithNode(rn);
-			frame.updatePackageClazz(); 
 		} catch (Throwable t) {
 			System.out.println("Error: test.txt dump");
 			t.printStackTrace(System.out);
@@ -548,7 +546,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			itype = new TypeRef(xtype);
 			mode = IsoneofMode.JENUM;
 		} else if( PassInfo.resolveBestMethodR(xtype,elems,
-				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noImports),
+				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
 			itype = new TypeRef(Type.getRealType(xtype,elems.mtype.ret()));

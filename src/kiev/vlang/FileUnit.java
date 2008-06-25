@@ -34,7 +34,6 @@ public final class FileUnit extends NameSpace {
 	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
 	public String							current_syntax;
 
-	@getter public FileUnit get$ctx_file_unit() { return this; }
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
@@ -112,7 +111,7 @@ public final class FileUnit extends NameSpace {
 	;
 		srpkg.name != "",
 		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
-		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
 		Env.getRoot().resolveNameR(node,path)
 	}
 }
@@ -123,10 +122,20 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 
 	public static final NameSpace[] emptyArray = new NameSpace[0];
 
+	// declare NodeAttr_members to be an attribute for ANode.nodeattr$syntax_parent
+	static final class NodeAttr_members extends SpaceAttAttrSlot<ASTNode> {
+		public final ANode[] getArray(ANode parent) { return ((NameSpace)parent).members; }
+		public final ANode[] get(ANode parent) { return ((NameSpace)parent).members; }
+		public final void setArray(ANode parent, Object narr) { ((NameSpace)parent).members = (ASTNode∅)narr; }
+		public final void set(ANode parent, Object narr) { ((NameSpace)parent).members = (ASTNode∅)narr; }
+		NodeAttr_members(String name, TypeInfo typeinfo) {
+			super(name, ANode.nodeattr$syntax_parent, typeinfo);
+		}
+	}
+
 	@nodeAttr public SymbolRef<KievPackage>	srpkg;
 	@nodeAttr public ASTNode∅					members;
 	
-	@getter public NameSpace get$ctx_name_space() { return this; }
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
@@ -173,7 +182,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 			((Import)syn).resolveNameR(node,path)
 		}
 	;
-		path.space_prev.pslot().name != "srpkg",
+		path.getPrevSlotName() != "srpkg",
 		trace( Kiev.debug && Kiev.debugResolve, "In namespace package: "+srpkg),
 		getPackage().resolveNameR(node,path)
 	;
@@ -191,8 +200,6 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		syn instanceof Import,
 		trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
 		((Import)syn).resolveMethodR(node,path,mt)
-	;
-		getPackage().resolveMethodR(node,path,mt)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		syn @= members,
@@ -215,7 +222,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
 					KievPackage@ node;
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 					if !(scope.resolveNameR(node,info))
 						return new KievPackage[0];
 					scope = (KievPackage)node;
@@ -225,7 +232,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 					head = name.intern();
 					Vector<KievPackage> vect = new Vector<KievPackage>();
 					KievPackage@ node;
-					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
 					if (!by_equals)
 						flags |= ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);

@@ -163,7 +163,7 @@ public final class NewExpr extends ENode {
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
 			if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
-				ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+				ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 				if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(ntype),(Method)m,((NewExpr)this).args.delToArray());
 					replaceWithNodeReWalk(n);
@@ -175,7 +175,7 @@ public final class NewExpr extends ENode {
 		{
 			CallType mt = (CallType)new CallType(ntype,null,ta,Type.tpVoid,false);
 			Constructor@ c;
-			ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+			ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(ntype,c,info,mt) ) {
 				this.symbol = c;
 				return;
@@ -240,7 +240,7 @@ public final class NewEnumExpr extends ENode {
 			ta[i] = args[i].getType();
 		CallType mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
 		Constructor@ c;
-		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(ntype,c,info,mt) ) {
 			this.symbol = c;
 			return;

@@ -19,41 +19,6 @@ import syntax kiev.Syntax;
 
 
 @ThisIsANode(lang=CoreLang)
-public class KievPackage extends Struct {
-
-	@nodeData public DNode∅						pkg_members;
-
-	public final rule resolveNameR(ASTNode@ node, ResInfo info)
-	{
-		info.isStaticAllowed(),
-		{
-			super.resolveNameR(node, info)
-		;
-			node @= pkg_members,
-			info.checkNodeName(node)
-		;
-			info.isCmpByEquals(),
-			node ?= tryLoad(info.getName())
-		}
-	}
-
-	public DNode tryLoad(String name) {
-		if (!isPackage())
-			return null;
-		trace(Kiev.debug && Kiev.debugResolve,"Package: trying to load in package "+this);
-		DNode dn;
-		String qn = name;
-		if (this instanceof Env)
-			dn = Env.getRoot().loadAnyDecl(qn);
-		else
-			dn = Env.getRoot().loadAnyDecl(qn=(this.qname()+"\u001f"+name));
-		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
-		return dn;
-	}
-	
-}
-
-@ThisIsANode(lang=CoreLang)
 public class JavaClass extends Struct {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
@@ -257,16 +222,14 @@ public abstract class Struct extends ComplexTypeDecl {
 		Struct obj = (Struct)super.copy(cc);
 		if (this == obj)
 			return this;
-		if !(obj instanceof Env) {
-			obj.xmeta_type = new CompaundMetaType(obj);
-			obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, null, null);
-			obj.callbackTypeVersionChanged();
-		}
+		obj.xmeta_type = new CompaundMetaType(obj);
+		obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, null, null);
+		obj.callbackTypeVersionChanged();
 		return obj;
 	}
 
 	public boolean isClazz() {
-		return !isPackage() && !isInterface();
+		return !isInterface();
 	}
 	
 	// indicates that structure members were generated
@@ -354,20 +317,10 @@ public abstract class Struct extends ComplexTypeDecl {
 
 	public Struct() {
 		super(null);
-		//if !(this instanceof Env) {
-		//	this.xmeta_type = new CompaundMetaType(this);
-		//	this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, null, null);
-		//}
 	}
 
-	public void initStruct(String name, ComplexTypeDecl outer, int flags) {
+	public void initStruct(String name, int flags) {
 		this.sname = name;
-		this.package_clazz.symbol = outer;
-		if (outer instanceof KievPackage) {
-			int outer_idx = outer.pkg_members.indexOf(this);
-			if (outer_idx < 0)
-				outer.pkg_members += this;
-		}
 		if (flags != 0) {
 			if!(this instanceof KievPackage) {
 				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));

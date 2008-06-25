@@ -1222,11 +1222,11 @@ public abstract class Annotation extends Attribute {
 }
 
 public abstract class Annotations extends Annotation {
-	public annotation[]	annotations;
+	public Annotation.annotation[]	annotations;
 	
 	public int size() {
 		int sz = 6+2;
-		foreach (annotation a; annotations)
+		foreach (Annotation.annotation a; annotations)
 			sz += a.size();
 		return sz;
 	}
@@ -1235,9 +1235,9 @@ public abstract class Annotations extends Annotation {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		int elen = cont.readShort();
-		annotations = new annotation[elen];
+		annotations = new Annotation.annotation[elen];
 		for(int i=0; i < elen; i++) {
-			annotations[i] = new annotation();
+			annotations[i] = new Annotation.annotation();
 			annotations[i].read(cont);
 		}
 	}
@@ -1259,12 +1259,12 @@ public class RIAnnotations extends Annotations {
 }
 
 public abstract class ParAnnotations extends Annotation {
-	public annotation[][]	annotations;
+	public Annotation.annotation[][]	annotations;
 	
 	public int size() {
 		int sz = 6+1;
-		foreach (annotation[] aa; annotations) {
-			foreach (annotation a; aa) {
+		foreach (Annotation.annotation[] aa; annotations) {
+			foreach (Annotation.annotation a; aa) {
 				sz += 2+a.size();
 			}
 		}
@@ -1275,12 +1275,12 @@ public abstract class ParAnnotations extends Annotation {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		int npar = cont.readByte();
-		annotations = new annotation[npar][];
+		annotations = new Annotation.annotation[npar][];
 		for(int p=0; p < npar; p++) {
 			int elen = cont.readShort();
-			annotations[p] = new annotation[elen];
+			annotations[p] = new Annotation.annotation[elen];
 			for(int i=0; i < elen; i++) {
-				annotations[p][i] = new annotation();
+				annotations[p][i] = new Annotation.annotation();
 				annotations[p][i].read(cont);
 			}
 		}

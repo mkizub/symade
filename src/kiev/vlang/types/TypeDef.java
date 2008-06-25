@@ -57,7 +57,12 @@ public abstract class TypeDef extends TypeDecl {
 
 	public static final TypeDef[] emptyArray = new TypeDef[0];
 
-	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
+	@getter public ComplexTypeDecl get$child_ctx_tdecl() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.get$child_ctx_tdecl();
+	}
 
 	public TypeRef[] getUpperBounds() { return super_types; }
 	public TypeRef[] getLowerBounds() { return TypeRef.emptyArray; }
@@ -136,7 +141,7 @@ public final class TypeAssign extends TypeDef {
 				foreach (TypeRef tr; parent.super_types) {
 					TypeDecl td = tr.getTypeDecl();
 					ASTNode@ node;
-					ResInfo info = new ResInfo(this,this.sname,ResInfo.noForwards|ResInfo.noImports);
+					ResInfo info = new ResInfo(this,this.sname,ResInfo.noForwards|ResInfo.noSyntaxContext);
 					foreach (td.resolveNameR(node,info)) {
 						ASTNode n = node;
 						if !(n instanceof TypeDef) {

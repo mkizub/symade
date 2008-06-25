@@ -388,17 +388,49 @@ public abstract class ANode implements INode {
 		return null;
 	}
 	
-	@getter public FileUnit get$ctx_file_unit() {
-		ANode p = this.parent();
-		if (p == null)
+	@getter public final FileUnit get$ctx_file_unit() {
+		ANode self = this;
+		if (self instanceof FileUnit)
+			return (FileUnit)self;
+		for (;;) {
+			ANode p = nodeattr$syntax_parent.get(self);
+			if (p != null) {
+				if (p instanceof FileUnit)
+					return (FileUnit)p;
+				self = p;
+				continue;
+			}
+			p = self.parent();
+			if (p != null) {
+				if (p instanceof FileUnit)
+					return (FileUnit)p;
+				self = p;
+				continue;
+			}
 			return null;
-		return p.get$ctx_file_unit();
+		}
 	}
 	@getter public NameSpace get$ctx_name_space() {
-		ANode p = this.parent();
-		if (p == null)
+		ANode self = this;
+		if (self instanceof NameSpace)
+			return (NameSpace)self;
+		for (;;) {
+			ANode p = nodeattr$syntax_parent.get(self);
+			if (p != null) {
+				if (p instanceof NameSpace)
+					return (NameSpace)p;
+				self = p;
+				continue;
+			}
+			p = self.parent();
+			if (p != null) {
+				if (p instanceof NameSpace)
+					return (NameSpace)p;
+				self = p;
+				continue;
+			}
 			return null;
-		return p.get$ctx_name_space();
+		}
 	}
 	@getter public ComplexTypeDecl get$ctx_tdecl() {
 		ANode p = this.parent();

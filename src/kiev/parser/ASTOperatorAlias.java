@@ -72,15 +72,6 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		this.sname = n.value;
 	}
 	
-    private void checkPublicAccess(Method m) {
-    	if( !m.isStatic() ) return;
-    	if( m.isPrivate() || m.isProtected() ) return;
-    	TypeDecl pkg = m.ctx_tdecl;
-    	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz.dnode;
-    	if( pkg == null || pkg instanceof Env ) return;
-    	foreach(ASTNode n; pkg.members; n == m ) return;
-    }
-	
 	private void setAliasName(String s) {
 		if (sname != s)
 			sname = s;
@@ -210,7 +201,6 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		default:
 			throw new CompilerException(this,"Unknown operator mode "+opmode);
 		}
-		checkPublicAccess(m);
 		m.setOperatorMethod(true);
 	}
 

@@ -33,46 +33,51 @@ public final class JEnv {
 		DNode cl = Env.getRoot().resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
-			cl = actuallyLoadClazz(name);
+			cl = actuallyLoadDecl(name);
 		else if (cl instanceof TypeDecl && cl.isTypeDeclNotLoaded() && !cl.isAnonymouse())
-			cl = actuallyLoadClazz(name);
+			cl = actuallyLoadDecl(name);
 		if (cl == null)
 			Env.classHashOfFails.put(qname);
 		return cl;
 	}
 
 	/** Actually load class from specified file and dir */
-	public DNode actuallyLoadClazz(String qname) {
+	public DNode actuallyLoadDecl(String qname) {
 		int p = qname.lastIndexOf('\u001f');
 		if (p < 0)
-			return actuallyLoadClazz(ClazzName.fromToplevelName(KString.from(qname)));
+			return actuallyLoadDecl(ClazzName.fromToplevelName(KString.from(qname)));
 		String pname = qname.substring(0,p);
-		TypeDecl td = Env.getRoot().loadTypeDecl(pname,true);
+		DNode dn = Env.getRoot().loadAnyDecl(pname);
+		if (dn == null)
+			throw new RuntimeException("Cannot find class/package "+pname.replace('\u001f','.'));
 		// maybe an inner class is already loaded by outer class
 		DNode cl = Env.getRoot().resolveGlobalDNode(qname);
 		if (cl != null && !cl.isTypeDeclNotLoaded())
 			return cl;
-		return actuallyLoadClazz(ClazzName.fromOuterAndName((ComplexTypeDecl)td, KString.from(qname.substring(p+1))));
+		return actuallyLoadDecl(ClazzName.fromOuterAndName(dn, KString.from(qname.substring(p+1))));
 	}
 
 	/** Actually load class from specified file and dir */
-	public Struct actuallyLoadClazz(Struct cl) {
+	public Struct actuallyLoadDecl(Struct cl) {
 		KString bc_name = cl.bytecode_name;
 		if (bc_name != null)
-			return (Struct)actuallyLoadClazz(ClazzName.fromBytecodeName(bc_name));
+			return (Struct)actuallyLoadDecl(ClazzName.fromBytecodeName(bc_name));
 		if (cl.sname == null)
 			throw new RuntimeException("Anonymouse class cannot be loaded from bytecode");
-		return (Struct)actuallyLoadClazz(ClazzName.fromOuterAndName(cl.package_clazz.dnode, KString.from(cl.sname)));
+		if (cl.parent() instanceof KievPackage)
+			return (Struct)actuallyLoadDecl(ClazzName.fromOuterAndName((KievPackage)cl.parent(), KString.from(cl.sname)));
+		else
+			return (Struct)actuallyLoadDecl(ClazzName.fromOuterAndName(cl.ctx_tdecl, KString.from(cl.sname)));
 	}
 
 	/** Actually load class from specified file and dir */
-	public DNode actuallyLoadClazz(ClazzName name) {
+	public DNode actuallyLoadDecl(ClazzName name) {
 		// Ensure the parent package/outer class is loaded
-		Struct pkg = (Struct)loadDecl(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+		DNode pkg = loadDecl(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 		if (pkg == null)
 			pkg = Env.getRoot().newPackage(name.package_name().toString().replace('.','\u001f'));
 		if (pkg.isTypeDeclNotLoaded())
-			pkg = (Struct)loadDecl(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
+			pkg = loadDecl(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 
 		long curr_time = 0L, diff_time = 0L;
 		diff_time = curr_time = System.currentTimeMillis();
@@ -101,10 +106,10 @@ public final class JEnv {
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose )
 				Kiev.reportInfo("Loaded "+(
-					td.isPackage()          ? "package   ":
-					td.isInterface()        ? "interface ":
-					td instanceof KievSyntax? "syntax    ":
-					                          "class     "
+					td instanceof KievPackage ? "package   ":
+					td.isInterface()          ? "interface ":
+					td instanceof KievSyntax  ? "syntax    ":
+					                            "class     "
 					)+name,diff_time);
 		}
 		return td;

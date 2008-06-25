@@ -105,7 +105,8 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 		}
 		// get top-level class
 		TypeDecl clazz = ctx_tdecl;
-		while !(clazz.package_clazz.dnode.isPackage() || clazz.package_clazz.dnode.isInterface()) clazz = clazz.package_clazz.dnode;
+		while !(clazz.parent() instanceof KievPackage || clazz.ctx_tdecl.isInterface())
+			clazz = clazz.ctx_tdecl;
 		// find $assertionsEnabled
 		foreach (Field f; clazz.members; f.sname == "$assertionsEnabled") {
 			replaceWithNodeResolve(reqType, new SFldExpr(pos,f));
@@ -557,7 +558,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 
 	public final boolean tryOverloadedCast(Type et) {
 		Method@ v;
-		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 		v.$unbind();
 		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
@@ -575,7 +576,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return true;
 		}
 		v.$unbind();
-		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noImports);
+		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
 			Method m = (Method)v;
@@ -677,10 +678,11 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return;
 		}
 		if( et.isReference() && ctype.isReference() && et.getStruct() != null
-		 && et.getStruct().package_clazz.dnode.isClazz()
+		 && et.getStruct().isStructInner()
+		 && !et.getStruct().isStatic()
 		 && !(et instanceof ArgType)
-		 && (et.getStruct().isStructInner() && !et.getStruct().isStatic())
-		 && et.getStruct().package_clazz.dnode.xtype.getAutoCastTo(ctype) != null
+		 && et.getStruct().ctx_tdecl.isClazz()
+		 && et.getStruct().ctx_tdecl.xtype.getAutoCastTo(ctype) != null
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,ctype,

@@ -671,10 +671,10 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	{
 		isInlinedByDispatcherMethod() , $cut, false
 	;
-		path.space_prev.pslot().name == "targs" ||
-		path.space_prev.pslot().name == "params" ||
-		path.space_prev.pslot().name == "type_ref" ||
-		path.space_prev.pslot().name == "dtype_ref",
+		path.getPrevSlotName() == "targs" ||
+		path.getPrevSlotName() == "params" ||
+		path.getPrevSlotName() == "type_ref" ||
+		path.getPrevSlotName() == "dtype_ref",
 		$cut,
 		node @= targs,
 		path.checkNodeName(node)
@@ -721,7 +721,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			throw new CompilerException(this,"Method must be declared on class level only");
 		TypeDecl clazz = this.ctx_tdecl;
 		// TODO: check flags for methods
-		if( clazz.isPackage() && !isStatic() ) { setStatic(true); }
 		if( isPrivate() && isFinal() ) { setFinal(false); }
 		else if( clazz.isClazz() && clazz.isFinal() && !isFinal() ) { setFinal(true); }
 		else if( clazz.isInterface() && !isPublic() ) {

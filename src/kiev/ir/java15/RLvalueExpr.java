@@ -55,7 +55,7 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			DNode@ v;
 			ResInfo info;
 			if (!(obj instanceof TypeRef) &&
-				tp.resolveNameAccessR(v,info=new ResInfo(this,this.ident,ResInfo.noStatic|ResInfo.noImports)) )
+				tp.resolveNameAccessR(v,info=new ResInfo(this,this.ident,ResInfo.noStatic|ResInfo.noSyntaxContext)) )
 				res[si] = makeExpr(v,info,obj);
 			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,this.ident)))
 				res[si] = makeExpr(v,info,tp.getStruct());
@@ -125,7 +125,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 		// Resolve overloaded access method
 		Method@ m;
 		CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},Type.tpAny,false);
-		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(obj.getType(),m,info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
 		if !(m.isMacro() && m.isNative()) {

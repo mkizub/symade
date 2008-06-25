@@ -407,7 +407,7 @@ public interface DataFlowSlots {
 	public final int FLS = 3;
 	public final int JMP = 4;
 	
-	public final boolean ASSERT_MORE = true;
+	public final boolean ASSERT_MORE = false;
 }
 
 public final class DataFlowInfo extends ANode implements DataFlowSlots {
@@ -727,7 +727,7 @@ public abstract class DFFunc implements DataFlowSlots {
 	
 	static boolean checkNode(ANode _node, Vector<ASTNode> lst) {
 		ASTNode node = (ASTNode)_node;
-		if (node instanceof NameSpace || node instanceof Method)
+		if (node instanceof NameSpace || node instanceof Method || node instanceof Initializer || node instanceof KievPackage)
 			return true;
 		if (lst == null) lst = new Vector<ASTNode>();
 		assert(!lst.contains(node));

@@ -137,7 +137,7 @@ public final class Kiev {
    	public static void reportParserError(int pos, String msg) {
         errorPrompt = false;
 		if( debug ) new Exception().printStackTrace(System.out);
-		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);
+		report( pos, k.curFileUnit, null, null, SeverError.Error, msg);
 	}
 
    	public static void reportParserError(int pos, String msg, Throwable e) {
@@ -153,7 +153,7 @@ public final class Kiev {
 		}
         errorPrompt = false;
 		if( debug ) e.printStackTrace(System.out);
-		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);
+		report( pos, k.curFileUnit, null, null, SeverError.Error, msg);
 	}
 
    	public static void reportParserError(int pos, Throwable e) {
@@ -170,9 +170,9 @@ public final class Kiev {
         errorPrompt = false;
 		if( debug ) e.printStackTrace(System.out);
 		if( e.getMessage() == null )
-			report(pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error,e.getClass().getName());
+			report(pos, k.curFileUnit, null, null, SeverError.Error,e.getClass().getName());
 		else
-			report(pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error,e.getMessage());
+			report(pos, k.curFileUnit, null, null, SeverError.Error,e.getMessage());
 	}
 
    	public static void reportError(String msg) {

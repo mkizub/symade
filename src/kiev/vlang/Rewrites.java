@@ -597,7 +597,7 @@ public final class MacroAccessExpr extends ENode {
 		if!(tp instanceof ASTNodeType)
 			throw new CompilerException(this, "Accessor must be an AST node");
 		Field@ v;
-		ResInfo info = new ResInfo(this,ident,ResInfo.noStatic | ResInfo.noImports | ResInfo.noForwards);
+		ResInfo info = new ResInfo(this,ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards);
 		if!(tp.resolveNameAccessR(v,info)) {
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
 			msg.append("\t").append(tp).append('\n');

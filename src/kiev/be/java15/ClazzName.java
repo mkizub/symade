@@ -88,12 +88,12 @@ class ClazzName implements Constants {
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
 
-	public static ClazzName fromOuterAndName(ComplexTypeDecl outer, KString short_name) {
+	public static ClazzName fromOuterAndName(DNode outer, KString short_name) {
 		if(short_name.equals(KString.Empty)) return Empty;
-		String delim = outer.isPackage() ? "/" : "$" ;
+		String delim = (outer instanceof KievPackage) ? "/" : "$" ;
 		KString bytecode_name;
 		KString name;
-		if( outer.isPackage() ) {
+		if (outer instanceof KievPackage) {
 			if (outer.qname() != "") {
 				bytecode_name = KString.from(outer.qname().replace('\u001f','/')+delim+short_name);
 				name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
@@ -102,6 +102,7 @@ class ClazzName implements Constants {
 				name = short_name;
 			}
 		} else {
+			outer = (ComplexTypeDecl)outer;
 			if (outer.bytecode_name == null)
 				bytecode_name = KString.from(outer.qname().replace('\u001f','/')+delim+short_name);
 			else

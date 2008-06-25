@@ -42,8 +42,6 @@ public final view JMethod of Method extends JDNode {
 	public final boolean isInvariantMethod();
 	public final boolean isInlinedByDispatcherMethod();
 
-	@getter public JMethod get$child_jctx_method() { return this; }
-	
 	public boolean isConstructor() {
 		return ((Method)this) instanceof Constructor;
 	}

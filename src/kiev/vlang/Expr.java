@@ -169,7 +169,7 @@ public class AssignExpr extends ENode {
 			Type ect1 = cae.obj.getType();
 			Type ect2 = cae.index.getType();
 			Method@ m;
-			ResInfo info = new ResInfo(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noImports);
+			ResInfo info = new ResInfo(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
 			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
 			if (PassInfo.resolveBestMethodR(ect1,m,info,mt)) {
 				Method rm = (Method)m;
@@ -770,14 +770,14 @@ public class CastExpr extends ENode {
 
 	private boolean resolveOverloadedCast(Type et) {
 		Method@ v;
-		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
 			this.symbol = (Method)v;
 			return true;
 		}
 		v.$unbind();
-		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noImports);
+		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
 			this.symbol = (Method)v;

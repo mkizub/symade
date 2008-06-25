@@ -75,7 +75,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		Method@ m;
 		// First try overloaded 'new', than real 'new'
 		if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
-			ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+			ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 			if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
 				CallExpr n = new CallExpr(pos,new TypeRef(ntype),(Method)m,((NewExpr)this).args.delToArray());
 				replaceWithNodeResolve(n);
@@ -83,7 +83,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 			}
 		}
 		mt = new CallType(ntype,null,ta,Type.tpVoid,false); //(CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
-		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
 			this.symbol = m;
 			m.makeArgs(args,ntype);
@@ -121,7 +121,7 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 		CallType mt = (CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
 		Constructor@ m;
 		mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
-		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
 			this.symbol = m;
 			m.makeArgs(args,ntype);
@@ -234,7 +234,7 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate() {
 		if (clazz != null)                                                    
 			return true;
-		clazz = Env.getRoot().newStruct(null,false,(Struct)ctx_tdecl,0,new JavaAnonymouseClass(),true,null);
+		clazz = Env.getRoot().newStruct(null,false,null,0,new JavaAnonymouseClass(),true,null);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		if (ctx_method==null || ctx_method.isStatic())

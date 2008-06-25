@@ -105,7 +105,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	;
 		path.isSuperAllowed(),
 		parent_syntax != null && parent_syntax.dnode != null,
-		path.space_prev == null || (path.space_prev.pslot().name != "parent_syntax"),
+		path.getPrevSlotName() != "parent_syntax",
 		syn ?= parent_syntax.dnode,
 		path.enterSuper() : path.leaveSuper(),
 		syn.resolveNameR(node,path)

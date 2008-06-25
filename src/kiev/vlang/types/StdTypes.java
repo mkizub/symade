@@ -31,7 +31,6 @@ public interface StdTypes {
 	public static final int flArgAppliable		= 1 <<  6;
 	public static final int flValAppliable		= 1 <<  7;
 
-	public static final CompaundType tpEnv;
 	public static final CoreType tpAny;
 	public static final CoreType tpVoid;
 	public static final CoreType tpBoolean;
@@ -103,9 +102,7 @@ public interface StdTypes {
 	static {
 
 		Env env = Env.getRoot();
-		tpEnv				= new CompaundType((CompaundMetaType)env.xmeta_type, null, null);
-		env.xtype			= tpEnv;
-
+		
 		tpAny		= new CoreType(Constants.nameAny,     null,  0);												tpAny.meta_type.tdecl.setTypeDeclNotLoaded(true);
 		tpVoid		= new CoreType(Constants.nameVoid,    null,  0);												tpVoid.meta_type.tdecl.setTypeDeclNotLoaded(true);
 		tpBoolean	= new CoreType(Constants.nameBoolean, tpAny, MetaType.flBoolean | MetaType.flIntegerInCode);	tpBoolean.meta_type.tdecl.setTypeDeclNotLoaded(true);

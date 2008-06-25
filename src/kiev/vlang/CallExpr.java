@@ -165,7 +165,7 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				Method@ m;
-				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noImports);
+				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
 				mt = new CallType(tp,ata,ta,null,false);
 				if (obj == null) {
 					if (PassInfo.resolveMethodR((ASTNode)this,m,info,mt)) {
@@ -186,7 +186,7 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				DNode@ closure;
-				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noImports);
+				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
 				if (obj == null) {
 					if (PassInfo.resolveNameR((ASTNode)this,closure,info)) { 
 						if ((closure instanceof Var || closure instanceof Field)
@@ -236,7 +236,7 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				DNode@ closure;
-				ResInfo info = new ResInfo(this, this.ident, ResInfo.noImports);
+				ResInfo info = new ResInfo(this, this.ident, ResInfo.noSyntaxContext);
 				if (obj == null) {
 					if (PassInfo.resolveNameR((ASTNode)this,closure,info)) { 
 						if (closure instanceof Field
@@ -409,7 +409,7 @@ public class CtorCallExpr extends ENode {
 
 		// constructor call "this(args)"
 		if (obj instanceof ThisExpr) {
-			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this.symbol = (Constructor)m;
@@ -418,7 +418,7 @@ public class CtorCallExpr extends ENode {
 		// constructor call "super(args)"
 		if (obj instanceof SuperExpr) {
 			mt = new CallType(tp,null,ta,Type.tpVoid,false);
-			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this.symbol = (Constructor)m;

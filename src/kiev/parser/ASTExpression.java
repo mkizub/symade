@@ -35,6 +35,49 @@ public class ASTExpression extends ENode {
 
 	public int		getPriority() { return 256; }
 
+	public boolean preResolveIn() {
+		// scan tokens, join qualified names
+		ENode[]	nodes = this.nodes;
+		for (int i=0; i < nodes.length-2; i++) {
+			ENode n0 = nodes[i];
+			if (n0 instanceof EToken && n0.asScope() instanceof KievPackage) {
+				ENode n1 = nodes[i+1];
+				if (n1 instanceof EToken && n1.ident == ".") {
+					ENode n2 = nodes[i+2];
+					if (n2 instanceof EToken && n2.isIdentifier()) {
+						KievPackage scope = (KievPackage)n0.asScope();
+						DNode@ dn;
+						if (!scope.resolveNameR(dn,new ResInfo(n2,n2.ident,ResInfo.noSyntaxContext|ResInfo.noForwards)))
+							continue;
+						if (dn instanceof KievPackage) {
+							EToken res = new EToken(n2.pos, scope.qname()+'\u001f'+n2.ident, ETokenKind.SCOPE_DECL, true);
+							res.value = (DNode)dn;
+							n0.detach();
+							n1.detach();
+							n2.detach();
+							this.nodes.insert(i, res);
+							nodes = this.nodes;
+							i--;
+							continue;
+						}
+						if (dn instanceof TypeDecl) {
+							TypeNameRef res = new TypeNameRef(scope.qname()+'\u001f'+n2.ident);
+							res.symbol = (TypeDecl)dn;
+							res.pos = n2.pos;
+							n0.detach();
+							n1.detach();
+							n2.detach();
+							this.nodes.insert(i, res);
+							nodes = this.nodes;
+							continue;
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
 	public void preResolveOut() {
 		if (nodes.length == 1) {
 			ENode n = nodes[0];
@@ -405,17 +448,16 @@ public class ASTExpression extends ENode {
 				tr = (TypeRef)result[0];
 			if (op == Operator.TypeAccess) {
 				EToken id = (EToken)result[2];
-				ComplexTypeDecl@ td;
-				if (!tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noImports|ResInfo.noForwards)))
+				TypeDecl@ td;
+				if (!tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noSyntaxContext|ResInfo.noForwards)))
 					return null;
-				if (td.package_clazz.dnode != tr.getTypeDecl())
+				if (td.parent() != tr.getTypeDecl())
 					return null;
 				TypeRef ret;
-				if (tr instanceof TypeNameRef) {
+				if (tr instanceof TypeNameRef)
 					ret = new TypeNameRef(tr.ident+"\u001f"+id.ident);
-				} else {
+				else
 					ret = new TypeInnerNameRef(tr.ncopy(),id.ident);
-				}
 				ret.symbol = (TypeDecl)td;
 				ret.pos = id.pos;
 				return ret;
@@ -469,9 +511,9 @@ public class ASTExpression extends ENode {
 				tr = (TypeRef)result[0];
 			if (tr != null) {
 				EToken id = (EToken)result[2];
-				ComplexTypeDecl@ td;
-				if (tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noImports|ResInfo.noForwards))) {
-					if (td.package_clazz.dnode == tr.getTypeDecl())
+				TypeDecl@ td;
+				if (tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noSyntaxContext|ResInfo.noForwards))) {
+					if (td.parent() == tr.getTypeDecl())
 						return null;
 				}
 			}

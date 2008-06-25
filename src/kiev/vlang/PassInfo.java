@@ -21,16 +21,26 @@ import syntax kiev.Syntax;
 public final class ParentEnumerator implements Enumeration<ASTNode> {
 	ASTNode n;
 	ASTNode r;
-	public ParentEnumerator(ASTNode n) {
+	final boolean in_syntax;
+	public ParentEnumerator(ASTNode n, boolean in_syntax) {
 		this.n = n;
+		this.in_syntax = in_syntax;
 	}
 	public boolean hasMoreElements() {
+		if (in_syntax && ANode.nodeattr$syntax_parent.get(n) != null)
+			return true;
 		return n.isAttached();
 	}
 	public ASTNode nextElement() {
 		if (r != null)
 			n = r;
-		r = (ASTNode)n.parent();
+		if (in_syntax) {
+			r = (ASTNode)ANode.nodeattr$syntax_parent.get(n);
+			if (r == null)
+				r = (ASTNode)n.parent();
+		} else {
+			r = (ASTNode)n.parent();
+		}
 		return r;
 	}
 }
@@ -76,7 +86,7 @@ public class PassInfo {
 		;
 			trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name "+path.getName())
 		},
-		pe = new ParentEnumerator(from),
+		pe = new ParentEnumerator(from, path.inSyntaxContext()),
 		p @= pe,
 		p instanceof ScopeOfNames,
 		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name '"+path.getName()+"' in scope '"+p+"'"),
@@ -261,7 +271,7 @@ public class PassInfo {
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
-		pe = new ParentEnumerator(from),
+		pe = new ParentEnumerator(from, path.inSyntaxContext()),
 		p @= pe,
 		p instanceof ScopeOfMethods,
 		path.space_prev = pe.n,

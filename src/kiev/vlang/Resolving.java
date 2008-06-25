@@ -19,12 +19,12 @@ import syntax kiev.Syntax;
 
 public final class ResInfo {
 	
-	public static final int noStatic     = 0x0001;
-	public static final int noImports    = 0x0002;
-	public static final int noForwards   = 0x0004;
-	public static final int noSuper      = 0x0008;
-	public static final int noEquals     = 0x0010; // to compare as startsWith
-	public static final int doImportStar = 0x0020; // to lookup in specific imports, then in the package, then in import with star
+	public static final int noStatic        = 0x0001;
+	public static final int noSyntaxContext = 0x0002;
+	public static final int noForwards      = 0x0004;
+	public static final int noSuper         = 0x0008;
+	public static final int noEquals        = 0x0010; // to compare as startsWith
+	public static final int doImportStar    = 0x0020; // to lookup in specific imports, then in the package, then in import with star
 
 	private String		name;
 	private int			flags;
@@ -42,12 +42,12 @@ public final class ResInfo {
 	
 	public ASTNode		space_prev;
 	
-	public boolean isStaticAllowed()   { return (flags & noStatic)     == 0; }
-	public boolean isImportsAllowed()  { return (flags & noImports)    == 0; }
-	public boolean isForwardsAllowed() { return (flags & noForwards)   == 0; }
-	public boolean isSuperAllowed()    { return (flags & noSuper)      == 0; }
-	public boolean isCmpByEquals()     { return (flags & noEquals)     == 0; }
-	public boolean doImportStar()      { return (flags & doImportStar) != 0; }
+	public boolean isStaticAllowed()   { return (flags & noStatic)        == 0; }
+	public boolean inSyntaxContext()   { return (flags & noSyntaxContext) == 0; }
+	public boolean isForwardsAllowed() { return (flags & noForwards)      == 0; }
+	public boolean isSuperAllowed()    { return (flags & noSuper)         == 0; }
+	public boolean isCmpByEquals()     { return (flags & noEquals)        == 0; }
+	public boolean doImportStar()      { return (flags & doImportStar)    != 0; }
 
 	private ResInfo() {}
 	
@@ -74,6 +74,14 @@ public final class ResInfo {
 	public String getName() { return name; }
 	public ASTNode getFrom() { return from; }
 	
+	public String getPrevSlotName() {
+		if (space_prev == null)
+			return null;
+		if (space_prev.pslot() == null)
+			return null;
+		return space_prev.pslot().name;
+	}
+	
 	public void enterMode(int fl) {
 		flags_stack[flags_p++] = flags;
 		flags |= fl;
@@ -87,7 +95,7 @@ public final class ResInfo {
 	public void enterReinterp(Type tp) {
 		forwards_stack[forwards_p++] = tp;
 		flags_stack[flags_p++] = flags;
-		flags |= noStatic | noImports;
+		flags |= noStatic | noSyntaxContext;
 		trace(Kiev.debug && Kiev.debugResolve,"Entering dewrap, now "+this);
 	}
 	public void leaveReinterp() {
@@ -103,7 +111,7 @@ public final class ResInfo {
 		assert ((flags & noForwards) == 0);
 		forwards_stack[forwards_p++] = node;
 		flags_stack[flags_p++] = flags;
-		flags |= noStatic | noImports;
+		flags |= noStatic | noSyntaxContext;
 		transforms += incr;
 		trace(Kiev.debug && Kiev.debugResolve,"Entering forward of "+node+", now "+this);
 	}
@@ -127,7 +135,7 @@ public final class ResInfo {
 	public void enterSuper(int incr, int mode) {
 		assert ((flags & noSuper) == 0);
 		flags_stack[flags_p++] = flags;
-		flags |= noImports | mode;
+		flags |= noSyntaxContext | mode;
 		transforms += incr;
 		trace(Kiev.debug && Kiev.debugResolve,"Entering super, now "+this);
 	}
@@ -169,8 +177,12 @@ public final class ResInfo {
 				// check visibility of this or inner classes
 				ComplexTypeDecl s = (ComplexTypeDecl)from_scope;
 				ComplexTypeDecl p = n.ctx_tdecl;
-				while (s != null && s != p && s.package_clazz.dnode.isClazz())
-					s = s.package_clazz.dnode;
+				while (s != null && s != p) {
+					ComplexTypeDecl x = s.ctx_tdecl;
+					if (x == null || !x.isClazz())
+						break;
+					s = x;
+				}
 				if (s == null || s != p)
 					return false;
 			}

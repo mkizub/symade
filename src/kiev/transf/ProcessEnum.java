@@ -47,6 +47,9 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			return;
 		}
 		
+		if (clazz.isInterfaceOnly() || clazz.resolveField(nameEnumValuesFld, false) != null)
+			return;
+		
 		Field[] eflds = ((JavaEnum)clazz).getEnumFields();
 		int pos = clazz.pos;
 		

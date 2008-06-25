@@ -28,7 +28,7 @@
    <star>false</star>
    <of_method>false</of_method>
   </a-node>
-  <a-node class='kiev.vlang.MetaTypeDecl'>
+  <a-node class='kiev.vlang.MetaTypeDecl' name='TemplateVNode'>
    <super_types>
     <a-node class='kiev.vlang.types.TypeNameRef'>
      <ident>any</ident>

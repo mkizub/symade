@@ -81,7 +81,6 @@ public static view RDNode of DNode extends RNode {
 	
 	public final boolean isStructView();
 	public final boolean isTypeUnerasable();
-	public final boolean isPackage();
 
 	public final void setPublic();
 	public final void setPrivate();
@@ -204,12 +203,10 @@ public view RTypeDecl of TypeDecl extends RDNode {
 
 @ViewOf(vcast=true, iface=true)
 public view RComplexTypeDecl of ComplexTypeDecl extends RTypeDecl {
-	public:ro			SymbolRef<TypeDecl>		package_clazz;
 	public:ro			TypeDef[]				args;
 	public:ro			ASTNode[]				members;
 
 	public final String qname();
-	public void updatePackageClazz();
 }
 
 

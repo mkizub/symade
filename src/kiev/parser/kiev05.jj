@@ -49,8 +49,6 @@ public interface ParserConstants extends kiev050Constants {
 public abstract class kiev050 {
 
 	public FileUnit			curFileUnit;
-	public ComplexTypeDecl	curClazz;
-	public Method			curMethod;
 	public boolean			interface_only = false;
 
 	public boolean			declMode = true;
@@ -134,34 +132,20 @@ public abstract class kiev050 {
 	}
 
 	private Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ASTNode parent) {
-		String nm;
-		ComplexTypeDecl outer;
-		boolean direct;
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		Struct clazz;
 		if (parent instanceof NameSpace) {
-			NameSpace ns = (NameSpace)parent;
-			nm = name.sname;
-			outer = ns.getPackage();
-			direct = true;
+			clazz = Env.getRoot().newStruct(name.sname,true,parent.getPackage(),flags,variant,true,uuid);
 		}
 		else if (parent instanceof Struct) {
-			nm = name.sname;
-			outer = curClazz;
-			direct = true;
+			clazz = Env.getRoot().newStruct(name.sname,true,(Struct)parent,flags,variant,true,uuid);
 		}
 		else if (name != null) {
-			// Construct name of local class
-			nm = name.sname;
-			outer = curClazz;
-			direct = false;
+			clazz = Env.getRoot().newStruct(name.sname,false,null,flags,variant,true,uuid);
 		}
 		else {
-			// Local anonymouse class
-			nm = null;
-			outer = curClazz;
-			direct = false;
+			clazz = Env.getRoot().newStruct(null,false,null,flags,variant,true,uuid);
 		}
-		String uuid = modifiers == null ? null : modifiers.getUUID();
-		Struct clazz = Env.getRoot().newStruct(nm,direct,(Struct)curClazz,flags,variant,true,uuid);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -807,7 +791,7 @@ TOKEN : /* OPERATORS */
  */
 
 FileUnit FileUnit(String filename) :
-{ FileUnit oldFileUnit; ComplexTypeDecl oldClazz; }
+{ FileUnit oldFileUnit; }
 {
 	{
 		oldFileUnit = curFileUnit;
@@ -815,8 +799,6 @@ FileUnit FileUnit(String filename) :
 		curFileUnit = fu;
 		declMode = true;
 		ASTModifiers modifiers;
-		oldClazz = curClazz;
-		curClazz = Env.getRoot();
 	}
 	try {
 		(
@@ -824,7 +806,6 @@ FileUnit FileUnit(String filename) :
 		)*
 		[
 			fu.srpkg = Package()
-			{ curClazz = fu.getPackage(); }
 		]
 		TopLevelDeclarations(fu)
 		<EOF>
@@ -832,7 +813,6 @@ FileUnit FileUnit(String filename) :
 	catch(ParseError e) { rpe("Bad declaration",e); }
 	catch(Throwable e) { rperr(e); }
 	finally {
-		curClazz = oldClazz;
 		curFileUnit = oldFileUnit;
 		declMode = true;
 		return fu;
@@ -840,7 +820,7 @@ FileUnit FileUnit(String filename) :
 }
 
 NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
-{ ComplexTypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); SymbolRef sr; }
+{ NameSpace ns = new NameSpace(); SymbolRef sr; }
 {
 	{ declMode = true; }
 	try {
@@ -850,7 +830,7 @@ NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
 			sr = QName()		{ ns.srpkg = (SymbolRefPkg)sr; }
 		|	sr = NameRef()		{ ns.srpkg = (SymbolRefPkg)sr; }
 		)
-		{ parent.members += ns; curClazz = ns.getPackage(); }
+		{ parent.members += ns; }
 		"{"
 		TopLevelDeclarations(ns)
 		"}"
@@ -858,7 +838,6 @@ NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
 	catch(ParseError e) { rpe("Bad declaration",e); }
 	catch(Throwable e) { rperr(e); }
 	finally {
-		curClazz = oldClazz;
 		declMode = true;
 		return ns;
 	}
@@ -1063,7 +1042,7 @@ KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) :
 }
 
 ComplexTypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ ComplexTypeDecl tdecl; Symbol name; TypeRef tp; ComplexTypeDecl oldClazz; TypeConstr[] args; }
+{ ComplexTypeDecl tdecl; Symbol name; TypeRef tp; TypeConstr[] args; }
 {
 	"metatype"
 	name = Name()
@@ -1078,15 +1057,12 @@ ComplexTypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		tdecl.super_types += Type()
 		( "," tdecl.super_types += Type()	)*
 	]
-	{ oldClazz = curClazz; curClazz = null; }
-	try {
-		TypeBodyDeclaration(tdecl)
-	} finally { curClazz = oldClazz; }
+	TypeBodyDeclaration(tdecl)
 	{ return tdecl; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; Symbol name; ComplexTypeDecl oldClazz; TypeConstr[] args; }
+{ Struct clazz; Symbol name; TypeConstr[] args; }
 {
 	(
 		"class"
@@ -1155,15 +1131,12 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			( "," clazz.super_types += Type()	)*
 		]
 	)
-	{ oldClazz = curClazz; curClazz = clazz; }
-	try {
-		TypeBodyDeclaration(clazz)
-	} finally { curClazz = oldClazz; }
+	TypeBodyDeclaration(clazz)
 	{ return clazz; }
 }
 
 void TypeBodyDeclaration(ComplexTypeDecl clazz) :
-{ ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
+{ ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members"); Struct sub_struct; }
 {
 	"{"
 	(
@@ -1184,41 +1157,45 @@ void TypeBodyDeclaration(ComplexTypeDecl clazz) :
 		(	LOOKAHEAD({ getToken(1).kind == LBRACE })
 			clazz.members += Initializer(modifiers)
 		|	LOOKAHEAD(1)
-			clazz.members += InvariantDeclaration(modifiers) [ ";" ]
+			clazz.members += InvariantDeclaration(modifiers)
+			[ ";" ]
 		|	LOOKAHEAD(1)
-			clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
+			sub_struct     = TypeDeclaration(modifiers, clazz)
+			{ if (!sub_struct.isAttached()) clazz.members += sub_struct; else assert(clazz.members.indexOf(sub_struct) >= 0); }
+			[ ";" ]
 		|	LOOKAHEAD(1)
 			clazz.members += MemberArgDecl(modifiers)
 		|	LOOKAHEAD(1)
-			clazz.members += CaseTypeDeclaration(modifiers, (Struct)clazz)
+			sub_struct     = CaseTypeDeclaration(modifiers, clazz)
+			{ if (!sub_struct.isAttached()) clazz.members += sub_struct; else assert(clazz.members.indexOf(sub_struct) >= 0); }
 		|
 			//LOOKAHEAD( "rule" <IDENTIFIER> "(" )
 			LOOKAHEAD(3, <IDENTIFIER> <IDENTIFIER> "(", { getToken(1).image.equals("rule") })
 			clazz.members += RuleDeclaration(modifiers)
 		|
 			LOOKAHEAD(0)
-			clazz.members += FieldOrMethodDecl(modifiers)
+			clazz.members += FieldOrMethodDecl(modifiers, clazz)
 		)
 	)*
 	{ comments_alone(clazz_members); }
 	"}"
 }
 
-DNode FieldOrMethodDecl(ASTModifiers modifiers) :
+DNode FieldOrMethodDecl(ASTModifiers modifiers, ComplexTypeDecl clazz) :
 { TypeConstr[] args; TypeRef dtype; DNode res = null; }
 {
 	(
 		args = ClazzArguments()
 		(
 			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
-			res = ConstructorDeclaration(modifiers, args)
+			res = ConstructorDeclaration(modifiers, args, clazz)
 		|
 			dtype = Type()
 			res = MethodDeclaration(modifiers, args, dtype)
 		)
 	|
 		LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
-		res = ConstructorDeclaration(modifiers, null)
+		res = ConstructorDeclaration(modifiers, null, clazz)
 	|
 		dtype = Type()
 		(
@@ -1255,7 +1232,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 	{ return f; }
 }
 
-Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
+Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 { Symbol name; PizzaCase clazz; TypeConstr[] args; }
 {
 	"case"
@@ -1851,17 +1828,14 @@ ENode MaybeSkipBlock(ASTNode target) :
 }
 */
 Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret) :
-{ Token t; Method m, oldMethod; Symbol id; ConstStringExpr cor; MetaThrows thr; TypeRef ptype; }
+{ Token t; Method m; Symbol id; ConstStringExpr cor; MetaThrows thr; TypeRef ptype; }
 {
 	id = Name()
 	{
 		m = mkMethod(id,modifiers,ret);
 		if (args != null)
 			m.targs.addAll(args);
-		oldMethod = curMethod;
-		curMethod = m;
 	}
-	try {
 	"("
 		(
 			LOOKAHEAD({ getToken(1).kind != RPAREN })
@@ -1901,24 +1875,20 @@ Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret)
 	|	"continue" cor = StringConstExpression() { m.body = CoreExpr.makeInstance(cor.pos, cor.value); } ";"
 	|	";"
 	)
-	} finally { curMethod = oldMethod; }
 	{ return m; }
 }
 
-Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args) :
-{ Token t; Constructor m; Symbol id; MetaThrows thr; Method oldMethod; TypeRef ptype; }
+Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args, ComplexTypeDecl clazz) :
+{ Token t; Constructor m; Symbol id; MetaThrows thr; TypeRef ptype; }
 {
 	id = Name()
 	{
-		if( !id.sname.equals(curClazz.sname) )
+		if( !id.sname.equals(clazz.sname) )
 			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
 		m = mkConstructor(id,modifiers); 
 		if (args != null)
 			m.targs.addAll(args);
-		oldMethod = curMethod;
-		curMethod = m;
 	}
-	try {
 	"("
 		(
 			LOOKAHEAD({ getToken(1).kind != RPAREN })
@@ -1954,7 +1924,6 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args) :
 		m.body = Block() [ ";" ]
 	|	";"
 	)
-	} finally { curMethod = oldMethod; }
 	{ return m; }
 }
 
@@ -2029,12 +1998,11 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 }
 
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
-{ RuleBlock bl; RuleMethod m; Symbol id; Method oldMethod; TypeRef ptype; }
+{ RuleBlock bl; RuleMethod m; Symbol id; TypeRef ptype; }
 {
 	<IDENTIFIER> // "rule"
 	id = Name()
-	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); oldMethod = curMethod; curMethod = m; }
-	try {
+	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); }
 	"("
 		(
 			LOOKAHEAD({ getToken(1).kind != RPAREN })
@@ -2069,7 +2037,6 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 	|
 		";"
 	)
-	} finally { curMethod = oldMethod; }
 	{ return m; }
 }
 
@@ -2712,7 +2679,6 @@ NewExpr NewExpression(TypeRef tp) :
 {
 	boolean old_mode;
 	Struct clazz;
-	ComplexTypeDecl oldClazz;
 	NewExpr ne = new NewExpr();
 	ne.pos = tp.pos;
 	ne.ntype = tp;
@@ -2733,15 +2699,8 @@ NewExpr NewExpression(TypeRef tp) :
 			old_mode = interface_only;
 			interface_only = false;
 			ne.clazz = clazz = mkStruct(null, new JavaAnonymouseClass(), ACC_FINAL, new ASTModifiers(), ne);
-			oldClazz = curClazz;
-			curClazz = clazz;
 		}
-		try {
-			TypeBodyDeclaration(clazz)
-		} finally {
-			interface_only = old_mode;
-			curClazz = oldClazz;
-		}
+		TypeBodyDeclaration(clazz)
 	)?
 	{ return ne; }
 }

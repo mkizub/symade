@@ -52,7 +52,7 @@ public final class Env extends KievPackage {
 	private Env() {
 		root = this;
 		this.setTypeDeclNotLoaded(false);
-		new CompaundMetaType(this);
+		StdTypes.tpAny;
 	}
 
 	public JEnv getBackendEnv() {
@@ -121,40 +121,67 @@ public final class Env extends KievPackage {
 		return newStruct(sname,true,outer,acces,variant,false,null);
 	}
 
+	public Struct newStruct(String sname, KievPackage outer, int acces, Struct variant) {
+		return newStruct(sname,true,outer,acces,variant,false,null);
+	}
+
 	public Struct newStruct(String sname, boolean direct, Struct outer, int acces, Struct cl, boolean cleanup, String uuid)
 	{
-		assert(outer != null);
 		Struct bcl = null;
-		if (direct && sname != null) {
-			if (outer instanceof KievPackage) {
-				foreach (Struct s; outer.pkg_members; s.sname == sname) {
-					bcl = s;
-					break;
-				}
-			} else {
-				foreach (Struct s; outer.members; s.sname == sname) {
-					bcl = s;
-					break;
-				}
+		if (direct && sname != null && outer != null) {
+			foreach (Struct s; outer.members; s.sname == sname) {
+				bcl = s;
+				break;
 			}
 		}
 		if( bcl != null ) {
 			assert (bcl.getClass() == cl.getClass());
-			cl = (Struct)bcl;
+			cl = bcl;
 			if( cleanup ) {
 				if (cl.uuid != uuid)
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
 				cl.cleanupOnReload();
 				cl.mflags = acces;
 			}
-			cl.package_clazz.symbol = outer;
-			if (outer instanceof KievPackage) {
-				if (outer.pkg_members.indexOf(cl) < 0)
-					outer.pkg_members += cl;
-			}
 			return cl;
 		}
-		cl.initStruct(sname,outer,acces);
+		if (outer != null) {
+			if (!cl.isAttached())
+				outer.members += cl;
+			else
+				assert (cl.parent() == outer);
+		}
+		cl.initStruct(sname,acces);
+		return cl;
+	}
+
+	public Struct newStruct(String sname, boolean direct, KievPackage outer, int acces, Struct cl, boolean cleanup, String uuid)
+	{
+		assert(outer != null);
+		Struct bcl = null;
+		if (direct && sname != null && outer != null) {
+			foreach (Struct s; outer.pkg_members; s.sname == sname) {
+				bcl = s;
+				break;
+			}
+		}
+		if( bcl != null ) {
+			assert (bcl.getClass() == cl.getClass());
+			cl = bcl;
+			if( cleanup ) {
+				if (cl.uuid != uuid)
+					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
+				cl.cleanupOnReload();
+				cl.mflags = acces;
+			}
+		}
+		if (outer != null) {
+			if (!cl.isAttached())
+				outer.pkg_members += cl;
+			else
+				assert (cl.parent() == outer);
+		}
+		cl.initStruct(sname,acces);
 		return cl;
 	}
 
@@ -176,9 +203,9 @@ public final class Env extends KievPackage {
 			break;
 		}
 		if (cl == null) {
-			cl = (KievPackage)newStruct(sname,outer,0,new KievPackage());
-			outer.members += cl;
-			cl.setTypeDeclNotLoaded(false);
+			cl = new KievPackage();
+			cl.sname = sname;
+			outer.pkg_members += cl;
 		}
 		return cl;
 	}
@@ -186,7 +213,6 @@ public final class Env extends KievPackage {
 	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, KievPackage pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
 			pkg = Env.getRoot();
-		assert (pkg.isPackage());
 		MetaTypeDecl tdecl = null;
 		foreach (MetaTypeDecl pmt; pkg.pkg_members; pmt.sname == id.sname) {
 			tdecl = pmt;
@@ -196,17 +222,18 @@ public final class Env extends KievPackage {
 			tdecl = new MetaTypeDecl();
 			tdecl.pos = id.pos;
 			tdecl.sname = id.sname;
-			tdecl.package_clazz.symbol = pkg;
 			tdecl.mflags = ACC_MACRO;
 			pkg.pkg_members.add(tdecl);
 		}
-		else if( cleanup ) {
+		else if (cleanup) {
 			if (tdecl.uuid != uuid)
 				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.uuid+" != "+uuid);
 			tdecl.cleanupOnReload();
 			tdecl.mflags = ACC_MACRO;
-			tdecl.package_clazz.symbol = pkg;
-			pkg.pkg_members.add(tdecl);
+			if (!tdecl.isAttached())
+				pkg.pkg_members.add(tdecl);
+			else
+				assert(pkg.pkg_members.indexOf(tdecl) >= 0);
 		}
 
 		return tdecl;
@@ -230,13 +257,13 @@ public final class Env extends KievPackage {
 	}
 	
 	private void addSpecialField(String name, Type tp, ENode init) {
-		foreach (Field f; this.members; f.hasName(name)) {
+		foreach (Field f; this.pkg_members; f.hasName(name)) {
 			f.init = init;
 			return;
 		}
 		Field f = new Field(name,tp,ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
 		f.init = init;
-		members.add(f);
+		pkg_members.add(f);
 	}
 
 	public void dumpProjectFile() {
@@ -257,42 +284,21 @@ public final class Env extends KievPackage {
 	}
 
 	public TypeDecl loadTypeDecl(String qname, boolean fatal) {
-		TypeDecl s = loadTypeDecl(qname);
-		if (fatal && s == null)
-			throw new RuntimeException("Cannot find TypeDecl "+qname);
-		return s;
-	}
-
-	public TypeDecl loadTypeDecl(String qname) {
-		if (qname.length() == 0) return Env.getRoot();
-		// Check class is already loaded
-		if (classHashOfFails.get(qname) != null) return null;
-		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
-		// Load if not loaded or not resolved
-		if (cl == null)
-			cl = (TypeDecl)jenv.actuallyLoadClazz(qname);
-		else if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
-			if (cl instanceof Struct)
-				cl = (TypeDecl)jenv.actuallyLoadClazz((Struct)cl);
-			else
-				cl = (TypeDecl)jenv.actuallyLoadClazz(cl.qname());
-		}
-		if (cl == null)
-			classHashOfFails.put(qname);
-		return cl;
+		DNode dn = loadAnyDecl(qname);
+		if (fatal && !(dn instanceof TypeDecl))
+			throw new RuntimeException("Cannot find TypeDecl "+qname.replace('\u001f','.'));
+		return (TypeDecl)dn;
 	}
 
 	public TypeDecl loadTypeDecl(TypeDecl cl) {
 		if (!cl.isTypeDeclNotLoaded())
 			return cl;
-		if (cl instanceof Env)
-			return Env.getRoot();
 		// Load if not loaded or not resolved
 		if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
 			if (cl instanceof Struct)
-				jenv.actuallyLoadClazz((Struct)cl);
+				jenv.actuallyLoadDecl((Struct)cl);
 			else
-				jenv.actuallyLoadClazz(cl.qname());
+				jenv.actuallyLoadDecl(cl.qname());
 		}
 		return cl;
 	}
@@ -304,12 +310,12 @@ public final class Env extends KievPackage {
 		DNode dn = resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (dn == null)
-			dn = jenv.actuallyLoadClazz(qname);
+			dn = jenv.actuallyLoadDecl(qname);
 		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded() && !dn.isAnonymouse()) {
 			if (dn instanceof Struct)
-				dn = jenv.actuallyLoadClazz((Struct)dn);
+				dn = jenv.actuallyLoadDecl((Struct)dn);
 			else
-				dn = jenv.actuallyLoadClazz(dn.qname());
+				dn = jenv.actuallyLoadDecl(dn.qname());
 		}
 		if (dn == null)
 			classHashOfFails.put(qname);
