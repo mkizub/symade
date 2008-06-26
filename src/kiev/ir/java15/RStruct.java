@@ -103,8 +103,13 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 						ti_access = new LVarExpr(from.pos,ctx_method.getTypeInfoParam(Var.PARAM_TYPEINFO));
 				}
 				else {
-					Field ti = resolveField(nameTypeInfo);
-					ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
+					ti_access = new CastExpr(from.pos, typeinfo_clazz.xtype,
+						new CallExpr(pos,
+							new ThisExpr(from.pos),
+							resolveMethod(nameGetTypeInfo,Type.tpTypeInfo),
+							ENode.emptyArray
+						)
+					);
 				}
 				// Check that we need our $typeinfo
 				if (this.xtype ≈ t)
@@ -190,6 +195,18 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			lb.append(tv.var);
 		return lb.toArray();
 	}
+	
+	public boolean extendsTypeInfoClass() {
+		foreach (TypeRef sup; super_types) {
+			TypeDecl td = sup.getTypeDecl();
+			if (!td.isClazz())
+				continue;
+			Type s = sup.getType();
+			if (s.isInstanceOf(StdTypes.tpTypeInfoInterface))
+				return true;
+		}
+		return false;
+	}
 
 	public void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
@@ -234,8 +251,6 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				));
 			}
 	
-			// create typeinfo field
-			Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.xtype,ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
 			
@@ -258,10 +273,26 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			}
 
 			// create method to get typeinfo field
-			Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
-			tim.body = new Block(pos,new ENode[]{
-				new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
-			});
+			if (getTypeInfoArgs().length == 0) {
+				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
+				// add a static field and return it
+				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.xtype,ACC_PUBLIC|ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC));
+				tif.init = new TypeInfoExpr(0, new TypeRef(getStruct().getType()));
+				tim.body = new Block(pos,new ENode[]{
+					new ReturnStat(pos,new SFldExpr(pos,new TypeRef(getStruct().xtype),tif))
+				});
+			}
+			else if (getStruct().super_types.length > 0 && extendsTypeInfoClass()) {
+				// already have a super-type which has getTypeInfo()
+			}
+			else {
+				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
+				// add a members field and return it
+				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.xtype,ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+				tim.body = new Block(pos,new ENode[]{
+					new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
+				});
+			}
 		}
 
 		// create public constructor
@@ -452,9 +483,10 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					new ThisExpr(),
 					typeinfo_clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
 					new ENode[]{
-						new IFldExpr(pos,
+						new CallExpr(pos,
 							new CastExpr(pos,this.xtype,new LVarExpr(pos,misa.params[0])),
-							this.resolveField(nameTypeInfo)
+							this.resolveMethod(nameGetTypeInfo,Type.tpTypeInfo),
+							ENode.emptyArray
 						)
 					}
 				)
@@ -489,7 +521,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			// Add outer hidden parameter to constructors for inner and non-static classes
 			foreach (Constructor m; members; !m.isStatic()) {
 				init_found = true;
-				if (!isInterface() && isTypeUnerasable() && m.getTypeInfoParam(Var.PARAM_TYPEINFO) == null)
+				if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs().length > 0 && m.getTypeInfoParam(Var.PARAM_TYPEINFO) == null)
 					m.params.insert(0,new LVar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 				if (isStructInner() && !isStatic() && m.getOuterThisParam() == null)
 					m.params.insert(0,new LVar(m.pos,nameThisDollar,ctx_tdecl.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
@@ -515,7 +547,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					if (isStructInner() && !isStatic()) {
 						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 					}
-					if (!isInterface() && isTypeUnerasable()) {
+					if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs().length > 0) {
 						init.params.append(new LVar(pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 					}
 					if (isEnum()) {
@@ -1526,18 +1558,20 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 				if (isTypeUnerasable() && m.isNeedFieldInits()) {
 					Field tif = resolveField(nameTypeInfo);
-					Var v = m.getTypeInfoParam(Var.PARAM_TYPEINFO);
-					assert(v != null);
-					initbody.stats.insert(p,
-						new ExprStat(pos,
-							new AssignExpr(m.pos,Operator.Assign,
-								new IFldExpr(m.pos,new ThisExpr(0),tif),
-								new LVarExpr(m.pos,v)
-							))
-						);
-					Kiev.runProcessorsOn(initbody.stats[p]);
-					RStruct.runResolveOn(initbody.stats[p]);
-					p++;
+					if (!tif.isStatic() && tif.parent() == getStruct()) {
+						Var v = m.getTypeInfoParam(Var.PARAM_TYPEINFO);
+						assert(v != null);
+						initbody.stats.insert(p,
+							new ExprStat(pos,
+								new AssignExpr(m.pos,Operator.Assign,
+									new IFldExpr(m.pos,new ThisExpr(0),tif),
+									new LVarExpr(m.pos,v)
+								))
+							);
+						Kiev.runProcessorsOn(initbody.stats[p]);
+						RStruct.runResolveOn(initbody.stats[p]);
+						p++;
+					}
 				}
 				while (p < initbody.stats.length) {
 					if (initbody.stats[p] instanceof ExprStat) {

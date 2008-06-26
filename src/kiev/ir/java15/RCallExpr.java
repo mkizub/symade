@@ -97,7 +97,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 			if (mmm.getTypeInfoParam(Var.PARAM_TYPEINFO) != null)
 				tpinfo = new LVarExpr(pos,mmm.getTypeInfoParam(Var.PARAM_TYPEINFO));
 			else
-				tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
+				tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CtorCallExpr)this,tp,false);
 			tpinfo.resolve(null);
 		}
 		if (func.isVarArgs()) {

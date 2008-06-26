@@ -59,7 +59,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 			outer.resolve(null);
 			ntype = ntype.rebind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
-		if (s.isTypeUnerasable()) {
+		if (s.isTypeUnerasable() && ((RStruct)s).getTypeInfoArgs().length > 0) {
 			tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,ntype,false); // Create static field for this type typeinfo
 			tpinfo.resolve(null);
 		}
@@ -160,8 +160,6 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 		if( ntype instanceof ArgType ) {
 			if( !ntype.isUnerasable())
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+ntype);
-			//if( ctx_method==null || ctx_method.isStatic() )
-			//	throw new CompilerException(this,"Access to argument "+ntype+" from static method");
 			ENode ti = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewArrayExpr)this,ntype,false);
 			if( args.length == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
