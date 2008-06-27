@@ -210,7 +210,7 @@ public final class Env extends KievPackage {
 		return cl;
 	}
 
-	public MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, KievPackage pkg, boolean cleanup, String uuid) {
+	public MetaTypeDecl newMetaType(Symbol id, KievPackage pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
 			pkg = Env.getRoot();
 		MetaTypeDecl tdecl = null;

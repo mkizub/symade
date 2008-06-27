@@ -19,8 +19,7 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-@unerasable
-public final class ASTOperatorAlias extends Symbol<Method> {
+public final class ASTOperatorAlias extends Symbol {
 
 	@nodeAttr public int					prior;
 	@nodeAttr public int					opmode;

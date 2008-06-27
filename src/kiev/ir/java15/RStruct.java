@@ -1193,8 +1193,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+clazz);
 				mm = mi;
 				// Append constraints to m from mm
-				foreach(WBCCondition cond; mm.conditions; m.conditions.indexOf(cond) < 0)
-					m.conditions.add(cond);
+				//foreach(WBCCondition cond; mm.conditions; m.conditions.indexOf(cond) < 0)
+				//	m.conditions.add(cond);
 				if( mmret == null && mm != null ) mmret = mm;
 				break;
 			} else {

@@ -112,7 +112,7 @@ public abstract class kiev050 implements kiev050Constants {
 	private ComplexTypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, NameSpace fu) {
 		KievPackage pkg = fu.getPackage();
 		String uuid = modifiers == null ? null : modifiers.getUUID();
-		MetaTypeDecl tdecl = Env.getRoot().newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
+		MetaTypeDecl tdecl = Env.getRoot().newMetaType(new Symbol(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(tdecl);
 		return tdecl;

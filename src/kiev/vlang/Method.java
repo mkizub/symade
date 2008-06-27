@@ -23,12 +23,17 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	@nodeAttr public TypeConstr∅			targs;
 	@nodeAttr public TypeRef				type_ret;
-	@nodeAttr public TypeRef				dtype_ret;
 	@nodeAttr public Var∅					params;
-	@nodeAttr public Symbol∅				aliases;
 	@nodeAttr public ENode					body;
-	@nodeAttr public WBCCondition∅		 	conditions;
-	@nodeAttr(ext_data=true) public Var	ret_var;
+
+	@abstract
+	@nodeAttr(ext_data=true)
+	public Symbol⋈							aliases;
+	@abstract
+	@nodeAttr(ext_data=true)
+	public WBCCondition⋈				 	conditions;
+	@nodeAttr(ext_data=true)
+	public Var								ret_var;
 
 	@nodeData(ext_data=true)
 	public Method		caller_from_inner;
@@ -53,10 +58,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		if (isAttached()) {
 			if      (attr.name == "params")
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
-			else if (attr.name == "conditions")
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
 		}
-		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "dtype_ret" || attr.name == "metas") {
+		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "metas") {
 			_mtype = null;
 			_dtype = null;
 		}
@@ -238,13 +241,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			tp_ret = Type.tpVoid;
 		else
 			tp_ret = type_ret.getType();
-		if (dtype_ret == null)
-			dtp_ret = tp_ret;
-		else
-			dtp_ret = dtype_ret.getType();
 		
 		this._mtype = new CallType(this, args.toArray(), tp_ret);
-		this._dtype = new CallType(this, dargs.toArray(), dtp_ret);
+		this._dtype = new CallType(this, dargs.toArray(), tp_ret);
 	}
 
 	@getter public Method get$child_ctx_method() { return this; }

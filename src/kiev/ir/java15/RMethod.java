@@ -22,14 +22,11 @@ public view RMethod of Method extends RDNode {
 
 	public:ro			TypeDef[]			targs;
 	public				TypeRef				type_ret;
-	public				TypeRef				dtype_ret;
 	public:ro			CallType			mtype;
 	public:ro			CallType			dtype;
 	public:ro			CallType			etype;
 	public:ro			Var[]				params;
-	public:ro			Symbol[]			aliases;
 	public				ENode				body;
-	public:ro			WBCCondition[]		conditions;
 
 	public:ro			Block				block;
 
@@ -57,6 +54,10 @@ public view RMethod of Method extends RDNode {
 	public final boolean isDispatcherMethod();
 	public final void setDispatcherMethod(boolean on);
 	public final boolean isInlinedByDispatcherMethod();
+	
+	public Enumeration<WBCCondition> conditions() {
+		return (Enumeration<WBCCondition>)((Method)this).conditions.elements();
+	}
 
 	public void resolveDecl() {
 		RMethod.resolveMethod(this);
@@ -67,7 +68,7 @@ public view RMethod of Method extends RDNode {
 		assert( ctx_tdecl == parent() || isInlinedByDispatcherMethod() );
 		//Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
 		try {
-			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
+			foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
 			}
 			if (body != null && !isMacro() && !(body instanceof MetaValue)) {
@@ -82,7 +83,7 @@ public view RMethod of Method extends RDNode {
 					}
 				}
 			}
-			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
+			foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondEnsure ) {
 				if( mtype.ret() ≢ Type.tpVoid ) getRetVar();
 				cond.resolveDecl();
 			}

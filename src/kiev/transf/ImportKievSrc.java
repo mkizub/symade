@@ -709,7 +709,7 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 					Kiev.reportError(m, "Annotation methods may not have arguments");
 				if (m.body != null && !(m.body instanceof MetaValue))
 					Kiev.reportError(m, "Annotation methods may not have bodies");
-				if (m.conditions.length > 0)
+				if (m.conditions.elements().hasMoreElements())
 					Kiev.reportError(m, "Annotation methods may not have work-by-contruct conditions");
 				m.setPublic();
 				m.setAbstract(true);

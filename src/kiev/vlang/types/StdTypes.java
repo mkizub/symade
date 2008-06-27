@@ -174,7 +174,7 @@ public interface StdTypes {
 		tpArrayArg.flags |= flArgAppliable | flValAppliable;
 		tpArray					= ArrayType.newArrayType(tpArrayArg);
 
-		TypeDecl tdVararg = env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
+		TypeDecl tdVararg = env.newMetaType(new Symbol("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
 		tdVararg.setPublic();
 		tdVararg.setMacro(true);
 		tdVararg.setFinal(true);
@@ -186,7 +186,7 @@ public interface StdTypes {
 		tdVararg.super_types += new TypeRef(ArrayType.newArrayType(tpVarargArg));
 		tpVararg				= (XType)tdVararg.xtype;
 
-		tdASTNodeType = env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
+		tdASTNodeType = env.newMetaType(new Symbol("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
 		tdASTNodeType.setPublic();
 		tdASTNodeType.setMacro(true);
 		tdASTNodeType.setFinal(true);

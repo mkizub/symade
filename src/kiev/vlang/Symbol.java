@@ -27,8 +27,7 @@ public interface ISymbol extends INode {
 }
 
 @ThisIsANode(lang=CoreLang)
-@unerasable
-public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
+public class Symbol extends ASTNode implements ISymbol {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
@@ -42,10 +41,14 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	@nodeAttr(copyable=false)
 	public	String					uuid; // source code name, may be null for anonymouse symbols
 	
-	@getter public D get$dnode() {
+	@getter public ANode get$node() {
+		return parent();
+	}
+	
+	@getter public DNode get$dnode() {
 		ANode p = parent();
-		if (p instanceof D)
-			return (D)p;
+		if (p instanceof DNode)
+			return (DNode)p;
 		return null;
 	}
 	
@@ -164,7 +167,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, Symbol<D> symbol) {
+	public SymbolRef(int pos, Symbol symbol) {
 		this.pos = pos;
 		this.symbol = symbol;
 	}
@@ -174,7 +177,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.symbol = symbol;
 	}
 
-	public SymbolRef(Symbol<D> symbol) {
+	public SymbolRef(Symbol symbol) {
 		this.symbol = symbol;
 	}
 

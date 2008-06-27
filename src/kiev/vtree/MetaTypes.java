@@ -189,7 +189,7 @@ public metatype NodeExtSpace<N extends ANode> extends Object {
 	}
 }
 
-public class NodeExtSpaceEnumerator<N extends ANode> implements Enumeration<N>
+public class NodeExtSpaceEnumerator<+N extends ANode> implements Enumeration<N>
 {
 	public  final ANode             parent;
 	public  final ExtSpaceAttrSlot  attr;

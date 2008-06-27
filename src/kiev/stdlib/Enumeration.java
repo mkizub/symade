@@ -32,7 +32,7 @@ import syntax kiev.stdlib.Syntax;
  * @see Vector
  * @see Hashtable
  */
-public interface Enumeration<A>
+public interface Enumeration<+A>
 {
     /**
      * Returns true if the enumeration contains more elements; false

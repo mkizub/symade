@@ -377,7 +377,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
 		super(elem);
-		this.rnode = new SymbolRef<Struct>((Symbol<Struct>)cls);
+		this.rnode = new SymbolRef<Struct>(cls);
 	}
 
 	public void preResolveOut() {

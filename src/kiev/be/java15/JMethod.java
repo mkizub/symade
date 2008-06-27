@@ -22,7 +22,6 @@ public final view JMethod of Method extends JDNode {
 
 	public:ro	JVar[]					params;
 	public:ro	JENode					body;
-	public:ro	JWBCCondition[]			conditions;
 
 	public:ro	CallType				mtype;
 	public:ro	CallType				dtype;
@@ -34,6 +33,10 @@ public final view JMethod of Method extends JDNode {
 	
 	public JVar	getRetVar() { return (JVar)((Method)this).getRetVar(); }
 	
+	public Enumeration<WBCCondition> conditions() {
+		return (Enumeration<WBCCondition>)((Method)this).conditions.elements();
+	}
+
 	public final boolean isVirtualStatic();
 	public final boolean isVarArgs();
 	public final boolean isRuleMethod();
@@ -56,8 +59,8 @@ public final view JMethod of Method extends JDNode {
 
 	public void generate(ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		foreach(JWBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
-			cond.generate(constPool,Type.tpVoid);
+		foreach(WBCCondition cond; conditions(); cond.cond != WBCType.CondInvariant )
+			((JWBCCondition)cond).generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null && !(body instanceof MetaValue)) {
 			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
@@ -72,19 +75,19 @@ public final view JMethod of Method extends JDNode {
 					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
-						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
-							code.importCode(cond.getCodeAttr());
-						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							assert( cond.jparent instanceof JMethod && ((JMethod)cond.jparent).isInvariantMethod() );
+						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondRequire )
+							code.importCode(((JWBCCondition)cond).getCodeAttr());
+						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondInvariant ) {
+							assert( cond.parent instanceof Method && ((Method)cond.parent).isInvariantMethod() );
 							if( !isConstructor() ) {
-								if( !((JDNode)cond.jparent).isStatic() )
+								if( !((DNode)cond.parent).isStatic() )
 									code.addInstrLoadThis();
-								code.addInstr(Instr.op_call,cond.jctx_method,false);
+								code.addInstr(Instr.op_call,(JMethod)cond.ctx_method,false);
 							}
 							code.need_to_gen_post_cond = true;
 						}
 						if( !code.need_to_gen_post_cond ) {
-							foreach(JWBCCondition cond; conditions; cond.cond != WBCType.CondRequire ) {
+							foreach(WBCCondition cond; conditions(); cond.cond != WBCType.CondRequire ) {
 								code.need_to_gen_post_cond = true;
 								break;
 							}
@@ -96,14 +99,14 @@ public final view JMethod of Method extends JDNode {
 							code.addVar(getRetVar());
 							code.addInstr(Instr.op_store,getRetVar());
 						}
-						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							if( !((JDNode)cond.jparent).isStatic() )
+						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondInvariant ) {
+							if( !((DNode)cond.parent).isStatic() )
 								code.addInstrLoadThis();
-							code.addInstr(Instr.op_call,cond.jctx_method,false);
+							code.addInstr(Instr.op_call,(JMethod)cond.ctx_method,false);
 							code.need_to_gen_post_cond = true;
 						}
-						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
-							code.importCode(cond.getCodeAttr());
+						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondEnsure )
+							code.importCode(((JWBCCondition)cond).getCodeAttr());
 						if( mtype.ret() ≢ Type.tpVoid ) {
 							code.addInstr(Instr.op_load,getRetVar());
 							code.addInstr(Instr.op_return);

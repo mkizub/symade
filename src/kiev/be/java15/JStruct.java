@@ -200,11 +200,8 @@ public final view JStruct of Struct extends JTypeDecl {
 			try {
 				m.generate(constPool);
 
-				JWBCCondition[] conditions = m.conditions;
-				for(int j=0; j < conditions.length; j++) {
-					if( conditions[j].definer.equals(m) ) {
-						m.addAttr(conditions[j].getCodeAttr());
-					}
+				foreach (WBCCondition cond; m.conditions(); cond.definer == (Method)m) {
+					m.addAttr(((JWBCCondition)cond).getCodeAttr());
 				}
 
 				if (m.hasRuntimeVisibleMetas())
