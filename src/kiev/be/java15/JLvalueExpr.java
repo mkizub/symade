@@ -74,10 +74,8 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateLoad(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - load only: "+this);
 		code.setLinePos(this);
-		if( var.isVirtual() && !isAsField() )
+		if (var.isVirtual() && !isAsField())
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		MetaAccess.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
@@ -100,10 +98,8 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
 		code.setLinePos(this);
-		if( var.isVirtual() && !isAsField() )
+		if (var.isVirtual() && !isAsField())
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		MetaAccess.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
@@ -136,10 +132,8 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateStore(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - store only: "+this);
 		code.setLinePos(this);
-		if( var.isVirtual() && !isAsField() )
+		if (var.isVirtual() && !isAsField())
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		MetaAccess.verifyWrite(this,var);
 		if (var.isNative()) {
 			assert(var.isMacro());
@@ -154,10 +148,8 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
 		code.setLinePos(this);
-		if( var.isVirtual() && !isAsField() )
+		if (var.isVirtual() && !isAsField())
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		MetaAccess.verifyWrite(this,var);
 		code.addInstr(op_dup_x);
 		if (var.isNative()) {

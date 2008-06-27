@@ -38,11 +38,11 @@ public class JavaInterface extends Struct {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 	public JavaInterface() {
-		this.is_struct_interface = true;
+		this.mflags_is_struct_interface = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.is_struct_interface = true;
+		this.mflags_is_struct_interface = true;
 	}
 }
 
@@ -55,11 +55,11 @@ public final class KievView extends Struct {
 	@nodeAttr public TypeRef						view_of;
 
 	public KievView() {
-		this.is_virtual = true;
+		this.mflags_is_virtual = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.is_virtual = true;
+		this.mflags_is_virtual = true;
 	}
 	
 	public Struct getViewImpl() {
@@ -73,11 +73,11 @@ public final class KievView extends Struct {
 @ThisIsANode(lang=CoreLang)
 public final class JavaAnnotation extends JavaInterface {
 	public JavaAnnotation() {
-		this.is_struct_annotation = true;
+		this.mflags_is_struct_annotation = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.is_struct_annotation = true;
+		this.mflags_is_struct_annotation = true;
 	}
 
 	public void resolveMetaDefaults() {
@@ -158,11 +158,11 @@ public final class JavaEnum extends JavaClass {
 	@nodeAttr public		Field∅			enum_fields;
 
 	public JavaEnum() {
-		this.is_enum = true;
+		this.mflags_is_enum = true;
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
-		this.is_enum = true;
+		this.mflags_is_enum = true;
 	}
 	public Field[] getEnumFields() {
 		return enum_fields;
@@ -184,7 +184,7 @@ public final class JavaEnum extends JavaClass {
 				if (f.parent() == null)
 					this.members += f;
 				assert (f.parent() == this);
-				f.is_enum = true;
+				f.mflags_is_enum = true;
 				f.setPublic();
 				f.setStatic(true);
 				f.setFinal(true);
@@ -198,7 +198,7 @@ public final class JavaEnum extends JavaClass {
 				if (f.parent() == this)
 					~f;
 				assert (f.parent() == null);
-				f.is_enum = false;
+				f.mflags_is_enum = false;
 			}
 		}
 		super.callbackChildChanged(ct, attr, data);
@@ -333,9 +333,7 @@ public abstract class Struct extends ComplexTypeDecl {
 			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) setMeta(new MetaSynthetic());
 			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
 			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
-			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) setMeta(new MetaSingleton());
-			if ((flags & ACC_MIXIN) == ACC_MIXIN) setMeta(new MetaMixin());
-			this.mflags = flags;
+			this.nodeflags |= flags;
 		}
 		if (this.xmeta_type == null) {
 			CompaundMetaType cmt = new CompaundMetaType(this);
@@ -351,23 +349,14 @@ public abstract class Struct extends ComplexTypeDecl {
 
 	public void cleanupOnReload() {
 		this.metas.delAll();
-		this.mflags = 0;
+		this.nodeflags = 0;
 		this.typeinfo_clazz = null;
 		super.cleanupOnReload();
 	}
 
 	public boolean preResolveIn() {
-		if (this.isLoadedFromBytecode())
+		if (this.isInterfaceOnly())
 			return false;
-		if (parent() instanceof Struct || parent() instanceof NameSpace)
-			return true;
-		if (ctx_method==null || ctx_method.isStatic())
-			this.setStatic(true);
-		this.setLocal(true);
-		this.setLoadedFromBytecode(true);
-		try {
-			Kiev.runProcessorsOn(this);
-		} finally { this.setLoadedFromBytecode(false); }
 		return true;
 	}
 

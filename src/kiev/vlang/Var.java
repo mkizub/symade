@@ -49,7 +49,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	@nodeData(ext_data=true)
 	public ConstExpr				const_value;
 
-	@getter public int get$kind() { return this.var_kind; }
+	@getter public int get$kind() { return this.mflags_var_kind; }
 
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
@@ -70,23 +70,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 	// is a field of enum
 	public final boolean isEnumField() {
-		return this.is_enum;
-	}
-	// packer field (auto-generated for packed fields)
-	public final boolean isPackerField() {
-		return this.is_fld_packer;
-	}
-	public final void setPackerField(boolean on) {
-		if (this.is_fld_packer != on)
-			this.is_fld_packer = on;
-	}
-	// packed field
-	public final boolean isPackedField() {
-		return this.is_fld_packed;
-	}
-	public final void setPackedField(boolean on) {
-		if (this.is_fld_packed != on)
-			this.is_fld_packed = on;
+		return this.mflags_is_enum;
 	}
 	// field's initializer was already added to class initializer
 	public final boolean isAddedToInit() {
@@ -119,7 +103,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final Var[]	emptyArray = new Var[0];
 
 	public Var(int kind) {
-		this.var_kind = kind;
+		this.mflags_var_kind = kind;
 	}
 
 	public Var(String name, TypeRef vtype, int kind, int flags)
@@ -140,9 +124,9 @@ public abstract class Var extends DNode implements GlobalDNode {
 			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) setMeta(new MetaTransient());
 			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
 			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
-			this.mflags = flags;
+			this.nodeflags = flags;
 		}
-		this.var_kind = kind;
+		this.mflags_var_kind = kind;
 	}
 
 	public Var(String name, TypeRef vtype, int kind)
@@ -150,7 +134,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	{
 		this.sname = name;
 		this.vtype = vtype;
-		this.var_kind = kind;
+		this.mflags_var_kind = kind;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

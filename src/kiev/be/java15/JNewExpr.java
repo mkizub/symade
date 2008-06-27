@@ -69,8 +69,8 @@ public final view JNewExpr of NewExpr extends JENode {
 		// Constructor call args (first args 'this' skipped)
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
-		if( ntype.getStruct() != null && ntype.getStruct().isLocal() ) {
-			JStruct cl = (JStruct)(Struct)((CompaundType)ntype).tdecl;
+		if (ntype.getStruct() != null) {
+			JStruct cl = (JStruct)ntype.getStruct();
 			foreach (JField f; cl.members) {
 				if( !f.isNeedProxy() ) continue;
 				JVar v = ((JLVarExpr)f.init).var;

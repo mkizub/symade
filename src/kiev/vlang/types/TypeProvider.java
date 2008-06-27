@@ -168,7 +168,7 @@ public final class CoreMetaType extends MetaType {
 	private static TypeDecl makeTypeDecl(String name) {
 		MetaTypeDecl tdecl = new MetaTypeDecl(null);
 		tdecl.sname = name;
-		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		Env.getRoot().newPackage("kiev\u001fstdlib").pkg_members.add(tdecl);
 		return tdecl;
 	}
@@ -530,7 +530,7 @@ public final class ArrayMetaType extends MetaType {
 		assert  (tdecl == null);
 		tdecl = new MetaTypeDecl(null);
 		tdecl.sname = "_array_";
-		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 		tdecl.args.add(StdTypes.tdArrayArg);
 		tdecl.uuid = "bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04";
@@ -631,7 +631,7 @@ public class WildcardCoMetaType extends MetaType {
 		assert (tdecl == null);
 		tdecl = new MetaTypeDecl(null);
 		tdecl.sname = "_wildcard_co_variant_";
-		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
 		tdecl.args.add(StdTypes.tdWildcardCoArg);
 		tdecl.uuid = "6c99b10d-3003-3176-8086-71be6cee5c51";
@@ -676,7 +676,7 @@ public class WildcardContraMetaType extends MetaType {
 		assert (tdecl == null);
 		tdecl = new MetaTypeDecl(null);
 		tdecl.sname = "_wildcard_contra_variant_";
-		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpAny));
 		tdecl.args.add(StdTypes.tdWildcardContraArg);
 		tdecl.uuid = "933ac6b8-4d03-3799-9bb3-3c9bc1883707";
@@ -721,7 +721,7 @@ public class WrapperMetaType extends MetaType {
 		assert (tdecl == null);
 		tdecl = new MetaTypeDecl(null);
 		tdecl.sname = "_wrapper_";
-		tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 		tdecl.args.add(StdTypes.tdWrapperArg);
 		tdecl.uuid = "67544053-836d-3bac-b94d-0c4b14ae9c55";
@@ -834,7 +834,7 @@ public final class TupleMetaType extends MetaType {
 		assert (tdecl == null);
 		tuple_tdecl = new MetaTypeDecl(null);
 		tuple_tdecl.sname = "_tuple_";
-		tuple_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tuple_tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tuple_tdecl.super_types.add(new TypeRef(StdTypes.tpAny));
 		Env.getRoot().newPackage("kiev\u001fstdlib").pkg_members.add(tuple_tdecl);
 
@@ -906,7 +906,7 @@ public class CallMetaType extends MetaType {
 		assert (call_tdecl == null);
 		call_tdecl = new MetaTypeDecl();
 		call_tdecl.sname = "_call_type_";
-		call_tdecl.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		call_tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		call_tdecl.uuid = "25395a72-2b16-317a-85b2-5490309bdffc";
 		call_static_instance    = new CallMetaType(templ_bindings_static, MetaType.flCallable);
 		call_this_instance      = new CallMetaType(templ_bindings_this,   MetaType.flCallable);

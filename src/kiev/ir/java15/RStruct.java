@@ -32,13 +32,6 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	public final boolean isPizzaCase();
 	// a structure with the only one instance (singleton)	
 	public final boolean isSingleton();
-	public final void setSingleton(boolean on);
-	// a local (in method) class	
-	public final boolean isLocal();
-	public final void setLocal(boolean on);
-	// an anonymouse (unnamed) class	
-	public final boolean isAnonymouse();
-	public final void setAnonymouse(boolean on);
 	// has pizza cases
 	public final boolean isHasCases();
 	public final void setHasCases(boolean on);
@@ -60,9 +53,6 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	public final boolean isAnnotation();
 	// java enum
 	public final boolean isEnum();
-	// structure was loaded from bytecode
-	public final boolean isLoadedFromBytecode();
-	public final void setLoadedFromBytecode(boolean on);
 
 	public Method addMethod(Method m);
 	public Field addField(Field f);
@@ -569,7 +559,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	public boolean preGenerate() {
 		getStruct().checkResolved();
 		getStruct().xtype.checkResolved();
-		if (isMembersPreGenerated() /*|| isLoadedFromBytecode()*/) return true;
+		if (isMembersPreGenerated()) return true;
 		setMembersPreGenerated(true);
 		
 		// first, pre-generate super-types
@@ -577,7 +567,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			((RTypeDecl)sup.getTypeDecl()).preGenerate();
 
 		if (isMixin())
-			((Struct)this).is_struct_interface = true;
+			((Struct)this).mflags_is_struct_interface = true;
 		// generate typeinfo class, if needed
 		autoGenerateTypeinfoClazz();
 		// generate a class for interface non-abstract members
@@ -817,7 +807,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = new MethodImpl(m.sname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.mflags);
+			Method bridge = new MethodImpl(m.sname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.getFlags());
 			for (int i=0; i < vte.etype.arity; i++)
 				bridge.params.append(new LVar(mo.pos,m.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
@@ -1046,9 +1036,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			{
 				// create dispatch method
 				if (m.isRuleMethod())
-					mmm = new RuleMethod(m.sname, m.mflags | ACC_SYNTHETIC);
+					mmm = new RuleMethod(m.sname, m.getFlags() | ACC_SYNTHETIC);
 				else
-					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.mflags | ACC_SYNTHETIC);
+					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.getFlags() | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				{
 					ANode.CopyContext cc = new ANode.CopyContext();
@@ -1058,9 +1048,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				foreach (Var fp; m.params) {
 					TypeRef stype = fp.stype;
 					if (stype != null)
-						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.getFlags()));
 					else
-						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(),fp.kind,fp.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(),fp.kind,fp.getFlags()));
 				}
 				((Struct)self).members.add(mmm);
 			}
@@ -1509,7 +1499,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 						EToken max_args = new EToken(pos,nameClosureMaxArgs,ETokenKind.IDENTIFIER,true);
 						ctor_call.args.add(max_args);
 					}
-					else if (isAnonymouse()) {
+					else if (this.parent() instanceof NewExpr && ((NewExpr)this.parent()).clazz == this) {
 						int skip_args = 0;
 						if( isStructInner() && !isStatic() ) skip_args++;
 						if( this.isTypeUnerasable() && super_types[0].getStruct().isTypeUnerasable() ) skip_args++;
@@ -1660,7 +1650,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				c.resolveDecl();
 			
 			// Autogenerate hidden args for initializers of local class
-			if( isLocal() ) {
+			{
 				Field[] proxy_fields = Field.emptyArray;
 				foreach(Field f; this.members) {
 					if( f.isNeedProxy() )

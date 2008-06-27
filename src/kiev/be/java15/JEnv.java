@@ -45,7 +45,7 @@ public final class JEnv {
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = actuallyLoadDecl(name);
-		else if (cl instanceof TypeDecl && cl.isTypeDeclNotLoaded() && !cl.isAnonymouse())
+		else if (cl instanceof TypeDecl && cl.isTypeDeclNotLoaded())
 			cl = actuallyLoadDecl(name);
 		if (cl == null)
 			Env.classHashOfFails.put(qname);

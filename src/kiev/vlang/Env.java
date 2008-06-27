@@ -141,7 +141,7 @@ public final class Env extends KievPackage {
 				if (cl.uuid != uuid)
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
 				cl.cleanupOnReload();
-				cl.mflags = acces;
+				cl.nodeflags |= acces;
 			}
 			return cl;
 		}
@@ -172,7 +172,7 @@ public final class Env extends KievPackage {
 				if (cl.uuid != uuid)
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
 				cl.cleanupOnReload();
-				cl.mflags = acces;
+				cl.nodeflags |= acces;
 			}
 		}
 		if (outer != null) {
@@ -222,14 +222,14 @@ public final class Env extends KievPackage {
 			tdecl = new MetaTypeDecl();
 			tdecl.pos = id.pos;
 			tdecl.sname = id.sname;
-			tdecl.mflags = ACC_MACRO;
+			tdecl.nodeflags |= ACC_MACRO;
 			pkg.pkg_members.add(tdecl);
 		}
 		else if (cleanup) {
 			if (tdecl.uuid != uuid)
 				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.uuid+" != "+uuid);
 			tdecl.cleanupOnReload();
-			tdecl.mflags = ACC_MACRO;
+			tdecl.nodeflags |= ACC_MACRO;
 			if (!tdecl.isAttached())
 				pkg.pkg_members.add(tdecl);
 			else
@@ -294,7 +294,7 @@ public final class Env extends KievPackage {
 		if (!cl.isTypeDeclNotLoaded())
 			return cl;
 		// Load if not loaded or not resolved
-		if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
+		if (cl.isTypeDeclNotLoaded()) {
 			if (cl instanceof Struct)
 				jenv.actuallyLoadDecl((Struct)cl);
 			else
@@ -311,7 +311,7 @@ public final class Env extends KievPackage {
 		// Load if not loaded or not resolved
 		if (dn == null)
 			dn = jenv.actuallyLoadDecl(qname);
-		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded() && !dn.isAnonymouse()) {
+		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded()) {
 			if (dn instanceof Struct)
 				dn = jenv.actuallyLoadDecl((Struct)dn);
 			else

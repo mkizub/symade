@@ -38,9 +38,9 @@ public class RuleMethod extends Method {
 		if (attr.name == "localvars") {
 			Var p = (Var)data;
 			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
-				p.var_kind = Var.VAR_RULE;
+				p.mflags_var_kind = Var.VAR_RULE;
 			else if (ct == ChildChangeType.DETACHED && p.kind == Var.VAR_RULE)
-				p.var_kind = Var.VAR_LOCAL;
+				p.mflags_var_kind = Var.VAR_LOCAL;
 		}
 		super.callbackChildChanged(ct, attr, data);
 	}

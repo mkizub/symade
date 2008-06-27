@@ -26,7 +26,10 @@ public abstract class LoopStat extends ENode {
 	protected LoopStat() {
 		lblcnt = new Label();
 		lblbrk = new Label();
-		setBreakTarget(true);
+	}
+
+	public final boolean isBreakTarget() {
+		return true;
 	}
 }
 

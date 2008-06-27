@@ -504,9 +504,10 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		stats;
 	}
 
-	@nodeAttr public ASTNode∅			stats;
-	@nodeAttr(copyable=false, ext_data=true)
-	          public Label				lblbrk;
+	@nodeAttr
+	public ASTNode∅			stats;
+	@nodeAttr(ext_data=true)
+	public Label				lblbrk;
 
 	public Block() {}
 
@@ -517,6 +518,11 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public Block(int pos, ASTNode[] sts) {
 		this.pos = pos;
 		this.stats.addAll(sts);
+	}
+
+	// break target (ENodes)
+	public boolean isBreakTarget() {
+		return lblbrk != null;
 	}
 
 	public void addSymbol(DNode sym) {

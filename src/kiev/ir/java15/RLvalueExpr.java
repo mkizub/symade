@@ -214,14 +214,15 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 	
 	public void resolve(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
-		if( ctx_tdecl.isLocal() ) {
-			if( getVar().ctx_tdecl != this.ctx_tdecl ) {
+		ComplexTypeDecl ctx_tdecl = this.ctx_tdecl;
+		if !(ctx_tdecl.parent() instanceof KievPackage || ctx_tdecl.parent() instanceof ComplexTypeDecl) {
+			if (getVar().ctx_tdecl != ctx_tdecl) {
 				var.setNeedProxy(true);
 				setAsField(true);
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = ctx_tdecl.resolveField(this.ident,false)) == null ) {
+				if ((vf = ctx_tdecl.resolveField(this.ident,false)) == null) {
 					// Add field
 					vf = (Field)ctx_tdecl.members.add(new Field(this.ident,var.getType(),ACC_PUBLIC));
 					vf.setNeedProxy(true);

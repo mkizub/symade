@@ -1073,23 +1073,63 @@ public abstract class ASTNode extends ANode implements Constants {
 	@setter public final void set$pos(int value) { this.pos = value; }
 	@getter public final int get$pos() { return this.pos; }
 	
+
+	public @packed:3,nodeflags, 0 int     mflags_access;
+
+	public @packed:1,nodeflags, 3 boolean mflags_is_static;
+	public @packed:1,nodeflags, 4 boolean mflags_is_final;
+	public @packed:1,nodeflags, 5 boolean mflags_is_mth_synchronized;	// method
+	public @packed:1,nodeflags, 5 boolean mflags_is_struct_super;		// struct
+	public @packed:1,nodeflags, 6 boolean mflags_is_fld_volatile;		// field
+	public @packed:1,nodeflags, 6 boolean mflags_is_mth_bridge;			// method
+	public @packed:1,nodeflags, 7 boolean mflags_is_fld_transient;		// field
+	public @packed:1,nodeflags, 7 boolean mflags_is_mth_varargs;			// method
+	public @packed:1,nodeflags, 8 boolean mflags_is_native;				// native method, backend operation/field/struct
+	public @packed:1,nodeflags, 9 boolean mflags_is_struct_interface;
+	public @packed:1,nodeflags,10 boolean mflags_is_abstract;
+	public @packed:1,nodeflags,11 boolean mflags_is_math_strict;			// strict math
+	public @packed:1,nodeflags,12 boolean mflags_is_synthetic;			// any decl that was generated (not in sources)
+	public @packed:1,nodeflags,13 boolean mflags_is_struct_annotation;
+	public @packed:1,nodeflags,14 boolean mflags_is_enum;				// struct/decl group/fields
+		
+	// Flags temporary used with java flags
+	public @packed:1,nodeflags,16 boolean mflags_is_forward;				// var/field/method, type is wrapper
+	public @packed:1,nodeflags,17 boolean mflags_is_virtual;				// var/field, method is 'static virtual', struct is 'view'
+	public @packed:1,nodeflags,18 boolean mflags_is_type_unerasable;		// typedecl, method/struct as parent of typedef
+	public @packed:1,nodeflags,19 boolean mflags_is_macro;				// macro-declarations for fields, methods, etc
+
+	// General flags
+	public @packed:1,nodeflags,21 boolean is_rewrite_target;
+	public @packed:1,nodeflags,22 boolean is_auto_generated;
+	public @packed:1,nodeflags,23 boolean is_interface_only;		// only node's interface was scanned/loded; no implementation
+
+	// Structures
+	public @packed:1,nodeflags,24 boolean is_struct_fe_passed;
+	public @packed:1,nodeflags,25 boolean is_struct_has_pizza_cases;
+	public @packed:1,nodeflags,26 boolean is_struct_compiler_node;
+	public @packed:1,nodeflags,27 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
+	// Method flags
+	public @packed:1,nodeflags,24 boolean is_mth_virtual_static;
+	public @packed:1,nodeflags,25 boolean is_mth_operator;
+	public @packed:1,nodeflags,26 boolean is_mth_invariant;
 	// SymbolRef/ENode/ISymRef
 	public @packed:1,nodeflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
+	// Expression/statement flags
+	public @packed:1,nodeflags,25 boolean is_expr_as_field;
+	public @packed:1,nodeflags,26 boolean is_expr_primary;
+	public @packed:1,nodeflags,27 boolean is_expr_super;
 	// EToken
-	public @packed:1,nodeflags,20  boolean is_explicit; // explicit or implicit kind of EToken
+	public @packed:1,nodeflags,27 boolean is_explicit; // explicit or implicit kind of EToken
+	// Var/Field
+	public @packed:7,nodeflags,24 int     mflags_var_kind;				// var/field kind
 	
-	// Structures	
+
+
+	// Structures
 	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2
 	public @packed:1,compileflags,9  boolean is_struct_args_resolved; // KievFE_Pass2
 	public @packed:1,compileflags,10 boolean is_struct_members_generated; // KievFE_Pass2
 	public @packed:1,compileflags,11 boolean is_struct_pre_generated; // KievME_PreGenartion
-
-	public @packed:1,nodeflags,17 boolean is_struct_fe_passed;
-	public @packed:1,nodeflags,18 boolean is_struct_local;
-	public @packed:1,nodeflags,19 boolean is_struct_anomymouse;
-	public @packed:1,nodeflags,20 boolean is_struct_has_pizza_cases;
-	public @packed:1,nodeflags,21 boolean is_struct_bytecode;	// struct was loaded from bytecode
-	public @packed:1,nodeflags,22 boolean is_struct_compiler_node;
 
 	// EToken (unresolved e-node tokens) flags
 	public @packed:1,compileflags,8  boolean is_token_ident;
@@ -1105,10 +1145,6 @@ public abstract class ASTNode extends ANode implements Constants {
 	
 	public @packed:1,compileflags,11 boolean is_expr_id_signature;
 
-	public @packed:1,nodeflags,17 boolean is_expr_as_field;
-	public @packed:1,nodeflags,18 boolean is_expr_primary;
-	public @packed:1,nodeflags,19 boolean is_expr_super;
-
 	// Statement flags
 	public @packed:1,compileflags,11 boolean is_stat_abrupted;
 	public @packed:1,compileflags,12 boolean is_stat_breaked;
@@ -1116,33 +1152,20 @@ public abstract class ASTNode extends ANode implements Constants {
 	public @packed:1,compileflags,14 boolean is_stat_auto_returnable;
 	public @packed:1,compileflags,15 boolean is_direct_flow_reachable; // reachable by direct control flow (with no jumps)
 
-	public @packed:1,nodeflags,20 boolean is_stat_break_target;
-
 	// Method flags
 	public @packed:1,compileflags,8  boolean is_mth_need_fields_init;
 	public @packed:1,compileflags,9  boolean is_mth_dispatcher;
 
-	public @packed:1,nodeflags,17 boolean is_mth_virtual_static;
-	public @packed:1,nodeflags,18 boolean is_mth_operator;
-	public @packed:1,nodeflags,19 boolean is_mth_invariant;
-	
 	// Var/field
 	public @packed:1,compileflags,8  boolean is_need_proxy;
 	public @packed:1,compileflags,9  boolean is_init_wrapper;
 	public @packed:1,compileflags,10 boolean is_fld_added_to_init;
 
-	// Field specific
-	public @packed:1,nodeflags,17 boolean is_fld_packer;
-	public @packed:1,nodeflags,18 boolean is_fld_packed;
-
 	// General flags
-	public @packed:1,nodeflags,4 boolean is_rewrite_target;
 	public @packed:1,compileflags,3 boolean is_resolved;
 	public @packed:1,compileflags,2 boolean is_bad;
 	public @packed:1,compileflags,1 boolean versioned;
 	public @packed:1,compileflags,0 boolean locked;
-
-	public @packed:1,nodeflags,16 boolean is_auto_generated;
 
 	public AttrSlot[] values() {
 		return ASTNode.$values;
@@ -1209,16 +1232,6 @@ public abstract class ASTNode extends ANode implements Constants {
 		throw new RuntimeException("replace unknown kind of AttrSlot");
 	}
 
-	// break target (ENodes)
-	public final boolean isBreakTarget() {
-		return this.is_stat_break_target;
-	}
-	public final void setBreakTarget(boolean on) {
-		if (this.is_stat_break_target != on) {
-			this.is_stat_break_target = on;
-		}
-	}
-
 	// rewrite target (ENodes)
 	public final boolean isRewriteTarget() {
 		return this.is_rewrite_target;
@@ -1246,6 +1259,11 @@ public abstract class ASTNode extends ANode implements Constants {
 	}
 	public final void setBad(boolean on) {
 		this.is_bad = on;
+	}
+
+	// break target (ENodes, redefined in loops, switch, blocks)
+	public boolean isBreakTarget() {
+		return false;
 	}
 
 	public Type getType() { return Type.tpVoid; }

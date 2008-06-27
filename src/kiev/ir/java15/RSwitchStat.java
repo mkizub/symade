@@ -128,7 +128,7 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 			Block bl = new Block(cas.pos);
 			foreach (ASTNode n; ((SwitchStat)this).stats.delToArray(); !(n instanceof CaseLabel))
 				bl.stats += n;
-			bl.setBreakTarget(true);
+			bl.lblbrk = new Label(); // make a break target
 			if( cas.val == null ) {
 				bl.stats.insert(0,new ExprStat(sel.pos,~sel));
 				this.replaceWithNodeResolve(Type.tpVoid, bl);

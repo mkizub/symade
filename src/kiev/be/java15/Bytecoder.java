@@ -66,10 +66,12 @@ public class Bytecoder implements JConstants {
 		}
 		cl.initStruct(clname.src_name.toString(), bcclazz.flags);
 		cl.is_interface_only = true;
+		cl.setTypeDeclNotLoaded(false);
 		cl.bytecode_name = clname.bytecode_name;
 
 
 		MetaAccess.verifyDecl(cl);
+		cl.setTypeDeclNotLoaded(false);
 
 		KString.KStringScanner cl_sign_sc = null;
 		KString cl_sign = bcclazz.getClazzSignature();
@@ -79,7 +81,6 @@ public class Bytecoder implements JConstants {
 		}
 
 		cl.callbackTypeVersionChanged();
-		cl.setTypeDeclNotLoaded(false);
 		cl.setFrontEndPassed();
 
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
@@ -168,7 +169,7 @@ public class Bytecoder implements JConstants {
 			ftype = Signature.getType(f_type);
 		if ((f_flags & ACC_ENUM)!=0) {
 			f = new Field(f_name.toString(),ftype,f_flags);
-			f.is_enum = true;
+			f.mflags_is_enum = true;
 		} else {
 			f = new Field(f_name.toString(),ftype,f_flags);
 		}
@@ -627,8 +628,7 @@ public class Bytecoder implements JConstants {
 		{
 			Vector<kiev.bytecode.Field> flds = new Vector<kiev.bytecode.Field>(); 
 			foreach (Field f; cl.members) {
-				if( f.isPackedField() ) continue;
-				if (/*!kievmode &&*/ f.isAbstract()) continue;
+				if (f.isAbstract()) continue;
 				flds.append(writeField(f));
 			}
 			bcclazz.fields = flds.copyIntoArray();

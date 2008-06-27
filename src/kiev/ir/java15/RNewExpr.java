@@ -233,8 +233,6 @@ public final view RNewClosure of NewClosure extends RENode {
 		if (clazz != null)                                                    
 			return true;
 		clazz = Env.getRoot().newStruct(null,false,null,0,new JavaAnonymouseClass(),true,null);
-		clazz.setLocal(true);
-		clazz.setAnonymouse(true);
 		if (ctx_method==null || ctx_method.isStatic())
 			clazz.setStatic(true);
 		if (Env.getRoot().loadTypeDecl(Type.tpClosureClazz).isTypeDeclNotLoaded())

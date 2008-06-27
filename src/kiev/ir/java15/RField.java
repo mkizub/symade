@@ -21,12 +21,6 @@ import syntax kiev.Syntax;
 public static final view RField of Field extends RVar {
 	public		ConstExpr		const_value;
 	
-	// packer field (auto-generated for packed fields)
-	public final boolean isPackerField();
-	public final void setPackerField(boolean on);
-	// packed field
-	public final boolean isPackedField();
-	public final void setPackedField(boolean on);
 	// field's initializer was already added to class initializer
 	public final boolean isAddedToInit();
 	public final void setAddedToInit(boolean on);

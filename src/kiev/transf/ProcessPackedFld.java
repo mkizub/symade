@@ -26,15 +26,11 @@ public final class PackedFldFE_Verify extends VerifyProcessor {
 	}
 	private void verifyField(Field f) {
 		MetaPacked mp = f.getMetaPacked();
-		if !(f.isPackedField() ) {
-			if (mp != null)
-				Kiev.reportError(f, "Non-packed field has @packed attribute");
+		if (mp == null)
 			return;
-		}
-		if (mp == null) {
-			if (mp != null)
-				Kiev.reportError(f, "Packed field has no @packed attribute");
-			return;
+		if (!f.isAbstract()) {
+			Kiev.reportWarning(f,"Packed field "+f+" must be abstract");
+			f.setAbstract(true);
 		}
 		TypeDecl s = f.ctx_tdecl;
 		String mp_in = mp.getS("in");
@@ -94,10 +90,10 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 	
 	public void doProcess(Struct:ASTNode s) {
 		// Setup packed/packer fields
-		foreach(Field f; s.members; f.isPackedField() ) {
+		MetaPacked mp;
+		foreach(Field f; s.members; (mp=f.getMetaPacked()) != null) {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
-			MetaPacked mp = f.getMetaPacked();
 			if (!f.isInterfaceOnly() && mp.fld.dnode == null) {
 				String mp_in = mp.getS("in");
 				if( mp_in != null && mp_in.length() > 0 ) {
@@ -139,6 +135,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			// setter
 			if (!f.isFinal() && MetaAccess.writeable(f)) {
 				Method set_var = new MethodImpl(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC | ACC_FINAL);
+				set_var.setAbstract(false);
 				if (s.isInterface())
 					set_var.setFinal(false);
 				s.addMethod(set_var);
@@ -184,6 +181,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			// getter
 			if(MetaAccess.readable(f)) {
 				Method get_var = new MethodImpl(get_name,f.getType(),f.getJavaFlags() | ACC_SYNTHETIC |ACC_FINAL);
+				get_var.setAbstract(false);
 				if (s.isInterface())
 					get_var.setFinal(false);
 				s.addMethod(get_var);
@@ -225,7 +223,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 
 	private int countPackerFields(Struct s) {
 		int i = 0;
-		foreach (Field f; s.members; f.isPackerField()) i++;
+		foreach (Field f; s.members; f.getMetaPacker() != null) i++;
 		return i;
 	}
 
@@ -236,7 +234,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 		s.super_types.length > 0,
 		locatePackerField(f,size,s.super_types[0].getStruct())
 	;	n @= s.members,
-		n instanceof Field && ((Field)n).isPackerField(),
+		n instanceof Field && ((Field)n).getMetaPacker() != null,
 		ff = (Field)n : ff = null,
 		(32-ff.getMetaPacked().size) >= size,
 		f ?= ff

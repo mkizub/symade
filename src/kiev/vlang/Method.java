@@ -51,9 +51,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		if (attr.name == "params") {
 			Var p = (Var)data;
 			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
-				p.var_kind = Var.PARAM_NORMAL;
+				p.mflags_var_kind = Var.PARAM_NORMAL;
 			else if (ct == ChildChangeType.DETACHED && p.kind == Var.PARAM_NORMAL)
-				p.var_kind = Var.VAR_LOCAL;
+				p.mflags_var_kind = Var.VAR_LOCAL;
 		}
 		if (isAttached()) {
 			if      (attr.name == "params")
@@ -114,11 +114,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	// method with variable number of arguments	
 	public final boolean isVarArgs() {
-		return this.is_mth_varargs;
+		return this.mflags_is_mth_varargs;
 	}
 	public final void setVarArgs(boolean on) {
-		if (this.is_mth_varargs != on) {
-			this.is_mth_varargs = on;
+		if (this.mflags_is_mth_varargs != on) {
+			this.mflags_is_mth_varargs = on;
 		}
 	}
 	// logic rule method
@@ -225,7 +225,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				break;
 			default:
 				if (fp.kind >= Var.PARAM_TYPEINFO_N && fp.kind < Var.PARAM_TYPEINFO_N+128) {
-					assert(this.is_type_unerasable);
+					assert(this.mflags_is_type_unerasable);
 					assert(fp.isFinal());
 					assert(fp.getType() ≈ Type.tpTypeInfo);
 					dargs.append(fp.getType());
@@ -268,7 +268,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if ((flags & ACC_BRIDGE) == ACC_BRIDGE) setMeta(new MetaBridge());
 			if ((flags & ACC_VARARGS) == ACC_VARARGS) setMeta(new MetaVarArgs());
 			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
-			this.mflags = flags;
+			this.nodeflags |= flags;
 		}
 	}
 	
@@ -358,7 +358,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public boolean preResolveIn() {
 		//foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
-		//	fp.var_kind = Var.PARAM_NORMAL;
+		//	fp.mflags_var_kind = Var.PARAM_NORMAL;
 		Type t = this.mtype; // rebuildTypes()
 		return true;
 	}
@@ -749,7 +749,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				fp.stype.getType(); // resolve
 			fp.verifyMetas();
 			//if (fp.kind == Var.VAR_LOCAL)
-			//	fp.var_kind = Var.PARAM_NORMAL;
+			//	fp.mflags_var_kind = Var.PARAM_NORMAL;
 		}
 
 		Type t = this.mtype; // rebuildTypes()

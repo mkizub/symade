@@ -67,7 +67,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
 
 		if (view_meta != null && view_meta.getZ("iface"))
-			clazz.is_struct_interface = true; //clazz.setInterface();
+			clazz.mflags_is_struct_interface = true; //clazz.setInterface();
 		
 		// generate constructor
 		{

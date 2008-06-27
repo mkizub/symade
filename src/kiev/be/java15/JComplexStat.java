@@ -94,6 +94,12 @@ public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 	public:ro	JENode				sel_to_int;
 	public:ro	JLabel				lblcnt;
 
+	public JLabel getBrkLabel() {
+		if( lblbrk == null )
+			((Block)this).lblbrk = new Label();
+		return lblbrk;
+	}
+
 	public JLabel getCntLabel() {
 		if( lblcnt == null )
 			((SwitchStat)this).lblcnt = new Label();

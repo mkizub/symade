@@ -606,7 +606,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				MetaAccess.verifyDecl(f); // recheck access
 				Type ftype = fdecl.getType();
 				MetaPacked pack = f.getMetaPacked();
-				if( pack != null ) {
+				if (pack != null) {
 					if( f.isStatic() ) {
 						Kiev.reportWarning(fdecl,"Packing of static field(s) ignored");
 						~pack;
@@ -642,14 +642,14 @@ public final class KievFE_Pass3 extends TransfProcessor {
 						}
 					}
 				}
-				if( f.getMetaPacked() != null )
-					f.setPackedField(true);
+				if (f.getMetaPacked() != null)
+					f.setAbstract(true);
 			}
 			else if( me.members[i] instanceof WBCCondition ) {
 				WBCCondition inv = (WBCCondition)me.members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new MethodImpl(inv.sname,Type.tpVoid,inv.mflags);
+				Method m = new MethodImpl(inv.sname,Type.tpVoid,inv.getFlags());
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m);

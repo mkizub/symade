@@ -209,7 +209,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			else if (isNodeKind(f.getType()))
 				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @nodeAttr or @nodeData");
 		}
-		if (!f.isStatic() && !f.isAbstract() && !f.isPackedField() && !f.isFinal() && f.getMeta(mnUnVersioned) == null)
+		if (!f.isStatic() && !f.isAbstract() && !f.isFinal() && f.getMeta(mnUnVersioned) == null)
 			f.setVirtual(true);
 	}
 }
@@ -739,7 +739,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					copyV.block.addSymbol(v);
 				}
 				foreach (Field f; impl.members) {
-					if (f.isPackedField() || f.isAbstract() || f.isStatic())
+					if (f.isAbstract() || f.isStatic())
 						continue;
 					{	// check if we may not copy the field
 						UserMeta fmeta = (UserMeta)f.getMeta(VNode_Base.mnAtt);
@@ -889,7 +889,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					v.init = new CastExpr(0,sVVV.xtype,new LVarExpr(0,mkRstr.params[0]));
 					mkRstr.block.stats += v;
 					foreach (Field f; impl.members) {
-						if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
+						if (f.isAbstract() || f.isStatic() || f.isFinal() || f.getMeta(VNode_Base.mnUnVersioned) != null)
 							continue;
 						Field vf = null;
 						foreach (Field vvv; sVVV.members; vvv.sname == f.sname) {
@@ -945,7 +945,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
 				}
 			}
-			if (f.isVirtual() && !f.isPackedField()) {
+			if (f.isVirtual() && f.getMetaPacked() == null) {
 				fixSetterMethod(impl, f, fmatt, fmref);
 				fixGetterMethod(impl, f, fmatt, fmref);
 			}
@@ -977,7 +977,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		ctor.block.stats += new ExprStat(new CtorCallExpr(0,new SuperExpr(),new ENode[]{new LVarExpr(0,ctor.params[0])}));
 		s.members += ctor;
 
-		foreach (Field f; impl.members; !f.isStatic() && !f.isAbstract() && !f.isPackedField() && !f.isFinal() && f.getMeta(VNode_Base.mnUnVersioned) == null) {
+		foreach (Field f; impl.members; !f.isStatic() && !f.isAbstract() && !f.isFinal() && f.getMeta(VNode_Base.mnUnVersioned) == null) {
 			Field sf = new Field(f.sname,f.getType(),ACC_SYNTHETIC);
 			s.members += sf;
 			ctor.block.stats += new ExprStat(new AssignExpr(0,Operator.Assign,new IFldExpr(0,new ThisExpr(),sf),new IFldExpr(0,new LVarExpr(0,ctor.params[0]),f,true)));

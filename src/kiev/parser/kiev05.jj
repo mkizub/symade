@@ -152,12 +152,6 @@ public abstract class kiev050 {
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(clazz);
-		if (parent instanceof NameSpace)
-			clazz.setLocal(false);
-		else if (parent instanceof Struct)
-			clazz.setLocal(parent.isLocal());
-		else
-			clazz.setLocal(true);
 		
 		return clazz;
 	}
@@ -240,7 +234,7 @@ public abstract class kiev050 {
 
 	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
 		Field f = new Field(id.sname,new TypeDeclRef(),0);
-		f.is_enum = true;
+		f.mflags_is_enum = true;
 		f.pos = id.pos;
 		modifiers.moveToNode(f);
 		f.setPublic();
@@ -1239,26 +1233,28 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 	name = Name()
 	{
 		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
-		clazz.setSingleton(true);
 	}
 	[
 		args = ClazzArguments() { clazz.args.addAll(args); }
 	]
-	[
-	"(" { clazz.setSingleton(false); }
-		(
-			LOOKAHEAD({ getToken(1).kind != RPAREN })
-			modifiers = Modifiers()
-			clazz.case_fields += CaseTypeField(modifiers)
+	(
+		"("
 			(
-				","
+				LOOKAHEAD({ getToken(1).kind != RPAREN })
 				modifiers = Modifiers()
 				clazz.case_fields += CaseTypeField(modifiers)
-			)*
-		)?
-	")"
-	]
-	";"
+				(
+					","
+					modifiers = Modifiers()
+					clazz.case_fields += CaseTypeField(modifiers)
+				)*
+			)?
+		")"
+		";"
+	|
+		";"
+		{ clazz.metas.add(new MetaSingleton()); }
+	)
 	{ return clazz; }
 }
 

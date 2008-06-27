@@ -139,12 +139,6 @@ public abstract class kiev050 implements kiev050Constants {
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(clazz);
-		if (parent instanceof NameSpace)
-			clazz.setLocal(false);
-		else if (parent instanceof Struct)
-			clazz.setLocal(parent.isLocal());
-		else
-			clazz.setLocal(true);
 		
 		return clazz;
 	}
@@ -227,7 +221,7 @@ public abstract class kiev050 implements kiev050Constants {
 
 	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
 		Field f = new Field(id.sname,new TypeDeclRef(),0);
-		f.is_enum = true;
+		f.mflags_is_enum = true;
 		f.pos = id.pos;
 		modifiers.moveToNode(f);
 		f.setPublic();
@@ -1426,7 +1420,6 @@ public abstract class kiev050 implements kiev050Constants {
     jj_consume_token(CASE);
     name = Name();
                 clazz = (PizzaCase)mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
-                clazz.setSingleton(true);
     switch (jj_nt.kind) {
     case LT:
     case LANGLE:
@@ -1439,7 +1432,6 @@ public abstract class kiev050 implements kiev050Constants {
     switch (jj_nt.kind) {
     case LPAREN:
       jj_consume_token(LPAREN);
-              clazz.setSingleton(false);
       if (getToken(1).kind != RPAREN) {
         modifiers = Modifiers();
         clazz.case_fields += CaseTypeField(modifiers);
@@ -1460,11 +1452,16 @@ public abstract class kiev050 implements kiev050Constants {
         ;
       }
       jj_consume_token(RPAREN);
+      jj_consume_token(SEMICOLON);
+      break;
+    case SEMICOLON:
+      jj_consume_token(SEMICOLON);
+                  clazz.metas.add(new MetaSingleton());
       break;
     default:
-      ;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
-    jj_consume_token(SEMICOLON);
           {if (true) return clazz;}
     throw new Error("Missing return statement in function");
   }
@@ -5360,6 +5357,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     catch(LookaheadSuccess ls) { return true; }
   }
 
+  final private boolean jj_3R_262() {
+    if (jj_scan_token(STRING_LITERAL)) return true;
+    return false;
+  }
+
   final private boolean jj_3_47() {
     if (jj_scan_token(OPERATOR)) return true;
     return false;
@@ -5405,11 +5407,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_190() {
-    if (jj_scan_token(ENUM)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_258() {
     if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
     return false;
@@ -5420,13 +5417,18 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_189() {
-    if (jj_scan_token(META_INTERFACE)) return true;
+  final private boolean jj_3R_190() {
+    if (jj_scan_token(ENUM)) return true;
     return false;
   }
 
   final private boolean jj_3R_257() {
     if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_189() {
+    if (jj_scan_token(META_INTERFACE)) return true;
     return false;
   }
 
@@ -5537,11 +5539,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_187() {
-    if (jj_scan_token(CLASS)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_153() {
     if (jj_scan_token(META_UUID)) return true;
     return false;
@@ -5549,6 +5546,11 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_92() {
     if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_187() {
+    if (jj_scan_token(CLASS)) return true;
     return false;
   }
 
@@ -5985,11 +5987,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_85() {
-    if (jj_3R_117()) return true;
-    return false;
-  }
-
   final private boolean jj_3_41() {
     if (jj_3R_100()) return true;
     return false;
@@ -5997,6 +5994,11 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_264() {
     if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_85() {
+    if (jj_3R_117()) return true;
     return false;
   }
 
@@ -6098,15 +6100,15 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_168() {
+    if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
+    return false;
+  }
+
   final private boolean jj_3_4() {
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_scan_token(ASSIGN)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_168() {
-    if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
     return false;
   }
 
@@ -6199,12 +6201,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_2() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_scan_token(OPERATOR)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_103() {
     if (jj_3R_101()) return true;
     return false;
@@ -6212,6 +6208,12 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_125() {
     if (jj_3R_176()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_2() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
@@ -6269,13 +6271,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_84() {
-    if (jj_scan_token(LPAREN)) return true;
+  final private boolean jj_3R_123() {
+    if (jj_3R_175()) return true;
     return false;
   }
 
-  final private boolean jj_3R_123() {
-    if (jj_3R_175()) return true;
+  final private boolean jj_3R_84() {
+    if (jj_scan_token(LPAREN)) return true;
     return false;
   }
 
@@ -6681,6 +6683,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_225() {
+    if (jj_scan_token(IS_THE)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_104() {
     Token xsp;
     xsp = jj_scanpos;
@@ -6754,11 +6761,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_225() {
-    if (jj_scan_token(IS_THE)) return true;
     return false;
   }
 
@@ -6849,15 +6851,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_87() {
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_1()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   final private boolean jj_3R_208() {
     if (jj_3R_244()) return true;
     return false;
@@ -6886,6 +6879,15 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_87() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_1()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -7269,11 +7271,6 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_108() {
     if (jj_3R_87()) return true;
     if (jj_3R_129()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_262() {
-    if (jj_scan_token(STRING_LITERAL)) return true;
     return false;
   }
 

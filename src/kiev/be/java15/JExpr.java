@@ -244,12 +244,7 @@ public view JBlock of Block extends JENode {
 	}
 
 	public JLabel getBrkLabel() {
-		if( lblbrk == null )
-			((Block)this).lblbrk = new Label();
 		return lblbrk;
-	}
-	public void backendCleanup() {
-		((Block)this).lblbrk = null;
 	}
 
 }

@@ -124,14 +124,16 @@ public class SwitchStat extends Block {
 	@nodeAttr(copyable=false, ext_data=true)
 	          public Label                 lblcnt;
 
-	public SwitchStat() {
-		setBreakTarget(true);
-	}
+	public SwitchStat() {}
 
 	public SwitchStat(int pos, ENode sel) {
 		this();
 		this.pos = pos;
 		this.sel = sel;
+	}
+
+	public final boolean isBreakTarget() {
+		return true;
 	}
 
 	public String toString() { return "switch("+sel+")"; }

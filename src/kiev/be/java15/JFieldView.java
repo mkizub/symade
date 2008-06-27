@@ -24,8 +24,6 @@ public final view JField of Field extends JVar {
 	public:ro	JConstExpr			const_value;
 	
 	public final boolean isVirtual();
-	public final boolean isPackerField();
-	public final boolean isPackedField();
 
 	public boolean	isConstantExpr() {
 		if( this.isFinal() ) {

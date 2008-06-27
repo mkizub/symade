@@ -31,43 +31,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeAttr(ext_data=true)
 	public MNode⋈		metas;
 
-	// TODO: make private
-	public int			mflags;
-
-	public @packed:3,mflags, 0 int     is_access;
-
-	public @packed:1,mflags, 3 boolean is_static;
-	public @packed:1,mflags, 4 boolean is_final;
-	public @packed:1,mflags, 5 boolean is_mth_synchronized;	// method
-	public @packed:1,mflags, 5 boolean is_struct_super;		// struct
-	public @packed:1,mflags, 6 boolean is_fld_volatile;		// field
-	public @packed:1,mflags, 6 boolean is_mth_bridge;			// method
-	public @packed:1,mflags, 7 boolean is_fld_transient;		// field
-	public @packed:1,mflags, 7 boolean is_mth_varargs;			// method
-	public @packed:1,mflags, 8 boolean is_native;				// native method, backend operation/field/struct
-	public @packed:1,mflags, 9 boolean is_struct_interface;
-	public @packed:1,mflags,10 boolean is_abstract;
-	public @packed:1,mflags,11 boolean is_math_strict;			// strict math
-	public @packed:1,mflags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
-	public @packed:1,mflags,13 boolean is_struct_annotation;
-	public @packed:1,mflags,14 boolean is_enum;				// struct/decl group/fields
-		
-	// Flags temporary used with java flags
-	public @packed:1,mflags,16 boolean is_forward;				// var/field/method, type is wrapper
-	public @packed:1,mflags,17 boolean is_virtual;				// var/field, method is 'static virtual', struct is 'view'
-	public @packed:1,mflags,18 boolean is_type_unerasable;		// typedecl, method/struct as parent of typedef
-	public @packed:1,mflags,19 boolean is_macro;				// macro-declarations for fields, methods, etc
-	
-	public @packed:1,mflags,20 boolean is_has_throws;			// methods
-
-	public @packed:1,mflags,20 boolean is_struct_singleton;	// struct
-	public @packed:1,mflags,21 boolean is_struct_mixin;		// struct
-	public @packed:1,mflags,22 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
-
-	public @packed:10,mflags,20 int    var_kind;				// var/field kind
-	
-	public @packed:1,mflags,31 boolean is_interface_only;		// only node's interface was scanned/loded; no implementation
-
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr
 	public							String			sname; // source code name, may be null for anonymouse symbols
@@ -114,30 +77,29 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	
-	public final boolean isPublic()			{ return this.is_access == MASK_ACC_PUBLIC; }
-	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
-	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
-	public final boolean isPkgPrivate()		{ return this.is_access == MASK_ACC_DEFAULT; }
-	public final boolean isStatic()			{ return this.is_static; }
-	public final boolean isFinal()				{ return this.is_final; }
-	public final boolean isSynchronized()		{ return this.is_mth_synchronized; }
-	public final boolean isFieldVolatile()		{ return this.is_fld_volatile; }
-	public final boolean isMethodBridge()		{ return this.is_mth_bridge; }
-	public final boolean isFieldTransient()	{ return this.is_fld_transient; }
-	public final boolean isMethodVarargs()		{ return this.is_mth_varargs; }
-	public final boolean isStructBcLoaded()	{ return this.is_struct_bytecode; }
-	public final boolean isNative()			{ return this.is_native; }
-	public final boolean isInterface()			{ return this.is_struct_interface; }
-	public final boolean isAbstract()			{ return this.is_abstract; }
-	public final boolean isMathStrict()		{ return this.is_math_strict; }
-	public final boolean isSynthetic()			{ return this.is_synthetic; }
+	public final boolean isPublic()			{ return this.mflags_access == MASK_ACC_PUBLIC; }
+	public final boolean isPrivate()			{ return this.mflags_access == MASK_ACC_PRIVATE; }
+	public final boolean isProtected()			{ return this.mflags_access == MASK_ACC_PROTECTED; }
+	public final boolean isPkgPrivate()		{ return this.mflags_access == MASK_ACC_DEFAULT; }
+	public final boolean isStatic()			{ return this.mflags_is_static; }
+	public final boolean isFinal()				{ return this.mflags_is_final; }
+	public final boolean isSynchronized()		{ return this.mflags_is_mth_synchronized; }
+	public final boolean isFieldVolatile()		{ return this.mflags_is_fld_volatile; }
+	public final boolean isMethodBridge()		{ return this.mflags_is_mth_bridge; }
+	public final boolean isFieldTransient()	{ return this.mflags_is_fld_transient; }
+	public final boolean isMethodVarargs()		{ return this.mflags_is_mth_varargs; }
+	public final boolean isNative()			{ return this.mflags_is_native; }
+	public final boolean isInterface()			{ return this.mflags_is_struct_interface; }
+	public final boolean isAbstract()			{ return this.mflags_is_abstract; }
+	public final boolean isMathStrict()		{ return this.mflags_is_math_strict; }
+	public final boolean isSynthetic()			{ return this.mflags_is_synthetic; }
 
-	public final boolean isMacro()				{ return this.is_macro; }
-	public final boolean isVirtual()			{ return this.is_virtual; }
-	public final boolean isForward()			{ return this.is_forward; }
+	public final boolean isMacro()				{ return this.mflags_is_macro; }
+	public final boolean isVirtual()			{ return this.mflags_is_virtual; }
+	public final boolean isForward()			{ return this.mflags_is_forward; }
 	
 	public final boolean isStructView()		{ return this instanceof KievView; }
-	public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
+	public final boolean isTypeUnerasable()	{ return this.mflags_is_type_unerasable; }
 	public final boolean isStructInner()		{ return !(this.parent() instanceof KievPackage); }
 
 	public final boolean isInterfaceOnly()		{ return this.is_interface_only; }
@@ -316,7 +278,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final void resolveDecl() { ((RDNode)this).resolveDecl(); }
 
 	public int getFlags() {
-		return this.mflags;
+		return this.nodeflags & 0xFFFFF;
 	}
 	public short getJavaFlags() {
 		return (short)(getFlags() & JAVA_ACC_MASK);
@@ -423,50 +385,13 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public boolean isClazz() {
 		return false;
 	}
-	// a structure with the only one instance (singleton)	
-	public final boolean isSingleton() {
-		return this.is_struct_singleton;
-	}
-	public final void setSingleton(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fsingleton");
-		if (m != null) {
-			if!(on) m.detach();
-		} else {
-			if (on) this.setMeta(new MetaSingleton());
-		}
-	}
-	// a local (in method) class	
-	public final boolean isLocal() {
-		return this.is_struct_local;
-	}
-	public final void setLocal(boolean on) {
-		if (this.is_struct_local != on) {
-			this.is_struct_local = on;
-		}
-	}
-	// an anonymouse (unnamed) class	
-	public final boolean isAnonymouse() {
-		return this.is_struct_anomymouse;
-	}
-	public final void setAnonymouse(boolean on) {
-		if (this.is_struct_anomymouse != on) {
-			this.is_struct_anomymouse = on;
-		}
-	}
 	// kiev annotation
 	public final boolean isAnnotation() {
-		return this.is_struct_annotation;
+		return this.mflags_is_struct_annotation;
 	}
 	// java enum
 	public final boolean isEnum() {
-		return this.is_enum;
-	}
-	// structure was loaded from bytecode
-	public final boolean isLoadedFromBytecode() {
-		return this.is_struct_bytecode;
-	}
-	public final void setLoadedFromBytecode(boolean on) {
-		this.is_struct_bytecode = on;
+		return this.mflags_is_enum;
 	}
 
 	// a pizza case	
@@ -483,17 +408,13 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 	}
 
+	// a structure with the only one instance (singleton)	
+	public final boolean isSingleton() {
+		return this.getMeta("kiev\u001fstdlib\u001fmeta\u001fsingleton") != null;
+	}
 	// an interface with methdos and fields (mixin)	
 	public final boolean isMixin() {
-		return this.is_struct_mixin;
-	}
-	public final void setMixin(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fmixin");
-		if (m != null) {
-			if!(on) m.detach();
-		} else {
-			if (on) this.setMeta(new MetaMixin());
-		}
+		return this.getMeta("kiev\u001fstdlib\u001fmeta\u001fmixin") != null;
 	}
 
 	// indicates that type of the structure was attached
@@ -546,7 +467,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public void cleanupOnReload() {
 		this.super_types.delAll();
 		this.metas.delAll();
-		this.mflags = 0;
+		this.nodeflags = 0;
 		this.compileflags &= 3;
 	}
 

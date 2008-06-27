@@ -1031,7 +1031,7 @@ public final class CallType extends Type {
 			ts.append(tpCallParamArgs[i], args[i]);
 		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts));
 		Type accessor = null;
-		if (!meth.is_static && !meth.is_mth_virtual_static)
+		if (!meth.mflags_is_static && !meth.is_mth_virtual_static)
 			accessor = meth.ctx_tdecl.xtype;
 		if (accessor != null)
 			vs.append(tpSelfTypeArg, tpSelfTypeArg /*accessor*/);
