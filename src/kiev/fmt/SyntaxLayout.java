@@ -41,10 +41,8 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		if (q_name != null)
 			return q_name;
 		ANode p = parent();
-		if (p instanceof ATextSyntax)
-			q_name = (p.qname()+"\u001f"+sname).intern();
-		else if (p instanceof NameSpace)
-			q_name = (p.srpkg.name+"\u001f"+sname).intern();
+		if (p instanceof GlobalDNode)
+			q_name = (((GlobalDNode)p).qname()+"\u001f"+sname).intern();
 		else
 			q_name = sname;
 		return q_name;
@@ -56,27 +54,13 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		super.callbackChildChanged(ct, attr, data);
 	}
 	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
+		if (pi.isSemantic())
 			resetNames();
-			if (parent() instanceof NameSpace) {
-				NameSpace fu = (NameSpace)parent();
-				int idx = fu.getPackage().pkg_members.indexOf(this);
-				if (idx < 0)
-					fu.getPackage().pkg_members.add(this);
-			}
-		}
 		super.callbackAttached(pi);
 	}
 	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic()) {
+		if (slot.isSemantic())
 			resetNames();
-			if (parent() instanceof NameSpace) {
-				NameSpace fu = (NameSpace)parent();
-				int idx = fu.getPackage().pkg_members.indexOf(this);
-				if (idx >= 0)
-					fu.getPackage().pkg_members.del(idx);
-			}
-		}
 		super.callbackDetached(parent, slot);
 	}
 
