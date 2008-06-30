@@ -13,6 +13,7 @@ package kiev.gui;
 import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
+import kiev.vtree.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
@@ -20,8 +21,9 @@ import kiev.parser.*;
 import kiev.fmt.*;
 
 import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
+//import syntax kiev.Syntax;
 
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -74,18 +76,18 @@ public class TreeView extends UIView implements KeyListener {
 			if (sel == null || !(sel.getLastPathComponent() instanceof Drawable))
 				return;
 			Drawable dr = (Drawable)sel.getLastPathComponent();
-			Vector<ANode> v = new Vector<ANode>();
-			ANode n = dr.drnode;
+			java.util.Vector<ANode> v = new java.util.Vector<ANode>();
+			ANode n = dr.get$drnode();
 			//if (n instanceof DNode)
 			//	n = n.id;
-			v.append(n);
+			v.add(n);
 			while (n != null && !(n instanceof FileUnit)) {
 				n = n.parent();
-				v.append(n);
+				v.add(n);
 			}
-			if !(n instanceof FileUnit)
+			if (!(n instanceof FileUnit))
 				return;
-			parent_window.openEditor((FileUnit)n, v.toArray());
+			parent_window.openEditor((FileUnit)n, v.toArray(new ANode[v.size()]));
 			e.consume();
 		}
 	}
@@ -171,15 +173,15 @@ final class ANodeTreeModel implements TreeModel {
 		Drawable dr = (Drawable)parent;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).arg;
-		if !(dr instanceof DrawNonTerm)
+		if (!(dr instanceof DrawNonTerm))
 			return 0;
 		DrawNonTerm nt = (DrawNonTerm)dr;
 		if (nt.draw_folded) {
 			nt.draw_folded = false;
 			//tree_view.formatter.format(nt.drnode, nt);
 			DrawContext ctx = new DrawContext(tree_view.formatter,null,1000);
-			Drawable root = tree_view.formatter.getDrawable(nt.drnode, nt, tree_view.getSyntax());
-			root.preFormat(ctx, root.syntax, nt.drnode);
+			Drawable root = tree_view.formatter.getDrawable(nt.get$drnode(), nt, tree_view.getSyntax());
+			root.preFormat(ctx, root.syntax, nt.get$drnode());
 		}
 		return nt.args.length;
 	}
@@ -187,7 +189,7 @@ final class ANodeTreeModel implements TreeModel {
 		Drawable dr = (Drawable)node;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).arg;
-		if !(dr instanceof DrawNonTerm)
+		if (!(dr instanceof DrawNonTerm))
 			return true;
 		DrawNonTerm nt = (DrawNonTerm)dr;
 		if (nt.folded == null)

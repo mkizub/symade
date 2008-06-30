@@ -20,7 +20,12 @@ import kiev.parser.*;
 import kiev.fmt.*;
 
 import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
+//import syntax kiev.Syntax;
+import kiev.vlang.*;
+import kiev.vlang.types.*;
+import kiev.vtree.*;
+import kiev.transf.*;
+import kiev.parser.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -259,8 +264,10 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	
 	public UIView getCurrentView() {
 		Component cc = cur_component;
-		foreach (Editor e; editor_views; e.view_canvas == cc)
-			return e;
+		for (Editor e : editor_views) {
+			if (e.view_canvas == cc)
+				return e;
+		}
 		if (info_view.view_canvas == cc)
 			return info_view;
 		if (clip_view.view_canvas == cc)
@@ -275,8 +282,8 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	}
 	
 	public void openEditor(FileUnit fu, ANode[] path) {
-		foreach (Editor e; editor_views) {
-			if (e.the_root == fu || e.the_root.ctx_file_unit == fu) {
+		for (Editor e: editor_views) {
+			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
 				e.goToPath(path);
 				editors.setSelectedComponent(e.view_canvas);
 				e.view_canvas.requestFocus();
@@ -296,19 +303,19 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	}
 
 	public void closeEditor(Editor ed) {
-		Vector<Editor> v = new Vector<Editor>();
-		foreach (Editor e; editor_views) {
+		java.util.Vector<Editor> v = new java.util.Vector<Editor>();
+		for (Editor e: editor_views) {
 			if (e != ed) {
-				v.append(e);
+				v.add(e);
 				continue;
 			}
 			editors.remove(e.view_canvas);
 		}
-		editor_views = v.toArray();
+		editor_views = v.toArray(new Editor[v.size()]);
 	}
 }
 
-public class UIActionMenuItem extends JMenuItem {
+class UIActionMenuItem extends JMenuItem {
 	final Window wnd;
 	final UIActionFactory factory;
 	UIActionMenuItem(Window wnd, String text, int mnemonic, UIActionFactory factory) {

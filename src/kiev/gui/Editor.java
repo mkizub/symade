@@ -23,7 +23,8 @@ import kiev.parser.*;
 import kiev.fmt.*;
 
 import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
+//import syntax kiev.Syntax;
+import kiev.vtree.*;
 
 import java.util.EnumSet;
 
@@ -36,6 +37,8 @@ import java.awt.event.MouseEvent;
 import java.awt.Graphics;
 
 import java.awt.datatransfer.*;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -53,6 +56,7 @@ import javax.swing.JTextField;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.text.TextAction;
+
 
 /**
  * @author mkizub
@@ -72,9 +76,9 @@ public class Editor extends InfoView implements KeyListener {
 	/** The object in clipboard */
 	public final Clipboard	clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
 	
-	protected Stack<Transaction>		changes = new Stack<Transaction>();
+	protected java.util.Stack<Transaction>		changes = new java.util.Stack<Transaction>();
 	
-	protected final Hashtable<InputEventInfo,String[]> keyActionMap;
+	protected final java.util.Hashtable<InputEventInfo,String[]> keyActionMap;
 
 	{
 		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
@@ -111,7 +115,7 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_B),				new PasteElemNext.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
 		
-		this.keyActionMap = new Hashtable<InputEventInfo,String[]>();
+		this.keyActionMap = new java.util.Hashtable<InputEventInfo,String[]>();
 		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_E), new String[]{"kiev.gui.TextEditor$Factory",
 			"kiev.gui.IntEditor$Factory","kiev.gui.EnumEditor$Factory","kiev.gui.AccessEditor$Factory","kiev.gui.ChooseItemEditor"});
 		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_O), new String[]{"kiev.gui.FolderTrigger$Factory"});
@@ -168,9 +172,9 @@ public class Editor extends InfoView implements KeyListener {
 		while (dr != null) {
 			Drawable p = (Drawable)dr.parent();
 			if (p instanceof DrawNonTermList)
-				return new ActionPoint(p,((SpaceAttrSlot)p.slst_attr),p.getInsertIndex(dr, next));
+				return new ActionPoint(p,((SpaceAttrSlot)((DrawNonTermList)p).slst_attr),((DrawNonTermList)p).getInsertIndex(dr, next));
 			if (p instanceof DrawWrapList)
-				return new ActionPoint(p,((SpaceAttrSlot)p.slst_attr),p.getInsertIndex(dr, next));
+				return new ActionPoint(p,((SpaceAttrSlot)((DrawWrapList)p).slst_attr),((DrawWrapList)p).getInsertIndex(dr, next));
 			dr = p;
 		}
 		return null;
@@ -206,12 +210,14 @@ public class Editor extends InfoView implements KeyListener {
 			String[] actions = keyActionMap.get(new InputEventInfo(mask, code));
 			if (actions != null && cur_elem.dr != null && cur_elem.dr.syntax.funcs != null) {
 				Drawable dr;
-				foreach (Draw_SyntaxFunction f; cur_elem.dr.syntax.funcs; (dr=getFunctionTarget(f)) != null) {
-					foreach (String act; actions; act != null && act.equals(f.act)) {
+				for (Draw_SyntaxFunction f: cur_elem.dr.syntax.funcs) 
+					if((dr=getFunctionTarget(f)) != null) {
+					for (String act: actions) 
+						if (act != null && act.equals(f.act)) {
 						try {
 							Class c = Class.forName(f.act);
-							UIActionFactory af = (UIActionFactory)c.newInstance();
-							Runnable r = af.getAction(new UIActionViewContext(this.parent_window, this, dr));
+							af = (UIActionFactory)c.newInstance();
+							r = af.getAction(new UIActionViewContext(this.parent_window, this, dr));
 							if (r != null) {
 								evt.consume();
 								r.run();
@@ -222,7 +228,7 @@ public class Editor extends InfoView implements KeyListener {
 				}
 			}
 			if (mask == 0) {
-				if !(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK)
+				if (!(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK))
 					java.awt.Toolkit.getDefaultToolkit().beep();
 				return;
 			}
@@ -235,12 +241,12 @@ public class Editor extends InfoView implements KeyListener {
 			return dr;
 		String[] attrs = sf.attr.split("\\.");
 		next_attr:
-		foreach(String attr; attrs) {
+		for(String attr: attrs) {
 			while (dr.parent() instanceof DrawCtrl)
 				dr = (Drawable)dr.parent();
-			if !(dr.parent() instanceof DrawNonTerm)
+			if (!(dr.parent() instanceof DrawNonTerm))
 				return null;
-			foreach (Drawable d; ((DrawNonTerm)dr.parent()).args) {
+			for (Drawable d: ((DrawNonTerm)dr.parent()).args) {
 				Drawable x = checkFunctionTarget(attr, d);
 				if (x != null) {
 					dr = x;
@@ -256,13 +262,14 @@ public class Editor extends InfoView implements KeyListener {
 			return null;
 		Draw_SyntaxElem stx0 = dr.syntax;
 		Drawable x;
-		if (stx0 instanceof Draw_SyntaxAttr && attr.equals(stx0.name))
+		if (stx0 instanceof Draw_SyntaxAttr && attr.equals(((Draw_SyntaxAttr)stx0).name))
 			return dr;
-		if (stx0 instanceof Draw_SyntaxSet && stx0.nested_function_lookup) {
-			foreach (Drawable d; ((DrawNonTerm)dr).args; (x=checkFunctionTarget(attr, d)) != null)
-				return x;
+		if (stx0 instanceof Draw_SyntaxSet && ((Draw_SyntaxSet)stx0).nested_function_lookup) {
+			for (Drawable d: ((DrawNonTerm)dr).args) 
+				if( (x=checkFunctionTarget(attr, d)) != null)
+					return x;
 		}
-		if (dr instanceof DrawOptional && (x=checkFunctionTarget(attr, dr.arg)) != null)
+		if (dr instanceof DrawOptional && (x=checkFunctionTarget(attr, ((DrawOptional)dr).arg)) != null)
 			return x;
 		return null;
 	}
@@ -294,7 +301,9 @@ public class Editor extends InfoView implements KeyListener {
 		int y = e.getY() + view_canvas.translated_y;
 		DrawTerm dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
-			if (dr.x < x && dr.y < y && dr.x+dr.w >= x && dr.y+dr.h >= y) {
+			int w = dr._metric & 0xfff;
+			int h = dr._metric >>> 12 & 0xff;
+			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
 			if (dr == view_canvas.last_visible)
@@ -314,7 +323,9 @@ public class Editor extends InfoView implements KeyListener {
 		int y = e.getY() + view_canvas.translated_y;
 		DrawTerm dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
-			if (dr.x < x && dr.y < y && dr.x+dr.w >= x && dr.y+dr.h >= y) {
+			int w = dr._metric & 0xfff;
+			int h = dr._metric >>> 12 & 0xff;
+			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
 			if (dr == view_canvas.last_visible)
@@ -335,12 +346,12 @@ public class Editor extends InfoView implements KeyListener {
 		if (view_root == null)
 			return;
 		try {
-			foreach (ANode node; path) {
+			for (final ANode node: path) {
 				view_root.walkTree(new TreeWalker() {
 					public boolean pre_exec(ANode n) {
 						if (n instanceof Drawable) {
-							if (n instanceof DrawNodeTerm && n.getAttrObject() == node || n.drnode == node) {
-								DrawTerm dr = n.getFirstLeaf();
+							if (n instanceof DrawNodeTerm && ((DrawNodeTerm)n).getAttrObject() == node || ((Drawable)n).get$drnode() == node) {
+								DrawTerm dr = ((DrawNodeTerm)n).getFirstLeaf();
 								cur_elem.set(dr);
 								cur_x = cur_elem.dr.x;
 								makeCurrentVisible();
@@ -379,19 +390,20 @@ public class Editor extends InfoView implements KeyListener {
 	
 		void set(DrawTerm dr) {
 			this.dr = dr;
-			this.node = (dr == null ? null : dr.drnode);
+			this.node = (dr == null ? null : dr.get$drnode());
 			Editor.this.view_canvas.current = dr;
 			Editor.this.view_canvas.current_node = node;
 			if (dr != null) {
-				this.x = dr.x + dr.w / 2;
+				int w = dr._metric & 0xfff;
+				this.x = dr.x + w / 2;
 				this.y = dr.y;
-				Vector<Drawable> v = new Vector<Drawable>();
+				java.util.Vector<Drawable> v = new java.util.Vector<Drawable>();
 				Drawable d = dr;
 				while (d != null) {
-					v.append(d);
+					v.add(d);
 					d = (Drawable)d.parent();
 				}
-				path = v.toArray();
+				path = v.toArray(new Drawable[v.size()]);
 			} else {
 				path = Drawable.emptyArray;
 			}
@@ -407,7 +419,7 @@ public class Editor extends InfoView implements KeyListener {
 				set(root.getFirstLeaf());
 				return;
 			}
-			if (dr.ctx_root == root)
+			if (dr.get$ctx_root() == root)
 				return;
 			if (path.length == 0) {
 				set(root.getFirstLeaf());
@@ -416,7 +428,7 @@ public class Editor extends InfoView implements KeyListener {
 			Drawable last = path[path.length-1];
 			Drawable bad = null;
 			for (int i=path.length-1; i >= 0 && bad == null; i--) {
-				if (path[i].ctx_root == root && path[i].getFirstLeaf() != null)
+				if (path[i].get$ctx_root() == root && path[i].getFirstLeaf() != null)
 					last = path[i];
 				else
 					bad = path[i];
@@ -433,7 +445,7 @@ public class Editor extends InfoView implements KeyListener {
 	}
 }
 
-public class ActionPoint {
+class ActionPoint {
 	public final Drawable	dr;
 	public final ANode		node;
 	public final AttrSlot	slot;
@@ -441,11 +453,11 @@ public class ActionPoint {
 	public final int		length;
 	public ActionPoint(Drawable dr, AttrSlot slot) {
 		this.dr = dr;
-		this.node = dr.drnode;
+		this.node = dr.get$drnode();
 		this.slot = slot;
 		if (slot instanceof SpaceAttrSlot) {
 			this.index = 0;
-			this.length = slot.getArray(node).length;
+			this.length = ((SpaceAttrSlot)slot).getArray(node).length;
 		} else {
 			this.index = -1;
 			this.length = -1;
@@ -453,7 +465,7 @@ public class ActionPoint {
 	}
 	public ActionPoint(Drawable dr, SpaceAttrSlot slot, int idx) {
 		this.dr = dr;
-		this.node = dr.drnode;
+		this.node = dr.get$drnode();
 		this.slot = slot;
 		this.length = slot.getArray(node).length;
 		if (idx <= 0) {
@@ -467,8 +479,15 @@ public class ActionPoint {
 	}
 }
 
-public class TransferableANode implements Transferable, ClipboardOwner {
-	static DataFlavor transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vtree.ANode");
+class TransferableANode implements Transferable, ClipboardOwner {
+	static DataFlavor transferableANodeFlavor;
+	static {
+		try {
+			transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vtree.ANode");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 	public final ANode node;
 	public TransferableANode(ANode node) {
 		this.node = node;
@@ -480,8 +499,9 @@ public class TransferableANode implements Transferable, ClipboardOwner {
 		};
 	}
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-		foreach (DataFlavor df; getTransferDataFlavors(); df.equals(flavor))
-			return true;
+		for (DataFlavor df: getTransferDataFlavors()) 
+			if( df.equals(flavor))
+				return true;
 		return false;
 	}
     public Object getTransferData(DataFlavor flavor)
@@ -497,19 +517,19 @@ public class TransferableANode implements Transferable, ClipboardOwner {
 }
 
 
-public interface KeyHandler {
+interface KeyHandler {
 	public void process();
 }
 
 final class ChooseItemEditor implements UIActionFactory {
 
-	public String getDescr() { "Edit current element" }
-	public boolean isForPopupMenu() { false }
+	public String getDescr() { return "Edit current element"; }
+	public boolean isForPopupMenu() { return false; }
 	public Runnable getAction(UIActionViewContext context) {
 		if (context.editor == null)
 			return null;
 		Editor editor = context.editor;
-		if (context.dt.drnode != context.node)
+		if (context.dt.get$drnode() != context.node)
 			return null;
 		Drawable dr = context.dr;
 		if (dr instanceof DrawNodeTerm) {
@@ -523,7 +543,7 @@ final class ChooseItemEditor implements UIActionFactory {
 			else if (obj instanceof Integer)
 				return new IntEditor(editor, dt, pattr);
 			else if (obj instanceof ConstIntExpr)
-				return new IntEditor(editor, dt, obj.getScalarPtr("value"));
+				return new IntEditor(editor, dt, ((ConstIntExpr)obj).getScalarPtr("value"));
 			else if (obj instanceof Boolean || Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
 				return new EnumEditor(editor, dt, pattr);
 		}
@@ -536,14 +556,14 @@ final class ChooseItemEditor implements UIActionFactory {
 				if (dt == null)
 					dt = editor.cur_elem.dr.getNextLeaf();
 			}
-			return new EnumEditor(editor, dt, dec.drnode.getScalarPtr(stx.name));
+			return new EnumEditor(editor, dt, dec.get$drnode().getScalarPtr(stx.name));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
-			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getScalarPtr(stx.name));
+			return new EnumEditor(editor, dr.getFirstLeaf(), dec.get$drnode().getScalarPtr(stx.name));
 		}
-		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxToken.TokenKind.OPERATOR) {
+		else if (dr instanceof DrawToken && dr.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxToken.SyntaxToken$TokenKind.OPERATOR) {
 			return new OperatorEditor(editor, (DrawToken)dr);
 		}
 		return null;
@@ -563,8 +583,8 @@ final class FolderTrigger implements Runnable {
 	}
 
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Toggle folding" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Toggle folding"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -581,27 +601,28 @@ final class FolderTrigger implements Runnable {
 final class FunctionExecuter implements Runnable {
 
 	public JPopupMenu			menu;
-	final Vector<TextAction>	actions;
+	final java.util.Vector<TextAction>	actions;
 
 	private final Editor editor;
 	FunctionExecuter(Editor editor) {
 		this.editor = editor;
-		actions = new Vector<TextAction>();
+		actions = new java.util.Vector<TextAction>();
 	}
 	
 	public void run() {
 		menu = new JPopupMenu();
-		foreach (TextAction act; actions)
+		for (TextAction act: actions)
 			menu.add(new JMenuItem(act));
 		int x = editor.cur_elem.dr.x;
-		int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
+		int h = editor.cur_elem.dr._metric >>> 12 & 0xff;
+		int y = editor.cur_elem.dr.y + h - editor.view_canvas.translated_y;
 		menu.show(editor.view_canvas, x, y);
 	}
 
 
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Popup list of functions for a current element" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Popup list of functions for a current element"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -609,13 +630,14 @@ final class FunctionExecuter implements Runnable {
 			Drawable dr = context.dr;
 			if (dr == null)
 				return null;
-			if (dr.drnode != context.node)
+			if (dr.get$drnode() != context.node)
 				return null;
 			Draw_SyntaxFunction[] sfs_funcs = dr.syntax.funcs;
 			if (sfs_funcs == null || sfs_funcs.length == 0)
 				return null;
 			FunctionExecuter fe = new FunctionExecuter(editor);
-			foreach (Draw_SyntaxFunction sf; sfs_funcs; sf.act != null) {
+			for (Draw_SyntaxFunction sf: sfs_funcs) 
+				if(sf.act != null) {
 				try {
 					dr = editor.getFunctionTarget(sf);
 					if (dr == null)
@@ -623,27 +645,27 @@ final class FunctionExecuter implements Runnable {
 					if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
 						if (dr.syntax instanceof Draw_SyntaxList) {
 							Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
-							if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
-								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, slst));
+							if (((Object[])dr.get$drnode().getVal(slst.name)).length == 0)
+								fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), slst));
 						}
 					}
 					else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
 						if (dr.syntax instanceof Draw_SyntaxAttr) {
 							Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-							if (dr.drnode.getVal(satr.name) == null)
-								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
+							if (dr.get$drnode().getVal(satr.name) == null)
+								fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), satr));
 						}
 					}
 					else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
 						if (dr.syntax instanceof Draw_SyntaxToken) {
-							if (dr.drnode instanceof ENode)
-								fe.actions.append(fe.new EditElemAction(sf.title, dr));
+							if (dr.get$drnode() instanceof ENode)
+								fe.actions.add(fe.new EditElemAction(sf.title, dr));
 						}
 					}
 					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
 						if (dr.syntax instanceof Draw_SyntaxAttr) {
 							Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-							fe.actions.append(fe.new EditElemAction(sf.title, dr));
+							fe.actions.add(fe.new EditElemAction(sf.title, dr));
 						}
 					}
 					else {
@@ -654,16 +676,16 @@ final class FunctionExecuter implements Runnable {
 								continue;
 							Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, editor, dr));
 							if (r != null)
-								fe.actions.append(fe.new RunFuncAction(sf.title, r));
+								fe.actions.add(fe.new RunFuncAction(sf.title, r));
 						} catch (Throwable t) {}
 					}
 				} catch (Throwable t) {}
 			}
-			foreach (UIActionFactory af; editor.naviMap; af.isForPopupMenu()) {
+			for (UIActionFactory af: editor.naviMap.values()) if(af.isForPopupMenu()) {
 				try {
 					Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, editor, dr));
 					if (r != null)
-						fe.actions.append(fe.new RunFuncAction(af.getDescr(), r));
+						fe.actions.add(fe.new RunFuncAction(af.getDescr(), r));
 				} catch (Throwable t) {}
 			}
 			if (fe.actions.size() > 0)
@@ -754,7 +776,7 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 	private void addItems(Menu menu, ExpectedTypeInfo[] expected_types, ANode n, String name) {
 		if (expected_types == null)
 			return;
-		foreach (ExpectedTypeInfo eti; expected_types) {
+		for (ExpectedTypeInfo eti: expected_types) {
 			if (eti.typeinfo != null) {
 				String title = eti.title;
 				if (title == null)
@@ -775,14 +797,14 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 	
 	private JMenu makeSubMenu(Menu m) {
 		JMenu jm = new JMenu(m.title);
-		foreach (Menu sub; m.menus) {
+		for (Menu sub: m.menus) {
 			while (sub.actions.length == 0 && sub.menus.length == 1)
 				sub = sub.menus[0];
 			if (sub.actions.length == 0 && sub.menus.length == 0)
 				continue;
 			jm.add(makeSubMenu(sub));
 		}
-		foreach (NewElemAction a; m.actions)
+		for (NewElemAction a: m.actions)
 			jm.add(a);
 		return jm;
 	}
@@ -790,14 +812,14 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		while (m.actions.length == 0 && m.menus.length == 1)
 			m = m.menus[0];
 		JPopupMenu jp = new JPopupMenu(m.title);
-		foreach (Menu sub; m.menus) {
+		for (Menu sub: m.menus) {
 			while (sub.actions.length == 0 && sub.menus.length == 1)
 				sub = sub.menus[0];
 			if (sub.actions.length == 0 && sub.menus.length == 0)
 				continue;
 			jp.add(makeSubMenu(sub));
 		}
-		foreach (NewElemAction a; m.actions)
+		for (NewElemAction a: m.actions)
 			jp.add(a);
 		return jp;
 	}
@@ -808,7 +830,8 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
 		int x = editor.cur_elem.dr.x;
-		int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
+		int h = editor.cur_elem.dr._metric >>> 12 & 0xff;
+		int y = editor.cur_elem.dr.y + h - editor.view_canvas.translated_y;
 		this.menu.show(editor.view_canvas, x, y);
 		editor.startItemEditor(this);
 	}
@@ -837,19 +860,20 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
 				editor.view_canvas.remove(menu);
-			foreach (AttrSlot a; node.values(); a.name == attr) {
+			for (AttrSlot a: node.values()) 
+				if (a.name == attr) {
 				try {
 					ANode obj = (ANode)typeinfo.newInstance();
 					obj.initForEditor();
 					if (a instanceof SpaceAttrSlot) {
 						if (idx < 0)
 							idx = 0;
-						else if (idx > a.getArray(node).length)
-							idx = a.getArray(node).length;
-						a.insert(node,idx,obj);
+						else if (idx > ((SpaceAttrSlot)a).getArray(node).length)
+							idx = ((SpaceAttrSlot)a).getArray(node).length;
+						((SpaceAttrSlot)a).insert(node,idx,obj);
 					}
 					else if (a instanceof ExtSpaceAttrSlot) {
-						a.add(node, obj);
+						((ExtSpaceAttrSlot)a).add(node, obj);
 					}
 					else {
 						((ScalarAttrSlot)a).set(node, obj);
@@ -874,16 +898,16 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 	public void run() {
 		Drawable dr = editor.cur_elem.dr;
 		if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
-			ANode n = dr.drnode;
+			ANode n = dr.get$drnode();
 			Draw_SyntaxAttr satt = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
 			makeMenu("Set new item", n, satt);
 			return;
 		}
-		if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrObject() == null)) {
-			ANode n = dr.drnode;
+		if (dr instanceof DrawNodeTerm && (dr.get$drnode() == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
+			ANode n = dr.get$drnode();
 			while (n == null) {
 				dr = (Drawable)dr.parent();
-				n = dr.drnode;
+				n = dr.get$drnode();
 			}
 			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
 			makeMenu("Set new item", n, satt);
@@ -898,25 +922,25 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 		}
 	}
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Create a new element at this position" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Create a new element at this position"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
 			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
-				ANode n = dr.drnode;
+				ANode n = dr.get$drnode();
 				Draw_SyntaxAttr satt = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
 				if (satt.expected_types == null || satt.expected_types.length == 0)
 					return null;
 				return new NewElemHere(editor);
 			}
-			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrObject() == null)) {
-				ANode n = dr.drnode;
+			if (dr instanceof DrawNodeTerm && (dr.get$drnode() == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
+				ANode n = dr.get$drnode();
 				while (n == null) {
 					dr = (Drawable)dr.parent();
-					n = dr.drnode;
+					n = dr.get$drnode();
 				}
 				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
 				if (satt.expected_types == null || satt.expected_types.length == 0)
@@ -946,8 +970,8 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 		}
 	}
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Create a new element at next position" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Create a new element at next position"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -966,8 +990,8 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 final class PasteElemHere implements Runnable {
 	final ANode      paste_node;
 	final Editor     editor;
-	final ScalarPtr  pattr;
-	final ActionPoint ap;
+	ScalarPtr  pattr = null;
+	ActionPoint ap = null;
 	PasteElemHere(ANode paste_node, Editor editor, ScalarPtr pattr) {
 		this.paste_node = paste_node;
 		this.editor = editor;
@@ -985,8 +1009,8 @@ final class PasteElemHere implements Runnable {
 			if (node.isAttached())
 				node = node.ncopy();
 			if (pattr != null) {
-				if (pattr.slot instanceof SpaceAttrSlot)
-					((SpaceAttrSlot)pattr.slot).insert(pattr.node, 0, node);
+				if (((Object)pattr.slot) instanceof SpaceAttrSlot)
+					((SpaceAttrSlot)((Object)pattr.slot)).insert(pattr.node, 0, node);
 				else
 					pattr.set(node);
 			}
@@ -998,8 +1022,8 @@ final class PasteElemHere implements Runnable {
 		editor.formatAndPaint(true);
 	}
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Paste an element at this position" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Paste an element at this position"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -1008,7 +1032,16 @@ final class PasteElemHere implements Runnable {
 			Transferable content = editor.clipboard.getContents(null);
 			if (!content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor))
 				return null;
-			ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+			ANode node = null;
+			try {
+				node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+			} catch (UnsupportedFlavorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			// try paste as a node into null
 			if (dr instanceof DrawNodeTerm) {
 				DrawNodeTerm dt = (DrawNodeTerm)dr;
@@ -1019,10 +1052,10 @@ final class PasteElemHere implements Runnable {
 			// try paste as a node into placeholder
 			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
 				Draw_SyntaxAttr sa = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
-				ScalarPtr pattr = dr.drnode.getScalarPtr(sa.name);
+				ScalarPtr pattr = dr.get$drnode().getScalarPtr(sa.name);
 				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
 					return new PasteElemHere(node, editor, pattr);
-				else if (pattr.slot instanceof SpaceAttrSlot && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
+				else if (((Object)pattr.slot) instanceof SpaceAttrSlot && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
 					return new PasteElemHere(node, editor, pattr);
 			}
 			// try paste as an element of list
@@ -1042,7 +1075,16 @@ final class PasteElemNext implements Runnable {
 	}
 	public void run() {
 		Transferable content = editor.clipboard.getContents(null);
-		ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+		ANode node = null;
+		try {
+			node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+		} catch (UnsupportedFlavorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		ActionPoint ap = editor.getActionPoint(true);
 		editor.changes.push(Transaction.open("Editor.java:PasteElemNext"));
 		try {
@@ -1055,8 +1097,8 @@ final class PasteElemNext implements Runnable {
 		editor.formatAndPaint(true);
 	}
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Paste an element at next position" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Paste an element at next position"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -1064,7 +1106,16 @@ final class PasteElemNext implements Runnable {
 			Transferable content = editor.clipboard.getContents(null);
 			if (!content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor))
 				return null;
-			ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+			ANode node = null;
+			try {
+				node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+			} catch (UnsupportedFlavorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			ActionPoint ap = editor.getActionPoint(true);
 			if (ap == null || ap.length < 0)
 				return null;
@@ -1085,18 +1136,18 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 	protected       JComboBox	combo;
 
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Edit the attribute as a text" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Edit the attribute as a text"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt.syntax instanceof Draw_SyntaxAttr)
+			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
-			if (dt.drnode != context.node)
+			if (dt.get$drnode() != context.node)
 				return null;
-			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.get$drnode().getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new TextEditor(editor, dt, pattr);
 		}
 	}
@@ -1222,7 +1273,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		case KeyEvent.VK_ENTER:
 			if (in_combo) {
 				in_combo = false;
-				String text = (String)combo.getSelectedItem();
+				text = (String)combo.getSelectedItem();
 				this.setText(text);
 				edit_offset = text.length();
 				combo.setPopupVisible(false);
@@ -1276,7 +1327,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 	}
 
 	void showAutoComplete() {
-		if !(pattr.node instanceof ASTNode)
+		if (!(pattr.node instanceof ASTNode))
 			return;
 		String name = getText();
 		if (name == null || name.length() == 0)
@@ -1300,12 +1351,12 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		combo.setPopupVisible(false);
 		int x = dr_term.x;
 		int y = dr_term.y - editor.view_canvas.translated_y;
-		int w = dr_term.w;
-		int h = dr_term.h;
+		int w = dr_term._metric & 0xfff;
+		int h = dr_term._metric >>> 12 & 0xff;
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
-		foreach (DNode dn; decls) {
-			combo.addItem(qualified ? dn.qname.replace('\u001f','.') : dn.sname);
+		for (DNode dn: decls) {
+			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.sname);
 			popup = true;
 		}
 		if (popup) {
@@ -1326,18 +1377,18 @@ final class IntEditor extends TextEditor {
 	}
 	
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Edit the attribute as an integer" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Edit the attribute as an integer"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt.syntax instanceof Draw_SyntaxAttr)
+			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
-			if (dt.drnode != context.node)
+			if (dt.get$drnode() != context.node)
 				return null;
-			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.get$drnode().getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new IntEditor(editor, dt, pattr);
 		}
 	}
@@ -1376,18 +1427,18 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 	}
 	
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Edit the attribute as an enumerated value" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Edit the attribute as an enumerated value"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt.syntax instanceof Draw_SyntaxAttr)
+			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
-			if (dt.drnode != context.node)
+			if (dt.get$drnode() != context.node)
 				return null;
-			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.get$drnode().getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new EnumEditor(editor, dt, pattr);
 		}
 	}
@@ -1401,12 +1452,33 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 			//EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
 			//foreach (Enum e; ens.toArray())
 			//	menu.add(new JMenuItem(new SetSyntaxAction(e)));
-			java.lang.reflect.Method vals = pattr.slot.typeinfo.clazz.getMethod("values");
-			foreach (Enum e; (Enum[])vals.invoke(null))
-				menu.add(new JMenuItem(new SetSyntaxAction(e)));
+			java.lang.reflect.Method vals = null;
+			try {
+				vals = pattr.slot.typeinfo.clazz.getMethod("values");
+			} catch (SecurityException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NoSuchMethodException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				for (Enum e: ((Enum[])vals.invoke(null)))
+					menu.add(new JMenuItem(new SetSyntaxAction(e)));
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		int x = cur_elem.x;
-		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
+		int h = cur_elem._metric >>> 12 & 0xff;
+		int y = cur_elem.y + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}
@@ -1454,16 +1526,16 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 	}
 	
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Edit access attribute" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Edit access attribute"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if !(dt instanceof DrawJavaAccess)
+			if (!(dt instanceof DrawJavaAccess))
 				return null;
-			if (dt.drnode != context.node)
+			if (dt.get$drnode() != context.node)
 				return null;
 			return new AccessEditor(editor, (DrawJavaAccess)dt);
 		}
@@ -1478,7 +1550,7 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		menu.add(b=new SetSimpleMenuItem("@protected", "protected"));	group.add(b); b.addActionListener(this);
 		menu.add(b=new SetSimpleMenuItem("@access",    ""));			group.add(b); b.addActionListener(this);
 		menu.add(b=new SetSimpleMenuItem("@private",   "private"));	group.add(b); b.addActionListener(this);
-		int flags = ((MetaAccess)cur_elem.drnode).flags;
+		int flags = ((MetaAccess)cur_elem.get$drnode()).flags;
 		menu.add(b=new JCheckBoxMenuItem("Access bits")); b.setSelected(flags != -1); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("public read",     1<<7, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("public write",    1<<6, flags)); b.addActionListener(this);
@@ -1489,7 +1561,8 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		menu.add(b=new SetFlagsMenuItem("private read",    1<<1, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("private write",   1<<0, flags)); b.addActionListener(this);
 		int x = cur_elem.x;
-		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
+		int h = cur_elem._metric >>> 12 & 0xff;
+		int y = cur_elem.y + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}
@@ -1514,31 +1587,31 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		try {
 			if (e.getSource() instanceof SetSimpleMenuItem) {
 				SetSimpleMenuItem mi = (SetSimpleMenuItem)e.getSource();
-				((MetaAccess)cur_elem.drnode).simple = mi.val;
+				((MetaAccess)cur_elem.get$drnode()).simple = mi.val;
 				setMenuVisible();
 			}
 			else if (e.getSource() instanceof SetFlagsMenuItem) {
 				SetFlagsMenuItem mi = (SetFlagsMenuItem)e.getSource();
 				if (mi.isSelected())
-					((MetaAccess)cur_elem.drnode).flags |= mi.val;
+					((MetaAccess)cur_elem.get$drnode()).flags |= mi.val;
 				else
-					((MetaAccess)cur_elem.drnode).flags &= ~mi.val;
+					((MetaAccess)cur_elem.get$drnode()).flags &= ~mi.val;
 				setMenuVisible();
 			}
 			else if (e.getSource() instanceof JCheckBoxMenuItem) {
 				JCheckBoxMenuItem mi = (JCheckBoxMenuItem)e.getSource();
 				if (mi.isSelected()) {
-					int flags = ((MetaAccess)cur_elem.drnode).flags;
-					foreach (SetFlagsMenuItem sf; menu.getSubElements()) {
+					int flags = ((MetaAccess)cur_elem.get$drnode()).flags;
+					for (SetFlagsMenuItem sf: (SetFlagsMenuItem[])menu.getSubElements()) {
 						sf.setEnabled(true);
 						sf.setSelected((flags & sf.val) != 0);
 					}
 				} else {
-					foreach (SetFlagsMenuItem sf; menu.getSubElements()) {
+					for (SetFlagsMenuItem sf: (SetFlagsMenuItem[])menu.getSubElements()) {
 						sf.setEnabled(false);
 						sf.setSelected(false);
 					}
-					((MetaAccess)cur_elem.drnode).flags = -1;
+					((MetaAccess)cur_elem.get$drnode()).flags = -1;
 				}
 				setMenuVisible();
 			}
@@ -1557,7 +1630,7 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		SetSimpleMenuItem(String text, String val) {
 			super(text);
 			this.val = val;
-			setSelected((((MetaAccess)cur_elem.drnode).simple == val));
+			setSelected((((MetaAccess)cur_elem.get$drnode()).simple == val));
 		}
 	}
 	class SetFlagsMenuItem extends JCheckBoxMenuItem {
@@ -1581,21 +1654,21 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 	OperatorEditor(Editor editor, DrawTerm cur_elem) {
 		this.editor = editor;
 		this.cur_elem = cur_elem;
-		this.expr = (ENode)cur_elem.drnode;
+		this.expr = (ENode)cur_elem.get$drnode();
 		this.menu = new JPopupMenu();
 	}
 	
 	final static class Factory implements UIActionFactory {
-		public String getDescr() { "Edit the operator of an expression" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Edit the operator of an expression"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
-			if (dt.drnode != context.node)
+			if (dt.get$drnode() != context.node)
 				return null;
-			if !(dt instanceof DrawToken && dt.drnode instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.OPERATOR)
+			if (!(dt instanceof DrawToken && dt.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.SyntaxToken$TokenKind.OPERATOR))
 				return null;
 			return new OperatorEditor(editor, dt);
 		}
@@ -1605,44 +1678,57 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 		editor.startItemEditor(this);
 		if (expr instanceof TypeExpr) {
 			// show all postfix type operators
-			foreach (Operator op; Operator.allOperatorNamesHash; op.name.startsWith("T "))
-				menu.add(new JMenuItem(new SetSyntaxAction(op)));
+			for(Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
+				Operator op = (Operator)op$iter.nextElement();
+				if (op.name.startsWith("T "))
+					menu.add(new JMenuItem(new SetSyntaxAction(op)));
+			}
 		}
 		else if (expr.getArgs().length == 2) {
 			JMenu m_assign = new JMenu("Assign");
 			menu.add(m_assign);
-			foreach (Operator op; Operator.allAssignOperators; op.arity == 2)
-				m_assign.add(new JMenuItem(new SetSyntaxAction(op)));
+			for (Operator op: Operator.allAssignOperators) 
+				if (op.arity == 2)
+					m_assign.add(new JMenuItem(new SetSyntaxAction(op)));
 
 			JMenu m_bool   = new JMenu("Boolean");
 			menu.add(m_bool);
-			foreach (Operator op; Operator.allBoolOperators; op.arity == 2)
-				m_bool.add(new JMenuItem(new SetSyntaxAction(op)));
+			for (Operator op: Operator.allBoolOperators) 
+				if(op.arity == 2)
+					m_bool.add(new JMenuItem(new SetSyntaxAction(op)));
 
 			JMenu m_math   = new JMenu("Arithmetic");
 			menu.add(m_math);
-			foreach (Operator op; Operator.allMathOperators; op.arity == 2)
-				m_math.add(new JMenuItem(new SetSyntaxAction(op)));
+			for (Operator op: Operator.allMathOperators) 
+				if (op.arity == 2)
+					m_math.add(new JMenuItem(new SetSyntaxAction(op)));
 
 			JMenu m_others = new JMenu("Others");
 			menu.add(m_others);
-			foreach (Operator op; Operator.allOperatorNamesHash; op.arity == 2 && !op.name.startsWith("T ")) {
-				if (Arrays.contains(Operator.allAssignOperators, op))
-					continue;
-				if (Arrays.contains(Operator.allBoolOperators, op))
-					continue;
-				if (Arrays.contains(Operator.allMathOperators, op))
-					continue;
-				m_others.add(new JMenuItem(new SetSyntaxAction(op)));
+			for(Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
+				Operator op = (Operator)op$iter.nextElement();
+				if (op.arity == 2 && !op.name.startsWith("T ")) {
+					if (Arrays.contains(Operator.allAssignOperators, op))
+						continue;
+					if (Arrays.contains(Operator.allBoolOperators, op))
+						continue;
+					if (Arrays.contains(Operator.allMathOperators, op))
+						continue;
+					m_others.add(new JMenuItem(new SetSyntaxAction(op)));
+				}
 			}
 		}
 		else {
 			int arity = expr.getArgs().length;
-			foreach (Operator op; Operator.allOperatorNamesHash; op.arity == arity && !op.name.startsWith("T "))
-				menu.add(new JMenuItem(new SetSyntaxAction(op)));
+			for(Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
+				Operator op = (Operator)op$iter.nextElement();
+				if( op.arity == arity && !op.name.startsWith("T "))
+					menu.add(new JMenuItem(new SetSyntaxAction(op)));
+			}
 		}
 		int x = cur_elem.x;
-		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
+		int h = cur_elem._metric >>> 12 & 0xff;
+		int y = cur_elem.y + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}
@@ -1667,7 +1753,7 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 		public void actionPerformed(ActionEvent e) {
 			editor.view_canvas.remove(menu);
 			try {
-				ENode expr = this.expr;
+				ENode expr = OperatorEditor.this.expr;
 				expr.setOp(op);
 			} catch (Throwable t) {
 				editor.stopItemEditor(true);
@@ -1717,7 +1803,7 @@ final class FindDialog extends JDialog implements ActionListener {
 			this.dispose();
 		}
 	}
-	private void lookup(String txt) {
+	private void lookup(final String txt) {
 		try {
 			cur_node.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) {
@@ -1731,15 +1817,15 @@ final class FindDialog extends JDialog implements ActionListener {
 		}
 	}
 	private void setNode(ANode n) {
-		Vector<ANode> path = new Vector<ANode>();
-		path.append(n);
+		java.util.Vector<ANode> path = new java.util.Vector<ANode>();
+		path.add(n);
 		while (n.parent() != null) {
 			n = n.parent();
-			path.append(n);
+			path.add(n);
 			if (n instanceof FileUnit)
 				break;
 		}
-		the_view.goToPath(path.toArray());
+		the_view.goToPath(path.toArray(new ANode[path.size()]));
 	}
 	static class FoundException extends RuntimeException {
 		final ANode node;

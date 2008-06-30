@@ -12,15 +12,15 @@ package kiev.gui;
 
 import kiev.Kiev;
 import kiev.CError;
-import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vtree.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 import kiev.fmt.*;
 
 import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
+//import syntax kiev.Syntax;
 
 
 import java.awt.event.ActionEvent;
@@ -43,6 +43,7 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Hashtable;
 
 
 /**
@@ -60,7 +61,10 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 		public void run() {
 			for (;;) {
 				while (!do_format) {
-					synchronized(this) { this.wait(); }
+					synchronized(this) { try {
+						this.wait();
+					} catch (InterruptedException e) {}
+					}
 					continue;
 				}
 				this.do_format = false;
@@ -79,7 +83,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 	/** A background thread to format and paint */
 	protected BgFormatter	bg_formatter;
                                                    
-	protected final Hashtable<InputEventInfo,UIActionFactory> naviMap;
+	protected final java.util.Hashtable<InputEventInfo,UIActionFactory> naviMap;
 
 	{
 		this.naviMap = new Hashtable<InputEventInfo,UIActionFactory>();
@@ -230,7 +234,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 			evt.consume();
 			r.run();
 		} else {
-			if !(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK)
+			if (!(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK))
 				java.awt.Toolkit.getDefaultToolkit().beep();
 		}
 	}

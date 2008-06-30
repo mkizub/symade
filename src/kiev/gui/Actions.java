@@ -10,20 +10,22 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.CompilerParseInfo;
 import kiev.Kiev;
 import kiev.Compiler;
 import kiev.CompilerThread;
 import kiev.EditorThread;
 import kiev.CError;
-import kiev.stdlib.*;
+import kiev.vtree.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 import kiev.fmt.*;
+import kiev.gui.FileActions.DumpFileFilter;
 
 import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
+//import syntax kiev.Syntax;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -41,10 +43,11 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Vector;
 
 import java.awt.datatransfer.*;
 
-public final class InputEventInfo {
+final class InputEventInfo {
 	private final int mask;
 	private final int code;
 	public InputEventInfo(int mask, int code) {
@@ -54,7 +57,7 @@ public final class InputEventInfo {
 	public int hashCode() { return mask ^ code; }
 	public boolean equals(Object ie) {
 		if (ie instanceof InputEventInfo)
-			return this.mask == ie.mask && ie.code == code;
+			return this.mask == ((InputEventInfo)ie).mask && ((InputEventInfo)ie).code == code;
 		return false;
 	}
 	public String toString() {
@@ -65,7 +68,7 @@ public final class InputEventInfo {
 	}
 }
 
-public class UIActionViewContext {
+class UIActionViewContext {
 	public final Window		wnd;
 	public final UIView		ui;
 	public final InfoView	uiv;
@@ -78,12 +81,19 @@ public class UIActionViewContext {
 		this.ui = ui;
 		if (ui instanceof InfoView) {
 			this.uiv = (InfoView)ui;
+		} else {
+			this.uiv = null;
 		}
 		if (ui instanceof Editor) {
 			this.editor = (Editor)ui;
 			this.dt = editor.cur_elem.dr;
 			this.node = editor.cur_elem.node;
 			this.dr = dt;
+		} else {
+			this.editor = null;
+			this.dt = null;
+			this.node = null;
+			this.dr = null;
 		}
 	}
 	public UIActionViewContext(Window wnd, Editor editor, Drawable dr) {
@@ -97,13 +107,13 @@ public class UIActionViewContext {
 	}
 }
 
-public interface UIActionFactory {
+interface UIActionFactory {
 	public String getDescr();
 	public boolean isForPopupMenu();
 	public Runnable getAction(UIActionViewContext context);
 }
 
-public final class NavigateView implements Runnable {
+final class NavigateView implements Runnable {
 	
 	final InfoView uiv;
 	final int incr;
@@ -118,30 +128,30 @@ public final class NavigateView implements Runnable {
 	}
 
 	final static class LineUp implements UIActionFactory {
-		public String getDescr() { "Scroll the view one line up" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Scroll the view one line up"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new NavigateView(context.uiv, -1);
 		}
 	}
 	final static class LineDn implements UIActionFactory {
-		public String getDescr() { "Scroll the view one line down" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Scroll the view one line down"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new NavigateView(context.uiv, +1);
 		}
 	}
 	final static class PageUp implements UIActionFactory {
-		public String getDescr() { "Scroll the view one page up" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Scroll the view one page up"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
 			return new NavigateView(uiv, -uiv.view_canvas.last_visible.lineno + uiv.view_canvas.first_visible.lineno + 1);
 		}
 	}
 	final static class PageDn implements UIActionFactory {
-		public String getDescr() { "Scroll the view one page down" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Scroll the view one page down"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
 			return new NavigateView(uiv, +uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno - 1);
@@ -149,7 +159,7 @@ public final class NavigateView implements Runnable {
 	}
 }
 
-public class NavigateEditor implements Runnable {
+class NavigateEditor implements Runnable {
 
 	final Editor uiv;
 	final int incr;
@@ -173,8 +183,8 @@ public class NavigateEditor implements Runnable {
 	}
 	
 	final static class GoPrev implements UIActionFactory {
-		public String getDescr() { "Go to the previous element" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to the previous element"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-1);
@@ -182,8 +192,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoNext implements UIActionFactory {
-		public String getDescr() { "Go to the next element" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to the next element"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+1);
@@ -191,8 +201,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoLineUp implements UIActionFactory {
-		public String getDescr() { "Go to an element above" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to an element above"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-2);
@@ -200,8 +210,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoLineDn implements UIActionFactory {
-		public String getDescr() { "Go to an element below" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to an element below"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+2);
@@ -209,8 +219,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoLineHome implements UIActionFactory {
-		public String getDescr() { "Go to the first element on the line" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to the first element on the line"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-3);
@@ -218,8 +228,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoLineEnd implements UIActionFactory {
-		public String getDescr() { "Go to the last element on the line" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to the last element on the line"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+3);
@@ -227,8 +237,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoPageUp implements UIActionFactory {
-		public String getDescr() { "Go to an element one screen above" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to an element one screen above"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-4);
@@ -236,8 +246,8 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	final static class GoPageDn implements UIActionFactory {
-		public String getDescr() { "Go to an element one screen below" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Go to an element one screen below"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+4);
@@ -290,19 +300,21 @@ public class NavigateEditor implements Runnable {
 		if (prev != null)
 			prev = prev.getPrevLeaf();
 		while (prev != null) {
-			if (prev.do_newline) {
+			if (prev.get$do_newline()) {
 				n = prev;
 				break;
 			}
 			prev = prev.getPrevLeaf();
 		}
 		while (n != null) {
-			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
+			int w = n._metric & 0xfff;
+			if (n.x <= uiv.cur_x && n.x+w >= uiv.cur_x) 
 				break;
 			prev = n.getPrevLeaf();
-			if (prev == null || prev.do_newline)
+			if (prev == null || prev.get$do_newline())
 				break;
-			if (prev.x+prev.w < uiv.cur_x)
+			w = prev._metric & 0xfff;
+			if (prev.x+w < uiv.cur_x) 
 				break;
 			n = prev;
 		}
@@ -317,21 +329,22 @@ public class NavigateEditor implements Runnable {
 		DrawTerm n = null;
 		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf();
 		while (next != null) {
-			if (next.do_newline) {
+			if (next.get$do_newline()) {
 				n = next.getNextLeaf();
 				break;
 			}
 			next = next.getNextLeaf();
 		}
 		while (n != null) {
-			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
+			int w = n._metric & 0xfff;
+			if (n.x <= uiv.cur_x && n.x+w >= uiv.cur_x) 
 				break;
 			next = n.getNextLeaf();
 			if (next == null)
 				break;
 			if (next.x > uiv.cur_x)
 				break;
-			if (next.do_newline)
+			if (next.get$do_newline())
 				break;
 			n = next;
 		}
@@ -399,7 +412,7 @@ public class NavigateEditor implements Runnable {
 
 }
 
-public class NavigateNode implements Runnable {
+class NavigateNode implements Runnable {
 
 	final Editor uiv;
 	final String cmd;
@@ -421,8 +434,8 @@ public class NavigateNode implements Runnable {
 	}
 
 	final static class NodeUp implements UIActionFactory {
-		public String getDescr() { "Select parent node" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Select parent node"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.node != null && context.editor.cur_elem.node.parent() != null)
 				return new NavigateNode(context.editor, "select-up");
@@ -431,8 +444,8 @@ public class NavigateNode implements Runnable {
 	}
 
 	final static class InsertMode implements UIActionFactory {
-		public String getDescr() { "Change insert/command editor mode" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Change insert/command editor mode"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateNode(context.editor, "insert-mode");
@@ -443,7 +456,7 @@ public class NavigateNode implements Runnable {
 }
 
 
-public final class FileActions implements Runnable {
+final class FileActions implements Runnable {
 	
 	static class DumpFileFilter extends FileFilter {
 		final String syntax_qname;
@@ -454,8 +467,8 @@ public final class FileActions implements Runnable {
 			this.description = description;
 			this.extension = extension;
 		}
-		public String getDescription() { description }
-		public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith("."+extension) }
+		public String getDescription() { return description; }
+		public boolean accept(File f) { return f.isDirectory() || f.getName().toLowerCase().endsWith("."+extension); }
 	}
 	
 	static DumpFileFilter[] dumpFileFilters = {
@@ -472,6 +485,7 @@ public final class FileActions implements Runnable {
 	FileActions(Window wnd, String action) {
 		this.wnd = wnd;
 		this.action = action;
+		this.uiv = null;
 	}
 	
 	FileActions(InfoView uiv, String action) {
@@ -486,7 +500,7 @@ public final class FileActions implements Runnable {
 			if (uiv.the_root instanceof FileUnit)
 				fu = (FileUnit)uiv.the_root;
 			else
-				fu = (FileUnit)uiv.the_root.ctx_file_unit;
+				fu = (FileUnit)this.uiv.the_root.get$ctx_file_unit();
 			JFileChooser jfc = new JFileChooser(".");
 			jfc.setDialogType(JFileChooser.SAVE_DIALOG);
 			File f = new File(fu.pname());
@@ -494,10 +508,11 @@ public final class FileActions implements Runnable {
 				jfc.setCurrentDirectory(f.getParentFile());
 			jfc.setSelectedFile(f);
 			jfc.setAcceptAllFileFilterUsed(false);
-			foreach (DumpFileFilter dff; dumpFileFilters)
+			for (DumpFileFilter dff: dumpFileFilters)
 				jfc.addChoosableFileFilter(dff);
-			foreach (DumpFileFilter dff; dumpFileFilters; fu.current_syntax == dff.syntax_qname)
-				jfc.setFileFilter(dff);
+			for (DumpFileFilter dff: dumpFileFilters) 
+				if (fu.current_syntax == dff.syntax_qname)
+					jfc.setFileFilter(dff);
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
@@ -536,7 +551,7 @@ public final class FileActions implements Runnable {
 			if (uiv.the_root instanceof FileUnit)
 				fu = (FileUnit)uiv.the_root;
 			else
-				fu = (FileUnit)uiv.the_root.ctx_file_unit;
+				fu = (FileUnit)uiv.the_root.get$ctx_file_unit();
 			String stx_name = null;
 			Draw_ATextSyntax stx = null;
 			if (fu.current_syntax != null) {
@@ -547,15 +562,16 @@ public final class FileActions implements Runnable {
 			if (stx == null || stx != uiv.syntax) {
 				JFileChooser jfc = new JFileChooser(".");
 				jfc.setDialogType(JFileChooser.SAVE_DIALOG);
-				File f = new File(fu.pname());
+				f = new File(fu.pname());
 				if (f.getParentFile() != null)
 					jfc.setCurrentDirectory(f.getParentFile());
 				jfc.setSelectedFile(f);
 				jfc.setAcceptAllFileFilterUsed(false);
-				foreach (DumpFileFilter dff; dumpFileFilters)
+				for (DumpFileFilter dff: dumpFileFilters)
 					jfc.addChoosableFileFilter(dff);
-				foreach (DumpFileFilter dff; dumpFileFilters; fu.current_syntax == dff.syntax_qname)
-					jfc.setFileFilter(dff);
+				for (DumpFileFilter dff: dumpFileFilters) 
+					if (fu.current_syntax == dff.syntax_qname)
+						jfc.setFileFilter(dff);
 				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
 					return;
 				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
@@ -577,18 +593,18 @@ public final class FileActions implements Runnable {
 		else if (action == "load-as") {
 			JFileChooser jfc = new JFileChooser(".");
 			jfc.setFileFilter(new FileFilter() {
-				public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
-				public String getDescription() { "XML file for node tree import" }
+				public boolean accept(File f) { return f.isDirectory() || f.getName().toLowerCase().endsWith(".xml"); }
+				public String getDescription() { return "XML file for node tree import"; }
 			});
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
 			CompilerParseInfo cpi = new CompilerParseInfo(jfc.getSelectedFile(), false);
 			Transaction tr = Transaction.open("Actions.java:load-as");
 			try {
-				EditorThread thr = EditorThread;
+				EditorThread thr = EditorThread.$instance;
 				Compiler.runFrontEnd(thr,new CompilerParseInfo[]{cpi},null,true);
 				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
-			} catch( IOException e ) {
+			} catch( Exception e ) {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
 			} finally { tr.close(); }
 			if (cpi.fu != null)
@@ -600,7 +616,7 @@ public final class FileActions implements Runnable {
 		}
 		else if (action == "run-backend") {
 			System.out.println("Running backend compiler...");
-			CompilerThread thr = CompilerThread;
+			CompilerThread thr = CompilerThread.$instance;
 			thr.errCount = 0;
 			thr.warnCount = 0;
 			Compiler.runBackEnd(thr, Env.getRoot(), null, false);
@@ -618,7 +634,7 @@ public final class FileActions implements Runnable {
 		Transaction tr = Transaction.open("Actions.java:runFrontEndCompiler()");
 		try {
 			editor.changes.push(tr);
-			EditorThread thr = EditorThread;
+			EditorThread thr = EditorThread.$instance;
 			Compiler.runFrontEnd(thr,null,root,true);
 			System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
 		} finally {
@@ -634,54 +650,54 @@ public final class FileActions implements Runnable {
 	
 
 	final static class SaveFileAs implements UIActionFactory {
-		public String getDescr() { "Save the file as a new file" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Save the file as a new file"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
-			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
+			if (!(context.uiv != null && context.uiv.the_root instanceof ASTNode))
 				return null;
 			return new FileActions(context.uiv, "save-as");
 		}
 	}
 
 	final static class SaveFileAsApi implements UIActionFactory {
-		public String getDescr() { "Save the file as a new API file" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Save the file as a new API file"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
-			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
+			if (!(context.uiv != null && context.uiv.the_root instanceof ASTNode))
 				return null;
 			return new FileActions(context.uiv, "save-as-api");
 		}
 	}
 
 	final static class SaveFile implements UIActionFactory {
-		public String getDescr() { "Save the file" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Save the file"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
-			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
+			if (!(context.uiv != null && context.uiv.the_root instanceof ASTNode))
 				return null;
 			return new FileActions(context.uiv, "save");
 		}
 	}
 
 	final static class LoadFileAs implements UIActionFactory {
-		public String getDescr() { "Load a file into current view as a file with specified syntax" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Load a file into current view as a file with specified syntax"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new FileActions(context.wnd, "load-as");
 		}
 	}
 
 	final static class MergeTreeAll implements UIActionFactory {
-		public String getDescr() { "Merge editor's changes into working tree for the whole project" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Merge editor's changes into working tree for the whole project"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new FileActions(context.wnd, "merge-all");
 		}
 	}
 
 	final static class RunBackendAll implements UIActionFactory {
-		public String getDescr() { "Run back-end compilation for the whole project" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Run back-end compilation for the whole project"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv != null)
 				return new FileActions(context.uiv, "run-backend");
@@ -690,8 +706,8 @@ public final class FileActions implements Runnable {
 	}
 
 	final static class RunFrontendAll implements UIActionFactory {
-		public String getDescr() { "Run front-end compilation for the whole project" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Run front-end compilation for the whole project"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new FileActions(context.editor, "run-frontend-all");
@@ -700,8 +716,8 @@ public final class FileActions implements Runnable {
 	}
 
 	final static class RunFrontend implements UIActionFactory {
-		public String getDescr() { "Run front-end compilation for the current compilation unit" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Run front-end compilation for the current compilation unit"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new FileActions(context.editor, "run-frontend");
@@ -710,7 +726,7 @@ public final class FileActions implements Runnable {
 	}
 }
 
-public final class EditActions implements Runnable {
+final class EditActions implements Runnable {
 	
 	final Editor editor;
 	final String action;
@@ -761,8 +777,8 @@ public final class EditActions implements Runnable {
 	}
 
 	final static class CloseWindow implements UIActionFactory {
-		public String getDescr() { "Close the editor window" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Close the editor window"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new EditActions(context.editor, "close");
@@ -771,18 +787,18 @@ public final class EditActions implements Runnable {
 	}
 
 	final static class Undo implements UIActionFactory {
-		public String getDescr() { "Undo last change" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Undo last change"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null && context.editor.changes.length > 0)
+			if (context.editor != null && context.editor.changes.size() > 0)
 				return new EditActions(context.editor, "undo");
 			return null;
 		}
 	}
 	
 	final static class Cut implements UIActionFactory {
-		public String getDescr() { "Cut current node" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Cut current node"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.dr != null)
 				return new EditActions(context.editor, "cut");
@@ -791,8 +807,8 @@ public final class EditActions implements Runnable {
 	}
 	
 	final static class Del implements UIActionFactory {
-		public String getDescr() { "Delete current node" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Delete current node"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.dr != null)
 				return new EditActions(context.editor, "del");
@@ -801,8 +817,8 @@ public final class EditActions implements Runnable {
 	}
 	
 	final static class Copy implements UIActionFactory {
-		public String getDescr() { "Copy current node" }
-		public boolean isForPopupMenu() { true }
+		public String getDescr() { return "Copy current node"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.dr != null)
 				return new EditActions(context.editor, "copy");
@@ -812,7 +828,7 @@ public final class EditActions implements Runnable {
 	
 }
 
-public final class RenderActions implements Runnable {
+final class RenderActions implements Runnable {
 	
 	final UIView ui;
 	final String action;
@@ -840,14 +856,14 @@ public final class RenderActions implements Runnable {
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
 			if (ui instanceof InfoView)
-				m.show(ui.view_canvas, 0, 0);
+				m.show(((InfoView)ui).view_canvas, 0, 0);
 			else if (ui instanceof TreeView)
-				m.show(ui.the_tree, 0, 0);
+				m.show(((TreeView)ui).the_tree, 0, 0);
 		}
 		else if (action == "unfold-all") {
 			if (ui instanceof InfoView) {
 				ui.view_root.walkTree(new TreeWalker() {
-					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) n.draw_folded = false; return true; }
+					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) ((DrawFolded)n).draw_folded = false; return true; }
 				});
 			}
 			ui.formatAndPaint(true);
@@ -855,7 +871,7 @@ public final class RenderActions implements Runnable {
 		else if (action == "fold-all") {
 			if (ui instanceof InfoView) {
 				ui.view_root.walkTree(new TreeWalker() {
-					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) n.draw_folded = true; return true; }
+					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) ((DrawFolded)n).draw_folded = true; return true; }
 				});
 			}
 			ui.formatAndPaint(true);
@@ -878,7 +894,7 @@ public final class RenderActions implements Runnable {
 		else if (action == "redraw") {
 			ui.setSyntax(ui.syntax);
 			if (ui instanceof Editor)
-				ui.cur_elem.set(ui.view_root.getFirstLeaf());
+				((Editor)ui).cur_elem.set(ui.view_root.getFirstLeaf());
 			//ui.view_canvas.root = ui.view_root;
 			ui.formatAndPaint(false);
 		}
@@ -903,9 +919,18 @@ public final class RenderActions implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (clazz != null) {
-				ATextSyntax stx = (ATextSyntax)clazz.newInstance();
+				ATextSyntax stx = null;
+				try {
+					stx = (ATextSyntax)clazz.newInstance();
+				} catch (InstantiationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IllegalAccessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				if (stx instanceof XmlDumpSyntax)
-					stx.dump = qname;
+					((XmlDumpSyntax)stx).dump = qname;
 				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}
@@ -949,16 +974,16 @@ public final class RenderActions implements Runnable {
 	}
 */
 	final static class SyntaxFileAs implements UIActionFactory {
-		public String getDescr() { "Set the syntax of the curret view" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Set the syntax of the curret view"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.ui, "select-syntax");
 		}
 	}
 
 	final static class OpenFoldedAll implements UIActionFactory {
-		public String getDescr() { "Open (unfold) all folded elements" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Open (unfold) all folded elements"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv == null || context.uiv.view_root == null)
 				return null;
@@ -967,8 +992,8 @@ public final class RenderActions implements Runnable {
 	}
 
 	final static class CloseFoldedAll implements UIActionFactory {
-		public String getDescr() { "Close (fold) all foldable elements" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Close (fold) all foldable elements"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv == null || context.uiv.view_root == null)
 				return null;
@@ -977,39 +1002,39 @@ public final class RenderActions implements Runnable {
 	}
 
 	final static class ToggleShowAutoGenerated implements UIActionFactory {
-		public String getDescr() { "Toggle show of auto-generated code" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Toggle show of auto-generated code"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.ui, "toggle-autogen");
 		}
 	}
 
 	final static class ToggleShowPlaceholders implements UIActionFactory {
-		public String getDescr() { "Toggle show of editor placeholders" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Toggle show of editor placeholders"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.ui, "toggle-placeholder");
 		}
 	}
 
 	final static class ToggleHintEscaped implements UIActionFactory {
-		public String getDescr() { "Toggle idents and strings escaping" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Toggle idents and strings escaping"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.ui, "toggle-escape");
 		}
 	}
 
 	final static class Redraw implements UIActionFactory {
-		public String getDescr() { "Redraw the window" }
-		public boolean isForPopupMenu() { false }
+		public String getDescr() { return "Redraw the window"; }
+		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.ui, "redraw");
 		}
 	}
 }
 
-public final class ExprEditActions implements Runnable, KeyListener {
+final class ExprEditActions implements Runnable, KeyListener {
 	
 	final Editor editor;
 	final UIActionViewContext context;
@@ -1032,7 +1057,7 @@ public final class ExprEditActions implements Runnable, KeyListener {
 				Drawable d = context.dr;
 				while (d != null && !(d instanceof DrawNonTerm))
 					d = (Drawable)d.parent();
-				if !(d instanceof DrawNonTerm)
+				if (!(d instanceof DrawNonTerm))
 					return;
 				nt = (DrawNonTerm)d;
 			}
@@ -1043,22 +1068,22 @@ public final class ExprEditActions implements Runnable, KeyListener {
 				if (dt.isUnvisible())
 					continue;
 				if (dt instanceof DrawToken) {
-					if (((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.UNKNOWN)
-						expr.nodes += new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false);
+					if (((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.SyntaxToken$TokenKind.UNKNOWN)
+						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken(0, dt.getText(), ETokenKind.UNKNOWN, false));
 					else
-						expr.nodes += new EToken(0,dt.getText(),ETokenKind.OPERATOR,true);
+						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken(0, dt.getText(), ETokenKind.OPERATOR, true));
 				}
 				else if (dt instanceof DrawNodeTerm) {
-					if (dt.drnode instanceof ConstExpr)
-						expr.nodes += new EToken((ConstExpr)dt.drnode);
+					if (dt.get$drnode() instanceof ConstExpr)
+						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken((ConstExpr)dt.get$drnode()));
 					else
-						expr.nodes += new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false);
+						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false));
 				}
 			}
 			editor.insert_mode = true;
 			editor.startItemEditor(this);
 			context.node.replaceWithNode(expr);
-			foreach (EToken et; expr.nodes)
+			for (EToken et: (EToken[])expr.nodes)
 				et.guessKind();
 			editor.formatAndPaint(true);
 		}
@@ -1078,16 +1103,16 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			menu = null;
 			if (kind == ETokenKind.UNKNOWN) {
 				et.base_kind = ETokenKind.UNKNOWN;
-				et.explicit = false;
+				et.set$explicit(false);
 			} else {
 				et.base_kind = kind;
-				et.explicit = true;
+				et.set$explicit(true);
 			}
 			et.guessKind();
 			editor.formatAndPaint(true);
 		}
 	}
-
+  
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	public void keyPressed(KeyEvent evt) {
@@ -1096,14 +1121,15 @@ public final class ExprEditActions implements Runnable, KeyListener {
 		if (code == KeyEvent.VK_F && mask == KeyEvent.CTRL_DOWN_MASK) {
 			DrawTerm dt = editor.cur_elem.dr;
 			ANode n = editor.cur_elem.node;
-			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n)
+			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.get$drnode() != n)
 				return;
 			EToken et = (EToken)n;
 			menu = new JPopupMenu();
-			foreach (ETokenKind k; ETokenKind.values())
+			for (ETokenKind k: ETokenKind.class.getEnumConstants())
 				menu.add(new SetKindAction(et, k));
 			int x = dt.x;
-			int y = dt.y + dt.h - editor.view_canvas.translated_y;
+			int h = dt._metric >>> 12 & 0xff;
+			int y = dt.y + h - editor.view_canvas.translated_y;
 			menu.show(editor.view_canvas, x, y);
 			return;
 		}
@@ -1140,7 +1166,7 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			return;
 		case KeyEvent.VK_ENTER:
 			editor.insert_mode = true;
-			EditorThread thr = EditorThread;
+			EditorThread thr = EditorThread.$instance;
 			try {
 				thr.errCount = 0;
 				thr.warnCount = 0;
@@ -1158,7 +1184,7 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			return;
 		DrawTerm dt = editor.cur_elem.dr;
 		ANode n = editor.cur_elem.node;
-		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n) {
+		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.get$drnode() != n) {
 			java.awt.Toolkit.getDefaultToolkit().beep();
 			return;
 		}
@@ -1217,7 +1243,7 @@ public final class ExprEditActions implements Runnable, KeyListener {
 		case KeyEvent.VK_SPACE:
 			// split the node, if it's not a string/char expression
 			if (et.base_kind != ETokenKind.EXPR_STRING && et.base_kind != ETokenKind.EXPR_CHAR) {
-				if (et.explicit && edit_offset != 0 && edit_offset != text.length()) {
+				if (et.get$explicit() && edit_offset != 0 && edit_offset != text.length()) {
 					java.awt.Toolkit.getDefaultToolkit().beep();
 					return;
 				}
@@ -1318,18 +1344,18 @@ public final class ExprEditActions implements Runnable, KeyListener {
 	private void joinNodes(DrawTerm dt, EToken et, boolean by_backspace) {
 		if (by_backspace) {
 			DrawTerm pt = dt.getPrevLeaf();
-			if (pt != null && pt.drnode instanceof EToken) {
-				EToken pe = (EToken)pt.drnode;
+			if (pt != null && pt.get$drnode() instanceof EToken) {
+				EToken pe = (EToken)pt.get$drnode();
 				editor.cur_elem.set(pt);
 				editor.view_canvas.cursor_offset = pt.getText().length();
-				pe.setText(pe.ident + et.ident);
+				pe.setText(pe.get$ident() + et.get$ident());
 				et.detach();
 			}
 		} else {
 			DrawTerm nt = dt.getNextLeaf();
-			if (nt != null && nt.drnode instanceof EToken) {
-				EToken pe = (EToken)nt.drnode;
-				et.setText(et.ident + pe.ident);
+			if (nt != null && nt.get$drnode() instanceof EToken) {
+				EToken pe = (EToken)nt.get$drnode();
+				et.setText(et.get$ident() + pe.get$ident());
 				pe.detach();
 			}
 		}
@@ -1383,25 +1409,25 @@ public final class ExprEditActions implements Runnable, KeyListener {
 	
 	private ANode[] makePathTo(ANode n) {
 		Vector<ANode> path = new Vector<ANode>();
-		path.append(n);
+		path.add(n);
 		while (n.parent() != null) {
 			n = n.parent();
-			path.append(n);
+			path.add(n);
 			if (n instanceof FileUnit)
 				break;
 		}
-		return path.toArray();
+		return path.toArray(new ANode[path.size()]);
 	}
 
-	final static class Flatten implements UIActionFactory {
-		public String getDescr() { "Flatten expresison tree" }
-		public boolean isForPopupMenu() { true }
+	public final static class Flatten implements UIActionFactory {
+		public String getDescr() { return "Flatten expresison tree"; }
+		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
 			ANode node = context.node;
 			Drawable dr = context.dr;
 			if (context.editor == null || node == null || dr == null)
 				return null;
-			if !(node instanceof ENode)
+			if (!(node instanceof ENode))
 				return null;
 			return new ExprEditActions(context, "split");
 		}

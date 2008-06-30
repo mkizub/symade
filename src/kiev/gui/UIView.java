@@ -20,7 +20,8 @@ import kiev.parser.*;
 import kiev.fmt.*;
 
 import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
+//import syntax kiev.Syntax;
+import kiev.vtree.*;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
@@ -67,7 +68,7 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 		formatAndPaint(true);
 	}
 	
-	public abstract void setRoot(ANode root) {}
+	public abstract void setRoot(ANode root);
 	
 	public abstract void formatAndPaint(boolean full);
 

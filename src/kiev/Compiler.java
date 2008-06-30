@@ -371,7 +371,8 @@ stop:;
 		if( warnCount > 0 )
 			System.out.println(warnCount+" warnings");
 		programm_end = System.currentTimeMillis();
-		System.out.println(src+": total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb\007\007");
+//		System.out.println(src+": total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb\007\007");
+		System.out.println(src+": total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
 		if (Kiev.testError != null) {
 			System.out.println("FAILED: there was no expected error "+Kiev.testError+" at "+Kiev.testErrorLine+":"+Kiev.testErrorOffs);
 			System.exit(1);
