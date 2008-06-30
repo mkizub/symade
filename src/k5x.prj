@@ -88,17 +88,6 @@
          <core:FileUnit name='XmlDumpSyntax.java' />
         </members>
        </sop:kiev.vlang.DirUnit>
-       <sop:kiev.vlang.DirUnit name='gui'>
-        <members>
-         <core:FileUnit name='Actions.java' />
-         <core:FileUnit name='Canvas.java' />
-         <core:FileUnit name='Editor.java' />
-         <core:FileUnit name='InfoView.java' />
-         <core:FileUnit name='TreeView.java' />
-         <core:FileUnit name='UIView.java' />
-         <core:FileUnit name='Window.java' />
-        </members>
-       </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='ir'>
         <members>
          <sop:kiev.vlang.DirUnit name='java15'>

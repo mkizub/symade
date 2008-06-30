@@ -1,0 +1,27 @@
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<sop:dump version='1.0' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
+ <sop:kiev.vlang.Project>
+  <root_dir>
+   <sop:kiev.vlang.DirUnit name='.'>
+    <members>
+     <sop:kiev.vlang.DirUnit name='test'>
+      <members>
+       <core:FileUnit name='GUITest.java' />
+      </members>
+     </sop:kiev.vlang.DirUnit>
+    </members>
+   </sop:kiev.vlang.DirUnit>
+  </root_dir>
+ </sop:kiev.vlang.Project>
+</sop:dump>
