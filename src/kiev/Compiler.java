@@ -28,11 +28,13 @@ import syntax kiev.Syntax;
 @singleton
 public class CompilerThread extends WorkerThread {
 	private CompilerThread() { super("compiler"); }
+	public static CompilerThread getInst() { return CompilerThread; } 
 }
 
 @singleton
 public class EditorThread extends WorkerThread {
 	private EditorThread() { super("editor"); }
+	public static EditorThread getInst() { return EditorThread; } 
 }
 
 public final class CompilerParseInfo {

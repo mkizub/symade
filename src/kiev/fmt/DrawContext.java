@@ -90,7 +90,7 @@ public final class DrawContext implements Cloneable {
 	public void formatAsText(DrawTerm dr) {
 		dr.x = 0;
 		dr.y = 0;
-		dr.h = 0;
+		dr.height = 0;
 		String text = dr.getText();
 		if (gfx != null) {
 			if (text == null) text = "\u25d8"; // ◘
@@ -98,19 +98,19 @@ public final class DrawContext implements Cloneable {
 				Font  font  = dr.syntax.lout.font;
 				TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
 				Rectangle2D rect = tl.getBounds();
-				dr.w = (int)Math.ceil(tl.getAdvance());
-				dr.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-				dr.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+				dr.width = (int)Math.ceil(tl.getAdvance());
+				dr.height = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+				dr.baseline = (int)Math.ceil(tl.getAscent()+tl.getLeading());
 			} else {
-				dr.w = 0;
-				dr.h = 10;
-				dr.b = 0;
+				dr.width = 0;
+				dr.height = 10;
+				dr.baseline = 0;
 			}
 		} else {
 			if (text == null) text = "";
-			dr.w = text.length();
-			dr.h = 1;
-			dr.b = 0;
+			dr.width = text.length();
+			dr.height = 1;
+			dr.baseline = 0;
 		}
 	}
 
@@ -219,7 +219,7 @@ public final class DrawContext implements Cloneable {
 		DrawTerm leaf = (DrawTerm)dlb.dr;
 		flushSpaceRequests(leaf, cur_attempt, indents);
 		leaf.x = x;
-		x += leaf.w;
+		x += leaf.width;
 		max_x = Math.max(max_x, x);
 		line_started = false;
 		indents.cur_indent = indents.next_indent;

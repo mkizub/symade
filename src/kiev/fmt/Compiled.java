@@ -344,14 +344,14 @@ public class Draw_SyntaxElem implements Serializable {
 
 public class Draw_SyntaxToken extends Draw_SyntaxElem implements Cloneable {
 	public String							text;
-	public SyntaxToken.TokenKind			kind;
+	public SyntaxTokenKind					kind;
 
 	public Draw_SyntaxToken() {}
 	public Draw_SyntaxToken(String text) {
 		this.text = text;
-		this.kind = SyntaxToken.TokenKind.UNKNOWN;
+		this.kind = SyntaxTokenKind.UNKNOWN;
 	}
-	public Draw_SyntaxToken(String text, SyntaxToken.TokenKind kind) {
+	public Draw_SyntaxToken(String text, SyntaxTokenKind kind) {
 		this.text = text;
 		this.kind = kind;
 	}
@@ -832,7 +832,7 @@ public class Draw_ATextSyntax implements Serializable {
 					}
 				}
 				if (elems[i] == null)
-					elems[i] = new Draw_SyntaxToken(text, SyntaxToken.TokenKind.OPERATOR);
+					elems[i] = new Draw_SyntaxToken(text, SyntaxTokenKind.OPERATOR);
 				continue;
 			}
 		}

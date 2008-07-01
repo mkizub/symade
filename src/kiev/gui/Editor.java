@@ -10,21 +10,10 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-import kiev.Compiler;
-import kiev.CompilerThread;
-import kiev.EditorThread;
-import kiev.CError;
-import kiev.stdlib.*;
+import kiev.vtree.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
 import kiev.fmt.*;
-
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
-import kiev.vtree.*;
 
 import java.util.EnumSet;
 
@@ -34,11 +23,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.Graphics;
 
 import java.awt.datatransfer.*;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -171,23 +157,26 @@ public class Editor extends InfoView implements KeyListener {
 		Drawable dr = cur_elem.dr;
 		while (dr != null) {
 			Drawable p = (Drawable)dr.parent();
-			if (p instanceof DrawNonTermList)
-				return new ActionPoint(p,((SpaceAttrSlot)((DrawNonTermList)p).slst_attr),((DrawNonTermList)p).getInsertIndex(dr, next));
-			if (p instanceof DrawWrapList)
-				return new ActionPoint(p,((SpaceAttrSlot)((DrawWrapList)p).slst_attr),((DrawWrapList)p).getInsertIndex(dr, next));
+			AttrSlot slot = null;
+			if (p instanceof DrawNonTermList) {
+				slot = ((DrawNonTermList)p).slst_attr;
+				if (slot instanceof SpaceAttrSlot)
+					return new ActionPoint(p,(SpaceAttrSlot)slot,((DrawNonTermList)p).getInsertIndex(dr, next));
+				else if (slot instanceof ExtSpaceAttrSlot)
+					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawNonTermList)p).getInsertIndex(dr, next));
+			}
+			else if (p instanceof DrawWrapList) {
+				slot = ((DrawWrapList)p).slst_attr;
+				if (slot instanceof SpaceAttrSlot)
+					return new ActionPoint(p,(SpaceAttrSlot)slot,((DrawWrapList)p).getInsertIndex(dr, next));
+				else if (slot instanceof ExtSpaceAttrSlot)
+					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawWrapList)p).getInsertIndex(dr, next));
+			}
 			dr = p;
 		}
 		return null;
 	}
 
-	private boolean isSpaceOrHidden(Drawable dr) {
-		return dr.isUnvisible() || isSpace(dr);
-	}
-	
-	private boolean isSpace(Drawable dr) {
-		return dr instanceof DrawSpace;
-	}
-	
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	
@@ -301,8 +290,8 @@ public class Editor extends InfoView implements KeyListener {
 		int y = e.getY() + view_canvas.translated_y;
 		DrawTerm dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
-			int w = dr._metric & 0xfff;
-			int h = dr._metric >>> 12 & 0xff;
+			int w = dr.getWidth();
+			int h = dr.getHeight();
 			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
@@ -323,8 +312,8 @@ public class Editor extends InfoView implements KeyListener {
 		int y = e.getY() + view_canvas.translated_y;
 		DrawTerm dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
-			int w = dr._metric & 0xfff;
-			int h = dr._metric >>> 12 & 0xff;
+			int w = dr.getWidth();
+			int h = dr.getHeight();
 			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
@@ -394,7 +383,7 @@ public class Editor extends InfoView implements KeyListener {
 			Editor.this.view_canvas.current = dr;
 			Editor.this.view_canvas.current_node = node;
 			if (dr != null) {
-				int w = dr._metric & 0xfff;
+				int w = dr.getWidth();
 				this.x = dr.x + w / 2;
 				this.y = dr.y;
 				java.util.Vector<Drawable> v = new java.util.Vector<Drawable>();
@@ -468,6 +457,26 @@ class ActionPoint {
 		this.node = dr.get$drnode();
 		this.slot = slot;
 		this.length = slot.getArray(node).length;
+		if (idx <= 0) {
+			this.index = 0;
+		} else {
+			if (idx >= this.length)
+				this.index = this.length;
+			else
+				this.index = idx;
+		}
+	}
+	public ActionPoint(Drawable dr, ExtSpaceAttrSlot slot, int idx) {
+		this.dr = dr;
+		this.node = dr.get$drnode();
+		this.slot = slot;
+		int length = 0;
+		kiev.stdlib.Enumeration en = slot.iterate(node);
+		while (en.hasMoreElements()) {
+			en.nextElement();
+			length++;
+		}
+		this.length = length;
 		if (idx <= 0) {
 			this.index = 0;
 		} else {
@@ -563,7 +572,7 @@ final class ChooseItemEditor implements UIActionFactory {
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
 			return new EnumEditor(editor, dr.getFirstLeaf(), dec.get$drnode().getScalarPtr(stx.name));
 		}
-		else if (dr instanceof DrawToken && dr.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxToken.SyntaxToken$TokenKind.OPERATOR) {
+		else if (dr instanceof DrawToken && dr.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxTokenKind.OPERATOR) {
 			return new OperatorEditor(editor, (DrawToken)dr);
 		}
 		return null;
@@ -614,7 +623,7 @@ final class FunctionExecuter implements Runnable {
 		for (TextAction act: actions)
 			menu.add(new JMenuItem(act));
 		int x = editor.cur_elem.dr.x;
-		int h = editor.cur_elem.dr._metric >>> 12 & 0xff;
+		int h = editor.cur_elem.dr.getHeight();
 		int y = editor.cur_elem.dr.y + h - editor.view_canvas.translated_y;
 		menu.show(editor.view_canvas, x, y);
 	}
@@ -716,11 +725,9 @@ final class FunctionExecuter implements Runnable {
 	}
 
 	class EditElemAction extends TextAction {
-		private String		text;
 		private Drawable	dr;
 		EditElemAction(String text, Drawable dr) {
 			super(text);
-			this.text = text;
 			this.dr = dr;
 		}
 		public void actionPerformed(ActionEvent e) {
@@ -735,11 +742,9 @@ final class FunctionExecuter implements Runnable {
 	}
 
 	class RunFuncAction extends TextAction {
-		private String		text;
 		private Runnable	r;
 		RunFuncAction(String text, Runnable r) {
 			super(text);
-			this.text = text;
 			this.r = r;
 		}
 		public void actionPerformed(ActionEvent e) {
@@ -781,14 +786,14 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 				String title = eti.title;
 				if (title == null)
 					title = eti.typeinfo.clazz.getName();
-				menu.actions = (NewElemAction[])Arrays.append(menu.actions, new NewElemAction(title, eti.typeinfo, n, name));
+				menu.actions = (NewElemAction[])kiev.stdlib.Arrays.append(menu.actions, new NewElemAction(title, eti.typeinfo, n, name));
 			}
 			else if (eti.subtypes != null && eti.subtypes.length > 0) {
 				if (eti.title == null || eti.title.length() == 0) {
 					addItems(menu, eti.subtypes, n, name);
 				} else {
 					Menu sub_menu = new Menu(eti.title);
-					menu.menus = (Menu[])Arrays.append(menu.menus, sub_menu);
+					menu.menus = (Menu[])kiev.stdlib.Arrays.append(menu.menus, sub_menu);
 					addItems(sub_menu, eti.subtypes, n, name);
 				}
 			}
@@ -830,7 +835,7 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
 		int x = editor.cur_elem.dr.x;
-		int h = editor.cur_elem.dr._metric >>> 12 & 0xff;
+		int h = editor.cur_elem.dr.getHeight();
 		int y = editor.cur_elem.dr.y + h - editor.view_canvas.translated_y;
 		this.menu.show(editor.view_canvas, x, y);
 		editor.startItemEditor(this);
@@ -848,10 +853,10 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 
 	class NewElemAction extends TextAction {
-		private TypeInfo	typeinfo;
+		private kiev.stdlib.TypeInfo	typeinfo;
 		private ANode		node;
 		private String		attr;
-		NewElemAction(String title, TypeInfo typeinfo, ANode node, String attr) {
+		NewElemAction(String title, kiev.stdlib.TypeInfo typeinfo, ANode node, String attr) {
 			super(title);
 			this.typeinfo = typeinfo;
 			this.node = node;
@@ -930,7 +935,7 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
 			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
-				ANode n = dr.get$drnode();
+				//ANode n = dr.get$drnode();
 				Draw_SyntaxAttr satt = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
 				if (satt.expected_types == null || satt.expected_types.length == 0)
 					return null;
@@ -1035,12 +1040,9 @@ final class PasteElemHere implements Runnable {
 			ANode node = null;
 			try {
 				node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
-			} catch (UnsupportedFlavorException e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {
 				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return null;
 			}
 			// try paste as a node into null
 			if (dr instanceof DrawNodeTerm) {
@@ -1078,12 +1080,9 @@ final class PasteElemNext implements Runnable {
 		ANode node = null;
 		try {
 			node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
-		} catch (UnsupportedFlavorException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return;
 		}
 		ActionPoint ap = editor.getActionPoint(true);
 		editor.changes.push(Transaction.open("Editor.java:PasteElemNext"));
@@ -1109,12 +1108,9 @@ final class PasteElemNext implements Runnable {
 			ANode node = null;
 			try {
 				node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
-			} catch (UnsupportedFlavorException e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {
 				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return null;
 			}
 			ActionPoint ap = editor.getActionPoint(true);
 			if (ap == null || ap.length < 0)
@@ -1351,8 +1347,8 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		combo.setPopupVisible(false);
 		int x = dr_term.x;
 		int y = dr_term.y - editor.view_canvas.translated_y;
-		int w = dr_term._metric & 0xfff;
-		int h = dr_term._metric >>> 12 & 0xff;
+		int w = dr_term.getWidth();
+		int h = dr_term.getHeight();
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		for (DNode dn: decls) {
@@ -1449,35 +1445,11 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
 		} else {
-			//EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
-			//foreach (Enum e; ens.toArray())
-			//	menu.add(new JMenuItem(new SetSyntaxAction(e)));
-			java.lang.reflect.Method vals = null;
-			try {
-				vals = pattr.slot.typeinfo.clazz.getMethod("values");
-			} catch (SecurityException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (NoSuchMethodException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			try {
-				for (Enum e: ((Enum[])vals.invoke(null)))
-					menu.add(new JMenuItem(new SetSyntaxAction(e)));
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			for (Object e: EnumSet.allOf(pattr.slot.typeinfo.clazz))
+				menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		}
 		int x = cur_elem.x;
-		int h = cur_elem._metric >>> 12 & 0xff;
+		int h = cur_elem.getHeight();
 		int y = cur_elem.y + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
@@ -1561,7 +1533,7 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		menu.add(b=new SetFlagsMenuItem("private read",    1<<1, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("private write",   1<<0, flags)); b.addActionListener(this);
 		int x = cur_elem.x;
-		int h = cur_elem._metric >>> 12 & 0xff;
+		int h = cur_elem.getHeight();
 		int y = cur_elem.y + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
@@ -1668,7 +1640,7 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 			DrawTerm dt = context.dt;
 			if (dt.get$drnode() != context.node)
 				return null;
-			if (!(dt instanceof DrawToken && dt.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.SyntaxToken$TokenKind.OPERATOR))
+			if (!(dt instanceof DrawToken && dt.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxTokenKind.OPERATOR))
 				return null;
 			return new OperatorEditor(editor, dt);
 		}
@@ -1678,7 +1650,7 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 		editor.startItemEditor(this);
 		if (expr instanceof TypeExpr) {
 			// show all postfix type operators
-			for(Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
+			for(kiev.stdlib.Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
 				Operator op = (Operator)op$iter.nextElement();
 				if (op.name.startsWith("T "))
 					menu.add(new JMenuItem(new SetSyntaxAction(op)));
@@ -1705,14 +1677,14 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 
 			JMenu m_others = new JMenu("Others");
 			menu.add(m_others);
-			for(Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
+			for(kiev.stdlib.Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
 				Operator op = (Operator)op$iter.nextElement();
 				if (op.arity == 2 && !op.name.startsWith("T ")) {
-					if (Arrays.contains(Operator.allAssignOperators, op))
+					if (kiev.stdlib.Arrays.contains(Operator.allAssignOperators, op))
 						continue;
-					if (Arrays.contains(Operator.allBoolOperators, op))
+					if (kiev.stdlib.Arrays.contains(Operator.allBoolOperators, op))
 						continue;
-					if (Arrays.contains(Operator.allMathOperators, op))
+					if (kiev.stdlib.Arrays.contains(Operator.allMathOperators, op))
 						continue;
 					m_others.add(new JMenuItem(new SetSyntaxAction(op)));
 				}
@@ -1720,14 +1692,14 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 		}
 		else {
 			int arity = expr.getArgs().length;
-			for(Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
+			for(kiev.stdlib.Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
 				Operator op = (Operator)op$iter.nextElement();
 				if( op.arity == arity && !op.name.startsWith("T "))
 					menu.add(new JMenuItem(new SetSyntaxAction(op)));
 			}
 		}
 		int x = cur_elem.x;
-		int h = cur_elem._metric >>> 12 & 0xff;
+		int h = cur_elem.getHeight();
 		int y = cur_elem.y + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);

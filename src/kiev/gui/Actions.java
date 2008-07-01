@@ -10,22 +10,14 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.CompilerParseInfo;
-import kiev.Kiev;
 import kiev.Compiler;
+import kiev.CompilerParseInfo;
 import kiev.CompilerThread;
 import kiev.EditorThread;
-import kiev.CError;
 import kiev.vtree.*;
 import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
 import kiev.parser.*;
 import kiev.fmt.*;
-import kiev.gui.FileActions.DumpFileFilter;
-
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -35,13 +27,11 @@ import java.awt.event.InputEvent;
 import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JScrollBar;
 
 import javax.swing.text.TextAction;
 import javax.swing.filechooser.FileFilter;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -307,13 +297,13 @@ class NavigateEditor implements Runnable {
 			prev = prev.getPrevLeaf();
 		}
 		while (n != null) {
-			int w = n._metric & 0xfff;
+			int w = n.getWidth();
 			if (n.x <= uiv.cur_x && n.x+w >= uiv.cur_x) 
 				break;
 			prev = n.getPrevLeaf();
 			if (prev == null || prev.get$do_newline())
 				break;
-			w = prev._metric & 0xfff;
+			w = prev.getWidth();
 			if (prev.x+w < uiv.cur_x) 
 				break;
 			n = prev;
@@ -336,7 +326,7 @@ class NavigateEditor implements Runnable {
 			next = next.getNextLeaf();
 		}
 		while (n != null) {
-			int w = n._metric & 0xfff;
+			int w = n.getWidth();
 			if (n.x <= uiv.cur_x && n.x+w >= uiv.cur_x) 
 				break;
 			next = n.getNextLeaf();
@@ -601,7 +591,7 @@ final class FileActions implements Runnable {
 			CompilerParseInfo cpi = new CompilerParseInfo(jfc.getSelectedFile(), false);
 			Transaction tr = Transaction.open("Actions.java:load-as");
 			try {
-				EditorThread thr = EditorThread.$instance;
+				EditorThread thr = EditorThread.getInst();
 				Compiler.runFrontEnd(thr,new CompilerParseInfo[]{cpi},null,true);
 				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
 			} catch( Exception e ) {
@@ -616,7 +606,7 @@ final class FileActions implements Runnable {
 		}
 		else if (action == "run-backend") {
 			System.out.println("Running backend compiler...");
-			CompilerThread thr = CompilerThread.$instance;
+			CompilerThread thr = CompilerThread.getInst();
 			thr.errCount = 0;
 			thr.warnCount = 0;
 			Compiler.runBackEnd(thr, Env.getRoot(), null, false);
@@ -634,7 +624,7 @@ final class FileActions implements Runnable {
 		Transaction tr = Transaction.open("Actions.java:runFrontEndCompiler()");
 		try {
 			editor.changes.push(tr);
-			EditorThread thr = EditorThread.$instance;
+			EditorThread thr = EditorThread.getInst();
 			Compiler.runFrontEnd(thr,null,root,true);
 			System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
 		} finally {
@@ -902,10 +892,10 @@ final class RenderActions implements Runnable {
 
 	static class SetSyntaxAction extends TextAction {
 		private UIView uiv;
-		private Class clazz;
+		private Class<? extends ATextSyntax> clazz;
 		private String qname;
 		private boolean in_project;
-		SetSyntaxAction(UIView uiv, String text, Class clazz, String name) {
+		SetSyntaxAction(UIView uiv, String text, Class<? extends ATextSyntax> clazz, String name) {
 			super(text);
 			this.uiv = uiv;
 			this.clazz = clazz;
@@ -922,12 +912,9 @@ final class RenderActions implements Runnable {
 				ATextSyntax stx = null;
 				try {
 					stx = (ATextSyntax)clazz.newInstance();
-				} catch (InstantiationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IllegalAccessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					return;
 				}
 				if (stx instanceof XmlDumpSyntax)
 					((XmlDumpSyntax)stx).dump = qname;
@@ -1051,7 +1038,6 @@ final class ExprEditActions implements Runnable, KeyListener {
 	
 	public void run() {
 		if (action == "split") {
-			ENode en = (ENode)context.node;
 			DrawNonTerm nt = null;
 			{
 				Drawable d = context.dr;
@@ -1064,20 +1050,21 @@ final class ExprEditActions implements Runnable, KeyListener {
 			DrawTerm first = nt.getFirstLeaf();
 			DrawTerm last = nt.getLastLeaf().getNextLeaf();
 			expr = new ASTExpression();
+			SpacePtr enodes = expr.getSpacePtr("nodes");
 			for (DrawTerm dt = first; dt != null && dt != last; dt = dt.getNextLeaf()) {
 				if (dt.isUnvisible())
 					continue;
 				if (dt instanceof DrawToken) {
-					if (((Draw_SyntaxToken)dt.syntax).kind == SyntaxToken.SyntaxToken$TokenKind.UNKNOWN)
-						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken(0, dt.getText(), ETokenKind.UNKNOWN, false));
+					if (((Draw_SyntaxToken)dt.syntax).kind == SyntaxTokenKind.UNKNOWN)
+						enodes.add(new EToken(0, dt.getText(), ETokenKind.UNKNOWN, false));
 					else
-						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken(0, dt.getText(), ETokenKind.OPERATOR, true));
+						enodes.add(new EToken(0, dt.getText(), ETokenKind.OPERATOR, true));
 				}
 				else if (dt instanceof DrawNodeTerm) {
 					if (dt.get$drnode() instanceof ConstExpr)
-						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken((ConstExpr)dt.get$drnode()));
+						enodes.add(new EToken((ConstExpr)dt.get$drnode()));
 					else
-						((SpaceAttAttrSlot) ASTExpression.nodeattr$nodes).add(expr, new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false));
+						enodes.add(new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false));
 				}
 			}
 			editor.insert_mode = true;
@@ -1128,7 +1115,7 @@ final class ExprEditActions implements Runnable, KeyListener {
 			for (ETokenKind k: ETokenKind.class.getEnumConstants())
 				menu.add(new SetKindAction(et, k));
 			int x = dt.x;
-			int h = dt._metric >>> 12 & 0xff;
+			int h = dt.getHeight();
 			int y = dt.y + h - editor.view_canvas.translated_y;
 			menu.show(editor.view_canvas, x, y);
 			return;
@@ -1166,7 +1153,7 @@ final class ExprEditActions implements Runnable, KeyListener {
 			return;
 		case KeyEvent.VK_ENTER:
 			editor.insert_mode = true;
-			EditorThread thr = EditorThread.$instance;
+			EditorThread thr = EditorThread.getInst();
 			try {
 				thr.errCount = 0;
 				thr.warnCount = 0;

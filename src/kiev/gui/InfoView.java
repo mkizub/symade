@@ -10,39 +10,18 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.vlang.*;
 import kiev.vtree.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
 import kiev.fmt.*;
 
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
-
-
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.Graphics2D;
 
-import javax.swing.JFileChooser;
-import javax.swing.JPopupMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JScrollBar;
 
-import javax.swing.text.TextAction;
-import javax.swing.filechooser.FileFilter;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Hashtable;
 
 
@@ -87,9 +66,9 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 
 	{
 		this.naviMap = new Hashtable<InputEventInfo,UIActionFactory>();
-		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
-		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
-		final int ALT   = KeyEvent.ALT_DOWN_MASK;
+//		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
+//		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
+//		final int ALT   = KeyEvent.ALT_DOWN_MASK;
 
 		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_UP),			new NavigateView.LineUp());
 		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DOWN),			new NavigateView.LineDn());

@@ -10,20 +10,8 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-import kiev.fmt.*;
-
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
 import kiev.vtree.*;
-
-
+import kiev.fmt.*;
 
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
@@ -191,8 +179,8 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 			DrawTerm dt = (DrawTerm)n.dr;
 			if (dt.lineno < first_line)
 				return null;
-			int w = dt._metric & 0xfff;
-			int h = dt._metric >>> 12 & 0xff;
+			int w = dt.getWidth();
+			int h = dt.getHeight();
 			return new Rectangle(dt.x, dt.y, w, h);
 		} else {
 			Rectangle res = null;
@@ -216,11 +204,13 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 			for (DrawLayoutBlock dlb: n.blocks) {
 				paint(g, dlb);
 			}
-			//Rectangle r = calcBounds(n);
-			//if (r != null) {
-			//	g.setColor(Color.BLACK);
-			//	g.drawRect(r.x, r.y, r.width, r.height);
-			//}
+			if (false) {
+				Rectangle r = calcBounds(n);
+				if (r != null) {
+					g.setColor(Color.BLACK);
+					g.drawRect(r.x, r.y, r.width, r.height);
+				}
+			}
 		}
 	}
 
@@ -274,9 +264,9 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		
 		int x = leaf.x;
 		int y = leaf.y;
-		int w = leaf._metric & 0xfff;
-		int h = leaf._metric >>> 12 & 0xff;
-		int b = leaf._metric >>> 20 & 0xff;
+		int w = leaf.getWidth();
+		int h = leaf.getHeight();
+		int b = leaf.getBaseline();
 
 		if (!translated) {
 			translated_y = y;
@@ -350,8 +340,8 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		
 		int x = leaf.x;
 		int y = leaf.y;
-		int w = leaf._metric & 0xfff;
-		int h = leaf._metric >>> 12 & 0xff;
+		int w = leaf.getWidth();
+		int h = leaf.getHeight();
 
 		if (!translated) {
 			translated_y = y;

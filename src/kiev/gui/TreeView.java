@@ -10,32 +10,17 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
 import kiev.vtree.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
+import kiev.vlang.FileUnit;
 import kiev.fmt.*;
-
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
 
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.JTree;
 import javax.swing.tree.*;
 import javax.swing.event.*;

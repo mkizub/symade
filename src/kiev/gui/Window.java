@@ -10,22 +10,9 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-import kiev.fmt.*;
-
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
 import kiev.vtree.*;
-import kiev.transf.*;
-import kiev.parser.*;
+import kiev.vlang.*;
+import kiev.fmt.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -224,7 +211,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setSize(screenSize.width, (screenSize.height*3)/4);
-		this.show();
+		this.setVisible(true);
 		editor_views = new Editor[0];
 		info_view   = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
 		clip_view   = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
@@ -295,7 +282,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		editors.addTab(fu.fname, edit_canvas);
 		editors.setSelectedComponent(edit_canvas);
 		Editor editor_view = new Editor  (this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), edit_canvas);
-		editor_views = (Editor[])Arrays.append(editor_views, editor_view);
+		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);
 		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);
 		editor_view.goToPath(path);

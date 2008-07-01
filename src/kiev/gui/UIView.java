@@ -10,27 +10,13 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
+import kiev.vtree.*;
 import kiev.fmt.*;
 
-import static kiev.stdlib.Debug.*;
-//import syntax kiev.Syntax;
-import kiev.vtree.*;
-
-import java.io.File;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.Graphics2D;
-import javax.swing.text.TextAction;
 
 /**
  * @author Maxim Kizub

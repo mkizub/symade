@@ -37,13 +37,13 @@ public abstract class DrawTerm extends Drawable {
 	public		int     x;
 	public		int     y;
 	public		int     lineno; // line number for text-kind draw/print formatters
-	public		int		_metric;
+	private		int		_metric;
 	@packed:12,_metric,0
-	public		int		w;
+	public		int		width;
 	@packed:8,_metric,12
-	public		int		h;
+	public		int		height;
 	@packed:8,_metric,20
-	public		int		b;
+	public		int		baseline;
 	@packed:1,_metric,31
 	public		boolean	hidden_as_auto_generated;
 	
@@ -69,6 +69,13 @@ public abstract class DrawTerm extends Drawable {
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
+	public final int getX() { return this.x; }
+	public final int getY() { return this.y; }
+	public final int getWidth() { return this.width; }
+	public final int getHeight() { return this.height; }
+	public final int getBaseline() { return this.baseline; }
+	public final int getLineNo() { return this.lineno; }
+	
 	public final int getMaxLayout() {
 		return syntax.lout.count;
 	}

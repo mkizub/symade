@@ -725,16 +725,17 @@ public final class SyntaxElemRef extends SyntaxElem {
 	}
 }
 
+public static enum SyntaxTokenKind {
+	UNKNOWN, KEYWORD, OPERATOR, SEPARATOR
+}
+
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxToken extends SyntaxElem {
-	public static enum TokenKind {
-		UNKNOWN, KEYWORD, OPERATOR, SEPARATOR
-	}
 
 	public static final SyntaxToken[] emptyArray = new SyntaxToken[0];
 
 	@nodeAttr public String					text;
-	@nodeAttr public TokenKind				kind;
+	@nodeAttr public SyntaxTokenKind		kind;
 
 	@setter
 	public void set$text(String value) {
@@ -742,14 +743,14 @@ public final class SyntaxToken extends SyntaxElem {
 	}
 	
 	public SyntaxToken() {
-		this.kind = TokenKind.UNKNOWN;
+		this.kind = SyntaxTokenKind.UNKNOWN;
 	}
 	public SyntaxToken(String text) {
 		this.text = text;
-		this.kind = TokenKind.UNKNOWN;
+		this.kind = SyntaxTokenKind.UNKNOWN;
 	}
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "kind" && kind == TokenKind.UNKNOWN)
+		if (attr.name == "kind" && kind == SyntaxTokenKind.UNKNOWN)
 			return false;
 		return super.includeInDump(dump, attr, val);
 	}

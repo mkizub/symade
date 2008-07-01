@@ -135,15 +135,15 @@ public class TextFormatter extends AbstractFormatter {
 		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
 			dr.y = y;
 			if (dr.isUnvisible()) {
-				dr.w = 0;
-				dr.h = 1;
+				dr.width = 0;
+				dr.height = 1;
 				continue;
 			}
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
 				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
 					l.lineno = lineno;
 					l.y = y;
-					l.h = 1;
+					l.height = 1;
 					if (l == dr)
 						break;
 				}
@@ -156,7 +156,7 @@ public class TextFormatter extends AbstractFormatter {
 		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
 			l.lineno = lineno;
 			l.y = y;
-			l.h = 1;
+			l.height = 1;
 		}
 	}
 }
@@ -218,18 +218,18 @@ public class GfxFormatter extends AbstractFormatter {
 		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
 			dr.y = y;
 			if (dr.isUnvisible()) {
-				dr.w = 0;
-				dr.h = max_h;
+				dr.width = 0;
+				dr.height = max_h;
 				continue;
 			}
-			max_h = Math.max(max_h, dr.h);
-			max_b = Math.max(max_b, dr.b);
+			max_h = Math.max(max_h, dr.height);
+			max_b = Math.max(max_b, dr.baseline);
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
 				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
 					l.lineno = lineno;
 					l.y = y;
-					l.h = max_h;
-					l.b = max_b;
+					l.height = max_h;
+					l.baseline = max_b;
 					if (l == dr)
 						break;
 				}
@@ -244,8 +244,8 @@ public class GfxFormatter extends AbstractFormatter {
 		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
 			l.lineno = lineno;
 			l.y = y;
-			l.h = max_h;
-			l.b = max_b;
+			l.height = max_h;
+			l.baseline = max_b;
 		}
 	}
 }

@@ -48,7 +48,7 @@ public class TextPrinter implements DrawDevice {
 				pos_x += text.length();
 			}
 
-			x += leaf.w;
+			x += leaf.width;
 			while (pos_x < x) {
 				sb.append(' ');
 				pos_x++;

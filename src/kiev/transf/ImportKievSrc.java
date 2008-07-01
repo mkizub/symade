@@ -665,6 +665,13 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				inst.pos = me.pos;
 				inst.init = new NewExpr(me.pos, me.xtype, ENode.emptyArray);
 				me.members += inst;
+				
+				Method get = new MethodImpl("getInstance", me.xtype, ACC_STATIC|ACC_PUBLIC /*|ACC_SYNTHETIC*/);
+				get.pos = me.pos;
+				get.body = new Block(me.pos, new ENode[]{
+					new ReturnStat(me.pos, new SFldExpr(me.pos,inst))
+				});
+				me.members += get;
 			}
 		}
 
