@@ -157,7 +157,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 				num_lines = lineno;
 				int visa = 0;
 				if (first_visible != null && last_visible != null) {
-					visa = last_visible.lineno-first_visible.lineno;
+					visa = last_visible.getLineNo()-first_visible.getLineNo();
 					if (verticalScrollBar.getVisibleAmount() != visa)
 						verticalScrollBar.setVisibleAmount(visa);
 				}
@@ -175,16 +175,16 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	}
 	
 	private Rectangle calcBounds(DrawLayoutBlock n) {
-		if (n.dr instanceof DrawTerm) {
-			DrawTerm dt = (DrawTerm)n.dr;
-			if (dt.lineno < first_line)
+		if (n.getDrawable() instanceof DrawTerm) {
+			DrawTerm dt = (DrawTerm)n.getDrawable();
+			if (dt.getLineNo() < first_line)
 				return null;
 			int w = dt.getWidth();
 			int h = dt.getHeight();
-			return new Rectangle(dt.x, dt.y, w, h);
+			return new Rectangle(dt.getX(), dt.getY(), w, h);
 		} else {
 			Rectangle res = null;
-			for (DrawLayoutBlock dlb: n.blocks) {
+			for (DrawLayoutBlock dlb: n.getBlocks()) {
 				Rectangle r = calcBounds(dlb);
 				if (res == null)
 					res = r;
@@ -198,10 +198,10 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	private void paint(Graphics2D g, DrawLayoutBlock n) {
 		if (n == null)
 			return;
-		if (n.dr instanceof DrawTerm) {
-			paintLeaf(g, (DrawTerm)n.dr);
+		if (n.getDrawable() instanceof DrawTerm) {
+			paintLeaf(g, (DrawTerm)n.getDrawable());
 		} else {
-			for (DrawLayoutBlock dlb: n.blocks) {
+			for (DrawLayoutBlock dlb: n.getBlocks()) {
 				paint(g, dlb);
 			}
 			if (false) {
@@ -219,7 +219,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		if (n == null || n.isUnvisible())
 			return;
 		if (n instanceof DrawNonTerm) {
-			for(Drawable dr: ((DrawNonTerm)n).args) 
+			for(Drawable dr: ((DrawNonTerm)n).getArgs()) 
 				if(!dr.isUnvisible()) {
 					if (dr instanceof DrawNonTerm && current_node == dr.get$drnode()) {
 						int lineno = this.lineno;
@@ -230,7 +230,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 			}
 		}
 		else if (n instanceof DrawCtrl)
-			paint(g, ((DrawCtrl)n).arg);
+			paint(g, ((DrawCtrl)n).getArg());
 		else
 			paintLeaf(g, (DrawTerm)n);
 	}
@@ -239,12 +239,12 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		if (n == null || n.isUnvisible())
 			return;
 		if (n instanceof DrawNonTerm) {
-			for (Drawable dr: ((DrawNonTerm)n).args) 
+			for (Drawable dr: ((DrawNonTerm)n).getArgs()) 
 				if (!dr.isUnvisible())
 					paintBg(g, dr);
 		}
 		else if (n instanceof DrawCtrl)
-			paintBg(g, ((DrawCtrl)n).arg);
+			paintBg(g, ((DrawCtrl)n).getArg());
 		else
 			paintLeafBg(g, (DrawTerm)n);
 	}
@@ -262,8 +262,8 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		if (first_visible == null)
 			first_visible = leaf;
 		
-		int x = leaf.x;
-		int y = leaf.y;
+		int x = leaf.getX();
+		int y = leaf.getY();
 		int w = leaf.getWidth();
 		int h = leaf.getHeight();
 		int b = leaf.getBaseline();
@@ -338,8 +338,8 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		if (leaf.get$do_newline())
 			lineno++;
 		
-		int x = leaf.x;
-		int y = leaf.y;
+		int x = leaf.getX();
+		int y = leaf.getY();
 		int w = leaf.getWidth();
 		int h = leaf.getHeight();
 

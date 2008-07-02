@@ -240,6 +240,9 @@ public final class MetaAccess extends MetaFlag {
 	public final void setSimple(String val) {
 		this.simple = val;
 	}
+	public final String getSimple() {
+		this.simple
+	}
 	@setter public final void set$simple(String val) {
 		this.simple = val.intern();
 		ANode p = parent();
@@ -249,6 +252,9 @@ public final class MetaAccess extends MetaFlag {
 
 	public final void setFlags(int val) {
 		this.flags = val;
+	}
+	public int getFlags() {
+		this.flags
 	}
 	@setter public void set$flags(int val) {
 		this.flags = val;
@@ -305,9 +311,9 @@ public final class MetaAccess extends MetaFlag {
 	}
 
 	public static void verifyDecl(DNode dn) {
-		MetaAccess acc = dn.getMetaAccess();
-		if (acc != null)
-			acc.verifyAccessDecl(dn);
+		//MetaAccess acc = dn.getMetaAccess();
+		//if (acc != null)
+		//	acc.verifyAccessDecl(dn);
 	}
 	
 	private void verifyAccessDecl(DNode n) {

@@ -32,6 +32,9 @@ public class ASTExpression extends ENode {
 	private int cur_pos;
 
 	public ASTExpression() {}
+	
+	// for GUI
+	public ENode[] getNodes() { return nodes; }
 
 	public int		getPriority() { return 256; }
 

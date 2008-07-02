@@ -216,7 +216,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		info_view   = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
 		clip_view   = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
 		expl_view   = new TreeView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
-		expl_view.setRoot(Env.getProject().root_dir);
+		expl_view.setRoot(Env.getProject());
 		expl_view.formatAndPaint(true);
 		expl_tree.requestFocus();
 	}
@@ -279,7 +279,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		}
 		Canvas edit_canvas = new Canvas();
 		edit_canvas.addFocusListener(this);
-		editors.addTab(fu.fname, edit_canvas);
+		editors.addTab(fu.pname(), edit_canvas);
 		editors.setSelectedComponent(edit_canvas);
 		Editor editor_view = new Editor  (this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), edit_canvas);
 		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);

@@ -21,6 +21,9 @@ public abstract class DrawCtrl extends Drawable {
 		super(node, syntax, text_syntax);
 	}
 
+	// for GUI
+	public Drawable getArg() { this.arg }
+
 	public String getText() {
 		if (arg != null)
 			return arg.getText();
@@ -232,9 +235,13 @@ public class DrawEnumChoice extends DrawCtrl {
 @ThisIsANode(copyable=false)
 public final class DrawFolded extends DrawCtrl {
 
-	@nodeAttr
 	public	boolean draw_folded;
 	private	boolean drawed_as_folded;
+	
+	// for GUI
+	public boolean getDrawFolded() { draw_folded }
+	// for GUI
+	public void setDrawFolded(boolean val) { draw_folded = val; }
 	
 	public DrawFolded(ANode node, Draw_SyntaxFolder syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);

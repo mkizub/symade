@@ -67,7 +67,7 @@ public class Editor extends InfoView implements KeyListener {
 	protected final java.util.Hashtable<InputEventInfo,String[]> keyActionMap;
 
 	{
-		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
+		//final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
 		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
 		final int ALT   = KeyEvent.ALT_DOWN_MASK;
 
@@ -204,7 +204,7 @@ public class Editor extends InfoView implements KeyListener {
 					for (String act: actions) 
 						if (act != null && act.equals(f.act)) {
 						try {
-							Class c = Class.forName(f.act);
+							Class<?> c = Class.forName(f.act);
 							af = (UIActionFactory)c.newInstance();
 							r = af.getAction(new UIActionViewContext(this.parent_window, this, dr));
 							if (r != null) {
@@ -235,7 +235,7 @@ public class Editor extends InfoView implements KeyListener {
 				dr = (Drawable)dr.parent();
 			if (!(dr.parent() instanceof DrawNonTerm))
 				return null;
-			for (Drawable d: ((DrawNonTerm)dr.parent()).args) {
+			for (Drawable d: ((DrawNonTerm)dr.parent()).getArgs()) {
 				Drawable x = checkFunctionTarget(attr, d);
 				if (x != null) {
 					dr = x;
@@ -254,11 +254,11 @@ public class Editor extends InfoView implements KeyListener {
 		if (stx0 instanceof Draw_SyntaxAttr && attr.equals(((Draw_SyntaxAttr)stx0).name))
 			return dr;
 		if (stx0 instanceof Draw_SyntaxSet && ((Draw_SyntaxSet)stx0).nested_function_lookup) {
-			for (Drawable d: ((DrawNonTerm)dr).args) 
+			for (Drawable d: ((DrawNonTerm)dr).getArgs()) 
 				if( (x=checkFunctionTarget(attr, d)) != null)
 					return x;
 		}
-		if (dr instanceof DrawOptional && (x=checkFunctionTarget(attr, ((DrawOptional)dr).arg)) != null)
+		if (dr instanceof DrawOptional && (x=checkFunctionTarget(attr, ((DrawOptional)dr).getArg())) != null)
 			return x;
 		return null;
 	}
@@ -292,7 +292,7 @@ public class Editor extends InfoView implements KeyListener {
 		for (; dr != null; dr = dr.getNextLeaf()) {
 			int w = dr.getWidth();
 			int h = dr.getHeight();
-			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
+			if (dr.getX() < x && dr.getY() < y && dr.getX()+w >= x && dr.getY()+h >= y) {
 				break;
 			}
 			if (dr == view_canvas.last_visible)
@@ -302,7 +302,7 @@ public class Editor extends InfoView implements KeyListener {
 			return;
 		e.consume();
 		cur_elem.set(dr);
-		cur_x = cur_elem.dr.x;
+		cur_x = cur_elem.dr.getX();
 		formatAndPaint(false);
 	}
 	
@@ -314,7 +314,7 @@ public class Editor extends InfoView implements KeyListener {
 		for (; dr != null; dr = dr.getNextLeaf()) {
 			int w = dr.getWidth();
 			int h = dr.getHeight();
-			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
+			if (dr.getX() < x && dr.getY() < y && dr.getX()+w >= x && dr.getY()+h >= y) {
 				break;
 			}
 			if (dr == view_canvas.last_visible)
@@ -342,7 +342,7 @@ public class Editor extends InfoView implements KeyListener {
 							if (n instanceof DrawNodeTerm && ((DrawNodeTerm)n).getAttrObject() == node || ((Drawable)n).get$drnode() == node) {
 								DrawTerm dr = ((DrawNodeTerm)n).getFirstLeaf();
 								cur_elem.set(dr);
-								cur_x = cur_elem.dr.x;
+								cur_x = cur_elem.dr.getX();
 								makeCurrentVisible();
 								formatAndPaint(false);
 								throw new RuntimeException();
@@ -357,15 +357,15 @@ public class Editor extends InfoView implements KeyListener {
 
 	void makeCurrentVisible() {
 		try {
-			int top_lineno = view_canvas.first_visible.lineno;
-			int bot_lineno = view_canvas.last_visible.lineno;
+			int top_lineno = view_canvas.first_visible.getLineNo();
+			int bot_lineno = view_canvas.last_visible.getLineNo();
 			int height = bot_lineno - top_lineno;
 			int first_line = view_canvas.first_line;
 			
-			if (top_lineno > 0 && cur_elem.dr.getFirstLeaf().lineno <= top_lineno)
-				first_line = cur_elem.dr.getFirstLeaf().lineno -1;
-			if (bot_lineno < view_canvas.num_lines && cur_elem.dr.getFirstLeaf().lineno >= bot_lineno)
-				first_line = cur_elem.dr.getFirstLeaf().lineno - height + 1;
+			if (top_lineno > 0 && cur_elem.dr.getFirstLeaf().getLineNo() <= top_lineno)
+				first_line = cur_elem.dr.getFirstLeaf().getLineNo() -1;
+			if (bot_lineno < view_canvas.num_lines && cur_elem.dr.getFirstLeaf().getLineNo() >= bot_lineno)
+				first_line = cur_elem.dr.getFirstLeaf().getLineNo() - height + 1;
 			view_canvas.setFirstLine(first_line);
 		} catch (NullPointerException e) {}
 	}
@@ -384,8 +384,8 @@ public class Editor extends InfoView implements KeyListener {
 			Editor.this.view_canvas.current_node = node;
 			if (dr != null) {
 				int w = dr.getWidth();
-				this.x = dr.x + w / 2;
-				this.y = dr.y;
+				this.x = dr.getX() + w / 2;
+				this.y = dr.getY();
 				java.util.Vector<Drawable> v = new java.util.Vector<Drawable>();
 				Drawable d = dr;
 				while (d != null) {
@@ -587,7 +587,7 @@ final class FolderTrigger implements Runnable {
 		this.df = df;
 	}
 	public void run() {
-		df.draw_folded = !df.draw_folded;
+		df.setDrawFolded(!df.getDrawFolded());
 		editor.formatAndPaint(true);
 	}
 
@@ -622,9 +622,9 @@ final class FunctionExecuter implements Runnable {
 		menu = new JPopupMenu();
 		for (TextAction act: actions)
 			menu.add(new JMenuItem(act));
-		int x = editor.cur_elem.dr.x;
+		int x = editor.cur_elem.dr.getX();
 		int h = editor.cur_elem.dr.getHeight();
-		int y = editor.cur_elem.dr.y + h - editor.view_canvas.translated_y;
+		int y = editor.cur_elem.dr.getY() + h - editor.view_canvas.translated_y;
 		menu.show(editor.view_canvas, x, y);
 	}
 
@@ -673,13 +673,13 @@ final class FunctionExecuter implements Runnable {
 					}
 					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
 						if (dr.syntax instanceof Draw_SyntaxAttr) {
-							Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
+							//Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
 							fe.actions.add(fe.new EditElemAction(sf.title, dr));
 						}
 					}
 					else {
 						try {
-							Class c = Class.forName(sf.act);
+							Class<?> c = Class.forName(sf.act);
 							UIActionFactory af = (UIActionFactory)c.newInstance();
 							if (!af.isForPopupMenu())
 								continue;
@@ -834,9 +834,9 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		addItems(m, satt.expected_types, n, satt.name);
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
-		int x = editor.cur_elem.dr.x;
+		int x = editor.cur_elem.dr.getX();
 		int h = editor.cur_elem.dr.getHeight();
-		int y = editor.cur_elem.dr.y + h - editor.view_canvas.translated_y;
+		int y = editor.cur_elem.dr.getY() + h - editor.view_canvas.translated_y;
 		this.menu.show(editor.view_canvas, x, y);
 		editor.startItemEditor(this);
 	}
@@ -1345,14 +1345,14 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 			combo.removeAllItems();
 		}
 		combo.setPopupVisible(false);
-		int x = dr_term.x;
-		int y = dr_term.y - editor.view_canvas.translated_y;
+		int x = dr_term.getX();
+		int y = dr_term.getY() - editor.view_canvas.translated_y;
 		int w = dr_term.getWidth();
 		int h = dr_term.getHeight();
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		for (DNode dn: decls) {
-			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.sname);
+			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.get$sname());
 			popup = true;
 		}
 		if (popup) {
@@ -1448,9 +1448,9 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 			for (Object e: EnumSet.allOf(pattr.slot.typeinfo.clazz))
 				menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		}
-		int x = cur_elem.x;
+		int x = cur_elem.getX();
 		int h = cur_elem.getHeight();
-		int y = cur_elem.y + h - editor.view_canvas.translated_y;
+		int y = cur_elem.getY() + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}
@@ -1522,7 +1522,7 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		menu.add(b=new SetSimpleMenuItem("@protected", "protected"));	group.add(b); b.addActionListener(this);
 		menu.add(b=new SetSimpleMenuItem("@access",    ""));			group.add(b); b.addActionListener(this);
 		menu.add(b=new SetSimpleMenuItem("@private",   "private"));	group.add(b); b.addActionListener(this);
-		int flags = ((MetaAccess)cur_elem.get$drnode()).flags;
+		int flags = ((MetaAccess)cur_elem.get$drnode()).getFlags();
 		menu.add(b=new JCheckBoxMenuItem("Access bits")); b.setSelected(flags != -1); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("public read",     1<<7, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("public write",    1<<6, flags)); b.addActionListener(this);
@@ -1532,9 +1532,9 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		menu.add(b=new SetFlagsMenuItem("package write",   1<<2, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("private read",    1<<1, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("private write",   1<<0, flags)); b.addActionListener(this);
-		int x = cur_elem.x;
+		int x = cur_elem.getX();
 		int h = cur_elem.getHeight();
-		int y = cur_elem.y + h - editor.view_canvas.translated_y;
+		int y = cur_elem.getY() + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}
@@ -1559,21 +1559,22 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		try {
 			if (e.getSource() instanceof SetSimpleMenuItem) {
 				SetSimpleMenuItem mi = (SetSimpleMenuItem)e.getSource();
-				((MetaAccess)cur_elem.get$drnode()).simple = mi.val;
+				((MetaAccess)cur_elem.get$drnode()).setSimple(mi.val);
 				setMenuVisible();
 			}
 			else if (e.getSource() instanceof SetFlagsMenuItem) {
 				SetFlagsMenuItem mi = (SetFlagsMenuItem)e.getSource();
+				MetaAccess ma = (MetaAccess)cur_elem.get$drnode();
 				if (mi.isSelected())
-					((MetaAccess)cur_elem.get$drnode()).flags |= mi.val;
+					ma.setFlags(ma.getFlags() | mi.val);
 				else
-					((MetaAccess)cur_elem.get$drnode()).flags &= ~mi.val;
+					ma.setFlags(ma.getFlags() & ~mi.val);
 				setMenuVisible();
 			}
 			else if (e.getSource() instanceof JCheckBoxMenuItem) {
 				JCheckBoxMenuItem mi = (JCheckBoxMenuItem)e.getSource();
 				if (mi.isSelected()) {
-					int flags = ((MetaAccess)cur_elem.get$drnode()).flags;
+					int flags = ((MetaAccess)cur_elem.get$drnode()).getFlags();
 					for (SetFlagsMenuItem sf: (SetFlagsMenuItem[])menu.getSubElements()) {
 						sf.setEnabled(true);
 						sf.setSelected((flags & sf.val) != 0);
@@ -1583,7 +1584,7 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 						sf.setEnabled(false);
 						sf.setSelected(false);
 					}
-					((MetaAccess)cur_elem.get$drnode()).flags = -1;
+					((MetaAccess)cur_elem.get$drnode()).setFlags(-1);
 				}
 				setMenuVisible();
 			}
@@ -1602,7 +1603,8 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 		SetSimpleMenuItem(String text, String val) {
 			super(text);
 			this.val = val;
-			setSelected((((MetaAccess)cur_elem.get$drnode()).simple == val));
+			MetaAccess ma = (MetaAccess)cur_elem.get$drnode();
+			setSelected((ma.getSimple() == val));
 		}
 	}
 	class SetFlagsMenuItem extends JCheckBoxMenuItem {
@@ -1698,9 +1700,9 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 					menu.add(new JMenuItem(new SetSyntaxAction(op)));
 			}
 		}
-		int x = cur_elem.x;
+		int x = cur_elem.getX();
 		int h = cur_elem.getHeight();
-		int y = cur_elem.y + h - editor.view_canvas.translated_y;
+		int y = cur_elem.getY() + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}

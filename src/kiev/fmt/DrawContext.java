@@ -372,6 +372,11 @@ public final class DrawLayoutBlock extends ANode {
 	public int					max_layout;		// for block (alternative) layouts
 	public boolean				is_flow;		// for flow blocks
 	
+	// for GUI
+	public Drawable getDrawable() { dr }
+	// for GUI
+	public DrawLayoutBlock[] getBlocks() { blocks }
+	
 	public DrawLayoutBlock pushDrawable(Drawable dr) {
 		Draw_Paragraph pl = null;
 		if (dr.syntax != null) {

@@ -17,13 +17,22 @@ import syntax kiev.Syntax;
 public abstract class DrawNonTerm extends Drawable {
 	@nodeAttr public Drawable		folded;
 	@nodeAttr public Drawable∅		args;
-	@nodeAttr public boolean		draw_folded;
+	          public boolean		draw_folded;
 	          public int			max_layout;
 
 	public DrawNonTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 	
+	// for GUI
+	public Drawable[] getArgs() { this.args }
+	// for GUI
+	public Drawable getFolded() { this.folded }
+	// for GUI
+	public boolean getDrawFolded() { this.draw_folded }
+	// for GUI
+	public void setDrawFolded(boolean val) { this.draw_folded = val; }
+
 	public String getText() {
 		if (folded != null)
 			return folded.getText();

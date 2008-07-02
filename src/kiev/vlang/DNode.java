@@ -119,7 +119,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 			m.setSimple("private");
 	}
 	public void setProtected() {
-		MetaAccess m = (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
 		MetaAccess m = getMetaAccess();
 		if (m == null)
 			this.setMeta(new MetaAccess("protected"));
@@ -127,13 +126,32 @@ public abstract class DNode extends ASTNode implements ISymbol {
 			m.setSimple("protected");
 	}
 	public void setPkgPrivate() {
-		MetaAccess m = (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
 		MetaAccess m = getMetaAccess();
 		if (m != null) {
 			if (m.flags != -1 || m.flags != 0xF)
 				m.setSimple("");
 			else
 				m.detach();
+		}
+	}
+	public void setPkgPrivateKeepAccess() {
+		int flags = MetaAccess.getFlags(this);
+		MetaAccess m = getMetaAccess();
+		if (m != null) {
+			m.setSimple("");
+			m.setFlags(flags);
+		} else {
+			this.setMeta(new MetaAccess("", flags));
+		}
+	}
+	public void setPrivateKeepAccess() {
+		int flags = MetaAccess.getFlags(this);
+		MetaAccess m = getMetaAccess();
+		if (m != null) {
+			m.setSimple("private");
+			m.setFlags(flags);
+		} else {
+			this.setMeta(new MetaAccess("private", flags));
 		}
 	}
 

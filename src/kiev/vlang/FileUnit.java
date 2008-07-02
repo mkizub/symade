@@ -45,6 +45,11 @@ public final class FileUnit extends NameSpace {
 		return ((DirUnit)parent()).pname() + '/' + fname;
 	}
 	
+	// for GUI
+	public String getCurrentSyntax() { this.current_syntax }
+	// for GUI
+	public void setCurrentSyntax(String val) { this.current_syntax = val; }
+
 	public static FileUnit makeFile(String qname, boolean project_file) {
 		qname = qname.replace(File.separatorChar, '/');
 		DirUnit dir;

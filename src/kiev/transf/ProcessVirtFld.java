@@ -277,8 +277,6 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
 		}
 
-		if (!f.isVirtual())
-			return;		// no need to generate getter
 		if( !get_found && MetaAccess.readable(f)) {
 			Method get_var = new MethodImpl(get_name,f.getType(),f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
@@ -297,6 +295,9 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		else if( get_found && !MetaAccess.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
 		}
+
+		if (!f.isAbstract() && !f.isPrivate())
+			f.setPkgPrivateKeepAccess();
 	}
 }
 	

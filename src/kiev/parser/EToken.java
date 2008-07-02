@@ -47,14 +47,20 @@ public final class EToken extends ENode {
 	public static final Pattern patternIntConst = Pattern.compile("\\p{Digit}+");
 	public static final Pattern patternFloatConst = Pattern.compile("\\p{Digit}+\\.\\p{Digit}*(?:[Ee][\\+\\-]?\\p{Digit}+)?");
 
-	@nodeAttr public ETokenKind	base_kind;
-	@nodeData public ANode		value;
+	@nodeAttr public ETokenKind base_kind;
+	@nodeData public ANode      value;
 	@abstract
 	@nodeAttr public boolean		explicit;		// if the base type if explicitly set
 	
 	@getter public final boolean get$explicit() { is_explicit }
 	@setter public final void set$explicit(boolean val) { is_explicit = val; }
 
+	// for GUI
+	public final ETokenKind getKind() { base_kind }
+	// for GUI
+	public final void setKind(ETokenKind val) { base_kind = val; }
+	
+	
 	public EToken() {}
 	public EToken(Token t, ETokenKind kind) {
 		set(t);

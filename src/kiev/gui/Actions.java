@@ -136,7 +136,7 @@ final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			return new NavigateView(uiv, -uiv.view_canvas.last_visible.lineno + uiv.view_canvas.first_visible.lineno + 1);
+			return new NavigateView(uiv, -uiv.view_canvas.last_visible.getLineNo() + uiv.view_canvas.first_visible.getLineNo() + 1);
 		}
 	}
 	final static class PageDn implements UIActionFactory {
@@ -144,7 +144,7 @@ final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			return new NavigateView(uiv, +uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno - 1);
+			return new NavigateView(uiv, +uiv.view_canvas.last_visible.getLineNo() - uiv.view_canvas.first_visible.getLineNo() - 1);
 		}
 	}
 }
@@ -252,7 +252,7 @@ class NavigateEditor implements Runnable {
 			DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
 			if (prev != null) {
 				uiv.cur_elem.set(prev);
-				uiv.cur_x = prev.x;
+				uiv.cur_x = prev.getX();
 				if (uiv.insert_mode) {
 					String text = prev.getText();
 					if (text != null)
@@ -275,7 +275,7 @@ class NavigateEditor implements Runnable {
 			DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
 			if (next != null) {
 				uiv.cur_elem.set(next);
-				uiv.cur_x = next.x;
+				uiv.cur_x = next.getX();
 				uiv.view_canvas.cursor_offset = 0;
 			}
 		}
@@ -298,13 +298,13 @@ class NavigateEditor implements Runnable {
 		}
 		while (n != null) {
 			int w = n.getWidth();
-			if (n.x <= uiv.cur_x && n.x+w >= uiv.cur_x) 
+			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
 			prev = n.getPrevLeaf();
 			if (prev == null || prev.get$do_newline())
 				break;
 			w = prev.getWidth();
-			if (prev.x+w < uiv.cur_x) 
+			if (prev.getX()+w < uiv.cur_x) 
 				break;
 			n = prev;
 		}
@@ -327,12 +327,12 @@ class NavigateEditor implements Runnable {
 		}
 		while (n != null) {
 			int w = n.getWidth();
-			if (n.x <= uiv.cur_x && n.x+w >= uiv.cur_x) 
+			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
 			next = n.getNextLeaf();
 			if (next == null)
 				break;
-			if (next.x > uiv.cur_x)
+			if (next.getX() > uiv.cur_x)
 				break;
 			if (next.get$do_newline())
 				break;
@@ -346,33 +346,33 @@ class NavigateEditor implements Runnable {
 		}
 	}
 	private void navigateLineHome(Editor uiv, boolean repaint) {
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().lineno;
+		int lineno = uiv.cur_elem.dr.getFirstLeaf().getLineNo();
 		DrawTerm res = uiv.cur_elem.dr;
 		for (;;) {
 			DrawTerm dr = res.getPrevLeaf();
-			if (dr == null || dr.lineno != lineno)
+			if (dr == null || dr.getLineNo() != lineno)
 				break;
 			res = dr;
 		}
 		if (res != uiv.cur_elem.dr) {
 			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.x;
+			uiv.cur_x = uiv.cur_elem.dr.getX();
 		}
 		if (repaint)
 			uiv.formatAndPaint(false);
 	}
 	private void navigateLineEnd(Editor uiv, boolean repaint) {
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().lineno;
+		int lineno = uiv.cur_elem.dr.getFirstLeaf().getLineNo();
 		DrawTerm res = uiv.cur_elem.dr;
 		for (;;) {
 			DrawTerm dr = res.getNextLeaf();
-			if (dr == null || dr.lineno != lineno)
+			if (dr == null || dr.getLineNo() != lineno)
 				break;
 			res = dr;
 		}
 		if (res != uiv.cur_elem.dr) {
 			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.x;
+			uiv.cur_x = uiv.cur_elem.dr.getX();
 		}
 		if (repaint)
 			uiv.formatAndPaint(false);
@@ -382,7 +382,7 @@ class NavigateEditor implements Runnable {
 			uiv.view_canvas.setFirstLine(0);
 			return;
 		}
-		int offs = uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno -1;
+		int offs = uiv.view_canvas.last_visible.getLineNo() - uiv.view_canvas.first_visible.getLineNo() -1;
 		uiv.view_canvas.incrFirstLine(-offs);
 		for (int i=offs; i >= 0; i--)
 			navigateUp(uiv,i==0);
@@ -393,7 +393,7 @@ class NavigateEditor implements Runnable {
 			uiv.view_canvas.setFirstLine(0);
 			return;
 		}
-		int offs = uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno -1;
+		int offs = uiv.view_canvas.last_visible.getLineNo() - uiv.view_canvas.first_visible.getLineNo() -1;
 		uiv.view_canvas.incrFirstLine(+offs);
 		for (int i=offs; i >= 0; i--)
 			navigateDn(uiv,i==0);
@@ -501,7 +501,7 @@ final class FileActions implements Runnable {
 			for (DumpFileFilter dff: dumpFileFilters)
 				jfc.addChoosableFileFilter(dff);
 			for (DumpFileFilter dff: dumpFileFilters) 
-				if (fu.current_syntax == dff.syntax_qname)
+				if (fu.getCurrentSyntax() == dff.syntax_qname)
 					jfc.setFileFilter(dff);
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
@@ -509,11 +509,11 @@ final class FileActions implements Runnable {
 			try {
 				if ("stx-fmt\u001fsyntax-dump-full".equals(dff.syntax_qname)) {
 					DumpUtils.dumpToXMLFile("full", fu, jfc.getSelectedFile());
-					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
+					fu.setCurrentSyntax("stx-fmt\u001fsyntax-dump-full");
 				} else {
 					Draw_ATextSyntax stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
 					SyntaxManager.dumpTextFile(fu, jfc.getSelectedFile(), stx);
-					fu.current_syntax = stx.q_name;
+					fu.setCurrentSyntax(stx.q_name);
 				}
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
@@ -544,9 +544,9 @@ final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root.get$ctx_file_unit();
 			String stx_name = null;
 			Draw_ATextSyntax stx = null;
-			if (fu.current_syntax != null) {
-				stx = SyntaxManager.loadLanguageSyntax(fu.current_syntax);
-				stx_name = fu.current_syntax;
+			if (fu.getCurrentSyntax() != null) {
+				stx = SyntaxManager.loadLanguageSyntax(fu.getCurrentSyntax());
+				stx_name = fu.getCurrentSyntax();
 			}
 			File f = new File(fu.pname());
 			if (stx == null || stx != uiv.syntax) {
@@ -560,7 +560,7 @@ final class FileActions implements Runnable {
 				for (DumpFileFilter dff: dumpFileFilters)
 					jfc.addChoosableFileFilter(dff);
 				for (DumpFileFilter dff: dumpFileFilters) 
-					if (fu.current_syntax == dff.syntax_qname)
+					if (fu.getCurrentSyntax() == dff.syntax_qname)
 						jfc.setFileFilter(dff);
 				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
 					return;
@@ -575,7 +575,7 @@ final class FileActions implements Runnable {
 				} else {
 					SyntaxManager.dumpTextFile(fu, f, stx);
 				}
-				fu.current_syntax = stx_name;
+				fu.setCurrentSyntax(stx_name);
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}
@@ -853,7 +853,7 @@ final class RenderActions implements Runnable {
 		else if (action == "unfold-all") {
 			if (ui instanceof InfoView) {
 				ui.view_root.walkTree(new TreeWalker() {
-					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) ((DrawFolded)n).draw_folded = false; return true; }
+					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) ((DrawFolded)n).setDrawFolded(false); return true; }
 				});
 			}
 			ui.formatAndPaint(true);
@@ -861,7 +861,7 @@ final class RenderActions implements Runnable {
 		else if (action == "fold-all") {
 			if (ui instanceof InfoView) {
 				ui.view_root.walkTree(new TreeWalker() {
-					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) ((DrawFolded)n).draw_folded = true; return true; }
+					public boolean pre_exec(ANode n) { if (n instanceof DrawFolded) ((DrawFolded)n).setDrawFolded(true); return true; }
 				});
 			}
 			ui.formatAndPaint(true);
@@ -917,7 +917,7 @@ final class RenderActions implements Runnable {
 					return;
 				}
 				if (stx instanceof XmlDumpSyntax)
-					((XmlDumpSyntax)stx).dump = qname;
+					((XmlDumpSyntax)stx).set$dump(qname);
 				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}
@@ -1070,7 +1070,7 @@ final class ExprEditActions implements Runnable, KeyListener {
 			editor.insert_mode = true;
 			editor.startItemEditor(this);
 			context.node.replaceWithNode(expr);
-			for (EToken et: (EToken[])expr.nodes)
+			for (EToken et: (EToken[])expr.getNodes())
 				et.guessKind();
 			editor.formatAndPaint(true);
 		}
@@ -1089,10 +1089,10 @@ final class ExprEditActions implements Runnable, KeyListener {
 				editor.view_canvas.remove(menu);
 			menu = null;
 			if (kind == ETokenKind.UNKNOWN) {
-				et.base_kind = ETokenKind.UNKNOWN;
+				et.setKind(ETokenKind.UNKNOWN);
 				et.set$explicit(false);
 			} else {
-				et.base_kind = kind;
+				et.setKind(kind);
 				et.set$explicit(true);
 			}
 			et.guessKind();
@@ -1114,9 +1114,9 @@ final class ExprEditActions implements Runnable, KeyListener {
 			menu = new JPopupMenu();
 			for (ETokenKind k: ETokenKind.class.getEnumConstants())
 				menu.add(new SetKindAction(et, k));
-			int x = dt.x;
+			int x = dt.getX();
 			int h = dt.getHeight();
-			int y = dt.y + h - editor.view_canvas.translated_y;
+			int y = dt.getY() + h - editor.view_canvas.translated_y;
 			menu.show(editor.view_canvas, x, y);
 			return;
 		}
@@ -1129,15 +1129,15 @@ final class ExprEditActions implements Runnable, KeyListener {
 			java.awt.Toolkit.getDefaultToolkit().beep();
 			return;
 		case KeyEvent.VK_HOME:
-			if (expr.nodes.length > 0)
-				editor.goToPath(makePathTo(expr.nodes[0]));
+			if (expr.getNodes().length > 0)
+				editor.goToPath(makePathTo(expr.getNodes()[0]));
 			else
 				editor.goToPath(makePathTo(expr));
 			editor.view_canvas.cursor_offset = 0;
 			return;
 		case KeyEvent.VK_END:
-			if (expr.nodes.length > 0)
-				editor.goToPath(makePathTo(expr.nodes[expr.nodes.length-1]));
+			if (expr.getNodes().length > 0)
+				editor.goToPath(makePathTo(expr.getNodes()[expr.getNodes().length-1]));
 			else
 				editor.goToPath(makePathTo(expr));
 			if (editor.cur_elem.dr != null && editor.cur_elem.dr.getText() != null)
@@ -1229,7 +1229,7 @@ final class ExprEditActions implements Runnable, KeyListener {
 			break;
 		case KeyEvent.VK_SPACE:
 			// split the node, if it's not a string/char expression
-			if (et.base_kind != ETokenKind.EXPR_STRING && et.base_kind != ETokenKind.EXPR_CHAR) {
+			if (et.getKind() != ETokenKind.EXPR_STRING && et.getKind() != ETokenKind.EXPR_CHAR) {
 				if (et.get$explicit() && edit_offset != 0 && edit_offset != text.length()) {
 					java.awt.Toolkit.getDefaultToolkit().beep();
 					return;
@@ -1248,13 +1248,13 @@ final class ExprEditActions implements Runnable, KeyListener {
 				return;
 			} else {
 				char ch = evt.getKeyChar();
-				if (et.base_kind == ETokenKind.EXPR_STRING || et.base_kind == ETokenKind.EXPR_CHAR) {
+				if (et.getKind() == ETokenKind.EXPR_STRING || et.getKind() == ETokenKind.EXPR_CHAR) {
 					text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
 					edit_offset++;
 					et.setText(text);
 					break;
 				}
-				else if (et.base_kind == ETokenKind.EXPR_NUMBER) {
+				else if (et.getKind() == ETokenKind.EXPR_NUMBER) {
 					String s = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
 					if (EToken.patternIntConst.matcher(s).matches() || EToken.patternFloatConst.matcher(s).matches()) {
 						edit_offset++;
