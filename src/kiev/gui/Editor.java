@@ -14,6 +14,7 @@ import kiev.vtree.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.fmt.*;
+import kiev.gui.event.ElementEvent;
 
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -122,6 +123,7 @@ public class Editor extends InfoView implements KeyListener {
 	public void setRoot(ANode root) {
 		super.setRoot(root);
 		cur_elem.set(view_root.getFirstLeaf());
+		
 	}
 	
 	public void setSyntax(Draw_ATextSyntax syntax) {
@@ -154,7 +156,6 @@ public class Editor extends InfoView implements KeyListener {
 			cur_elem.restore();
 		}
 		view_canvas.repaint();
-		parent_window.info_view.formatAndPaintLater(cur_elem.node);
 	}
 	
 	public ActionPoint getActionPoint(boolean next) {
@@ -374,14 +375,15 @@ public class Editor extends InfoView implements KeyListener {
 
 	final class CurElem {
 		DrawTerm		dr;
-		ANode			node;
+		ANode			node, oldNode;
 		int				x;
 		int				y;
 		Drawable[]		path = Drawable.emptyArray;
 	
 		void set(DrawTerm dr) {
 			this.dr = dr;
-			this.node = (dr == null ? null : dr.get$drnode());
+			oldNode = node;
+			setNode(dr == null ? null : dr.get$drnode());
 			Editor.this.view_canvas.current = dr;
 			Editor.this.view_canvas.current_node = node;
 			if (dr != null) {
@@ -398,51 +400,6 @@ public class Editor extends InfoView implements KeyListener {
 			} else {
 				path = Drawable.emptyArray;
 			}
-			
-			if (node == null)
-				return;
-			
-			DefaultTableModel tm = (DefaultTableModel)parent_window.prop_table.getModel();
-			String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
-			tm.setDataVector(null, newIdentifiers);
-			System.out.println("Selected: "+node.getClass()); //0
-			Object[] rowData = {node.getClass()};
-			tm.addRow(rowData);
-			for (AttrSlot slot: node.values()) {
-				String name = slot.name; //1
-				Object[] rowData1 = {"", slot.name};
-				tm.addRow(rowData1);
-				if (slot instanceof ScalarAttrSlot) {
-					ScalarAttrSlot s = (ScalarAttrSlot)slot;
-					Object obj = s.get(node);
-					Object[] rowData2 = {"", "", obj};
-					tm.addRow(rowData2);
-					System.out.println(name + " : "+obj); //2
-				}
-				else if (slot instanceof SpaceAttrSlot) {
-					SpaceAttrSlot s = (SpaceAttrSlot)slot;
-					ANode[] arr = s.getArray(node); //2
-					for (ANode an: arr){
-						Object[] rowData2 = {"", "", an};
-						tm.addRow(rowData2);
-					}
-				}
-				else if (slot instanceof ExtSpaceAttrSlot) {
-					ExtSpaceAttrSlot s = (ExtSpaceAttrSlot)slot;
-					for (ExtChildrenIterator i = s.iterate(node); i.hasMoreElements();){
-						ANode an = i.nextElement();
-						Object[] rowData2 = {"", "", an};
-						tm.addRow(rowData2);
-					}
-				}
-				else if (slot instanceof ParentAttrSlot) {
-					ParentAttrSlot s = (ParentAttrSlot)slot;
-					Object obj = s.get(node);
-					Object[] rowData2 = {"", "", obj};
-					tm.addRow(rowData2);
-
-				}
-			}			
 		}
 		
 		void restore() {
@@ -475,11 +432,24 @@ public class Editor extends InfoView implements KeyListener {
 		}
 		void nodeUp() {
 			if (node != null && node.parent() != null) {
-				node = node.parent();
+				setNode(node.parent());
 				Editor.this.view_canvas.current_node = node;
 			}	
 		}
+
+		/**
+		 * @param node the node to set
+		 */
+		private void setNode(ANode node) {
+			this.node = node;
+			if (node != null && !node.equals(oldNode))
+				parent_window.fireElementChanged(new ElementEvent(node, ElementEvent.ELEMENT_CHANGED));	
+		}
 	}
+	
+	@Override
+	public void elementChanged(ElementEvent e) {}
+
 }
 
 class ActionPoint {
