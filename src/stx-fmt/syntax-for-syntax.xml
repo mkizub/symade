@@ -392,7 +392,6 @@
         <elpar>
          <core:SymbolRef name='par-indent' />
         </elpar>
-        <folded_by_default>false</folded_by_default>
         <name>members</name>
         <expected_types>
          <core:SymbolRef name='TextSyntax' />
@@ -461,7 +460,6 @@
             <name></name>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>members</name>
           <expected_types>
            <core:SymbolRef name='Import' />
@@ -476,7 +474,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -498,7 +495,6 @@
           </fmt>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -552,7 +548,6 @@
           </fmt>
          </syntax:SyntaxSpace>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -606,7 +601,6 @@
           </fmt>
          </syntax:SyntaxSpace>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -660,7 +654,6 @@
           </fmt>
          </syntax:SyntaxSpace>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -708,7 +701,6 @@
           <name>star</name>
          </syntax:SyntaxEnumChoice>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-import' />
@@ -751,7 +743,6 @@
           <name>pixel_size</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-space' />
@@ -818,7 +809,6 @@
           <name>indent_from_current_position</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-space' />
@@ -861,7 +851,6 @@
           <name>token_text</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-space' />
@@ -898,7 +887,6 @@
           <name>rgb_color</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-format' />
@@ -938,7 +926,6 @@
           <text>"</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-format' />
@@ -1000,7 +987,6 @@
           <text>]</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <par>
          <core:SymbolRef name='par-indent' />
@@ -1083,14 +1069,12 @@
           <elpar>
            <core:SymbolRef name='par-flow' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>spaces</name>
           <expected_types>
            <core:SymbolRef name='SpaceCmd' />
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-nl-format' />
@@ -1143,7 +1127,6 @@
           </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -1207,7 +1190,6 @@
           </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -1247,7 +1229,6 @@
             <name>text</name>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1309,7 +1290,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1330,7 +1310,6 @@
             <name>text</name>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1386,7 +1365,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1410,7 +1388,6 @@
             </fmt>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1508,7 +1485,6 @@
               <text>]</text>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>expected_types</name>
             <expected_types>
              <core:SymbolRef name='SymbolRef' />
@@ -1521,7 +1497,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1545,7 +1520,6 @@
             </fmt>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1623,7 +1597,6 @@
               <text>]</text>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>expected_types</name>
             <expected_types>
              <core:SymbolRef name='SymbolRef' />
@@ -1636,7 +1609,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1660,7 +1632,6 @@
             </fmt>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1704,7 +1675,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1728,7 +1698,6 @@
             </fmt>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1772,7 +1741,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1796,7 +1764,6 @@
             </fmt>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1840,7 +1807,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -1877,7 +1843,6 @@
             </empty>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -1955,18 +1920,6 @@
             </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
-            <text>fold=</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxSubAttr>
-            <name>folded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-            </expected_types>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxToken>
             <text>par=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
@@ -1982,12 +1935,6 @@
             <name>elpar</name>
             <expected_types>
              <core:SymbolRef name='SymbolRef' />
-            </expected_types>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxSubAttr>
-            <name>folded_by_default</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
             </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxList>
@@ -2020,7 +1967,6 @@
             <elpar>
              <core:SymbolRef name='par-flow' />
             </elpar>
-            <folded_by_default>false</folded_by_default>
             <name>expected_types</name>
             <expected_types>
              <core:SymbolRef name='SymbolRef' />
@@ -2030,7 +1976,6 @@
             </par>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
           <par>
            <core:SymbolRef name='par-flow' />
@@ -2051,11 +1996,6 @@
          <syntax:SyntaxSet>
           <elements>
            <syntax:SyntaxList>
-            <folded>
-             <syntax:SyntaxToken>
-              <text>{...}</text>
-             </syntax:SyntaxToken>
-            </folded>
             <element>
              <syntax:SyntaxNode>
               <name></name>
@@ -2077,7 +2017,6 @@
             <elpar>
              <core:SymbolRef name='par-indent' />
             </elpar>
-            <folded_by_default>false</folded_by_default>
             <name>elements</name>
             <expected_types>
              <core:SymbolRef name='SyntaxToken' />
@@ -2101,7 +2040,6 @@
             </par>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -2133,7 +2071,6 @@
             <elpar>
              <core:SymbolRef name='par-indent' />
             </elpar>
-            <folded_by_default>false</folded_by_default>
             <name>elements</name>
             <expected_types>
              <core:SymbolRef name='SyntaxToken' />
@@ -2154,24 +2091,6 @@
              <core:SymbolRef name='SyntaxEnumChoice' />
             </expected_types>
            </syntax:SyntaxList>
-           <syntax:SyntaxToken>
-            <text>fold=</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxSubAttr>
-            <name>folded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-            </expected_types>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxSubAttr>
-            <name>folded_by_default</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-            </expected_types>
-           </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>func_lookup:</text>
            </syntax:SyntaxToken>
@@ -2200,8 +2119,133 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </unfolded>
+       </syntax:SyntaxFolder>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='std-def-tree-branch'>
+      <rnode>
+       <core:SymbolRef name='SyntaxTreeBranch' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxFolder>
+        <folded_by_default>true</folded_by_default>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxSubAttr>
+            <name>name</name>
+           </syntax:SyntaxSubAttr>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <unfolded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>&lt;tree-branch:</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>name</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>filter=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>filter</name>
+            <expected_types>
+             <core:SymbolRef name='stx-types-CalcOptions' />
+            </expected_types>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>el=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>element</name>
+            <expected_types>
+             <core:SymbolRef name='SyntaxToken' />
+             <core:SymbolRef name='SyntaxSet' />
+             <core:SymbolRef name='SyntaxSubAttr' />
+             <core:SymbolRef name='SyntaxNode' />
+             <core:SymbolRef name='SyntaxExpr' />
+            </expected_types>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>fold=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>folded</name>
+            <expected_types>
+             <core:SymbolRef name='SyntaxToken' />
+             <core:SymbolRef name='SyntaxSet' />
+             <core:SymbolRef name='SyntaxSubAttr' />
+             <core:SymbolRef name='SyntaxIdentAttr' />
+            </expected_types>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>par=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>par</name>
+            <expected_types>
+             <core:SymbolRef name='SymbolRef' />
+            </expected_types>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>elpar=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>elpar</name>
+            <expected_types>
+             <core:SymbolRef name='SymbolRef' />
+            </expected_types>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxList>
+            <element>
+             <syntax:SyntaxNode>
+              <name></name>
+              <fmt>
+               <core:SymbolRef name='fmt-nl-1++' />
+              </fmt>
+             </syntax:SyntaxNode>
+            </element>
+            <separator>
+             <syntax:SyntaxToken>
+              <text>,</text>
+              <fmt>
+               <core:SymbolRef name='fmt-nl-1-+' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </separator>
+            <prefix>
+             <syntax:SyntaxToken>
+              <text>[</text>
+             </syntax:SyntaxToken>
+            </prefix>
+            <sufix>
+             <syntax:SyntaxToken>
+              <text>]</text>
+             </syntax:SyntaxToken>
+            </sufix>
+            <elpar>
+             <core:SymbolRef name='par-flow' />
+            </elpar>
+            <name>expected_types</name>
+            <expected_types>
+             <core:SymbolRef name='SymbolRef' />
+            </expected_types>
+            <par>
+             <core:SymbolRef name='par-indent' />
+            </par>
+           </syntax:SyntaxList>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
          </syntax:SyntaxSet>
         </unfolded>
        </syntax:SyntaxFolder>
@@ -2231,7 +2275,6 @@
               <text>|</text>
              </syntax:SyntaxToken>
             </separator>
-            <folded_by_default>false</folded_by_default>
             <name>elements</name>
             <expected_types>
              <core:SymbolRef name='SyntaxToken' />
@@ -2249,7 +2292,6 @@
             <text>)</text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -2276,7 +2318,6 @@
               <text>|</text>
              </syntax:SyntaxToken>
             </separator>
-            <folded_by_default>false</folded_by_default>
             <name>elements</name>
             <expected_types>
              <core:SymbolRef name='SyntaxToken' />
@@ -2306,7 +2347,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -2365,7 +2405,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -2412,7 +2451,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -2453,7 +2491,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -2518,14 +2555,12 @@
           <elpar>
            <core:SymbolRef name='par-flow' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>keywords</name>
           <expected_types>
            <core:SymbolRef name='ConstStringExpr' />
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2579,7 +2614,6 @@
             <text>}</text>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>expected_types</name>
           <expected_types>
            <core:SymbolRef name='SymbolRef' />
@@ -2589,7 +2623,6 @@
           </par>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2645,7 +2678,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -2692,7 +2724,6 @@
             <name></name>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>operators</name>
           <expected_types>
            <core:SymbolRef name='SyntaxToken' />
@@ -2704,7 +2735,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2722,7 +2752,6 @@
             <name></name>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>attrs</name>
           <expected_types>
            <core:SymbolRef name='SyntaxSubAttr' />
@@ -2740,7 +2769,6 @@
           <name>template</name>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2784,7 +2812,6 @@
           <text>)</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2848,7 +2875,6 @@
           </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2885,7 +2911,6 @@
           </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2941,7 +2966,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -2965,7 +2989,6 @@
           <name>template</name>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3022,7 +3045,6 @@
                 </expected_types>
                </syntax:SyntaxSubAttr>
               </elements>
-              <folded_by_default>false</folded_by_default>
               <nested_function_lookup>false</nested_function_lookup>
              </syntax:SyntaxSet>
             </opt_true>
@@ -3031,7 +3053,6 @@
             <text>)?</text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -3092,7 +3113,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -3136,7 +3156,6 @@
             <text>|)</text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -3191,7 +3210,6 @@
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </unfolded>
@@ -3232,7 +3250,6 @@
           <name>name</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3254,7 +3271,6 @@
           </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3285,7 +3301,6 @@
           <text>)</text>
          </syntax:SyntaxToken>
         </sufix>
-        <folded_by_default>false</folded_by_default>
         <name>opts</name>
         <expected_types>
          <core:SymbolRef name='stx-types-CalcOptions' />
@@ -3319,7 +3334,6 @@
           <text>)</text>
          </syntax:SyntaxToken>
         </sufix>
-        <folded_by_default>false</folded_by_default>
         <name>opts</name>
         <expected_types>
          <core:SymbolRef name='stx-types-CalcOptions' />
@@ -3341,7 +3355,6 @@
           <name>name</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3360,7 +3373,6 @@
           <name>name</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3379,7 +3391,6 @@
           <name>name</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3398,7 +3409,6 @@
           <name>name</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3417,7 +3427,6 @@
           <name>name</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3436,7 +3445,6 @@
           <text>!=null</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3455,7 +3463,6 @@
           <text>!= empty</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3499,7 +3506,6 @@
           <text>]</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <par>
          <core:SymbolRef name='par-indent' />
@@ -3534,7 +3540,6 @@
         <elpar>
          <core:SymbolRef name='par-flow' />
         </elpar>
-        <folded_by_default>false</folded_by_default>
         <name>funcs</name>
         <expected_types>
          <core:SymbolRef name='SyntaxFunction' />

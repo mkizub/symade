@@ -237,9 +237,7 @@ public class Editor extends InfoView implements KeyListener {
 		for(String attr: attrs) {
 			while (dr.parent() instanceof DrawCtrl)
 				dr = (Drawable)dr.parent();
-			if (!(dr.parent() instanceof DrawNonTerm))
-				return null;
-			for (Drawable d: ((DrawNonTerm)dr.parent()).getArgs()) {
+			for (Drawable d: dr.getChildren()) {
 				Drawable x = checkFunctionTarget(attr, d);
 				if (x != null) {
 					dr = x;
@@ -258,7 +256,7 @@ public class Editor extends InfoView implements KeyListener {
 		if (stx0 instanceof Draw_SyntaxAttr && attr.equals(((Draw_SyntaxAttr)stx0).name))
 			return dr;
 		if (stx0 instanceof Draw_SyntaxSet && ((Draw_SyntaxSet)stx0).nested_function_lookup) {
-			for (Drawable d: ((DrawNonTerm)dr).getArgs()) 
+			for (Drawable d: dr.getChildren()) 
 				if( (x=checkFunctionTarget(attr, d)) != null)
 					return x;
 		}
@@ -400,6 +398,9 @@ public class Editor extends InfoView implements KeyListener {
 			} else {
 				path = Drawable.emptyArray;
 			}
+			
+			if (node == null)
+				return;
 			
 			DefaultTableModel tm = (DefaultTableModel)parent_window.prop_table.getModel();
 			String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
@@ -585,6 +586,8 @@ final class ChooseItemEditor implements UIActionFactory {
 		if (context.editor == null)
 			return null;
 		Editor editor = context.editor;
+		if (context.dt == null || context.node == null)
+			return null;
 		if (context.dt.get$drnode() != context.node)
 			return null;
 		Drawable dr = context.dr;
@@ -1186,6 +1189,8 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
+			if (dt == null || context.node == null)
+				return null;
 			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
 			if (dt.get$drnode() != context.node)
@@ -1427,6 +1432,8 @@ final class IntEditor extends TextEditor {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
+			if (dt == null || context.node == null)
+				return null;
 			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
 			if (dt.get$drnode() != context.node)
@@ -1477,6 +1484,8 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
+			if (dt == null || context.node == null)
+				return null;
 			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
 			if (dt.get$drnode() != context.node)
@@ -1552,6 +1561,8 @@ class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionLi
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
+			if (dt == null || context.node == null)
+				return null;
 			if (!(dt instanceof DrawJavaAccess))
 				return null;
 			if (dt.get$drnode() != context.node)
@@ -1687,6 +1698,8 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 				return null;
 			Editor editor = context.editor;
 			DrawTerm dt = context.dt;
+			if (dt == null || context.node == null)
+				return null;
 			if (dt.get$drnode() != context.node)
 				return null;
 			if (!(dt instanceof DrawToken && dt.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxTokenKind.OPERATOR))

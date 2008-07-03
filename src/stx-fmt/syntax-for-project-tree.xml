@@ -115,25 +115,29 @@
        </syntax:SyntaxNode>
       </elem>
      </syntax:SyntaxExprTemplate>
-     <syntax:SyntaxElemDecl name='stx-env'>
+     <syntax:SyntaxElemDecl name='stx-project'>
       <rnode>
-       <core:SymbolRef name='Env' />
+       <core:SymbolRef name='Project' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxToken>
           <text>Project</text>
          </syntax:SyntaxToken>
         </folded>
         <element>
-         <syntax:SyntaxNode>
-          <name></name>
-         </syntax:SyntaxNode>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxSubAttr>
+            <name>root_dir</name>
+           </syntax:SyntaxSubAttr>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
         </element>
-        <folded_by_default>true</folded_by_default>
-        <name>files</name>
-       </syntax:SyntaxList>
+        <name>root_dir</name>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-dir'>
@@ -141,7 +145,7 @@
        <core:SymbolRef name='DirUnit' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -155,7 +159,6 @@
             <text>/</text>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -164,9 +167,8 @@
           <name></name>
          </syntax:SyntaxNode>
         </element>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-file'>
@@ -174,7 +176,7 @@
        <core:SymbolRef name='FileUnit' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -185,7 +187,6 @@
             <name>fname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -199,9 +200,8 @@
           <name>kiev.vlang.DNode</name>
          </syntax:CalcOptionClass>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-enum'>
@@ -209,7 +209,7 @@
        <core:SymbolRef name='JavaEnum' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -223,7 +223,6 @@
             <name>sname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -241,9 +240,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-case'>
@@ -251,7 +249,7 @@
        <core:SymbolRef name='PizzaCase' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -265,7 +263,6 @@
             <name>sname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -283,9 +280,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-syntax'>
@@ -293,41 +289,20 @@
        <core:SymbolRef name='KievSyntax' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
-        <folded>
-         <syntax:SyntaxSet>
-          <elements>
-           <syntax:SyntaxToken>
-            <text>syntax: </text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxIdentAttr>
-            <decl>
-             <core:SymbolRef name='ident-template' />
-            </decl>
-            <name>sname</name>
-           </syntax:SyntaxIdentAttr>
-          </elements>
-          <folded_by_default>false</folded_by_default>
-          <nested_function_lookup>false</nested_function_lookup>
-         </syntax:SyntaxSet>
-        </folded>
-        <element>
-         <syntax:SyntaxNode>
-          <name></name>
-         </syntax:SyntaxNode>
-        </element>
-        <filter>
-         <syntax:CalcOptionNot>
-          <opt>
-           <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-           </syntax:CalcOptionHasMeta>
-          </opt>
-         </syntax:CalcOptionNot>
-        </filter>
-        <folded_by_default>true</folded_by_default>
-        <name>members</name>
-       </syntax:SyntaxList>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>syntax: </text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-view'>
@@ -335,7 +310,7 @@
        <core:SymbolRef name='KievView' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -358,7 +333,6 @@
             <name>view_of</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -376,9 +350,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-annotation'>
@@ -386,7 +359,7 @@
        <core:SymbolRef name='JavaAnnotation' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -400,7 +373,6 @@
             <name>sname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -418,9 +390,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-interface'>
@@ -428,7 +399,7 @@
        <core:SymbolRef name='JavaInterface' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -442,7 +413,6 @@
             <name>sname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -460,9 +430,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-struct-class'>
@@ -470,7 +439,7 @@
        <core:SymbolRef name='JavaClass' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -484,7 +453,6 @@
             <name>sname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -502,9 +470,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-metatype'>
@@ -512,7 +479,7 @@
        <core:SymbolRef name='MetaTypeDecl' />
       </rnode>
       <elem>
-       <syntax:SyntaxList>
+       <syntax:SyntaxTreeBranch>
         <folded>
          <syntax:SyntaxSet>
           <elements>
@@ -526,7 +493,6 @@
             <name>sname</name>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </folded>
@@ -544,9 +510,8 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <folded_by_default>true</folded_by_default>
         <name>members</name>
-       </syntax:SyntaxList>
+       </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-field'>
@@ -572,7 +537,6 @@
           <name>vtype</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -617,11 +581,9 @@
             <text>)</text>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -666,14 +628,12 @@
             <text>)-></text>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
          </syntax:SyntaxList>
          <syntax:SyntaxSubAttr>
           <name>type_ret</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -718,11 +678,9 @@
             <text>)->rule</text>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -744,7 +702,6 @@
           <name>sname</name>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -766,7 +723,6 @@
           <name>sname</name>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>

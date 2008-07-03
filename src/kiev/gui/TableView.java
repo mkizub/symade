@@ -150,53 +150,6 @@ final class ANodeTableModel extends DefaultTableModel {
 		return table_view.view_root;
 	}
 
-	public Object getChild(Object parent, int index) {
-		Drawable dr = (Drawable)parent;
-		while (dr != null && dr instanceof DrawCtrl)
-			dr = ((DrawCtrl)dr).getArg();
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		return nt.getArgs()[index];
-	}
-	public int getChildCount(Object parent) {
-		Drawable dr = (Drawable)parent;
-		while (dr != null && dr instanceof DrawCtrl)
-			dr = ((DrawCtrl)dr).getArg();
-		if (!(dr instanceof DrawNonTerm))
-			return 0;
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		if (nt.getDrawFolded()) {
-			nt.setDrawFolded(false);
-			//table_view.formatter.format(nt.drnode, nt);
-			DrawContext ctx = new DrawContext(table_view.formatter,null,1000);
-			Drawable root = table_view.formatter.getDrawable(nt.get$drnode(), nt, table_view.getSyntax());
-			root.preFormat(ctx, root.syntax, nt.get$drnode());
-		}
-		return nt.getArgs().length;
-	}
-	public boolean isLeaf(Object node) {
-		Drawable dr = (Drawable)node;
-		while (dr != null && dr instanceof DrawCtrl)
-			dr = ((DrawCtrl)dr).getArg();
-		if (!(dr instanceof DrawNonTerm))
-			return true;
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		if (nt.getFolded() == null)
-			return true;
-		return false;
-	}
-	public int getIndexOfChild(Object parent, Object child) {
-		Drawable dr = (Drawable)parent;
-		while (dr != null && dr instanceof DrawCtrl)
-			dr = ((DrawCtrl)dr).getArg();
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		for (int i=0; i < nt.getArgs().length; i++) {
-			if (nt.getArgs()[i] == child)
-				return i;
-		}
-		return -1;
-	}
-
-
 	private void fireTableModelChanged(TableModel source, Object elem) {
 		// Guaranteed to return a non-null array
 		Object[] listeners = listenerList.getListenerList();

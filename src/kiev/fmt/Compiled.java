@@ -504,32 +504,42 @@ public class Draw_SyntaxXmlTypeAttr extends Draw_SyntaxXmlStrAttr {
 }
 
 public class Draw_SyntaxList extends Draw_SyntaxAttr {
-	public Draw_SyntaxElem					folded;
 	public Draw_SyntaxElem					element;
 	public Draw_SyntaxElem					separator;
 	public Draw_SyntaxElem					prefix;
 	public Draw_SyntaxElem					sufix;
 	public Draw_CalcOption					filter;
 	public Draw_Paragraph					elpar;
-	public boolean							folded_by_default;
 
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
 		if (in_syntax != null)
 			text_syntax = in_syntax;
 		Drawable dr;
-		if (text_syntax instanceof TreeSyntax || prefix == null && sufix == null && empty == null)
+		if (prefix == null && sufix == null && empty == null)
 			dr = new DrawNonTermList(node, this, text_syntax);
 		else
 			dr = new DrawWrapList(node, this, text_syntax);
 		return dr;
 	}
-
 }
 
-public class Draw_SyntaxSet extends Draw_SyntaxElem {
+public class Draw_SyntaxTreeBranch extends Draw_SyntaxAttr {
 	public Draw_SyntaxElem					folded;
+	public Draw_SyntaxElem					element;
+	public Draw_CalcOption					filter;
+	public Draw_Paragraph					elpar;
+
+	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
+		if (in_syntax != null)
+			text_syntax = in_syntax;
+		Drawable dr = new DrawTreeBranch(node, this, text_syntax);
+		return dr;
+	}
+}
+
+
+public class Draw_SyntaxSet extends Draw_SyntaxElem {
 	public Draw_SyntaxElem[]				elements = Draw_SyntaxElem.emptyArray;
-	public boolean							folded_by_default;
 	public boolean							nested_function_lookup;
 
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -569,11 +579,9 @@ public class Draw_SyntaxSwitch extends Draw_SyntaxElem {
 		DrawSyntaxSwitch curr_dss = (DrawSyntaxSwitch)curr_dr;
 		if (getTargetSyntax(expected_node) != target_syntax)
 			return false;
-		if (curr_dss.args.length == 0)
+		Drawable sub_dr = curr_dss.element;
+		if (sub_dr == null)
 			return true;
-		if (curr_dss.args.length != 3)
-			return false;
-		Drawable sub_dr = curr_dss.args[1];
 		if (sub_dr.text_syntax != target_syntax)
 			return false;
 		Draw_SyntaxElem expected_stx = target_syntax.getSyntaxElem(expected_node);
@@ -1146,6 +1154,35 @@ public class Draw_KievTextSyntax extends Draw_ATextSyntax {
 }
 
 public class Draw_TreeSyntax extends Draw_ATextSyntax {
+	protected Draw_Layout loutSpNo;
+	protected Draw_Layout loutNoNo;
+	protected Draw_Layout loutNlNl;
+	protected Draw_Layout loutNoNl;
+	protected Draw_Paragraph plIndented;
+
+	public Draw_TreeSyntax() {
+		SpaceInfo siSp = new SpaceInfo("sp", SP_SPACE, 1,  4);
+		SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
+		SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
+		SyntaxElemFormatDecl sefdSpNo = new SyntaxElemFormatDecl("fmt-sp-no");
+		SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
+		SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
+
+		sefdSpNo.spaces += new SpaceCmd(siSp, SP_ADD, SP_NOP, 0);
+		sefdNlNl.spaces += new SpaceCmd(siNl, SP_ADD, SP_ADD, 0);
+		sefdNoNl.spaces += new SpaceCmd(siNl, SP_NOP, SP_ADD, 0);
+
+		loutSpNo = sefdSpNo.compile();
+		loutNoNo = sefdNoNo.compile();
+		loutNlNl = sefdNlNl.compile();
+		loutNoNl = sefdNoNl.compile();
+
+		plIndented = new Draw_Paragraph();
+		plIndented.indent_text_size = 1;
+		plIndented.indent_pixel_size = 10;
+		plIndented.indent_from_current_position = true;
+	}
+
 	public Draw_SyntaxElem getSyntaxElem(ANode node) {
 		if (node == null)
 			return super.getSyntaxElem(node);
@@ -1166,31 +1203,49 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 			}
 			return se;
 		}
-		Draw_SyntaxSet ss = new Draw_SyntaxSet();
-		ss.folded_by_default = true;
+		Draw_SyntaxTreeBranch stb = new Draw_SyntaxTreeBranch();
 		{
 			String name = node.getClass().getName();
 			int idx = name.lastIndexOf('.');
 			if (idx >= 0)
 				name = name.substring(idx+1);
-			ss.folded = new Draw_SyntaxToken(name);
+			stb.folded = new Draw_SyntaxToken(name);
 		}
+		Draw_SyntaxSet ss = new Draw_SyntaxSet();
+		stb.element = ss;
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
-			if (attr instanceof SpaceAttrSlot) {
-				Draw_SyntaxList lst = new Draw_SyntaxList();
+			if (attr instanceof SpaceAttrSlot || attr instanceof ExtSpaceAttrSlot) {
+				Draw_SyntaxTreeBranch lst = new Draw_SyntaxTreeBranch();
+				lst.folded =  new Draw_SyntaxToken(attr.name+"∅");
 				lst.name = attr.name;
+				lst.attr_slot = attr;
 				lst.element = new Draw_SyntaxNode();
-				lst.folded_by_default = true;
-				//ss.elements += lst;
 				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, lst);
-			} else {
+			}
+			else if (attr.is_child) {
+				Draw_SyntaxTreeBranch lst = new Draw_SyntaxTreeBranch();
+				lst.folded =  new Draw_SyntaxToken(attr.name);
+				lst.name = attr.name;
+				lst.attr_slot = attr;
+				Draw_SyntaxSet ass = new Draw_SyntaxSet();
+				lst.element = ass;
+				Draw_SyntaxSubAttr sa = new Draw_SyntaxSubAttr();
+				sa.name = attr.name;
+				sa.attr_slot = attr;
+				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, sa);
+				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, lst);
+			}
+			else {
+				Draw_SyntaxSet ass = new Draw_SyntaxSet();
+				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, new Draw_SyntaxToken(attr.name+": "));
 				Draw_SyntaxSubAttr st = new Draw_SyntaxSubAttr();
 				st.name = attr.name;
-				//ss.elements += st;
-				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, st);
+				st.attr_slot = attr;
+				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, st);
+				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, ass);
 			}
 		}
-		allSyntax.put(cl_name,ss);
+		allSyntax.put(cl_name,stb);
 		return ss;
 	}
 }

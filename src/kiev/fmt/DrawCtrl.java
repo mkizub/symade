@@ -30,41 +30,19 @@ public abstract class DrawCtrl extends Drawable {
 		return "???";
 	}
 
-	public DrawTerm getFirstLeaf() {
-		if (arg == null || this.isUnvisible())
-			return null;
-		return arg.getFirstLeaf();
+	public Drawable getNextChild(Drawable dr) {
+		assert (dr == arg);
+		return null;
 	}
-	public DrawTerm getLastLeaf()  {
-		if (arg == null || this.isUnvisible())
-			return null;
-		return arg.getLastLeaf();
+	public Drawable getPrevChild(Drawable dr) {
+		assert (dr == arg);
+		return null;
 	}
-
-	public final int getMaxLayout() {
-		return syntax.lout.count;
+	public Drawable[] getChildren() {
+		if (arg == null)
+			return Drawable.emptyArray;
+		return new Drawable[]{arg};
 	}
-
-	public void lnkFormat(DrawLinkContext cont) {
-		if (this.isUnvisible())
-			return;
-		cont.processSpaceBefore(this);
-		if (arg != null)
-			arg.lnkFormat(cont);
-		cont.processSpaceAfter(this);
-	}
-
-	public void postFormat(DrawLayoutBlock context) {
-		if (arg != null) {
-			context = context.pushDrawable(this);
-			try {
-				arg.postFormat(context);
-			} finally {
-				context.popDrawable(this);
-			}
-		}
-	}
-
 }
 
 @ThisIsANode(copyable=false)

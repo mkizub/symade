@@ -15,83 +15,29 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(copyable=false)
 public abstract class DrawNonTerm extends Drawable {
-	@nodeAttr public Drawable		folded;
 	@nodeAttr public Drawable∅		args;
-	          public boolean		draw_folded;
-	          public int			max_layout;
 
 	public DrawNonTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 	}
 	
-	// for GUI
-	public Drawable[] getArgs() { this.args }
-	// for GUI
-	public Drawable getFolded() { this.folded }
-	// for GUI
-	public boolean getDrawFolded() { this.draw_folded }
-	// for GUI
-	public void setDrawFolded(boolean val) { this.draw_folded = val; }
-
 	public String getText() {
-		if (folded != null)
-			return folded.getText();
 		StringBuffer sb = new StringBuffer();
 		foreach (Drawable arg; args)
 			sb.append(arg.getText());
 		return sb.toString();
 	}
 
-	public DrawTerm getFirstLeaf() {
-		if (this.isUnvisible())
-			return null;
-		for (int i=0; i < args.length; i++) {
-			DrawTerm d = args[i].getFirstLeaf();
-			if (d != null && !d.isUnvisible())
-				return d;
-		}
-		return null;
+	public Drawable getNextChild(Drawable dr) {
+		assert (dr.parent() == this && dr.pslot().name == "args");
+		return (Drawable)ANode.getNextNode(dr);
 	}
-	public DrawTerm getLastLeaf()  {
-		if (this.isUnvisible())
-			return null;
-		for (int i=args.length-1; i >= 0 ; i--) {
-			DrawTerm d = args[i].getLastLeaf();
-			if (d != null && !d.isUnvisible())
-				return d;
-		}
-		return null;
+	public Drawable getPrevChild(Drawable dr) {
+		assert (dr.parent() == this && dr.pslot().name == "args");
+		return (Drawable)ANode.getPrevNode(dr);
 	}
-
-	public final int getMaxLayout() { return max_layout; }
-
-	protected final void calcMaxLayout() {
-		max_layout = syntax.lout.count;
-		foreach (Drawable dr; args; !dr.isUnvisible())
-			max_layout = Math.max(max_layout, dr.getMaxLayout());
-	}
-
-	public final void lnkFormat(DrawLinkContext cont) {
-		if (this.isUnvisible())
-			return;
-		cont.processSpaceBefore(this);
-		foreach (Drawable arg; args)
-			arg.lnkFormat(cont);
-		cont.processSpaceAfter(this);
-	}
-
-	public final void postFormat(DrawLayoutBlock context) {
-		context = context.pushDrawable(this);
-		try {
-			for (int j=0; j < args.length; j++) {
-				Drawable dr = args[j];
-				if (dr.isUnvisible())
-					continue;
-				dr.postFormat(context);
-			}
-		} finally {
-			context.popDrawable(this);
-		}
+	public Drawable[] getChildren() {
+		return args;
 	}
 }
 
@@ -103,7 +49,6 @@ public final class DrawWrapList extends DrawNonTerm {
 
 	public DrawWrapList(ANode node, Draw_SyntaxList syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		this.draw_folded = syntax.folded_by_default;
 		foreach (AttrSlot a; node.values(); a.name == syntax.name && a instanceof SpaceAttrSlot || a instanceof ExtSpaceAttrSlot) {
 			slst_attr = a;
 			break;
@@ -122,14 +67,6 @@ public final class DrawWrapList extends DrawNonTerm {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxList slst = (Draw_SyntaxList)this.syntax;
 		ANode node = this.drnode;
-		
-		if (folded == null && slst.folded != null) {
-			folded = slst.folded.makeDrawable(cont.fmt, node, text_syntax);
-			if (draw_folded) {
-				folded.preFormat(cont,slst.folded,node);
-				return;
-			}
-		}
 		
 		boolean empty = true;
 		if (slst_attr instanceof SpaceAttrSlot) {
@@ -196,7 +133,6 @@ public final class DrawWrapList extends DrawNonTerm {
 			if (slst.sufix != null)
 				args[x++].preFormat(cont,slst.sufix,node);
 		}
-		calcMaxLayout();
 	}
 	
 	public int getInsertIndex(Drawable dr, boolean next) {
@@ -225,7 +161,6 @@ public final class DrawNonTermList extends DrawNonTerm {
 
 	public DrawNonTermList(ANode node, Draw_SyntaxList syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		this.draw_folded = syntax.folded_by_default;
 		foreach (AttrSlot a; node.values(); a.name == syntax.name && a instanceof SpaceAttrSlot || a instanceof ExtSpaceAttrSlot) {
 			slst_attr = a;
 			break;
@@ -236,14 +171,6 @@ public final class DrawNonTermList extends DrawNonTerm {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxList slst = (Draw_SyntaxList)this.syntax;
 		ANode node = this.drnode;
-		
-		if (folded == null && slst.folded != null) {
-			folded = slst.folded.makeDrawable(cont.fmt, node, text_syntax);
-			if (draw_folded) {
-				folded.preFormat(cont,slst.folded,node);
-				return;
-			}
-		}
 		
 		if (slst_attr instanceof SpaceAttrSlot) {
 			ANode[] narr = ((SpaceAttrSlot)slst_attr).getArray(node);
@@ -302,7 +229,6 @@ public final class DrawNonTermList extends DrawNonTerm {
 			for (; x < n; x++)
 				args[x].preFormat(cont,slst.element,args[x].drnode);
 		}
-		calcMaxLayout();
 	}
 	
 	public int getInsertIndex(Drawable dr, boolean next) {
@@ -334,7 +260,6 @@ public final class DrawNonTermSet extends DrawNonTerm {
 
 	public DrawNonTermSet(ANode node, Draw_SyntaxSet syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		this.draw_folded = syntax.folded_by_default;
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -342,48 +267,181 @@ public final class DrawNonTermSet extends DrawNonTerm {
 		Draw_SyntaxSet sset = (Draw_SyntaxSet)this.syntax;
 		ANode node = this.drnode;
 
-		if (folded == null && sset.folded != null)
-			folded = sset.folded.makeDrawable(cont.fmt, node, text_syntax);
-		if (folded != null)
-			folded.preFormat(cont,sset.folded,node);
-			
-		if (!draw_folded || folded == null) {
-			if (args.length != sset.elements.length) {
-				args.delAll();
-				foreach (Draw_SyntaxElem se; sset.elements)
-					args.append(se.makeDrawable(cont.fmt, node, text_syntax));
-			}
-			for (int i=0; i < args.length; i++) {
-				Drawable dr = args[i];
-				dr.preFormat(cont,sset.elements[i],node);
-			}
+		if (args.length != sset.elements.length) {
+			args.delAll();
+			foreach (Draw_SyntaxElem se; sset.elements)
+				args.append(se.makeDrawable(cont.fmt, node, text_syntax));
 		}
-		calcMaxLayout();
+		for (int i=0; i < args.length; i++) {
+			Drawable dr = args[i];
+			dr.preFormat(cont,sset.elements[i],node);
+		}
 	}
 }
 
 
 @ThisIsANode(copyable=false)
-public class DrawSyntaxSwitch extends DrawNonTerm {
+public class DrawSyntaxSwitch extends Drawable {
+	
+	@nodeAttr public Drawable		prefix;
+	@nodeAttr public Drawable		element;
+	@nodeAttr public Drawable		suffix;
 	
 	public DrawSyntaxSwitch(ANode node, Draw_SyntaxSwitch syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
+	}
+
+	public String getText() {
+		StringBuffer sb = new StringBuffer();
+		if (prefix != null)  sb.append(prefix.getText());
+		if (element != null) sb.append(element.getText());
+		if (suffix != null)  sb.append(suffix.getText());
+		return sb.toString();
+	}
+
+	public Drawable getNextChild(Drawable dr) {
+		if (dr == prefix)
+			return element;
+		if (dr == element)
+			return suffix;
+		return null;
+	}
+	public Drawable getPrevChild(Drawable dr) {
+		if (dr == suffix)
+			return element;
+		if (dr == element)
+			return prefix;
+		return null;
+	}
+	public Drawable[] getChildren() {
+		return new Drawable[]{prefix,element,suffix};
 	}
 
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxSwitch ssw = (Draw_SyntaxSwitch)this.syntax;
 		ANode node = this.drnode;
-		if (args.length == 0) {
-			args.append(ssw.prefix.makeDrawable(cont.fmt, node, text_syntax));
-			args.append(cont.fmt.getDrawable(node, null, ssw.target_syntax));
-			args.append(ssw.suffix.makeDrawable(cont.fmt, node, text_syntax));
+		
+		if (prefix == null && ssw.prefix != null)
+			prefix = ssw.prefix.makeDrawable(cont.fmt, node, text_syntax);
+		if (element == null)
+			element = cont.fmt.getDrawable(node, null, ssw.target_syntax);
+		if (suffix == null && ssw.suffix != null)
+			suffix = ssw.suffix.makeDrawable(cont.fmt, node, text_syntax);
+
+		if (prefix != null)  prefix.preFormat(cont,ssw.prefix,node);
+		if (element != null) element.preFormat(cont,element.syntax,node);
+		if (suffix != null)  suffix.preFormat(cont,ssw.suffix,node);
+	}
+}
+
+@ThisIsANode(copyable=false)
+public final class DrawTreeBranch extends Drawable {
+
+	@nodeAttr public Drawable		folded;
+	@nodeAttr public Drawable∅		args;
+	          public boolean		draw_folded;
+	          public AttrSlot		slst_attr;
+
+	public DrawTreeBranch(ANode node, Draw_SyntaxTreeBranch syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
+		this.draw_folded = true;
+		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
+			slst_attr = a;
+			break;
 		}
-		assert(args.length == 3);
-		args[0].preFormat(cont,ssw.prefix,node);
-		args[1].preFormat(cont,args[1].syntax,node);
-		args[2].preFormat(cont,ssw.suffix,node);
-		calcMaxLayout();
+	}
+
+	// for GUI
+	public Drawable getFolded() { this.folded }
+	// for GUI
+	public boolean getDrawFolded() { this.draw_folded }
+	// for GUI
+	public void setDrawFolded(boolean val) { this.draw_folded = val; }
+
+	public String getText() {
+		if (folded != null)
+			return folded.getText();
+		StringBuffer sb = new StringBuffer();
+		foreach (Drawable arg; args)
+			sb.append(arg.getText());
+		return sb.toString();
+	}
+
+	public Drawable getNextChild(Drawable dr) {
+		assert (dr.parent() == this && dr.pslot().name == "args");
+		return (Drawable)ANode.getNextNode(dr);
+	}
+	public Drawable getPrevChild(Drawable dr) {
+		assert (dr.parent() == this && dr.pslot().name == "args");
+		return (Drawable)ANode.getPrevNode(dr);
+	}
+	public Drawable[] getChildren() {
+		return args;
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
+		Draw_SyntaxTreeBranch slst = (Draw_SyntaxTreeBranch)this.syntax;
+		ANode node = this.drnode;
+		
+		if (folded == null && slst.folded != null) {
+			folded = slst.folded.makeDrawable(cont.fmt, node, text_syntax);
+			if (draw_folded) {
+				folded.preFormat(cont,slst.folded,node);
+				return;
+			}
+		}
+		
+		if (slst_attr instanceof SpaceAttrSlot) {
+			ANode[] narr = ((SpaceAttrSlot)slst_attr).getArray(node);
+			int sz = narr.length;
+			Drawable[] old_args = args.delToArray();
+	next_node:
+			for (int i=0; i < sz; i++) {
+				ANode n = narr[i];
+				if (n instanceof ASTNode && n.isAutoGenerated() && !cont.fmt.getShowAutoGenerated())
+					continue;
+				if (slst.filter != null && !slst.filter.calc(n))
+					continue;
+				foreach (Drawable dr; old_args; dr.drnode == n) {
+					args.append(dr);
+					continue next_node;
+				}
+				args.append(slst.element.makeDrawable(cont.fmt, n, text_syntax));
+			}
+			foreach (Drawable arg; this.args)
+				arg.preFormat(cont,slst.element,arg.drnode);
+		}
+		else if (slst_attr instanceof ExtSpaceAttrSlot) {
+			Drawable[] old_args = args.delToArray();
+	next_node:
+			foreach (ANode n; ((ExtSpaceAttrSlot)slst_attr).iterate(node)) {
+				if (n instanceof ASTNode && n.isAutoGenerated() && !cont.fmt.getShowAutoGenerated())
+					continue;
+				if (slst.filter != null && !slst.filter.calc(n))
+					continue;
+				foreach (Drawable dr; old_args; dr.drnode == n) {
+					args.append(dr);
+					continue next_node;
+				}
+				args.append(slst.element.makeDrawable(cont.fmt, n, text_syntax));
+			}
+			foreach (Drawable arg; this.args)
+				arg.preFormat(cont,slst.element,arg.drnode);
+		}
+		else {
+			Draw_SyntaxSet sset = (Draw_SyntaxSet)slst.element;
+			ANode node = this.drnode;
+			if (args.length != sset.elements.length) {
+				args.delAll();
+				foreach (Draw_SyntaxElem se; sset.elements)
+					args.append(se.makeDrawable(cont.fmt, node, text_syntax));
+			}
+			for (int i=0; i < args.length; i++)
+				args[i].preFormat(cont,sset.elements[i],node);
+		}
+
 	}
 }
 

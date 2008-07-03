@@ -40,11 +40,9 @@ public abstract class Drawable extends ANode {
 	public abstract String getText();
 
 	public abstract void preFormat(DrawContext cont);
-	public abstract void lnkFormat(DrawLinkContext cont);
-	public abstract void postFormat(DrawLayoutBlock cont);
-	public abstract DrawTerm getFirstLeaf();
-	public abstract DrawTerm getLastLeaf();
-	public abstract int getMaxLayout();
+	public abstract Drawable getNextChild(Drawable dr);
+	public abstract Drawable getPrevChild(Drawable dr);
+	public abstract Drawable[] getChildren();
 
 	public final void preFormat(DrawContext cont, Draw_SyntaxElem expected_stx, ANode expected_node) {
 		if (!expected_stx.check(cont, this, expected_node)) {
@@ -62,13 +60,44 @@ public abstract class Drawable extends ANode {
 		return false;
 	}  
 
+	public final DrawTerm getFirstLeaf() {
+		if (this.isUnvisible())
+			return null;
+		if (this instanceof DrawTerm)
+			return (DrawTerm)this;
+		Drawable[] children = this.getChildren();
+		for (int i=0; i < children.length; i++) {
+			DrawTerm d = children[i].getFirstLeaf();
+			if (d != null && !d.isUnvisible())
+				return d;
+		}
+		return null;
+	}
+	public final DrawTerm getLastLeaf() {
+		if (this.isUnvisible())
+			return null;
+		if (this instanceof DrawTerm)
+			return (DrawTerm)this;
+		Drawable[] children = this.getChildren();
+		for (int i=children.length-1; i >= 0 ; i--) {
+			DrawTerm d = children[i].getLastLeaf();
+			if (d != null && !d.isUnvisible())
+				return d;
+		}
+		return null;
+	}
+
 	public final DrawTerm getNextLeaf() {
 		Drawable p = this;
 		for (;;) {
-			while (ANode.getNextNode(p) == null && (p=(Drawable)p.parent()) != null);
-			if (p == null)
+			Drawable parent = (Drawable)p.parent();
+			if (parent == null)
 				return null;
-			p = (Drawable)ANode.getNextNode(p);
+			p = parent.getNextChild(p);
+			if (p == null) {
+				p = parent;
+				continue;
+			}
 			if (p.isUnvisible())
 				continue;
 			DrawTerm d = p.getFirstLeaf();
@@ -82,10 +111,14 @@ public abstract class Drawable extends ANode {
 	public final DrawTerm getPrevLeaf() {
 		Drawable p = this;
 		for (;;) {
-			while (ANode.getPrevNode(p) == null && (p=(Drawable)p.parent()) != null);
-			if (p == null)
+			Drawable parent = (Drawable)p.parent();
+			if (parent == null)
 				return null;
-			p = (Drawable)ANode.getPrevNode(p);
+			p = parent.getPrevChild(p);
+			if (p == null) {
+				p = parent;
+				continue;
+			}
 			if (p.isUnvisible())
 				continue;
 			DrawTerm d = p.getLastLeaf();
@@ -94,6 +127,31 @@ public abstract class Drawable extends ANode {
 			if (!d.isUnvisible())
 				return d;
 			p = d;
+		}
+	}
+
+	public void lnkFormat(DrawLinkContext cont) {
+		if (this.isUnvisible())
+			return;
+		cont.processSpaceBefore(this);
+		foreach (Drawable arg; this.getChildren())
+			arg.lnkFormat(cont);
+		cont.processSpaceAfter(this);
+	}
+
+	public final void postFormat(DrawLayoutBlock context) {
+		if (this.isUnvisible())
+			return;
+		if (this instanceof DrawTerm) {
+			context.addLeaf((DrawTerm)this);
+		} else {
+			context = context.pushDrawable(this);
+			try {
+				foreach (Drawable dr; this.getChildren())
+					dr.postFormat(context);
+			} finally {
+				context.popDrawable(this);
+			}
 		}
 	}
 }

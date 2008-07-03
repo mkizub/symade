@@ -151,16 +151,15 @@ final class ANodeTreeModel implements TreeModel {
 		Drawable dr = (Drawable)parent;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).getArg();
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		return nt.getArgs()[index];
+		return dr.getChildren()[index];
 	}
     public int getChildCount(Object parent) {
 		Drawable dr = (Drawable)parent;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).getArg();
-		if (!(dr instanceof DrawNonTerm))
+		if (!(dr instanceof DrawTreeBranch))
 			return 0;
-		DrawNonTerm nt = (DrawNonTerm)dr;
+		DrawTreeBranch nt = (DrawTreeBranch)dr;
 		if (nt.getDrawFolded()) {
 			nt.setDrawFolded(false);
 			//tree_view.formatter.format(nt.drnode, nt);
@@ -168,26 +167,21 @@ final class ANodeTreeModel implements TreeModel {
 			Drawable root = tree_view.formatter.getDrawable(nt.get$drnode(), nt, tree_view.getSyntax());
 			root.preFormat(ctx, root.syntax, nt.get$drnode());
 		}
-		return nt.getArgs().length;
+		return nt.getChildren().length;
 	}
     public boolean isLeaf(Object node) {
 		Drawable dr = (Drawable)node;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).getArg();
-		if (!(dr instanceof DrawNonTerm))
-			return true;
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		if (nt.getFolded() == null)
-			return true;
-		return false;
+		return !(dr instanceof DrawTreeBranch);
 	}
     public int getIndexOfChild(Object parent, Object child) {
 		Drawable dr = (Drawable)parent;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).getArg();
-		DrawNonTerm nt = (DrawNonTerm)dr;
-		for (int i=0; i < nt.getArgs().length; i++) {
-			if (nt.getArgs()[i] == child)
+		Drawable[] children = dr.getChildren();
+		for (int i=0; i < children.length; i++) {
+			if (children[i] == child)
 				return i;
 		}
 		return -1;

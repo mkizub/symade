@@ -66,8 +66,9 @@ public abstract class DrawTerm extends Drawable {
 		return hidden_as_auto_generated;
 	}  
 
-	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
-	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
+	public Drawable getNextChild(Drawable dr) { assert ("DrawToken has no children"); return null; }
+	public Drawable getPrevChild(Drawable dr) { assert ("DrawToken has no children"); return null; }
+	public Drawable[] getChildren() { return Drawable.emptyArray; }
 
 	public final int getX() { return this.x; }
 	public final int getY() { return this.y; }
@@ -76,10 +77,6 @@ public abstract class DrawTerm extends Drawable {
 	public final int getBaseline() { return this.baseline; }
 	public final int getLineNo() { return this.lineno; }
 	
-	public final int getMaxLayout() {
-		return syntax.lout.count;
-	}
-
 	private boolean textIsUpToDate(String txt) {
 		if (text == _uninitialized_)
 			return false;
@@ -196,12 +193,6 @@ public abstract class DrawTerm extends Drawable {
 			assert(!dt.isUnvisible());
 		}
 		assert(dt.lnk_next == null);
-	}
-
-	public final void postFormat(DrawLayoutBlock context) {
-		if (this.isUnvisible())
-			return;
-		context.addLeaf(this);
 	}
 
 	public String getPrefix() { return ""; }	

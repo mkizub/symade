@@ -38,7 +38,6 @@ public class DrawAutoParenth extends DrawNonTerm {
 		args[0].preFormat(cont,template.l_paren,node);
 		args[1].preFormat(cont,sp.attr,this.drnode);
 		args[2].preFormat(cont,template.r_paren,node);
-		calcMaxLayout();
 	}
 }
 
@@ -69,6 +68,5 @@ public class DrawLispExpr extends DrawNonTerm {
 		foreach (ENode ea; eargs)
 			args[n++].preFormat(cont,st.elem,ea);
 		args[n++].preFormat(cont,st.r_paren,node);
-		calcMaxLayout();
 	}
 }

@@ -218,35 +218,33 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	private void paint(Graphics2D g, Drawable n) {
 		if (n == null || n.isUnvisible())
 			return;
-		if (n instanceof DrawNonTerm) {
-			for(Drawable dr: ((DrawNonTerm)n).getArgs()) 
-				if(!dr.isUnvisible()) {
-					if (dr instanceof DrawNonTerm && current_node == dr.get$drnode()) {
+		if (n instanceof DrawTerm) {
+			paintLeaf(g, (DrawTerm)n);
+		} else {
+			for(Drawable dr: n.getChildren()) { 
+				if(dr != null && !dr.isUnvisible()) {
+					if (current_node == dr.get$drnode()) {
 						int lineno = this.lineno;
 						paintBg(g, dr);
 						this.lineno = lineno;
 					}
 					paint(g, dr);
+				}
 			}
 		}
-		else if (n instanceof DrawCtrl)
-			paint(g, ((DrawCtrl)n).getArg());
-		else
-			paintLeaf(g, (DrawTerm)n);
 	}
 
 	private void paintBg(Graphics2D g, Drawable n) {
 		if (n == null || n.isUnvisible())
 			return;
-		if (n instanceof DrawNonTerm) {
-			for (Drawable dr: ((DrawNonTerm)n).getArgs()) 
+		if (n instanceof DrawTerm) {
+			paintLeafBg(g, (DrawTerm)n);
+		} else {
+			for (Drawable dr: n.getChildren()) { 
 				if (!dr.isUnvisible())
 					paintBg(g, dr);
+			}
 		}
-		else if (n instanceof DrawCtrl)
-			paintBg(g, ((DrawCtrl)n).getArg());
-		else
-			paintLeafBg(g, (DrawTerm)n);
 	}
 
 	private void paintLeaf(Graphics2D g, DrawTerm leaf) {

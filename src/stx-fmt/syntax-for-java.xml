@@ -1180,7 +1180,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>members</name>
           <expected_types>
            <core:SymbolRef name='Import' />
@@ -1204,7 +1203,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -1254,7 +1252,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -1295,7 +1292,6 @@
             </fmt>
            </syntax:SyntaxSpace>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -1663,7 +1659,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </prefix>
-        <folded_by_default>false</folded_by_default>
         <name>super_types</name>
         <expected_types>
          <core:SymbolRef name='stx-types-TypeRef' />
@@ -1718,7 +1713,6 @@
         <elpar>
          <core:SymbolRef name='par-indented' />
         </elpar>
-        <folded_by_default>false</folded_by_default>
         <name>members</name>
         <expected_types>
          <core:SymbolRef name='MethodImpl' />
@@ -1826,7 +1820,6 @@
               <text>)</text>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>args</name>
            </syntax:SyntaxList>
           </elements>
@@ -1851,7 +1844,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
          <core:SymbolRef name='fmt-import' />
@@ -1897,7 +1889,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -1934,7 +1925,6 @@
           <text>;</text>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -1999,7 +1989,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2072,11 +2061,9 @@
               <name></name>
              </syntax:SyntaxNode>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>super_types</name>
           <expected_types>
            <core:SymbolRef name='TypeRef' />
@@ -2106,11 +2093,9 @@
               <name></name>
              </syntax:SyntaxNode>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>lower_bound</name>
           <expected_types>
            <core:SymbolRef name='TypeRef' />
@@ -2133,7 +2118,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2248,7 +2232,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </prefix>
-            <folded_by_default>false</folded_by_default>
             <name>super_types</name>
             <expected_types>
              <core:SymbolRef name='TypeRef' />
@@ -2289,7 +2272,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </prefix>
-            <folded_by_default>false</folded_by_default>
             <name>lower_bound</name>
             <expected_types>
              <core:SymbolRef name='TypeRef' />
@@ -2306,7 +2288,6 @@
             </empty>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -2390,7 +2371,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeConstr' />
@@ -2417,7 +2397,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2494,7 +2473,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>enum_fields</name>
           <empty>
            <syntax:SyntaxToken>
@@ -2537,7 +2515,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>members</name>
           <empty>
            <syntax:SyntaxToken>
@@ -2552,7 +2529,6 @@
           <text>}</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2605,7 +2581,6 @@
                 <name>alt_enum_id</name>
                </syntax:SyntaxSubAttr>
               </elements>
-              <folded_by_default>false</folded_by_default>
               <nested_function_lookup>false</nested_function_lookup>
              </syntax:SyntaxSet>
             </opt_true>
@@ -2625,7 +2600,6 @@
             </empty>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
           <par>
            <core:SymbolRef name='par-block' />
@@ -2712,7 +2686,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeConstr' />
@@ -2764,7 +2737,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>case_fields</name>
             <expected_types>
              <core:SymbolRef name='Field' />
@@ -2779,7 +2751,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2830,7 +2801,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -2912,7 +2882,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeRef' />
@@ -2950,7 +2919,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3001,7 +2969,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3083,7 +3050,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeRef' />
@@ -3112,7 +3078,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3199,7 +3164,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeConstr' />
@@ -3226,7 +3190,6 @@
           <text>{ members }</text>
          </syntax:SyntaxElemRef>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3343,7 +3306,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3391,7 +3353,6 @@
                 </expected_types>
                </syntax:SyntaxSubAttr>
               </elements>
-              <folded_by_default>false</folded_by_default>
               <nested_function_lookup>false</nested_function_lookup>
              </syntax:SyntaxSet>
             </opt_true>
@@ -3422,7 +3383,6 @@
             </funcs>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -3475,7 +3435,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>targs</name>
           <expected_types>
            <core:SymbolRef name='TypeConstr' />
@@ -3582,7 +3541,6 @@
             </opt>
            </syntax:CalcOptionNot>
           </filter>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
           <expected_types>
            <core:SymbolRef name='LVar' />
@@ -3603,7 +3561,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>aliases</name>
           <expected_types>
            <core:SymbolRef name='Symbol' />
@@ -3630,7 +3587,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>conditions</name>
           <expected_types>
            <core:SymbolRef name='WBCCondition' />
@@ -3663,7 +3619,6 @@
           </empty>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3714,7 +3669,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>targs</name>
           <expected_types>
            <core:SymbolRef name='TypeConstr' />
@@ -3826,7 +3780,6 @@
             </opt>
            </syntax:CalcOptionNot>
           </filter>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
           <expected_types>
            <core:SymbolRef name='LVar' />
@@ -3847,7 +3800,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>aliases</name>
           <expected_types>
            <core:SymbolRef name='Symbol' />
@@ -3868,7 +3820,6 @@
             <name></name>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>localvars</name>
           <expected_types>
            <core:SymbolRef name='LVar' />
@@ -3894,7 +3845,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>conditions</name>
           <expected_types>
            <core:SymbolRef name='WBCCondition' />
@@ -3926,7 +3876,6 @@
           </empty>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -3977,7 +3926,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>targs</name>
           <expected_types>
            <core:SymbolRef name='TypeConstr' />
@@ -4064,7 +4012,6 @@
             </opt>
            </syntax:CalcOptionNot>
           </filter>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
           <expected_types>
            <core:SymbolRef name='LVar' />
@@ -4082,7 +4029,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>conditions</name>
           <expected_types>
            <core:SymbolRef name='WBCCondition' />
@@ -4114,7 +4060,6 @@
           </empty>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -4144,7 +4089,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4172,7 +4116,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4220,7 +4163,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>values</name>
            </syntax:SyntaxList>
            <syntax:SyntaxToken>
@@ -4230,7 +4172,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4273,7 +4214,6 @@
             </funcs>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4304,7 +4244,6 @@
             </fmt>
            </syntax:SyntaxStrAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4342,7 +4281,6 @@
           </funcs>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -4425,7 +4363,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </opt_true>
@@ -4434,7 +4371,6 @@
           <name>body</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -4450,7 +4386,6 @@
           </in_syntax>
          </syntax:SyntaxNode>
         </element>
-        <folded_by_default>false</folded_by_default>
         <name>metas</name>
         <expected_types>
          <core:SymbolRef name='UserMeta' />
@@ -4494,7 +4429,6 @@
           </in_syntax>
          </syntax:SyntaxNode>
         </element>
-        <folded_by_default>false</folded_by_default>
         <name>metas</name>
         <expected_types>
          <core:SymbolRef name='UserMeta' />
@@ -4786,11 +4720,9 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>exceptions</name>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4833,7 +4765,6 @@
             <name>offset</name>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4870,7 +4801,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -4963,7 +4893,6 @@
             <elpar>
              <core:SymbolRef name='par-indented' />
             </elpar>
-            <folded_by_default>false</folded_by_default>
             <name>values</name>
             <expected_types>
              <core:SymbolRef name='MetaValueScalar' />
@@ -4974,7 +4903,6 @@
             </empty>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
           <fmt>
            <core:SymbolRef name='fmt-meta-end' />
@@ -4996,7 +4924,6 @@
             </in_syntax>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>metas</name>
           <expected_types>
            <core:SymbolRef name='stx-types-Meta' />
@@ -5053,7 +4980,6 @@
           </empty>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5117,14 +5043,12 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>values</name>
           <expected_types>
            <core:SymbolRef name='stx-types-Expr' />
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5178,7 +5102,6 @@
           </funcs>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5245,7 +5168,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeRef' />
@@ -5262,7 +5184,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5338,7 +5259,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='TypeRef' />
@@ -5355,7 +5275,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5397,14 +5316,12 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
          </syntax:SyntaxList>
          <syntax:SyntaxSubAttr>
           <name>ret</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5470,7 +5387,6 @@
         <elpar>
          <core:SymbolRef name='par-indented' />
         </elpar>
-        <folded_by_default>false</folded_by_default>
         <name>stats</name>
         <expected_types>
          <core:SymbolRef name='stx-types-Stat' />
@@ -5522,7 +5438,6 @@
         <elpar>
          <core:SymbolRef name='par-indented' />
         </elpar>
-        <folded_by_default>false</folded_by_default>
         <name>stats</name>
         <expected_types>
          <core:SymbolRef name='stx-types-Stat' />
@@ -5571,7 +5486,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <folded_by_default>false</folded_by_default>
         <name>cases</name>
        </syntax:SyntaxList>
       </elem>
@@ -5602,7 +5516,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5640,7 +5553,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>rules</name>
           <empty>
            <syntax:SyntaxToken>
@@ -5655,7 +5567,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5681,7 +5592,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </separator>
-          <folded_by_default>false</folded_by_default>
           <name>rules</name>
           <empty>
            <syntax:SyntaxToken>
@@ -5690,7 +5600,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5811,11 +5720,9 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5877,13 +5784,11 @@
               </template>
              </syntax:SyntaxAutoParenth>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </opt_true>
          </syntax:SyntaxOptional>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -5939,13 +5844,11 @@
               </template>
              </syntax:SyntaxAutoParenth>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </opt_true>
          </syntax:SyntaxOptional>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6019,7 +5922,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6074,7 +5976,6 @@
           </funcs>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6249,7 +6150,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6279,7 +6179,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6309,7 +6208,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6391,14 +6289,12 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>args</name>
             <expected_types>
              <core:SymbolRef name='stx-types-Expr' />
             </expected_types>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </fld_elem>
@@ -6452,11 +6348,9 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6515,11 +6409,9 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6552,7 +6444,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </separator>
-        <folded_by_default>false</folded_by_default>
         <name>args</name>
         <empty>
          <syntax:SyntaxToken>
@@ -6590,7 +6481,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </separator>
-        <folded_by_default>false</folded_by_default>
         <name>exprs</name>
         <empty>
          <syntax:SyntaxToken>
@@ -6679,7 +6569,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>args</name>
             <expected_types>
              <core:SymbolRef name='stx-types-Expr' />
@@ -6701,7 +6590,6 @@
             </empty>
            </syntax:SyntaxSubAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </fld_elem>
@@ -6746,7 +6634,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <folded_by_default>false</folded_by_default>
         <name>args</name>
         <expected_types>
          <core:SymbolRef name='stx-types-Expr' />
@@ -6792,11 +6679,9 @@
               </fmt>
              </syntax:SyntaxToken>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <empty>
            <syntax:SyntaxToken>
@@ -6809,7 +6694,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6863,7 +6747,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <empty>
            <syntax:SyntaxToken>
@@ -6876,7 +6759,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -6931,7 +6813,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>params</name>
          </syntax:SyntaxList>
          <syntax:SyntaxToken>
@@ -6948,7 +6829,6 @@
           <name>body</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -7324,7 +7204,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -7425,7 +7304,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <folded_by_default>false</folded_by_default>
             <name>pattern</name>
             <expected_types>
              <core:SymbolRef name='LVar' />
@@ -7440,7 +7318,6 @@
             </empty>
            </syntax:SyntaxList>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
           <par>
            <core:SymbolRef name='par-unindented' />
@@ -7453,7 +7330,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -7502,7 +7378,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -7530,7 +7405,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -7666,7 +7540,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -7718,7 +7591,6 @@
             </funcs>
            </syntax:SyntaxIdentAttr>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -7809,7 +7681,6 @@
             </template>
            </syntax:SyntaxAutoParenth>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -7896,7 +7767,6 @@
             </template>
            </syntax:SyntaxAutoParenth>
           </elements>
-          <folded_by_default>false</folded_by_default>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
         </elem>
@@ -7986,7 +7856,6 @@
               </template>
              </syntax:SyntaxAutoParenth>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </elem>
@@ -8074,7 +7943,6 @@
               </template>
              </syntax:SyntaxAutoParenth>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </elem>
@@ -8125,7 +7993,6 @@
           </funcs>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8173,7 +8040,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8204,7 +8070,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8238,7 +8103,6 @@
               <name>message</name>
              </syntax:SyntaxSubAttr>
             </elements>
-            <folded_by_default>false</folded_by_default>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
           </opt_true>
@@ -8250,7 +8114,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8278,7 +8141,6 @@
           </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8309,7 +8171,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8340,7 +8201,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8371,7 +8231,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8450,7 +8309,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8541,7 +8399,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8606,7 +8463,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8652,7 +8508,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8704,7 +8559,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8767,7 +8621,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </separator>
-          <folded_by_default>false</folded_by_default>
           <name>inits</name>
           <expected_types>
            <core:SymbolRef name='LVar' />
@@ -8820,7 +8673,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -8918,7 +8770,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9017,7 +8868,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9081,7 +8931,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>stats</name>
           <expected_types>
            <core:SymbolRef name='CaseLabel' />
@@ -9090,7 +8939,6 @@
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9154,7 +9002,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>stats</name>
           <expected_types>
            <core:SymbolRef name='CaseLabel' />
@@ -9163,7 +9010,6 @@
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9227,7 +9073,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>stats</name>
           <expected_types>
            <core:SymbolRef name='CaseLabel' />
@@ -9236,7 +9081,6 @@
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9300,7 +9144,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>stats</name>
           <expected_types>
            <core:SymbolRef name='CaseLabel' />
@@ -9309,7 +9152,6 @@
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9373,7 +9215,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>stats</name>
           <expected_types>
            <core:SymbolRef name='CaseLabel' />
@@ -9382,7 +9223,6 @@
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9431,7 +9271,6 @@
             <name></name>
            </syntax:SyntaxNode>
           </element>
-          <folded_by_default>false</folded_by_default>
           <name>catchers</name>
           <expected_types>
            <core:SymbolRef name='CatchInfo' />
@@ -9455,7 +9294,6 @@
           </empty>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9501,7 +9339,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9547,7 +9384,6 @@
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9589,7 +9425,6 @@
           <elpar>
            <core:SymbolRef name='par-indented' />
           </elpar>
-          <folded_by_default>false</folded_by_default>
           <name>stats</name>
           <empty>
            <syntax:SyntaxToken>
@@ -9598,7 +9433,6 @@
           </empty>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9658,14 +9492,12 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>vars</name>
           <expected_types>
            <core:SymbolRef name='RewritePattern' />
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9716,14 +9548,12 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <folded_by_default>false</folded_by_default>
           <name>args</name>
           <expected_types>
            <core:SymbolRef name='RewriteNodeArg' />
           </expected_types>
          </syntax:SyntaxList>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9754,7 +9584,6 @@
           <name>anode</name>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -9794,7 +9623,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <folded_by_default>false</folded_by_default>
         <name>args</name>
        </syntax:SyntaxList>
       </elem>
@@ -9828,7 +9656,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <folded_by_default>false</folded_by_default>
         <name>nodes</name>
         <expected_types>
          <core:SymbolRef name='EToken' />
@@ -10119,7 +9946,6 @@
           </fmt>
          </syntax:SyntaxIdentAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -10152,7 +9978,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -10206,7 +10031,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>
@@ -10250,7 +10074,6 @@
           </empty>
          </syntax:SyntaxSubAttr>
         </elements>
-        <folded_by_default>false</folded_by_default>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
       </elem>

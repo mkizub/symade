@@ -945,14 +945,12 @@ public final class SyntaxSubAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxList extends SyntaxAttr {
-	@nodeAttr public SyntaxElem						folded;
 	@nodeAttr public SyntaxElem						element;
 	@nodeAttr public SyntaxElem						separator;
 	@nodeAttr public SyntaxElem						prefix;
 	@nodeAttr public SyntaxElem						sufix;
 	@nodeAttr public CalcOption						filter;
 	@nodeAttr public SymbolRef<AParagraphLayout>	elpar;
-	@nodeAttr public boolean						folded_by_default;
 
 	public SyntaxList() {}
 
@@ -976,8 +974,6 @@ public class SyntaxList extends SyntaxAttr {
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
 		Draw_SyntaxList dr_elem = (Draw_SyntaxList)_dr_elem;
 		super.fillCompiled(dr_elem);
-		if (this.folded != null)
-			dr_elem.folded = this.folded.getCompiled();
 		if (this.element != null)
 			dr_elem.element = this.element.getCompiled();
 		if (this.separator != null)
@@ -990,9 +986,48 @@ public class SyntaxList extends SyntaxAttr {
 			dr_elem.filter = this.filter.getCompiled();
 		if (this.elpar != null && this.elpar.dnode != null)
 			dr_elem.elpar = this.elpar.dnode.getCompiled();
-		dr_elem.folded_by_default = this.folded_by_default;
 	}
 
+}
+
+@ThisIsANode(lang=SyntaxLang)
+public class SyntaxTreeBranch extends SyntaxAttr {
+	@nodeAttr public SyntaxElem						folded;
+	@nodeAttr public SyntaxElem						element;
+	@nodeAttr public CalcOption						filter;
+	@nodeAttr public SymbolRef<AParagraphLayout>	elpar;
+
+	public SyntaxTreeBranch() {}
+
+	public void preResolveOut() {
+		super.preResolveOut();
+		if (elpar != null && elpar.name != null && elpar.name != "") {
+			AParagraphLayout@ d;
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,elpar.name)))
+				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+elpar.name+"'");
+			else if (elpar.symbol != d)
+				elpar.symbol = d;
+		}
+	}	
+
+	public Draw_SyntaxElem getCompiled() {
+		Draw_SyntaxTreeBranch dr_elem = new Draw_SyntaxTreeBranch();
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxTreeBranch dr_elem = (Draw_SyntaxTreeBranch)_dr_elem;
+		super.fillCompiled(dr_elem);
+		if (this.folded != null)
+			dr_elem.folded = this.folded.getCompiled();
+		if (this.element != null)
+			dr_elem.element = this.element.getCompiled();
+		if (this.filter != null)
+			dr_elem.filter = this.filter.getCompiled();
+		if (this.elpar != null && this.elpar.dnode != null)
+			dr_elem.elpar = this.elpar.dnode.getCompiled();
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -1076,9 +1111,7 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxSet extends SyntaxElem {
-	@nodeAttr public SyntaxElem		folded;
 	@nodeAttr public SyntaxElem∅	elements;
-	@nodeAttr public boolean		folded_by_default;
 	@nodeAttr public boolean		nested_function_lookup;
 
 	public Draw_SyntaxElem getCompiled() {
@@ -1090,12 +1123,9 @@ public class SyntaxSet extends SyntaxElem {
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
 		Draw_SyntaxSet dr_elem = (Draw_SyntaxSet)_dr_elem;
 		super.fillCompiled(dr_elem);
-		if (this.folded != null)
-			dr_elem.folded = this.folded.getCompiled();
 		dr_elem.elements = new Draw_SyntaxElem[this.elements.length];
 		for (int i=0; i < dr_elem.elements.length; i++)
 			dr_elem.elements[i] = this.elements[i].getCompiled();
-		dr_elem.folded_by_default = this.folded_by_default;
 		dr_elem.nested_function_lookup = this.nested_function_lookup;
 	}
 }
