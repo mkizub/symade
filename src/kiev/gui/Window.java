@@ -13,6 +13,8 @@ package kiev.gui;
 import kiev.vtree.*;
 import kiev.vlang.*;
 import kiev.fmt.*;
+import kiev.gui.event.ElementChangeListener;
+import kiev.gui.event.ElementEvent;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -35,6 +37,9 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 /**
  * @author mkizub
@@ -57,6 +62,9 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	Canvas		clip_canvas;
 	
 	Component	cur_component;
+
+  /** List of listeners */
+  protected EventListenerList listenerList = new EventListenerList();
 
 	public Window() {
 		super("SymADE");
@@ -306,6 +314,40 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
 	}
+	
+	/**
+	 * Forwards the given notification event to all
+	 * <code>ElementChangeListeners</code> that registered
+	 * themselves as listeners for <code>ElementEvent</code> event.
+	 *
+	 * @param e  the event to be forwarded
+	 *
+	 * @see #addElementChangeListener
+	 * @see ElementEvent
+	 * @see EventListenerList
+	 */
+	public void fireElementChanged(ElementEvent e) {
+		//Guaranteed to return a non-null array
+		Object[] listeners = listenerList.getListenerList();
+		//Process the listeners last to first, notifying
+		//those that are interested in this event
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == ElementChangeListener.class) {
+				((ElementChangeListener)listeners[i+1]).elementChanged(e);
+			}
+		}
+	}
+
+  /**
+   * Adds a listener to the list that's notified each time an element change
+   * occurs.
+   *
+   * @param	l		the ElementChangeListener
+   */
+  public void addElementChangeListener(ElementChangeListener l) {
+  	listenerList.add(ElementChangeListener.class, l);
+  }
+	
 }
 
 class UIActionMenuItem extends JMenuItem {

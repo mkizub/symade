@@ -12,6 +12,8 @@ package kiev.gui;
 
 import kiev.vtree.*;
 import kiev.fmt.*;
+import kiev.gui.event.ElementChangeListener;
+import kiev.gui.event.ElementEvent;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -19,10 +21,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 /**
- * @author Maxim Kizub
+ * The abstract class for the view components of the GUI. 
  */
-
-public abstract class UIView extends ANode implements MouseListener, ComponentListener  {
+public abstract class UIView extends ANode 
+implements MouseListener, ComponentListener, ElementChangeListener {
 
 	/** The workplace window */
 	protected Window			parent_window;
@@ -40,10 +42,41 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	public boolean				show_placeholders;
 	/** A hint to show escaped idents and strings */
 	public boolean				show_hint_escapes;
+	
+	/** A background thread to format and paint */
+	protected BgFormatter	bg_formatter;
+
+	class BgFormatter extends Thread {
+		private boolean do_format;
+		BgFormatter() {
+			this.setDaemon(true);
+			this.setPriority(Thread.NORM_PRIORITY - 1);
+		}
+		public void run() {
+			for (;;) {
+				while (!do_format) {
+					synchronized(this) { try {
+						this.wait();
+					} catch (InterruptedException e) {}
+					}
+					continue;
+				}
+				this.do_format = false;
+				formatAndPaint(true);
+			}
+		}
+		synchronized void schedule_run() {
+			this.do_format = true;
+			this.notify();
+		}
+	}
 
 	public UIView(Window window, Draw_ATextSyntax syntax) {
-		this.parent_window = window;
-		this.syntax        = syntax;
+		parent_window = window;
+		this.syntax = syntax;
+		bg_formatter = new BgFormatter();
+		parent_window.addElementChangeListener(this);
+		bg_formatter.start();
 	}
 	
 	public Draw_ATextSyntax getSyntax() { return syntax; }
@@ -58,6 +91,8 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	
 	public abstract void formatAndPaint(boolean full);
 
+	public abstract void formatAndPaintLater(ANode node);
+
 	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
@@ -70,4 +105,7 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	public void componentResized(ComponentEvent e) {
 		formatAndPaint(true);
 	}
+	
+	public void elementChanged(ElementEvent e) {}
+
 }
