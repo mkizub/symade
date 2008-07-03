@@ -51,6 +51,8 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	InfoView	clip_view;
 	TreeView	expl_view;
 	ANodeTree	expl_tree;
+	ANodeTable prop_table; 
+	TableView prop_view;  
 	Canvas		info_canvas;
 	Canvas		clip_canvas;
 	
@@ -194,6 +196,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		expl_tree   = new ANodeTree();	expl_tree.addFocusListener(this);
 		info_canvas = new Canvas();		info_canvas.addFocusListener(this);
 		clip_canvas = new Canvas();		clip_canvas.addFocusListener(this);
+		prop_table = new ANodeTable(); prop_table.addFocusListener(this);
 		explorers = new JTabbedPane();
 		editors   = new JTabbedPane();
 		infos     = new JTabbedPane();
@@ -208,6 +211,8 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		explorers.addTab("Explorer", new JScrollPane(expl_tree));
 		infos.addTab("Info", info_canvas);
 		infos.addTab("Clipboard", clip_canvas);
+		infos.addTab("Inspector", new JScrollPane(prop_table));
+		
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setSize(screenSize.width, (screenSize.height*3)/4);
@@ -215,6 +220,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		editor_views = new Editor[0];
 		info_view   = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
 		clip_view   = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
+		prop_view = new TableView (this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
 		expl_view   = new TreeView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
 		expl_view.setRoot(Env.getProject());
 		expl_view.formatAndPaint(true);

@@ -16,6 +16,8 @@ import kiev.vlang.types.*;
 import kiev.fmt.*;
 
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Vector;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -41,6 +43,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.text.TextAction;
 
 
@@ -396,7 +400,50 @@ public class Editor extends InfoView implements KeyListener {
 			} else {
 				path = Drawable.emptyArray;
 			}
+			
+			DefaultTableModel tm = (DefaultTableModel)parent_window.prop_table.getModel();
+			String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
+			tm.setDataVector(null, newIdentifiers);
+			System.out.println("Selected: "+node.getClass()); //0
+			Object[] rowData = {node.getClass()};
+			tm.addRow(rowData);
+			for (AttrSlot slot: node.values()) {
+				String name = slot.name; //1
+				Object[] rowData1 = {"", slot.name};
+				tm.addRow(rowData1);
+				if (slot instanceof ScalarAttrSlot) {
+					ScalarAttrSlot s = (ScalarAttrSlot)slot;
+					Object obj = s.get(node);
+					Object[] rowData2 = {"", "", obj};
+					tm.addRow(rowData2);
+					System.out.println(name + " : "+obj); //2
+				}
+				else if (slot instanceof SpaceAttrSlot) {
+					SpaceAttrSlot s = (SpaceAttrSlot)slot;
+					ANode[] arr = s.getArray(node); //2
+					for (ANode an: arr){
+						Object[] rowData2 = {"", "", an};
+						tm.addRow(rowData2);
+					}
+				}
+				else if (slot instanceof ExtSpaceAttrSlot) {
+					ExtSpaceAttrSlot s = (ExtSpaceAttrSlot)slot;
+					for (ExtChildrenIterator i = s.iterate(node); i.hasMoreElements();){
+						ANode an = i.nextElement();
+						Object[] rowData2 = {"", "", an};
+						tm.addRow(rowData2);
+					}
+				}
+				else if (slot instanceof ParentAttrSlot) {
+					ParentAttrSlot s = (ParentAttrSlot)slot;
+					Object obj = s.get(node);
+					Object[] rowData2 = {"", "", obj};
+					tm.addRow(rowData2);
+
+				}
+			}			
 		}
+		
 		void restore() {
 			Drawable dr = this.dr;
 			Drawable root = Editor.this.view_root;
