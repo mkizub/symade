@@ -50,11 +50,18 @@ public class TreeView extends UIView implements KeyListener {
 		this.the_tree.setRoot();
 	}
 	
+	@Override
 	public void formatAndPaint(boolean full) {
 		the_tree.format();
 		the_tree.repaint();
 	}
 
+	@Override
+	public void formatAndPaintLater(ANode node) {
+		this.the_root = node;
+		this.bg_formatter.schedule_run();
+	}
+	
 	public void mouseClicked(MouseEvent e) {
 		if (e.getClickCount() >= 2) {
 			TreePath sel = the_tree.getPathForLocation(e.getX(), e.getY());
