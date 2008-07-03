@@ -13,6 +13,7 @@ package kiev.gui;
 import kiev.vtree.*;
 import kiev.vlang.FileUnit;
 import kiev.fmt.*;
+import kiev.gui.event.ElementEvent;
 
 import java.awt.Component;
 import java.awt.Graphics2D;
@@ -48,6 +49,51 @@ public class TableView extends UIView implements KeyListener {
 		this.setRoot(null);
 	}
 
+	public void createModel (ANode node){
+		DefaultTableModel tm = (DefaultTableModel)table.getModel();
+		String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
+		tm.setDataVector(null, newIdentifiers);
+		System.out.println("Selected: "+node.getClass()); //0
+		Object[] rowData = {node.getClass()};
+		tm.addRow(rowData);
+		for (AttrSlot slot: node.values()) {
+			String name = slot.name; //1
+			Object[] rowData1 = {"", slot.name};
+			tm.addRow(rowData1);
+			if (slot instanceof ScalarAttrSlot) {
+				ScalarAttrSlot s = (ScalarAttrSlot)slot;
+				Object obj = s.get(node);
+				Object[] rowData2 = {"", "", obj};
+				tm.addRow(rowData2);
+				System.out.println(name + " : "+obj); //2
+			}
+			else if (slot instanceof SpaceAttrSlot) {
+				SpaceAttrSlot s = (SpaceAttrSlot)slot;
+				ANode[] arr = s.getArray(node); //2
+				for (ANode an: arr){
+					Object[] rowData2 = {"", "", an};
+					tm.addRow(rowData2);
+				}
+			}
+			else if (slot instanceof ExtSpaceAttrSlot) {
+				ExtSpaceAttrSlot s = (ExtSpaceAttrSlot)slot;
+				for (ExtChildrenIterator i = s.iterate(node); i.hasMoreElements();){
+					ANode an = i.nextElement();
+					Object[] rowData2 = {"", "", an};
+					tm.addRow(rowData2);
+				}
+			}
+			else if (slot instanceof ParentAttrSlot) {
+				ParentAttrSlot s = (ParentAttrSlot)slot;
+				Object obj = s.get(node);
+				Object[] rowData2 = {"", "", obj};
+				tm.addRow(rowData2);
+
+			}
+		}
+		
+	}
+	
 	public void setRoot(ANode root) {
 		this.the_root = root;
 		this.table.setRoot();
@@ -80,6 +126,11 @@ public class TableView extends UIView implements KeyListener {
 		}
 	}
 
+	public void formatAndPaintLater(ANode the_root) {
+		this.the_root = the_root;
+		this.bg_formatter.schedule_run();
+	}
+
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 
@@ -100,6 +151,15 @@ public class TableView extends UIView implements KeyListener {
 			}
 		}
 	}
+	
+	@Override
+	public void elementChanged(ElementEvent e) {
+		super.elementChanged(e);
+		ANode node = (ANode)e.getSource();
+		createModel(node);
+		formatAndPaintLater(node);		
+	}
+
 }
 
 class ANodeTable extends JTable {
