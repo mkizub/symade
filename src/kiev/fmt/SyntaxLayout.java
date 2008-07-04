@@ -373,8 +373,8 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 		if (!PassInfo.resolveNameR(this,s,new ResInfo(this,rnode.name)))
 			Kiev.reportError(this,"Cannot resolve @node '"+rnode.name+"'");
 		else if (!s.isCompilerNode())
-			Kiev.reportError(this,"Resolved '"+rnode.name+"' is not @node");
-		else if (rnode.symbol != s)
+			Kiev.reportWarning(this,"Resolved '"+rnode.name+"' is not @node");
+		if (rnode.symbol != s)
 			rnode.symbol = s;
 	}
 	

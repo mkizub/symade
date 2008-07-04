@@ -858,6 +858,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		foreach (ASTNode n; fu.members) {
 			if (n instanceof TypeDecl)
 				dumpAPI((TypeDecl)n);
+			else if (n instanceof KievSyntax)
+				dumpAPI((KievSyntax)n);
 			else if (n instanceof NameSpace)
 				dumpAPI((NameSpace)n);
 			else if (n instanceof DumpSerialized)
@@ -868,6 +870,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		foreach (ASTNode n; ns.members) {
 			if (n instanceof TypeDecl)
 				dumpAPI((TypeDecl)n);
+			else if (n instanceof KievSyntax)
+				dumpAPI((KievSyntax)n);
 			else if (n instanceof NameSpace)
 				dumpAPI((NameSpace)n);
 			else if (n instanceof DumpSerialized)
@@ -877,6 +881,17 @@ public final class KievME_DumpAPI extends BackendProcessor {
 	public void dumpAPI(TypeDecl td) {
 		if (td.isPrivate() || (td instanceof TypeDef))
 			return;
+		String output_dir = Kiev.output_dir;
+		if( output_dir==null ) output_dir = "classes";
+		try {
+			String out_file = td.qname().replace('\u001f',File.separatorChar)+".xml";
+			File f = new File(output_dir,out_file);
+			DumpUtils.dumpToXMLFile("api", td, f);
+		} catch (IOException e) {
+			System.out.println("Create/write error while API dump: "+e);
+		}
+	}
+	public void dumpAPI(KievSyntax td) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir==null ) output_dir = "classes";
 		try {

@@ -355,6 +355,8 @@ public final class DrawTreeBranch extends Drawable {
 	// for GUI
 	public Drawable getFolded() { this.folded }
 	// for GUI
+	public Drawable[] getSubNodes() { this.args }
+	// for GUI
 	public boolean getDrawFolded() { this.draw_folded }
 	// for GUI
 	public void setDrawFolded(boolean val) { this.draw_folded = val; }
@@ -369,15 +371,32 @@ public final class DrawTreeBranch extends Drawable {
 	}
 
 	public Drawable getNextChild(Drawable dr) {
-		assert (dr.parent() == this && dr.pslot().name == "args");
-		return (Drawable)ANode.getNextNode(dr);
+		if (dr == folded) {
+			Drawable[] args = this.args;
+			if (args.length > 0)
+				return args[0];
+			return null;
+		}
+		else if (dr.pslot().name == "args")
+			return (Drawable)ANode.getNextNode(dr);
+		return null;
 	}
 	public Drawable getPrevChild(Drawable dr) {
-		assert (dr.parent() == this && dr.pslot().name == "args");
-		return (Drawable)ANode.getPrevNode(dr);
+		if (dr.pslot().name == "args") {
+			Drawable p = (Drawable)ANode.getPrevNode(dr);
+			if (p != null)
+				return p;
+			return folded;
+		}
+		return null;
 	}
 	public Drawable[] getChildren() {
-		return args;
+		Drawable[] args = this.args;
+		Drawable[] ret = new Drawable[args.length+1];
+		ret[0] = folded;
+		for (int i=0; i < args.length; i++)
+			ret[i+1] = args[i];
+		return ret;
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -385,12 +404,13 @@ public final class DrawTreeBranch extends Drawable {
 		Draw_SyntaxTreeBranch slst = (Draw_SyntaxTreeBranch)this.syntax;
 		ANode node = this.drnode;
 		
-		if (folded == null && slst.folded != null) {
+		if (folded == null && slst.folded != null)
 			folded = slst.folded.makeDrawable(cont.fmt, node, text_syntax);
-			if (draw_folded) {
-				folded.preFormat(cont,slst.folded,node);
-				return;
-			}
+
+		folded.preFormat(cont,slst.folded,node);
+		if (draw_folded) {
+			this.args.delAll();
+			return;
 		}
 		
 		if (slst_attr instanceof SpaceAttrSlot) {

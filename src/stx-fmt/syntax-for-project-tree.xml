@@ -55,11 +55,19 @@
       <text_size>2</text_size>
       <pixel_size>4</pixel_size>
      </syntax:SpaceInfo>
+     <syntax:SpaceInfo name='nl'>
+      <kind>SP_NEW_LINE</kind>
+      <text_size>1</text_size>
+      <pixel_size>4</pixel_size>
+     </syntax:SpaceInfo>
      <syntax:DrawColor name='color-default'>
       <rgb_color>0</rgb_color>
      </syntax:DrawColor>
      <syntax:DrawFont name='font-default'>
       <font_name>Dialog-PLAIN-12</font_name>
+     </syntax:DrawFont>
+     <syntax:DrawFont name='font-bold'>
+      <font_name>Dialog-BOLD-12</font_name>
      </syntax:DrawFont>
      <syntax:SyntaxElemFormatDecl name='fmt-default'>
       <spaces>
@@ -79,6 +87,46 @@
        <core:SymbolRef name='font-default' />
       </font>
      </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-title'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-default' />
+      </color>
+      <font>
+       <core:SymbolRef name='font-default' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-keyword'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-default' />
+      </color>
+      <font>
+       <core:SymbolRef name='font-bold' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:ParagraphLayout name='par-tree-branch'>
+      <next_indent_text_size>1</next_indent_text_size>
+      <next_indent_pixel_size>20</next_indent_pixel_size>
+     </syntax:ParagraphLayout>
      <syntax:SyntaxIdentTemplate name='ident-template'>
       <regexp_ok>.*</regexp_ok>
       <elem>
@@ -122,9 +170,21 @@
       <elem>
        <syntax:SyntaxTreeBranch>
         <folded>
-         <syntax:SyntaxToken>
-          <text>Project</text>
-         </syntax:SyntaxToken>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>Project</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-keyword' />
+            </fmt>
+           </syntax:SyntaxToken>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+          <fmt>
+           <core:SymbolRef name='fmt-title' />
+          </fmt>
+         </syntax:SyntaxSet>
         </folded>
         <element>
          <syntax:SyntaxSet>
@@ -137,6 +197,9 @@
          </syntax:SyntaxSet>
         </element>
         <name>root_dir</name>
+        <par>
+         <core:SymbolRef name='par-tree-branch' />
+        </par>
        </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -154,12 +217,22 @@
              <core:SymbolRef name='ident-template' />
             </decl>
             <name>name</name>
+            <fmt>
+             <core:SymbolRef name='fmt-keyword' />
+            </fmt>
            </syntax:SyntaxIdentAttr>
            <syntax:SyntaxToken>
             <text>/</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-keyword' />
+            </fmt>
            </syntax:SyntaxToken>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
+          <fmt>
+           <core:SymbolRef name='fmt-title' />
+          </fmt>
          </syntax:SyntaxSet>
         </folded>
         <element>
@@ -168,6 +241,9 @@
          </syntax:SyntaxNode>
         </element>
         <name>members</name>
+        <par>
+         <core:SymbolRef name='par-tree-branch' />
+        </par>
        </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -188,6 +264,9 @@
            </syntax:SyntaxIdentAttr>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
+          <fmt>
+           <core:SymbolRef name='fmt-title' />
+          </fmt>
          </syntax:SyntaxSet>
         </folded>
         <element>
@@ -201,6 +280,9 @@
          </syntax:CalcOptionClass>
         </filter>
         <name>members</name>
+        <par>
+         <core:SymbolRef name='par-tree-branch' />
+        </par>
        </syntax:SyntaxTreeBranch>
       </elem>
      </syntax:SyntaxElemDecl>

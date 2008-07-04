@@ -510,7 +510,7 @@ public final class DumpUtils {
 							if (dn.parent() == null)
 								((KievPackage)pkg).pkg_members += dn;
 						}
-						else if (dn instanceof ComplexTypeDecl) {
+						else if (dn instanceof DNode) {
 							if (dn.parent() == null) {
 								if (pkg instanceof KievPackage)
 									((KievPackage)pkg).pkg_members += dn;

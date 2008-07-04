@@ -17,8 +17,6 @@ import kiev.fmt.*;
 import kiev.gui.event.ElementEvent;
 
 import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Vector;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -44,8 +42,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.text.TextAction;
 
 

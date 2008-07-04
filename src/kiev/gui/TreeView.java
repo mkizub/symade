@@ -158,7 +158,9 @@ final class ANodeTreeModel implements TreeModel {
 		Drawable dr = (Drawable)parent;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).getArg();
-		return dr.getChildren()[index];
+		if (!(dr instanceof DrawTreeBranch))
+			return null;
+		return ((DrawTreeBranch)dr).getSubNodes()[index];
 	}
     public int getChildCount(Object parent) {
 		Drawable dr = (Drawable)parent;
@@ -174,7 +176,7 @@ final class ANodeTreeModel implements TreeModel {
 			Drawable root = tree_view.formatter.getDrawable(nt.get$drnode(), nt, tree_view.getSyntax());
 			root.preFormat(ctx, root.syntax, nt.get$drnode());
 		}
-		return nt.getChildren().length;
+		return nt.getSubNodes().length;
 	}
     public boolean isLeaf(Object node) {
 		Drawable dr = (Drawable)node;
@@ -186,7 +188,9 @@ final class ANodeTreeModel implements TreeModel {
 		Drawable dr = (Drawable)parent;
 		while (dr != null && dr instanceof DrawCtrl)
 			dr = ((DrawCtrl)dr).getArg();
-		Drawable[] children = dr.getChildren();
+		if (!(dr instanceof DrawTreeBranch))
+			return -1;
+		Drawable[] children = ((DrawTreeBranch)dr).getSubNodes();
 		for (int i=0; i < children.length; i++) {
 			if (children[i] == child)
 				return i;

@@ -457,7 +457,7 @@ public abstract class AType extends TVSet implements StdTypes {
 			while (p > 0) {
 				String pnm = name.substring(0,p);
 				if (Env.getRoot().existsTypeDecl(pnm))
-					Env.getRoot().loadTypeDecl(pnm,false);
+					Env.getRoot().loadAnyDecl(pnm);
 				p = name.indexOf('\u001f', p+1);
 			}
 			if (Env.getRoot().existsTypeDecl(name))

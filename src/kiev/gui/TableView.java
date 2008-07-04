@@ -53,7 +53,6 @@ public class TableView extends UIView implements KeyListener {
 		DefaultTableModel tm = (DefaultTableModel)table.getModel();
 		String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
 		tm.setDataVector(null, newIdentifiers);
-		System.out.println("Selected: "+node.getClass()); //0
 		Object[] rowData = {node.getClass()};
 		tm.addRow(rowData);
 		for (AttrSlot slot: node.values()) {
@@ -65,7 +64,6 @@ public class TableView extends UIView implements KeyListener {
 				Object obj = s.get(node);
 				Object[] rowData2 = {"", "", obj};
 				tm.addRow(rowData2);
-				System.out.println(name + " : "+obj); //2
 			}
 			else if (slot instanceof SpaceAttrSlot) {
 				SpaceAttrSlot s = (SpaceAttrSlot)slot;

@@ -856,7 +856,7 @@ public abstract class ANode implements INode {
 		Object[] ext_data = this.ext_data;
 		if (ext_data != null) {
 			foreach (ParentInfo pi; ext_data)
-				delExtParent(pi.p_slot.parent_attr_slot);
+				pi.p_slot.detach(pi.p_parent, this);
 		}
 		return this;
 	}

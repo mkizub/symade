@@ -75,7 +75,6 @@ implements MouseListener, ComponentListener, ElementChangeListener {
 		parent_window = window;
 		this.syntax = syntax;
 		bg_formatter = new BgFormatter();
-		parent_window.addElementChangeListener(this);
 		bg_formatter.start();
 	}
 	
