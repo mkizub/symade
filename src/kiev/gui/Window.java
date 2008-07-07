@@ -243,8 +243,6 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		expl_tree.requestFocus();
 		tree_view.setRoot(Env.getProject());
 		tree_view.formatAndPaint(true);
-		this.addElementChangeListener(info_view);
-		this.addElementChangeListener(prop_view);
 	}
 	
 	private void initBgFormatters() {
