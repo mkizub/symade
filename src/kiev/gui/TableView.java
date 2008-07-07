@@ -51,13 +51,15 @@ public class TableView extends UIView implements KeyListener {
 
 	public void createModel (ANode node){
 		DefaultTableModel tm = (DefaultTableModel)table.getModel();
+		if (node == null){ tm.setDataVector ((Object[][])null, null); return;}
 		String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
 		tm.setDataVector(null, newIdentifiers);
+		if (node == null) return;
 		Object[] rowData = {node.getClass()};
 		tm.addRow(rowData);
 		for (AttrSlot slot: node.values()) {
-			String name = slot.name; //1
-			Object[] rowData1 = {"", slot.name};
+			String name = slot.name; 
+			Object[] rowData1 = {"", name};
 			tm.addRow(rowData1);
 			if (slot instanceof ScalarAttrSlot) {
 				ScalarAttrSlot s = (ScalarAttrSlot)slot;
@@ -67,7 +69,7 @@ public class TableView extends UIView implements KeyListener {
 			}
 			else if (slot instanceof SpaceAttrSlot) {
 				SpaceAttrSlot s = (SpaceAttrSlot)slot;
-				ANode[] arr = s.getArray(node); //2
+				ANode[] arr = s.getArray(node); 
 				for (ANode an: arr){
 					Object[] rowData2 = {"", "", an};
 					tm.addRow(rowData2);
@@ -97,11 +99,18 @@ public class TableView extends UIView implements KeyListener {
 		this.table.setRoot();
 	}
 
+	@Override
 	public void formatAndPaint(boolean full) {
 		table.format();
 		table.repaint();
 	}
 
+	@Override
+	public void formatAndPaintLater(ANode node) {
+		this.the_root = node;
+		this.bg_formatter.schedule_run();
+	}
+	
 	public void mouseClicked(MouseEvent e) {
 		if (e.getClickCount() >= 2) {
 			Object sel = table.getValueAt(table.rowAtPoint(new Point(e.getX(), e.getY())), table.columnAtPoint(new Point(e.getX(), e.getY())) );
@@ -124,10 +133,6 @@ public class TableView extends UIView implements KeyListener {
 		}
 	}
 
-	public void formatAndPaintLater(ANode the_root) {
-		this.the_root = the_root;
-		this.bg_formatter.schedule_run();
-	}
 
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
@@ -153,7 +158,7 @@ public class TableView extends UIView implements KeyListener {
 	@Override
 	public void elementChanged(ElementEvent e) {
 		super.elementChanged(e);
-		ANode node = (ANode)e.getSource();
+		ANode node = ((Editor)e.getSource()).cur_elem.node;
 		createModel(node);
 		formatAndPaintLater(node);		
 	}

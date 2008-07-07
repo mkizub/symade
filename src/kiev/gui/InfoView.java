@@ -89,6 +89,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 		this.formatter.setShowPlaceholders(this.show_placeholders);
 		this.formatter.setHintEscapes(this.show_hint_escapes);
 		view_canvas.dr_root = null;
+		view_canvas.dlb_root = null;
 		if (the_root != null && full) {
 			formatter.format(the_root, view_root, getSyntax());
 			view_canvas.dr_root = view_root = formatter.getRootDrawable();
@@ -99,8 +100,8 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 
 	@Override
 	public void formatAndPaintLater(ANode node) {
-		this.the_root = node;
-		this.bg_formatter.schedule_run();
+		the_root = node;
+		bg_formatter.schedule_run();
 	}
 
 	public void mouseClicked(MouseEvent e) {
@@ -195,7 +196,8 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 	@Override
 	public void elementChanged(ElementEvent e) {
 		super.elementChanged(e);
-		formatAndPaintLater((ANode)e.getSource());
+		ANode node = ((Editor)e.getSource()).cur_elem.node;
+		formatAndPaintLater(node);
 		
 	}
 }

@@ -438,8 +438,14 @@ public class Editor extends InfoView implements KeyListener {
 		 */
 		private void setNode(ANode node) {
 			this.node = node;
-			if (node != null && !node.equals(oldNode))
-				parent_window.fireElementChanged(new ElementEvent(node, ElementEvent.ELEMENT_CHANGED));	
+//			if (node != null && !node.equals(oldNode))
+			if (node != null && node.equals(oldNode)) 
+				return;
+			if (oldNode != null && oldNode.equals(node)) 
+				return;
+			if (node == null && oldNode == null)
+				return;		
+			parent_window.fireElementChanged(new ElementEvent(Editor.this, ElementEvent.ELEMENT_CHANGED));	
 		}
 	}
 	

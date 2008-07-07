@@ -20,6 +20,8 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.event.EventListenerList;
+
 /**
  * The abstract class for the view components of the GUI. 
  */
@@ -74,10 +76,19 @@ implements MouseListener, ComponentListener, ElementChangeListener {
 	public UIView(Window window, Draw_ATextSyntax syntax) {
 		parent_window = window;
 		this.syntax = syntax;
-		bg_formatter = new BgFormatter();
-		bg_formatter.start();
 	}
 	
+	public boolean isRegisteredToElementEvent() {
+		EventListenerList l = parent_window.getListenerList();
+		Object[] listeners = l.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == ElementChangeListener.class) 
+				if (((ElementChangeListener)listeners[i+1]) == this)
+					return true;			
+		}
+		return false;
+	}
+
 	public Draw_ATextSyntax getSyntax() { return syntax; }
 
 	public void setSyntax(Draw_ATextSyntax syntax) {
@@ -106,5 +117,13 @@ implements MouseListener, ComponentListener, ElementChangeListener {
 	}
 	
 	public void elementChanged(ElementEvent e) {}
+
+	/**
+	 * @param bg_formatter the bg_formatter to set
+	 */
+	protected BgFormatter setBg_formatter(BgFormatter bg_formatter) {
+		this.bg_formatter = bg_formatter;
+		return this.bg_formatter;
+	}
 
 }

@@ -732,7 +732,9 @@ final class EditActions implements Runnable {
 				editor.stopItemEditor(true);
 				editor.item_editor = null;
 			}
+			editor.cur_elem.set(null); 
 			editor.parent_window.closeEditor(editor);
+			editor.parent_window.info_view.formatAndPaint(true);
 		}
 		else if (action == "undo") {
 			Transaction tr = editor.changes.pop();

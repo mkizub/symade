@@ -13,6 +13,7 @@ package kiev.gui;
 import kiev.vtree.*;
 import kiev.vlang.*;
 import kiev.fmt.*;
+import kiev.gui.UIView.BgFormatter;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
 
@@ -235,6 +236,8 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		prop_view = new TableView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
 		expl_view = new TreeView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
 		tree_view = new ProjectView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), tree_canvas);
+		addListeners();
+		initBgFormatters();
 		expl_view.setRoot(Env.getProject());
 		expl_view.formatAndPaint(true);
 		expl_tree.requestFocus();
@@ -244,6 +247,18 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		this.addElementChangeListener(prop_view);
 	}
 	
+	private void initBgFormatters() {
+		if (info_view.isRegisteredToElementEvent())
+			info_view.setBg_formatter(info_view.new BgFormatter()).start();
+		if (prop_view.isRegisteredToElementEvent())
+			prop_view.setBg_formatter(prop_view.new BgFormatter()).start();
+	}
+
+	private void addListeners() {
+		addElementChangeListener(info_view);
+		addElementChangeListener(prop_view);
+	}
+
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
 		if (src instanceof UIActionMenuItem) {
@@ -358,6 +373,13 @@ public class Window extends JFrame implements ActionListener, FocusListener {
   public void addElementChangeListener(ElementChangeListener l) {
   	listenerList.add(ElementChangeListener.class, l);
   }
+
+	/**
+	 * @return the listenerList
+	 */
+	public EventListenerList getListenerList() {
+		return listenerList;
+	}
 	
 }
 
