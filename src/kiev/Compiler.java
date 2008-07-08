@@ -870,7 +870,7 @@ public class Compiler {
 
 		if (Kiev.run_gui) {
 			//kiev.gui.Window wnd = new kiev.gui.Window();
-			Object wnd = Class.forName("kiev.gui.Window").newInstance();
+			Object wnd = Class.forName("kiev.gui.Main").newInstance();
 			for(;;) Thread.sleep(10*1000);
 		} else {
 			if (thr.errCount == 0)

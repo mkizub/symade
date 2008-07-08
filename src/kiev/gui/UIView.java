@@ -14,6 +14,7 @@ import kiev.vtree.*;
 import kiev.fmt.*;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
+import kiev.gui.swing.Window;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -29,9 +30,9 @@ public abstract class UIView extends ANode
 implements MouseListener, ComponentListener, ElementChangeListener {
 
 	/** The workplace window */
-	protected Window			parent_window;
+	public Window			parent_window;
 	/** The formatter of the current view */
-	protected GfxFormatter		formatter;
+	public GfxFormatter		formatter;
 	/** The root node to display */
 	public ANode				the_root;
 	/** The root node of document we edit - the whole program */
@@ -47,31 +48,6 @@ implements MouseListener, ComponentListener, ElementChangeListener {
 	
 	/** A background thread to format and paint */
 	protected BgFormatter	bg_formatter;
-
-	class BgFormatter extends Thread {
-		private boolean do_format;
-		BgFormatter() {
-			this.setDaemon(true);
-			this.setPriority(Thread.NORM_PRIORITY - 1);
-		}
-		public void run() {
-			for (;;) {
-				while (!do_format) {
-					synchronized(this) { try {
-						this.wait();
-					} catch (InterruptedException e) {}
-					}
-					continue;
-				}
-				this.do_format = false;
-				formatAndPaint(true);
-			}
-		}
-		synchronized void schedule_run() {
-			this.do_format = true;
-			this.notify();
-		}
-	}
 
 	public UIView(Window window, Draw_ATextSyntax syntax) {
 		parent_window = window;
@@ -121,7 +97,7 @@ implements MouseListener, ComponentListener, ElementChangeListener {
 	/**
 	 * @param bg_formatter the bg_formatter to set
 	 */
-	protected BgFormatter setBg_formatter(BgFormatter bg_formatter) {
+	public BgFormatter setBg_formatter(BgFormatter bg_formatter) {
 		this.bg_formatter = bg_formatter;
 		return this.bg_formatter;
 	}

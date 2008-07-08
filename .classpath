@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="*|classes2/" including="kiev/gui/" kind="src" output="src/classes.gui" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="src/classes2" sourcepath="src"/>
+	<classpathentry excluding="*|classes2/kiev/gui/" including="kiev/gui/" kind="src" path="src"/>
+	<classpathentry kind="lib" path="src/classes2" sourcepath="src">
+		<accessrules>
+			<accessrule kind="nonaccessible" pattern="kiev/gui/**"/>
+		</accessrules>
+	</classpathentry>
 	<classpathentry kind="lib" path="bin/xpp3-1.1.4c.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="src/classes.gui"/>
 </classpath>
