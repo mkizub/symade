@@ -26,10 +26,11 @@ public class TextPrinter implements DrawDevice {
 	}
 	
 	public void draw(Drawable root) {
-		DrawTerm leaf = root.getFirstLeaf();
-		for (; leaf != null; leaf= leaf.getNextLeaf()) {
+		DrawTerm dr_leaf = root.getFirstLeaf();
+		TxtDrawTermFormatInfo leaf = (TxtDrawTermFormatInfo)dr_leaf.dt_fmt;
+		for (; leaf != null; leaf= leaf.getNext()) {
 			int x = leaf.x;
-			int y = leaf.y;
+			int y = leaf.lineno - 1;
 
 			while (pos_y < y) {
 				sb.append('\n');
@@ -41,14 +42,14 @@ public class TextPrinter implements DrawDevice {
 				pos_x++;
 			}
 			
-			String text = leaf.getText();
+			String text = leaf.dterm.getText();
 			
 			if (text != null) {
 				sb.append(text);
 				pos_x += text.length();
+				x += text.length();
 			}
 
-			x += leaf.width;
 			while (pos_x < x) {
 				sb.append(' ');
 				pos_x++;

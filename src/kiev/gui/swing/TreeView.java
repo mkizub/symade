@@ -146,7 +146,7 @@ final class ANodeTreeModel implements TreeModel {
 		if (nt.getDrawFolded()) {
 			nt.setDrawFolded(false);
 			//tree_view.formatter.format(nt.drnode, nt);
-			DrawContext ctx = new DrawContext(tree_view.formatter,null,1000);
+			GfxDrawContext ctx = new GfxDrawContext((GfxFormatter)tree_view.formatter,1000);
 			Drawable root = tree_view.formatter.getDrawable(nt.get$drnode(), nt, tree_view.getSyntax());
 			root.preFormat(ctx, root.syntax, nt.get$drnode());
 		}

@@ -20,11 +20,9 @@ import java.awt.Font;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
-public final class DrawContext implements Cloneable {
+public abstract class DrawContext implements Cloneable {
 	
 	public final Formatter				fmt;
-	public final Graphics2D				gfx;
-	public final Font					default_font;
 	private boolean						parent_has_more_attempts;
 	private int							width;
 	private int							x;
@@ -36,37 +34,21 @@ public final class DrawContext implements Cloneable {
 	static class Indents implements Cloneable {
 		int cur_indent;
 		int next_indent;
-		
-		Indents makeIndents(Draw_Paragraph pl, int cur_x, boolean is_text) {
-			if (pl != null) {
-				Indents i = new Indents();
-				int pl_indent = is_text ? pl.indent_text_size : pl.indent_pixel_size;
-				int pl_next_indent = is_text ? pl.next_indent_text_size : pl.next_indent_pixel_size;
-				if (pl.indent_from_current_position) {
-					i.cur_indent = pl_indent + cur_x;
-					i.next_indent = pl_indent + pl_next_indent + cur_x;
-				} else {
-					i.cur_indent = this.cur_indent + pl_indent;
-					i.next_indent = this.cur_indent + pl_next_indent + pl_indent;
-				}
-				return i;
-			}
-			return this;
-		}
-		public Object clone() {
-			return super.clone();
-		}
+		Indents() {}
+		public Object clone() { return super.clone(); }
 	}
 	
-	public DrawContext(Formatter fmt, Graphics2D gfx, int width) {
+	public DrawContext(Formatter fmt, int width) {
 		this.fmt = fmt;
-		this.gfx = gfx;
 		this.width = width;
 		line_started = true;
-		if (gfx != null)
-			default_font = new Font("Dialog", Font.PLAIN, 12);
 	}
 	
+	public abstract DrawTermFormatInfo makeDrawTermFormatInfo(DrawTerm dt);
+	public abstract void formatAsText(DrawTerm dr);
+	public abstract int setXgetWidth(DrawTerm dr, int x);
+	public abstract Indents makeIndents(Indents indents, Draw_Paragraph pl, int cur_x);
+
 	public Object clone() {
 		return super.clone();
 	}
@@ -87,33 +69,6 @@ public final class DrawContext implements Cloneable {
 		}
 	}
 
-	public void formatAsText(DrawTerm dr) {
-		dr.x = 0;
-		dr.y = 0;
-		dr.height = 0;
-		String text = dr.getText();
-		if (gfx != null) {
-			if (text == null) text = "\u25d8"; // ◘
-			if (text != null && text.length() != 0) {
-				Font  font  = dr.syntax.lout.font;
-				TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
-				Rectangle2D rect = tl.getBounds();
-				dr.width = (int)Math.ceil(tl.getAdvance());
-				dr.height = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-				dr.baseline = (int)Math.ceil(tl.getAscent()+tl.getLeading());
-			} else {
-				dr.width = 0;
-				dr.height = 10;
-				dr.baseline = 0;
-			}
-		} else {
-			if (text == null) text = "";
-			dr.width = text.length();
-			dr.height = 1;
-			dr.baseline = 0;
-		}
-	}
-
 	public void postFormat(DrawLayoutBlock dlb) {
 		this.postFormat(dlb, new Indents());
 	}
@@ -123,7 +78,7 @@ public final class DrawContext implements Cloneable {
 		next_layot:
 			for (int i=0; i <= dlb.max_layout; i++) {
 				DrawContext ctx = this.pushState();
-				Indents ctx_indents = indents.makeIndents(dlb.par, this.x, gfx==null);
+				Indents ctx_indents = makeIndents(indents, dlb.par, this.x);
 				boolean last = (i >= dlb.max_layout);
 				if (!last)
 					ctx.parent_has_more_attempts = true;
@@ -157,7 +112,7 @@ public final class DrawContext implements Cloneable {
 			// savepoint data
 			int save_idx = -1;
 			DrawContext ctx = this.pushState();
-			Indents ctx_indents = indents.makeIndents(dlb.par, this.x, gfx==null);
+			Indents ctx_indents = makeIndents(indents, dlb.par, this.x);
 			// work data between savepoints
 			DrawContext tmp = ctx.pushState();
 			Indents tmp_indents = (Indents)ctx_indents.clone();
@@ -215,16 +170,15 @@ public final class DrawContext implements Cloneable {
 	}
 
 	private void addLeaf(DrawLayoutBlock dlb, int cur_attempt, Indents indents) {
-		indents = indents.makeIndents(dlb.par, this.x, gfx==null);
+		indents = makeIndents(indents, dlb.par, this.x);
 		DrawTerm leaf = (DrawTerm)dlb.dr;
 		flushSpaceRequests(leaf, cur_attempt, indents);
-		leaf.x = x;
-		x += leaf.width;
+		x += setXgetWidth(leaf, x);
 		max_x = Math.max(max_x, x);
 		line_started = false;
 		indents.cur_indent = indents.next_indent;
 		// check flow break point
-		DrawTermLink lnk = leaf.lnk_next;
+		DrawTermLink lnk = leaf.dt_fmt.lnk_next;
 		if (lnk != null) {
 			int max_space = (lnk.size_0 & 0xFFFF);
 			int max_nl = (lnk.size_0 >>> 16);
@@ -233,7 +187,7 @@ public final class DrawContext implements Cloneable {
 	}
 	
 	private void flushSpaceRequests(DrawTerm leaf, int cur_attempt, Indents indents) {
-		DrawTermLink lnk = leaf.lnk_prev;
+		DrawTermLink lnk = leaf.dt_fmt.lnk_prev;
 		if (lnk == null) {
 			this.x = indents.cur_indent;
 			return;
@@ -266,6 +220,99 @@ public final class DrawContext implements Cloneable {
 		}
 	}
 }
+
+public final class GfxDrawContext extends DrawContext {
+	public final Graphics2D				gfx;
+	public final Font					default_font;
+	public GfxDrawContext(GfxFormatter fmt, int width) {
+		super(fmt,width);
+		this.gfx = fmt.getGfx();
+		this.default_font = new Font("Dialog", Font.PLAIN, 12);
+	}
+	public DrawTermFormatInfo makeDrawTermFormatInfo(DrawTerm dt) {
+		return new GfxDrawTermFormatInfo(dt);
+	}
+	public void formatAsText(DrawTerm dr) {
+		GfxDrawTermFormatInfo gfx_fmt = (GfxDrawTermFormatInfo)dr.dt_fmt;
+		gfx_fmt.x = 0;
+		gfx_fmt.y = 0;
+		gfx_fmt.height = 0;
+		String text = dr.getText();
+		if (text == null) text = "\u25d8"; // ◘
+		if (text != null && text.length() != 0) {
+			Font  font  = dr.syntax.lout.font;
+			TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
+			Rectangle2D rect = tl.getBounds();
+			gfx_fmt.width = (int)Math.ceil(tl.getAdvance());
+			gfx_fmt.height = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+			gfx_fmt.baseline = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+		} else {
+			gfx_fmt.width = 0;
+			gfx_fmt.height = 10;
+			gfx_fmt.baseline = 0;
+		}
+	}
+	public int setXgetWidth(DrawTerm dr, int x) {
+		GfxDrawTermFormatInfo gfx_fmt = (GfxDrawTermFormatInfo)dr.dt_fmt;
+		gfx_fmt.x = x;
+		return gfx_fmt.width;
+	}
+	public Indents makeIndents(Indents from, Draw_Paragraph pl, int cur_x) {
+		if (pl != null) {
+			Indents i = new Indents();
+			int pl_indent = pl.indent_pixel_size;
+			int pl_next_indent = pl.next_indent_pixel_size;
+			if (pl.indent_from_current_position) {
+				i.cur_indent = pl_indent + cur_x;
+				i.next_indent = pl_indent + pl_next_indent + cur_x;
+			} else {
+				i.cur_indent = from.cur_indent + pl_indent;
+				i.next_indent = from.cur_indent + pl_next_indent + pl_indent;
+			}
+			return i;
+		}
+		return from;
+	}
+}
+
+public final class TxtDrawContext extends DrawContext {
+	public TxtDrawContext(TextFormatter fmt, int width) {
+		super(fmt,width);
+	}
+	public DrawTermFormatInfo makeDrawTermFormatInfo(DrawTerm dt) {
+		return new TxtDrawTermFormatInfo(dt);
+	}
+	public void formatAsText(DrawTerm dr) {
+		TxtDrawTermFormatInfo txt_fmt = (TxtDrawTermFormatInfo)dr.dt_fmt;
+		txt_fmt.x = 0;
+		txt_fmt.lineno = 0;
+	}
+	public int setXgetWidth(DrawTerm dr, int x) {
+		TxtDrawTermFormatInfo txt_fmt = (TxtDrawTermFormatInfo)dr.dt_fmt;
+		txt_fmt.x = x;
+		String txt = dr.getText();
+		if (txt == null)
+			return 0;
+		return txt.length();
+	}
+	public Indents makeIndents(Indents from, Draw_Paragraph pl, int cur_x) {
+		if (pl != null) {
+			Indents i = new Indents();
+			int pl_indent = pl.indent_text_size;
+			int pl_next_indent = pl.next_indent_text_size;
+			if (pl.indent_from_current_position) {
+				i.cur_indent = pl_indent + cur_x;
+				i.next_indent = pl_indent + pl_next_indent + cur_x;
+			} else {
+				i.cur_indent = from.cur_indent + pl_indent;
+				i.next_indent = from.cur_indent + pl_next_indent + pl_indent;
+			}
+			return i;
+		}
+		return from;
+	}
+}
+
 
 public final class DrawLinkContext {
 	
@@ -378,32 +425,16 @@ public final class DrawLayoutBlock extends ANode {
 	public DrawLayoutBlock[] getBlocks() { blocks }
 	
 	public DrawLayoutBlock pushDrawable(Drawable dr) {
-		Draw_Paragraph pl = null;
 		if (dr.syntax != null) {
-			if (dr.syntax instanceof Draw_SyntaxList) {
-				if (dr instanceof DrawWrapList)
-					pl = dr.syntax.par;
-				else
-					pl = ((Draw_SyntaxList)dr.syntax).elpar;
-			} else {
-				pl = dr.syntax.par;
-			}
+			Draw_Paragraph pl = dr.syntax.par;
 			if (pl != null)
 				this = pushParagraph(dr, pl);
 		}
 		return this;
 	}
 	public DrawLayoutBlock popDrawable(Drawable dr) {
-		Draw_Paragraph pl = null;
 		if (dr.syntax != null) {
-			if (dr.syntax instanceof Draw_SyntaxList) {
-				if (dr instanceof DrawWrapList)
-					pl = dr.syntax.par;
-				else
-					pl = ((Draw_SyntaxList)dr.syntax).elpar;
-			} else {
-				pl = dr.syntax.par;
-			}
+			Draw_Paragraph pl = dr.syntax.par;
 			if (pl != null)
 				this = popParagraph(dr, pl);
 		}

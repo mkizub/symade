@@ -1,6 +1,6 @@
 package kiev.gui;
 
-import kiev.fmt.Draw_SyntaxList;
+import kiev.fmt.*;
 import kiev.gui.swing.NewElemEditor;
 
 public final class NewElemNext extends NewElemEditor implements Runnable {
@@ -27,8 +27,9 @@ public final class NewElemNext extends NewElemEditor implements Runnable {
 			ActionPoint ap = editor.getActionPoint(true);
 			if (ap == null || ap.length < 0)
 				return null;
-			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
-			if (slst.expected_types == null || slst.expected_types.length == 0)
+			Draw_SyntaxAttr slst = (Draw_SyntaxAttr)ap.dr.syntax;
+			ExpectedTypeInfo[] exp = slst.getExpectedTypes();
+			if (exp == null)
 				return null;
 			return new NewElemNext(editor);
 		}

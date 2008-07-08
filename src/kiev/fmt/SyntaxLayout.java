@@ -354,7 +354,8 @@ public final class PartialSyntaxElemDecl extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemDecl extends ASyntaxElemDecl {
-	@nodeAttr public SymbolRef<Struct>		rnode;
+	@nodeAttr public SymbolRef<Struct>			rnode;
+	@nodeAttr public SyntaxExpectedAttr∅		attr_types;
 
 	public SyntaxElemDecl() {
 		this.rnode = new SymbolRef<Struct>();
@@ -390,10 +391,42 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
+	private ExpectedTypeInfo makeExpectedTypeInfo(SymbolRef sr) {
+		if (sr.dnode instanceof Struct) {
+			Struct s = (Struct)sr.dnode;
+			ExpectedTypeInfo eti = new ExpectedTypeInfo();
+			eti.title = s.sname;
+			eti.typeinfo = TypeInfo.newTypeInfo(Class.forName(s.qname().replace('\u001f','.')),null);
+			return eti;
+		}
+		else if (sr.dnode instanceof SyntaxExpectedTemplate) {
+			SyntaxExpectedTemplate exp = (SyntaxExpectedTemplate)sr.dnode;
+			ExpectedTypeInfo eti = new ExpectedTypeInfo();
+			eti.title = exp.title;
+			eti.subtypes = new ExpectedTypeInfo[exp.expected_types.length];
+			for (int i=0; i < eti.subtypes.length; i++)
+				eti.subtypes[i] = makeExpectedTypeInfo(exp.expected_types[i]);
+			return eti;
+		}
+		return new ExpectedTypeInfo();
+	}
+
 	public Draw_SyntaxElemDecl getCompiled() {
 		Draw_SyntaxElemDecl dr_decl = new Draw_SyntaxElemDecl();
-		dr_decl.elem = this.elem.getCompiled();
+		dr_decl.elem = this.elem.getCompiled(dr_decl);
 		dr_decl.clazz_name = this.rnode.dnode.qname().replace('\u001f','.').intern();
+		foreach (SyntaxExpectedAttr exp; attr_types) {
+			ExpectedAttrTypeInfo eti = new ExpectedAttrTypeInfo();
+			eti.title = exp.title;
+			eti.attr_name = exp.attr_name;
+			eti.subtypes = new ExpectedTypeInfo[exp.expected_types.length];
+			for (int i=0; i < eti.subtypes.length; i++)
+				eti.subtypes[i] = makeExpectedTypeInfo(exp.expected_types[i]);
+			if (dr_decl.attr_types == null)
+				dr_decl.attr_types = new ExpectedAttrTypeInfo[]{eti};
+			else
+				dr_decl.attr_types = (ExpectedAttrTypeInfo[])Arrays.append(dr_decl.attr_types, eti);
+		}
 		return dr_decl;
 	}
 }
@@ -447,8 +480,14 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
+	
+	public static final SyntaxExpectedTemplate[] emptyArray = new SyntaxExpectedTemplate[0];
+	
 	@nodeAttr public String				title;
+	@nodeAttr public String				attr_name;
 	@nodeAttr public SymbolRef∅		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
+
+	@nodeData public AttrSlot			attr_slot;
 
 	public SyntaxExpectedTemplate() {
 		super(new SyntaxNode());
@@ -603,6 +642,45 @@ public final class SyntaxFunctions extends ASTNode {
 }
 
 @ThisIsANode(lang=SyntaxLang)
+public class SyntaxExpectedAttr extends ASTNode {
+	
+	public static final SyntaxExpectedAttr[] emptyArray = new SyntaxExpectedAttr[0];
+	
+	@nodeAttr public String				title;
+	@nodeAttr public String				attr_name;
+	@nodeAttr public SymbolRef∅		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
+
+	@nodeData public AttrSlot			attr_slot;
+
+	public SyntaxExpectedAttr() {}
+
+	public void preResolveOut() {
+		foreach (SymbolRef sr; expected_types) {
+			DNode@ dn;
+			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,sr.name)))
+				Kiev.reportError(this,"Cannot resolve @node '"+sr.name+"'");
+			else if !(dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate)
+				Kiev.reportError(this,"Resolved '"+sr.name+"' is not a @node or SyntaxExpectedTemplate");
+			else if (sr.symbol != dn)
+				sr.symbol = dn;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "expected_types") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<DNode> vect = new Vector<DNode>();
+			DNode@ dn;
+			foreach (PassInfo.resolveNameR(this,dn,info))
+				if ((dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate) && !vect.contains(dn))
+					vect.append(dn);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+}
+
+@ThisIsANode(lang=SyntaxLang)
 public abstract class SyntaxElem extends ASTNode {
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
@@ -642,7 +720,7 @@ public abstract class SyntaxElem extends ASTNode {
 				if (!vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
 		}
-		if (slot.name == "par" || slot.name == "elpar" ) {
+		if (slot.name == "par") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<AParagraphLayout> vect = new Vector<AParagraphLayout>();
 			AParagraphLayout@ dc;
@@ -653,7 +731,7 @@ public abstract class SyntaxElem extends ASTNode {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
-	public abstract Draw_SyntaxElem getCompiled();
+	public abstract Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl);
 
 	public void fillCompiled(Draw_SyntaxElem dr_elem) {
 		if (this.par != null && this.par.dnode != null)
@@ -689,17 +767,9 @@ public final class SyntaxElemRef extends SyntaxElem {
 		this.decl = new SymbolRef<ASyntaxElemDecl>(decl);
 	}
 	
-	public Draw_SyntaxElem getCompiled() {
-		return ((ASyntaxElemDecl)decl.dnode).elem.getCompiled();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		return ((ASyntaxElemDecl)decl.dnode).elem.getCompiled(elem_decl);
 	}
-
-//	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-//		return ((ASyntaxElemDecl)decl.dnode).elem.check(cont, curr_dr, expected_node);
-//	}
-//	
-//	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
-//		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node,text_syntax);
-//	}
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -755,8 +825,8 @@ public final class SyntaxToken extends SyntaxElem {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxToken dr_elem = new Draw_SyntaxToken();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxToken dr_elem = new Draw_SyntaxToken(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -773,16 +843,22 @@ public final class SyntaxToken extends SyntaxElem {
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxPlaceHolder extends SyntaxElem {
 	@nodeAttr public String					text;
+	@nodeAttr public String					attr_name;
 
 	@setter
 	public void set$text(String value) {
 		this.text = (value != null) ? value.intern() : null;
 	}
 	
+	@setter
+	public void set$attr_name(String value) {
+		this.attr_name = (value != null) ? value.intern() : null;
+	}
+	
 	public SyntaxPlaceHolder() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxPlaceHolder dr_elem = new Draw_SyntaxPlaceHolder();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxPlaceHolder dr_elem = new Draw_SyntaxPlaceHolder(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -791,6 +867,7 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 		Draw_SyntaxPlaceHolder dr_elem = (Draw_SyntaxPlaceHolder)_dr_elem;
 		super.fillCompiled(dr_elem);
 		dr_elem.text = this.text;
+		dr_elem.attr_name = this.attr_name;
 	}
 }
 
@@ -800,7 +877,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 	@nodeAttr public String							name;
 	@nodeAttr public SymbolRef<ATextSyntax>		in_syntax;
-	@nodeAttr public SymbolRef∅					expected_types;
 	@nodeAttr public SyntaxElem						empty;
 	@nodeData public AttrSlot						attr_slot;
 
@@ -821,19 +897,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		foreach (SymbolRef sr; expected_types; sr.name != null) {
-			DNode@ dn;
-			if( !PassInfo.resolveNameR(this,dn,new ResInfo(this,sr.name,ResInfo.noForwards)) ) {
-				Kiev.reportError(sr,"Unresolved type "+sr);
-				continue;
-			}
-			if !(dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate) {
-				Kiev.reportError(sr,"Resolved type "+sr+" is not a compiler @node or SyntaxExpectedTemplate");
-				continue;
-			}
-			if (sr.symbol != dn)
-				sr.symbol = dn;
-		}
 		if (in_syntax.name != null && in_syntax.name != "") {
 			ATextSyntax@ s;
 			if (!PassInfo.resolveNameR(this,s,new ResInfo(this,in_syntax.name,ResInfo.noForwards)))
@@ -844,15 +907,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "expected_types") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<DNode> vect = new Vector<DNode>();
-			DNode@ dn;
-			foreach (PassInfo.resolveNameR(this,dn,info))
-				if ((dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate) && !vect.contains(dn))
-					vect.append(dn);
-			return vect.toArray();
-		}
 		if (slot.name == "in_syntax") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<ATextSyntax> vect = new Vector<ATextSyntax>();
@@ -872,34 +926,9 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		if (this.in_syntax.dnode != null)
 			dr_elem.in_syntax = this.in_syntax.dnode.getCompiled();
 		if (this.empty != null)
-			dr_elem.empty = this.empty.getCompiled();
-		if (this.expected_types != null && this.expected_types.length > 0) {
-			dr_elem.expected_types = new ExpectedTypeInfo[this.expected_types.length];
-			for (int i=0; i < dr_elem.expected_types.length; i++)
-				dr_elem.expected_types[i] = makeExpectedTypeInfo(this.expected_types[i]);
-		}
+			dr_elem.empty = this.empty.getCompiled(dr_elem.elem_decl);
 	}
 	
-	private ExpectedTypeInfo makeExpectedTypeInfo(SymbolRef sr) {
-		if (sr.dnode instanceof Struct) {
-			Struct s = (Struct)sr.dnode;
-			ExpectedTypeInfo eti = new ExpectedTypeInfo();
-			eti.title = s.sname;
-			eti.typeinfo = TypeInfo.newTypeInfo(Class.forName(s.qname().replace('\u001f','.')),null);
-			return eti;
-		}
-		else if (sr.dnode instanceof SyntaxExpectedTemplate) {
-			SyntaxExpectedTemplate exp = (SyntaxExpectedTemplate)sr.dnode;
-			ExpectedTypeInfo eti = new ExpectedTypeInfo();
-			eti.title = exp.title;
-			eti.subtypes = new ExpectedTypeInfo[exp.expected_types.length];
-			for (int i=0; i < eti.subtypes.length; i++)
-				eti.subtypes[i] = makeExpectedTypeInfo(exp.expected_types[i]);
-			return eti;
-		}
-		return new ExpectedTypeInfo();
-	}
-
 	public Struct getExpectedType() {
 		ANode p = parent();
 		while (p != null && !(p instanceof SyntaxAttr || p instanceof ASyntaxElemDecl))
@@ -915,8 +944,8 @@ public abstract class SyntaxAttr extends SyntaxElem {
 public final class SyntaxSubAttr extends SyntaxAttr {
 	public SyntaxSubAttr() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxSubAttr dr_elem = new Draw_SyntaxSubAttr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxSubAttr dr_elem = new Draw_SyntaxSubAttr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -950,23 +979,11 @@ public class SyntaxList extends SyntaxAttr {
 	@nodeAttr public SyntaxElem						prefix;
 	@nodeAttr public SyntaxElem						sufix;
 	@nodeAttr public CalcOption						filter;
-	@nodeAttr public SymbolRef<AParagraphLayout>	elpar;
 
 	public SyntaxList() {}
 
-	public void preResolveOut() {
-		super.preResolveOut();
-		if (elpar != null && elpar.name != null && elpar.name != "") {
-			AParagraphLayout@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,elpar.name)))
-				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+elpar.name+"'");
-			else if (elpar.symbol != d)
-				elpar.symbol = d;
-		}
-	}	
-
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxList dr_elem = new Draw_SyntaxList();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxList dr_elem = new Draw_SyntaxList(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -975,17 +992,51 @@ public class SyntaxList extends SyntaxAttr {
 		Draw_SyntaxList dr_elem = (Draw_SyntaxList)_dr_elem;
 		super.fillCompiled(dr_elem);
 		if (this.element != null)
-			dr_elem.element = this.element.getCompiled();
+			dr_elem.element = this.element.getCompiled(dr_elem.elem_decl);
 		if (this.separator != null)
-			dr_elem.separator = this.separator.getCompiled();
+			dr_elem.separator = this.separator.getCompiled(dr_elem.elem_decl);
 		if (this.prefix != null)
-			dr_elem.prefix = this.prefix.getCompiled();
+			dr_elem.prefix = this.prefix.getCompiled(dr_elem.elem_decl);
 		if (this.sufix != null)
-			dr_elem.sufix = this.sufix.getCompiled();
+			dr_elem.sufix = this.sufix.getCompiled(dr_elem.elem_decl);
 		if (this.filter != null)
 			dr_elem.filter = this.filter.getCompiled();
-		if (this.elpar != null && this.elpar.dnode != null)
-			dr_elem.elpar = this.elpar.dnode.getCompiled();
+	}
+
+}
+
+@ThisIsANode(lang=SyntaxLang)
+public class SyntaxListWrapper extends SyntaxAttr {
+	@nodeAttr public SyntaxElem						prefix;
+	@nodeAttr public SyntaxElem						sufix;
+	@nodeAttr public SyntaxList						list;
+
+	public SyntaxListWrapper() {
+		this.list = new SyntaxList();
+	}
+
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "list" && data instanceof SyntaxList) {
+			this.name = ((SyntaxList)data).name;
+		}
+		super.callbackChildChanged(ct, attr, data);
+	}
+
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxListWrapper dr_elem = new Draw_SyntaxListWrapper(elem_decl);
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxListWrapper dr_elem = (Draw_SyntaxListWrapper)_dr_elem;
+		super.fillCompiled(dr_elem);
+		if (this.prefix != null)
+			dr_elem.prefix = this.prefix.getCompiled(dr_elem.elem_decl);
+		if (this.sufix != null)
+			dr_elem.sufix = this.sufix.getCompiled(dr_elem.elem_decl);
+		if (this.list != null)
+			dr_elem.list = (Draw_SyntaxList)this.list.getCompiled(dr_elem.elem_decl);
 	}
 
 }
@@ -995,23 +1046,11 @@ public class SyntaxTreeBranch extends SyntaxAttr {
 	@nodeAttr public SyntaxElem						folded;
 	@nodeAttr public SyntaxElem						element;
 	@nodeAttr public CalcOption						filter;
-	@nodeAttr public SymbolRef<AParagraphLayout>	elpar;
 
 	public SyntaxTreeBranch() {}
 
-	public void preResolveOut() {
-		super.preResolveOut();
-		if (elpar != null && elpar.name != null && elpar.name != "") {
-			AParagraphLayout@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,elpar.name)))
-				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+elpar.name+"'");
-			else if (elpar.symbol != d)
-				elpar.symbol = d;
-		}
-	}	
-
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxTreeBranch dr_elem = new Draw_SyntaxTreeBranch();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxTreeBranch dr_elem = new Draw_SyntaxTreeBranch(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1020,13 +1059,11 @@ public class SyntaxTreeBranch extends SyntaxAttr {
 		Draw_SyntaxTreeBranch dr_elem = (Draw_SyntaxTreeBranch)_dr_elem;
 		super.fillCompiled(dr_elem);
 		if (this.folded != null)
-			dr_elem.folded = this.folded.getCompiled();
+			dr_elem.folded = this.folded.getCompiled(dr_elem.elem_decl);
 		if (this.element != null)
-			dr_elem.element = this.element.getCompiled();
+			dr_elem.element = this.element.getCompiled(dr_elem.elem_decl);
 		if (this.filter != null)
 			dr_elem.filter = this.filter.getCompiled();
-		if (this.elpar != null && this.elpar.dnode != null)
-			dr_elem.elpar = this.elpar.dnode.getCompiled();
 	}
 }
 
@@ -1061,8 +1098,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxIdentAttr dr_elem = new Draw_SyntaxIdentAttr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxIdentAttr dr_elem = new Draw_SyntaxIdentAttr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1079,8 +1116,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 public class SyntaxCharAttr extends SyntaxAttr {
 	public SyntaxCharAttr() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxCharAttr dr_elem = new Draw_SyntaxCharAttr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxCharAttr dr_elem = new Draw_SyntaxCharAttr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1090,8 +1127,8 @@ public class SyntaxCharAttr extends SyntaxAttr {
 public class SyntaxStrAttr extends SyntaxAttr {
 	public SyntaxStrAttr() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxStrAttr dr_elem = new Draw_SyntaxStrAttr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxStrAttr dr_elem = new Draw_SyntaxStrAttr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1101,8 +1138,8 @@ public class SyntaxStrAttr extends SyntaxAttr {
 public class SyntaxXmlStrAttr extends SyntaxAttr {
 	public SyntaxXmlStrAttr() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxXmlStrAttr dr_elem = new Draw_SyntaxXmlStrAttr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxXmlStrAttr dr_elem = new Draw_SyntaxXmlStrAttr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1114,8 +1151,8 @@ public class SyntaxSet extends SyntaxElem {
 	@nodeAttr public SyntaxElem∅	elements;
 	@nodeAttr public boolean		nested_function_lookup;
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxSet dr_elem = new Draw_SyntaxSet();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxSet dr_elem = new Draw_SyntaxSet(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1125,7 +1162,7 @@ public class SyntaxSet extends SyntaxElem {
 		super.fillCompiled(dr_elem);
 		dr_elem.elements = new Draw_SyntaxElem[this.elements.length];
 		for (int i=0; i < dr_elem.elements.length; i++)
-			dr_elem.elements[i] = this.elements[i].getCompiled();
+			dr_elem.elements[i] = this.elements[i].getCompiled(dr_elem.elem_decl);
 		dr_elem.nested_function_lookup = this.nested_function_lookup;
 	}
 }
@@ -1138,8 +1175,8 @@ public class SyntaxNode extends SyntaxAttr {
 		this.attr_slot = ANode.nodeattr$this;
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxNode dr_elem = new Draw_SyntaxNode();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxNode dr_elem = new Draw_SyntaxNode(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1161,15 +1198,15 @@ public class SyntaxSwitch extends SyntaxElem {
 		Draw_SyntaxSwitch dr_elem = (Draw_SyntaxSwitch)_dr_elem;
 		super.fillCompiled(dr_elem);
 		if (this.prefix != null)
-			dr_elem.prefix = (Draw_SyntaxToken)this.prefix.getCompiled();
+			dr_elem.prefix = (Draw_SyntaxToken)this.prefix.getCompiled(dr_elem.elem_decl);
 		if (this.target_syntax != null)
 			dr_elem.target_syntax = (Draw_ATextSyntax)this.target_syntax.getCompiled();
 		if (this.suffix != null)
-			dr_elem.suffix = (Draw_SyntaxToken)this.suffix.getCompiled();
+			dr_elem.suffix = (Draw_SyntaxToken)this.suffix.getCompiled(dr_elem.elem_decl);
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxSwitch dr_elem = new Draw_SyntaxSwitch();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxSwitch dr_elem = new Draw_SyntaxSwitch(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1180,8 +1217,8 @@ public class SyntaxSwitch extends SyntaxElem {
 public class SyntaxSpace extends SyntaxElem {
 	public SyntaxSpace() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxSpace dr_elem = new Draw_SyntaxSpace();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxSpace dr_elem = new Draw_SyntaxSpace(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1398,8 +1435,8 @@ public class SyntaxOptional extends SyntaxElem {
 		this.opt_false = opt_false;
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxOptional dr_elem = new Draw_SyntaxOptional();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxOptional dr_elem = new Draw_SyntaxOptional(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1409,9 +1446,9 @@ public class SyntaxOptional extends SyntaxElem {
 		super.fillCompiled(dr_elem);
 		dr_elem.calculator = this.calculator.getCompiled();
 		if (this.opt_true != null)
-			dr_elem.opt_true = this.opt_true.getCompiled();
+			dr_elem.opt_true = this.opt_true.getCompiled(dr_elem.elem_decl);
 		if (this.opt_false != null)
-			dr_elem.opt_false = this.opt_false.getCompiled();
+			dr_elem.opt_false = this.opt_false.getCompiled(dr_elem.elem_decl);
 	}
 }
 
@@ -1421,8 +1458,8 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 
 	public SyntaxEnumChoice() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxEnumChoice dr_elem = new Draw_SyntaxEnumChoice();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxEnumChoice dr_elem = new Draw_SyntaxEnumChoice(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1432,7 +1469,7 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 		super.fillCompiled(dr_elem);
 		dr_elem.elements = new Draw_SyntaxElem[this.elements.length];
 		for (int i=0; i < dr_elem.elements.length; i++)
-			dr_elem.elements[i] = this.elements[i].getCompiled();
+			dr_elem.elements[i] = this.elements[i].getCompiled(dr_elem.elem_decl);
 	}
 }
 
@@ -1449,8 +1486,8 @@ public class SyntaxFolder extends SyntaxElem {
 		this.unfolded = unfolded;
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxFolder dr_elem = new Draw_SyntaxFolder();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxFolder dr_elem = new Draw_SyntaxFolder(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -1458,8 +1495,8 @@ public class SyntaxFolder extends SyntaxElem {
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
 		Draw_SyntaxFolder dr_elem = (Draw_SyntaxFolder)_dr_elem;
 		super.fillCompiled(dr_elem);
-		dr_elem.folded = this.folded.getCompiled();
-		dr_elem.unfolded = this.unfolded.getCompiled();
+		dr_elem.folded = this.folded.getCompiled(dr_elem.elem_decl);
+		dr_elem.unfolded = this.unfolded.getCompiled(dr_elem.elem_decl);
 		dr_elem.folded_by_default = this.folded_by_default;
 	}
 }

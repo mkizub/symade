@@ -1148,9 +1148,6 @@
           <in_syntax>
            <core:SymbolRef name='syntax-file-package' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='TypeNameRef' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>&lt;package declaration></text>
@@ -1181,21 +1178,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>members</name>
-          <expected_types>
-           <core:SymbolRef name='Import' />
-           <core:SymbolRef name='Opdef' />
-           <core:SymbolRef name='TypeAssign' />
-           <core:SymbolRef name='TypeConstr' />
-           <core:SymbolRef name='NameSpace' />
-           <core:SymbolRef name='MetaTypeDecl' />
-           <core:SymbolRef name='KievSyntax' />
-           <core:SymbolRef name='KievView' />
-           <core:SymbolRef name='PizzaCase' />
-           <core:SymbolRef name='JavaAnnotation' />
-           <core:SymbolRef name='JavaEnum' />
-           <core:SymbolRef name='JavaInterface' />
-           <core:SymbolRef name='JavaClass' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>&lt;declarations></text>
@@ -1660,9 +1642,6 @@
          </syntax:SyntaxToken>
         </prefix>
         <name>super_types</name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-TypeRef' />
-        </expected_types>
         <empty>
          <syntax:SyntaxPlaceHolder>
           <text>extends &lt;type></text>
@@ -1714,13 +1693,6 @@
          <core:SymbolRef name='par-indented' />
         </elpar>
         <name>members</name>
-        <expected_types>
-         <core:SymbolRef name='MethodImpl' />
-         <core:SymbolRef name='RuleMethod' />
-         <core:SymbolRef name='Initializer' />
-         <core:SymbolRef name='Constructor' />
-         <core:SymbolRef name='Field' />
-        </expected_types>
         <empty>
          <syntax:SyntaxToken>
           <text>{}</text>
@@ -1976,11 +1948,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>type_ref</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>;</text>
@@ -2065,11 +2032,6 @@
            </syntax:SyntaxSet>
           </element>
           <name>super_types</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -2097,11 +2059,6 @@
            </syntax:SyntaxSet>
           </element>
           <name>lower_bound</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -2233,11 +2190,6 @@
              </syntax:SyntaxToken>
             </prefix>
             <name>super_types</name>
-            <expected_types>
-             <core:SymbolRef name='TypeRef' />
-             <core:SymbolRef name='TypeNameRef' />
-             <core:SymbolRef name='TypeExpr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxElemRef>
               <decl>
@@ -2273,11 +2225,6 @@
              </syntax:SyntaxToken>
             </prefix>
             <name>lower_bound</name>
-            <expected_types>
-             <core:SymbolRef name='TypeRef' />
-             <core:SymbolRef name='TypeNameRef' />
-             <core:SymbolRef name='TypeExpr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxElemRef>
               <decl>
@@ -2372,9 +2319,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeConstr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -2587,9 +2531,6 @@
            </syntax:SyntaxOptional>
            <syntax:SyntaxSubAttr>
             <name>init</name>
-            <expected_types>
-             <core:SymbolRef name='NewEnumExpr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxPlaceHolder>
               <text>()</text>
@@ -2687,9 +2628,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeConstr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -2738,9 +2676,6 @@
              </syntax:SyntaxToken>
             </sufix>
             <name>case_fields</name>
-            <expected_types>
-             <core:SymbolRef name='Field' />
-            </expected_types>
            </syntax:SyntaxList>
           </opt_true>
          </syntax:SyntaxOptional>
@@ -2883,11 +2818,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3051,11 +2981,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3165,9 +3090,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeConstr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3222,9 +3144,6 @@
          </syntax:SyntaxElemRef>
          <syntax:SyntaxSubAttr>
           <name>vtype</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxIdentAttr>
           <decl>
@@ -3286,9 +3205,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>init</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxSpace />
             </empty>
@@ -3327,9 +3243,6 @@
            </syntax:SyntaxElemRef>
            <syntax:SyntaxSubAttr>
             <name>vtype</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-TypeRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxOptional>
             <calculator>
@@ -3348,9 +3261,6 @@
                </syntax:SyntaxToken>
                <syntax:SyntaxSubAttr>
                 <name>stype</name>
-                <expected_types>
-                 <core:SymbolRef name='stx-types-TypeRef' />
-                </expected_types>
                </syntax:SyntaxSubAttr>
               </elements>
               <nested_function_lookup>false</nested_function_lookup>
@@ -3436,9 +3346,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>targs</name>
-          <expected_types>
-           <core:SymbolRef name='TypeConstr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3450,9 +3357,6 @@
          </syntax:SyntaxList>
          <syntax:SyntaxSubAttr>
           <name>type_ret</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxIdentAttr>
           <decl>
@@ -3542,9 +3446,6 @@
            </syntax:CalcOptionNot>
           </filter>
           <name>params</name>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
          </syntax:SyntaxList>
          <syntax:SyntaxList>
           <element>
@@ -3562,10 +3463,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>aliases</name>
-          <expected_types>
-           <core:SymbolRef name='Symbol' />
-           <core:SymbolRef name='ASTOperatorAlias' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3588,9 +3485,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>conditions</name>
-          <expected_types>
-           <core:SymbolRef name='WBCCondition' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3605,10 +3499,6 @@
           <in_syntax>
            <core:SymbolRef name='stx-java-method-body' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-           <core:SymbolRef name='BlockRewr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxToken>
             <text>;</text>
@@ -3670,9 +3560,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>targs</name>
-          <expected_types>
-           <core:SymbolRef name='TypeConstr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3781,9 +3668,6 @@
            </syntax:CalcOptionNot>
           </filter>
           <name>params</name>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
          </syntax:SyntaxList>
          <syntax:SyntaxList>
           <element>
@@ -3801,10 +3685,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>aliases</name>
-          <expected_types>
-           <core:SymbolRef name='Symbol' />
-           <core:SymbolRef name='ASTOperatorAlias' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3821,9 +3701,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>localvars</name>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3846,9 +3723,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>conditions</name>
-          <expected_types>
-           <core:SymbolRef name='WBCCondition' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -3863,9 +3737,6 @@
           <in_syntax>
            <core:SymbolRef name='stx-java-method-body' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='RuleBlock' />
-          </expected_types>
           <empty>
            <syntax:SyntaxToken>
             <text>;</text>
@@ -3927,9 +3798,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>targs</name>
-          <expected_types>
-           <core:SymbolRef name='TypeConstr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -4013,9 +3881,6 @@
            </syntax:CalcOptionNot>
           </filter>
           <name>params</name>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
          </syntax:SyntaxList>
          <syntax:SyntaxList>
           <element>
@@ -4030,9 +3895,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>conditions</name>
-          <expected_types>
-           <core:SymbolRef name='WBCCondition' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -4047,9 +3909,6 @@
           <in_syntax>
            <core:SymbolRef name='stx-java-method-body' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <empty>
            <syntax:SyntaxToken>
             <text>;</text>
@@ -4265,9 +4124,6 @@
          </syntax:SyntaxElemRef>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <funcs>
            <syntax:SyntaxFunctions>
             <funcs>
@@ -4387,23 +4243,6 @@
          </syntax:SyntaxNode>
         </element>
         <name>metas</name>
-        <expected_types>
-         <core:SymbolRef name='UserMeta' />
-         <core:SymbolRef name='MetaAccess' />
-         <core:SymbolRef name='MetaUnerasable' />
-         <core:SymbolRef name='MetaSingleton' />
-         <core:SymbolRef name='MetaForward' />
-         <core:SymbolRef name='MetaVirtual' />
-         <core:SymbolRef name='MetaMacro' />
-         <core:SymbolRef name='MetaStatic' />
-         <core:SymbolRef name='MetaAbstract' />
-         <core:SymbolRef name='MetaFinal' />
-         <core:SymbolRef name='MetaBridge' />
-         <core:SymbolRef name='MetaVolatile' />
-         <core:SymbolRef name='MetaNative' />
-         <core:SymbolRef name='MetaSynchronized' />
-         <core:SymbolRef name='MetaTransient' />
-        </expected_types>
         <empty>
          <syntax:SyntaxPlaceHolder>
           <text>(@)</text>
@@ -4430,23 +4269,6 @@
          </syntax:SyntaxNode>
         </element>
         <name>metas</name>
-        <expected_types>
-         <core:SymbolRef name='UserMeta' />
-         <core:SymbolRef name='MetaAccess' />
-         <core:SymbolRef name='MetaUnerasable' />
-         <core:SymbolRef name='MetaSingleton' />
-         <core:SymbolRef name='MetaForward' />
-         <core:SymbolRef name='MetaVirtual' />
-         <core:SymbolRef name='MetaMacro' />
-         <core:SymbolRef name='MetaStatic' />
-         <core:SymbolRef name='MetaAbstract' />
-         <core:SymbolRef name='MetaFinal' />
-         <core:SymbolRef name='MetaBridge' />
-         <core:SymbolRef name='MetaVolatile' />
-         <core:SymbolRef name='MetaNative' />
-         <core:SymbolRef name='MetaSynchronized' />
-         <core:SymbolRef name='MetaTransient' />
-        </expected_types>
         <empty>
          <syntax:SyntaxPlaceHolder>
           <text>(@)</text>
@@ -4835,9 +4657,6 @@
              <core:SymbolRef name='ident-template' />
             </decl>
             <name>decl</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
             <fmt>
              <core:SymbolRef name='fmt-meta' />
             </fmt>
@@ -4894,10 +4713,6 @@
              <core:SymbolRef name='par-indented' />
             </elpar>
             <name>values</name>
-            <expected_types>
-             <core:SymbolRef name='MetaValueScalar' />
-             <core:SymbolRef name='MetaValueArray' />
-            </expected_types>
             <empty>
              <syntax:SyntaxSpace />
             </empty>
@@ -4925,9 +4740,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>metas</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Meta' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -4967,9 +4779,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>value</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>&lt;value></text>
@@ -5044,9 +4853,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>values</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -5169,11 +4975,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -5260,11 +5061,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='TypeRef' />
-           <core:SymbolRef name='TypeNameRef' />
-           <core:SymbolRef name='TypeExpr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -5335,9 +5131,6 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>arg</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -5388,12 +5181,6 @@
          <core:SymbolRef name='par-indented' />
         </elpar>
         <name>stats</name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-Stat' />
-         <core:SymbolRef name='stx-types-Expr' />
-         <core:SymbolRef name='stx-types-Macro' />
-         <core:SymbolRef name='stx-types-Decl' />
-        </expected_types>
         <empty>
          <syntax:SyntaxToken>
           <text>{}</text>
@@ -5439,12 +5226,6 @@
          <core:SymbolRef name='par-indented' />
         </elpar>
         <name>stats</name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-Stat' />
-         <core:SymbolRef name='stx-types-Expr' />
-         <core:SymbolRef name='stx-types-Macro' />
-         <core:SymbolRef name='stx-types-Decl' />
-        </expected_types>
         <empty>
          <syntax:SyntaxToken>
           <text>#{}</text>
@@ -5668,9 +5449,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>obj</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>5</priority>
@@ -5744,9 +5522,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>expr</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>1</priority>
@@ -5773,9 +5548,6 @@
               <attr>
                <syntax:SyntaxSubAttr>
                 <name>bt_expr</name>
-                <expected_types>
-                 <core:SymbolRef name='stx-types-Expr' />
-                </expected_types>
                </syntax:SyntaxSubAttr>
               </attr>
               <priority>1</priority>
@@ -5804,9 +5576,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>expr</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>1</priority>
@@ -5833,9 +5602,6 @@
               <attr>
                <syntax:SyntaxSubAttr>
                 <name>bt_expr</name>
-                <expected_types>
-                 <core:SymbolRef name='stx-types-Expr' />
-                </expected_types>
                </syntax:SyntaxSubAttr>
               </attr>
               <priority>1</priority>
@@ -5937,10 +5703,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>obj</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-             <core:SymbolRef name='stx-types-TypeRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>240</priority>
@@ -5991,9 +5753,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>obj</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>240</priority>
@@ -6045,9 +5804,6 @@
         <obj_elem>
          <syntax:SyntaxSubAttr>
           <name>obj</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </obj_elem>
         <separator>
@@ -6122,9 +5878,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>obj</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>230</priority>
@@ -6223,10 +5976,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>obj</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-TypeRef' />
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>240</priority>
@@ -6290,9 +6039,6 @@
              </syntax:SyntaxToken>
             </sufix>
             <name>args</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxList>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
@@ -6310,10 +6056,6 @@
         <elements>
          <syntax:SyntaxSubAttr>
           <name>obj</name>
-          <expected_types>
-           <core:SymbolRef name='ThisExpr' />
-           <core:SymbolRef name='SuperExpr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxList>
           <element>
@@ -6366,9 +6108,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>expr</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
           </attr>
           <priority>240</priority>
@@ -6532,9 +6271,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>ntype</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-TypeRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxList>
             <element>
@@ -6570,9 +6306,6 @@
              </syntax:SyntaxToken>
             </sufix>
             <name>args</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxToken>
               <text> ()</text>
@@ -6635,9 +6368,6 @@
          </syntax:SyntaxToken>
         </sufix>
         <name>args</name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-Expr' />
-        </expected_types>
        </syntax:SyntaxList>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -6842,9 +6572,6 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>lval</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -6862,9 +6589,6 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -6882,15 +6606,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr1</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr2</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -6908,15 +6626,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>lval</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>value</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -6934,9 +6646,6 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -6954,15 +6663,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr1</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr2</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -6980,15 +6683,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr1</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr2</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7006,15 +6703,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr1</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr2</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7032,15 +6723,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr1</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr2</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7058,15 +6743,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>itype</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7084,15 +6763,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>ctype</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7110,15 +6783,9 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>ctype</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7136,21 +6803,12 @@
         <attrs>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr1</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>expr2</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </attrs>
         <template>
@@ -7264,9 +6922,6 @@
            </syntax:SyntaxOptional>
            <syntax:SyntaxSubAttr>
             <name>val</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxSpace />
             </empty>
@@ -7305,9 +6960,6 @@
              </syntax:SyntaxToken>
             </sufix>
             <name>pattern</name>
-            <expected_types>
-             <core:SymbolRef name='LVar' />
-            </expected_types>
             <empty>
              <syntax:SyntaxElemRef>
               <decl>
@@ -7358,9 +7010,6 @@
           <in_syntax>
            <core:SymbolRef name='syntax-java-decl-simple' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -7370,9 +7019,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -7397,9 +7043,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -7467,9 +7110,6 @@
          </syntax:SyntaxElemRef>
          <syntax:SyntaxSubAttr>
           <name>vtype</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxIdentAttr>
           <decl>
@@ -7520,9 +7160,6 @@
           <attr>
            <syntax:SyntaxSubAttr>
             <name>init</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-Expr' />
-            </expected_types>
             <empty>
              <syntax:SyntaxSpace />
             </empty>
@@ -7561,9 +7198,6 @@
            </syntax:SyntaxElemRef>
            <syntax:SyntaxSubAttr>
             <name>vtype</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-TypeRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxIdentAttr>
             <decl>
@@ -7614,9 +7248,6 @@
            </syntax:SyntaxElemRef>
            <syntax:SyntaxSubAttr>
             <name>vtype</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-TypeRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxIdentAttr>
             <decl>
@@ -7667,9 +7298,6 @@
             <attr>
              <syntax:SyntaxSubAttr>
               <name>init</name>
-              <expected_types>
-               <core:SymbolRef name='stx-types-Expr' />
-              </expected_types>
               <empty>
                <syntax:SyntaxSpace />
               </empty>
@@ -7700,9 +7328,6 @@
            </syntax:SyntaxElemRef>
            <syntax:SyntaxSubAttr>
             <name>vtype</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-TypeRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxIdentAttr>
             <decl>
@@ -7753,9 +7378,6 @@
             <attr>
              <syntax:SyntaxSubAttr>
               <name>init</name>
-              <expected_types>
-               <core:SymbolRef name='stx-types-Expr' />
-              </expected_types>
               <empty>
                <syntax:SyntaxSpace />
               </empty>
@@ -7818,10 +7440,6 @@
              </syntax:SyntaxIdentAttr>
              <syntax:SyntaxSubAttr>
               <name>vtype</name>
-              <expected_types>
-               <core:SymbolRef name='TypeDeclRef' />
-               <core:SymbolRef name='TypeExpr' />
-              </expected_types>
              </syntax:SyntaxSubAttr>
              <syntax:SyntaxOptional>
               <calculator>
@@ -7842,9 +7460,6 @@
               <attr>
                <syntax:SyntaxSubAttr>
                 <name>init</name>
-                <expected_types>
-                 <core:SymbolRef name='stx-types-Expr' />
-                </expected_types>
                 <empty>
                  <syntax:SyntaxSpace />
                 </empty>
@@ -7905,10 +7520,6 @@
              </syntax:SyntaxIdentAttr>
              <syntax:SyntaxSubAttr>
               <name>vtype</name>
-              <expected_types>
-               <core:SymbolRef name='TypeDeclRef' />
-               <core:SymbolRef name='TypeExpr' />
-              </expected_types>
              </syntax:SyntaxSubAttr>
              <syntax:SyntaxOptional>
               <calculator>
@@ -7929,9 +7540,6 @@
               <attr>
                <syntax:SyntaxSubAttr>
                 <name>init</name>
-                <expected_types>
-                 <core:SymbolRef name='stx-types-Expr' />
-                </expected_types>
                 <empty>
                  <syntax:SyntaxSpace />
                 </empty>
@@ -7960,9 +7568,6 @@
         <elements>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>(void)</text>
@@ -8023,9 +7628,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8059,9 +7661,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>;</text>
@@ -8127,18 +7726,12 @@
         <elements>
          <syntax:SyntaxSubAttr>
           <name>lbl</name>
-          <expected_types>
-           <core:SymbolRef name='Label' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-unindented' />
           </par>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>stat</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -8295,9 +7888,6 @@
          </syntax:SyntaxOptional>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8345,9 +7935,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-if-cond' />
           </par>
@@ -8360,11 +7947,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>thenSt</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Macro' />
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8386,11 +7968,6 @@
          </syntax:SyntaxOptional>
          <syntax:SyntaxSubAttr>
           <name>elseSt</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Macro' />
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8424,9 +8001,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -8436,11 +8010,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>thenSt</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Macro' />
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8453,11 +8022,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>elseSt</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Macro' />
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block-if' />
           </par>
@@ -8488,9 +8052,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -8500,9 +8061,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8527,9 +8085,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8548,9 +8103,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>);</text>
@@ -8622,10 +8174,6 @@
            </syntax:SyntaxToken>
           </separator>
           <name>inits</name>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxList>
          <syntax:SyntaxToken>
           <text>;</text>
@@ -8635,9 +8183,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8650,9 +8195,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>iter</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8665,9 +8207,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8717,18 +8256,12 @@
           <in_syntax>
            <core:SymbolRef name='syntax-for-java' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>container</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxOptional>
           <calculator>
@@ -8747,9 +8280,6 @@
          </syntax:SyntaxOptional>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8762,9 +8292,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8809,9 +8336,6 @@
           <in_syntax>
            <core:SymbolRef name='syntax-java-decl-group' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='LVar' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>in</text>
@@ -8822,9 +8346,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>container</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxOptional>
           <calculator>
@@ -8844,10 +8365,6 @@
          </syntax:SyntaxOptional>
          <syntax:SyntaxSubAttr>
           <name>cond</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-           <core:SymbolRef name='stx-types-Macro' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -8860,9 +8377,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Stat' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -8893,9 +8407,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>sel</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -8932,11 +8443,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>stats</name>
-          <expected_types>
-           <core:SymbolRef name='CaseLabel' />
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Decl' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -8964,9 +8470,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>sel</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -9003,11 +8506,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>stats</name>
-          <expected_types>
-           <core:SymbolRef name='CaseLabel' />
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Decl' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -9035,9 +8533,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>sel</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -9074,11 +8569,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>stats</name>
-          <expected_types>
-           <core:SymbolRef name='CaseLabel' />
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Decl' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -9106,9 +8596,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>sel</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -9145,11 +8632,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>stats</name>
-          <expected_types>
-           <core:SymbolRef name='CaseLabel' />
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Decl' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -9177,9 +8659,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>sel</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -9216,11 +8695,6 @@
            <core:SymbolRef name='par-indented' />
           </elpar>
           <name>stats</name>
-          <expected_types>
-           <core:SymbolRef name='CaseLabel' />
-           <core:SymbolRef name='stx-types-Stat' />
-           <core:SymbolRef name='stx-types-Decl' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -9258,9 +8732,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -9272,9 +8743,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>catchers</name>
-          <expected_types>
-           <core:SymbolRef name='CatchInfo' />
-          </expected_types>
           <empty>
            <syntax:SyntaxElemRef>
             <decl>
@@ -9286,9 +8754,6 @@
          </syntax:SyntaxList>
          <syntax:SyntaxSubAttr>
           <name>finally_catcher</name>
-          <expected_types>
-           <core:SymbolRef name='FinallyInfo' />
-          </expected_types>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
@@ -9319,9 +8784,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -9331,9 +8793,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -9364,9 +8823,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -9376,9 +8832,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>body</name>
-          <expected_types>
-           <core:SymbolRef name='Block' />
-          </expected_types>
           <par>
            <core:SymbolRef name='par-indented-block' />
           </par>
@@ -9403,9 +8856,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>var</name>
-          <expected_types>
-           <core:SymbolRef name='RewritePattern' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>:</text>
@@ -9493,9 +8943,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>vars</name>
-          <expected_types>
-           <core:SymbolRef name='RewritePattern' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -9549,9 +8996,6 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>args</name>
-          <expected_types>
-           <core:SymbolRef name='RewriteNodeArg' />
-          </expected_types>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -9657,9 +9101,6 @@
          </syntax:SyntaxToken>
         </sufix>
         <name>nodes</name>
-        <expected_types>
-         <core:SymbolRef name='EToken' />
-        </expected_types>
        </syntax:SyntaxList>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -9925,9 +9366,6 @@
         <elements>
          <syntax:SyntaxSubAttr>
           <name>obj</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>↣</text>
@@ -9966,9 +9404,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>]</text>
@@ -9998,9 +9433,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>mtype</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>:</text>
@@ -10011,9 +9443,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>req_type</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-TypeRef' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>any</text>
@@ -10044,10 +9473,6 @@
         <elements>
          <syntax:SyntaxSubAttr>
           <name>expr</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Macro' />
-           <core:SymbolRef name='stx-types-Expr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>has</text>
@@ -10061,9 +9486,6 @@
           <in_syntax>
            <core:SymbolRef name='syntax-java-meta' />
           </in_syntax>
-          <expected_types>
-           <core:SymbolRef name='stx-types-Meta' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>&lt;meta></text>

@@ -39,29 +39,30 @@ public class ProjectView extends InfoView {
 		view_canvas.requestFocus();
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
-		DrawTerm dr = view_canvas.first_visible;
-		for (; dr != null; dr = dr.getNextLeaf()) {
-			int w = dr.getWidth();
-			int h = dr.getHeight();
-			if (dr.getX() < x && dr.getY() < y && dr.getX()+w >= x && dr.getY()+h >= y) {
+		DrawTerm dr_vis = view_canvas.first_visible;
+		GfxDrawTermFormatInfo dr = dr_vis == null ? null : dr_vis.getGxfFmtInfo();
+		for (; dr != null; dr = dr.getNext()) {
+			int w = dr.width;
+			int h = dr.height;
+			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
-			if (dr == view_canvas.last_visible)
+			if (dr.dterm == view_canvas.last_visible)
 				return;
 		}
 		if (dr == null)
 			return;
 		e.consume();
-		cur_dr = dr;
+		cur_dr = dr.dterm;
 		if (e.getClickCount() >= 2) {
-			if (dr.parent() instanceof DrawTreeBranch) {
-				DrawTreeBranch dtb = (DrawTreeBranch)dr.parent();
+			if (cur_dr.parent() instanceof DrawTreeBranch) {
+				DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent();
 				dtb.setDrawFolded(!dtb.getDrawFolded());
 				formatAndPaint(true);
 				return;
 			}
-			else if (dr.parent() instanceof DrawNonTermSet && dr.parent().parent() instanceof DrawTreeBranch) {
-				DrawTreeBranch dtb = (DrawTreeBranch)dr.parent().parent();
+			else if (cur_dr.parent() instanceof DrawNonTermSet && cur_dr.parent().parent() instanceof DrawTreeBranch) {
+				DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent().parent();
 				dtb.setDrawFolded(!dtb.getDrawFolded());
 				formatAndPaint(true);
 				return;

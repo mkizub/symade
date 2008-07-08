@@ -100,7 +100,7 @@ public class TextFormatter extends AbstractFormatter {
 	public void format(ANode node, Drawable dr, Draw_ATextSyntax syntax) {
 		dr_root = getDrawable(node, dr, syntax);
 		{
-			DrawContext ctx = new DrawContext(this,null,1000);
+			TxtDrawContext ctx = new TxtDrawContext(this,1000);
 			try {
 				dr_root.preFormat(ctx, dr_root.syntax, node);
 			} catch (ChangeRootException e) {
@@ -121,7 +121,7 @@ public class TextFormatter extends AbstractFormatter {
 		{
 			dlb_root = new DrawLayoutBlock();
 			dr_root.postFormat(dlb_root);
-			DrawContext ctx = new DrawContext(this,null,1000);
+			TxtDrawContext ctx = new TxtDrawContext(this,1000);
 			ctx.postFormat(dlb_root);
 			//dr_root.postFormat(ctx);
 		}
@@ -129,34 +129,24 @@ public class TextFormatter extends AbstractFormatter {
 		int lineno = 1;
 		int line_indent = 0;
 		int next_indent = line_indent;
-		int y = 0;
 		DrawTerm first = dr_root.getFirstLeaf();
-		DrawTerm line_start = first;
-		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
-			dr.y = y;
-			if (dr.isUnvisible()) {
-				dr.width = 0;
-				dr.height = 1;
-				continue;
-			}
+		if (first == null)
+			return;
+		TxtDrawTermFormatInfo line_start = (TxtDrawTermFormatInfo)first.dt_fmt;
+		for (TxtDrawTermFormatInfo dr=line_start; dr != null; dr = dr.getNext()) {
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
-				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
+				for (TxtDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
 					l.lineno = lineno;
-					l.y = y;
-					l.height = 1;
 					if (l == dr)
 						break;
 				}
-				y += dr.lnk_next.the_size;
-				line_start = dr.getNextLeaf();
-				lineno++;
+				lineno += dr.lnk_next.the_size;
+				line_start = dr.getNext();
 			}
 		}
 		// fill the rest
-		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
+		for (TxtDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
 			l.lineno = lineno;
-			l.y = y;
-			l.height = 1;
 		}
 	}
 }
@@ -171,6 +161,8 @@ public class GfxFormatter extends AbstractFormatter {
 		this.width = 100;
 	}
 	
+	public Graphics2D getGfx() { return gfx; }
+	
 	public void setWidth(int w) {
 		if (w < 100)
 			this.width = 100;
@@ -181,7 +173,7 @@ public class GfxFormatter extends AbstractFormatter {
 	public void format(ANode node, Drawable dr, Draw_ATextSyntax syntax) {
 		dr_root = getDrawable(node, dr, syntax);
 		{
-			DrawContext ctx = new DrawContext(this,gfx,this.width);
+			GfxDrawContext ctx = new GfxDrawContext(this,this.width);
 			try {
 				dr_root.preFormat(ctx, dr_root.syntax, node);
 			} catch (ChangeRootException e) {
@@ -202,7 +194,7 @@ public class GfxFormatter extends AbstractFormatter {
 		{
 			dlb_root = new DrawLayoutBlock();
 			dr_root.postFormat(dlb_root);
-			DrawContext ctx = new DrawContext(this,gfx,this.width);
+			GfxDrawContext ctx = new GfxDrawContext(this,this.width);
 			ctx.postFormat(dlb_root);
 			//dr_root.postFormat(ctx);
 		}
@@ -214,18 +206,15 @@ public class GfxFormatter extends AbstractFormatter {
 		int next_indent = line_indent;
 		int y = 0;
 		DrawTerm first = dr_root.getFirstLeaf();
-		DrawTerm line_start = first;
-		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
+		if (first == null)
+			return;
+		GfxDrawTermFormatInfo line_start = (GfxDrawTermFormatInfo)first.dt_fmt;
+		for (GfxDrawTermFormatInfo dr=line_start; dr != null; dr = dr.getNext()) {
 			dr.y = y;
-			if (dr.isUnvisible()) {
-				dr.width = 0;
-				dr.height = max_h;
-				continue;
-			}
 			max_h = Math.max(max_h, dr.height);
 			max_b = Math.max(max_b, dr.baseline);
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
-				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
+				for (GfxDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
 					l.lineno = lineno;
 					l.y = y;
 					l.height = max_h;
@@ -236,12 +225,12 @@ public class GfxFormatter extends AbstractFormatter {
 				y += max_h + dr.lnk_next.the_size;
 				max_h = 10;
 				max_b = 0;
-				line_start = dr.getNextLeaf();
+				line_start = dr.getNext();
 				lineno++;
 			}
 		}
 		// fill the rest
-		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
+		for (GfxDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
 			l.lineno = lineno;
 			l.y = y;
 			l.height = max_h;

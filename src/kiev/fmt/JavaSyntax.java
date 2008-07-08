@@ -26,12 +26,12 @@ public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 
 	public Draw_SyntaxJavaCommentTemplate getCompiled() {
 		Draw_SyntaxJavaCommentTemplate dr_decl = new Draw_SyntaxJavaCommentTemplate();
-		dr_decl.elem = this.elem.getCompiled();
-		dr_decl.newline = this.newline.getCompiled();
-		dr_decl.lin_beg = this.lin_beg.getCompiled();
-		dr_decl.doc_beg = this.doc_beg.getCompiled();
-		dr_decl.cmt_beg = this.cmt_beg.getCompiled();
-		dr_decl.cmt_end = this.cmt_end.getCompiled();
+		dr_decl.elem = this.elem.getCompiled(null);
+		dr_decl.newline = this.newline.getCompiled(null);
+		dr_decl.lin_beg = this.lin_beg.getCompiled(null);
+		dr_decl.doc_beg = this.doc_beg.getCompiled(null);
+		dr_decl.cmt_beg = this.cmt_beg.getCompiled(null);
+		dr_decl.cmt_end = this.cmt_end.getCompiled(null);
 		return dr_decl;
 	}
 }
@@ -44,17 +44,17 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 
 	public SyntaxJavaAccessExpr() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxJavaAccessExpr dr_elem = new Draw_SyntaxJavaAccessExpr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxJavaAccessExpr dr_elem = new Draw_SyntaxJavaAccessExpr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
 
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
 		Draw_SyntaxJavaAccessExpr dr_elem = (Draw_SyntaxJavaAccessExpr)_dr_elem;
-		dr_elem.obj_elem = this.obj_elem.getCompiled();
-		dr_elem.separator = (Draw_SyntaxToken)this.separator.getCompiled();
-		dr_elem.fld_elem = this.fld_elem.getCompiled();
+		dr_elem.obj_elem = this.obj_elem.getCompiled(dr_elem.elem_decl);
+		dr_elem.separator = (Draw_SyntaxToken)this.separator.getCompiled(dr_elem.elem_decl);
+		dr_elem.fld_elem = this.fld_elem.getCompiled(dr_elem.elem_decl);
 	}
 }
 
@@ -62,8 +62,8 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 public class SyntaxJavaAccess extends SyntaxElem {
 	public SyntaxJavaAccess() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxJavaAccess dr_elem = new Draw_SyntaxJavaAccess();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxJavaAccess dr_elem = new Draw_SyntaxJavaAccess(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -73,8 +73,8 @@ public class SyntaxJavaAccess extends SyntaxElem {
 public class SyntaxJavaPackedField extends SyntaxElem {
 	public SyntaxJavaPackedField() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxJavaPackedField dr_elem = new Draw_SyntaxJavaPackedField();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxJavaPackedField dr_elem = new Draw_SyntaxJavaPackedField(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -111,8 +111,8 @@ public class SyntaxJavaComment extends SyntaxElem {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxJavaComment dr_elem = new Draw_SyntaxJavaComment();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxJavaComment dr_elem = new Draw_SyntaxJavaComment(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -128,8 +128,8 @@ public class SyntaxJavaComment extends SyntaxElem {
 public class SyntaxJavaConstructorName extends SyntaxElem {
 	public SyntaxJavaConstructorName() {}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxJavaConstructorName dr_elem = new Draw_SyntaxJavaConstructorName();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxJavaConstructorName dr_elem = new Draw_SyntaxJavaConstructorName(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}

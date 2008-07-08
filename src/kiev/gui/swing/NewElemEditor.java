@@ -20,8 +20,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.TextAction;
 
-import kiev.fmt.Draw_SyntaxAttr;
-import kiev.fmt.ExpectedTypeInfo;
+import kiev.fmt.*;
 import kiev.gui.Editor;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
@@ -103,7 +102,19 @@ public abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 
 	public void makeMenu(String title, ANode n, Draw_SyntaxAttr satt) {
 		Menu m = new Menu(title);
-		addItems(m, satt.expected_types, n, satt.name);
+		addItems(m, satt.getExpectedTypes(), n, satt.name);
+		this.menu = makePopupMenu(m);
+		this.menu.addPopupMenuListener(this);
+		int x = editor.cur_elem.dr.getX();
+		int h = editor.cur_elem.dr.getHeight();
+		int y = editor.cur_elem.dr.getY() + h - editor.view_canvas.translated_y;
+		this.menu.show(editor.view_canvas, x, y);
+		editor.startItemEditor(this);
+	}
+
+	public void makeMenu(String title, ANode n, Draw_SyntaxPlaceHolder splh) {
+		Menu m = new Menu(title);
+		addItems(m, splh.getExpectedTypes(), n, splh.attr_name);
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
 		int x = editor.cur_elem.dr.getX();

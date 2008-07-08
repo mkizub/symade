@@ -30,35 +30,13 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import kiev.fmt.DrawCtrl;
-import kiev.fmt.DrawFolded;
-import kiev.fmt.DrawIdent;
-import kiev.fmt.DrawNodeTerm;
-import kiev.fmt.DrawNonTermList;
-import kiev.fmt.DrawOptional;
-import kiev.fmt.DrawPlaceHolder;
-import kiev.fmt.DrawTerm;
-import kiev.fmt.DrawWrapList;
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.fmt.Draw_SyntaxAttr;
-import kiev.fmt.Draw_SyntaxElem;
-import kiev.fmt.Draw_SyntaxFunction;
-import kiev.fmt.Draw_SyntaxPlaceHolder;
-import kiev.fmt.Draw_SyntaxSet;
-import kiev.fmt.Drawable;
+import kiev.fmt.*;
 import kiev.gui.event.ElementEvent;
 import kiev.gui.swing.Canvas;
 import kiev.gui.swing.Window;
 import kiev.vlang.DNode;
 import kiev.vlang.FileUnit;
-import kiev.vtree.ANode;
-import kiev.vtree.ASTNode;
-import kiev.vtree.AttrSlot;
-import kiev.vtree.ExtSpaceAttrSlot;
-import kiev.vtree.ScalarPtr;
-import kiev.vtree.SpaceAttrSlot;
-import kiev.vtree.Transaction;
-import kiev.vtree.TreeWalker;
+import kiev.vtree.*;
 import kiev.gui.swing.ExprEditActions;
 import kiev.gui.swing.FunctionExecutor;
 
@@ -184,12 +162,12 @@ public class Editor extends InfoView implements KeyListener {
 				else if (slot instanceof ExtSpaceAttrSlot)
 					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawNonTermList)p).getInsertIndex(dr, next));
 			}
-			else if (p instanceof DrawWrapList) {
-				slot = ((DrawWrapList)p).slst_attr;
+			else if (p instanceof DrawListWrapper) {
+				slot = ((DrawListWrapper)p).slst_attr;
 				if (slot instanceof SpaceAttrSlot)
-					return new ActionPoint(p,(SpaceAttrSlot)slot,((DrawWrapList)p).getInsertIndex(dr, next));
+					return new ActionPoint(p,(SpaceAttrSlot)slot,((DrawListWrapper)p).getInsertIndex(dr, next));
 				else if (slot instanceof ExtSpaceAttrSlot)
-					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawWrapList)p).getInsertIndex(dr, next));
+					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawListWrapper)p).getInsertIndex(dr, next));
 			}
 			dr = p;
 		}
@@ -305,21 +283,22 @@ public class Editor extends InfoView implements KeyListener {
 		view_canvas.requestFocus();
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
-		DrawTerm dr = view_canvas.first_visible;
-		for (; dr != null; dr = dr.getNextLeaf()) {
-			int w = dr.getWidth();
-			int h = dr.getHeight();
-			if (dr.getX() < x && dr.getY() < y && dr.getX()+w >= x && dr.getY()+h >= y) {
+		DrawTerm dr_vis = view_canvas.first_visible;
+		GfxDrawTermFormatInfo dr = dr_vis == null ? null : dr_vis.getGxfFmtInfo();
+		for (; dr != null; dr = dr.getNext()) {
+			int w = dr.width;
+			int h = dr.height;
+			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
-			if (dr == view_canvas.last_visible)
+			if (dr.dterm == view_canvas.last_visible)
 				return;
 		}
 		if (dr == null)
 			return;
 		e.consume();
-		cur_elem.set(dr);
-		cur_x = cur_elem.dr.getX();
+		cur_elem.set(dr.dterm);
+		cur_x = dr.x;
 		formatAndPaint(false);
 	}
 	
@@ -327,14 +306,15 @@ public class Editor extends InfoView implements KeyListener {
 		view_canvas.requestFocus();
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
-		DrawTerm dr = view_canvas.first_visible;
-		for (; dr != null; dr = dr.getNextLeaf()) {
-			int w = dr.getWidth();
-			int h = dr.getHeight();
-			if (dr.getX() < x && dr.getY() < y && dr.getX()+w >= x && dr.getY()+h >= y) {
+		DrawTerm dr_vis = view_canvas.first_visible;
+		GfxDrawTermFormatInfo dr = dr_vis == null ? null : dr_vis.getGxfFmtInfo();
+		for (; dr != null; dr = dr.getNext()) {
+			int w = dr.width;
+			int h = dr.height;
+			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
 				break;
 			}
-			if (dr == view_canvas.last_visible)
+			if (dr.dterm == view_canvas.last_visible)
 				return;
 		}
 		if (dr == null)
@@ -597,34 +577,41 @@ final class FolderTrigger implements Runnable {
 }
 
 final class PasteElemHere implements Runnable {
-	final ANode      paste_node;
-	final Editor     editor;
-	ScalarPtr  pattr = null;
-	ActionPoint ap = null;
-	PasteElemHere(ANode paste_node, Editor editor, ScalarPtr pattr) {
+	final ANode       paste_node;
+	final Editor      editor;
+	final ANode       into_node;
+	final AttrSlot    attr_slot;
+	final ActionPoint ap;
+	PasteElemHere(ANode paste_node, Editor editor, ANode into_node, AttrSlot attr_slot) {
 		this.paste_node = paste_node;
 		this.editor = editor;
-		this.pattr = pattr;
+		this.into_node = into_node;
+		this.attr_slot = attr_slot;
+		this.ap = null;
 	}
 	PasteElemHere(ANode paste_node, Editor editor, ActionPoint ap) {
 		this.paste_node = paste_node;
 		this.editor = editor;
+		this.into_node = null;
+		this.attr_slot = null;
 		this.ap = ap;
 	}
 	public void run() {
-		ANode node = this.paste_node;
+		ANode paste_node = this.paste_node;
 		editor.changes.push(Transaction.open("Editor.java:PasteElemHere"));
 		try {
-			if (node.isAttached())
-				node = node.ncopy();
-			if (pattr != null) {
-				if (((Object)pattr.slot) instanceof SpaceAttrSlot)
-					((SpaceAttrSlot)((Object)pattr.slot)).insert(pattr.node, 0, node);
-				else
-					pattr.set(node);
+			if (paste_node.isAttached())
+				paste_node = paste_node.ncopy();
+			if (attr_slot != null) {
+				if (attr_slot instanceof SpaceAttrSlot)
+					((SpaceAttrSlot)attr_slot).insert(into_node, 0, paste_node);
+				else if (attr_slot instanceof ExtSpaceAttrSlot)
+					((ExtSpaceAttrSlot)attr_slot).add(into_node, paste_node);
+				else if (attr_slot instanceof ScalarAttrSlot)
+					((ScalarAttrSlot)attr_slot).set(into_node, paste_node);
 			}
 			else if (ap != null)
-				((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
+				((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,paste_node);
 		} finally {
 			editor.changes.peek().close();
 		}
@@ -653,16 +640,20 @@ final class PasteElemHere implements Runnable {
 				DrawNodeTerm dt = (DrawNodeTerm)dr;
 				ScalarPtr pattr = dt.getScalarPtr();
 				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
-					return new PasteElemHere(node, editor, pattr);
+					return new PasteElemHere(node, editor, pattr.node, pattr.slot);
 			}
 			// try paste as a node into placeholder
-			if (dr instanceof DrawPlaceHolder && ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr != null) {
-				Draw_SyntaxAttr sa = ((Draw_SyntaxPlaceHolder)dr.syntax).parent_syntax_attr;
-				ScalarPtr pattr = dr.get$drnode().getScalarPtr(sa.name);
-				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
-					return new PasteElemHere(node, editor, pattr);
-				else if (((Object)pattr.slot) instanceof SpaceAttrSlot && ((Object[])pattr.get()).length == 0 && pattr.slot.typeinfo.$instanceof(node))
-					return new PasteElemHere(node, editor, pattr);
+			if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
+				Draw_SyntaxPlaceHolder dsph = (Draw_SyntaxPlaceHolder)dr.syntax;
+				ANode drnode = dr.get$drnode();
+				for (AttrSlot attr: drnode.values()) {
+					if (attr.name != dsph.attr_name)
+						continue;
+					if (attr instanceof ScalarAttrSlot && ((ScalarAttrSlot)attr).get(drnode) == null && attr.typeinfo.$instanceof(node))
+						return new PasteElemHere(node, editor, drnode, attr);
+					else if (attr instanceof SpaceAttrSlot && ((SpaceAttrSlot)attr).getArray(drnode).length == 0 && attr.typeinfo.$instanceof(node))
+						return new PasteElemHere(node, editor, drnode, attr);
+				}
 			}
 			// try paste as an element of list
 			ActionPoint ap = editor.getActionPoint(false);

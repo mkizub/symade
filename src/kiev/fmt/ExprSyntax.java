@@ -32,13 +32,13 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 
 	public Draw_SyntaxExprTemplate getCompiled() {
 		Draw_SyntaxExprTemplate dr_decl = new Draw_SyntaxExprTemplate();
-		dr_decl.elem = this.elem.getCompiled();
-		dr_decl.l_paren = (Draw_SyntaxToken)this.l_paren.getCompiled();
-		dr_decl.bad_op = (Draw_SyntaxToken)this.bad_op.getCompiled();
-		dr_decl.r_paren = (Draw_SyntaxToken)this.r_paren.getCompiled();
+		dr_decl.elem = this.elem.getCompiled(null);
+		dr_decl.l_paren = (Draw_SyntaxToken)this.l_paren.getCompiled(null);
+		dr_decl.bad_op = (Draw_SyntaxToken)this.bad_op.getCompiled(null);
+		dr_decl.r_paren = (Draw_SyntaxToken)this.r_paren.getCompiled(null);
 		dr_decl.operators = new Draw_SyntaxToken[this.operators.length];
 		for (int i=0; i < dr_decl.operators.length; i++)
-			dr_decl.operators[i] = (Draw_SyntaxToken)this.operators[i].getCompiled();
+			dr_decl.operators[i] = (Draw_SyntaxToken)this.operators[i].getCompiled(null);
 		return dr_decl;
 	}
 }
@@ -75,8 +75,8 @@ public class SyntaxExpr extends SyntaxElem {
 		return super.findForResolve(name,slot,by_equals);
 	}
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxExpr dr_elem = new Draw_SyntaxExpr();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxExpr dr_elem = new Draw_SyntaxExpr(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -87,7 +87,7 @@ public class SyntaxExpr extends SyntaxElem {
 		dr_elem.template = (Draw_SyntaxExprTemplate)this.template.dnode.getCompiled();
 		dr_elem.attrs = new Draw_SyntaxAttr[this.attrs.length];
 		for (int i=0; i < dr_elem.attrs.length; i++)
-			dr_elem.attrs[i] = (Draw_SyntaxAttr)this.attrs[i].getCompiled();
+			dr_elem.attrs[i] = (Draw_SyntaxAttr)this.attrs[i].getCompiled(dr_elem.elem_decl);
 	}
 }
 
@@ -122,8 +122,8 @@ public class SyntaxAutoParenth extends SyntaxElem {
 	}
 
 
-	public Draw_SyntaxElem getCompiled() {
-		Draw_SyntaxAutoParenth dr_elem = new Draw_SyntaxAutoParenth();
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxAutoParenth dr_elem = new Draw_SyntaxAutoParenth(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
@@ -132,7 +132,7 @@ public class SyntaxAutoParenth extends SyntaxElem {
 		Draw_SyntaxAutoParenth dr_elem = (Draw_SyntaxAutoParenth)_dr_elem;
 		super.fillCompiled(dr_elem);
 		dr_elem.template = (Draw_SyntaxExprTemplate)this.template.dnode.getCompiled();
-		dr_elem.attr = (Draw_SyntaxAttr)this.attr.getCompiled();
+		dr_elem.attr = (Draw_SyntaxAttr)this.attr.getCompiled(dr_elem.elem_decl);
 		dr_elem.priority = this.priority;
 	}
 }

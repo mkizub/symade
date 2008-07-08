@@ -96,6 +96,9 @@
       <next_indent_pixel_size>20</next_indent_pixel_size>
       <flow>true</flow>
      </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-indent-from_pos'>
+      <indent_from_current_position>true</indent_from_current_position>
+     </syntax:ParagraphLayout>
      <syntax:DrawColor name='red'>
       <rgb_color>16711680</rgb_color>
      </syntax:DrawColor>
@@ -282,6 +285,18 @@
        </syntax:SpaceCmd>
       </spaces>
      </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-nl-nl'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
      <syntax:SyntaxElemFormatDecl name='fmt-nl2'>
       <spaces>
        <syntax:SpaceCmd>
@@ -364,21 +379,10 @@
      </syntax:SyntaxElemFormatDecl>
      <syntax:PartialSyntaxElemDecl name='stx-syntax-members'>
       <elem>
-       <syntax:SyntaxList>
-        <element>
-         <syntax:SyntaxNode>
-          <name></name>
-          <fmt>
-           <core:SymbolRef name='fmt-nl' />
-          </fmt>
-         </syntax:SyntaxNode>
-        </element>
+       <syntax:SyntaxListWrapper>
         <prefix>
          <syntax:SyntaxToken>
           <text>{</text>
-          <fmt>
-           <core:SymbolRef name='fmt-nl' />
-          </fmt>
          </syntax:SyntaxToken>
         </prefix>
         <sufix>
@@ -389,27 +393,48 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <elpar>
-         <core:SymbolRef name='par-indent' />
-        </elpar>
+        <list>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <fmt>
+             <core:SymbolRef name='fmt-nl-nl' />
+            </fmt>
+           </syntax:SyntaxNode>
+          </element>
+          <name>members</name>
+          <fmt>
+           <core:SymbolRef name='fmt-nl-nl' />
+          </fmt>
+          <par>
+           <core:SymbolRef name='par-indent' />
+          </par>
+         </syntax:SyntaxList>
+        </list>
         <name>members</name>
-        <expected_types>
-         <core:SymbolRef name='TextSyntax' />
-         <core:SymbolRef name='SpaceInfo' />
-         <core:SymbolRef name='ParagraphLayout' />
-         <core:SymbolRef name='ParagraphLayoutBlock' />
-         <core:SymbolRef name='SyntaxJavaCommentTemplate' />
-         <core:SymbolRef name='SyntaxExprTemplate' />
-         <core:SymbolRef name='DrawColor' />
-         <core:SymbolRef name='DrawFont' />
-         <core:SymbolRef name='SyntaxExpectedTemplate' />
-         <core:SymbolRef name='SyntaxElemFormatDecl' />
-         <core:SymbolRef name='PartialSyntaxElemDecl' />
-         <core:SymbolRef name='SyntaxElemDecl' />
-        </expected_types>
-       </syntax:SyntaxList>
+       </syntax:SyntaxListWrapper>
       </elem>
      </syntax:PartialSyntaxElemDecl>
+     <syntax:SyntaxExpectedTemplate name='stx-types-of-syntax'>
+      <title>Syntax Declarations</title>
+      <expected_types>
+       <core:SymbolRef name='SpaceInfo' />
+       <core:SymbolRef name='ParagraphLayout' />
+       <core:SymbolRef name='ParagraphLayoutBlock' />
+       <core:SymbolRef name='DrawColor' />
+       <core:SymbolRef name='DrawFont' />
+       <core:SymbolRef name='SyntaxElemFormatDecl' />
+       <core:SymbolRef name='SyntaxExpectedTemplate' />
+       <core:SymbolRef name='PartialSyntaxElemDecl' />
+       <core:SymbolRef name='SyntaxElemDecl' />
+      </expected_types>
+      <elem>
+       <syntax:SyntaxNode>
+        <name></name>
+       </syntax:SyntaxNode>
+      </elem>
+     </syntax:SyntaxExpectedTemplate>
      <syntax:PartialSyntaxElemDecl name='stx-sname'>
       <elem>
        <syntax:SyntaxIdentAttr>
@@ -437,6 +462,17 @@
       <rnode>
        <core:SymbolRef name='FileUnit' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef name='Import' />
+         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef name='KievTextSyntax' />
+         <core:SymbolRef name='TreeSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -461,12 +497,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>members</name>
-          <expected_types>
-           <core:SymbolRef name='Import' />
-           <core:SymbolRef name='TextSyntax' />
-           <core:SymbolRef name='KievTextSyntax' />
-           <core:SymbolRef name='TreeSyntax' />
-          </expected_types>
           <empty>
            <syntax:SyntaxToken>
             <text> </text>
@@ -503,6 +533,14 @@
       <rnode>
        <core:SymbolRef name='TextSyntax' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef name='stx-types-of-syntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -556,6 +594,14 @@
       <rnode>
        <core:SymbolRef name='KievTextSyntax' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef name='stx-types-of-syntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -609,6 +655,14 @@
       <rnode>
        <core:SymbolRef name='TreeSyntax' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef name='stx-types-of-syntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -876,9 +930,6 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>sname</name>
-          <expected_types>
-           <core:SymbolRef name='Symbol' />
-          </expected_types>
           <fmt>
            <core:SymbolRef name='fmt-of-symbol' />
           </fmt>
@@ -962,9 +1013,6 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>si</name>
-          <expected_types>
-           <core:SymbolRef name='SymbolRef' />
-          </expected_types>
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxEnumChoice>
           <elements>
@@ -1011,6 +1059,15 @@
       <rnode>
        <core:SymbolRef name='SyntaxElemFormatDecl' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <title>SpaceCmd</title>
+        <attr_name>spaces</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SpaceCmd' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -1034,21 +1091,15 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>color</name>
-          <expected_types>
-           <core:SymbolRef name='SymbolRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>font:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>font</name>
-          <expected_types>
-           <core:SymbolRef name='SymbolRef' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
-          <text>spaces:</text>
+          <text>spaces:{</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxList>
           <element>
@@ -1056,24 +1107,19 @@
             <name></name>
            </syntax:SyntaxNode>
           </element>
-          <prefix>
-           <syntax:SyntaxToken>
-            <text>{</text>
-           </syntax:SyntaxToken>
-          </prefix>
-          <sufix>
-           <syntax:SyntaxToken>
-            <text>}</text>
-           </syntax:SyntaxToken>
-          </sufix>
-          <elpar>
-           <core:SymbolRef name='par-flow' />
-          </elpar>
           <name>spaces</name>
-          <expected_types>
-           <core:SymbolRef name='SpaceCmd' />
-          </expected_types>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>spaces</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
          </syntax:SyntaxList>
+         <syntax:SyntaxToken>
+          <text>}</text>
+         </syntax:SyntaxToken>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
@@ -1100,31 +1146,12 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>sname</name>
-          <expected_types>
-           <core:SymbolRef name='Symbol' />
-          </expected_types>
           <fmt>
            <core:SymbolRef name='fmt-of-symbol' />
           </fmt>
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxSubAttr>
           <name>elem</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-           <core:SymbolRef name='SyntaxSubAttr' />
-           <core:SymbolRef name='SyntaxIdentAttr' />
-           <core:SymbolRef name='SyntaxList' />
-           <core:SymbolRef name='SyntaxSet' />
-           <core:SymbolRef name='SyntaxNode' />
-           <core:SymbolRef name='SyntaxStrAttr' />
-           <core:SymbolRef name='SyntaxCharAttr' />
-           <core:SymbolRef name='SyntaxExpr' />
-           <core:SymbolRef name='SyntaxJavaAccessExpr' />
-           <core:SymbolRef name='SyntaxJavaComment' />
-           <core:SymbolRef name='SyntaxJavaAccess' />
-           <core:SymbolRef name='SyntaxSpace' />
-           <core:SymbolRef name='SyntaxFolder' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -1135,6 +1162,15 @@
       <rnode>
        <core:SymbolRef name='SyntaxElemDecl' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <title>SyntaxExpectedTemplate</title>
+        <attr_name>attr_types</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxExpectedAttr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -1149,9 +1185,6 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>sname</name>
-          <expected_types>
-           <core:SymbolRef name='Symbol' />
-          </expected_types>
           <fmt>
            <core:SymbolRef name='fmt-of-symbol' />
           </fmt>
@@ -1161,34 +1194,58 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>rnode</name>
-          <expected_types>
-           <core:SymbolRef name='SymbolRef' />
-          </expected_types>
           <fmt>
            <core:SymbolRef name='fmt-of-anode' />
           </fmt>
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxSubAttr>
           <name>elem</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-           <core:SymbolRef name='SyntaxElemRef' />
-           <core:SymbolRef name='SyntaxSubAttr' />
-           <core:SymbolRef name='SyntaxIdentAttr' />
-           <core:SymbolRef name='SyntaxList' />
-           <core:SymbolRef name='SyntaxSet' />
-           <core:SymbolRef name='SyntaxNode' />
-           <core:SymbolRef name='SyntaxStrAttr' />
-           <core:SymbolRef name='SyntaxXmlStrAttr' />
-           <core:SymbolRef name='SyntaxCharAttr' />
-           <core:SymbolRef name='SyntaxExpr' />
-           <core:SymbolRef name='SyntaxJavaAccessExpr' />
-           <core:SymbolRef name='SyntaxJavaComment' />
-           <core:SymbolRef name='SyntaxJavaAccess' />
-           <core:SymbolRef name='SyntaxSpace' />
-           <core:SymbolRef name='SyntaxFolder' />
-          </expected_types>
+          <fmt>
+           <core:SymbolRef name='fmt-nl' />
+          </fmt>
          </syntax:SyntaxSubAttr>
+         <syntax:SyntaxListWrapper>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>attr_types: [</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>]</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <list>
+           <syntax:SyntaxList>
+            <element>
+             <syntax:SyntaxNode>
+              <name></name>
+             </syntax:SyntaxNode>
+            </element>
+            <separator>
+             <syntax:SyntaxToken>
+              <text>,</text>
+              <fmt>
+               <core:SymbolRef name='fmt-nl' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </separator>
+            <name>attr_types</name>
+            <par>
+             <core:SymbolRef name='par-indent-from_pos' />
+            </par>
+           </syntax:SyntaxList>
+          </list>
+          <name>attr_types</name>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>[attr_types]</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+          <par>
+           <core:SymbolRef name='par-indent' />
+          </par>
+         </syntax:SyntaxListWrapper>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
@@ -1219,6 +1276,20 @@
       <rnode>
        <core:SymbolRef name='SyntaxToken' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1254,10 +1325,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>text</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>'</text>
@@ -1267,9 +1334,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>kind:</text>
@@ -1279,11 +1343,10 @@
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxSubAttr>
             <name>funcs</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxFunctions' />
-            </expected_types>
             <empty>
-             <syntax:SyntaxSpace />
+             <syntax:SyntaxPlaceHolder>
+              <text>funcs: {}</text>
+             </syntax:SyntaxPlaceHolder>
             </empty>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
@@ -1300,6 +1363,20 @@
       <rnode>
        <core:SymbolRef name='SyntaxPlaceHolder' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1335,30 +1412,31 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>text</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>'</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxToken>
+            <text>attr:</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='ident-template' />
+            </decl>
+            <name>attr_name</name>
+           </syntax:SyntaxIdentAttr>
+           <syntax:SyntaxToken>
             <text>fmt:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxSubAttr>
             <name>funcs</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxFunctions' />
-            </expected_types>
             <empty>
-             <syntax:SyntaxSpace />
+             <syntax:SyntaxPlaceHolder>
+              <text>funcs: {}</text>
+             </syntax:SyntaxPlaceHolder>
             </empty>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
@@ -1375,6 +1453,32 @@
       <rnode>
        <core:SymbolRef name='SyntaxSubAttr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1422,37 +1526,25 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>in:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>in_syntax</name>
-            <expected_types>
-             <core:SymbolRef name='TextSyntax' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>empty:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>empty</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxPlaceHolder' />
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSpace' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxSubAttr>
             <name>funcs</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxFunctions' />
-            </expected_types>
             <empty>
-             <syntax:SyntaxSpace />
+             <syntax:SyntaxPlaceHolder>
+              <text>funcs: {}</text>
+             </syntax:SyntaxPlaceHolder>
             </empty>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
@@ -1460,9 +1552,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>par</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxList>
             <element>
@@ -1486,9 +1575,6 @@
              </syntax:SyntaxToken>
             </sufix>
             <name>expected_types</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
             <par>
              <core:SymbolRef name='par-flow' />
             </par>
@@ -1507,6 +1593,20 @@
       <rnode>
        <core:SymbolRef name='SyntaxIdentAttr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1563,17 +1663,13 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxSubAttr>
             <name>funcs</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxFunctions' />
-            </expected_types>
             <empty>
-             <syntax:SyntaxSpace />
+             <syntax:SyntaxPlaceHolder>
+              <text>funcs: {}</text>
+             </syntax:SyntaxPlaceHolder>
             </empty>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxList>
@@ -1598,9 +1694,6 @@
              </syntax:SyntaxToken>
             </sufix>
             <name>expected_types</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
             <par>
              <core:SymbolRef name='par-flow' />
             </par>
@@ -1619,6 +1712,32 @@
       <rnode>
        <core:SymbolRef name='SyntaxCharAttr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1658,18 +1777,12 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>in:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>in_syntax</name>
-            <expected_types>
-             <core:SymbolRef name='TextSyntax' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
@@ -1685,6 +1798,32 @@
       <rnode>
        <core:SymbolRef name='SyntaxStrAttr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1724,18 +1863,12 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>in:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>in_syntax</name>
-            <expected_types>
-             <core:SymbolRef name='TextSyntax' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
@@ -1751,6 +1884,32 @@
       <rnode>
        <core:SymbolRef name='SyntaxXmlStrAttr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1790,18 +1949,12 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>in:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>in_syntax</name>
-            <expected_types>
-             <core:SymbolRef name='TextSyntax' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
@@ -1813,10 +1966,212 @@
        </syntax:SyntaxFolder>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='std-def-list-wrapper'>
+      <rnode>
+       <core:SymbolRef name='SyntaxListWrapper' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>list</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxList' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>empty</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxPlaceHolder' />
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef name='SyntaxElemRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>prefix</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxElemRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>sufix</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxElemRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <title>SyntaxExpectedTemplate</title>
+        <attr_name>expected_types</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxFolder>
+        <folded_by_default>true</folded_by_default>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>[</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>list</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>]</text>
+           </syntax:SyntaxToken>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <unfolded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>&lt;list-wrapper:</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>list</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>emp=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>empty</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>pr=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>prefix</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>su=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>sufix</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>fmt:</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>fmt</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>par=</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>par</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>></text>
+           </syntax:SyntaxToken>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
+         </syntax:SyntaxSet>
+        </unfolded>
+       </syntax:SyntaxFolder>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='std-def-list'>
       <rnode>
        <core:SymbolRef name='SyntaxList' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>element</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSet' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxNode' />
+         <core:SymbolRef name='SyntaxExpr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>separator</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSpace' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>filter</attr_name>
+        <expected_types>
+         <core:SymbolRef name='stx-types-CalcOptions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>empty</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxPlaceHolder' />
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef name='SyntaxElemRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <title>SyntaxExpectedTemplate</title>
+        <attr_name>expected_types</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -1824,23 +2179,7 @@
          <syntax:SyntaxSet>
           <elements>
            <syntax:SyntaxSubAttr>
-            <name>prefix</name>
-            <empty>
-             <syntax:SyntaxToken>
-              <text>[</text>
-             </syntax:SyntaxToken>
-            </empty>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxSubAttr>
             <name>name</name>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxSubAttr>
-            <name>sufix</name>
-            <empty>
-             <syntax:SyntaxToken>
-              <text>]</text>
-             </syntax:SyntaxToken>
-            </empty>
            </syntax:SyntaxSubAttr>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
@@ -1860,100 +2199,50 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>filter</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-CalcOptions' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>el=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>element</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxNode' />
-             <core:SymbolRef name='SyntaxExpr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>sep=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>separator</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSpace' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>emp=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>empty</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxPlaceHolder' />
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSpace' />
-             <core:SymbolRef name='SyntaxElemRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>pr=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>prefix</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxElemRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>su=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>sufix</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxElemRef' />
-            </expected_types>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>fmt:</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>fmt</name>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>par=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>par</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
-           <syntax:SyntaxToken>
-            <text>elpar=</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxSubAttr>
-            <name>elpar</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxList>
-            <element>
-             <syntax:SyntaxNode>
-              <name></name>
-              <fmt>
-               <core:SymbolRef name='fmt-nl-1++' />
-              </fmt>
-             </syntax:SyntaxNode>
-            </element>
-            <separator>
-             <syntax:SyntaxToken>
-              <text>,</text>
-              <fmt>
-               <core:SymbolRef name='fmt-nl-1-+' />
-              </fmt>
-             </syntax:SyntaxToken>
-            </separator>
+           <syntax:SyntaxListWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>[</text>
@@ -1964,17 +2253,38 @@
               <text>]</text>
              </syntax:SyntaxToken>
             </sufix>
-            <elpar>
-             <core:SymbolRef name='par-flow' />
-            </elpar>
+            <list>
+             <syntax:SyntaxList>
+              <element>
+               <syntax:SyntaxNode>
+                <name></name>
+                <fmt>
+                 <core:SymbolRef name='fmt-nl-1++' />
+                </fmt>
+               </syntax:SyntaxNode>
+              </element>
+              <separator>
+               <syntax:SyntaxToken>
+                <text>,</text>
+                <fmt>
+                 <core:SymbolRef name='fmt-nl-1-+' />
+                </fmt>
+               </syntax:SyntaxToken>
+              </separator>
+              <name>expected_types</name>
+              <par>
+               <core:SymbolRef name='par-indent' />
+              </par>
+             </syntax:SyntaxList>
+            </list>
             <name>expected_types</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
             <par>
-             <core:SymbolRef name='par-indent' />
+             <core:SymbolRef name='par-flow' />
             </par>
-           </syntax:SyntaxList>
+           </syntax:SyntaxListWrapper>
+           <syntax:SyntaxToken>
+            <text>></text>
+           </syntax:SyntaxToken>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
           <par>
@@ -1989,21 +2299,55 @@
       <rnode>
        <core:SymbolRef name='SyntaxSet' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>elements</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxIdentAttr' />
+         <core:SymbolRef name='SyntaxJavaConstructorName' />
+         <core:SymbolRef name='SyntaxAutoParenth' />
+         <core:SymbolRef name='SyntaxStrAttr' />
+         <core:SymbolRef name='SyntaxXmlStrAttr' />
+         <core:SymbolRef name='SyntaxCharAttr' />
+         <core:SymbolRef name='SyntaxListWrapper' />
+         <core:SymbolRef name='SyntaxList' />
+         <core:SymbolRef name='SyntaxSet' />
+         <core:SymbolRef name='SyntaxNode' />
+         <core:SymbolRef name='SyntaxExpr' />
+         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef name='SyntaxOptional' />
+         <core:SymbolRef name='SyntaxEnumChoice' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
         <folded>
          <syntax:SyntaxSet>
           <elements>
-           <syntax:SyntaxList>
-            <element>
-             <syntax:SyntaxNode>
-              <name></name>
-              <fmt>
-               <core:SymbolRef name='fmt-nl-1++' />
-              </fmt>
-             </syntax:SyntaxNode>
-            </element>
+           <syntax:SyntaxListWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>{</text>
@@ -2014,33 +2358,26 @@
               <text>}</text>
              </syntax:SyntaxToken>
             </sufix>
-            <elpar>
-             <core:SymbolRef name='par-indent' />
-            </elpar>
+            <list>
+             <syntax:SyntaxList>
+              <element>
+               <syntax:SyntaxNode>
+                <name></name>
+               </syntax:SyntaxNode>
+              </element>
+              <name>elements</name>
+              <par>
+               <core:SymbolRef name='par-flow' />
+              </par>
+             </syntax:SyntaxList>
+            </list>
             <name>elements</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxElemRef' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-             <core:SymbolRef name='SyntaxJavaConstructorName' />
-             <core:SymbolRef name='SyntaxStrAttr' />
-             <core:SymbolRef name='SyntaxXmlStrAttr' />
-             <core:SymbolRef name='SyntaxCharAttr' />
-             <core:SymbolRef name='SyntaxList' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxNode' />
-             <core:SymbolRef name='SyntaxExpr' />
-             <core:SymbolRef name='SyntaxSpace' />
-             <core:SymbolRef name='SyntaxOptional' />
-             <core:SymbolRef name='SyntaxEnumChoice' />
-            </expected_types>
-            <par>
-             <core:SymbolRef name='par-flow' />
-            </par>
-           </syntax:SyntaxList>
+           </syntax:SyntaxListWrapper>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
          </syntax:SyntaxSet>
         </folded>
         <unfolded>
@@ -2049,15 +2386,7 @@
            <syntax:SyntaxToken>
             <text>&lt;set:</text>
            </syntax:SyntaxToken>
-           <syntax:SyntaxList>
-            <element>
-             <syntax:SyntaxNode>
-              <name></name>
-              <fmt>
-               <core:SymbolRef name='fmt-nl-1++' />
-              </fmt>
-             </syntax:SyntaxNode>
-            </element>
+           <syntax:SyntaxListWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>{</text>
@@ -2068,29 +2397,21 @@
               <text>}</text>
              </syntax:SyntaxToken>
             </sufix>
-            <elpar>
-             <core:SymbolRef name='par-indent' />
-            </elpar>
+            <list>
+             <syntax:SyntaxList>
+              <element>
+               <syntax:SyntaxNode>
+                <name></name>
+               </syntax:SyntaxNode>
+              </element>
+              <name>elements</name>
+              <par>
+               <core:SymbolRef name='par-flow' />
+              </par>
+             </syntax:SyntaxList>
+            </list>
             <name>elements</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxElemRef' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-             <core:SymbolRef name='SyntaxJavaConstructorName' />
-             <core:SymbolRef name='SyntaxAutoParenth' />
-             <core:SymbolRef name='SyntaxStrAttr' />
-             <core:SymbolRef name='SyntaxXmlStrAttr' />
-             <core:SymbolRef name='SyntaxCharAttr' />
-             <core:SymbolRef name='SyntaxList' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxNode' />
-             <core:SymbolRef name='SyntaxExpr' />
-             <core:SymbolRef name='SyntaxSpace' />
-             <core:SymbolRef name='SyntaxOptional' />
-             <core:SymbolRef name='SyntaxEnumChoice' />
-            </expected_types>
-           </syntax:SyntaxList>
+           </syntax:SyntaxListWrapper>
            <syntax:SyntaxToken>
             <text>func_lookup:</text>
            </syntax:SyntaxToken>
@@ -2102,24 +2423,21 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>par:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>par</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
            </syntax:SyntaxToken>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
          </syntax:SyntaxSet>
         </unfolded>
        </syntax:SyntaxFolder>
@@ -2129,6 +2447,51 @@
       <rnode>
        <core:SymbolRef name='SyntaxTreeBranch' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>filter</attr_name>
+        <expected_types>
+         <core:SymbolRef name='stx-types-CalcOptions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>folded</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSet' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxIdentAttr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>element</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSet' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxNode' />
+         <core:SymbolRef name='SyntaxExpr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -2156,91 +2519,25 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>filter</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-CalcOptions' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>el=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>element</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxNode' />
-             <core:SymbolRef name='SyntaxExpr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>fold=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>folded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>par=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>par</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
-           <syntax:SyntaxToken>
-            <text>elpar=</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxSubAttr>
-            <name>elpar</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxList>
-            <element>
-             <syntax:SyntaxNode>
-              <name></name>
-              <fmt>
-               <core:SymbolRef name='fmt-nl-1++' />
-              </fmt>
-             </syntax:SyntaxNode>
-            </element>
-            <separator>
-             <syntax:SyntaxToken>
-              <text>,</text>
-              <fmt>
-               <core:SymbolRef name='fmt-nl-1-+' />
-              </fmt>
-             </syntax:SyntaxToken>
-            </separator>
-            <prefix>
-             <syntax:SyntaxToken>
-              <text>[</text>
-             </syntax:SyntaxToken>
-            </prefix>
-            <sufix>
-             <syntax:SyntaxToken>
-              <text>]</text>
-             </syntax:SyntaxToken>
-            </sufix>
-            <elpar>
-             <core:SymbolRef name='par-flow' />
-            </elpar>
-            <name>expected_types</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
-            <par>
-             <core:SymbolRef name='par-indent' />
-            </par>
-           </syntax:SyntaxList>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
           <par>
@@ -2255,39 +2552,74 @@
       <rnode>
        <core:SymbolRef name='SyntaxEnumChoice' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>elements</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxIdentAttr' />
+         <core:SymbolRef name='SyntaxSpace' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
         <folded>
          <syntax:SyntaxSet>
           <elements>
-           <syntax:SyntaxToken>
-            <text>(</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxList>
-            <element>
-             <syntax:SyntaxNode>
-              <name></name>
-             </syntax:SyntaxNode>
-            </element>
-            <separator>
+           <syntax:SyntaxListWrapper>
+            <prefix>
              <syntax:SyntaxToken>
-              <text>|</text>
+              <text>(</text>
              </syntax:SyntaxToken>
-            </separator>
+            </prefix>
+            <sufix>
+             <syntax:SyntaxToken>
+              <text>)</text>
+             </syntax:SyntaxToken>
+            </sufix>
+            <list>
+             <syntax:SyntaxList>
+              <element>
+               <syntax:SyntaxNode>
+                <name></name>
+               </syntax:SyntaxNode>
+              </element>
+              <separator>
+               <syntax:SyntaxToken>
+                <text>|</text>
+               </syntax:SyntaxToken>
+              </separator>
+              <name>elements</name>
+              <empty>
+               <syntax:SyntaxToken>
+                <text>&lt;?enums?></text>
+               </syntax:SyntaxToken>
+              </empty>
+             </syntax:SyntaxList>
+            </list>
             <name>elements</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-             <core:SymbolRef name='SyntaxSpace' />
-            </expected_types>
-            <empty>
-             <syntax:SyntaxToken>
-              <text>&lt;?enums?></text>
-             </syntax:SyntaxToken>
-            </empty>
-           </syntax:SyntaxList>
+           </syntax:SyntaxListWrapper>
            <syntax:SyntaxToken>
             <text>)</text>
            </syntax:SyntaxToken>
@@ -2304,44 +2636,44 @@
            <syntax:SyntaxSubAttr>
             <name>name</name>
            </syntax:SyntaxSubAttr>
-           <syntax:SyntaxToken>
-            <text>(</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxList>
-            <element>
-             <syntax:SyntaxNode>
-              <name></name>
-             </syntax:SyntaxNode>
-            </element>
-            <separator>
+           <syntax:SyntaxListWrapper>
+            <prefix>
              <syntax:SyntaxToken>
-              <text>|</text>
+              <text>(</text>
              </syntax:SyntaxToken>
-            </separator>
+            </prefix>
+            <sufix>
+             <syntax:SyntaxToken>
+              <text>)</text>
+             </syntax:SyntaxToken>
+            </sufix>
+            <list>
+             <syntax:SyntaxList>
+              <element>
+               <syntax:SyntaxNode>
+                <name></name>
+               </syntax:SyntaxNode>
+              </element>
+              <separator>
+               <syntax:SyntaxToken>
+                <text>|</text>
+               </syntax:SyntaxToken>
+              </separator>
+              <name>elements</name>
+              <empty>
+               <syntax:SyntaxToken>
+                <text>&lt;?enums?></text>
+               </syntax:SyntaxToken>
+              </empty>
+             </syntax:SyntaxList>
+            </list>
             <name>elements</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-             <core:SymbolRef name='SyntaxSpace' />
-            </expected_types>
-            <empty>
-             <syntax:SyntaxToken>
-              <text>&lt;?enums?></text>
-             </syntax:SyntaxToken>
-            </empty>
-           </syntax:SyntaxList>
-           <syntax:SyntaxToken>
-            <text>)</text>
-           </syntax:SyntaxToken>
+           </syntax:SyntaxListWrapper>
            <syntax:SyntaxToken>
             <text>fmt:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
@@ -2357,6 +2689,32 @@
       <rnode>
        <core:SymbolRef name='SyntaxNode' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>in_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='TextSyntax' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -2379,27 +2737,18 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>par:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>par</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>in:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>in_syntax</name>
-            <expected_types>
-             <core:SymbolRef name='TextSyntax' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
@@ -2461,6 +2810,26 @@
       <rnode>
        <core:SymbolRef name='SyntaxSpace' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -2483,9 +2852,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>></text>
@@ -2501,6 +2867,14 @@
       <rnode>
        <core:SymbolRef name='SyntaxIdentTemplate' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>keywords</attr_name>
+        <expected_types>
+         <core:SymbolRef name='ConstStringExpr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -2531,17 +2905,7 @@
          <syntax:SyntaxToken>
           <text>keywords:</text>
          </syntax:SyntaxToken>
-         <syntax:SyntaxList>
-          <element>
-           <syntax:SyntaxNode>
-            <name></name>
-           </syntax:SyntaxNode>
-          </element>
-          <separator>
-           <syntax:SyntaxToken>
-            <text>,</text>
-           </syntax:SyntaxToken>
-          </separator>
+         <syntax:SyntaxListWrapper>
           <prefix>
            <syntax:SyntaxToken>
             <text>{</text>
@@ -2552,14 +2916,26 @@
             <text>}</text>
            </syntax:SyntaxToken>
           </sufix>
-          <elpar>
-           <core:SymbolRef name='par-flow' />
-          </elpar>
+          <list>
+           <syntax:SyntaxList>
+            <element>
+             <syntax:SyntaxNode>
+              <name></name>
+             </syntax:SyntaxNode>
+            </element>
+            <separator>
+             <syntax:SyntaxToken>
+              <text>,</text>
+             </syntax:SyntaxToken>
+            </separator>
+            <name>keywords</name>
+           </syntax:SyntaxList>
+          </list>
           <name>keywords</name>
-          <expected_types>
-           <core:SymbolRef name='ConstStringExpr' />
-          </expected_types>
-         </syntax:SyntaxList>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
+         </syntax:SyntaxListWrapper>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
@@ -2569,6 +2945,15 @@
       <rnode>
        <core:SymbolRef name='SyntaxExpectedTemplate' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <title>SymbolRef</title>
+        <attr_name>expected_types</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -2590,6 +2975,75 @@
          <syntax:SyntaxStrAttr>
           <name>title</name>
          </syntax:SyntaxStrAttr>
+         <syntax:SyntaxListWrapper>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>attr_types: [</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>]</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <list>
+           <syntax:SyntaxList>
+            <element>
+             <syntax:SyntaxNode>
+              <name></name>
+             </syntax:SyntaxNode>
+            </element>
+            <separator>
+             <syntax:SyntaxToken>
+              <text>,</text>
+              <fmt>
+               <core:SymbolRef name='fmt-nl-1-+' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </separator>
+            <name>expected_types</name>
+            <par>
+             <core:SymbolRef name='par-flow' />
+            </par>
+           </syntax:SyntaxList>
+          </list>
+          <name>expected_types</name>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>attr_types: []</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+         </syntax:SyntaxListWrapper>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-def-expected-attr'>
+      <rnode>
+       <core:SymbolRef name='SyntaxExpectedAttr' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <title>SymbolRef</title>
+        <attr_name>expected_types</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>attr_name</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxToken>
+          <text>&lt;=</text>
+         </syntax:SyntaxToken>
          <syntax:SyntaxList>
           <element>
            <syntax:SyntaxNode>
@@ -2615,9 +3069,11 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>expected_types</name>
-          <expected_types>
-           <core:SymbolRef name='SymbolRef' />
-          </expected_types>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>{}</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
           <par>
            <core:SymbolRef name='par-flow' />
           </par>
@@ -2631,6 +3087,26 @@
       <rnode>
        <core:SymbolRef name='SyntaxJavaAccess' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>par</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxFolder>
         <folded_by_default>true</folded_by_default>
@@ -2661,15 +3137,9 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxSubAttr>
             <name>funcs</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxFunctions' />
-            </expected_types>
             <empty>
              <syntax:SyntaxSpace />
             </empty>
@@ -2725,9 +3195,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>operators</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-          </expected_types>
           <empty>
            <syntax:SyntaxToken>
             <text>&lt;?operators?></text>
@@ -2753,9 +3220,6 @@
            </syntax:SyntaxNode>
           </element>
           <name>attrs</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxSubAttr' />
-          </expected_types>
           <empty>
            <syntax:SyntaxPlaceHolder>
             <text>&lt;attrs></text>
@@ -2785,10 +3249,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>attr</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxSubAttr' />
-           <core:SymbolRef name='SyntaxNode' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>//</text>
@@ -2804,9 +3264,6 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>template</name>
-          <expected_types>
-           <core:SymbolRef name='SymbolRef' />
-          </expected_types>
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxToken>
           <text>)</text>
@@ -2840,39 +3297,21 @@
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxSubAttr>
           <name>elem</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxSubAttr' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>newline</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxSpace' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>lin_beg</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>doc_beg</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>cmt_beg</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>cmt_end</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -2888,27 +3327,15 @@
         <elements>
          <syntax:SyntaxSubAttr>
           <name>obj_elem</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxSubAttr' />
-           <core:SymbolRef name='SyntaxExpr' />
-           <core:SymbolRef name='SyntaxAutoParenth' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxSubAttr>
           <name>separator</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxToken' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>?</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>fld_elem</name>
-          <expected_types>
-           <core:SymbolRef name='SyntaxIdentAttr' />
-           <core:SymbolRef name='SyntaxSet' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -2949,15 +3376,9 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxSubAttr>
             <name>funcs</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxFunctions' />
-            </expected_types>
             <empty>
              <syntax:SyntaxSpace />
             </empty>
@@ -3008,22 +3429,12 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>calculator</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-CalcOptions' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>??</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>opt_true</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-             <core:SymbolRef name='SyntaxExpr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxOptional>
             <calculator>
@@ -3039,10 +3450,6 @@
                </syntax:SyntaxToken>
                <syntax:SyntaxSubAttr>
                 <name>opt_false</name>
-                <expected_types>
-                 <core:SymbolRef name='SyntaxToken' />
-                 <core:SymbolRef name='SyntaxSet' />
-                </expected_types>
                </syntax:SyntaxSubAttr>
               </elements>
               <nested_function_lookup>false</nested_function_lookup>
@@ -3070,9 +3477,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>calculator</name>
-            <expected_types>
-             <core:SymbolRef name='stx-types-CalcOptions' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>)?</text>
@@ -3082,23 +3486,12 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>opt_true</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-             <core:SymbolRef name='SyntaxIdentAttr' />
-             <core:SymbolRef name='SyntaxExpr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>elem_false=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>opt_false</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>fmt:</text>
@@ -3134,10 +3527,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>folded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>||</text>
@@ -3147,16 +3536,15 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>unfolded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>|)</text>
            </syntax:SyntaxToken>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
+          <par>
+           <core:SymbolRef name='par-indent' />
+          </par>
          </syntax:SyntaxSet>
         </folded>
         <unfolded>
@@ -3170,23 +3558,12 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>folded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>unfolded=</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>unfolded</name>
-            <expected_types>
-             <core:SymbolRef name='SyntaxToken' />
-             <core:SymbolRef name='SyntaxSet' />
-             <core:SymbolRef name='SyntaxList' />
-             <core:SymbolRef name='SyntaxSubAttr' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>fold-by-default:</text>
@@ -3199,9 +3576,6 @@
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
             <name>fmt</name>
-            <expected_types>
-             <core:SymbolRef name='SymbolRef' />
-            </expected_types>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>}</text>
@@ -3266,9 +3640,6 @@
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>opt</name>
-          <expected_types>
-           <core:SymbolRef name='stx-types-CalcOptions' />
-          </expected_types>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -3302,9 +3673,6 @@
          </syntax:SyntaxToken>
         </sufix>
         <name>opts</name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-CalcOptions' />
-        </expected_types>
        </syntax:SyntaxList>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -3335,9 +3703,6 @@
          </syntax:SyntaxToken>
         </sufix>
         <name>opts</name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-CalcOptions' />
-        </expected_types>
        </syntax:SyntaxList>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -3517,16 +3882,16 @@
       <rnode>
        <core:SymbolRef name='SyntaxFunctions' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxFunction' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
-       <syntax:SyntaxList>
-        <element>
-         <syntax:SyntaxNode>
-          <name></name>
-          <fmt>
-           <core:SymbolRef name='fmt-nl-1++' />
-          </fmt>
-         </syntax:SyntaxNode>
-        </element>
+       <syntax:SyntaxListWrapper>
         <prefix>
          <syntax:SyntaxToken>
           <text>funcs: {</text>
@@ -3537,14 +3902,24 @@
           <text>}</text>
          </syntax:SyntaxToken>
         </sufix>
-        <elpar>
-         <core:SymbolRef name='par-flow' />
-        </elpar>
+        <list>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <fmt>
+             <core:SymbolRef name='fmt-nl-1++' />
+            </fmt>
+           </syntax:SyntaxNode>
+          </element>
+          <name>funcs</name>
+         </syntax:SyntaxList>
+        </list>
         <name>funcs</name>
-        <expected_types>
-         <core:SymbolRef name='SyntaxFunction' />
-        </expected_types>
-       </syntax:SyntaxList>
+        <par>
+         <core:SymbolRef name='par-flow' />
+        </par>
+       </syntax:SyntaxListWrapper>
       </elem>
      </syntax:SyntaxElemDecl>
     </members>
