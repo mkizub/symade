@@ -73,17 +73,17 @@ public abstract class DrawContext implements Cloneable {
 		this.postFormat(dlb, new Indents());
 	}
 	
-	private void postFormat(DrawLayoutBlock dlb, Indents indents) {
-		if (!dlb.is_flow) {
+	private void postFormat(DrawLayoutInfo dlb, Indents indents) {
+		if (!dlb.isFlow()) {
 		next_layot:
-			for (int i=0; i <= dlb.max_layout; i++) {
+			for (int i=0; i <= dlb.getMaxLayout(); i++) {
 				DrawContext ctx = this.pushState();
-				Indents ctx_indents = makeIndents(indents, dlb.par, this.x);
-				boolean last = (i >= dlb.max_layout);
+				Indents ctx_indents = makeIndents(indents, dlb.getParagraph(), this.x);
+				boolean last = (i >= dlb.getMaxLayout());
 				if (!last)
 					ctx.parent_has_more_attempts = true;
-				foreach (DrawLayoutBlock b; dlb.blocks) {
-					if (b.dr instanceof DrawTerm)
+				foreach (DrawLayoutInfo b; dlb.getBlocks()) {
+					if (b.getDrawable() instanceof DrawTerm)
 						ctx.addLeaf(b, i, ctx_indents);
 					else
 						ctx.postFormat(b, ctx_indents);
@@ -112,7 +112,7 @@ public abstract class DrawContext implements Cloneable {
 			// savepoint data
 			int save_idx = -1;
 			DrawContext ctx = this.pushState();
-			Indents ctx_indents = makeIndents(indents, dlb.par, this.x);
+			Indents ctx_indents = makeIndents(indents, dlb.getParagraph(), this.x);
 			// work data between savepoints
 			DrawContext tmp = ctx.pushState();
 			Indents tmp_indents = (Indents)ctx_indents.clone();
@@ -123,13 +123,13 @@ public abstract class DrawContext implements Cloneable {
 			}
 			int idx = 0;
 			do {
-				if (idx >= dlb.blocks.length) {
+				if (idx >= dlb.getBlocks().length) {
 					// end of scan, save result and return
 					tmp.popState(this);
 					return;
 				}
-				DrawLayoutBlock b = (DrawLayoutBlock)dlb.blocks[idx];
-				if (b.dr instanceof DrawTerm)
+				DrawLayoutInfo b = dlb.getBlocks()[idx];
+				if (b.getDrawable() instanceof DrawTerm)
 					tmp.addLeaf(b, 0, tmp_indents);
 				else
 					tmp.postFormat(b, tmp_indents);
@@ -169,9 +169,9 @@ public abstract class DrawContext implements Cloneable {
 		}
 	}
 
-	private void addLeaf(DrawLayoutBlock dlb, int cur_attempt, Indents indents) {
-		indents = makeIndents(indents, dlb.par, this.x);
-		DrawTerm leaf = (DrawTerm)dlb.dr;
+	private void addLeaf(DrawLayoutInfo dlb, int cur_attempt, Indents indents) {
+		indents = makeIndents(indents, dlb.getParagraph(), this.x);
+		DrawTerm leaf = (DrawTerm)dlb.getDrawable();
 		flushSpaceRequests(leaf, cur_attempt, indents);
 		x += setXgetWidth(leaf, x);
 		max_x = Math.max(max_x, x);
@@ -405,24 +405,43 @@ public final class DrawLinkContext {
 	
 }
 
-@ThisIsANode(copyable=false)
-public final class DrawLayoutBlock extends ANode {
+public interface DrawLayoutInfo {
+	public Drawable getDrawable();
+	public DrawLayoutInfo[] getBlocks();
+	public Draw_Paragraph getParagraph();
+	public int getMaxLayout();
+	public boolean isFlow();
+}
 
-	public static final DrawLayoutBlock[] emptyArray = new DrawLayoutBlock[0];
+public final class DrawLayoutBlock implements DrawLayoutInfo {
 
-	@nodeAttr
-	public DrawLayoutBlock∅	blocks;
-	@nodeData
+	public static final DrawLayoutInfo[] emptyArray = new DrawLayoutInfo[0];
+
+	public final DrawLayoutBlock parent;
+
+	public DrawLayoutInfo[]		blocks;
 	public Draw_Paragraph		par;
-	@nodeData
 	public Drawable				dr;
 	public int					max_layout;		// for block (alternative) layouts
 	public boolean				is_flow;		// for flow blocks
 	
+	public DrawLayoutBlock() {
+		this.parent = null;
+		this.blocks = DrawLayoutBlock.emptyArray;
+	}
+	
+	private DrawLayoutBlock(DrawLayoutBlock parent) {
+		this.parent = parent;
+		this.blocks = DrawLayoutBlock.emptyArray;
+	}
+	
 	// for GUI
 	public Drawable getDrawable() { dr }
 	// for GUI
-	public DrawLayoutBlock[] getBlocks() { blocks }
+	public DrawLayoutInfo[] getBlocks() { blocks }
+	public Draw_Paragraph getParagraph() { par }
+	public int getMaxLayout() { max_layout }
+	public boolean isFlow() { is_flow }
 	
 	public DrawLayoutBlock pushDrawable(Drawable dr) {
 		if (dr.syntax != null) {
@@ -443,8 +462,8 @@ public final class DrawLayoutBlock extends ANode {
 	
 	private DrawLayoutBlock pushParagraph(Drawable dp, Draw_Paragraph pl) {
 		if (pl.enabled(dp)) {
-			DrawLayoutBlock dlb = new DrawLayoutBlock();
-			this.blocks += dlb;
+			DrawLayoutBlock dlb = new DrawLayoutBlock(this);
+			this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
 			dlb.dr = dp;
 			dlb.par = pl;
 			dlb.is_flow = pl.flow;
@@ -457,23 +476,18 @@ public final class DrawLayoutBlock extends ANode {
 			assert (pl.enabled(dp));
 			if (!this.is_flow) {
 				int max_layout = 0;
-				foreach (DrawLayoutBlock b; blocks)
-					max_layout = Math.max(max_layout, b.max_layout);
+				foreach (DrawLayoutInfo b; blocks)
+					max_layout = Math.max(max_layout, b.getMaxLayout());
 				this.max_layout = max_layout;
 			}
-			return (DrawLayoutBlock)parent();
+			return this.parent;
 		}
 		assert (!pl.enabled(dp));
 		return this;
 	}
 	
 	public void addLeaf(DrawTerm leaf) {
-		DrawLayoutBlock dlb = new DrawLayoutBlock();
-		this.blocks += dlb;
-		dlb.dr = leaf;
-		if (leaf.syntax != null && leaf.syntax.par != null)
-			dlb.par = leaf.syntax.par;
-		dlb.max_layout = leaf.syntax.lout.count;
+		this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, leaf.dt_fmt);
 	}
 	
 }

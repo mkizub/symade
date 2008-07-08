@@ -23,9 +23,8 @@ import java.awt.image.VolatileImage;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
-import kiev.fmt.DrawLayoutBlock;
+import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
-import kiev.fmt.Drawable;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 
@@ -40,8 +39,7 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 	public int imgWidth;
 	int					imgHeight;
 	
-	private Drawable dr_root;
-	private DrawLayoutBlock dlb_root;
+	private DrawLayoutInfo dlb_root;
 	public DrawTerm	current;
 	public ANode current_node;
 	public int first_line;
@@ -98,10 +96,6 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		}
 	}
 	
-	public void draw(Drawable root) {
-		this.dr_root = root;
-	}
-	
 	public VolatileImage createVolatileImage(int w, int h) {
 		System.out.println("create volatile image "+w+" : "+h);
 		return super.createVolatileImage(w, h);
@@ -137,7 +131,7 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 			g.setColor(Color.WHITE);
 			g.fillRect(0, 0, getWidth(), getHeight());
 			//g.clearRect(0, 0, getWidth(), getHeight());
-			if (dlb_root != null || dr_root != null) {
+			if (dlb_root != null) {
 				lineno = 1;
 				translated = false;
 				first_visible = null;
@@ -149,10 +143,7 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 				bg_drawed_y = -1;
 				selected = false;
 				//is_editable = true;
-				if (dlb_root != null)
-					paint(g, dlb_root);
-				else
-					paint(g, dr_root);
+				paint(g, dlb_root);
 				num_lines = lineno;
 				int visa = 0;
 				if (first_visible != null && last_visible != null) {
@@ -173,7 +164,7 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		return true;
 	}
 	
-	private Rectangle calcBounds(DrawLayoutBlock n) {
+	private Rectangle calcBounds(DrawLayoutInfo n) {
 		if (n.getDrawable() instanceof DrawTerm) {
 			DrawTerm dt = (DrawTerm)n.getDrawable();
 			if (dt.getLineNo() < first_line)
@@ -183,7 +174,7 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 			return new Rectangle(dt.getX(), dt.getY(), w, h);
 		} else {
 			Rectangle res = null;
-			for (DrawLayoutBlock dlb: n.getBlocks()) {
+			for (DrawLayoutInfo dlb: n.getBlocks()) {
 				Rectangle r = calcBounds(dlb);
 				if (res == null)
 					res = r;
@@ -194,13 +185,13 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		}
 	}
 
-	private void paint(Graphics2D g, DrawLayoutBlock n) {
+	private void paint(Graphics2D g, DrawLayoutInfo n) {
 		if (n == null)
 			return;
 		if (n.getDrawable() instanceof DrawTerm) {
 			paintLeaf(g, (DrawTerm)n.getDrawable());
 		} else {
-			for (DrawLayoutBlock dlb: n.getBlocks()) {
+			for (DrawLayoutInfo dlb: n.getBlocks()) {
 				paint(g, dlb);
 			}
 			if (false) {
@@ -213,38 +204,6 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		}
 	}
 
-
-	private void paint(Graphics2D g, Drawable n) {
-		if (n == null || n.isUnvisible())
-			return;
-		if (n instanceof DrawTerm) {
-			paintLeaf(g, (DrawTerm)n);
-		} else {
-			for(Drawable dr: n.getChildren()) { 
-				if(dr != null && !dr.isUnvisible()) {
-					if (current_node == dr.get$drnode()) {
-						int lineno = this.lineno;
-						paintBg(g, dr);
-						this.lineno = lineno;
-					}
-					paint(g, dr);
-				}
-			}
-		}
-	}
-
-	private void paintBg(Graphics2D g, Drawable n) {
-		if (n == null || n.isUnvisible())
-			return;
-		if (n instanceof DrawTerm) {
-			paintLeafBg(g, (DrawTerm)n);
-		} else {
-			for (Drawable dr: n.getChildren()) { 
-				if (!dr.isUnvisible())
-					paintBg(g, dr);
-			}
-		}
-	}
 
 	private void paintLeaf(Graphics2D g, DrawTerm leaf) {
 		if (leaf == null || leaf.isUnvisible())
@@ -324,42 +283,6 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		}
 	}
 	
-	private void paintLeafBg(Graphics2D g, DrawTerm leaf) {
-		if (leaf == null || leaf.isUnvisible())
-			return;
-		if (lineno < first_line) {
-			if (leaf.get$do_newline())
-				lineno++;
-			return;
-		}
-		if (leaf.get$do_newline())
-			lineno++;
-		
-		int x = leaf.getX();
-		int y = leaf.getY();
-		int w = leaf.getWidth();
-		int h = leaf.getHeight();
-
-		if (!translated) {
-			translated_y = y;
-			g.translate(0, -y);
-			translated = true;
-		}
-		if (y + h - translated_y >= getHeight())
-			return;
-		
-		g.setColor(selectedNodeColor);
-
-		if (bg_drawed_x < x && bg_drawed_y == y)
-			g.fillRect(bg_drawed_x, y, x-bg_drawed_x+w, h);
-		else
-			g.fillRect(x, y, w, h);
-
-		bg_drawed_x = x + w;
-		bg_drawed_y = y;
-		
-	}
-
 	/**
 	 * @return the verticalScrollBar
 	 */
@@ -368,30 +291,9 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 	}
 
 	/**
-	 * @return the dr_root
-	 */
-	public Drawable getDr_root() {
-		return dr_root;
-	}
-
-	/**
-	 * @param dr_root the dr_root to set
-	 */
-	public void setDr_root(Drawable dr_root) {
-		this.dr_root = dr_root;
-	}
-
-	/**
-	 * @return the dlb_root
-	 */
-	public DrawLayoutBlock getDlb_root() {
-		return dlb_root;
-	}
-
-	/**
 	 * @param dlb_root the dlb_root to set
 	 */
-	public void setDlb_root(DrawLayoutBlock dlb_root) {
+	public void setDlb_root(DrawLayoutInfo dlb_root) {
 		this.dlb_root = dlb_root;
 	}
 	

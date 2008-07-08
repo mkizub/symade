@@ -12,11 +12,7 @@ package kiev.fmt;
 
 import syntax kiev.Syntax;
 
-public interface DrawDevice {
-	public void draw(Drawable root);
-}
-
-public class TextPrinter implements DrawDevice {
+public class TextPrinter {
 	StringBuffer sb;
 	int pos_x = 0;
 	int pos_y = 0;

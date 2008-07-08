@@ -31,7 +31,7 @@ public class DrawTermLink {
 	
 }
 
-public abstract class DrawTermFormatInfo {
+public abstract class DrawTermFormatInfo implements DrawLayoutInfo {
 	public final       DrawTerm        dterm;
 	public:r,r,rw,rw   DrawTermLink    lnk_prev;
 	public:r,r,rw,rw   DrawTermLink    lnk_next;
@@ -58,6 +58,12 @@ public abstract class DrawTermFormatInfo {
 		return false;
 	}
 	
+	// DrawLayoutInfo
+	public Drawable getDrawable() { dterm }
+	public DrawLayoutInfo[] getBlocks() { return DrawLayoutBlock.emptyArray; }
+	public Draw_Paragraph getParagraph() { dterm.syntax.par }
+	public int getMaxLayout() { dterm.syntax.lout.count }
+	public boolean isFlow() { false }
 }
 
 public final class TxtDrawTermFormatInfo extends DrawTermFormatInfo {
