@@ -16,11 +16,6 @@
   <root_dir>
    <sop:kiev.vlang.DirUnit name='.'>
     <members>
-     <sop:kiev.vlang.DirUnit name='stx-fmt'>
-      <members>
-       <core:FileUnit name='syntax-for-syntax.xml' />
-      </members>
-     </sop:kiev.vlang.DirUnit>
      <sop:kiev.vlang.DirUnit name='test'>
       <members>
        <core:FileUnit name='GUITest.java' />

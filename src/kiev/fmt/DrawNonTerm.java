@@ -520,7 +520,6 @@ public final class DrawTreeBranch extends Drawable {
 			for (int i=0; i < args.length; i++)
 				args[i].preFormat(cont,sset.elements[i],node);
 		}
-
 	}
 }
 

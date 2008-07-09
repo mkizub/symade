@@ -110,8 +110,7 @@ public class TextFormatter extends AbstractFormatter {
 		}
 		try {
 			// link nodes
-			DrawLinkContext dlctx = new DrawLinkContext(false);
-			dr_root.lnkFormat(dlctx);
+			dr_root.lnkFormat(new DrawLinkContext(false, false));
 			DrawTerm first = dr_root.getFirstLeaf();
 			if (first != null)
 				DrawTerm.lnkVerify(first);
@@ -157,6 +156,7 @@ public class GfxFormatter extends AbstractFormatter {
 	private int			width;
 	
 	public GfxFormatter(Graphics2D gfx) {
+		assert(gfx != null);
 		this.gfx = gfx;
 		this.width = 100;
 	}
@@ -169,28 +169,28 @@ public class GfxFormatter extends AbstractFormatter {
 		else
 			this.width = w;
 	}
-
-	public void format(ANode node, Drawable dr, Draw_ATextSyntax syntax) {
-		dr_root = getDrawable(node, dr, syntax);
-		{
-			GfxDrawContext ctx = new GfxDrawContext(this,this.width);
-			try {
-				dr_root.preFormat(ctx, dr_root.syntax, node);
-			} catch (ChangeRootException e) {
-				dr_root = e.dr;
-				dr_root.preFormat(ctx, dr_root.syntax, node);
-			}
-		}
+	
+	public void linkNodes() {
 		try {
 			// link nodes
-			DrawLinkContext dlctx = new DrawLinkContext(false);
-			dr_root.lnkFormat(dlctx);
+			dr_root.lnkFormat(new DrawLinkContext(true, false));
 			DrawTerm first = dr_root.getFirstLeaf();
 			if (first != null)
 				DrawTerm.lnkVerify(first);
 			else
 				assert(dr_root.getLastLeaf() == null);
 		} catch (Throwable t) { t.printStackTrace(); }
+	}
+
+	public void format(ANode node, Drawable dr, Draw_ATextSyntax syntax) {
+		dr_root = getDrawable(node, dr, syntax);
+		try {
+			dr_root.preFormat(new GfxDrawContext(this,this.width), dr_root.syntax, node);
+		} catch (ChangeRootException e) {
+			dr_root = e.dr;
+			dr_root.preFormat(new GfxDrawContext(this,this.width), dr_root.syntax, node);
+		}
+		linkNodes();
 		{
 			dlb_root = new DrawLayoutBlock();
 			dr_root.postFormat(dlb_root);
@@ -238,5 +238,25 @@ public class GfxFormatter extends AbstractFormatter {
 		}
 	}
 }
+
+public class GfxTreeFormatter extends GfxFormatter {
+
+	public GfxTreeFormatter(Graphics2D gfx) {
+		super(gfx);
+	}
+
+	public void linkNodes() {
+		try {
+			// link nodes
+			dr_root.lnkFormat(new DrawLinkContext(true, true));
+			DrawTerm first = dr_root.getFirstLeaf();
+			if (first != null)
+				DrawTerm.lnkVerify(first);
+			else
+				assert(dr_root.getLastLeaf() == null);
+		} catch (Throwable t) { t.printStackTrace(); }
+	}
+}
+
 
 

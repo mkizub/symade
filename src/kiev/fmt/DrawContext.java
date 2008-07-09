@@ -315,13 +315,15 @@ public final class TxtDrawContext extends DrawContext {
 
 public final class DrawLinkContext {
 	
-	private final boolean					gfx;
+	public final boolean					is_gfx;
+	public final boolean					is_tree;
 	private final Vector<LayoutSpace>		space_infos = new Vector<LayoutSpace>();
 	private final Vector<LayoutSpace>		space_infos_1 = new Vector<LayoutSpace>();
 	private boolean							update_spaces;
 	
-	public DrawLinkContext(boolean gfx) {
-		this.gfx = gfx;
+	public DrawLinkContext(boolean is_gfx, boolean is_tree) {
+		this.is_gfx = is_gfx;
+		this.is_tree = is_tree;
 	}
 	
 	public void requestSpacesUpdate() {
@@ -343,9 +345,9 @@ public final class DrawLinkContext {
 		int max_nl = 0;
 		foreach (LayoutSpace csi; space_infos; !csi.eat) {
 			if (csi.new_line)
-				max_nl = Math.max(gfx ? csi.text_size : csi.pixel_size, max_nl);
+				max_nl = Math.max(is_gfx ? csi.pixel_size : csi.text_size, max_nl);
 			else
-				max_space = Math.max(gfx ? csi.text_size : csi.pixel_size, max_space);
+				max_space = Math.max(is_gfx ? csi.pixel_size : csi.text_size, max_space);
 		}
 		lnk.size_0 = (max_nl << 16) | (max_space & 0xFFFF);
 		space_infos.removeAllElements();
@@ -354,9 +356,9 @@ public final class DrawLinkContext {
 		max_nl = 0;
 		foreach (LayoutSpace csi; space_infos_1; !csi.eat) {
 			if (csi.new_line)
-				max_nl = Math.max(gfx ? csi.text_size : csi.pixel_size, max_nl);
+				max_nl = Math.max(is_gfx ? csi.pixel_size : csi.text_size, max_nl);
 			else
-				max_space = Math.max(gfx ? csi.text_size : csi.pixel_size, max_space);
+				max_space = Math.max(is_gfx ? csi.pixel_size : csi.text_size, max_space);
 		}
 		lnk.size_1 = (max_nl << 16) | (max_space & 0xFFFF);
 		space_infos_1.removeAllElements();

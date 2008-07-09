@@ -5,6 +5,8 @@ import java.awt.event.MouseEvent;
 import kiev.fmt.*;
 import kiev.gui.swing.Canvas;
 import kiev.gui.swing.Window;
+import kiev.vlang.FileUnit;
+import kiev.vtree.ANode;
 
 public class ProjectView extends InfoView {
 	
@@ -53,6 +55,10 @@ public class ProjectView extends InfoView {
 		e.consume();
 		cur_dr = dr.dterm;
 		if (e.getClickCount() >= 2) {
+			ANode n = dr.getDrawable().get$drnode();
+			if (n instanceof FileUnit) {
+				parent_window.openEditor((FileUnit)n, ANode.emptyArray);
+			}
 			if (cur_dr.parent() instanceof DrawTreeBranch) {
 				DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent();
 				dtb.setDrawFolded(!dtb.getDrawFolded());

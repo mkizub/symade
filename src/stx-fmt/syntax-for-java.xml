@@ -1689,9 +1689,6 @@
           </opt>
          </syntax:CalcOptionNot>
         </filter>
-        <elpar>
-         <core:SymbolRef name='par-indented' />
-        </elpar>
         <name>members</name>
         <empty>
          <syntax:SyntaxToken>
@@ -2456,9 +2453,6 @@
             </opts>
            </syntax:CalcOptionAnd>
           </filter>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>members</name>
           <empty>
            <syntax:SyntaxToken>
@@ -3459,9 +3453,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>aliases</name>
           <empty>
            <syntax:SyntaxElemRef>
@@ -3481,9 +3472,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>conditions</name>
           <empty>
            <syntax:SyntaxElemRef>
@@ -3681,9 +3669,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>aliases</name>
           <empty>
            <syntax:SyntaxElemRef>
@@ -3719,9 +3704,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>conditions</name>
           <empty>
            <syntax:SyntaxElemRef>
@@ -3891,9 +3873,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>conditions</name>
           <empty>
            <syntax:SyntaxElemRef>
@@ -4709,9 +4688,6 @@
               </fmt>
              </syntax:SyntaxToken>
             </sufix>
-            <elpar>
-             <core:SymbolRef name='par-indented' />
-            </elpar>
             <name>values</name>
             <empty>
              <syntax:SyntaxSpace />
@@ -5177,9 +5153,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <elpar>
-         <core:SymbolRef name='par-indented' />
-        </elpar>
         <name>stats</name>
         <empty>
          <syntax:SyntaxToken>
@@ -5222,9 +5195,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <elpar>
-         <core:SymbolRef name='par-indented' />
-        </elpar>
         <name>stats</name>
         <empty>
          <syntax:SyntaxToken>
@@ -5331,9 +5301,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </separator>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>rules</name>
           <empty>
            <syntax:SyntaxToken>
@@ -8439,9 +8406,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>stats</name>
          </syntax:SyntaxList>
         </elements>
@@ -8502,9 +8466,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>stats</name>
          </syntax:SyntaxList>
         </elements>
@@ -8565,9 +8526,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>stats</name>
          </syntax:SyntaxList>
         </elements>
@@ -8628,9 +8586,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>stats</name>
          </syntax:SyntaxList>
         </elements>
@@ -8691,9 +8646,6 @@
             </fmt>
            </syntax:SyntaxToken>
           </sufix>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>stats</name>
          </syntax:SyntaxList>
         </elements>
@@ -8872,9 +8824,6 @@
             </fmt>
            </syntax:SyntaxNode>
           </element>
-          <elpar>
-           <core:SymbolRef name='par-indented' />
-          </elpar>
           <name>stats</name>
           <empty>
            <syntax:SyntaxToken>

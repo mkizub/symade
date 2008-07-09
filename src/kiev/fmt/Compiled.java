@@ -1285,9 +1285,10 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 		loutNoNl = sefdNoNl.compile();
 
 		plIndented = new Draw_Paragraph();
-		plIndented.indent_text_size = 1;
-		plIndented.indent_pixel_size = 10;
-		plIndented.indent_from_current_position = true;
+		plIndented.indent_text_size = 0;
+		plIndented.indent_pixel_size = 0;
+		plIndented.next_indent_text_size = 1;
+		plIndented.next_indent_pixel_size = 20;
 	}
 
 	public Draw_SyntaxElem getSyntaxElem(ANode node) {
@@ -1310,42 +1311,54 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 			}
 			return se;
 		}
-		Draw_SyntaxTreeBranch stb = new Draw_SyntaxTreeBranch(null);
+		Draw_SyntaxElemDecl elem_decl = new Draw_SyntaxElemDecl();
+		Draw_SyntaxTreeBranch stb = new Draw_SyntaxTreeBranch(elem_decl);
+		stb.par = plIndented;
+		elem_decl.elem = stb;
+		elem_decl.clazz_name = cl_name;
 		{
 			String name = node.getClass().getName();
 			int idx = name.lastIndexOf('.');
 			if (idx >= 0)
 				name = name.substring(idx+1);
-			stb.folded = new Draw_SyntaxToken(null,name);
+			stb.folded = new Draw_SyntaxToken(elem_decl,name);
+			stb.folded.lout = loutNlNl;
 		}
-		Draw_SyntaxSet ss = new Draw_SyntaxSet(null);
+		Draw_SyntaxSet ss = new Draw_SyntaxSet(elem_decl);
 		stb.element = ss;
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			if (attr instanceof SpaceAttrSlot || attr instanceof ExtSpaceAttrSlot) {
-				Draw_SyntaxTreeBranch lst = new Draw_SyntaxTreeBranch(null);
-				lst.folded =  new Draw_SyntaxToken(null,attr.name+"∅");
+				Draw_SyntaxTreeBranch lst = new Draw_SyntaxTreeBranch(elem_decl);
+				lst.par = plIndented;
+				lst.folded =  new Draw_SyntaxToken(elem_decl,attr.name+"∅");
+				lst.folded.lout = loutNlNl;
 				lst.name = attr.name;
 				lst.attr_slot = attr;
-				lst.element = new Draw_SyntaxNode(null);
+				lst.element = new Draw_SyntaxNode(elem_decl);
+				lst.element.lout = loutNlNl;
 				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, lst);
 			}
 			else if (attr.is_child) {
-				Draw_SyntaxTreeBranch lst = new Draw_SyntaxTreeBranch(null);
-				lst.folded =  new Draw_SyntaxToken(null,attr.name);
+				Draw_SyntaxTreeBranch lst = new Draw_SyntaxTreeBranch(elem_decl);
+				lst.par = plIndented;
+				lst.folded =  new Draw_SyntaxToken(elem_decl,attr.name);
+				lst.folded.lout = loutNlNl;
 				lst.name = attr.name;
 				lst.attr_slot = attr;
-				Draw_SyntaxSet ass = new Draw_SyntaxSet(null);
+				Draw_SyntaxSet ass = new Draw_SyntaxSet(elem_decl);
 				lst.element = ass;
-				Draw_SyntaxSubAttr sa = new Draw_SyntaxSubAttr(null);
+				lst.element.lout = loutNlNl;
+				Draw_SyntaxSubAttr sa = new Draw_SyntaxSubAttr(elem_decl);
 				sa.name = attr.name;
 				sa.attr_slot = attr;
 				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, sa);
 				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, lst);
 			}
 			else {
-				Draw_SyntaxSet ass = new Draw_SyntaxSet(null);
-				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, new Draw_SyntaxToken(null,attr.name+": "));
-				Draw_SyntaxSubAttr st = new Draw_SyntaxSubAttr(null);
+				Draw_SyntaxSet ass = new Draw_SyntaxSet(elem_decl);
+				ass.lout = loutNlNl;
+				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, new Draw_SyntaxToken(elem_decl,attr.name+": "));
+				Draw_SyntaxSubAttr st = new Draw_SyntaxSubAttr(elem_decl);
 				st.name = attr.name;
 				st.attr_slot = attr;
 				ass.elements = (Draw_SyntaxElem[])Arrays.append(ass.elements, st);
