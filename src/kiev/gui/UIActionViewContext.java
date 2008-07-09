@@ -12,6 +12,8 @@ package kiev.gui;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Drawable;
+import kiev.gui.swing.Editor;
+import kiev.gui.swing.UIView;
 import kiev.gui.swing.Window;
 import kiev.vtree.ANode;
 
@@ -33,8 +35,8 @@ public class UIActionViewContext {
 		}
 		if (ui instanceof Editor) {
 			this.editor = (Editor)ui;
-			this.dt = editor.cur_elem.dr;
-			this.node = editor.cur_elem.node;
+			this.dt = editor.getCur_elem().dr;
+			this.node = editor.getCur_elem().node;
 			this.dr = dt;
 		} else {
 			this.editor = null;
@@ -48,8 +50,8 @@ public class UIActionViewContext {
 		this.ui = editor;
 		this.uiv = editor;
 		this.editor = editor;
-		this.dt = editor.cur_elem.dr;
-		this.node = editor.cur_elem.node;
+		this.dt = editor.getCur_elem().dr;
+		this.node = editor.getCur_elem().node;
 		this.dr = dr;
 	}
 }

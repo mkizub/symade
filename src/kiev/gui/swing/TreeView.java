@@ -13,7 +13,6 @@ package kiev.gui.swing;
 import kiev.vtree.*;
 import kiev.vlang.FileUnit;
 import kiev.fmt.*;
-import kiev.gui.UIView;
 
 import java.awt.Component;
 import java.awt.Graphics2D;

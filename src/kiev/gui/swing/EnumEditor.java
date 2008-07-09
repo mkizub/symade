@@ -12,7 +12,6 @@ package kiev.gui.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.EnumSet;
 
 import javax.swing.JMenuItem;
@@ -24,12 +23,13 @@ import javax.swing.text.TextAction;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vtree.ScalarPtr;
 
-public class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
+public class EnumEditor 
+	implements ItemEditor, PopupMenuListener, Runnable {
 	private final Editor		editor;
 	private final DrawTerm		cur_elem;
 	private final ScalarPtr		pattr;
@@ -63,7 +63,7 @@ public class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 
 	public void run() {
 		editor.startItemEditor(this);
-		if (pattr.slot.typeinfo.clazz == Boolean.class || pattr.slot.typeinfo.clazz == boolean.class) {
+		if ( pattr.slot.typeinfo.clazz == Boolean.class || pattr.slot.typeinfo.clazz == boolean.class) {
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
 		} else {

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.gui.EditActions.Undo;
+
 public final class NavigateView implements Runnable {
 	
 	final InfoView uiv;
@@ -24,6 +26,10 @@ public final class NavigateView implements Runnable {
 		this.uiv.view_canvas.incrFirstLine(this.incr);
 	}
 
+	public static LineUp newLineUp(){
+		return new LineUp();
+	}
+	
 	final static class LineUp implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one line up"; }
 		public boolean isForPopupMenu() { return false; }
@@ -31,6 +37,11 @@ public final class NavigateView implements Runnable {
 			return new NavigateView(context.uiv, -1);
 		}
 	}
+	
+	public static LineDn newLineDn(){
+		return new LineDn();
+	}
+
 	final static class LineDn implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one line down"; }
 		public boolean isForPopupMenu() { return false; }
@@ -38,6 +49,11 @@ public final class NavigateView implements Runnable {
 			return new NavigateView(context.uiv, +1);
 		}
 	}
+	
+	public static PageUp newPageUp(){
+		return new PageUp();
+	}
+
 	final static class PageUp implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one page up"; }
 		public boolean isForPopupMenu() { return false; }
@@ -48,6 +64,11 @@ public final class NavigateView implements Runnable {
 			return new NavigateView(uiv, lnfst - lnlst + 1);
 		}
 	}
+
+	public static PageDn newPageDn(){
+		return new PageDn();
+	}
+	
 	final static class PageDn implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one page down"; }
 		public boolean isForPopupMenu() { return false; }

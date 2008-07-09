@@ -8,53 +8,71 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui;
+package kiev.gui.swing;
 
-import java.awt.Component;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 
-import javax.swing.ComboBoxEditor;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import kiev.fmt.*;
+import kiev.fmt.DrawCtrl;
+import kiev.fmt.DrawFolded;
+import kiev.fmt.DrawListWrapper;
+import kiev.fmt.DrawNodeTerm;
+import kiev.fmt.DrawNonTermList;
+import kiev.fmt.DrawOptional;
+import kiev.fmt.DrawPlaceHolder;
+import kiev.fmt.DrawTerm;
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.Draw_SyntaxAttr;
+import kiev.fmt.Draw_SyntaxElem;
+import kiev.fmt.Draw_SyntaxFunction;
+import kiev.fmt.Draw_SyntaxPlaceHolder;
+import kiev.fmt.Draw_SyntaxSet;
+import kiev.fmt.Drawable;
+import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.gui.ChooseItemEditor;
+import kiev.gui.EditActions;
+import kiev.gui.InfoView;
+import kiev.gui.InputEventInfo;
+import kiev.gui.ItemEditor;
+import kiev.gui.NavigateView;
+import kiev.gui.NewElemHere;
+import kiev.gui.NewElemNext;
+import kiev.gui.UIActionFactory;
+import kiev.gui.UIActionViewContext;
+import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
-import kiev.gui.swing.Canvas;
-import kiev.gui.swing.Window;
-import kiev.vlang.DNode;
 import kiev.vlang.FileUnit;
-import kiev.vtree.*;
-import kiev.gui.swing.ExprEditActions;
-import kiev.gui.swing.FunctionExecutor;
+import kiev.vtree.ANode;
+import kiev.vtree.AttrSlot;
+import kiev.vtree.ExtSpaceAttrSlot;
+import kiev.vtree.ScalarAttrSlot;
+import kiev.vtree.ScalarPtr;
+import kiev.vtree.SpaceAttrSlot;
+import kiev.vtree.Transaction;
+import kiev.vtree.TreeWalker;
 
-/**
- * @author mkizub
- */
-
-public class Editor extends InfoView implements KeyListener {
+public class Editor extends InfoView implements KeyListener, ElementChangeListener {
 	
 	/** Symbols used by editor */
 	
 	/** Current editor mode */
-	protected KeyListener	item_editor;
-	public boolean		insert_mode;
+	private ItemEditor	item_editor;
+	public boolean insert_mode;
 	/** Current x position for scrolling up/down */
-	int						cur_x;
+	public int cur_x;
 	/** Current item */
-	public final CurElem	cur_elem;
+	final CurElem	cur_elem;
 	/** The object in clipboard */
 	public final Clipboard	clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
 	
@@ -69,30 +87,30 @@ public class Editor extends InfoView implements KeyListener {
 
 		this.naviMap.put(new InputEventInfo(ALT,				KeyEvent.VK_X),				new ExprEditActions.Flatten());
 
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_UP),			new NavigateView.LineUp());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_DOWN),			new NavigateView.LineDn());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_UP),			 NavigateView.newLineUp());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_DOWN),			 NavigateView.newLineDn());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_UP),		 NavigateView.newPageUp());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_DOWN),		NavigateView.newPageDn());
 
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_LEFT),			new NavigateEditor.GoPrev());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_RIGHT),			new NavigateEditor.GoNext());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_UP),			new NavigateEditor.GoLineUp());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DOWN),			new NavigateEditor.GoLineDn());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_HOME),			new NavigateEditor.GoLineHome());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_END),			new NavigateEditor.GoLineEnd());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_UP),		new NavigateEditor.GoPageUp());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_DOWN),		new NavigateEditor.GoPageDn());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_LEFT),			 NavigateEditor.newGoPrev());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_RIGHT),			 NavigateEditor.newGoNext());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_UP),			 NavigateEditor.newGoLineUp());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DOWN),			 NavigateEditor.newGoLineDn());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_HOME),			 NavigateEditor.newGoLineHome());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_END),			 NavigateEditor.newGoLineEnd());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_UP),		 NavigateEditor.newGoPageUp());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_DOWN),		 NavigateEditor.newGoPageDn());
 
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_Z),				new EditActions.Undo());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_C),				new EditActions.Copy());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_X),				new EditActions.Cut());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		new EditActions.Del());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_Z),				EditActions.newUndo());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_C),				 EditActions.newCopy());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_X),				 EditActions.newCut());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		 EditActions.newDel());
 
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				new FunctionExecutor.Factory());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				new FunctionExecutor.Factory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				new FolderTrigger.Factory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				new NewElemHere.Factory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				new NewElemNext.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				 FunctionExecutor.newFactory());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				 FunctionExecutor.newFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				 FolderTrigger.newFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				 NewElemHere.newFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				 NewElemNext.newFactory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_V),				new PasteElemHere.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_B),				new PasteElemNext.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
@@ -256,7 +274,7 @@ public class Editor extends InfoView implements KeyListener {
 		return null;
 	}
 
-	public void startItemEditor(KeyListener item_editor) {
+	public void startItemEditor(ItemEditor item_editor) {
 		assert (this.item_editor == null);
 		this.item_editor = item_editor;
 		changes.push(Transaction.open("Editor.java:startItemEditor"));
@@ -350,18 +368,17 @@ public class Editor extends InfoView implements KeyListener {
 		} catch (Throwable t) {}
 	}
 
-	void makeCurrentVisible() {
+	public void makeCurrentVisible() {
 		try {
 			int top_lineno = view_canvas.first_visible.getGfxFmtInfo().getLineNo();
 			int bot_lineno = view_canvas.last_visible.getGfxFmtInfo().getLineNo();
-			int cur_lineno = cur_elem.dr.getGfxFmtInfo().getLineNo();
 			int height = bot_lineno - top_lineno;
 			int first_line = view_canvas.first_line;
 			
-			if (top_lineno > 0 && cur_lineno <= top_lineno)
-				first_line = cur_lineno -1;
-			if (bot_lineno < view_canvas.num_lines && cur_lineno >= bot_lineno)
-				first_line = cur_lineno - height + 1;
+			if (top_lineno > 0 && cur_elem.dr.getFirstLeaf().getGfxFmtInfo().getLineNo() <= top_lineno)
+				first_line = cur_elem.dr.getFirstLeaf().getGfxFmtInfo().getLineNo() -1;
+			if (bot_lineno < view_canvas.num_lines && cur_elem.dr.getFirstLeaf().getGfxFmtInfo().getLineNo() >= bot_lineno)
+				first_line = cur_elem.dr.getFirstLeaf().getGfxFmtInfo().getLineNo() - height + 1;
 			view_canvas.setFirstLine(first_line);
 		} catch (NullPointerException e) {}
 	}
@@ -380,10 +397,10 @@ public class Editor extends InfoView implements KeyListener {
 			Editor.this.view_canvas.current = dr;
 			Editor.this.view_canvas.current_node = node;
 			if (dr != null) {
-				GfxDrawTermLayoutInfo dtli = dr.getGfxFmtInfo();
-				int w = dtli.getWidth();
-				this.x = dtli.getX() + w / 2;
-				this.y = dtli.getY();
+				GfxDrawTermLayoutInfo info = dr.getGfxFmtInfo();
+				int w = info.getWidth();
+				this.x = info.getX() + w / 2;
+				this.y = info.getY();
 				java.util.Vector<Drawable> v = new java.util.Vector<Drawable>();
 				Drawable d = dr;
 				while (d != null) {
@@ -424,7 +441,7 @@ public class Editor extends InfoView implements KeyListener {
 			set(last.getFirstLeaf());
 			return;
 		}
-		void nodeUp() {
+		public void nodeUp() {
 			if (node != null && node.parent() != null) {
 				setNode(node.parent());
 				Editor.this.view_canvas.current_node = node;
@@ -450,99 +467,28 @@ public class Editor extends InfoView implements KeyListener {
 	@Override
 	public void elementChanged(ElementEvent e) {}
 
-}
+	/**
+	 * @return the item_editor
+	 */
+	public KeyListener getItem_editor() {
+		return item_editor;
+	}
 
-class ActionPoint {
-	public final Drawable	dr;
-	public final ANode		node;
-	public final AttrSlot	slot;
-	public final int		index;
-	public final int		length;
-	public ActionPoint(Drawable dr, AttrSlot slot) {
-		this.dr = dr;
-		this.node = dr.get$drnode();
-		this.slot = slot;
-		if (slot instanceof SpaceAttrSlot) {
-			this.index = 0;
-			this.length = ((SpaceAttrSlot)slot).getArray(node).length;
-		} else {
-			this.index = -1;
-			this.length = -1;
-		}
+	/**
+	 * @param item_editor the item_editor to set
+	 */
+	public void setItem_editor(ItemEditor item_editor) {
+		this.item_editor = item_editor;
 	}
-	public ActionPoint(Drawable dr, SpaceAttrSlot slot, int idx) {
-		this.dr = dr;
-		this.node = dr.get$drnode();
-		this.slot = slot;
-		this.length = slot.getArray(node).length;
-		if (idx <= 0) {
-			this.index = 0;
-		} else {
-			if (idx >= this.length)
-				this.index = this.length;
-			else
-				this.index = idx;
-		}
-	}
-	public ActionPoint(Drawable dr, ExtSpaceAttrSlot slot, int idx) {
-		this.dr = dr;
-		this.node = dr.get$drnode();
-		this.slot = slot;
-		int length = 0;
-		kiev.stdlib.Enumeration en = slot.iterate(node);
-		while (en.hasMoreElements()) {
-			en.nextElement();
-			length++;
-		}
-		this.length = length;
-		if (idx <= 0) {
-			this.index = 0;
-		} else {
-			if (idx >= this.length)
-				this.index = this.length;
-			else
-				this.index = idx;
-		}
-	}
-}
 
-class TransferableANode implements Transferable, ClipboardOwner {
-	static DataFlavor transferableANodeFlavor;
-	static {
-		try {
-			transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vtree.ANode");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+	/**
+	 * @return the cur_elem
+	 */
+	public CurElem getCur_elem() {
+		return cur_elem;
 	}
-	public final ANode node;
-	public TransferableANode(ANode node) {
-		this.node = node;
-	}
-    public DataFlavor[] getTransferDataFlavors() {
-		return new DataFlavor[] {
-			DataFlavor.stringFlavor,
-			transferableANodeFlavor
-		};
-	}
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
-		for (DataFlavor df: getTransferDataFlavors()) 
-			if( df.equals(flavor))
-				return true;
-		return false;
-	}
-    public Object getTransferData(DataFlavor flavor)
-		throws UnsupportedFlavorException
-	{
-		if (transferableANodeFlavor.equals(flavor))
-			return node;
-		if (DataFlavor.stringFlavor.equals(flavor))
-			return String.valueOf(node);
-		throw new UnsupportedFlavorException(flavor);
-	}
-	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
-}
 
+}
 
 interface KeyHandler {
 	public void process();
@@ -560,6 +506,10 @@ final class FolderTrigger implements Runnable {
 		editor.formatAndPaint(true);
 	}
 
+	public static Factory newFactory(){
+		return new Factory();
+	}
+	
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Toggle folding"; }
 		public boolean isForPopupMenu() { return true; }
@@ -714,299 +664,6 @@ final class PasteElemNext implements Runnable {
 				return null;
 			return new PasteElemNext(editor);
 		}
-	}
-}
-
-class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
-	
-	protected final Editor		editor;
-	protected final DrawTerm	dr_term;
-	protected final ScalarPtr	pattr;
-	protected       int			edit_offset;
-	protected       boolean		in_combo;
-	protected       JComboBox	combo;
-
-	final static class Factory implements UIActionFactory {
-		public String getDescr() { return "Edit the attribute as a text"; }
-		public boolean isForPopupMenu() { return true; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor == null)
-				return null;
-			Editor editor = context.editor;
-			DrawTerm dt = context.dt;
-			if (dt == null || context.node == null)
-				return null;
-			if (!(dt.syntax instanceof Draw_SyntaxAttr))
-				return null;
-			if (dt.get$drnode() != context.node)
-				return null;
-			ScalarPtr pattr = dt.get$drnode().getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
-			return new TextEditor(editor, dt, pattr);
-		}
-	}
-
-	public void run() {
-		editor.startItemEditor(this);
-		this.editor.view_canvas.cursor_offset = edit_offset;
-		String text = this.getText();
-		if (text != null) {
-			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
-		}
-		showAutoComplete();
-	}
-
-	TextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr) {
-		this.editor = editor;
-		this.dr_term = dr_term;
-		this.pattr = pattr;
-	}
-
-	String getText() {
-		return (String)pattr.get();
-	}
-	void setText(String text) {
-		if (text != null && !text.equals(getText())) {
-			if (dr_term instanceof DrawIdent)
-				pattr.set(text.replace('.','\u001f'));
-			else
-				pattr.set(text);
-			showAutoComplete();
-		}
-	}
-
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	
-	public void keyPressed(KeyEvent evt) {
-		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
-			return;
-		evt.consume();
-		String text = this.getText();
-		if (text == null) { text = ""; }
-		int prefix_offset = dr_term.getPrefix().length();
-		if (edit_offset < 0) {
-			edit_offset = 0;
-			editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
-		}
-		if (edit_offset > text.length()) {
-			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
-		}
-		switch (code) {
-		case KeyEvent.VK_DOWN:
-			if (in_combo) {
-				int count = combo.getItemCount();
-				if (count == 0) {
-					in_combo = false;
-					break;
-				}
-				int idx = combo.getSelectedIndex();
-				idx++;
-				if (idx >= count)
-					idx = 0;
-				combo.setSelectedIndex(idx);
-				break;
-			}
-			else if (combo != null && combo.getItemCount() > 0) {
-				in_combo = true;
-				if (combo.getSelectedIndex() < 0)
-					combo.setSelectedIndex(0);
-			}
-			break;
-		case KeyEvent.VK_UP:
-			if (in_combo) {
-				int count = combo.getItemCount();
-				if (count == 0) {
-					in_combo = false;
-					break;
-				}
-				int idx = combo.getSelectedIndex();
-				idx--;
-				if (idx < 0)
-					idx = count-1;
-				combo.setSelectedIndex(idx);
-				break;
-			}
-			else if (combo != null && combo.getItemCount() > 0) {
-				in_combo = true;
-				if (combo.getSelectedIndex() < 0)
-					combo.setSelectedIndex(combo.getItemCount()-1);
-			}
-			break;
-		case KeyEvent.VK_HOME:
-			edit_offset = 0;
-			break;
-		case KeyEvent.VK_END:
-			edit_offset = text.length();
-			break;
-		case KeyEvent.VK_LEFT:
-			if (edit_offset > 0)
-				edit_offset--;
-			break;
-		case KeyEvent.VK_RIGHT:
-			if (edit_offset < text.length())
-				edit_offset++;
-			break;
-		case KeyEvent.VK_DELETE:
-			if (edit_offset < text.length()) {
-				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
-				this.setText(text);
-			}
-			break;
-		case KeyEvent.VK_BACK_SPACE:
-			if (edit_offset > 0) {
-				edit_offset--;
-				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
-				this.setText(text);
-			}
-			break;
-		case KeyEvent.VK_ENTER:
-			if (in_combo) {
-				in_combo = false;
-				text = (String)combo.getSelectedItem();
-				this.setText(text);
-				edit_offset = text.length();
-				combo.setPopupVisible(false);
-				break;
-			} else {
-				editor.view_canvas.cursor_offset = edit_offset = -1;
-				editor.stopItemEditor(false);
-				if (combo != null)
-					editor.view_canvas.remove(combo);
-				return;
-			}
-		case KeyEvent.VK_ESCAPE:
-			if (in_combo) {
-				in_combo = false;
-				combo.setSelectedIndex(-1);
-				combo.setPopupVisible(false);
-				if (combo.getItemCount() > 0)
-					combo.setPopupVisible(true);
-				break;
-			} else {
-				editor.view_canvas.cursor_offset = edit_offset = -1;
-				editor.stopItemEditor(true);
-				if (combo != null)
-					editor.view_canvas.remove(combo);
-				return;
-			}
-		default:
-			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
-				char ch = evt.getKeyChar();
-				if (ch == '.' && dr_term instanceof DrawIdent)
-					ch = '\u001f';
-				text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
-				edit_offset++;
-				this.setText(text);
-			}
-		}
-		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
-		editor.formatAndPaint(true);
-	}
-
-	public void addActionListener(ActionListener l) {}
-	public void removeActionListener(ActionListener l) {}
-	public Component getEditorComponent() { return null; }
-	public Object getItem() { return pattr.get(); }
-	public void selectAll() {}
-	public void setItem(Object text) {
-		if (text != null) {
-			setText((String)text);
-			editor.formatAndPaint(true);
-		}
-	}
-
-	void showAutoComplete() {
-		if (!(pattr.node instanceof ASTNode))
-			return;
-		String name = getText();
-		if (name == null || name.length() == 0)
-			return;
-		boolean qualified = name.indexOf('\u001f') > 0;
-		DNode[] decls = ((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
-		if (decls == null)
-			return;
-		if (combo == null) {
-			combo = new JComboBox();
-			combo.setOpaque(false);
-			combo.setEditable(true);
-			combo.setEditor(this);
-			combo.configureEditor(this, name);
-			combo.setMaximumRowCount(10);
-			combo.setPopupVisible(false);
-			editor.view_canvas.add(combo);
-		} else {
-			combo.removeAllItems();
-		}
-		combo.setPopupVisible(false);
-		GfxDrawTermLayoutInfo dtli = dr_term.getGfxFmtInfo();
-		int x = dtli.getX();
-		int y = dtli.getY() - editor.view_canvas.translated_y;
-		int w = dtli.getWidth();
-		int h = dtli.getHeight();
-		combo.setBounds(x, y, w+100, h);
-		boolean popup = false;
-		for (DNode dn: decls) {
-			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.get$sname());
-			popup = true;
-		}
-		if (popup) {
-			if (!in_combo)
-				combo.setSelectedIndex(-1);
-			combo.setPopupVisible(true);
-		} else {
-			in_combo = false;
-		}
-	}
-	
-}
-
-final class IntEditor extends TextEditor {
-	
-	IntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr) {
-		super(editor, dr_term, pattr);
-	}
-	
-	final static class Factory implements UIActionFactory {
-		public String getDescr() { return "Edit the attribute as an integer"; }
-		public boolean isForPopupMenu() { return true; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor == null)
-				return null;
-			Editor editor = context.editor;
-			DrawTerm dt = context.dt;
-			if (dt == null || context.node == null)
-				return null;
-			if (!(dt.syntax instanceof Draw_SyntaxAttr))
-				return null;
-			if (dt.get$drnode() != context.node)
-				return null;
-			ScalarPtr pattr = dt.get$drnode().getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
-			return new IntEditor(editor, dt, pattr);
-		}
-	}
-
-	public void run() {
-		editor.startItemEditor(this);
-		this.editor.view_canvas.cursor_offset = edit_offset;
-		String text = this.getText();
-		if (text != null) {
-			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
-		}
-	}
-
-	String getText() {
-		Object o = pattr.get();
-		if (o == null)
-			return null;
-		return String.valueOf(o);
-	}
-	void setText(String text) {
-		pattr.set(Integer.valueOf(text));
 	}
 }
 

@@ -13,7 +13,6 @@ package kiev.gui.swing;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -26,12 +25,14 @@ import javax.swing.event.PopupMenuListener;
 import kiev.fmt.DrawJavaAccess;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.gui.Editor;
+import kiev.gui.swing.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.MetaAccess;
 
-public class AccessEditor implements KeyListener, PopupMenuListener, Runnable, ActionListener {
+public class AccessEditor 
+	implements ItemEditor, PopupMenuListener, Runnable, ActionListener {
 	private final Editor			editor;
 	private final DrawJavaAccess	cur_elem;
 	private final JPopupMenu		menu;

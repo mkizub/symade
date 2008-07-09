@@ -8,13 +8,13 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui;
+package kiev.gui.swing;
 
 import kiev.vtree.*;
 import kiev.fmt.*;
+import kiev.gui.BgFormatter;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
-import kiev.gui.swing.Window;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -29,7 +29,7 @@ import javax.swing.event.EventListenerList;
  * The abstract class for the view components of the GUI. 
  */
 public abstract class UIView extends ANode 
-	implements KeyListener, MouseListener, ComponentListener, ElementChangeListener {
+	implements kiev.gui.UIView, KeyListener, MouseListener, ComponentListener, ElementChangeListener {
 
 	/** The workplace window */
 	public Window			parent_window;
@@ -81,6 +81,10 @@ public abstract class UIView extends ANode
 
 	public abstract void formatAndPaintLater(ANode node);
 
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {}
+	
 	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
@@ -94,10 +98,6 @@ public abstract class UIView extends ANode
 		formatAndPaint(true);
 	}
 	
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {}
-
 	public void elementChanged(ElementEvent e) {}
 
 	/**

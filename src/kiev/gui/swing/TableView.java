@@ -13,8 +13,6 @@ package kiev.gui.swing;
 import kiev.vtree.*;
 import kiev.vlang.FileUnit;
 import kiev.fmt.*;
-import kiev.gui.Editor;
-import kiev.gui.UIView;
 import kiev.gui.event.ElementEvent;
 
 import java.awt.Component;

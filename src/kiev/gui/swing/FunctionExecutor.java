@@ -23,7 +23,6 @@ import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.ChooseItemEditor;
-import kiev.gui.Editor;
 import kiev.gui.NewElemHere;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -52,8 +51,11 @@ public final class FunctionExecutor implements Runnable {
 		menu.show(editor.view_canvas, x, y);
 	}
 
+	public static Factory newFactory(){
+		return new Factory();
+	}
 
-	public final static class Factory implements UIActionFactory {
+	final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Popup list of functions for a current element"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {

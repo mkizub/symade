@@ -22,11 +22,9 @@ import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.NsXmlDumpSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
-import kiev.gui.Editor;
 import kiev.gui.InfoView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.gui.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.TreeWalker;
 

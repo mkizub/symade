@@ -18,8 +18,11 @@ import kiev.fmt.Draw_SyntaxEnumChoice;
 import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.SyntaxTokenKind;
+import kiev.gui.swing.Editor;
 import kiev.gui.swing.EnumEditor;
+import kiev.gui.swing.IntEditor;
 import kiev.gui.swing.OperatorEditor;
+import kiev.gui.swing.TextEditor;
 import kiev.vlang.ConstIntExpr;
 import kiev.vlang.ENode;
 import kiev.vlang.SymbolRef;
@@ -57,9 +60,9 @@ public final class ChooseItemEditor implements UIActionFactory {
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
 			DrawTerm dt = dr.getFirstLeaf();
 			if (dt == null) {
-				dt = editor.cur_elem.dr.getFirstLeaf();
+				dt = editor.getCur_elem().dr.getFirstLeaf();
 				if (dt == null)
-					dt = editor.cur_elem.dr.getNextLeaf();
+					dt = editor.getCur_elem().dr.getNextLeaf();
 			}
 			return new EnumEditor(editor, dt, dec.get$drnode().getScalarPtr(stx.name));
 		}

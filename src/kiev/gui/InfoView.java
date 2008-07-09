@@ -14,6 +14,8 @@ import kiev.vtree.*;
 import kiev.fmt.*;
 import kiev.gui.event.ElementEvent;
 import kiev.gui.swing.Canvas;
+import kiev.gui.swing.Editor;
+import kiev.gui.swing.UIView;
 import kiev.gui.swing.Window;
 
 import java.awt.event.KeyEvent;
@@ -116,7 +118,7 @@ public class InfoView extends UIView implements KeyListener {
 	@Override
 	public void elementChanged(ElementEvent e) {
 		super.elementChanged(e);
-		ANode node = ((Editor)e.getSource()).cur_elem.node;
+		ANode node = ((Editor)e.getSource()).getCur_elem().node;
 		formatAndPaintLater(node);
 		
 	}

@@ -12,7 +12,6 @@ package kiev.gui.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
@@ -21,14 +20,14 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.TextAction;
 
 import kiev.fmt.*;
-import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtSpaceAttrSlot;
 import kiev.vtree.ScalarAttrSlot;
 import kiev.vtree.SpaceAttrSlot;
 
-public abstract class NewElemEditor implements KeyListener, PopupMenuListener {
+public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 
 	static class Menu {
 		String			title;

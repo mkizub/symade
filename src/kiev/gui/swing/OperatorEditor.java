@@ -12,7 +12,6 @@ package kiev.gui.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -26,18 +25,18 @@ import kiev.fmt.DrawToken;
 import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.SyntaxTokenKind;
-import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.ENode;
 import kiev.vlang.Operator;
 import kiev.vlang.types.TypeExpr;
 
-public class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
-	private final Editor		editor;
-	private final DrawTerm		cur_elem;
-	private final ENode			expr;
-	private final JPopupMenu	menu;
+public class OperatorEditor implements ItemEditor, PopupMenuListener, Runnable {
+	private final Editor editor;
+	private final DrawTerm cur_elem;
+	private final ENode expr;
+	private final JPopupMenu menu;
 	
 	public OperatorEditor(Editor editor, DrawTerm cur_elem) {
 		this.editor = editor;

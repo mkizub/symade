@@ -10,6 +10,8 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.gui.swing.UIView;
+
 public class BgFormatter extends Thread {
 	private boolean do_format;
 	private UIView view;

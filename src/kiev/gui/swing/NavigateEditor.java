@@ -8,10 +8,12 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui;
+package kiev.gui.swing;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.gui.UIActionFactory;
+import kiev.gui.UIActionViewContext;
 
 public class NavigateEditor implements Runnable {
 
@@ -35,6 +37,10 @@ public class NavigateEditor implements Runnable {
 		case +4: navigatePageDn(uiv); break;
 		}
 	}
+
+	public static GoPrev newGoPrev(){
+		return new GoPrev();
+	}
 	
 	final static class GoPrev implements UIActionFactory {
 		public String getDescr() { return "Go to the previous element"; }
@@ -45,6 +51,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+
+	public static GoNext newGoNext(){
+		return new GoNext();
+	}
+
 	final static class GoNext implements UIActionFactory {
 		public String getDescr() { return "Go to the next element"; }
 		public boolean isForPopupMenu() { return false; }
@@ -54,6 +65,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+	
+	public static GoLineUp newGoLineUp(){
+		return new GoLineUp();
+	}
+
 	final static class GoLineUp implements UIActionFactory {
 		public String getDescr() { return "Go to an element above"; }
 		public boolean isForPopupMenu() { return false; }
@@ -63,6 +79,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+	
+	public static GoLineDn newGoLineDn(){
+		return new GoLineDn();
+	}
+
 	final static class GoLineDn implements UIActionFactory {
 		public String getDescr() { return "Go to an element below"; }
 		public boolean isForPopupMenu() { return false; }
@@ -72,6 +93,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+	
+	public static GoLineHome newGoLineHome(){
+		return new GoLineHome();
+	}
+	
 	final static class GoLineHome implements UIActionFactory {
 		public String getDescr() { return "Go to the first element on the line"; }
 		public boolean isForPopupMenu() { return false; }
@@ -81,6 +107,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+	
+	public static GoLineEnd newGoLineEnd(){
+		return new GoLineEnd();
+	}
+
 	final static class GoLineEnd implements UIActionFactory {
 		public String getDescr() { return "Go to the last element on the line"; }
 		public boolean isForPopupMenu() { return false; }
@@ -90,6 +121,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+	
+	public static GoPageUp newGoPageUp(){
+		return new GoPageUp();
+	}
+
 	final static class GoPageUp implements UIActionFactory {
 		public String getDescr() { return "Go to an element one screen above"; }
 		public boolean isForPopupMenu() { return false; }
@@ -99,6 +135,11 @@ public class NavigateEditor implements Runnable {
 			return null;
 		}
 	}
+	
+	public static GoPageDn newGoPageDn(){
+		return new GoPageDn();
+	}
+
 	final static class GoPageDn implements UIActionFactory {
 		public String getDescr() { return "Go to an element one screen below"; }
 		public boolean isForPopupMenu() { return false; }

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.gui.swing.Editor;
+
 public class NavigateNode implements Runnable {
 
 	final Editor uiv;
@@ -29,7 +31,7 @@ public class NavigateNode implements Runnable {
 	}
 	public void run() {
 		if (cmd == "select-up") {
-			uiv.cur_elem.nodeUp();
+			uiv.getCur_elem().nodeUp();
 			uiv.formatAndPaint(false);
 		}
 		else if (cmd == "insert-mode") {
@@ -42,7 +44,7 @@ public class NavigateNode implements Runnable {
 		public String getDescr() { return "Select parent node"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null && context.editor.cur_elem.node != null && context.editor.cur_elem.node.parent() != null)
+			if (context.editor != null && context.editor.getCur_elem().node != null && context.editor.getCur_elem().node.parent() != null)
 				return new NavigateNode(context.editor, "select-up");
 			return null;
 		}

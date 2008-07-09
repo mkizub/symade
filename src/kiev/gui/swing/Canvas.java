@@ -29,11 +29,12 @@ import javax.swing.JScrollBar;
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.gui.UIView;
+import kiev.gui.swing.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 
-public class Canvas extends JPanel implements kiev.gui.Canvas, MouseWheelListener, AdjustmentListener {
+public class Canvas extends JPanel 
+	implements kiev.gui.Canvas, MouseWheelListener, AdjustmentListener {
 	private static final long serialVersionUID = 4713633504436057499L;
 	static final Color defaultTextColor = Color.BLACK;
 	static final Color autoGenTextColor = Color.GRAY;
@@ -41,8 +42,8 @@ public class Canvas extends JPanel implements kiev.gui.Canvas, MouseWheelListene
 	static final Font defaultTextFont = new Font("Dialog", Font.PLAIN, 12);
 	
 	private JScrollBar verticalScrollBar;
-	private int        imgWidth;
-	private int        imgHeight;
+	private int imgWidth;
+	private int imgHeight;
 	
 	private DrawLayoutInfo dlb_root;
 	public DrawTerm	current;
@@ -53,16 +54,16 @@ public class Canvas extends JPanel implements kiev.gui.Canvas, MouseWheelListene
 
 	transient VolatileImage vImg;
 	
-	int			lineno;
-	boolean		translated;
+	int lineno;
+	boolean translated;
 	public DrawTerm	first_visible;
 	public DrawTerm	last_visible;
-	public int			translated_y;
-	int			drawed_x;
-	int			drawed_y;
-	int			bg_drawed_x;
-	int			bg_drawed_y;
-	boolean		selected;
+	public int translated_y;
+	int drawed_x;
+	int drawed_y;
+	int bg_drawed_x;
+	int bg_drawed_y;
+	boolean selected;
 	
 	public Canvas() {
 		super(null,false);
@@ -75,10 +76,14 @@ public class Canvas extends JPanel implements kiev.gui.Canvas, MouseWheelListene
 		this.imgHeight = 100;
 	}
 	
-	public void setUIView(UIView uiv) {
-		this.addMouseListener(uiv);
-		this.addComponentListener(uiv);
-		this.addKeyListener(uiv);
+	public void setUIView(kiev.gui.UIView uiv) {
+		if (uiv instanceof UIView){
+			this.addMouseListener((UIView)uiv);
+			this.addComponentListener((UIView)uiv);
+			this.addKeyListener((UIView)uiv);
+		} else {
+			throw new RuntimeException("Wrong instance of UIView"); 
+		}
 	}
 	
 	public int getImgWidth() { return imgWidth; }

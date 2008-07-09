@@ -5,6 +5,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 
 import kiev.fmt.DrawNodeTerm;
+import kiev.gui.swing.Editor;
+import kiev.gui.swing.TransferableANode;
 import kiev.vtree.ANode;
 import kiev.vtree.Transaction;
 
@@ -30,17 +32,21 @@ public final class EditActions implements Runnable {
 		return new Cut();
 	}
 
+	public static Del newDel(){
+		return new Del();
+	}
+
 	public static CloseWindow newCloseWindow(){
 		return new CloseWindow();
 	}
 
 	public void run() {
 		if (action == "close") {
-			if (editor.item_editor != null) {
+			if (editor.getItem_editor() != null) {
 				editor.stopItemEditor(true);
-				editor.item_editor = null;
+				editor.setItem_editor(null);
 			}
-			editor.cur_elem.set(null); 
+			editor.getCur_elem().set(null); 
 			editor.parent_window.closeEditor(editor);
 			editor.parent_window.info_view.formatAndPaint(true);
 		}
@@ -50,7 +56,7 @@ public final class EditActions implements Runnable {
 			editor.formatAndPaint(true);
 		}
 		else if (action == "cut" || action == "del") {
-			ANode node = editor.cur_elem.node;
+			ANode node = editor.getCur_elem().node;
 			editor.changes.push(Transaction.open("Actions.java:cut"));
 			node.detach();
 			editor.changes.peek().close();
@@ -61,8 +67,8 @@ public final class EditActions implements Runnable {
 			editor.formatAndPaint(true);
 		}
 		else if (action == "copy") {
-			if (editor.cur_elem.dr instanceof DrawNodeTerm) {
-				Object obj = ((DrawNodeTerm)editor.cur_elem.dr).getAttrObject();
+			if (editor.getCur_elem().dr instanceof DrawNodeTerm) {
+				Object obj = ((DrawNodeTerm)editor.getCur_elem().dr).getAttrObject();
 				Transferable tr = null;
 				if (obj instanceof ANode)
 					tr = new TransferableANode((ANode)obj);
@@ -70,7 +76,7 @@ public final class EditActions implements Runnable {
 					tr = new StringSelection(String.valueOf(obj));
 				editor.clipboard.setContents(tr, (ClipboardOwner)tr);
 			} else {
-				Transferable tr = new TransferableANode(editor.cur_elem.node);
+				Transferable tr = new TransferableANode(editor.getCur_elem().node);
 				editor.clipboard.setContents(tr, (ClipboardOwner)tr);
 			}
 		}
@@ -91,7 +97,7 @@ public final class EditActions implements Runnable {
 		public String getDescr() { return "Cut current node"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null && context.editor.cur_elem.dr != null)
+			if (context.editor != null && context.editor.getCur_elem().dr != null)
 				return new EditActions(context.editor, "cut");
 			return null;
 		}
@@ -101,7 +107,7 @@ public final class EditActions implements Runnable {
 		public String getDescr() { return "Delete current node"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null && context.editor.cur_elem.dr != null)
+			if (context.editor != null && context.editor.getCur_elem().dr != null)
 				return new EditActions(context.editor, "del");
 			return null;
 		}
@@ -111,7 +117,7 @@ public final class EditActions implements Runnable {
 		public String getDescr() { return "Copy current node"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null && context.editor.cur_elem.dr != null)
+			if (context.editor != null && context.editor.getCur_elem().dr != null)
 				return new EditActions(context.editor, "copy");
 			return null;
 		}

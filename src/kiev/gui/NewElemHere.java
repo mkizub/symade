@@ -1,16 +1,17 @@
 package kiev.gui;
 
 import kiev.fmt.*;
+import kiev.gui.swing.ActionPoint;
+import kiev.gui.swing.Editor;
 import kiev.gui.swing.NewElemEditor;
 import kiev.vtree.ANode;
 
 public final class NewElemHere extends NewElemEditor implements Runnable {
+
 	public NewElemHere(Editor editor) { super(editor); }
-	public static Factory newFactory(){
-		return new Factory();
-	}
+
 	public void run() {
-		Drawable dr = getEditor().cur_elem.dr;
+		Drawable dr = getEditor().getCur_elem().dr;
 		if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
 			ANode n = dr.get$drnode();
 			makeMenu("Set new item", n, (Draw_SyntaxPlaceHolder)dr.syntax);
@@ -34,6 +35,11 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			return;
 		}
 	}
+	
+	public static Factory newFactory(){
+		return new Factory();
+	}
+
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Create a new element at this position"; }
 		public boolean isForPopupMenu() { return true; }

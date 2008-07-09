@@ -12,7 +12,6 @@ package kiev.gui.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Vector;
 
 import javax.swing.JPopupMenu;
@@ -28,8 +27,7 @@ import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.SyntaxTokenKind;
-import kiev.gui.Editor;
-import kiev.gui.NavigateEditor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.parser.ASTExpression;
@@ -43,7 +41,8 @@ import kiev.vtree.ASTNode;
 import kiev.vtree.SpaceAttrSlot;
 import kiev.vtree.SpacePtr;
 
-public final class ExprEditActions implements Runnable, KeyListener {
+public final class ExprEditActions 
+	implements ItemEditor, Runnable {
 	
 	final Editor editor;
 	final UIActionViewContext context;
