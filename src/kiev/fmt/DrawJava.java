@@ -24,14 +24,6 @@ public class DrawJavaAccessExpr extends Drawable {
 		super(node, syntax, text_syntax);
 	}
 
-	public String getText() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(accessor.getText());
-		sb.append(separator.getText());
-		sb.append(field.getText());
-		return sb.toString();
-	}
-
 	public Drawable getNextChild(Drawable dr) {
 		if (dr == accessor)
 			return separator;

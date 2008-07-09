@@ -37,8 +37,6 @@ public abstract class Drawable extends ANode {
 		this.text_syntax = text_syntax;
 	}
 	
-	public abstract String getText();
-
 	public abstract void preFormat(DrawContext cont);
 	public abstract Drawable getNextChild(Drawable dr);
 	public abstract Drawable getPrevChild(Drawable dr);

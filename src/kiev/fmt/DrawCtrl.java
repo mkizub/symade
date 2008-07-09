@@ -24,12 +24,6 @@ public abstract class DrawCtrl extends Drawable {
 	// for GUI
 	public Drawable getArg() { this.arg }
 
-	public String getText() {
-		if (arg != null)
-			return arg.getText();
-		return "???";
-	}
-
 	public Drawable getNextChild(Drawable dr) {
 		assert (dr == arg);
 		return null;

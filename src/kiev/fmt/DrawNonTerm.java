@@ -21,13 +21,6 @@ public abstract class DrawNonTerm extends Drawable {
 		super(node, syntax, text_syntax);
 	}
 	
-	public String getText() {
-		StringBuffer sb = new StringBuffer();
-		foreach (Drawable arg; args)
-			sb.append(arg.getText());
-		return sb.toString();
-	}
-
 	public Drawable getNextChild(Drawable dr) {
 		assert (dr.parent() == this && dr.pslot().name == "args");
 		return (Drawable)ANode.getNextNode(dr);
@@ -152,17 +145,6 @@ public final class DrawNonTermList extends Drawable {
 		}
 	}
 	
-	public String getText() {
-		StringBuffer sb = new StringBuffer();
-		if (prefix != null)
-			sb.append(prefix.getText());
-		foreach (Drawable arg; args)
-			sb.append(arg.getText());
-		if (sufix != null)
-			sb.append(sufix.getText());
-		return sb.toString();
-	}
-
 	public Drawable getNextChild(Drawable dr) {
 		if (dr == prefix) {
 			if (args.length > 0)
@@ -350,14 +332,6 @@ public class DrawSyntaxSwitch extends Drawable {
 		super(node, syntax, text_syntax);
 	}
 
-	public String getText() {
-		StringBuffer sb = new StringBuffer();
-		if (prefix != null)  sb.append(prefix.getText());
-		if (element != null) sb.append(element.getText());
-		if (suffix != null)  sb.append(suffix.getText());
-		return sb.toString();
-	}
-
 	public Drawable getNextChild(Drawable dr) {
 		if (dr == prefix)
 			return element;
@@ -419,15 +393,6 @@ public final class DrawTreeBranch extends Drawable {
 	public boolean getDrawFolded() { this.draw_folded }
 	// for GUI
 	public void setDrawFolded(boolean val) { this.draw_folded = val; }
-
-	public String getText() {
-		if (folded != null)
-			return folded.getText();
-		StringBuffer sb = new StringBuffer();
-		foreach (Drawable arg; args)
-			sb.append(arg.getText());
-		return sb.toString();
-	}
 
 	public Drawable getNextChild(Drawable dr) {
 		if (dr == folded) {
