@@ -143,7 +143,7 @@ public abstract class Drawable extends ANode {
 		if (this.isUnvisible())
 			return;
 		if (this instanceof DrawTerm) {
-			context.addLeaf((DrawTerm)this);
+			context.addLeaf(((DrawTerm)this).dt_fmt);
 		} else {
 			context = context.pushDrawable(this);
 			try {

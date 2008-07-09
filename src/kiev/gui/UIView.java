@@ -18,6 +18,8 @@ import kiev.gui.swing.Window;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -27,7 +29,7 @@ import javax.swing.event.EventListenerList;
  * The abstract class for the view components of the GUI. 
  */
 public abstract class UIView extends ANode 
-implements MouseListener, ComponentListener, ElementChangeListener {
+	implements KeyListener, MouseListener, ComponentListener, ElementChangeListener {
 
 	/** The workplace window */
 	public Window			parent_window;
@@ -92,6 +94,10 @@ implements MouseListener, ComponentListener, ElementChangeListener {
 		formatAndPaint(true);
 	}
 	
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {}
+
 	public void elementChanged(ElementEvent e) {}
 
 	/**

@@ -21,6 +21,7 @@ import kiev.fmt.Draw_SyntaxFunction;
 import kiev.fmt.Draw_SyntaxList;
 import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
+import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.Editor;
 import kiev.gui.NewElemHere;
@@ -44,9 +45,10 @@ public final class FunctionExecutor implements Runnable {
 		menu = new JPopupMenu();
 		for (TextAction act: actions)
 			menu.add(new JMenuItem(act));
-		int x = editor.cur_elem.dr.getX();
-		int h = editor.cur_elem.dr.getHeight();
-		int y = editor.cur_elem.dr.getY() + h - editor.view_canvas.translated_y;
+		GfxDrawTermLayoutInfo cur_dtli = editor.cur_elem.dr.getGfxFmtInfo();
+		int x = cur_dtli.getX();
+		int h = cur_dtli.getHeight();
+		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
 		menu.show(editor.view_canvas, x, y);
 	}
 

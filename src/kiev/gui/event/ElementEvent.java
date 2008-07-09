@@ -34,7 +34,7 @@ public class ElementEvent extends EventObject {
   
 	public ElementEvent(Object source, int type) {
 		super(source);
-		this.id = id;
+		this.id = type;
 	}
 	
   /**

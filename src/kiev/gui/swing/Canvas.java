@@ -17,6 +17,9 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.font.TextLayout;
 import java.awt.image.VolatileImage;
 
@@ -25,10 +28,12 @@ import javax.swing.JScrollBar;
 
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
+import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.gui.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 
-public class Canvas extends JPanel implements kiev.gui.Canvas {
+public class Canvas extends JPanel implements kiev.gui.Canvas, MouseWheelListener, AdjustmentListener {
 	private static final long serialVersionUID = 4713633504436057499L;
 	static final Color defaultTextColor = Color.BLACK;
 	static final Color autoGenTextColor = Color.GRAY;
@@ -36,8 +41,8 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 	static final Font defaultTextFont = new Font("Dialog", Font.PLAIN, 12);
 	
 	private JScrollBar verticalScrollBar;
-	public int imgWidth;
-	int					imgHeight;
+	private int        imgWidth;
+	private int        imgHeight;
 	
 	private DrawLayoutInfo dlb_root;
 	public DrawTerm	current;
@@ -65,10 +70,20 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		this.verticalScrollBar = new JScrollBar(JScrollBar.VERTICAL);
 		this.verticalScrollBar.addAdjustmentListener(this);
 		this.add(this.verticalScrollBar);
+		this.addMouseWheelListener(this);
 		this.imgWidth = 100;
 		this.imgHeight = 100;
 	}
 	
+	public void setUIView(UIView uiv) {
+		this.addMouseListener(uiv);
+		this.addComponentListener(uiv);
+		this.addKeyListener(uiv);
+	}
+	
+	public int getImgWidth() { return imgWidth; }
+	public int getImgHeight() { return imgHeight; }
+
 	public void setBounds(int x, int y, int width, int height) {
 		int pw = verticalScrollBar.getPreferredSize().width;
 		imgWidth = width - pw;
@@ -96,6 +111,74 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 		}
 	}
 	
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		if (e.getScrollAmount() != 0) {
+			JScrollBar toScroll = this.getVerticalScrollBar();
+			int direction = 0;
+			// find which scrollbar to scroll, or return if none
+			if (toScroll == null || !toScroll.isVisible()) { 
+				//toScroll = scrollpane.getHorizontalScrollBar();
+				//if (toScroll == null || !toScroll.isVisible()) { 
+				//	return;
+				//}
+				return;
+			}
+			direction = e.getWheelRotation() < 0 ? -1 : 1;
+			if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)
+				scrollByUnits(toScroll, direction, e.getScrollAmount());
+			else if (e.getScrollType() == MouseWheelEvent.WHEEL_BLOCK_SCROLL)
+				scrollByBlock(toScroll, direction);
+		}
+	}
+	private static void scrollByBlock(JScrollBar scrollbar, int direction) {
+		// This method is called from BasicScrollPaneUI to implement wheel
+		// scrolling, and also from scrollByBlock().
+		int oldValue = scrollbar.getValue();
+		int blockIncrement = scrollbar.getBlockIncrement(direction);
+		int delta = blockIncrement * ((direction > 0) ? +1 : -1);
+		int newValue = oldValue + delta;
+
+		// Check for overflow.
+		if (delta > 0 && newValue < oldValue) {
+			newValue = scrollbar.getMaximum();
+		}
+		else if (delta < 0 && newValue > oldValue) {
+			newValue = scrollbar.getMinimum();
+		}
+
+		scrollbar.setValue(newValue);			
+	}
+	private static void scrollByUnits(JScrollBar scrollbar, int direction,
+			int units) {
+		// This method is called from BasicScrollPaneUI to implement wheel
+		// scrolling, as well as from scrollByUnit().
+		int delta;
+
+		for (int i=0; i<units; i++) {
+			if (direction > 0) {
+				delta = scrollbar.getUnitIncrement(direction);
+			}
+			else {
+				delta = -scrollbar.getUnitIncrement(direction);
+			}
+
+			int oldValue = scrollbar.getValue();
+			int newValue = oldValue + delta;
+
+			// Check for overflow.
+			if (delta > 0 && newValue < oldValue) {
+				newValue = scrollbar.getMaximum();
+			}
+			else if (delta < 0 && newValue > oldValue) {
+				newValue = scrollbar.getMinimum();
+			}
+			if (oldValue == newValue) {
+				break;
+			}
+			scrollbar.setValue(newValue);
+		}
+	}
+
 	public VolatileImage createVolatileImage(int w, int h) {
 		System.out.println("create volatile image "+w+" : "+h);
 		return super.createVolatileImage(w, h);
@@ -147,7 +230,7 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 				num_lines = lineno;
 				int visa = 0;
 				if (first_visible != null && last_visible != null) {
-					visa = last_visible.getLineNo()-first_visible.getLineNo();
+					visa = last_visible.getGfxFmtInfo().getLineNo()-first_visible.getGfxFmtInfo().getLineNo();
 					if (verticalScrollBar.getVisibleAmount() != visa)
 						verticalScrollBar.setVisibleAmount(visa);
 				}
@@ -165,13 +248,13 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 	}
 	
 	private Rectangle calcBounds(DrawLayoutInfo n) {
-		if (n.getDrawable() instanceof DrawTerm) {
-			DrawTerm dt = (DrawTerm)n.getDrawable();
-			if (dt.getLineNo() < first_line)
+		if (n instanceof GfxDrawTermLayoutInfo) {
+			GfxDrawTermLayoutInfo dtli = (GfxDrawTermLayoutInfo)n;
+			if (dtli.getLineNo() < first_line)
 				return null;
-			int w = dt.getWidth();
-			int h = dt.getHeight();
-			return new Rectangle(dt.getX(), dt.getY(), w, h);
+			int w = dtli.getWidth();
+			int h = dtli.getHeight();
+			return new Rectangle(dtli.getX(), dtli.getY(), w, h);
 		} else {
 			Rectangle res = null;
 			for (DrawLayoutInfo dlb: n.getBlocks()) {
@@ -188,8 +271,8 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 	private void paint(Graphics2D g, DrawLayoutInfo n) {
 		if (n == null)
 			return;
-		if (n.getDrawable() instanceof DrawTerm) {
-			paintLeaf(g, (DrawTerm)n.getDrawable());
+		if (n instanceof GfxDrawTermLayoutInfo) {
+			paintLeaf(g, (GfxDrawTermLayoutInfo)n);
 		} else {
 			for (DrawLayoutInfo dlb: n.getBlocks()) {
 				paint(g, dlb);
@@ -205,24 +288,25 @@ public class Canvas extends JPanel implements kiev.gui.Canvas {
 	}
 
 
-	private void paintLeaf(Graphics2D g, DrawTerm leaf) {
+	private void paintLeaf(Graphics2D g, GfxDrawTermLayoutInfo dtli) {
+		DrawTerm leaf = dtli.getDrawable();
 		if (leaf == null || leaf.isUnvisible())
 			return;
 		if (lineno < first_line) {
-			if (leaf.get$do_newline())
+			if (dtli.get$do_newline())
 				lineno++;
 			return;
 		}
-		if (leaf.get$do_newline())
+		if (dtli.get$do_newline())
 			lineno++;
 		if (first_visible == null)
 			first_visible = leaf;
 		
-		int x = leaf.getX();
-		int y = leaf.getY();
-		int w = leaf.getWidth();
-		int h = leaf.getHeight();
-		int b = leaf.getBaseline();
+		int x = dtli.getX();
+		int y = dtli.getY();
+		int w = dtli.getWidth();
+		int h = dtli.getHeight();
+		int b = dtli.getBaseline();
 
 		if (!translated) {
 			translated_y = y;

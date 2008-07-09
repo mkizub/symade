@@ -132,10 +132,10 @@ public class TextFormatter extends AbstractFormatter {
 		DrawTerm first = dr_root.getFirstLeaf();
 		if (first == null)
 			return;
-		TxtDrawTermFormatInfo line_start = (TxtDrawTermFormatInfo)first.dt_fmt;
-		for (TxtDrawTermFormatInfo dr=line_start; dr != null; dr = dr.getNext()) {
+		TxtDrawTermLayoutInfo line_start = (TxtDrawTermLayoutInfo)first.dt_fmt;
+		for (TxtDrawTermLayoutInfo dr=line_start; dr != null; dr = dr.getNext()) {
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
-				for (TxtDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
+				for (TxtDrawTermLayoutInfo l=line_start; l != null; l=l.getNext()) {
 					l.lineno = lineno;
 					if (l == dr)
 						break;
@@ -145,7 +145,7 @@ public class TextFormatter extends AbstractFormatter {
 			}
 		}
 		// fill the rest
-		for (TxtDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
+		for (TxtDrawTermLayoutInfo l=line_start; l != null; l=l.getNext()) {
 			l.lineno = lineno;
 		}
 	}
@@ -208,13 +208,13 @@ public class GfxFormatter extends AbstractFormatter {
 		DrawTerm first = dr_root.getFirstLeaf();
 		if (first == null)
 			return;
-		GfxDrawTermFormatInfo line_start = (GfxDrawTermFormatInfo)first.dt_fmt;
-		for (GfxDrawTermFormatInfo dr=line_start; dr != null; dr = dr.getNext()) {
+		GfxDrawTermLayoutInfo line_start = (GfxDrawTermLayoutInfo)first.dt_fmt;
+		for (GfxDrawTermLayoutInfo dr=line_start; dr != null; dr = dr.getNext()) {
 			dr.y = y;
 			max_h = Math.max(max_h, dr.height);
 			max_b = Math.max(max_b, dr.baseline);
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
-				for (GfxDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
+				for (GfxDrawTermLayoutInfo l=line_start; l != null; l=l.getNext()) {
 					l.lineno = lineno;
 					l.y = y;
 					l.height = max_h;
@@ -230,7 +230,7 @@ public class GfxFormatter extends AbstractFormatter {
 			}
 		}
 		// fill the rest
-		for (GfxDrawTermFormatInfo l=line_start; l != null; l=l.getNext()) {
+		for (GfxDrawTermLayoutInfo l=line_start; l != null; l=l.getNext()) {
 			l.lineno = lineno;
 			l.y = y;
 			l.height = max_h;

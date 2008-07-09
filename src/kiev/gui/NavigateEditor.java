@@ -11,6 +11,7 @@
 package kiev.gui;
 
 import kiev.fmt.DrawTerm;
+import kiev.fmt.GfxDrawTermLayoutInfo;
 
 public class NavigateEditor implements Runnable {
 
@@ -112,12 +113,12 @@ public class NavigateEditor implements Runnable {
 		if (uiv.insert_mode && uiv.view_canvas.cursor_offset > 0) {
 			uiv.view_canvas.cursor_offset --;
 		} else {
-			DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
+			GfxDrawTermLayoutInfo prev = uiv.cur_elem.dr.getFirstLeaf().getGfxFmtInfo().getPrev();
 			if (prev != null) {
-				uiv.cur_elem.set(prev);
+				uiv.cur_elem.set(prev.getDrawable());
 				uiv.cur_x = prev.getX();
 				if (uiv.insert_mode) {
-					String text = prev.getText();
+					String text = prev.getDrawable().getText();
 					if (text != null)
 						uiv.view_canvas.cursor_offset = text.length();
 					else
@@ -135,9 +136,9 @@ public class NavigateEditor implements Runnable {
 		if (curr != null && curr.getText() != null && uiv.insert_mode && uiv.view_canvas.cursor_offset < curr.getText().length()) {
 			uiv.view_canvas.cursor_offset ++;
 		} else {
-			DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
+			GfxDrawTermLayoutInfo next = uiv.cur_elem.dr.getFirstLeaf().getGfxFmtInfo().getNext();
 			if (next != null) {
-				uiv.cur_elem.set(next);
+				uiv.cur_elem.set(next.getDrawable());
 				uiv.cur_x = next.getX();
 				uiv.view_canvas.cursor_offset = 0;
 			}
@@ -148,22 +149,23 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	private void navigateUp(Editor uiv, boolean repaint) {
-		DrawTerm n = null;
-		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf();
-		if (prev != null)
-			prev = prev.getPrevLeaf();
+		DrawTerm dt = uiv.cur_elem.dr.getFirstLeaf();
+		if (dt == null)
+			return;
+		GfxDrawTermLayoutInfo n = null;
+		GfxDrawTermLayoutInfo prev = dt.getGfxFmtInfo().getPrev();
 		while (prev != null) {
 			if (prev.get$do_newline()) {
 				n = prev;
 				break;
 			}
-			prev = prev.getPrevLeaf();
+			prev = prev.getPrev();
 		}
 		while (n != null) {
 			int w = n.getWidth();
 			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
-			prev = n.getPrevLeaf();
+			prev = n.getPrev();
 			if (prev == null || prev.get$do_newline())
 				break;
 			w = prev.getWidth();
@@ -172,27 +174,28 @@ public class NavigateEditor implements Runnable {
 			n = prev;
 		}
 		if (n != null)
-			uiv.cur_elem.set(n);
+			uiv.cur_elem.set(n.getDrawable());
 		if (repaint) {
 			uiv.makeCurrentVisible();
 			uiv.formatAndPaint(false);
 		}
 	}
 	private void navigateDn(Editor uiv, boolean repaint) {
-		DrawTerm n = null;
-		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf();
+		DrawTerm dt = uiv.cur_elem.dr.getFirstLeaf();
+		GfxDrawTermLayoutInfo n = null;
+		GfxDrawTermLayoutInfo next = dt.getGfxFmtInfo();
 		while (next != null) {
 			if (next.get$do_newline()) {
-				n = next.getNextLeaf();
+				n = next.getNext();
 				break;
 			}
-			next = next.getNextLeaf();
+			next = next.getNext();
 		}
 		while (n != null) {
 			int w = n.getWidth();
 			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
-			next = n.getNextLeaf();
+			next = n.getNext();
 			if (next == null)
 				break;
 			if (next.getX() > uiv.cur_x)
@@ -202,40 +205,40 @@ public class NavigateEditor implements Runnable {
 			n = next;
 		}
 		if (n != null)
-			uiv.cur_elem.set(n);
+			uiv.cur_elem.set(n.getDrawable());
 		if (repaint) {
 			uiv.makeCurrentVisible();
 			uiv.formatAndPaint(false);
 		}
 	}
 	private void navigateLineHome(Editor uiv, boolean repaint) {
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().getLineNo();
-		DrawTerm res = uiv.cur_elem.dr;
+		GfxDrawTermLayoutInfo res = uiv.cur_elem.dr.getGfxFmtInfo();
+		int lineno = res.getLineNo();
 		for (;;) {
-			DrawTerm dr = res.getPrevLeaf();
+			GfxDrawTermLayoutInfo dr = res.getPrev();
 			if (dr == null || dr.getLineNo() != lineno)
 				break;
 			res = dr;
 		}
-		if (res != uiv.cur_elem.dr) {
-			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.getX();
+		if (res.getDrawable() != uiv.cur_elem.dr) {
+			uiv.cur_elem.set(res.getDrawable());
+			uiv.cur_x = res.getX();
 		}
 		if (repaint)
 			uiv.formatAndPaint(false);
 	}
 	private void navigateLineEnd(Editor uiv, boolean repaint) {
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().getLineNo();
-		DrawTerm res = uiv.cur_elem.dr;
+		GfxDrawTermLayoutInfo res = uiv.cur_elem.dr.getGfxFmtInfo();
+		int lineno = res.getLineNo();
 		for (;;) {
-			DrawTerm dr = res.getNextLeaf();
+			GfxDrawTermLayoutInfo dr = res.getNext();
 			if (dr == null || dr.getLineNo() != lineno)
 				break;
 			res = dr;
 		}
-		if (res != uiv.cur_elem.dr) {
-			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.getX();
+		if (res.getDrawable() != uiv.cur_elem.dr) {
+			uiv.cur_elem.set(res.getDrawable());
+			uiv.cur_x = res.getX();
 		}
 		if (repaint)
 			uiv.formatAndPaint(false);
@@ -245,7 +248,9 @@ public class NavigateEditor implements Runnable {
 			uiv.view_canvas.setFirstLine(0);
 			return;
 		}
-		int offs = uiv.view_canvas.last_visible.getLineNo() - uiv.view_canvas.first_visible.getLineNo() -1;
+		int lnlst = uiv.view_canvas.last_visible.getGfxFmtInfo().getLineNo();
+		int lnfst = uiv.view_canvas.first_visible.getGfxFmtInfo().getLineNo();
+		int offs = lnlst - lnfst -1;
 		uiv.view_canvas.incrFirstLine(-offs);
 		for (int i=offs; i >= 0; i--)
 			navigateUp(uiv,i==0);
@@ -256,7 +261,9 @@ public class NavigateEditor implements Runnable {
 			uiv.view_canvas.setFirstLine(0);
 			return;
 		}
-		int offs = uiv.view_canvas.last_visible.getLineNo() - uiv.view_canvas.first_visible.getLineNo() -1;
+		int lnlst = uiv.view_canvas.last_visible.getGfxFmtInfo().getLineNo();
+		int lnfst = uiv.view_canvas.first_visible.getGfxFmtInfo().getLineNo();
+		int offs = lnlst - lnfst -1;
 		uiv.view_canvas.incrFirstLine(+offs);
 		for (int i=offs; i >= 0; i--)
 			navigateDn(uiv,i==0);

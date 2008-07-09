@@ -26,6 +26,7 @@ import kiev.fmt.DrawTerm;
 import kiev.fmt.DrawToken;
 import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
+import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.SyntaxTokenKind;
 import kiev.gui.Editor;
 import kiev.gui.NavigateEditor;
@@ -136,9 +137,10 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			menu = new JPopupMenu();
 			for (ETokenKind k: ETokenKind.class.getEnumConstants())
 				menu.add(new SetKindAction(et, k));
-			int x = dt.getX();
-			int h = dt.getHeight();
-			int y = dt.getY() + h - editor.view_canvas.translated_y;
+			GfxDrawTermLayoutInfo dtli = dt.getGfxFmtInfo();
+			int x = dtli.getX();
+			int h = dtli.getHeight();
+			int y = dtli.getY() + h - editor.view_canvas.translated_y;
 			menu.show(editor.view_canvas, x, y);
 			return;
 		}

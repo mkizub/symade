@@ -44,9 +44,9 @@ public abstract class DrawContext implements Cloneable {
 		line_started = true;
 	}
 	
-	public abstract DrawTermFormatInfo makeDrawTermFormatInfo(DrawTerm dt);
+	public abstract DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt);
 	public abstract void formatAsText(DrawTerm dr);
-	public abstract int setXgetWidth(DrawTerm dr, int x);
+	public abstract int setXgetWidth(DrawTermLayoutInfo dlb, int x);
 	public abstract Indents makeIndents(Indents indents, Draw_Paragraph pl, int cur_x);
 
 	public Object clone() {
@@ -83,8 +83,8 @@ public abstract class DrawContext implements Cloneable {
 				if (!last)
 					ctx.parent_has_more_attempts = true;
 				foreach (DrawLayoutInfo b; dlb.getBlocks()) {
-					if (b.getDrawable() instanceof DrawTerm)
-						ctx.addLeaf(b, i, ctx_indents);
+					if (b instanceof DrawTermLayoutInfo)
+						ctx.addLeaf((DrawTermLayoutInfo)b, i, ctx_indents);
 					else
 						ctx.postFormat(b, ctx_indents);
 					if (ctx.max_x >= ctx.width) {
@@ -129,8 +129,8 @@ public abstract class DrawContext implements Cloneable {
 					return;
 				}
 				DrawLayoutInfo b = dlb.getBlocks()[idx];
-				if (b.getDrawable() instanceof DrawTerm)
-					tmp.addLeaf(b, 0, tmp_indents);
+				if (b instanceof DrawTermLayoutInfo)
+					tmp.addLeaf((DrawTermLayoutInfo)b, 0, tmp_indents);
 				else
 					tmp.postFormat(b, tmp_indents);
 				if (tmp.max_x >= tmp.width) {
@@ -169,16 +169,15 @@ public abstract class DrawContext implements Cloneable {
 		}
 	}
 
-	private void addLeaf(DrawLayoutInfo dlb, int cur_attempt, Indents indents) {
+	private void addLeaf(DrawTermLayoutInfo dlb, int cur_attempt, Indents indents) {
 		indents = makeIndents(indents, dlb.getParagraph(), this.x);
-		DrawTerm leaf = (DrawTerm)dlb.getDrawable();
-		flushSpaceRequests(leaf, cur_attempt, indents);
-		x += setXgetWidth(leaf, x);
+		flushSpaceRequests(dlb, cur_attempt, indents);
+		x += setXgetWidth(dlb, x);
 		max_x = Math.max(max_x, x);
 		line_started = false;
 		indents.cur_indent = indents.next_indent;
 		// check flow break point
-		DrawTermLink lnk = leaf.dt_fmt.lnk_next;
+		DrawTermLink lnk = dlb.lnk_next;
 		if (lnk != null) {
 			int max_space = (lnk.size_0 & 0xFFFF);
 			int max_nl = (lnk.size_0 >>> 16);
@@ -186,8 +185,8 @@ public abstract class DrawContext implements Cloneable {
 		}
 	}
 	
-	private void flushSpaceRequests(DrawTerm leaf, int cur_attempt, Indents indents) {
-		DrawTermLink lnk = leaf.dt_fmt.lnk_prev;
+	private void flushSpaceRequests(DrawTermLayoutInfo dlb, int cur_attempt, Indents indents) {
+		DrawTermLink lnk = dlb.lnk_prev;
 		if (lnk == null) {
 			this.x = indents.cur_indent;
 			return;
@@ -229,11 +228,11 @@ public final class GfxDrawContext extends DrawContext {
 		this.gfx = fmt.getGfx();
 		this.default_font = new Font("Dialog", Font.PLAIN, 12);
 	}
-	public DrawTermFormatInfo makeDrawTermFormatInfo(DrawTerm dt) {
-		return new GfxDrawTermFormatInfo(dt);
+	public DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt) {
+		return new GfxDrawTermLayoutInfo(dt);
 	}
 	public void formatAsText(DrawTerm dr) {
-		GfxDrawTermFormatInfo gfx_fmt = (GfxDrawTermFormatInfo)dr.dt_fmt;
+		GfxDrawTermLayoutInfo gfx_fmt = (GfxDrawTermLayoutInfo)dr.dt_fmt;
 		gfx_fmt.x = 0;
 		gfx_fmt.y = 0;
 		gfx_fmt.height = 0;
@@ -252,8 +251,8 @@ public final class GfxDrawContext extends DrawContext {
 			gfx_fmt.baseline = 0;
 		}
 	}
-	public int setXgetWidth(DrawTerm dr, int x) {
-		GfxDrawTermFormatInfo gfx_fmt = (GfxDrawTermFormatInfo)dr.dt_fmt;
+	public int setXgetWidth(DrawTermLayoutInfo dlb, int x) {
+		GfxDrawTermLayoutInfo gfx_fmt = (GfxDrawTermLayoutInfo)dlb;
 		gfx_fmt.x = x;
 		return gfx_fmt.width;
 	}
@@ -279,18 +278,18 @@ public final class TxtDrawContext extends DrawContext {
 	public TxtDrawContext(TextFormatter fmt, int width) {
 		super(fmt,width);
 	}
-	public DrawTermFormatInfo makeDrawTermFormatInfo(DrawTerm dt) {
-		return new TxtDrawTermFormatInfo(dt);
+	public DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt) {
+		return new TxtDrawTermLayoutInfo(dt);
 	}
 	public void formatAsText(DrawTerm dr) {
-		TxtDrawTermFormatInfo txt_fmt = (TxtDrawTermFormatInfo)dr.dt_fmt;
+		TxtDrawTermLayoutInfo txt_fmt = (TxtDrawTermLayoutInfo)dr.dt_fmt;
 		txt_fmt.x = 0;
 		txt_fmt.lineno = 0;
 	}
-	public int setXgetWidth(DrawTerm dr, int x) {
-		TxtDrawTermFormatInfo txt_fmt = (TxtDrawTermFormatInfo)dr.dt_fmt;
+	public int setXgetWidth(DrawTermLayoutInfo dlb, int x) {
+		TxtDrawTermLayoutInfo txt_fmt = (TxtDrawTermLayoutInfo)dlb;
 		txt_fmt.x = x;
-		String txt = dr.getText();
+		String txt = dlb.getDrawable().getText();
 		if (txt == null)
 			return 0;
 		return txt.length();
@@ -405,15 +404,15 @@ public final class DrawLinkContext {
 	
 }
 
-public interface DrawLayoutInfo {
-	public Drawable getDrawable();
-	public DrawLayoutInfo[] getBlocks();
-	public Draw_Paragraph getParagraph();
-	public int getMaxLayout();
-	public boolean isFlow();
+public abstract class DrawLayoutInfo {
+	public abstract Drawable getDrawable();
+	public abstract DrawLayoutInfo[] getBlocks();
+	public abstract Draw_Paragraph getParagraph();
+	public abstract int getMaxLayout();
+	public abstract boolean isFlow();
 }
 
-public final class DrawLayoutBlock implements DrawLayoutInfo {
+public final class DrawLayoutBlock extends DrawLayoutInfo {
 
 	public static final DrawLayoutInfo[] emptyArray = new DrawLayoutInfo[0];
 
@@ -486,8 +485,8 @@ public final class DrawLayoutBlock implements DrawLayoutInfo {
 		return this;
 	}
 	
-	public void addLeaf(DrawTerm leaf) {
-		this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, leaf.dt_fmt);
+	public void addLeaf(DrawTermLayoutInfo dlb) {
+		this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
 	}
 	
 }

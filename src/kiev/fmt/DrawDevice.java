@@ -23,7 +23,7 @@ public class TextPrinter {
 	
 	public void draw(Drawable root) {
 		DrawTerm dr_leaf = root.getFirstLeaf();
-		TxtDrawTermFormatInfo leaf = (TxtDrawTermFormatInfo)dr_leaf.dt_fmt;
+		TxtDrawTermLayoutInfo leaf = (TxtDrawTermLayoutInfo)dr_leaf.dt_fmt;
 		for (; leaf != null; leaf= leaf.getNext()) {
 			int x = leaf.x;
 			int y = leaf.lineno - 1;

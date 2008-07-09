@@ -14,8 +14,8 @@ import syntax kiev.Syntax;
 
 // links to DrawTerm-s and holds space information
 public class DrawTermLink {
-	public final DrawTermFormatInfo prev;
-	public final DrawTermFormatInfo next;
+	public final DrawTermLayoutInfo prev;
+	public final DrawTermLayoutInfo next;
 	public int size_0;
 	public int size_1;
 
@@ -23,7 +23,7 @@ public class DrawTermLink {
 	@packed:30,sp_nl_size,0  public int the_size;
 	@packed: 1,sp_nl_size,30 public boolean do_newline;
 
-	DrawTermLink(DrawTermFormatInfo prev, DrawTermFormatInfo next) {
+	DrawTermLink(DrawTermLayoutInfo prev, DrawTermLayoutInfo next) {
 		this.prev = prev;
 		this.next = next;
 		this.sp_nl_size = -1;
@@ -31,7 +31,7 @@ public class DrawTermLink {
 	
 }
 
-public abstract class DrawTermFormatInfo implements DrawLayoutInfo {
+public abstract class DrawTermLayoutInfo extends DrawLayoutInfo {
 	public final       DrawTerm        dterm;
 	public:r,r,rw,rw   DrawTermLink    lnk_prev;
 	public:r,r,rw,rw   DrawTermLink    lnk_next;
@@ -39,15 +39,15 @@ public abstract class DrawTermFormatInfo implements DrawLayoutInfo {
 	public		int     x;
 	public		int     lineno; // line number for text-kind draw/print formatters
 
-	DrawTermFormatInfo(DrawTerm dterm) {
+	DrawTermLayoutInfo(DrawTerm dterm) {
 		this.dterm = dterm;
 	}
-	public DrawTermFormatInfo getNext() {
+	public DrawTermLayoutInfo getNext() {
 		if (lnk_next == null)
 			return null;
 		return lnk_next.next;
 	}
-	public DrawTermFormatInfo getPrev() {
+	public DrawTermLayoutInfo getPrev() {
 		if (lnk_prev == null)
 			return null;
 		return lnk_prev.prev;
@@ -59,55 +59,71 @@ public abstract class DrawTermFormatInfo implements DrawLayoutInfo {
 	}
 	
 	// DrawLayoutInfo
-	public Drawable getDrawable() { dterm }
+	public DrawTerm getDrawable() { dterm }
 	public DrawLayoutInfo[] getBlocks() { return DrawLayoutBlock.emptyArray; }
 	public Draw_Paragraph getParagraph() { dterm.syntax.par }
 	public int getMaxLayout() { dterm.syntax.lout.count }
 	public boolean isFlow() { false }
+
+	public int getX() { return this.x; }
+	public int getY() { return this.lineno-1; }
+	public int getWidth() { return 0; }
+	public int getHeight() { return 0; }
+	public int getBaseline() { return 0; }
+	public int getLineNo() { return this.lineno; }
+	
 }
 
-public final class TxtDrawTermFormatInfo extends DrawTermFormatInfo {
-	TxtDrawTermFormatInfo(DrawTerm dterm) {
+public final class TxtDrawTermLayoutInfo extends DrawTermLayoutInfo {
+	TxtDrawTermLayoutInfo(DrawTerm dterm) {
 		super(dterm);
 	}
-	public TxtDrawTermFormatInfo getNext() {
+	public TxtDrawTermLayoutInfo getNext() {
 		if (lnk_next == null)
 			return null;
-		return (TxtDrawTermFormatInfo)lnk_next.next;
+		return (TxtDrawTermLayoutInfo)lnk_next.next;
 	}
-	public TxtDrawTermFormatInfo getPrev() {
+	public TxtDrawTermLayoutInfo getPrev() {
 		if (lnk_prev == null)
 			return null;
-		return (TxtDrawTermFormatInfo)lnk_prev.prev;
+		return (TxtDrawTermLayoutInfo)lnk_prev.prev;
 	}
 }
 
-public final class GfxDrawTermFormatInfo extends DrawTermFormatInfo {
+public final class GfxDrawTermLayoutInfo extends DrawTermLayoutInfo {
 	public		int     y;
 	public		int		width;
 	public		int		height;
 	public		int		baseline;
 
-	GfxDrawTermFormatInfo(DrawTerm dterm) {
+	GfxDrawTermLayoutInfo(DrawTerm dterm) {
 		super(dterm);
 	}
-	public GfxDrawTermFormatInfo getNext() {
+	public GfxDrawTermLayoutInfo getNext() {
 		if (lnk_next == null)
 			return null;
-		return (GfxDrawTermFormatInfo)lnk_next.next;
+		return (GfxDrawTermLayoutInfo)lnk_next.next;
 	}
-	public GfxDrawTermFormatInfo getPrev() {
+	public GfxDrawTermLayoutInfo getPrev() {
 		if (lnk_prev == null)
 			return null;
-		return (GfxDrawTermFormatInfo)lnk_prev.prev;
+		return (GfxDrawTermLayoutInfo)lnk_prev.prev;
 	}
+
+	public final int getX() { return this.x; }
+	public final int getY() { return this.y; }
+	public final int getWidth() { return this.width; }
+	public final int getHeight() { return this.height; }
+	public final int getBaseline() { return this.baseline; }
+	public final int getLineNo() { return this.lineno; }
+	
 }
 
 @ThisIsANode(copyable=false)
 public abstract class DrawTerm extends Drawable {
 	private static String _uninitialized_ = "uninitialized yet";
 
-	public DrawTermFormatInfo dt_fmt;
+	public DrawTermLayoutInfo dt_fmt;
 	
 	public boolean hidden_as_auto_generated;
 	
@@ -118,13 +134,7 @@ public abstract class DrawTerm extends Drawable {
 		this.text = _uninitialized_;
 	}
 	
-	public GfxDrawTermFormatInfo getGxfFmtInfo() { return (GfxDrawTermFormatInfo)dt_fmt; }
-	
-	@getter public final boolean get$do_newline() {
-		if (dt_fmt.lnk_next != null)
-			return dt_fmt.lnk_next.do_newline;
-		return false;
-	}
+	public GfxDrawTermLayoutInfo getGfxFmtInfo() { return (GfxDrawTermLayoutInfo)dt_fmt; }
 	
 	public boolean isUnvisible() {
 		return hidden_as_auto_generated;
@@ -134,13 +144,6 @@ public abstract class DrawTerm extends Drawable {
 	public Drawable getPrevChild(Drawable dr) { assert ("DrawToken has no children"); return null; }
 	public Drawable[] getChildren() { return Drawable.emptyArray; }
 
-	public final int getX() { return ((GfxDrawTermFormatInfo)this.dt_fmt).x; }
-	public final int getY() { return ((GfxDrawTermFormatInfo)this.dt_fmt).y; }
-	public final int getWidth() { return ((GfxDrawTermFormatInfo)this.dt_fmt).width; }
-	public final int getHeight() { return ((GfxDrawTermFormatInfo)this.dt_fmt).height; }
-	public final int getBaseline() { return ((GfxDrawTermFormatInfo)this.dt_fmt).baseline; }
-	public final int getLineNo() { return ((GfxDrawTermFormatInfo)this.dt_fmt).lineno; }
-	
 	private boolean textIsUpToDate(String txt) {
 		if (text == _uninitialized_)
 			return false;
@@ -166,7 +169,7 @@ public abstract class DrawTerm extends Drawable {
 		if (this.isUnvisible()) return;
 
 		if (this.dt_fmt == null)
-			this.dt_fmt = cont.makeDrawTermFormatInfo(this);
+			this.dt_fmt = cont.makeDrawTermLayoutInfo(this);
 		dt_fmt.x = 0;
 		String tmp = "???";
 		try {

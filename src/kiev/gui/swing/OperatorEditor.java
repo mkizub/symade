@@ -24,6 +24,7 @@ import javax.swing.text.TextAction;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.DrawToken;
 import kiev.fmt.Draw_SyntaxToken;
+import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.SyntaxTokenKind;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
@@ -115,9 +116,10 @@ public class OperatorEditor implements KeyListener, PopupMenuListener, Runnable 
 					menu.add(new JMenuItem(new SetSyntaxAction(op)));
 			}
 		}
-		int x = cur_elem.getX();
-		int h = cur_elem.getHeight();
-		int y = cur_elem.getY() + h - editor.view_canvas.translated_y;
+		GfxDrawTermLayoutInfo cur_dtli = cur_elem.getGfxFmtInfo();
+		int x = cur_dtli.getX();
+		int h = cur_dtli.getHeight();
+		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}

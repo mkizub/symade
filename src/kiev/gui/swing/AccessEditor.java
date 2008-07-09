@@ -25,6 +25,7 @@ import javax.swing.event.PopupMenuListener;
 
 import kiev.fmt.DrawJavaAccess;
 import kiev.fmt.DrawTerm;
+import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -78,9 +79,10 @@ public class AccessEditor implements KeyListener, PopupMenuListener, Runnable, A
 		menu.add(b=new SetFlagsMenuItem("package write",   1<<2, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("private read",    1<<1, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("private write",   1<<0, flags)); b.addActionListener(this);
-		int x = cur_elem.getX();
-		int h = cur_elem.getHeight();
-		int y = cur_elem.getY() + h - editor.view_canvas.translated_y;
+		GfxDrawTermLayoutInfo cur_dtli = cur_elem.getGfxFmtInfo();
+		int x = cur_dtli.getX();
+		int h = cur_dtli.getHeight();
+		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}

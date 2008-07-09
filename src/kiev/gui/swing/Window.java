@@ -314,7 +314,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		for (Editor e: editor_views) {
 			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
 				e.goToPath(path);
-				editors.setSelectedComponent(e.view_canvas);
+				editors.setSelectedComponent((Component)e.view_canvas);
 				e.view_canvas.requestFocus();
 				return;
 			}
@@ -338,7 +338,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 				v.add(e);
 				continue;
 			}
-			editors.remove(e.view_canvas);
+			editors.remove((Component)e.view_canvas);
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
 	}

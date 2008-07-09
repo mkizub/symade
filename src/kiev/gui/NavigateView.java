@@ -43,7 +43,9 @@ public final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			return new NavigateView(uiv, -uiv.view_canvas.last_visible.getLineNo() + uiv.view_canvas.first_visible.getLineNo() + 1);
+			int lnlst = uiv.view_canvas.last_visible.getGfxFmtInfo().getLineNo();
+			int lnfst = uiv.view_canvas.first_visible.getGfxFmtInfo().getLineNo();
+			return new NavigateView(uiv, lnfst - lnlst + 1);
 		}
 	}
 	final static class PageDn implements UIActionFactory {
@@ -51,7 +53,9 @@ public final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			return new NavigateView(uiv, +uiv.view_canvas.last_visible.getLineNo() - uiv.view_canvas.first_visible.getLineNo() - 1);
+			int lnlst = uiv.view_canvas.last_visible.getGfxFmtInfo().getLineNo();
+			int lnfst = uiv.view_canvas.first_visible.getGfxFmtInfo().getLineNo();
+			return new NavigateView(uiv, lnlst - lnfst - 1);
 		}
 	}
 }

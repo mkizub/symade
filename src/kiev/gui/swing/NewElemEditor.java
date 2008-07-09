@@ -105,9 +105,10 @@ public abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		addItems(m, satt.getExpectedTypes(), n, satt.name);
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
-		int x = editor.cur_elem.dr.getX();
-		int h = editor.cur_elem.dr.getHeight();
-		int y = editor.cur_elem.dr.getY() + h - editor.view_canvas.translated_y;
+		GfxDrawTermLayoutInfo cur_dtli = editor.cur_elem.dr.getGfxFmtInfo();
+		int x = cur_dtli.getX();
+		int h = cur_dtli.getHeight();
+		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
 		this.menu.show(editor.view_canvas, x, y);
 		editor.startItemEditor(this);
 	}
@@ -117,9 +118,10 @@ public abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		addItems(m, splh.getExpectedTypes(), n, splh.attr_name);
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
-		int x = editor.cur_elem.dr.getX();
-		int h = editor.cur_elem.dr.getHeight();
-		int y = editor.cur_elem.dr.getY() + h - editor.view_canvas.translated_y;
+		GfxDrawTermLayoutInfo cur_dtli = editor.cur_elem.dr.getGfxFmtInfo();
+		int x = cur_dtli.getX();
+		int h = cur_dtli.getHeight();
+		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
 		this.menu.show(editor.view_canvas, x, y);
 		editor.startItemEditor(this);
 	}
