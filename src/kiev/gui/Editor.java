@@ -206,7 +206,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 			}
 			if (mask == 0) {
 				if (!(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK))
-					java.awt.Toolkit.getDefaultToolkit().beep();
+					UIManager.doGUIBeep();
 				return;
 			}
 		}

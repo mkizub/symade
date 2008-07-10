@@ -67,4 +67,8 @@ public class UIManager {
 		kiev.gui.swing.Clipboard.setClipboardContent(obj);
 	}
 
+	public static void doGUIBeep() {
+		java.awt.Toolkit.getDefaultToolkit().beep();
+	}
+
 }
