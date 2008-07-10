@@ -15,11 +15,6 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-import java.awt.Graphics2D;
-import java.awt.Font;
-import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
-
 public abstract class DrawContext implements Cloneable {
 	
 	public final Formatter				fmt;
@@ -221,12 +216,10 @@ public abstract class DrawContext implements Cloneable {
 }
 
 public final class GfxDrawContext extends DrawContext {
-	public final Graphics2D				gfx;
-	public final Font					default_font;
+	public final IFmtGfx				gfx;
 	public GfxDrawContext(GfxFormatter fmt, int width) {
 		super(fmt,width);
 		this.gfx = fmt.getGfx();
-		this.default_font = new Font("Dialog", Font.PLAIN, 12);
 	}
 	public DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt) {
 		return new GfxDrawTermLayoutInfo(dt);
@@ -239,12 +232,10 @@ public final class GfxDrawContext extends DrawContext {
 		String text = dr.getText();
 		if (text == null) text = "\u25d8"; // ◘
 		if (text != null && text.length() != 0) {
-			Font  font  = dr.syntax.lout.font;
-			TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
-			Rectangle2D rect = tl.getBounds();
-			gfx_fmt.width = (int)Math.ceil(tl.getAdvance());
-			gfx_fmt.height = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-			gfx_fmt.baseline = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+			gfx.layoutText(text, dr.syntax.lout.font_name);
+			gfx_fmt.width = gfx.textWidth();
+			gfx_fmt.height = gfx.textHeight();
+			gfx_fmt.baseline = gfx.textBaseline();
 		} else {
 			gfx_fmt.width = 0;
 			gfx_fmt.height = 10;

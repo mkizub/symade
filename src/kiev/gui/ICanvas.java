@@ -11,11 +11,11 @@
 package kiev.gui;
 
 import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.event.FocusListener;
 
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
+import kiev.fmt.IFmtGfx;
 import kiev.vtree.ANode;
 
 public interface ICanvas {
@@ -24,7 +24,7 @@ public interface ICanvas {
 	public void setBounds(int x, int y, int width, int height);
 	public void setFirstLine(int val);
 	public void incrFirstLine(int val);
-	public Graphics getGraphics();
+	public IFmtGfx getFmtGraphics();
 	public int getImgWidth();
 	public void repaint();
 	public void requestFocus();

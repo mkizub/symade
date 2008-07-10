@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -55,7 +54,7 @@ public class InfoView extends UIView implements KeyListener {
 		super(window, syntax);
 		this.view_canvas = view_canvas;
 		this.view_canvas.setUIView(this);
-		this.formatter = new GfxFormatter((Graphics2D)view_canvas.getGraphics());
+		this.formatter = new GfxFormatter(view_canvas.getFmtGraphics());
 	}
 
 	public void setRoot(ANode root) {

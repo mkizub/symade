@@ -2,11 +2,7 @@ package kiev.gui;
 
 import java.awt.event.MouseEvent;
 
-import kiev.fmt.DrawNonTermSet;
-import kiev.fmt.DrawTerm;
-import kiev.fmt.DrawTreeBranch;
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.fmt.*;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 

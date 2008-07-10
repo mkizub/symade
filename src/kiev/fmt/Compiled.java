@@ -15,8 +15,6 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.util.regex.Pattern;
@@ -46,20 +44,24 @@ public final class LayoutSpace implements Cloneable, Serializable {
 
 public final class Draw_Layout implements Serializable {
 
-	private static final Font default_font = Font.decode("Dialog-PLAIN-12");
-	
 	public int				count;
-	public Color 			color;
-	public Font				font;
+	public int				rgb_color;
+	public String			font_name;
 	public LayoutSpace[]	spaces_before;
 	public LayoutSpace[]	spaces_after;
 
 	public Draw_Layout() {
 		this.count = 0;
-		this.color = Color.BLACK;
-		this.font = default_font;
+		this.rgb_color = 0;
+		this.font_name = "Dialog-PLAIN-12";
 		this.spaces_before = LayoutSpace.emptyArray;
 		this.spaces_after = LayoutSpace.emptyArray;
+	}
+
+
+	Object readResolve() throws ObjectStreamException {
+		if (this.font_name != null) this.font_name = this.font_name.intern();
+		return this;
 	}
 }
 

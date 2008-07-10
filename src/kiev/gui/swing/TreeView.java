@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
-import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -33,8 +32,7 @@ public class TreeView extends UIView implements KeyListener {
 	public TreeView(IWindow window, Draw_ATextSyntax syntax, ANodeTree the_tree) {
 		super(window, syntax);
 		this.the_tree = the_tree;
-		this.formatter = new GfxTreeFormatter((Graphics2D)the_tree.getGraphics());
-		this.the_tree.renderer.setFormatter((GfxTreeFormatter)this.formatter);
+		this.formatter = new GfxTreeFormatter(the_tree.getFmtGraphics());
 		this.the_tree.tree_view = this;
 		this.the_tree.addKeyListener(this);
 		this.the_tree.addMouseListener(this);

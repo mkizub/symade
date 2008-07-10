@@ -11,7 +11,6 @@
 package kiev.gui.swing;
 
 import java.awt.Component;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -56,7 +55,7 @@ public class TableView extends UIView implements KeyListener {
 	public TableView(IWindow window, Draw_ATextSyntax syntax, ANodeTable table) {
 		super(window, syntax);
 		this.table = table;
-		this.formatter = new GfxFormatter((Graphics2D)table.getGraphics());
+		this.formatter = new GfxFormatter(table.getFmtGraphics());
 		this.table.table_view = this;
 		this.table.addKeyListener(this);
 		this.table.addMouseListener(this);

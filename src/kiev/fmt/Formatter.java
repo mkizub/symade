@@ -15,7 +15,13 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-import java.awt.Graphics2D;
+public interface IFmtGfx {
+	public Object getNative();
+	public void layoutText(String text, String font_name);
+	public int  textWidth();
+	public int  textHeight();
+	public int  textBaseline();
+}
 
 public interface Formatter {
 	public void       format(ANode node, Drawable dr, Draw_ATextSyntax syntax);
@@ -152,16 +158,16 @@ public class TextFormatter extends AbstractFormatter {
 
 public class GfxFormatter extends AbstractFormatter {
 
-	private Graphics2D	gfx;
+	private IFmtGfx		gfx;
 	private int			width;
 	
-	public GfxFormatter(Graphics2D gfx) {
+	public GfxFormatter(IFmtGfx gfx) {
 		assert(gfx != null);
 		this.gfx = gfx;
 		this.width = 100;
 	}
 	
-	public Graphics2D getGfx() { return gfx; }
+	public IFmtGfx getGfx() { return gfx; }
 	
 	public void setWidth(int w) {
 		if (w < 100)
@@ -241,7 +247,7 @@ public class GfxFormatter extends AbstractFormatter {
 
 public class GfxTreeFormatter extends GfxFormatter {
 
-	public GfxTreeFormatter(Graphics2D gfx) {
+	public GfxTreeFormatter(IFmtGfx gfx) {
 		super(gfx);
 	}
 

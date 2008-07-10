@@ -15,8 +15,6 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -601,9 +599,9 @@ public final class SyntaxElemFormatDecl extends DNode {
 			lout.count = Math.max(lout.count, sc.from_attempt);
 		}
 		if (this.color != null && this.color.dnode != null)
-			lout.color = new Color(this.color.dnode.rgb_color);
-		if (this.font != null && this.font.dnode != null)
-			lout.font = Font.decode(this.font.dnode.font_name);
+			lout.rgb_color = this.color.dnode.rgb_color;
+		if (this.font != null && this.font.dnode != null && this.font.dnode.font_name != null)
+			lout.font_name = this.font.dnode.font_name.intern();
 		return lout;
 	}
 }

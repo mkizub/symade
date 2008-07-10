@@ -39,7 +39,7 @@ import kiev.fmt.DrawTreeBranch;
 import kiev.fmt.Draw_SyntaxSpace;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.fmt.GfxTreeFormatter;
+import kiev.fmt.IFmtGfx;
 
 
 public class ANodeTree extends JTree {
@@ -55,6 +55,10 @@ public class ANodeTree extends JTree {
 		this.renderer = new DrawableTreeCellRenderer();
 		this.setCellRenderer(this.renderer);
 		this.addTreeExpansionListener((ANodeTreeModel)this.treeModel);
+	}
+
+	public IFmtGfx getFmtGraphics() {
+		return new AWTGraphics2D((Graphics2D)this.getGraphics());
 	}
 
 	public void setRoot() {
@@ -194,14 +198,9 @@ class DrawableTreeCellRenderer extends DefaultTreeCellRenderer {
 
 	private static final long serialVersionUID = 2546321918616119971L;
 
-	private GfxTreeFormatter formatter;
 	private Drawable         cur_dr;
 	private DrawLayoutBlock  cur_dlb;
 	private Dimension        cur_dim;
-	
-	public void setFormatter(GfxTreeFormatter formatter) {
-		this.formatter = formatter;
-	}
 	
 	public Component getTreeCellRendererComponent(
 		JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
@@ -302,18 +301,17 @@ class DrawableTreeCellRenderer extends DefaultTreeCellRenderer {
 			return;
 		int x = dtli.getX();
 		int y = dtli.getY();
-		int w = dtli.getWidth();
-		int h = dtli.getHeight();
+		//int w = dtli.getWidth();
+		//int h = dtli.getHeight();
 		int b = dtli.getBaseline();
 		
 		boolean set_white = false;
 		
-		Color color = leaf.syntax.lout.color;
-		Font  font  = leaf.syntax.lout.font;
 		if (set_white)
 			g.setColor(Color.WHITE);
 		else
-			g.setColor(color);
+			g.setColor(new Color(leaf.syntax.lout.rgb_color));
+		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font_name);
 		g.setFont(font);
 		String s = leaf.getText();
 		if (s == null) s = "\u25d8"; // ◘

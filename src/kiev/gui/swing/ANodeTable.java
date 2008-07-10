@@ -10,7 +10,11 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Graphics2D;
+
 import javax.swing.JTable;
+
+import kiev.fmt.IFmtGfx;
 
 
 public class ANodeTable extends JTable {
@@ -22,7 +26,11 @@ public class ANodeTable extends JTable {
 //		getModel().setCellEditable(false);
 		setDefaultRenderer(Object.class, new DrawableTableCellRenderer()); //TODO parameters
 	}
-
+	
+	public IFmtGfx getFmtGraphics() {
+		return new AWTGraphics2D((Graphics2D)this.getGraphics());
+	}
+	
 	public void setRoot() {
 		ANodeTableModel model = (ANodeTableModel)dataModel;
 		model.setRoot(table_view);
