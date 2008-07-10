@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -23,13 +21,11 @@ import kiev.fmt.DrawListWrapper;
 import kiev.fmt.DrawNodeTerm;
 import kiev.fmt.DrawNonTermList;
 import kiev.fmt.DrawOptional;
-import kiev.fmt.DrawPlaceHolder;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.Draw_SyntaxElem;
 import kiev.fmt.Draw_SyntaxFunction;
-import kiev.fmt.Draw_SyntaxPlaceHolder;
 import kiev.fmt.Draw_SyntaxSet;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
@@ -38,8 +34,6 @@ import kiev.gui.event.ElementEvent;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtSpaceAttrSlot;
-import kiev.vtree.ScalarAttrSlot;
-import kiev.vtree.ScalarPtr;
 import kiev.vtree.SpaceAttrSlot;
 import kiev.vtree.Transaction;
 import kiev.vtree.TreeWalker;
@@ -57,9 +51,6 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 	
 	/** Current item */
 	private final CurElem	cur_elem;
-	
-	/** The object in clipboard */
-	public final Clipboard	clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
 	
 	public java.util.Stack<Transaction>		changes = new java.util.Stack<Transaction>();
 	
@@ -91,13 +82,13 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_X),				 EditActions.newCut());
 		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		 EditActions.newDel());
 
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				 UIManager.newFunctionExecutorFactory());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				 UIManager.newFunctionExecutorFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				 FolderTrigger.newFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				 UIManager.newNewElemHereFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				 UIManager.newNewElemNextFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_V),				new PasteElemHere.Factory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_B),				new PasteElemNext.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				FolderTrigger.newFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				UIManager.newNewElemHereFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				UIManager.newNewElemNextFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_V),				UIManager.newPasteHereFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_B),				UIManager.newPasteNextFactory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
 		
 		this.keyActionMap = new java.util.Hashtable<InputEventInfo,String[]>();
@@ -510,146 +501,4 @@ final class FolderTrigger implements Runnable {
 		}
 	}
 }
-
-final class PasteElemHere implements Runnable {
-	final ANode       paste_node;
-	final Editor      editor;
-	final ANode       into_node;
-	final AttrSlot    attr_slot;
-	final ActionPoint ap;
-	PasteElemHere(ANode paste_node, Editor editor, ANode into_node, AttrSlot attr_slot) {
-		this.paste_node = paste_node;
-		this.editor = editor;
-		this.into_node = into_node;
-		this.attr_slot = attr_slot;
-		this.ap = null;
-	}
-	PasteElemHere(ANode paste_node, Editor editor, ActionPoint ap) {
-		this.paste_node = paste_node;
-		this.editor = editor;
-		this.into_node = null;
-		this.attr_slot = null;
-		this.ap = ap;
-	}
-	public void run() {
-		ANode paste_node = this.paste_node;
-		editor.changes.push(Transaction.open("Editor.java:PasteElemHere"));
-		try {
-			if (paste_node.isAttached())
-				paste_node = paste_node.ncopy();
-			if (attr_slot != null) {
-				if (attr_slot instanceof SpaceAttrSlot)
-					((SpaceAttrSlot)attr_slot).insert(into_node, 0, paste_node);
-				else if (attr_slot instanceof ExtSpaceAttrSlot)
-					((ExtSpaceAttrSlot)attr_slot).add(into_node, paste_node);
-				else if (attr_slot instanceof ScalarAttrSlot)
-					((ScalarAttrSlot)attr_slot).set(into_node, paste_node);
-			}
-			else if (ap != null)
-				((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,paste_node);
-		} finally {
-			editor.changes.peek().close();
-		}
-		editor.formatAndPaint(true);
-	}
-	final static class Factory implements UIActionFactory {
-		public String getDescr() { return "Paste an element at this position"; }
-		public boolean isForPopupMenu() { return true; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor == null)
-				return null;
-			Editor editor = context.editor;
-			Drawable dr = context.dr;
-			Transferable content = editor.clipboard.getContents(null);
-			if (!content.isDataFlavorSupported(TransferableANode.getTransferableANodeFlavor()))
-				return null;
-			ANode node = null;
-			try {
-				node = (ANode)content.getTransferData(TransferableANode.getTransferableANodeFlavor());
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-			// try paste as a node into null
-			if (dr instanceof DrawNodeTerm) {
-				DrawNodeTerm dt = (DrawNodeTerm)dr;
-				ScalarPtr pattr = dt.getScalarPtr();
-				if (pattr.get() == null && pattr.slot.typeinfo.$instanceof(node))
-					return new PasteElemHere(node, editor, pattr.node, pattr.slot);
-			}
-			// try paste as a node into placeholder
-			if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
-				Draw_SyntaxPlaceHolder dsph = (Draw_SyntaxPlaceHolder)dr.syntax;
-				ANode drnode = dr.get$drnode();
-				for (AttrSlot attr: drnode.values()) {
-					if (attr.name != dsph.attr_name)
-						continue;
-					if (attr instanceof ScalarAttrSlot && ((ScalarAttrSlot)attr).get(drnode) == null && attr.typeinfo.$instanceof(node))
-						return new PasteElemHere(node, editor, drnode, attr);
-					else if (attr instanceof SpaceAttrSlot && ((SpaceAttrSlot)attr).getArray(drnode).length == 0 && attr.typeinfo.$instanceof(node))
-						return new PasteElemHere(node, editor, drnode, attr);
-				}
-			}
-			// try paste as an element of list
-			ActionPoint ap = editor.getActionPoint(false);
-			if (ap != null && ap.length >= 0 && ap.slot.typeinfo.$instanceof(node)) {
-				return new PasteElemHere(node, editor, ap);
-			}
-			return null;
-		}
-	}
-}
-
-final class PasteElemNext implements Runnable {
-	final Editor editor;
-	PasteElemNext(Editor editor) {
-		this.editor = editor;
-	}
-	public void run() {
-		Transferable content = editor.clipboard.getContents(null);
-		ANode node = null;
-		try {
-			node = (ANode)content.getTransferData(TransferableANode.getTransferableANodeFlavor());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-		ActionPoint ap = editor.getActionPoint(true);
-		editor.changes.push(Transaction.open("Editor.java:PasteElemNext"));
-		try {
-			if (node.isAttached())
-				node = node.ncopy();
-			((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
-		} finally {
-			editor.changes.peek().close();
-		}
-		editor.formatAndPaint(true);
-	}
-	final static class Factory implements UIActionFactory {
-		public String getDescr() { return "Paste an element at next position"; }
-		public boolean isForPopupMenu() { return true; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor == null)
-				return null;
-			Editor editor = context.editor;
-			Transferable content = editor.clipboard.getContents(null);
-			if (!content.isDataFlavorSupported(TransferableANode.getTransferableANodeFlavor()))
-				return null;
-			ANode node = null;
-			try {
-				node = (ANode)content.getTransferData(TransferableANode.getTransferableANodeFlavor());
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-			ActionPoint ap = editor.getActionPoint(true);
-			if (ap == null || ap.length < 0)
-				return null;
-			if (!ap.slot.typeinfo.$instanceof(node))
-				return null;
-			return new PasteElemNext(editor);
-		}
-	}
-}
-
 

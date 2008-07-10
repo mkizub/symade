@@ -1,10 +1,7 @@
 package kiev.gui;
 
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-
 import kiev.fmt.DrawNodeTerm;
+import kiev.fmt.DrawTerm;
 import kiev.vtree.ANode;
 import kiev.vtree.Transaction;
 
@@ -59,23 +56,17 @@ public final class EditActions implements Runnable {
 			node.detach();
 			editor.changes.peek().close();
 			if (action == "cut") {
-				TransferableANode tr = new TransferableANode(node);
-				editor.clipboard.setContents(tr, tr);
+				UIManager.setClipboardContent(node);
 			}
 			editor.formatAndPaint(true);
 		}
 		else if (action == "copy") {
-			if (editor.getCur_elem().dr instanceof DrawNodeTerm) {
-				Object obj = ((DrawNodeTerm)editor.getCur_elem().dr).getAttrObject();
-				Transferable tr = null;
-				if (obj instanceof ANode)
-					tr = new TransferableANode((ANode)obj);
-				else
-					tr = new StringSelection(String.valueOf(obj));
-				editor.clipboard.setContents(tr, (ClipboardOwner)tr);
+			DrawTerm dr = editor.getCur_elem().dr;
+			if (dr instanceof DrawNodeTerm) {
+				Object obj = ((DrawNodeTerm)dr).getAttrObject();
+				UIManager.setClipboardContent(obj);
 			} else {
-				Transferable tr = new TransferableANode(editor.getCur_elem().node);
-				editor.clipboard.setContents(tr, (ClipboardOwner)tr);
+				UIManager.setClipboardContent(editor.getCur_elem().node);
 			}
 		}
 	}

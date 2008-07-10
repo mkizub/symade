@@ -54,4 +54,17 @@ public class UIManager {
 	public static UIActionFactory newNewElemNextFactory(){
 		return kiev.gui.swing.NewElemNext.newFactory();
 	}
+
+	public static UIActionFactory newPasteHereFactory(){
+		return kiev.gui.swing.Clipboard.newPasteHereFactory();
+	}
+
+	public static UIActionFactory newPasteNextFactory(){
+		return kiev.gui.swing.Clipboard.newPasteNextFactory();
+	}
+	
+	public static void setClipboardContent(Object obj) {
+		kiev.gui.swing.Clipboard.setClipboardContent(obj);
+	}
+
 }
