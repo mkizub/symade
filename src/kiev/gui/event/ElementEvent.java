@@ -12,11 +12,18 @@ package kiev.gui.event;
 
 import java.util.EventObject;
 
-
-
 public class ElementEvent extends EventObject {
 
-  protected int id;
+  /**
+	 * Serial Version UID.
+	 */
+	private static final long serialVersionUID = -8044680202445555011L;
+	
+	/**
+	 * The identifier.
+	 */	
+	protected int id;
+	
   /**
    * The first number in the range of ids used for element events.
    */

@@ -10,6 +10,9 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.fmt.DrawTerm;
+import kiev.vtree.ScalarPtr;
+
 public class UIManager {
 
 	public static ICanvas newCanvas(){
@@ -20,4 +23,35 @@ public class UIManager {
 		return new kiev.gui.swing.Window();
 	}
 	
+	public static ItemEditor newEnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr){
+		return new kiev.gui.swing.EnumEditor(editor, cur_elem, pattr);
+	}
+	
+	public static ItemEditor newIntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
+		return new kiev.gui.swing.EnumEditor(editor, dr_term, pattr);
+	}
+
+	public static ItemEditor newOperatorEditor(Editor editor, DrawTerm cur_elem){
+		return new kiev.gui.swing.OperatorEditor(editor, cur_elem);
+	}
+	
+	public static ItemEditor newTextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
+		return new kiev.gui.swing.TextEditor(editor, dr_term, pattr);
+	}
+	
+	public static UIActionFactory newExprEditActionsFlatten(){
+		return kiev.gui.swing.ExprEditActions.newFlatten();
+	}
+	
+	public static UIActionFactory newFunctionExecutorFactory(){
+		return kiev.gui.swing.FunctionExecutor.newFactory();
+	}
+	
+	public static UIActionFactory newNewElemHereFactory(){
+		return kiev.gui.swing.NewElemHere.newFactory();
+	}
+	
+	public static UIActionFactory newNewElemNextFactory(){
+		return kiev.gui.swing.NewElemNext.newFactory();
+	}
 }

@@ -25,7 +25,6 @@ import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.Editor;
-import kiev.gui.NewElemHere;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.ENode;

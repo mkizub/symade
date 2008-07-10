@@ -1,7 +1,12 @@
-package kiev.gui;
+package kiev.gui.swing;
 
-import kiev.fmt.*;
-import kiev.gui.swing.NewElemEditor;
+import kiev.fmt.Draw_SyntaxAttr;
+import kiev.fmt.Draw_SyntaxList;
+import kiev.fmt.ExpectedTypeInfo;
+import kiev.gui.ActionPoint;
+import kiev.gui.Editor;
+import kiev.gui.UIActionFactory;
+import kiev.gui.UIActionViewContext;
 
 public final class NewElemNext extends NewElemEditor implements Runnable {
 	NewElemNext(Editor editor) { super(editor); }

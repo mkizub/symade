@@ -35,9 +35,6 @@ import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
-import kiev.gui.swing.Canvas;
-import kiev.gui.swing.ExprEditActions;
-import kiev.gui.swing.FunctionExecutor;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtSpaceAttrSlot;
@@ -73,7 +70,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
 		final int ALT   = KeyEvent.ALT_DOWN_MASK;
 
-		this.naviMap.put(new InputEventInfo(ALT,				KeyEvent.VK_X),				new ExprEditActions.Flatten());
+		this.naviMap.put(new InputEventInfo(ALT,				KeyEvent.VK_X),				UIManager.newExprEditActionsFlatten());
 
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_UP),			 NavigateView.newLineUp());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_DOWN),			 NavigateView.newLineDn());
@@ -94,11 +91,11 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_X),				 EditActions.newCut());
 		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		 EditActions.newDel());
 
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				 FunctionExecutor.newFactory());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				 FunctionExecutor.newFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				 UIManager.newFunctionExecutorFactory());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				 UIManager.newFunctionExecutorFactory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				 FolderTrigger.newFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				 NewElemHere.newFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				 NewElemNext.newFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				 UIManager.newNewElemHereFactory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				 UIManager.newNewElemNextFactory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_V),				new PasteElemHere.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_B),				new PasteElemNext.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
@@ -324,7 +321,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		if (dr == null)
 			return;
 		if (e.getButton() == MouseEvent.BUTTON3) {
-			UIActionFactory af =  FunctionExecutor.newFactory();
+			UIActionFactory af =  UIManager.newFunctionExecutorFactory();
 			Runnable r = af.getAction(new UIActionViewContext(this.parent_window, this));
 			if (r != null)
 				r.run();

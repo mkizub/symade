@@ -432,7 +432,11 @@ public final class ExprEditActions
 		return path.toArray(new ANode[path.size()]);
 	}
 
-	public final static class Flatten implements UIActionFactory {
+	public static Flatten newFlatten(){
+		return new Flatten();
+	}
+	
+	final static class Flatten implements UIActionFactory {
 		public String getDescr() { return "Flatten expresison tree"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {

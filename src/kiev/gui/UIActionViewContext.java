@@ -12,7 +12,6 @@ package kiev.gui;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Drawable;
-//import kiev.gui.swing.Window;
 import kiev.vtree.ANode;
 
 public class UIActionViewContext {

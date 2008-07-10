@@ -12,8 +12,7 @@ package kiev.gui;
 
 import java.awt.event.ActionListener;
 
-import javax.swing.event.EventListenerList;
-
+import kiev.gui.event.EventListenerList;
 import kiev.gui.event.ElementEvent;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;

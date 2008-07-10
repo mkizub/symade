@@ -15,7 +15,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -29,18 +28,16 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
-import javax.swing.event.EventListenerList;
+
+import kiev.gui.event.EventListenerList;
 
 import kiev.fmt.SyntaxManager;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.EditActions;
 import kiev.gui.Editor;
-import kiev.gui.ICanvas;
 import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
-import kiev.gui.NewElemHere;
-import kiev.gui.NewElemNext;
 import kiev.gui.ProjectView;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.BgFormatter;

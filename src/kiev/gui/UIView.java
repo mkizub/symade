@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.vtree.*;
-import kiev.fmt.*;
-import kiev.gui.event.ElementChangeListener;
-import kiev.gui.event.ElementEvent;
-import kiev.gui.swing.Window;
-
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -23,7 +17,14 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.event.EventListenerList;
+import kiev.gui.event.EventListenerList;
+
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.Drawable;
+import kiev.fmt.GfxFormatter;
+import kiev.gui.event.ElementChangeListener;
+import kiev.gui.event.ElementEvent;
+import kiev.vtree.ANode;
 
 /**
  * The abstract class for the view components of the GUI. 

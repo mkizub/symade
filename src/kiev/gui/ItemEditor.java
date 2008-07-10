@@ -12,6 +12,6 @@ package kiev.gui;
 
 import java.awt.event.KeyListener;
 
-public interface ItemEditor extends KeyListener {
+public interface ItemEditor extends KeyListener, Runnable {
 
 }

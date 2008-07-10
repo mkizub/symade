@@ -18,10 +18,6 @@ import kiev.fmt.Draw_SyntaxEnumChoice;
 import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.SyntaxTokenKind;
-import kiev.gui.swing.EnumEditor;
-import kiev.gui.swing.IntEditor;
-import kiev.gui.swing.OperatorEditor;
-import kiev.gui.swing.TextEditor;
 import kiev.vlang.ConstIntExpr;
 import kiev.vlang.ENode;
 import kiev.vlang.SymbolRef;
@@ -44,15 +40,15 @@ public final class ChooseItemEditor implements UIActionFactory {
 			ScalarPtr pattr = dt.getScalarPtr();
 			Object obj = pattr.get();
 			if (obj instanceof SymbolRef)
-				return new TextEditor(editor, dt, ((SymbolRef)obj).getScalarPtr("name"));
+				return UIManager.newTextEditor(editor, dt, ((SymbolRef)obj).getScalarPtr("name"));
 			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class)
-				return new TextEditor(editor, dt, pattr);
+				return UIManager.newTextEditor(editor, dt, pattr);
 			else if (obj instanceof Integer)
-				return new IntEditor(editor, dt, pattr);
+				return UIManager.newIntEditor(editor, dt, pattr);
 			else if (obj instanceof ConstIntExpr)
-				return new IntEditor(editor, dt, ((ConstIntExpr)obj).getScalarPtr("value"));
+				return UIManager.newIntEditor(editor, dt, ((ConstIntExpr)obj).getScalarPtr("value"));
 			else if (obj instanceof Boolean || Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
-				return new EnumEditor(editor, dt, pattr);
+				return UIManager.newEnumEditor(editor, dt, pattr);
 		}
 		else if (dr instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr;
@@ -63,15 +59,15 @@ public final class ChooseItemEditor implements UIActionFactory {
 				if (dt == null)
 					dt = editor.getCur_elem().dr.getNextLeaf();
 			}
-			return new EnumEditor(editor, dt, dec.get$drnode().getScalarPtr(stx.name));
+			return UIManager.newEnumEditor(editor, dt, dec.get$drnode().getScalarPtr(stx.name));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
-			return new EnumEditor(editor, dr.getFirstLeaf(), dec.get$drnode().getScalarPtr(stx.name));
+			return UIManager.newEnumEditor(editor, dr.getFirstLeaf(), dec.get$drnode().getScalarPtr(stx.name));
 		}
 		else if (dr instanceof DrawToken && dr.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxTokenKind.OPERATOR) {
-			return new OperatorEditor(editor, (DrawToken)dr);
+			return UIManager.newOperatorEditor(editor, (DrawToken)dr);
 		}
 		return null;
 	}

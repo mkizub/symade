@@ -1,7 +1,10 @@
-package kiev.gui;
+package kiev.gui.swing;
 
 import kiev.fmt.*;
-import kiev.gui.swing.NewElemEditor;
+import kiev.gui.ActionPoint;
+import kiev.gui.Editor;
+import kiev.gui.UIActionFactory;
+import kiev.gui.UIActionViewContext;
 import kiev.vtree.ANode;
 
 public final class NewElemHere extends NewElemEditor implements Runnable {
