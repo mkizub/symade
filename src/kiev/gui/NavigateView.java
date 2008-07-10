@@ -57,8 +57,8 @@ public final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			int lnlst = uiv.getView_canvas().getLast_visible().getGfxFmtInfo().getLineNo();
-			int lnfst = uiv.getView_canvas().getFirst_visible().getGfxFmtInfo().getLineNo();
+			int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
+			int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
 			return new NavigateView(uiv, lnfst - lnlst + 1);
 		}
 	}
@@ -72,8 +72,8 @@ public final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			int lnlst = uiv.getView_canvas().getLast_visible().getGfxFmtInfo().getLineNo();
-			int lnfst = uiv.getView_canvas().getFirst_visible().getGfxFmtInfo().getLineNo();
+			int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
+			int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
 			return new NavigateView(uiv, lnlst - lnfst - 1);
 		}
 	}

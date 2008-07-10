@@ -58,8 +58,8 @@ public class Canvas extends JPanel
 	
 	int lineno;
 	boolean translated;
-	private DrawTerm	first_visible;
-	private DrawTerm	last_visible;
+	private GfxDrawTermLayoutInfo	first_visible;
+	private GfxDrawTermLayoutInfo	last_visible;
 	private int translated_y;
 	int drawed_x;
 	int drawed_y;
@@ -241,7 +241,7 @@ public class Canvas extends JPanel
 				num_lines = lineno;
 				int visa = 0;
 				if (first_visible != null && last_visible != null) {
-					visa = last_visible.getGfxFmtInfo().getLineNo()-first_visible.getGfxFmtInfo().getLineNo();
+					visa = last_visible.getLineNo()-first_visible.getLineNo();
 					if (verticalScrollBar.getVisibleAmount() != visa)
 						verticalScrollBar.setVisibleAmount(visa);
 				}
@@ -311,7 +311,7 @@ public class Canvas extends JPanel
 		if (dtli.get$do_newline())
 			lineno++;
 		if (first_visible == null)
-			first_visible = leaf;
+			first_visible = dtli;
 		
 		int x = dtli.getX();
 		int y = dtli.getY();
@@ -327,7 +327,7 @@ public class Canvas extends JPanel
 		if (y + h - translated_y >= getHeight())
 			return;
 		
-		last_visible = leaf;
+		last_visible = dtli;
 		
 		boolean set_white = false;
 		if (leaf == current && cursor_offset < 0) {
@@ -401,21 +401,8 @@ public class Canvas extends JPanel
 	/**
 	 * @param current the current to set
 	 */
-	public void setCurrent(DrawTerm current) {
+	public void setCurrent(DrawTerm current, ANode current_node) {
 		this.current = current;
-	}
-
-	/**
-	 * @return the current_node
-	 */
-	public ANode getCurrent_node() {
-		return current_node;
-	}
-
-	/**
-	 * @param current_node the current_node to set
-	 */
-	public void setCurrent_node(ANode current_node) {
 		this.current_node = current_node;
 	}
 
@@ -427,38 +414,17 @@ public class Canvas extends JPanel
 	}
 
 	/**
-	 * @param translated_y the translated_y to set
-	 */
-	public void setTranslated_y(int translated_y) {
-		this.translated_y = translated_y;
-	}
-
-	/**
 	 * @return the last_visible
 	 */
-	public DrawTerm getLast_visible() {
+	public GfxDrawTermLayoutInfo getLast_visible() {
 		return last_visible;
-	}
-
-	/**
-	 * @param last_visible the last_visible to set
-	 */
-	public void setLast_visible(DrawTerm last_visible) {
-		this.last_visible = last_visible;
 	}
 
 	/**
 	 * @return the first_visible
 	 */
-	public DrawTerm getFirst_visible() {
+	public GfxDrawTermLayoutInfo getFirst_visible() {
 		return first_visible;
-	}
-
-	/**
-	 * @param first_visible the first_visible to set
-	 */
-	public void setFirst_visible(DrawTerm first_visible) {
-		this.first_visible = first_visible;
 	}
 
 	/**
@@ -496,12 +462,5 @@ public class Canvas extends JPanel
 		return num_lines;
 	}
 
-	/**
-	 * @param num_lines the num_lines to set
-	 */
-	public void setNum_lines(int num_lines) {
-		this.num_lines = num_lines;
-	}
-	
 }
 

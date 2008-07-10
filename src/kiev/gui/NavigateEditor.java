@@ -287,8 +287,8 @@ public class NavigateEditor implements Runnable {
 			uiv.getView_canvas().setFirstLine(0);
 			return;
 		}
-		int lnlst = uiv.getView_canvas().getLast_visible().getGfxFmtInfo().getLineNo();
-		int lnfst = uiv.getView_canvas().getFirst_visible().getGfxFmtInfo().getLineNo();
+		int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
+		int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
 		int offs = lnlst - lnfst -1;
 		uiv.getView_canvas().incrFirstLine(-offs);
 		for (int i=offs; i >= 0; i--)
@@ -300,8 +300,8 @@ public class NavigateEditor implements Runnable {
 			uiv.getView_canvas().setFirstLine(0);
 			return;
 		}
-		int lnlst = uiv.getView_canvas().getLast_visible().getGfxFmtInfo().getLineNo();
-		int lnfst = uiv.getView_canvas().getFirst_visible().getGfxFmtInfo().getLineNo();
+		int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
+		int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
 		int offs = lnlst - lnfst -1;
 		uiv.getView_canvas().incrFirstLine(+offs);
 		for (int i=offs; i >= 0; i--)

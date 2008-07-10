@@ -130,7 +130,7 @@ public class OperatorEditor implements ItemEditor, PopupMenuListener, Runnable {
 	public void keyPressed(KeyEvent evt) {}
 	
 	public void popupMenuCanceled(PopupMenuEvent e) {
-		editor.getView_canvas().remove(menu);
+		((Canvas)editor.getView_canvas()).remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -144,7 +144,7 @@ public class OperatorEditor implements ItemEditor, PopupMenuListener, Runnable {
 			this.op = op;
 		}
 		public void actionPerformed(ActionEvent e) {
-			editor.getView_canvas().remove(menu);
+			((Canvas)editor.getView_canvas()).remove(menu);
 			try {
 				ENode expr = OperatorEditor.this.expr;
 				expr.setOp(op);

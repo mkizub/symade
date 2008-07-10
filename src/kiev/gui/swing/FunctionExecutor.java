@@ -143,7 +143,7 @@ public final class FunctionExecutor implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
-				editor.getView_canvas().remove(menu);
+				((Canvas)editor.getView_canvas()).remove(menu);
 				menu = null;
 			}
 			NewElemHere neh = new NewElemHere(editor);
@@ -161,7 +161,7 @@ public final class FunctionExecutor implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
-				editor.getView_canvas().remove(menu);
+				((Canvas)editor.getView_canvas()).remove(menu);
 				menu = null;
 			}
 			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, editor, dr));
@@ -179,7 +179,7 @@ public final class FunctionExecutor implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
-				editor.getView_canvas().remove(menu);
+				((Canvas)editor.getView_canvas()).remove(menu);
 				menu = null;
 			}
 			r.run();

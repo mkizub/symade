@@ -189,7 +189,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				editor.getView_canvas().setCursor_offset(edit_offset);
 				editor.stopItemEditor(false);
 				if (combo != null)
-					editor.getView_canvas().remove(combo);
+					((Canvas)editor.getView_canvas()).remove(combo);
 				return;
 			}
 		case KeyEvent.VK_ESCAPE:
@@ -205,7 +205,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				editor.getView_canvas().setCursor_offset(edit_offset); 
 				editor.stopItemEditor(true);
 				if (combo != null)
-					editor.getView_canvas().remove(combo);
+					((Canvas)editor.getView_canvas()).remove(combo);
 				return;
 			}
 		default:
@@ -252,7 +252,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			combo.configureEditor(this, name);
 			combo.setMaximumRowCount(10);
 			combo.setPopupVisible(false);
-			editor.getView_canvas().add(combo);
+			((Canvas)editor.getView_canvas()).add(combo);
 		} else {
 			combo.removeAllItems();
 		}

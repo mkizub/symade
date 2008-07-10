@@ -94,7 +94,7 @@ public class AccessEditor
 	public void keyPressed(KeyEvent evt) {}
 	
 	public void popupMenuCanceled(PopupMenuEvent e) {
-		editor.getView_canvas().remove(menu);
+		((Canvas)editor.getView_canvas()).remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -139,11 +139,11 @@ public class AccessEditor
 				setMenuVisible();
 			}
 			else {
-				editor.getView_canvas().remove(menu);
+				((Canvas)editor.getView_canvas()).remove(menu);
 				editor.stopItemEditor(false);
 			}
 		} catch (Throwable t) {
-			editor.getView_canvas().remove(menu);
+			((Canvas)editor.getView_canvas()).remove(menu);
 			editor.stopItemEditor(true);
 		}
 	}

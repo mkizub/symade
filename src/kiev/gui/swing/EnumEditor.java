@@ -85,7 +85,7 @@ public class EnumEditor
 	public void keyPressed(KeyEvent evt) {}
 	
 	public void popupMenuCanceled(PopupMenuEvent e) {
-		editor.getView_canvas().remove(menu);
+		((Canvas)editor.getView_canvas()).remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -99,7 +99,7 @@ public class EnumEditor
 			this.val = val;
 		}
 		public void actionPerformed(ActionEvent e) {
-			editor.getView_canvas().remove(menu);
+			((Canvas)editor.getView_canvas()).remove(menu);
 			try {
 				pattr.set(val);
 			} catch (Throwable t) {

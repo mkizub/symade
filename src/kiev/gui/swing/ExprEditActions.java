@@ -111,7 +111,7 @@ public final class ExprEditActions
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
-				editor.getView_canvas().remove(menu);
+				((Canvas)editor.getView_canvas()).remove(menu);
 			menu = null;
 			if (kind == ETokenKind.UNKNOWN) {
 				et.setKind(ETokenKind.UNKNOWN);

@@ -132,7 +132,7 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 	public void keyPressed(KeyEvent evt) {}
 	public void popupMenuCanceled(PopupMenuEvent e) {
 		if (menu != null)
-			editor.getView_canvas().remove(menu);
+			((Canvas)editor.getView_canvas()).remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -151,7 +151,7 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
-				editor.getView_canvas().remove(menu);
+				((Canvas)editor.getView_canvas()).remove(menu);
 			for (AttrSlot a: node.values()) 
 				if (a.name == attr) {
 				try {
