@@ -22,6 +22,5 @@ public interface IUIView {
 	public abstract void formatAndPaint(boolean full);
 	public abstract void formatAndPaintLater(ANode node);
 	public BgFormatter setBg_formatter(BgFormatter bg_formatter);
-	
-	
+		
 }

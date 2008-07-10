@@ -111,7 +111,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_A), new String[]{"kiev.gui.NewElemNext$Factory"});
 	}
 	
-	public Editor(IWindow window, Draw_ATextSyntax syntax, Canvas view_canvas) {
+	public Editor(IWindow window, Draw_ATextSyntax syntax, ICanvas view_canvas) {
 		super(window, syntax, view_canvas);
 		this.show_placeholders = true;
 		cur_elem = new CurElem();

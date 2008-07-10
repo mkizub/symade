@@ -21,4 +21,5 @@ public interface IEditor {
 	public ActionPoint getActionPoint(boolean next);
 	public Drawable getFunctionTarget(Draw_SyntaxFunction sf);
 	public CurElem getCur_elem();
+	
 }

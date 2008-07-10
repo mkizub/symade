@@ -57,19 +57,19 @@ public class Window extends JFrame
 	JTabbedPane explorers;
 	JTabbedPane editors;
 	JTabbedPane infos;
-	JSplitPane  split_left;
-	JSplitPane  split_bottom;
-	Editor[]	editor_views;
-	InfoView	info_view;
-	InfoView	clip_view;
-	TreeView	expl_view;
-	InfoView	tree_view;
-	ANodeTree	expl_tree;
+	JSplitPane split_left;
+	JSplitPane split_bottom;
+	Editor[] editor_views;
+	InfoView info_view;
+	InfoView clip_view;
+	TreeView expl_view;
+	InfoView tree_view;
+	ANodeTree expl_tree;
 	ANodeTable prop_table; 
 	TableView prop_view;  
-	ICanvas		info_canvas;
-	ICanvas		clip_canvas;
-	ICanvas		tree_canvas;
+	Canvas info_canvas;
+	Canvas clip_canvas;
+	Canvas tree_canvas;
 	
 	Component	cur_component;
 
