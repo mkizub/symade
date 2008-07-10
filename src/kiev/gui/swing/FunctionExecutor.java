@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuItem;
@@ -23,6 +24,7 @@ import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.ChooseItemEditor;
+import kiev.gui.Editor;
 import kiev.gui.NewElemHere;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -44,11 +46,11 @@ public final class FunctionExecutor implements Runnable {
 		menu = new JPopupMenu();
 		for (TextAction act: actions)
 			menu.add(new JMenuItem(act));
-		GfxDrawTermLayoutInfo cur_dtli = editor.cur_elem.dr.getGfxFmtInfo();
+		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
-		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
-		menu.show(editor.view_canvas, x, y);
+		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
+		menu.show((Component)editor.getView_canvas(), x, y);
 	}
 
 	public static Factory newFactory(){
@@ -142,7 +144,7 @@ public final class FunctionExecutor implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
-				editor.view_canvas.remove(menu);
+				editor.getView_canvas().remove(menu);
 				menu = null;
 			}
 			NewElemHere neh = new NewElemHere(editor);
@@ -160,7 +162,7 @@ public final class FunctionExecutor implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
-				editor.view_canvas.remove(menu);
+				editor.getView_canvas().remove(menu);
 				menu = null;
 			}
 			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, editor, dr));
@@ -178,7 +180,7 @@ public final class FunctionExecutor implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
-				editor.view_canvas.remove(menu);
+				editor.getView_canvas().remove(menu);
 				menu = null;
 			}
 			r.run();

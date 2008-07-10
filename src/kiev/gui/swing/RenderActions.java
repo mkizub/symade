@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuItem;
@@ -22,9 +23,11 @@ import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.NsXmlDumpSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
+import kiev.gui.Editor;
 import kiev.gui.InfoView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
+import kiev.gui.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.TreeWalker;
 
@@ -58,7 +61,7 @@ public final class RenderActions implements Runnable {
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
 			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
 			if (ui instanceof InfoView)
-				m.show(((InfoView)ui).view_canvas, 0, 0);
+				m.show((Component)((InfoView)ui).getView_canvas(), 0, 0);
 			else if (ui instanceof TreeView)
 				m.show(((TreeView)ui).the_tree, 0, 0);
 		}
@@ -96,7 +99,7 @@ public final class RenderActions implements Runnable {
 		else if (action == "redraw") {
 			ui.setSyntax(ui.syntax);
 			if (ui instanceof Editor)
-				((Editor)ui).cur_elem.set(ui.view_root.getFirstLeaf());
+				((Editor)ui).getCur_elem().set(ui.view_root.getFirstLeaf());
 			//ui.view_canvas.root = ui.view_root;
 			ui.formatAndPaint(false);
 		}

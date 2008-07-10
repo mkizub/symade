@@ -8,7 +8,7 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -19,7 +19,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import kiev.vtree.ANode;
 
 public class TransferableANode implements Transferable, ClipboardOwner {
-	static DataFlavor transferableANodeFlavor;
+	private static DataFlavor transferableANodeFlavor;
 	static {
 		try {
 			transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vtree.ANode");
@@ -53,5 +53,17 @@ public class TransferableANode implements Transferable, ClipboardOwner {
 		throw new UnsupportedFlavorException(flavor);
 	}
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
+	/**
+	 * @return the transferableANodeFlavor
+	 */
+	public static DataFlavor getTransferableANodeFlavor() {
+		return transferableANodeFlavor;
+	}
+	/**
+	 * @param transferableANodeFlavor the transferableANodeFlavor to set
+	 */
+	public static void setTransferableANodeFlavor(DataFlavor transferableANodeFlavor) {
+		TransferableANode.transferableANodeFlavor = transferableANodeFlavor;
+	}
 }
 

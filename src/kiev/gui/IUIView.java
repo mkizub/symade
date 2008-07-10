@@ -10,30 +10,18 @@
  *******************************************************************************/
 package kiev.gui;
 
-public class BgFormatter extends Thread {
-	private boolean do_format;
-	private UIView view;
-	public BgFormatter(UIView view) {
-		this.view = view;
-		this.setDaemon(true);
-		this.setPriority(Thread.NORM_PRIORITY - 1);
-	}
-	public void run() {
-		for (;;) {
-			while (!do_format) {
-				synchronized(this) { try {
-					this.wait();
-				} catch (InterruptedException e) {}
-				}
-				continue;
-			}
-			this.do_format = false;
-			view.formatAndPaint(true);
-		}
-	}
-	public synchronized void schedule_run() {
-		this.do_format = true;
-		this.notify();
-	}
-}
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.vtree.ANode;
 
+public interface IUIView {
+
+	public boolean isRegisteredToElementEvent();
+	public Draw_ATextSyntax getSyntax();
+	public void setSyntax(Draw_ATextSyntax syntax);
+	public abstract void setRoot(ANode root);
+	public abstract void formatAndPaint(boolean full);
+	public abstract void formatAndPaintLater(ANode node);
+	public BgFormatter setBg_formatter(BgFormatter bg_formatter);
+	
+	
+}

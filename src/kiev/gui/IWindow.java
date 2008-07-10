@@ -10,30 +10,21 @@
  *******************************************************************************/
 package kiev.gui;
 
-public class BgFormatter extends Thread {
-	private boolean do_format;
-	private UIView view;
-	public BgFormatter(UIView view) {
-		this.view = view;
-		this.setDaemon(true);
-		this.setPriority(Thread.NORM_PRIORITY - 1);
-	}
-	public void run() {
-		for (;;) {
-			while (!do_format) {
-				synchronized(this) { try {
-					this.wait();
-				} catch (InterruptedException e) {}
-				}
-				continue;
-			}
-			this.do_format = false;
-			view.formatAndPaint(true);
-		}
-	}
-	public synchronized void schedule_run() {
-		this.do_format = true;
-		this.notify();
-	}
-}
+import java.awt.event.ActionListener;
 
+import javax.swing.event.EventListenerList;
+
+import kiev.gui.event.ElementEvent;
+import kiev.vlang.FileUnit;
+import kiev.vtree.ANode;
+
+public interface IWindow extends ActionListener {
+	public EventListenerList getListenerList();
+	public void fireElementChanged(ElementEvent e);
+	public void openEditor(FileUnit fu);
+	public void openEditor(FileUnit fu, ANode[] path);
+	public void closeEditor(Editor ed);
+	public InfoView getInfo_view();
+	public void setInfo_view(InfoView info_view); 
+	public UIView getCurrentView();
+}

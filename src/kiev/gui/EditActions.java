@@ -5,8 +5,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 
 import kiev.fmt.DrawNodeTerm;
-import kiev.gui.swing.Editor;
-import kiev.gui.swing.TransferableANode;
 import kiev.vtree.ANode;
 import kiev.vtree.Transaction;
 
@@ -48,7 +46,7 @@ public final class EditActions implements Runnable {
 			}
 			editor.getCur_elem().set(null); 
 			editor.parent_window.closeEditor(editor);
-			editor.parent_window.info_view.formatAndPaint(true);
+			editor.parent_window.getInfo_view().formatAndPaint(true);
 		}
 		else if (action == "undo") {
 			Transaction tr = editor.changes.pop();

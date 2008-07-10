@@ -34,6 +34,9 @@ import javax.swing.event.EventListenerList;
 import kiev.fmt.SyntaxManager;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.EditActions;
+import kiev.gui.Editor;
+import kiev.gui.ICanvas;
+import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
 import kiev.gui.NewElemHere;
@@ -41,13 +44,15 @@ import kiev.gui.NewElemNext;
 import kiev.gui.ProjectView;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.BgFormatter;
+import kiev.gui.UIView;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
 import kiev.vlang.Env;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 
-public class Window extends JFrame implements ActionListener, FocusListener {
+public class Window extends JFrame 
+	implements IWindow, FocusListener {
 	private static final long serialVersionUID = -1330097168227311246L;
 	JTabbedPane explorers;
 	JTabbedPane editors;
@@ -55,16 +60,16 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	JSplitPane  split_left;
 	JSplitPane  split_bottom;
 	Editor[]	editor_views;
-	public InfoView	info_view;
+	InfoView	info_view;
 	InfoView	clip_view;
 	TreeView	expl_view;
 	InfoView	tree_view;
 	ANodeTree	expl_tree;
 	ANodeTable prop_table; 
 	TableView prop_view;  
-	Canvas		info_canvas;
-	Canvas		clip_canvas;
-	Canvas		tree_canvas;
+	ICanvas		info_canvas;
+	ICanvas		clip_canvas;
+	ICanvas		tree_canvas;
 	
 	Component	cur_component;
 
@@ -81,24 +86,24 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 			menu = new JMenu("File");
 			menu.setMnemonic(KeyEvent.VK_F);
 
-			mi = new UIActionMenuItem(this, "Load", KeyEvent.VK_L, new FileActions.LoadFileAs());
+			mi = new UIActionMenuItem((IWindow)this, "Load", KeyEvent.VK_L, new FileActions.LoadFileAs());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.ALT_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Save As...", KeyEvent.VK_A, new FileActions.SaveFileAs());
+			mi = new UIActionMenuItem((IWindow)this, "Save As...", KeyEvent.VK_A, new FileActions.SaveFileAs());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Save As API", 0, new FileActions.SaveFileAsApi());
+			mi = new UIActionMenuItem((IWindow)this, "Save As API", 0, new FileActions.SaveFileAsApi());
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Save", KeyEvent.VK_S, new FileActions.SaveFile());
+			mi = new UIActionMenuItem((IWindow)this, "Save", KeyEvent.VK_S, new FileActions.SaveFile());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
 			menu.add(new JSeparator());
 
-			mi = new UIActionMenuItem(this, "Close", KeyEvent.VK_C,  EditActions.newCloseWindow());
+			mi = new UIActionMenuItem((IWindow)this, "Close", KeyEvent.VK_C,  EditActions.newCloseWindow());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
@@ -108,41 +113,41 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 			menu = new JMenu("Edit");
 			menu.setMnemonic(KeyEvent.VK_E);
 
-			mi = new UIActionMenuItem(this, "Undo", KeyEvent.VK_U, EditActions.newUndo());
+			mi = new UIActionMenuItem((IWindow)this, "Undo", KeyEvent.VK_U, EditActions.newUndo());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Copy", KeyEvent.VK_C,  EditActions.newCopy());
+			mi = new UIActionMenuItem((IWindow)this, "Copy", KeyEvent.VK_C,  EditActions.newCopy());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Cut", KeyEvent.VK_U,  EditActions.newCut());
+			mi = new UIActionMenuItem((IWindow)this, "Cut", KeyEvent.VK_U,  EditActions.newCut());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Del", KeyEvent.VK_D,  EditActions.newCut());
+			mi = new UIActionMenuItem((IWindow)this, "Del", KeyEvent.VK_D,  EditActions.newCut());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
 			menu.add(mi);
 
 			menu.add(new JSeparator());
 
-			mi = new UIActionMenuItem(this, "New Element Here", KeyEvent.VK_H, NewElemHere.newFactory());
+			mi = new UIActionMenuItem((IWindow)this, "New Element Here", KeyEvent.VK_H, NewElemHere.newFactory());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "New Element Next", KeyEvent.VK_N,  NewElemNext.newFactory());
+			mi = new UIActionMenuItem((IWindow)this, "New Element Next", KeyEvent.VK_N,  NewElemNext.newFactory());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Edit Element", KeyEvent.VK_E, new ChooseItemEditor());
+			mi = new UIActionMenuItem((IWindow)this, "Edit Element", KeyEvent.VK_E, new ChooseItemEditor());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Select Parent", KeyEvent.VK_P, NavigateNode.newNodeUp());
+			mi = new UIActionMenuItem((IWindow)this, "Select Parent", KeyEvent.VK_P, NavigateNode.newNodeUp());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.ALT_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Insert Mode", KeyEvent.VK_I,  NavigateNode.newInsertMode());
+			mi = new UIActionMenuItem((IWindow)this, "Insert Mode", KeyEvent.VK_I,  NavigateNode.newInsertMode());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
 			menu.add(mi);
 
@@ -152,31 +157,31 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 			menu = new JMenu("Render");
 			menu.setMnemonic(KeyEvent.VK_R);
 
-			mi = new UIActionMenuItem(this, "Syntax As...", KeyEvent.VK_S, new RenderActions.SyntaxFileAs());
+			mi = new UIActionMenuItem((IWindow)this, "Syntax As...", KeyEvent.VK_S, new RenderActions.SyntaxFileAs());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Unfold all", KeyEvent.VK_U, new RenderActions.OpenFoldedAll());
+			mi = new UIActionMenuItem((IWindow)this, "Unfold all", KeyEvent.VK_U, new RenderActions.OpenFoldedAll());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Fold all", KeyEvent.VK_F, new RenderActions.CloseFoldedAll());
+			mi = new UIActionMenuItem((IWindow)this, "Fold all", KeyEvent.VK_F, new RenderActions.CloseFoldedAll());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.SHIFT_MASK|ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "AutoGenerated", KeyEvent.VK_A, new RenderActions.ToggleShowAutoGenerated());
+			mi = new UIActionMenuItem((IWindow)this, "AutoGenerated", KeyEvent.VK_A, new RenderActions.ToggleShowAutoGenerated());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Placeholders", KeyEvent.VK_P, new RenderActions.ToggleShowPlaceholders());
+			mi = new UIActionMenuItem((IWindow)this, "Placeholders", KeyEvent.VK_P, new RenderActions.ToggleShowPlaceholders());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "HintEscaped", KeyEvent.VK_E, new RenderActions.ToggleHintEscaped());
+			mi = new UIActionMenuItem((IWindow)this, "HintEscaped", KeyEvent.VK_E, new RenderActions.ToggleHintEscaped());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Redraw", KeyEvent.VK_R, new RenderActions.Redraw());
+			mi = new UIActionMenuItem((IWindow)this, "Redraw", KeyEvent.VK_R, new RenderActions.Redraw());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
@@ -186,19 +191,19 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 			menu = new JMenu("Compiler");
 			menu.setMnemonic(KeyEvent.VK_C);
 
-			mi = new UIActionMenuItem(this, "Merge Tree", KeyEvent.VK_M, new FileActions.MergeTreeAll());
+			mi = new UIActionMenuItem((IWindow)this, "Merge Tree", KeyEvent.VK_M, new FileActions.MergeTreeAll());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Compile Backend All", KeyEvent.VK_B, new FileActions.RunBackendAll());
+			mi = new UIActionMenuItem((IWindow)this, "Compile Backend All", KeyEvent.VK_B, new FileActions.RunBackendAll());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Compile Frontend All", KeyEvent.VK_A, new FileActions.RunFrontendAll());
+			mi = new UIActionMenuItem((IWindow)this, "Compile Frontend All", KeyEvent.VK_A, new FileActions.RunFrontendAll());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem(this, "Compile Frontend", KeyEvent.VK_F, new FileActions.RunFrontend());
+			mi = new UIActionMenuItem((IWindow)this, "Compile Frontend", KeyEvent.VK_F, new FileActions.RunFrontend());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.ALT_MASK));
 			menu.add(mi);
 
@@ -223,9 +228,9 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		split_left.setResizeWeight(0.25);
 		split_left.setOneTouchExpandable(true);
 		explorers.addTab("Explorer", new JScrollPane(expl_tree));
-		explorers.addTab("Project", tree_canvas);
-		infos.addTab("Info", info_canvas);
-		infos.addTab("Clipboard", clip_canvas);
+		explorers.addTab("Project", (Component)tree_canvas);
+		infos.addTab("Info", (Component)info_canvas);
+		infos.addTab("Clipboard", (Component)clip_canvas);
 		infos.addTab("Inspector", new JScrollPane(prop_table));
 		
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
@@ -233,11 +238,11 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		this.setSize(screenSize.width, (screenSize.height*3)/4);
 		this.setVisible(true);
 		editor_views = new Editor[0];
-		info_view = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
-		clip_view = new InfoView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
-		prop_view = new TableView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
-		expl_view = new TreeView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
-		tree_view = new ProjectView(this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), tree_canvas);
+		info_view = new InfoView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
+		clip_view = new InfoView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
+		prop_view = new TableView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
+		expl_view = new TreeView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
+		tree_view = new ProjectView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), tree_canvas);
 		addListeners();
 		initBgFormatters();
 		expl_view.setRoot(Env.getProject());
@@ -263,7 +268,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		Object src = e.getSource();
 		if (src instanceof UIActionMenuItem) {
 			UIActionMenuItem m = (UIActionMenuItem)src;
-			Runnable r = m.factory.getAction(new UIActionViewContext(this, getCurrentView()));
+			Runnable r = m.factory.getAction(new UIActionViewContext((IWindow)this, getCurrentView()));
 			if (r != null)
 				r.run();
 		}
@@ -290,16 +295,16 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	public UIView getCurrentView() {
 		Component cc = cur_component;
 		for (Editor e : editor_views) {
-			if (e.view_canvas == cc)
+			if (e.getView_canvas() == cc)
 				return e;
 		}
-		if (info_view.view_canvas == cc)
+		if (info_view.getView_canvas() == cc)
 			return info_view;
-		if (clip_view.view_canvas == cc)
+		if (clip_view.getView_canvas() == cc)
 			return clip_view;
 		if (expl_view.the_tree == cc)
 			return expl_view;
-		if (tree_view.view_canvas == cc)
+		if (tree_view.getView_canvas() == cc)
 			return tree_view;
 		return null;
 	}
@@ -312,8 +317,8 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		for (Editor e: editor_views) {
 			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
 				e.goToPath(path);
-				editors.setSelectedComponent((Component)e.view_canvas);
-				e.view_canvas.requestFocus();
+				editors.setSelectedComponent((Component)e.getView_canvas());
+				e.getView_canvas().requestFocus();
 				return;
 			}
 		}
@@ -321,7 +326,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		edit_canvas.addFocusListener(this);
 		editors.addTab(fu.pname(), edit_canvas);
 		editors.setSelectedComponent(edit_canvas);
-		Editor editor_view = new Editor  (this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), edit_canvas);
+		Editor editor_view = new Editor  ((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), edit_canvas);
 		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);
 		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);
@@ -336,7 +341,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 				v.add(e);
 				continue;
 			}
-			editors.remove((Component)e.view_canvas);
+			editors.remove((Component)e.getView_canvas());
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
 	}
@@ -379,6 +384,20 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	 */
 	public EventListenerList getListenerList() {
 		return listenerList;
+	}
+
+	/**
+	 * @return the info_view
+	 */
+	public InfoView getInfo_view() {
+		return info_view;
+	}
+
+	/**
+	 * @param info_view the info_view to set
+	 */
+	public void setInfo_view(InfoView info_view) {
+		this.info_view = info_view;
 	}
 	
 }

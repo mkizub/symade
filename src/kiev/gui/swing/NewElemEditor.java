@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -20,6 +21,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.TextAction;
 
 import kiev.fmt.*;
+import kiev.gui.Editor;
 import kiev.gui.ItemEditor;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
@@ -102,13 +104,13 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 	public void makeMenu(String title, ANode n, Draw_SyntaxAttr satt) {
 		Menu m = new Menu(title);
 		addItems(m, satt.getExpectedTypes(), n, satt.name);
-		this.menu = makePopupMenu(m);
-		this.menu.addPopupMenuListener(this);
-		GfxDrawTermLayoutInfo cur_dtli = editor.cur_elem.dr.getGfxFmtInfo();
+		menu = makePopupMenu(m);
+		menu.addPopupMenuListener(this);
+		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
-		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
-		this.menu.show(editor.view_canvas, x, y);
+		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
+		this.menu.show((Component)editor.getView_canvas(), x, y);
 		editor.startItemEditor(this);
 	}
 
@@ -117,11 +119,11 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 		addItems(m, splh.getExpectedTypes(), n, splh.attr_name);
 		this.menu = makePopupMenu(m);
 		this.menu.addPopupMenuListener(this);
-		GfxDrawTermLayoutInfo cur_dtli = editor.cur_elem.dr.getGfxFmtInfo();
+		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
-		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
-		this.menu.show(editor.view_canvas, x, y);
+		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
+		this.menu.show((Component)editor.getView_canvas(), x, y);
 		editor.startItemEditor(this);
 	}
 
@@ -130,7 +132,7 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 	public void keyPressed(KeyEvent evt) {}
 	public void popupMenuCanceled(PopupMenuEvent e) {
 		if (menu != null)
-			editor.view_canvas.remove(menu);
+			editor.getView_canvas().remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -149,7 +151,7 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
-				editor.view_canvas.remove(menu);
+				editor.getView_canvas().remove(menu);
 			for (AttrSlot a: node.values()) 
 				if (a.name == attr) {
 				try {

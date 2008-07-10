@@ -8,7 +8,7 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui;
 
 import kiev.fmt.Drawable;
 import kiev.vtree.ANode;

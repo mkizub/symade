@@ -29,12 +29,13 @@ import javax.swing.JScrollBar;
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.gui.swing.UIView;
+import kiev.gui.ICanvas;
+import kiev.gui.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 
 public class Canvas extends JPanel 
-	implements kiev.gui.Canvas, MouseWheelListener, AdjustmentListener {
+	implements ICanvas, MouseWheelListener, AdjustmentListener {
 	private static final long serialVersionUID = 4713633504436057499L;
 	static final Color defaultTextColor = Color.BLACK;
 	static final Color autoGenTextColor = Color.GRAY;
@@ -46,19 +47,19 @@ public class Canvas extends JPanel
 	private int imgHeight;
 	
 	private DrawLayoutInfo dlb_root;
-	public DrawTerm	current;
-	public ANode current_node;
-	public int first_line;
-	public int num_lines;
-	public int cursor_offset = -1;
+	private DrawTerm	current;
+	private ANode current_node;
+	private int first_line;
+	private int num_lines;
+	private int cursor_offset = -1;
 
 	transient VolatileImage vImg;
 	
 	int lineno;
 	boolean translated;
-	public DrawTerm	first_visible;
-	public DrawTerm	last_visible;
-	public int translated_y;
+	private DrawTerm	first_visible;
+	private DrawTerm	last_visible;
+	private int translated_y;
 	int drawed_x;
 	int drawed_y;
 	int bg_drawed_x;
@@ -76,7 +77,7 @@ public class Canvas extends JPanel
 		this.imgHeight = 100;
 	}
 	
-	public void setUIView(kiev.gui.UIView uiv) {
+	public void setUIView(kiev.gui.IUIView uiv) {
 		if (uiv instanceof UIView){
 			this.addMouseListener((UIView)uiv);
 			this.addComponentListener((UIView)uiv);
@@ -384,6 +385,118 @@ public class Canvas extends JPanel
 	 */
 	public void setDlb_root(DrawLayoutInfo dlb_root) {
 		this.dlb_root = dlb_root;
+	}
+
+	/**
+	 * @return the current
+	 */
+	public DrawTerm getCurrent() {
+		return current;
+	}
+
+	/**
+	 * @param current the current to set
+	 */
+	public void setCurrent(DrawTerm current) {
+		this.current = current;
+	}
+
+	/**
+	 * @return the current_node
+	 */
+	public ANode getCurrent_node() {
+		return current_node;
+	}
+
+	/**
+	 * @param current_node the current_node to set
+	 */
+	public void setCurrent_node(ANode current_node) {
+		this.current_node = current_node;
+	}
+
+	/**
+	 * @return the translated_y
+	 */
+	public int getTranslated_y() {
+		return translated_y;
+	}
+
+	/**
+	 * @param translated_y the translated_y to set
+	 */
+	public void setTranslated_y(int translated_y) {
+		this.translated_y = translated_y;
+	}
+
+	/**
+	 * @return the last_visible
+	 */
+	public DrawTerm getLast_visible() {
+		return last_visible;
+	}
+
+	/**
+	 * @param last_visible the last_visible to set
+	 */
+	public void setLast_visible(DrawTerm last_visible) {
+		this.last_visible = last_visible;
+	}
+
+	/**
+	 * @return the first_visible
+	 */
+	public DrawTerm getFirst_visible() {
+		return first_visible;
+	}
+
+	/**
+	 * @param first_visible the first_visible to set
+	 */
+	public void setFirst_visible(DrawTerm first_visible) {
+		this.first_visible = first_visible;
+	}
+
+	/**
+	 * @return the cursor_offset
+	 */
+	public int getCursor_offset() {
+		return cursor_offset;
+	}
+
+	/**
+	 * @param cursor_offset the cursor_offset to set
+	 */
+	public void setCursor_offset(int cursor_offset) {
+		this.cursor_offset = cursor_offset;
+	}
+
+	/**
+	 * @return the first_line
+	 */
+	public int getFirst_line() {
+		return first_line;
+	}
+
+	/**
+	 * @param first_line the first_line to set
+	 */
+	public void setFirst_line(int first_line) {
+		this.first_line = first_line;
+	}
+
+	/**
+	 * @return the num_lines
+	 */
+	public int getNum_lines() {
+		return num_lines;
+	}
+
+	/**
+	 * @param num_lines the num_lines to set
+	 */
+	public void setNum_lines(int num_lines) {
+		this.num_lines = num_lines;
 	}
 	
 }

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.EnumSet;
@@ -23,6 +24,7 @@ import javax.swing.text.TextAction;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.gui.Editor;
 import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -63,7 +65,7 @@ public class EnumEditor
 
 	public void run() {
 		editor.startItemEditor(this);
-		if ( pattr.slot.typeinfo.clazz == Boolean.class || pattr.slot.typeinfo.clazz == boolean.class) {
+		if (pattr.slot.typeinfo.clazz == Boolean.class || pattr.slot.typeinfo.clazz == boolean.class) {
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
 			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
 		} else {
@@ -73,9 +75,9 @@ public class EnumEditor
 		GfxDrawTermLayoutInfo cur_dtli = cur_elem.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
-		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
+		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
 		menu.addPopupMenuListener(this);
-		menu.show(editor.view_canvas, x, y);
+		menu.show((Component)editor.getView_canvas(), x, y);
 	}
 
 	public void keyReleased(KeyEvent evt) {}
@@ -83,7 +85,7 @@ public class EnumEditor
 	public void keyPressed(KeyEvent evt) {}
 	
 	public void popupMenuCanceled(PopupMenuEvent e) {
-		editor.view_canvas.remove(menu);
+		editor.getView_canvas().remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -97,7 +99,7 @@ public class EnumEditor
 			this.val = val;
 		}
 		public void actionPerformed(ActionEvent e) {
-			editor.view_canvas.remove(menu);
+			editor.getView_canvas().remove(menu);
 			try {
 				pattr.set(val);
 			} catch (Throwable t) {

@@ -10,24 +10,39 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
-import kiev.vtree.*;
-import kiev.vlang.FileUnit;
-import kiev.fmt.*;
-import kiev.gui.event.ElementEvent;
-
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import javax.swing.JPopupMenu;
+
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import javax.swing.event.*;
+
+import kiev.fmt.DrawTerm;
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.Drawable;
+import kiev.fmt.GfxFormatter;
+import kiev.gui.Editor;
+import kiev.gui.IWindow;
+import kiev.gui.UIView;
+import kiev.gui.event.ElementEvent;
+import kiev.vlang.FileUnit;
+import kiev.vtree.ANode;
+import kiev.vtree.AttrSlot;
+import kiev.vtree.ExtChildrenIterator;
+import kiev.vtree.ExtSpaceAttrSlot;
+import kiev.vtree.ParentAttrSlot;
+import kiev.vtree.ScalarAttrSlot;
+import kiev.vtree.SpaceAttrSlot;
 
 
 /**
@@ -38,7 +53,7 @@ public class TableView extends UIView implements KeyListener {
 
 	protected final ANodeTable table;
 
-	public TableView(Window window, Draw_ATextSyntax syntax, ANodeTable table) {
+	public TableView(IWindow window, Draw_ATextSyntax syntax, ANodeTable table) {
 		super(window, syntax);
 		this.table = table;
 		this.formatter = new GfxFormatter((Graphics2D)table.getGraphics());
@@ -157,7 +172,7 @@ public class TableView extends UIView implements KeyListener {
 	@Override
 	public void elementChanged(ElementEvent e) {
 		super.elementChanged(e);
-		ANode node = ((Editor)e.getSource()).cur_elem.node;
+		ANode node = ((Editor)e.getSource()).getCur_elem().node;
 		createModel(node);
 		formatAndPaintLater(node);		
 	}

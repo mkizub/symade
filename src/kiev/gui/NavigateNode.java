@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.gui.swing.Editor;
 
 public class NavigateNode implements Runnable {
 

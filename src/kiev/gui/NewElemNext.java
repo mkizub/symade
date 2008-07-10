@@ -1,8 +1,6 @@
 package kiev.gui;
 
 import kiev.fmt.*;
-import kiev.gui.swing.ActionPoint;
-import kiev.gui.swing.Editor;
 import kiev.gui.swing.NewElemEditor;
 
 public final class NewElemNext extends NewElemEditor implements Runnable {

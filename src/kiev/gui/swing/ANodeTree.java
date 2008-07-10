@@ -173,7 +173,6 @@ final class ANodeTreeModel implements TreeModel, TreeExpansionListener {
         }
     }
 
-	@Override
 	public void treeCollapsed(TreeExpansionEvent event) {
 		TreePath path = event.getPath();
 		Object obj = path.getLastPathComponent();
@@ -186,8 +185,7 @@ final class ANodeTreeModel implements TreeModel, TreeExpansionListener {
 			fireTreeStructureChanged(this, path);
 		}
 	}
-
-	@Override
+	
 	public void treeExpanded(TreeExpansionEvent event) {
 	}
 }

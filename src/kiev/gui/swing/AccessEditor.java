@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -25,7 +26,7 @@ import javax.swing.event.PopupMenuListener;
 import kiev.fmt.DrawJavaAccess;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.gui.swing.Editor;
+import kiev.gui.Editor;
 import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -83,9 +84,9 @@ public class AccessEditor
 		GfxDrawTermLayoutInfo cur_dtli = cur_elem.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
-		int y = cur_dtli.getY() + h - editor.view_canvas.translated_y;
+		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
 		menu.addPopupMenuListener(this);
-		menu.show(editor.view_canvas, x, y);
+		menu.show((Component)editor.getView_canvas(), x, y);
 	}
 
 	public void keyReleased(KeyEvent evt) {}
@@ -93,7 +94,7 @@ public class AccessEditor
 	public void keyPressed(KeyEvent evt) {}
 	
 	public void popupMenuCanceled(PopupMenuEvent e) {
-		editor.view_canvas.remove(menu);
+		editor.getView_canvas().remove(menu);
 		editor.stopItemEditor(true);
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -138,11 +139,11 @@ public class AccessEditor
 				setMenuVisible();
 			}
 			else {
-				editor.view_canvas.remove(menu);
+				editor.getView_canvas().remove(menu);
 				editor.stopItemEditor(false);
 			}
 		} catch (Throwable t) {
-			editor.view_canvas.remove(menu);
+			editor.getView_canvas().remove(menu);
 			editor.stopItemEditor(true);
 		}
 	}

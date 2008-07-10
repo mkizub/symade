@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.gui.EditActions.Undo;
-
 public final class NavigateView implements Runnable {
 	
 	final InfoView uiv;
@@ -23,7 +21,7 @@ public final class NavigateView implements Runnable {
 	}
 	
 	public void run() {
-		this.uiv.view_canvas.incrFirstLine(this.incr);
+		this.uiv.getView_canvas().incrFirstLine(this.incr);
 	}
 
 	public static LineUp newLineUp(){
@@ -59,8 +57,8 @@ public final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			int lnlst = uiv.view_canvas.last_visible.getGfxFmtInfo().getLineNo();
-			int lnfst = uiv.view_canvas.first_visible.getGfxFmtInfo().getLineNo();
+			int lnlst = uiv.getView_canvas().getLast_visible().getGfxFmtInfo().getLineNo();
+			int lnfst = uiv.getView_canvas().getFirst_visible().getGfxFmtInfo().getLineNo();
 			return new NavigateView(uiv, lnfst - lnlst + 1);
 		}
 	}
@@ -74,8 +72,8 @@ public final class NavigateView implements Runnable {
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
-			int lnlst = uiv.view_canvas.last_visible.getGfxFmtInfo().getLineNo();
-			int lnfst = uiv.view_canvas.first_visible.getGfxFmtInfo().getLineNo();
+			int lnlst = uiv.getView_canvas().getLast_visible().getGfxFmtInfo().getLineNo();
+			int lnfst = uiv.getView_canvas().getFirst_visible().getGfxFmtInfo().getLineNo();
 			return new NavigateView(uiv, lnlst - lnfst - 1);
 		}
 	}

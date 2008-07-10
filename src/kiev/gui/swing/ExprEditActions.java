@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
@@ -27,7 +28,9 @@ import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.SyntaxTokenKind;
+import kiev.gui.Editor;
 import kiev.gui.ItemEditor;
+import kiev.gui.NavigateEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.parser.ASTExpression;
@@ -108,7 +111,7 @@ public final class ExprEditActions
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
-				editor.view_canvas.remove(menu);
+				editor.getView_canvas().remove(menu);
 			menu = null;
 			if (kind == ETokenKind.UNKNOWN) {
 				et.setKind(ETokenKind.UNKNOWN);
@@ -128,8 +131,8 @@ public final class ExprEditActions
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 		if (code == KeyEvent.VK_F && mask == KeyEvent.CTRL_DOWN_MASK) {
-			DrawTerm dt = editor.cur_elem.dr;
-			ANode n = editor.cur_elem.node;
+			DrawTerm dt = editor.getCur_elem().dr;
+			ANode n = editor.getCur_elem().node;
 			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.get$drnode() != n)
 				return;
 			EToken et = (EToken)n;
@@ -139,8 +142,8 @@ public final class ExprEditActions
 			GfxDrawTermLayoutInfo dtli = dt.getGfxFmtInfo();
 			int x = dtli.getX();
 			int h = dtli.getHeight();
-			int y = dtli.getY() + h - editor.view_canvas.translated_y;
-			menu.show(editor.view_canvas, x, y);
+			int y = dtli.getY() + h - editor.getView_canvas().getTranslated_y();
+			menu.show((Component)editor.getView_canvas(), x, y);
 			return;
 		}
 		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
@@ -156,17 +159,17 @@ public final class ExprEditActions
 				editor.goToPath(makePathTo(expr.getNodes()[0]));
 			else
 				editor.goToPath(makePathTo(expr));
-			editor.view_canvas.cursor_offset = 0;
+			editor.getView_canvas().setCursor_offset(0);
 			return;
 		case KeyEvent.VK_END:
 			if (expr.getNodes().length > 0)
 				editor.goToPath(makePathTo(expr.getNodes()[expr.getNodes().length-1]));
 			else
 				editor.goToPath(makePathTo(expr));
-			if (editor.cur_elem.dr != null && editor.cur_elem.dr.getText() != null)
-				editor.view_canvas.cursor_offset = editor.cur_elem.dr.getText().length();
+			if (editor.getCur_elem().dr != null && editor.getCur_elem().dr.getText() != null)
+				editor.getView_canvas().setCursor_offset(editor.getCur_elem().dr.getText().length());
 			else
-				editor.view_canvas.cursor_offset = 0;
+				editor.getView_canvas().setCursor_offset(0);
 			return;
 		case KeyEvent.VK_LEFT:
 			new NavigateEditor(context.editor,-1).run();
@@ -192,8 +195,8 @@ public final class ExprEditActions
 		}
 		if (code == KeyEvent.VK_SHIFT || code == KeyEvent.VK_ALT || code == KeyEvent.VK_CONTROL)
 			return;
-		DrawTerm dt = editor.cur_elem.dr;
-		ANode n = editor.cur_elem.node;
+		DrawTerm dt = editor.getCur_elem().dr;
+		ANode n = editor.getCur_elem().node;
 		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.get$drnode() != n) {
 			java.awt.Toolkit.getDefaultToolkit().beep();
 			return;
@@ -206,7 +209,7 @@ public final class ExprEditActions
 		int prefix_offset = prefix_text.length();
 		int suffix_offset = suffix_text.length();
 		text = text.substring(prefix_offset, text.length() - suffix_offset);
-		int edit_offset = editor.view_canvas.cursor_offset - prefix_offset;
+		int edit_offset = editor.getView_canvas().getCursor_offset() - prefix_offset;
 		if (edit_offset < 0 || edit_offset > text.length()) {
 			char ch = evt.getKeyChar();
 			if (ch != KeyEvent.CHAR_UNDEFINED) {
@@ -337,17 +340,17 @@ public final class ExprEditActions
 				break;
 			}
 		}
-		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+		editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
 		editor.formatAndPaint(true);
 	}
 	
 	private void deleteNode(DrawTerm dt, EToken et, boolean by_backspace) {
 		dt = (by_backspace ? dt.getPrevLeaf() : dt.getNextLeaf());
-		editor.cur_elem.set(dt);
+		editor.getCur_elem().set(dt);
 		if (by_backspace && dt != null && dt.getText() != null)
-			editor.view_canvas.cursor_offset = dt.getText().length();
+			editor.getView_canvas().setCursor_offset(dt.getText().length());
 		else
-			editor.view_canvas.cursor_offset = 0;
+			editor.getView_canvas().setCursor_offset(0);
 		et.detach();
 		editor.formatAndPaint(true);
 	}
@@ -356,8 +359,8 @@ public final class ExprEditActions
 			DrawTerm pt = dt.getPrevLeaf();
 			if (pt != null && pt.get$drnode() instanceof EToken) {
 				EToken pe = (EToken)pt.get$drnode();
-				editor.cur_elem.set(pt);
-				editor.view_canvas.cursor_offset = pt.getText().length();
+				editor.getCur_elem().set(pt);
+				editor.getView_canvas().setCursor_offset(pt.getText().length());
 				pe.setText(pe.get$ident() + et.get$ident());
 				et.detach();
 			}
@@ -389,7 +392,7 @@ public final class ExprEditActions
 			ne.setText(right);
 		}
 		// set new node to be current
-		editor.view_canvas.cursor_offset = 0;
+		editor.getView_canvas().setCursor_offset(0);
 		editor.formatAndPaint(true);
 		editor.goToPath(makePathTo(ne));
 		editor.formatAndPaint(false);
@@ -402,7 +405,7 @@ public final class ExprEditActions
 		ne.setText(String.valueOf(ch));
 		editor.formatAndPaint(true);
 		editor.goToPath(makePathTo(ne));
-		editor.view_canvas.cursor_offset = 1;
+		editor.getView_canvas().setCursor_offset(1);
 		editor.formatAndPaint(false);
 	}
 	private void appendNode(DrawTerm dt, EToken et, char ch) {
@@ -413,7 +416,7 @@ public final class ExprEditActions
 		ne.setText(String.valueOf(ch));
 		editor.formatAndPaint(true);
 		editor.goToPath(makePathTo(ne));
-		editor.view_canvas.cursor_offset = 1;
+		editor.getView_canvas().setCursor_offset(1);
 		editor.formatAndPaint(false);
 	}
 	

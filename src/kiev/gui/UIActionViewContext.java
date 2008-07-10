@@ -12,20 +12,24 @@ package kiev.gui;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Drawable;
-import kiev.gui.swing.Editor;
-import kiev.gui.swing.UIView;
-import kiev.gui.swing.Window;
+//import kiev.gui.swing.Window;
 import kiev.vtree.ANode;
 
 public class UIActionViewContext {
-	public final Window		wnd;
+	public final IWindow		wnd;
 	public final UIView		ui;
 	public final InfoView	uiv;
 	public final Editor		editor;
 	public final DrawTerm	dt;
 	public final ANode		node;
 	public Drawable			dr;
-	public UIActionViewContext(Window wnd, UIView ui) {
+	
+	/**
+	 * Constructor of UIActionViewContext.
+	 * @param wnd
+	 * @param ui
+	 */
+	public UIActionViewContext(IWindow wnd, UIView ui) {
 		this.wnd = wnd;
 		this.ui = ui;
 		if (ui instanceof InfoView) {
@@ -45,7 +49,7 @@ public class UIActionViewContext {
 			this.dr = null;
 		}
 	}
-	public UIActionViewContext(Window wnd, Editor editor, Drawable dr) {
+	public UIActionViewContext(IWindow wnd, Editor editor, Drawable dr) {
 		this.wnd = wnd;
 		this.ui = editor;
 		this.uiv = editor;

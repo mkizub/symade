@@ -18,7 +18,6 @@ import kiev.fmt.Draw_SyntaxEnumChoice;
 import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
 import kiev.fmt.SyntaxTokenKind;
-import kiev.gui.swing.Editor;
 import kiev.gui.swing.EnumEditor;
 import kiev.gui.swing.IntEditor;
 import kiev.gui.swing.OperatorEditor;

@@ -10,30 +10,15 @@
  *******************************************************************************/
 package kiev.gui;
 
-public class BgFormatter extends Thread {
-	private boolean do_format;
-	private UIView view;
-	public BgFormatter(UIView view) {
-		this.view = view;
-		this.setDaemon(true);
-		this.setPriority(Thread.NORM_PRIORITY - 1);
-	}
-	public void run() {
-		for (;;) {
-			while (!do_format) {
-				synchronized(this) { try {
-					this.wait();
-				} catch (InterruptedException e) {}
-				}
-				continue;
-			}
-			this.do_format = false;
-			view.formatAndPaint(true);
-		}
-	}
-	public synchronized void schedule_run() {
-		this.do_format = true;
-		this.notify();
-	}
-}
+import kiev.fmt.Draw_SyntaxFunction;
+import kiev.fmt.Drawable;
+import kiev.gui.Editor.CurElem;
 
+
+public interface IEditor {
+
+	public void makeCurrentVisible();
+	public ActionPoint getActionPoint(boolean next);
+	public Drawable getFunctionTarget(Draw_SyntaxFunction sf);
+	public CurElem getCur_elem();
+}

@@ -10,25 +10,21 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.vtree.*;
-import kiev.fmt.*;
-import kiev.gui.event.ElementEvent;
-import kiev.gui.swing.Canvas;
-import kiev.gui.swing.Editor;
-import kiev.gui.swing.UIView;
-import kiev.gui.swing.Window;
-
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.Graphics2D;
-
 import java.util.Hashtable;
+
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.GfxFormatter;
+import kiev.gui.event.ElementEvent;
+import kiev.vtree.ANode;
 
 public class InfoView extends UIView implements KeyListener {
 
 	/** The canvas to show definition of current node */
-	public Canvas	view_canvas;
+	protected ICanvas	view_canvas;
 
 
 	public final java.util.Hashtable<InputEventInfo,UIActionFactory> naviMap;
@@ -55,7 +51,7 @@ public class InfoView extends UIView implements KeyListener {
 //		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_R),				new RenderActions.Redraw());
 	}
 
-	public InfoView(Window window, Draw_ATextSyntax syntax, Canvas view_canvas) {
+	public InfoView(IWindow window, Draw_ATextSyntax syntax, ICanvas view_canvas) {
 		super(window, syntax);
 		this.view_canvas = view_canvas;
 		this.view_canvas.setUIView(this);
@@ -121,6 +117,20 @@ public class InfoView extends UIView implements KeyListener {
 		ANode node = ((Editor)e.getSource()).getCur_elem().node;
 		formatAndPaintLater(node);
 		
+	}
+
+	/**
+	 * @return the view_canvas
+	 */
+	public ICanvas getView_canvas() {
+		return view_canvas;
+	}
+
+	/**
+	 * @param view_canvas the view_canvas to set
+	 */
+	public void setView_canvas(ICanvas view_canvas) {
+		this.view_canvas = view_canvas;
 	}
 }
 

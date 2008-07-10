@@ -10,23 +10,27 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
-import kiev.vtree.*;
-import kiev.vlang.FileUnit;
-import kiev.fmt.*;
-
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
+
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.Drawable;
+import kiev.fmt.GfxTreeFormatter;
+import kiev.gui.IWindow;
+import kiev.gui.UIView;
+import kiev.vlang.FileUnit;
+import kiev.vtree.ANode;
 
 public class TreeView extends UIView implements KeyListener {
 	protected final ANodeTree the_tree;
 	
-	public TreeView(Window window, Draw_ATextSyntax syntax, ANodeTree the_tree) {
+	public TreeView(IWindow window, Draw_ATextSyntax syntax, ANodeTree the_tree) {
 		super(window, syntax);
 		this.the_tree = the_tree;
 		this.formatter = new GfxTreeFormatter((Graphics2D)the_tree.getGraphics());

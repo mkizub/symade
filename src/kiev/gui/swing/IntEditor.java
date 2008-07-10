@@ -12,6 +12,7 @@ package kiev.gui.swing;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
+import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vtree.ScalarPtr;
@@ -43,11 +44,11 @@ public final class IntEditor extends TextEditor {
 
 	public void run() {
 		editor.startItemEditor(this);
-		this.editor.view_canvas.cursor_offset = edit_offset;
+		editor.getView_canvas().setCursor_offset(edit_offset);
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
+			editor.getView_canvas().setCursor_offset(edit_offset + dr_term.getPrefix().length());
 		}
 	}
 

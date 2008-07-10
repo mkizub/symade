@@ -22,6 +22,7 @@ import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.DrawIdent;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
+import kiev.gui.Editor;
 import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -59,11 +60,11 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 
 	public void run() {
 		editor.startItemEditor(this);
-		this.editor.view_canvas.cursor_offset = edit_offset;
+		editor.getView_canvas().setCursor_offset(edit_offset);
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
+			editor.getView_canvas().setCursor_offset(edit_offset + dr_term.getPrefix().length());
 		}
 		showAutoComplete();
 	}
@@ -101,11 +102,11 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		int prefix_offset = dr_term.getPrefix().length();
 		if (edit_offset < 0) {
 			edit_offset = 0;
-			editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+			editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
 		}
 		if (edit_offset > text.length()) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+			editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
 		}
 		switch (code) {
 		case KeyEvent.VK_DOWN:
@@ -184,10 +185,11 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				combo.setPopupVisible(false);
 				break;
 			} else {
-				editor.view_canvas.cursor_offset = edit_offset = -1;
+				edit_offset = -1;
+				editor.getView_canvas().setCursor_offset(edit_offset);
 				editor.stopItemEditor(false);
 				if (combo != null)
-					editor.view_canvas.remove(combo);
+					editor.getView_canvas().remove(combo);
 				return;
 			}
 		case KeyEvent.VK_ESCAPE:
@@ -199,10 +201,11 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 					combo.setPopupVisible(true);
 				break;
 			} else {
-				editor.view_canvas.cursor_offset = edit_offset = -1;
+				edit_offset = -1;
+				editor.getView_canvas().setCursor_offset(edit_offset); 
 				editor.stopItemEditor(true);
 				if (combo != null)
-					editor.view_canvas.remove(combo);
+					editor.getView_canvas().remove(combo);
 				return;
 			}
 		default:
@@ -215,7 +218,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				this.setText(text);
 			}
 		}
-		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+		editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
 		editor.formatAndPaint(true);
 	}
 
@@ -249,14 +252,14 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			combo.configureEditor(this, name);
 			combo.setMaximumRowCount(10);
 			combo.setPopupVisible(false);
-			editor.view_canvas.add(combo);
+			editor.getView_canvas().add(combo);
 		} else {
 			combo.removeAllItems();
 		}
 		combo.setPopupVisible(false);
 		GfxDrawTermLayoutInfo info = dr_term.getGfxFmtInfo();
 		int x = info.getX();
-		int y = info.getY() - editor.view_canvas.translated_y;
+		int y = info.getY() - editor.getView_canvas().getTranslated_y();
 		int w = info.getWidth();
 		int h = info.getHeight();
 		combo.setBounds(x, y, w+100, h);

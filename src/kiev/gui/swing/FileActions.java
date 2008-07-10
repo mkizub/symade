@@ -23,6 +23,8 @@ import kiev.EditorThread;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
+import kiev.gui.Editor;
+import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
@@ -55,11 +57,11 @@ public final class FileActions implements Runnable {
 		//new DumpFileFilter("stx-fmt\u001fsyntax-dump-api",  "Kiev XML API dump", "xml"),
 	};
 	
-	final Window wnd;
+	final IWindow wnd;
 	final InfoView uiv;
 	final String action;
 	
-	FileActions(Window wnd, String action) {
+	FileActions(IWindow wnd, String action) {
 		this.wnd = wnd;
 		this.action = action;
 		this.uiv = null;

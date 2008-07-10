@@ -12,15 +12,23 @@ package kiev.gui.swing;
 
 import javax.swing.JMenuItem;
 
+import kiev.gui.IWindow;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 
 public class UIActionMenuItem extends JMenuItem {
 	private static final long serialVersionUID = 3759102136127901645L;
-	final Window wnd;
+	final IWindow wnd;
 	final UIActionFactory factory;
 	
-	UIActionMenuItem(Window wnd, String text, int mnemonic, UIActionFactory factory) {
+	/**
+	 * Constructor of UIActionMenuItem.
+	 * @param wnd
+	 * @param text
+	 * @param mnemonic
+	 * @param factory
+	 */
+	UIActionMenuItem(IWindow wnd, String text, int mnemonic, UIActionFactory factory) {
 		super(text, mnemonic);
 		setModel(new UIActionButtonModel());
 		this.wnd = wnd;
