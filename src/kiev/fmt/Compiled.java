@@ -71,7 +71,7 @@ public class Draw_Paragraph implements Serializable {
 	public int next_indent_text_size;
 	public int next_indent_pixel_size;
 	public boolean indent_from_current_position;
-	public boolean flow;
+	public ParagraphFlow flow;
 	
 	public boolean enabled(Drawable dr) { return true; }
 }

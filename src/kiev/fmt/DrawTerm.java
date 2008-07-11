@@ -64,6 +64,7 @@ public abstract class DrawTermLayoutInfo extends DrawLayoutInfo {
 	public Draw_Paragraph getParagraph() { dterm.syntax.par }
 	public int getMaxLayout() { dterm.syntax.lout.count }
 	public boolean isFlow() { false }
+	public boolean isVertical() { false }
 
 	public int getX() { return this.x; }
 	public int getY() { return this.lineno-1; }

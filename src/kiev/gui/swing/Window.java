@@ -39,6 +39,8 @@ import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
 import kiev.gui.ProjectView;
+import kiev.gui.TableView;
+import kiev.gui.TreeView;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.BgFormatter;
 import kiev.gui.UIView;
@@ -299,7 +301,7 @@ public class Window extends JFrame
 			return info_view;
 		if (clip_view.getView_canvas() == cc)
 			return clip_view;
-		if (expl_view.the_tree == cc)
+		if (expl_view.getView_tree() == cc)
 			return expl_view;
 		if (tree_view.getView_canvas() == cc)
 			return tree_view;

@@ -40,9 +40,12 @@ import kiev.fmt.Draw_SyntaxSpace;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.IFmtGfx;
+import kiev.gui.INodeTree;
+import kiev.gui.IUIView;
+import kiev.gui.TreeView;
 
 
-public class ANodeTree extends JTree {
+public class ANodeTree extends JTree implements INodeTree {
 	private static final long serialVersionUID = 6245260955964490417L;
 
 	/** The formatter of the current view */
@@ -57,6 +60,17 @@ public class ANodeTree extends JTree {
 		this.addTreeExpansionListener((ANodeTreeModel)this.treeModel);
 	}
 
+	public void setUIView(IUIView uiv) {
+		if (uiv instanceof TreeView){
+			this.tree_view = (TreeView)uiv;
+			this.addMouseListener(tree_view);
+			this.addComponentListener(tree_view);
+			this.addKeyListener(tree_view);
+		} else {
+			throw new RuntimeException("Wrong instance of UIView"); 
+		}
+	}
+
 	public IFmtGfx getFmtGraphics() {
 		return new AWTGraphics2D((Graphics2D)this.getGraphics());
 	}
@@ -69,6 +83,13 @@ public class ANodeTree extends JTree {
 	public void format() {
 		ANodeTreeModel model = (ANodeTreeModel)treeModel;
 		model.format(tree_view);
+	}
+
+	public Drawable getDrawableAt(int x, int y) {
+		TreePath sel = this.getPathForLocation(x, y);
+		if (sel == null || !(sel.getLastPathComponent() instanceof Drawable))
+			return null;
+		return (Drawable)sel.getLastPathComponent();
 	}
 }
 

@@ -8,34 +8,24 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.tree.TreePath;
 
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxTreeFormatter;
-import kiev.gui.IWindow;
-import kiev.gui.UIView;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 
-public class TreeView extends UIView implements KeyListener {
-	protected final ANodeTree the_tree;
+public class TreeView extends UIView {
+	protected final INodeTree the_tree;
 	
-	public TreeView(IWindow window, Draw_ATextSyntax syntax, ANodeTree the_tree) {
+	public TreeView(IWindow window, Draw_ATextSyntax syntax, INodeTree the_tree) {
 		super(window, syntax);
 		this.the_tree = the_tree;
+		this.the_tree.setUIView(this);
 		this.formatter = new GfxTreeFormatter(the_tree.getFmtGraphics());
-		this.the_tree.tree_view = this;
-		this.the_tree.addKeyListener(this);
-		this.the_tree.addMouseListener(this);
 		this.setRoot(null);
 	}
 
@@ -58,14 +48,11 @@ public class TreeView extends UIView implements KeyListener {
 	
 	public void mouseClicked(MouseEvent e) {
 		if (e.getClickCount() >= 2) {
-			TreePath sel = the_tree.getPathForLocation(e.getX(), e.getY());
-			if (sel == null || !(sel.getLastPathComponent() instanceof Drawable))
+			Drawable dr = the_tree.getDrawableAt(e.getX(), e.getY());
+			if (dr == null)
 				return;
-			Drawable dr = (Drawable)sel.getLastPathComponent();
 			java.util.Vector<ANode> v = new java.util.Vector<ANode>();
 			ANode n = dr.get$drnode();
-			//if (n instanceof DNode)
-			//	n = n.id;
 			v.add(n);
 			while (n != null && !(n instanceof FileUnit)) {
 				n = n.parent();
@@ -78,26 +65,13 @@ public class TreeView extends UIView implements KeyListener {
 		}
 	}
 
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	
-	public void keyPressed(KeyEvent evt) {
-		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask == (KeyEvent.CTRL_DOWN_MASK|KeyEvent.ALT_DOWN_MASK)) {
-			switch (code) {
-			case KeyEvent.VK_S: {
-				evt.consume();
-				// build a menu of types to instantiate
-				JPopupMenu m = new JPopupMenu();
-				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
-				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
-				m.show(the_tree, 0, 0);
-				break;
-				}
-			}
-		}
+	/**
+	 * @return the view_tree
+	 */
+	public INodeTree getView_tree() {
+		return the_tree;
 	}
+
 }
 
 

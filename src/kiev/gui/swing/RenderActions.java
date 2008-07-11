@@ -25,6 +25,7 @@ import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
 import kiev.gui.Editor;
 import kiev.gui.InfoView;
+import kiev.gui.TreeView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIView;
@@ -46,24 +47,28 @@ public final class RenderActions implements Runnable {
 		if (action == "select-syntax") {
 			// build a menu of types to instantiate
 			JPopupMenu m = new JPopupMenu();
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java", false)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt\u001fsyntax-for-java", true)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl", false)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full, namespace)", NsXmlDumpSyntax.class, "full")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api, namespace)", NsXmlDumpSyntax.class, "api")));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt\u001fsyntax-for-vdom", false)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt\u001fsyntax-for-vdom", true)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
-			m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
-			if (ui instanceof InfoView)
+			if (ui instanceof InfoView) {
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt\u001fsyntax-for-java", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full, namespace)", NsXmlDumpSyntax.class, "full")));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api, namespace)", NsXmlDumpSyntax.class, "api")));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt\u001fsyntax-for-vdom", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt\u001fsyntax-for-vdom", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
 				m.show((Component)((InfoView)ui).getView_canvas(), 0, 0);
-			else if (ui instanceof TreeView)
-				m.show(((TreeView)ui).the_tree, 0, 0);
+			}
+			else if (ui instanceof TreeView) {
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
+				m.show((Component)((TreeView)ui).getView_tree(), 0, 0);
+			}
 		}
 		else if (action == "unfold-all") {
 			if (ui instanceof InfoView) {

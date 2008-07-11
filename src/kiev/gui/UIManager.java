@@ -28,7 +28,7 @@ public class UIManager {
 	}
 	
 	public static ItemEditor newIntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
-		return new kiev.gui.swing.EnumEditor(editor, dr_term, pattr);
+		return new kiev.gui.swing.IntEditor(editor, dr_term, pattr);
 	}
 
 	public static ItemEditor newOperatorEditor(Editor editor, DrawTerm cur_elem){

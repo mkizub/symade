@@ -117,16 +117,16 @@
      <syntax:ParagraphLayout name='par-flow-indented'>
       <next_indent_text_size>4</next_indent_text_size>
       <next_indent_pixel_size>40</next_indent_pixel_size>
-      <flow>true</flow>
+      <flow>FLOW</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-indented-flow'>
       <indent_text_size>4</indent_text_size>
       <indent_pixel_size>40</indent_pixel_size>
-      <flow>true</flow>
+      <flow>FLOW</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-if-cond'>
       <indent_from_current_position>true</indent_from_current_position>
-      <flow>true</flow>
+      <flow>FLOW</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayoutBlock name='par-indented-block'>
       <token_text>{ #{</token_text>

@@ -78,6 +78,8 @@ public abstract class DrawContext implements Cloneable {
 				if (!last)
 					ctx.parent_has_more_attempts = true;
 				foreach (DrawLayoutInfo b; dlb.getBlocks()) {
+					if (dlb.isVertical())
+						ctx.force_new_line = true;
 					if (b instanceof DrawTermLayoutInfo)
 						ctx.addLeaf((DrawTermLayoutInfo)b, i, ctx_indents);
 					else
@@ -403,6 +405,7 @@ public abstract class DrawLayoutInfo {
 	public abstract Draw_Paragraph getParagraph();
 	public abstract int getMaxLayout();
 	public abstract boolean isFlow();
+	public abstract boolean isVertical();
 }
 
 public final class DrawLayoutBlock extends DrawLayoutInfo {
@@ -415,7 +418,6 @@ public final class DrawLayoutBlock extends DrawLayoutInfo {
 	public Draw_Paragraph		par;
 	public Drawable				dr;
 	public int					max_layout;		// for block (alternative) layouts
-	public boolean				is_flow;		// for flow blocks
 	
 	public DrawLayoutBlock() {
 		this.parent = null;
@@ -433,7 +435,8 @@ public final class DrawLayoutBlock extends DrawLayoutInfo {
 	public DrawLayoutInfo[] getBlocks() { blocks }
 	public Draw_Paragraph getParagraph() { par }
 	public int getMaxLayout() { max_layout }
-	public boolean isFlow() { is_flow }
+	public boolean isFlow() { par != null && par.flow == ParagraphFlow.FLOW }
+	public boolean isVertical() { par != null && par.flow == ParagraphFlow.VERTICAL }
 	
 	public DrawLayoutBlock pushDrawable(Drawable dr) {
 		if (dr.syntax != null) {
@@ -458,7 +461,6 @@ public final class DrawLayoutBlock extends DrawLayoutInfo {
 			this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
 			dlb.dr = dp;
 			dlb.par = pl;
-			dlb.is_flow = pl.flow;
 			return dlb;
 		}
 		return this;
@@ -466,7 +468,7 @@ public final class DrawLayoutBlock extends DrawLayoutInfo {
 	private DrawLayoutBlock popParagraph(Drawable dp, Draw_Paragraph pl) {
 		if (this.dr == dp) {
 			assert (pl.enabled(dp));
-			if (!this.is_flow) {
+			if (pl.flow == ParagraphFlow.HORIZONTAL) {
 				int max_layout = 0;
 				foreach (DrawLayoutInfo b; blocks)
 					max_layout = Math.max(max_layout, b.getMaxLayout());
@@ -482,5 +484,14 @@ public final class DrawLayoutBlock extends DrawLayoutInfo {
 		this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
 	}
 	
+	public DrawLayoutBlock enterBlock(Draw_Paragraph pl) {
+		DrawLayoutBlock dlb = new DrawLayoutBlock(this);
+		this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
+		dlb.par = pl;
+		return dlb;
+	}
+	public DrawLayoutBlock leaveBlock() {
+		return this.parent;
+	}
 }
 

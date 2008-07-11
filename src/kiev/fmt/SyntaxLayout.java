@@ -233,6 +233,12 @@ public final class SpaceCmd extends ASTNode {
 
 }
 
+public enum ParagraphFlow {
+	HORIZONTAL,
+	VERTICAL,
+	FLOW
+}
+
 @ThisIsANode(lang=SyntaxLang)
 public abstract class AParagraphLayout extends DNode {
 	@nodeAttr int indent_text_size;
@@ -240,8 +246,7 @@ public abstract class AParagraphLayout extends DNode {
 	@nodeAttr int next_indent_text_size;
 	@nodeAttr int next_indent_pixel_size;
 	@nodeAttr boolean indent_from_current_position;
-	@nodeAttr boolean align_right;
-	@nodeAttr boolean flow;
+	@nodeAttr ParagraphFlow flow;
 	
 	public AParagraphLayout() {}
 
@@ -254,10 +259,7 @@ public abstract class AParagraphLayout extends DNode {
 			if (val instanceof Integer && val.intValue() == 0)
 				return false;
 		}
-		if (attr.name == "indent_from_current_position" ||
-			attr.name == "align_right" ||
-			attr.name == "flow"
-		) {
+		if (attr.name == "indent_from_current_position") {
 			if (val instanceof Boolean && !val.booleanValue())
 				return false;
 		}
@@ -309,7 +311,6 @@ public final class ParagraphLayoutBlock extends AParagraphLayout {
 		}
 		return p;
 	}
-
 }
 
 @ThisIsANode(lang=SyntaxLang)
