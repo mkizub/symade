@@ -40,6 +40,7 @@ import kiev.fmt.Draw_SyntaxSpace;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.IFmtGfx;
+import kiev.gui.TreeView;
 
 
 public class ANodeTree extends JTree {

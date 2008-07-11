@@ -25,6 +25,7 @@ import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
 import kiev.gui.Editor;
 import kiev.gui.InfoView;
+import kiev.gui.TreeView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIView;
@@ -63,7 +64,7 @@ public final class RenderActions implements Runnable {
 			if (ui instanceof InfoView)
 				m.show((Component)((InfoView)ui).getView_canvas(), 0, 0);
 			else if (ui instanceof TreeView)
-				m.show(((TreeView)ui).the_tree, 0, 0);
+				m.show(((TreeView)ui).getThe_tree(), 0, 0);
 		}
 		else if (action == "unfold-all") {
 			if (ui instanceof InfoView) {

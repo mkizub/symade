@@ -15,11 +15,12 @@ import java.awt.Graphics2D;
 import javax.swing.JTable;
 
 import kiev.fmt.IFmtGfx;
+import kiev.gui.TableView;
 
 
 public class ANodeTable extends JTable {
 	private static final long serialVersionUID = 6919873102266566145L;
-	TableView table_view;
+	protected TableView table_view;
 
 	ANodeTable() {
 		super(new ANodeTableModel());
@@ -39,5 +40,19 @@ public class ANodeTable extends JTable {
 	public void format() {
 		ANodeTableModel model = (ANodeTableModel)dataModel;
 		model.format(table_view);
+	}
+
+	/**
+	 * @return the table_view
+	 */
+	public TableView getTable_view() {
+		return table_view;
+	}
+
+	/**
+	 * @param table_view the table_view to set
+	 */
+	public void setTable_view(TableView table_view) {
+		this.table_view = table_view;
 	}
 }

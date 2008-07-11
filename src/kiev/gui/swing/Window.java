@@ -39,8 +39,11 @@ import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
 import kiev.gui.ProjectView;
+import kiev.gui.TableView;
+import kiev.gui.TreeView;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.BgFormatter;
+import kiev.gui.UIManager;
 import kiev.gui.UIView;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
@@ -237,8 +240,8 @@ public class Window extends JFrame
 		editor_views = new Editor[0];
 		info_view = new InfoView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
 		clip_view = new InfoView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
-		prop_view = new TableView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
-		expl_view = new TreeView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
+		prop_view = UIManager.newTableView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
+		expl_view = UIManager.newTreeView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
 		tree_view = new ProjectView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), tree_canvas);
 		addListeners();
 		initBgFormatters();
@@ -299,7 +302,7 @@ public class Window extends JFrame
 			return info_view;
 		if (clip_view.getView_canvas() == cc)
 			return clip_view;
-		if (expl_view.the_tree == cc)
+		if (expl_view.getThe_tree() == cc)
 			return expl_view;
 		if (tree_view.getView_canvas() == cc)
 			return tree_view;
