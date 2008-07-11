@@ -11,9 +11,6 @@
 package kiev.gui;
 
 import kiev.fmt.DrawTerm;
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.gui.swing.ANodeTable;
-import kiev.gui.swing.ANodeTree;
 import kiev.vtree.ScalarPtr;
 
 public class UIManager {
@@ -72,13 +69,6 @@ public class UIManager {
 
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
-	}
-
-	public static TableView newTableView(IWindow window, Draw_ATextSyntax syntax, ANodeTable table){
-		return new kiev.gui.swing.TableViewImpl(window, syntax, table);
-	}
-	public static TreeView newTreeView(IWindow window, Draw_ATextSyntax syntax, ANodeTree the_tree){
-		return new kiev.gui.swing.TreeViewImpl(window, syntax, the_tree);
 	}
 
 }

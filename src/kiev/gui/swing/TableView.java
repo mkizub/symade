@@ -11,11 +11,15 @@
 package kiev.gui.swing;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.event.EventListenerList;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -25,9 +29,12 @@ import javax.swing.table.TableModel;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Drawable;
+import kiev.fmt.GfxFormatter;
+import kiev.gui.Editor;
 import kiev.gui.IWindow;
-import kiev.gui.TableView;
-import kiev.gui.event.EventListenerList;
+import kiev.gui.UIView;
+import kiev.gui.event.ElementEvent;
+import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtChildrenIterator;
@@ -36,28 +43,23 @@ import kiev.vtree.ParentAttrSlot;
 import kiev.vtree.ScalarAttrSlot;
 import kiev.vtree.SpaceAttrSlot;
 
-public class TableViewImpl extends TableView {
 
-	public TableViewImpl(IWindow window, Draw_ATextSyntax syntax, ANodeTable table) {
-		super(window, syntax, table);
-	}
+/**
+ */
 
-	public void keyPressed(KeyEvent evt) {
-		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask == (KeyEvent.CTRL_DOWN_MASK|KeyEvent.ALT_DOWN_MASK)) {
-			switch (code) {
-			case KeyEvent.VK_S: {
-				evt.consume();
-				// build a menu of types to instantiate
-				JPopupMenu m = new JPopupMenu();
-				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
-				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
-				m.show(table, 0, 0);
-				break;
-			}
-			}
-		}
+public class TableView extends UIView implements KeyListener {
+
+
+	protected final ANodeTable table;
+
+	public TableView(IWindow window, Draw_ATextSyntax syntax, ANodeTable table) {
+		super(window, syntax);
+		this.table = table;
+		this.formatter = new GfxFormatter(table.getFmtGraphics());
+		this.table.table_view = this;
+		this.table.addKeyListener(this);
+		this.table.addMouseListener(this);
+		this.setRoot(null);
 	}
 
 	public void createModel (ANode node){
@@ -104,7 +106,78 @@ public class TableViewImpl extends TableView {
 		}
 		
 	}
+	
+	public void setRoot(ANode root) {
+		this.the_root = root;
+		this.table.setRoot();
+	}
+
+	@Override
+	public void formatAndPaint(boolean full) {
+		table.format();
+		table.repaint();
+	}
+
+	@Override
+	public void formatAndPaintLater(ANode node) {
+		this.the_root = node;
+		this.bg_formatter.schedule_run();
+	}
+	
+	public void mouseClicked(MouseEvent e) {
+		if (e.getClickCount() >= 2) {
+			Object sel = table.getValueAt(table.rowAtPoint(new Point(e.getX(), e.getY())), table.columnAtPoint(new Point(e.getX(), e.getY())) );
+			if (sel == null || !(sel instanceof Drawable))
+				return;
+			Drawable dr = (Drawable)sel;
+			java.util.Vector<ANode> v = new java.util.Vector<ANode>();
+			ANode n = dr.get$drnode();
+			//if (n instanceof DNode)
+			//	n = n.id;
+			v.add(n);
+			while (n != null && !(n instanceof FileUnit)) {
+				n = n.parent();
+				v.add(n);
+			}
+			if (!(n instanceof FileUnit))
+				return;
+			parent_window.openEditor((FileUnit)n, v.toArray(new ANode[v.size()]));
+			e.consume();
+		}
+	}
+
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+
+	public void keyPressed(KeyEvent evt) {
+		int code = evt.getKeyCode();
+		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask == (KeyEvent.CTRL_DOWN_MASK|KeyEvent.ALT_DOWN_MASK)) {
+			switch (code) {
+			case KeyEvent.VK_S: {
+				evt.consume();
+				// build a menu of types to instantiate
+				JPopupMenu m = new JPopupMenu();
+				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
+				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
+				m.show(table, 0, 0);
+				break;
+			}
+			}
+		}
+	}
+	
+	@Override
+	public void elementChanged(ElementEvent e) {
+		super.elementChanged(e);
+		ANode node = ((Editor)e.getSource()).getCur_elem().node;
+		createModel(node);
+		formatAndPaintLater(node);		
+	}
+
 }
+
 
 final class ANodeTableModel extends DefaultTableModel {
 	private static final long serialVersionUID = -7916598298174485497L;
@@ -163,3 +236,4 @@ class DrawableTableCellRenderer extends DefaultTableCellRenderer {
 		return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 	}
 }
+
