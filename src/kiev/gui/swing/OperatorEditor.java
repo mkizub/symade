@@ -27,7 +27,6 @@ import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.SyntaxTokenKind;
 import kiev.gui.Editor;
-import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.ENode;

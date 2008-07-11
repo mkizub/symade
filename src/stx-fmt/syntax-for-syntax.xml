@@ -1132,6 +1132,37 @@
       <rnode>
        <core:SymbolRef name='PartialSyntaxElemDecl' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>elem</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxIdentAttr' />
+         <core:SymbolRef name='SyntaxJavaConstructorName' />
+         <core:SymbolRef name='SyntaxAutoParenth' />
+         <core:SymbolRef name='SyntaxStrAttr' />
+         <core:SymbolRef name='SyntaxXmlStrAttr' />
+         <core:SymbolRef name='SyntaxCharAttr' />
+         <core:SymbolRef name='SyntaxListWrapper' />
+         <core:SymbolRef name='SyntaxList' />
+         <core:SymbolRef name='SyntaxSet' />
+         <core:SymbolRef name='SyntaxNode' />
+         <core:SymbolRef name='SyntaxExpr' />
+         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef name='SyntaxOptional' />
+         <core:SymbolRef name='SyntaxEnumChoice' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <title>SyntaxExpectedTemplate</title>
+        <attr_name>attr_types</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxExpectedAttr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>

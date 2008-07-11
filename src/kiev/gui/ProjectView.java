@@ -1,7 +1,5 @@
 package kiev.gui;
 
-import java.awt.event.MouseEvent;
-
 import kiev.fmt.*;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
@@ -10,8 +8,8 @@ public class ProjectView extends InfoView {
 	
 	private DrawTerm cur_dr;
 
-	public ProjectView(IWindow window, Draw_ATextSyntax syntax, ICanvas view_canvas) {
-		super(window, syntax, view_canvas);
+	public ProjectView(IWindow window, ICanvas view_canvas, Draw_ATextSyntax syntax) {
+		super(window, view_canvas, syntax);
 	}
 	
 	public void formatAndPaint(boolean full) {
@@ -31,42 +29,29 @@ public class ProjectView extends InfoView {
 		view_canvas.repaint();
 	}
 
-	public void mouseClicked(MouseEvent e) {
-		view_canvas.requestFocus();
-		int x = e.getX();
-		int y = e.getY() + view_canvas.getTranslated_y();
-		GfxDrawTermLayoutInfo dr = view_canvas.getFirst_visible();
-		GfxDrawTermLayoutInfo last = view_canvas.getLast_visible();
-		for (; dr != null; dr = dr.getNext()) {
-			int w = dr.width;
-			int h = dr.height;
-			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y) {
-				break;
-			}
-			if (dr == last)
-				return;
+	public void selectDrawTerm(DrawTerm dr) {
+		cur_dr = (DrawTerm)dr;
+		formatAndPaint(false);
+	}
+
+	public void toggleItem(Drawable dr) {
+		if (dr instanceof DrawTerm)
+			cur_dr = (DrawTerm)dr;
+		ANode n = dr.get$drnode();
+		if (n instanceof FileUnit) {
+			parent_window.openEditor((FileUnit)n, ANode.emptyArray);
 		}
-		if (dr == null)
+		if (cur_dr.parent() instanceof DrawTreeBranch) {
+			DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent();
+			dtb.setDrawFolded(!dtb.getDrawFolded());
+			formatAndPaint(true);
 			return;
-		e.consume();
-		cur_dr = dr.dterm;
-		if (e.getClickCount() >= 2) {
-			ANode n = dr.getDrawable().get$drnode();
-			if (n instanceof FileUnit) {
-				parent_window.openEditor((FileUnit)n, ANode.emptyArray);
-			}
-			if (cur_dr.parent() instanceof DrawTreeBranch) {
-				DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent();
-				dtb.setDrawFolded(!dtb.getDrawFolded());
-				formatAndPaint(true);
-				return;
-			}
-			else if (cur_dr.parent() instanceof DrawNonTermSet && cur_dr.parent().parent() instanceof DrawTreeBranch) {
-				DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent().parent();
-				dtb.setDrawFolded(!dtb.getDrawFolded());
-				formatAndPaint(true);
-				return;
-			}
+		}
+		else if (cur_dr.parent() instanceof DrawNonTermSet && cur_dr.parent().parent() instanceof DrawTreeBranch) {
+			DrawTreeBranch dtb = (DrawTreeBranch)cur_dr.parent().parent();
+			dtb.setDrawFolded(!dtb.getDrawFolded());
+			formatAndPaint(true);
+			return;
 		}
 		formatAndPaint(false);
 	}

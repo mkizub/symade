@@ -34,12 +34,12 @@ public class UIActionMenuItem extends JMenuItem {
 		this.wnd = wnd;
 		this.factory = factory;
 		this.getAccessibleContext().setAccessibleDescription(factory.getDescr());
-		this.addActionListener(wnd);
+		this.addActionListener((Window)wnd);
 	}
 	
 	public boolean isEnabled() {
 		if (factory == null || !super.isEnabled()) return false;
-		return factory.getAction(new UIActionViewContext(wnd, wnd.getCurrentView())) != null;
+		return factory.getAction(new UIActionViewContext(wnd, null, wnd.getCurrentView())) != null;
 	}
 	
 	class UIActionButtonModel extends javax.swing.DefaultButtonModel {
@@ -48,7 +48,7 @@ public class UIActionMenuItem extends JMenuItem {
 		public boolean isEnabled() {
 			try {
 				if (UIActionMenuItem.this == null || factory == null || !super.isEnabled()) return false;
-				return factory.getAction(new UIActionViewContext(wnd, wnd.getCurrentView())) != null;
+				return factory.getAction(new UIActionViewContext(wnd, null, wnd.getCurrentView())) != null;
 			} catch (NullPointerException e) { return false; }
 		}
 	}

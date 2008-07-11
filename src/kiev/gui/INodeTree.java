@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.fmt.Drawable;
-import kiev.fmt.IFmtGfx;
-
-public interface INodeTree {
+public interface INodeTree extends IUIViewPeer {
 	
-	public void setUIView(IUIView uiv);
-	public IFmtGfx getFmtGraphics();
 	public void setRoot();
 	public void format();
-	public void repaint();
-	public Drawable getDrawableAt(int x, int y);
 		
 }

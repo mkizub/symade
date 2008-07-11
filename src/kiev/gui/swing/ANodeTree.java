@@ -17,6 +17,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.font.TextLayout;
 
 import javax.swing.Icon;
@@ -45,7 +47,7 @@ import kiev.gui.IUIView;
 import kiev.gui.TreeView;
 
 
-public class ANodeTree extends JTree implements INodeTree {
+public class ANodeTree extends JTree implements INodeTree, MouseListener {
 	private static final long serialVersionUID = 6245260955964490417L;
 
 	/** The formatter of the current view */
@@ -58,14 +60,12 @@ public class ANodeTree extends JTree implements INodeTree {
 		this.renderer = new DrawableTreeCellRenderer();
 		this.setCellRenderer(this.renderer);
 		this.addTreeExpansionListener((ANodeTreeModel)this.treeModel);
+		this.addMouseListener(this);
 	}
 
 	public void setUIView(IUIView uiv) {
 		if (uiv instanceof TreeView){
 			this.tree_view = (TreeView)uiv;
-			this.addMouseListener(tree_view);
-			this.addComponentListener(tree_view);
-			this.addKeyListener(tree_view);
 		} else {
 			throw new RuntimeException("Wrong instance of UIView"); 
 		}
@@ -90,6 +90,18 @@ public class ANodeTree extends JTree implements INodeTree {
 		if (sel == null || !(sel.getLastPathComponent() instanceof Drawable))
 			return null;
 		return (Drawable)sel.getLastPathComponent();
+	}
+
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseClicked(MouseEvent evt) {
+		boolean consume = tree_view.inputEvent(new InputEventInfo(evt));
+		if (consume) {
+			evt.consume();
+			return;
+		}
 	}
 }
 

@@ -12,10 +12,12 @@ package kiev.gui;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Drawable;
+import kiev.gui.event.InputEvent;
 import kiev.vtree.ANode;
 
 public class UIActionViewContext {
-	public final IWindow		wnd;
+	public final IWindow	wnd;
+	public final InputEvent	evt;
 	public final UIView		ui;
 	public final InfoView	uiv;
 	public final Editor		editor;
@@ -28,8 +30,9 @@ public class UIActionViewContext {
 	 * @param wnd
 	 * @param ui
 	 */
-	public UIActionViewContext(IWindow wnd, UIView ui) {
+	public UIActionViewContext(IWindow wnd, InputEvent evt, UIView ui) {
 		this.wnd = wnd;
+		this.evt = evt;
 		this.ui = ui;
 		if (ui instanceof InfoView) {
 			this.uiv = (InfoView)ui;
@@ -48,8 +51,9 @@ public class UIActionViewContext {
 			this.dr = null;
 		}
 	}
-	public UIActionViewContext(IWindow wnd, Editor editor, Drawable dr) {
+	public UIActionViewContext(IWindow wnd, InputEvent evt, Editor editor, Drawable dr) {
 		this.wnd = wnd;
+		this.evt = evt;
 		this.ui = editor;
 		this.uiv = editor;
 		this.editor = editor;

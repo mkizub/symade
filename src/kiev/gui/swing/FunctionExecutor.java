@@ -69,60 +69,64 @@ public final class FunctionExecutor implements Runnable {
 			if (dr.get$drnode() != context.node)
 				return null;
 			Draw_SyntaxFunction[] sfs_funcs = dr.syntax.funcs;
-			if (sfs_funcs == null || sfs_funcs.length == 0)
-				return null;
 			FunctionExecutor fe = new FunctionExecutor(editor);
-			for (Draw_SyntaxFunction sf: sfs_funcs) 
-				if(sf.act != null) {
-				try {
-					dr = editor.getFunctionTarget(sf);
-					if (dr == null)
-						continue;
-					if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
-						if (dr.syntax instanceof Draw_SyntaxList) {
-							Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
-							if (((Object[])dr.get$drnode().getVal(slst.name)).length == 0)
-								fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), slst));
+			if (sfs_funcs != null || sfs_funcs.length > 0) {
+				for (Draw_SyntaxFunction sf: sfs_funcs) 
+					if(sf.act != null) {
+					try {
+						dr = editor.getFunctionTarget(sf);
+						if (dr == null)
+							continue;
+						if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
+							if (dr.syntax instanceof Draw_SyntaxList) {
+								Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
+								if (((Object[])dr.get$drnode().getVal(slst.name)).length == 0)
+									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), slst));
+							}
 						}
-					}
-					else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
-						if (dr.syntax instanceof Draw_SyntaxAttr) {
-							Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-							if (dr.get$drnode().getVal(satr.name) == null)
-								fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), satr));
+						else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
+							if (dr.syntax instanceof Draw_SyntaxAttr) {
+								Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
+								if (dr.get$drnode().getVal(satr.name) == null)
+									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), satr));
+							}
 						}
-					}
-					else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
-						if (dr.syntax instanceof Draw_SyntaxToken) {
-							if (dr.get$drnode() instanceof ENode)
+						else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
+							if (dr.syntax instanceof Draw_SyntaxToken) {
+								if (dr.get$drnode() instanceof ENode)
+									fe.actions.add(fe.new EditElemAction(sf.title, dr));
+							}
+						}
+						else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
+							if (dr.syntax instanceof Draw_SyntaxAttr) {
+								//Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
 								fe.actions.add(fe.new EditElemAction(sf.title, dr));
+							}
 						}
-					}
-					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
-						if (dr.syntax instanceof Draw_SyntaxAttr) {
-							//Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-							fe.actions.add(fe.new EditElemAction(sf.title, dr));
+						else {
+							try {
+								Class<?> c = Class.forName(sf.act);
+								UIActionFactory af = (UIActionFactory)c.newInstance();
+								if (!af.isForPopupMenu())
+									continue;
+								Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
+								if (r != null)
+									fe.actions.add(fe.new RunFuncAction(sf.title, r));
+							} catch (Throwable t) {}
 						}
-					}
-					else {
+					} catch (Throwable t) {}
+				}
+			}
+			for (UIActionFactory[] actions: editor.naviMap.values()) {
+				for (UIActionFactory af: actions) {
+					if(af.isForPopupMenu()) {
 						try {
-							Class<?> c = Class.forName(sf.act);
-							UIActionFactory af = (UIActionFactory)c.newInstance();
-							if (!af.isForPopupMenu())
-								continue;
-							Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, editor, dr));
+							Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
 							if (r != null)
-								fe.actions.add(fe.new RunFuncAction(sf.title, r));
+								fe.actions.add(fe.new RunFuncAction(af.getDescr(), r));
 						} catch (Throwable t) {}
 					}
-				} catch (Throwable t) {}
-			}
-			for (UIActionFactory af: editor.naviMap.values()) if(af.isForPopupMenu()) {
-				try {
-					Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, editor, dr));
-					if (r != null)
-						fe.actions.add(fe.new RunFuncAction(af.getDescr(), r));
-				} catch (Throwable t) {}
+				}
 			}
 			if (fe.actions.size() > 0)
 				return fe;
@@ -164,7 +168,8 @@ public final class FunctionExecutor implements Runnable {
 				((Canvas)editor.getView_canvas()).remove(menu);
 				menu = null;
 			}
-			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, editor, dr));
+			InputEventInfo evt = new InputEventInfo(e);
+			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, evt, editor, dr));
 			if (r != null)
 				r.run();
 		}

@@ -8,14 +8,10 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui;
+package kiev.gui.swing;
 
-import kiev.vtree.ANode;
+import java.awt.event.KeyListener;
 
-public interface INodeTable extends IUIViewPeer {
-	
-	public void setRoot();
-	public void format();
-	public void createModel(ANode node);
-		
+public interface ItemEditor extends KeyListener, Runnable {
+
 }

@@ -10,12 +10,7 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.Hashtable;
 
 import kiev.gui.event.EventListenerList;
 
@@ -24,18 +19,20 @@ import kiev.fmt.Drawable;
 import kiev.fmt.GfxFormatter;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
+import kiev.gui.event.InputEvent;
 import kiev.vtree.ANode;
 
 /**
  * The abstract class for the view components of the GUI. 
  */
-public abstract class UIView extends ANode 
-	implements IUIView, KeyListener, MouseListener, ComponentListener, ElementChangeListener {
+public abstract class UIView extends ANode implements IUIView, ElementChangeListener {
 
 	/** The workplace window */
-	public IWindow			parent_window;
+	public final IWindow		parent_window;
+	/** The GUI toolkit peer */
+	public final IUIViewPeer	peer;
 	/** The formatter of the current view */
-	public GfxFormatter		formatter;
+	public GfxFormatter			formatter;
 	/** The root node to display */
 	public ANode				the_root;
 	/** The root node of document we edit - the whole program */
@@ -52,9 +49,13 @@ public abstract class UIView extends ANode
 	/** A background thread to format and paint */
 	protected BgFormatter	bg_formatter;
 
-	public UIView(IWindow window, Draw_ATextSyntax syntax) {
-		parent_window = window;
+	public final Hashtable<Object,UIActionFactory[]> naviMap;
+
+	public UIView(IWindow window, IUIViewPeer peer, Draw_ATextSyntax syntax) {
+		this.parent_window = window;
+		this.peer = peer;
 		this.syntax = syntax;
+		this.naviMap = UIManager.getUIActions(this);
 	}
 	
 	public boolean isRegisteredToElementEvent() {
@@ -82,21 +83,18 @@ public abstract class UIView extends ANode
 
 	public abstract void formatAndPaintLater(ANode node);
 
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {}
-	
-	public void mouseClicked(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
-	public void mousePressed(MouseEvent e) {}
-	public void mouseReleased(MouseEvent e) {}
-
-	public void componentHidden(ComponentEvent e) {}
-	public void componentMoved(ComponentEvent e) {}
-	public void componentShown(ComponentEvent e) {}
-	public void componentResized(ComponentEvent e) {
-		formatAndPaint(true);
+	public boolean inputEvent(InputEvent evt) {
+		UIActionFactory[] actions = naviMap.get(evt);
+		if (actions == null)
+			return false;
+		for (UIActionFactory af: actions) {
+			Runnable r = af.getAction(new UIActionViewContext(parent_window, evt, this));
+			if (r != null) {
+				r.run();
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public void elementChanged(ElementEvent e) {}
@@ -107,6 +105,20 @@ public abstract class UIView extends ANode
 	public BgFormatter setBg_formatter(BgFormatter bg_formatter) {
 		this.bg_formatter = bg_formatter;
 		return this.bg_formatter;
+	}
+
+	/**
+	 * @return the item_editor
+	 */
+	public IUIViewPeer getViewPeer() {
+		return this.peer;
+	}
+
+	/**
+	 * @return the item_editor
+	 */
+	public Runnable getItem_editor() {
+		return null;
 	}
 
 }

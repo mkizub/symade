@@ -27,7 +27,6 @@ import kiev.fmt.DrawJavaAccess;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.Editor;
-import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.MetaAccess;

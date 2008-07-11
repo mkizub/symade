@@ -10,8 +10,15 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.awt.event.KeyListener;
+import kiev.fmt.Drawable;
+import kiev.fmt.IFmtGfx;
 
-public interface ItemEditor extends KeyListener, Runnable {
+public interface IUIViewPeer {
+	
+	public void setUIView(IUIView uiv);
+	public IFmtGfx getFmtGraphics();
+	public void repaint();
+	public void requestFocus();
+	public Drawable getDrawableAt(int x, int y);
 
 }

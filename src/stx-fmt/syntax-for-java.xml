@@ -1601,6 +1601,7 @@
       <elem>
        <syntax:SyntaxToken>
         <text>{</text>
+        <kind>SEPARATOR</kind>
         <fmt>
          <core:SymbolRef name='fmt-type-block-start' />
         </fmt>
@@ -1611,6 +1612,7 @@
       <elem>
        <syntax:SyntaxToken>
         <text>}</text>
+        <kind>SEPARATOR</kind>
         <fmt>
          <core:SymbolRef name='fmt-type-block-end' />
         </fmt>
@@ -1655,15 +1657,7 @@
      </syntax:PartialSyntaxElemDecl>
      <syntax:PartialSyntaxElemDecl name='stx-type-members'>
       <elem>
-       <syntax:SyntaxList>
-        <element>
-         <syntax:SyntaxNode>
-          <name></name>
-          <fmt>
-           <core:SymbolRef name='fmt-space-nl' />
-          </fmt>
-         </syntax:SyntaxNode>
-        </element>
+       <syntax:SyntaxListWrapper>
         <prefix>
          <syntax:SyntaxElemRef>
           <decl>
@@ -1680,25 +1674,42 @@
           <text>}</text>
          </syntax:SyntaxElemRef>
         </sufix>
-        <filter>
-         <syntax:CalcOptionNot>
-          <opt>
-           <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
-           </syntax:CalcOptionHasMeta>
-          </opt>
-         </syntax:CalcOptionNot>
-        </filter>
+        <list>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <fmt>
+             <core:SymbolRef name='fmt-space-nl' />
+            </fmt>
+           </syntax:SyntaxNode>
+          </element>
+          <filter>
+           <syntax:CalcOptionNot>
+            <opt>
+             <syntax:CalcOptionHasMeta>
+              <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+             </syntax:CalcOptionHasMeta>
+            </opt>
+           </syntax:CalcOptionNot>
+          </filter>
+          <name>members</name>
+         </syntax:SyntaxList>
+        </list>
         <name>members</name>
         <empty>
          <syntax:SyntaxToken>
           <text>{}</text>
+          <kind>SEPARATOR</kind>
           <fmt>
-           <core:SymbolRef name='fmt-type-block-end' />
+           <core:SymbolRef name='fmt-type-block-start' />
           </fmt>
          </syntax:SyntaxToken>
         </empty>
-       </syntax:SyntaxList>
+        <par>
+         <core:SymbolRef name='par-indented' />
+        </par>
+       </syntax:SyntaxListWrapper>
       </elem>
      </syntax:PartialSyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-import'>
@@ -3005,6 +3016,18 @@
       <rnode>
        <core:SymbolRef name='JavaClass' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef name='Field' />
+         <core:SymbolRef name='JavaClass' />
+         <core:SymbolRef name='Constructor' />
+         <core:SymbolRef name='Initializer' />
+         <core:SymbolRef name='MethodImpl' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -4233,32 +4256,6 @@
        </syntax:SyntaxList>
       </elem>
      </syntax:PartialSyntaxElemDecl>
-     <syntax:SyntaxElemDecl name='stx-meta-set'>
-      <rnode>
-       <core:SymbolRef name='DNode' />
-      </rnode>
-      <elem>
-       <syntax:SyntaxList>
-        <element>
-         <syntax:SyntaxNode>
-          <name></name>
-          <in_syntax>
-           <core:SymbolRef name='syntax-java-meta' />
-          </in_syntax>
-         </syntax:SyntaxNode>
-        </element>
-        <name>metas</name>
-        <empty>
-         <syntax:SyntaxPlaceHolder>
-          <text>(@)</text>
-          <fmt>
-           <core:SymbolRef name='fmt-placeholder' />
-          </fmt>
-         </syntax:SyntaxPlaceHolder>
-        </empty>
-       </syntax:SyntaxList>
-      </elem>
-     </syntax:SyntaxElemDecl>
      <syntax:TextSyntax name='syntax-java-meta'>
       <members>
        <syntax:SyntaxElemDecl name='stx-meta-access'>
@@ -4701,27 +4698,6 @@
          </syntax:SyntaxSet>
         </elem>
        </syntax:SyntaxElemDecl>
-       <syntax:SyntaxElemDecl name='stx-meta-set-rare'>
-        <rnode>
-         <core:SymbolRef name='DNode' />
-        </rnode>
-        <elem>
-         <syntax:SyntaxList>
-          <element>
-           <syntax:SyntaxNode>
-            <name></name>
-            <in_syntax>
-             <core:SymbolRef name='syntax-java-meta' />
-            </in_syntax>
-           </syntax:SyntaxNode>
-          </element>
-          <name>metas</name>
-          <empty>
-           <syntax:SyntaxSpace />
-          </empty>
-         </syntax:SyntaxList>
-        </elem>
-       </syntax:SyntaxElemDecl>
       </members>
      </syntax:TextSyntax>
      <syntax:SyntaxElemDecl name='stx-meta-scalar-value'>
@@ -5162,6 +5138,9 @@
           </fmt>
          </syntax:SyntaxToken>
         </empty>
+        <par>
+         <core:SymbolRef name='par-indented' />
+        </par>
        </syntax:SyntaxList>
       </elem>
      </syntax:SyntaxElemDecl>

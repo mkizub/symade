@@ -10,6 +10,8 @@
  *******************************************************************************/
 package kiev.gui;
 
+import java.util.Hashtable;
+
 import kiev.fmt.DrawTerm;
 import kiev.vtree.ScalarPtr;
 
@@ -23,19 +25,31 @@ public class UIManager {
 		return new kiev.gui.swing.Window();
 	}
 	
-	public static ItemEditor newEnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr){
+	public static Hashtable<Object,UIActionFactory[]> getUIActions(UIView uiv) {
+		if (uiv instanceof Editor)
+			return kiev.gui.swing.Configuration.getEditorActionMap();
+		if (uiv instanceof ProjectView)
+			return kiev.gui.swing.Configuration.getProjectViewActionMap();
+		if (uiv instanceof InfoView)
+			return kiev.gui.swing.Configuration.getInfoViewActionMap();
+		if (uiv instanceof TreeView)
+			return kiev.gui.swing.Configuration.getTreeViewActionMap();
+		return new Hashtable<Object,UIActionFactory[]>();
+	}
+	
+	public static Runnable newEnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr){
 		return new kiev.gui.swing.EnumEditor(editor, cur_elem, pattr);
 	}
 	
-	public static ItemEditor newIntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
+	public static Runnable newIntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
 		return new kiev.gui.swing.IntEditor(editor, dr_term, pattr);
 	}
 
-	public static ItemEditor newOperatorEditor(Editor editor, DrawTerm cur_elem){
+	public static Runnable newOperatorEditor(Editor editor, DrawTerm cur_elem){
 		return new kiev.gui.swing.OperatorEditor(editor, cur_elem);
 	}
 	
-	public static ItemEditor newTextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
+	public static Runnable newTextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
 		return new kiev.gui.swing.TextEditor(editor, dr_term, pattr);
 	}
 	
@@ -68,7 +82,7 @@ public class UIManager {
 	}
 
 	public static void doGUIBeep() {
-		java.awt.Toolkit.getDefaultToolkit().beep();
+		kiev.gui.swing.Configuration.doGUIBeep();
 	}
 
 }

@@ -28,7 +28,7 @@ public final class NavigateView implements Runnable {
 		return new LineUp();
 	}
 	
-	final static class LineUp implements UIActionFactory {
+	public final static class LineUp implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one line up"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -40,7 +40,7 @@ public final class NavigateView implements Runnable {
 		return new LineDn();
 	}
 
-	final static class LineDn implements UIActionFactory {
+	public final static class LineDn implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one line down"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -52,7 +52,7 @@ public final class NavigateView implements Runnable {
 		return new PageUp();
 	}
 
-	final static class PageUp implements UIActionFactory {
+	public final static class PageUp implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one page up"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -67,7 +67,7 @@ public final class NavigateView implements Runnable {
 		return new PageDn();
 	}
 	
-	final static class PageDn implements UIActionFactory {
+	public final static class PageDn implements UIActionFactory {
 		public String getDescr() { return "Scroll the view one page down"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {

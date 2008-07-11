@@ -22,7 +22,6 @@ import javax.swing.text.TextAction;
 
 import kiev.fmt.*;
 import kiev.gui.Editor;
-import kiev.gui.ItemEditor;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtSpaceAttrSlot;

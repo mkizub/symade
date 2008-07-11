@@ -23,7 +23,6 @@ import kiev.fmt.DrawIdent;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.gui.Editor;
-import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.DNode;

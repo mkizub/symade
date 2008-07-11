@@ -10,14 +10,12 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.awt.event.ActionListener;
-
 import kiev.gui.event.EventListenerList;
 import kiev.gui.event.ElementEvent;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 
-public interface IWindow extends ActionListener {
+public interface IWindow {
 	public EventListenerList getListenerList();
 	public void fireElementChanged(ElementEvent e);
 	public void openEditor(FileUnit fu);

@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
 package kiev.gui;
 
 import kiev.fmt.DrawNodeTerm;
@@ -37,10 +47,8 @@ public final class EditActions implements Runnable {
 
 	public void run() {
 		if (action == "close") {
-			if (editor.getItem_editor() != null) {
+			if (editor.getItem_editor() != null)
 				editor.stopItemEditor(true);
-				editor.setItem_editor(null);
-			}
 			editor.getCur_elem().set(null); 
 			editor.parent_window.closeEditor(editor);
 			editor.parent_window.getInfo_view().formatAndPaint(true);

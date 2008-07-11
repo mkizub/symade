@@ -18,6 +18,12 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.TextLayout;
@@ -28,44 +34,49 @@ import javax.swing.JScrollBar;
 
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
+import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.IFmtGfx;
 import kiev.gui.ICanvas;
+import kiev.gui.IUIView;
 import kiev.gui.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 
-public class Canvas extends JPanel 
-	implements ICanvas, MouseWheelListener, AdjustmentListener {
+public class Canvas extends JPanel implements ICanvas, ComponentListener,
+		KeyListener, MouseListener, MouseWheelListener, AdjustmentListener
+{
 	private static final long serialVersionUID = 4713633504436057499L;
 	static final Color defaultTextColor = Color.BLACK;
 	static final Color autoGenTextColor = Color.GRAY;
 	static final Color selectedNodeColor = new Color(224,224,224);
 	static final Font defaultTextFont = new Font("Dialog", Font.PLAIN, 12);
-	
-	private JScrollBar verticalScrollBar;
-	private int imgWidth;
-	private int imgHeight;
-	
-	private DrawLayoutInfo dlb_root;
-	private DrawTerm	current;
-	private ANode current_node;
-	private int first_line;
-	private int num_lines;
-	private int cursor_offset = -1;
 
-	transient VolatileImage vImg;
+	private UIView            ui_view;
 	
-	int lineno;
-	boolean translated;
+	private JScrollBar        verticalScrollBar;
+	private int               imgWidth;
+	private int               imgHeight;
+	
+	private DrawLayoutInfo    dlb_root;
+	private DrawTerm          current;
+	private ANode             current_node;
+	private int               first_line;
+	private int               num_lines;
+	private int               cursor_offset = -1;
+
+	transient VolatileImage   vImg;
+	
+	int                       lineno;
+	boolean                   translated;
 	private GfxDrawTermLayoutInfo	first_visible;
 	private GfxDrawTermLayoutInfo	last_visible;
-	private int translated_y;
-	int drawed_x;
-	int drawed_y;
-	int bg_drawed_x;
-	int bg_drawed_y;
-	boolean selected;
+	private int               translated_y;
+	private int               drawed_x;
+	private int               drawed_y;
+	private int               bg_drawed_x;
+	private int               bg_drawed_y;
+	private boolean           selected;
 	
 	public Canvas() {
 		super(null,false);
@@ -73,16 +84,16 @@ public class Canvas extends JPanel
 		this.verticalScrollBar = new JScrollBar(JScrollBar.VERTICAL);
 		this.verticalScrollBar.addAdjustmentListener(this);
 		this.add(this.verticalScrollBar);
+		this.addMouseListener(this);
 		this.addMouseWheelListener(this);
+		this.addKeyListener(this);
 		this.imgWidth = 100;
 		this.imgHeight = 100;
 	}
 	
-	public void setUIView(kiev.gui.IUIView uiv) {
+	public void setUIView(IUIView uiv) {
 		if (uiv instanceof UIView){
-			this.addMouseListener((UIView)uiv);
-			this.addComponentListener((UIView)uiv);
-			this.addKeyListener((UIView)uiv);
+			this.ui_view = (UIView)uiv;
 		} else {
 			throw new RuntimeException("Wrong instance of UIView"); 
 		}
@@ -97,10 +108,13 @@ public class Canvas extends JPanel
 
 	public void setBounds(int x, int y, int width, int height) {
 		int pw = verticalScrollBar.getPreferredSize().width;
+		int oldWidth = imgWidth;
 		imgWidth = width - pw;
 		imgHeight = height;
 		verticalScrollBar.setBounds(imgWidth,0,pw,height);
 		super.setBounds(x, y, width, height);
+		if (oldWidth != imgWidth && this.ui_view != null)
+			this.ui_view.formatAndPaint(true);
 	}
 	
 	public void setFirstLine(int val) {
@@ -109,6 +123,62 @@ public class Canvas extends JPanel
 	
 	public void incrFirstLine(int val) {
 		verticalScrollBar.setValue(first_line+val);
+	}
+	
+	public Drawable getDrawableAt(int x, int y) {
+		y += translated_y;
+		GfxDrawTermLayoutInfo dr = first_visible;
+		GfxDrawTermLayoutInfo last = last_visible;
+		for (; dr != null; dr = dr.getNext()) {
+			int w = dr.width;
+			int h = dr.height;
+			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y)
+				return dr.dterm;
+			if (dr == last)
+				return null;
+		}
+		return null;
+	}
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {
+		KeyListener item_editor = (KeyListener)ui_view.getItem_editor();
+		if (item_editor != null) {
+			item_editor.keyPressed(evt);
+			return;
+		}
+		boolean consume = ui_view.inputEvent(new InputEventInfo(evt));
+		if (consume) {
+			evt.consume();
+			return;
+		}
+		int code = evt.getKeyCode();
+		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask == 0) {
+			if (!(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK))
+				Configuration.doGUIBeep();
+			return;
+		}
+	}
+
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseClicked(MouseEvent evt) {
+		boolean consume = ui_view.inputEvent(new InputEventInfo(evt));
+		if (consume) {
+			evt.consume();
+			return;
+		}
+	}
+
+	public void componentHidden(ComponentEvent e) {}
+	public void componentMoved(ComponentEvent e) {}
+	public void componentShown(ComponentEvent e) {}
+	public void componentResized(ComponentEvent e) {
+		this.ui_view.formatAndPaint(true);
 	}
 	
 	public void adjustmentValueChanged(AdjustmentEvent e) {

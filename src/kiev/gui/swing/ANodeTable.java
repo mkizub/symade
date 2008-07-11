@@ -13,6 +13,8 @@ package kiev.gui.swing;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JTable;
 import javax.swing.event.EventListenerList;
@@ -37,7 +39,7 @@ import kiev.vtree.ScalarAttrSlot;
 import kiev.vtree.SpaceAttrSlot;
 
 
-public class ANodeTable extends JTable implements INodeTable {
+public class ANodeTable extends JTable implements INodeTable, MouseListener {
 	private static final long serialVersionUID = 6919873102266566145L;
 	TableView table_view;
 
@@ -45,14 +47,12 @@ public class ANodeTable extends JTable implements INodeTable {
 		super(new ANodeTableModel());
 //		getModel().setCellEditable(false);
 		setDefaultRenderer(Object.class, new DrawableTableCellRenderer()); //TODO parameters
+		this.addMouseListener(this);
 	}
 	
 	public void setUIView(IUIView uiv) {
 		if (uiv instanceof TableView){
 			this.table_view = (TableView)uiv;
-			this.addMouseListener(table_view);
-			this.addComponentListener(table_view);
-			this.addKeyListener(table_view);
 		} else {
 			throw new RuntimeException("Wrong instance of UIView"); 
 		}
@@ -122,6 +122,18 @@ public class ANodeTable extends JTable implements INodeTable {
 		if (sel == null || !(sel instanceof Drawable))
 			return null;
 		return (Drawable)sel;
+	}
+
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseClicked(MouseEvent evt) {
+		boolean consume = table_view.inputEvent(new InputEventInfo(evt));
+		if (consume) {
+			evt.consume();
+			return;
+		}
 	}
 }
 

@@ -10,13 +10,7 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-
-
 import kiev.fmt.DrawCtrl;
-import kiev.fmt.DrawFolded;
 import kiev.fmt.DrawListWrapper;
 import kiev.fmt.DrawNodeTerm;
 import kiev.fmt.DrawNonTermList;
@@ -31,6 +25,7 @@ import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
+import kiev.gui.event.InputEvent;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtSpaceAttrSlot;
@@ -38,10 +33,10 @@ import kiev.vtree.SpaceAttrSlot;
 import kiev.vtree.Transaction;
 import kiev.vtree.TreeWalker;
 
-public class Editor extends InfoView implements KeyListener, ElementChangeListener {
+public class Editor extends InfoView implements ElementChangeListener {
 	
 	/** Symbols used by editor */	
-	private ItemEditor	item_editor;
+	private Runnable	item_editor;
 	
 	/** Current editor mode */
 	public boolean insert_mode;
@@ -54,53 +49,8 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 	
 	public java.util.Stack<Transaction>		changes = new java.util.Stack<Transaction>();
 	
-	protected final java.util.Hashtable<InputEventInfo,String[]> keyActionMap;
-
-	{
-		//final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
-		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
-		final int ALT   = KeyEvent.ALT_DOWN_MASK;
-
-		this.naviMap.put(new InputEventInfo(ALT,				KeyEvent.VK_X),				UIManager.newExprEditActionsFlatten());
-
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_UP),			 NavigateView.newLineUp());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_DOWN),			 NavigateView.newLineDn());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_UP),		 NavigateView.newPageUp());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_DOWN),		NavigateView.newPageDn());
-
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_LEFT),			 NavigateEditor.newGoPrev());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_RIGHT),			 NavigateEditor.newGoNext());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_UP),			 NavigateEditor.newGoLineUp());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DOWN),			 NavigateEditor.newGoLineDn());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_HOME),			 NavigateEditor.newGoLineHome());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_END),			 NavigateEditor.newGoLineEnd());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_UP),		 NavigateEditor.newGoPageUp());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_DOWN),		 NavigateEditor.newGoPageDn());
-
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_Z),				EditActions.newUndo());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_C),				 EditActions.newCopy());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_X),				 EditActions.newCut());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		 EditActions.newDel());
-
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
-		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				FolderTrigger.newFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				UIManager.newNewElemHereFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				UIManager.newNewElemNextFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_V),				UIManager.newPasteHereFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_B),				UIManager.newPasteNextFactory());
-		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
-		
-		this.keyActionMap = new java.util.Hashtable<InputEventInfo,String[]>();
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_E), new String[]{"kiev.gui.TextEditor$Factory",
-			"kiev.gui.IntEditor$Factory","kiev.gui.EnumEditor$Factory","kiev.gui.AccessEditor$Factory","kiev.gui.ChooseItemEditor"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_O), new String[]{"kiev.gui.FolderTrigger$Factory"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_N), new String[]{"kiev.gui.NewElemHere$Factory"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_A), new String[]{"kiev.gui.NewElemNext$Factory"});
-	}
-	
-	public Editor(IWindow window, Draw_ATextSyntax syntax, ICanvas view_canvas) {
-		super(window, syntax, view_canvas);
+	public Editor(IWindow window, ICanvas view_canvas, Draw_ATextSyntax syntax) {
+		super(window, view_canvas, syntax);
 		this.show_placeholders = true;
 		cur_elem = new CurElem();
 	}
@@ -165,51 +115,35 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		return null;
 	}
 
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	
-	public void keyPressed(KeyEvent evt) {
-		if (item_editor != null) {
-			item_editor.keyPressed(evt);
-			return;
-		}
-		//System.out.println(evt);
-		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		{
-			UIActionFactory af = naviMap.get(new InputEventInfo(mask, code));
-			Runnable r = (af == null) ? null : af.getAction(new UIActionViewContext(parent_window, this));
-			if (r != null) {
-				evt.consume();
-				r.run();
-				return;
-			}
-			String[] actions = keyActionMap.get(new InputEventInfo(mask, code));
-			if (actions != null && cur_elem.dr != null && cur_elem.dr.syntax.funcs != null) {
-				Drawable dr;
-				for (Draw_SyntaxFunction f: cur_elem.dr.syntax.funcs) 
-					if((dr=getFunctionTarget(f)) != null) {
-					for (String act: actions) 
-						if (act != null && act.equals(f.act)) {
-						try {
-							Class<?> c = Class.forName(f.act);
-							af = (UIActionFactory)c.newInstance();
-							r = af.getAction(new UIActionViewContext(this.parent_window, this, dr));
+	public boolean inputEvent(InputEvent evt) {
+		UIActionFactory[] actions = naviMap.get(evt);
+		if (actions == null)
+			return false;
+		Draw_SyntaxFunction[] funcs = null;
+		if (cur_elem.dr != null && cur_elem.dr.syntax.funcs != null)
+			funcs = cur_elem.dr.syntax.funcs;
+		for (UIActionFactory af: actions) {
+			if (funcs != null) {
+				for (Draw_SyntaxFunction f: funcs) {
+					if (af.getClass().getName().equals(f.act)) {
+						Drawable dr = getFunctionTarget(f);
+						if (dr != null) {
+							Runnable r = af.getAction(new UIActionViewContext(this.parent_window, evt, this, dr));
 							if (r != null) {
-								evt.consume();
 								r.run();
-								return;
+								return true;
 							}
-						} catch (Throwable t) {}
+						}
 					}
 				}
 			}
-			if (mask == 0) {
-				if (!(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK))
-					UIManager.doGUIBeep();
-				return;
+			Runnable r = af.getAction(new UIActionViewContext(parent_window, evt, this));
+			if (r != null) {
+				r.run();
+				return true;
 			}
 		}
+		return false;
 	}
 	
 	public Drawable getFunctionTarget(Draw_SyntaxFunction sf) {
@@ -249,7 +183,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		return null;
 	}
 
-	public void startItemEditor(ItemEditor item_editor) {
+	public void startItemEditor(Runnable item_editor) {
 		assert (this.item_editor == null);
 		this.item_editor = item_editor;
 		changes.push(Transaction.open("Editor.java:startItemEditor"));
@@ -269,7 +203,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		}
 		this.formatAndPaint(true);
 	}
-	
+/*	
 	public void mousePressed(MouseEvent e) {
 		view_canvas.requestFocus();
 		int x = e.getX();
@@ -292,7 +226,7 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 		cur_x = dr.x;
 		formatAndPaint(false);
 	}
-	
+
 	public void mouseClicked(MouseEvent e) {
 		view_canvas.requestFocus();
 		int x = e.getX();
@@ -318,7 +252,13 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 			return;
 		}
 	}
-	
+*/	
+	public void selectDrawTerm(DrawTerm dr) {
+		cur_elem.set(dr);
+		cur_x = dr.getGfxFmtInfo().getX();
+		formatAndPaint(false);
+	}
+
 	public void goToPath(ANode[] path) {
 		if (view_root == null)
 			return;
@@ -444,15 +384,8 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 	/**
 	 * @return the item_editor
 	 */
-	public KeyListener getItem_editor() {
+	public Runnable getItem_editor() {
 		return item_editor;
-	}
-
-	/**
-	 * @param item_editor the item_editor to set
-	 */
-	public void setItem_editor(ItemEditor item_editor) {
-		this.item_editor = item_editor;
 	}
 
 	/**
@@ -463,40 +396,3 @@ public class Editor extends InfoView implements KeyListener, ElementChangeListen
 	}
 
 }
-
-interface KeyHandler {
-	public void process();
-}
-
-final class FolderTrigger implements Runnable {
-	private final Editor editor;
-	private final DrawFolded df;
-	FolderTrigger(Editor editor, DrawFolded df) {
-		this.editor = editor;
-		this.df = df;
-	}
-	public void run() {
-		df.setDrawFolded(!df.getDrawFolded());
-		editor.formatAndPaint(true);
-	}
-
-	public static Factory newFactory(){
-		return new Factory();
-	}
-	
-	final static class Factory implements UIActionFactory {
-		public String getDescr() { return "Toggle folding"; }
-		public boolean isForPopupMenu() { return true; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor == null)
-				return null;
-			Editor editor = context.editor;
-			for (Drawable dr = editor.getCur_elem().dr; dr != null; dr = (Drawable)dr.parent()) {
-				if (dr instanceof DrawFolded)
-					return new FolderTrigger(editor, (DrawFolded)dr);
-			}
-			return null;
-		}
-	}
-}
-

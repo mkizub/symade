@@ -78,7 +78,10 @@ public abstract class Drawable extends ANode {
 			return (DrawTerm)this;
 		Drawable[] children = this.getChildren();
 		for (int i=children.length-1; i >= 0 ; i--) {
-			DrawTerm d = children[i].getLastLeaf();
+			Drawable ch = children[i];
+			if (ch == null || ch.isUnvisible())
+				continue;
+			DrawTerm d = ch.getLastLeaf();
 			if (d != null && !d.isUnvisible())
 				return d;
 		}
@@ -132,7 +135,7 @@ public abstract class Drawable extends ANode {
 		if (this.isUnvisible())
 			return;
 		cont.processSpaceBefore(this);
-		foreach (Drawable arg; this.getChildren())
+		foreach (Drawable arg; this.getChildren(); arg != null)
 			arg.lnkFormat(cont);
 		cont.processSpaceAfter(this);
 	}
@@ -145,7 +148,7 @@ public abstract class Drawable extends ANode {
 		} else {
 			context = context.pushDrawable(this);
 			try {
-				foreach (Drawable dr; this.getChildren())
+				foreach (Drawable dr; this.getChildren(); dr != null)
 					dr.postFormat(context);
 			} finally {
 				context.popDrawable(this);

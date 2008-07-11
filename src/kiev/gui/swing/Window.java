@@ -15,6 +15,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -51,7 +52,7 @@ import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 
 public class Window extends JFrame 
-	implements IWindow, FocusListener {
+	implements IWindow, ActionListener, FocusListener {
 	private static final long serialVersionUID = -1330097168227311246L;
 	JTabbedPane explorers;
 	JTabbedPane editors;
@@ -237,11 +238,11 @@ public class Window extends JFrame
 		this.setSize(screenSize.width, (screenSize.height*3)/4);
 		this.setVisible(true);
 		editor_views = new Editor[0];
-		info_view = new InfoView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), info_canvas);
-		clip_view = new InfoView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), clip_canvas);
-		prop_view = new TableView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), prop_table);
-		expl_view = new TreeView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), expl_tree);
-		tree_view = new ProjectView((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"), tree_canvas);
+		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
+		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
 		addListeners();
 		initBgFormatters();
 		expl_view.setRoot(Env.getProject());
@@ -267,7 +268,8 @@ public class Window extends JFrame
 		Object src = e.getSource();
 		if (src instanceof UIActionMenuItem) {
 			UIActionMenuItem m = (UIActionMenuItem)src;
-			Runnable r = m.factory.getAction(new UIActionViewContext((IWindow)this, getCurrentView()));
+			InputEventInfo evt = new InputEventInfo(e);
+			Runnable r = m.factory.getAction(new UIActionViewContext((IWindow)this, evt, getCurrentView()));
 			if (r != null)
 				r.run();
 		}
@@ -325,7 +327,7 @@ public class Window extends JFrame
 		edit_canvas.addFocusListener(this);
 		editors.addTab(fu.pname(), edit_canvas);
 		editors.setSelectedComponent(edit_canvas);
-		Editor editor_view = new Editor  ((IWindow)this, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"), edit_canvas);
+		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
 		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);
 		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);
