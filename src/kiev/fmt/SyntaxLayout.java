@@ -233,6 +233,35 @@ public final class SpaceCmd extends ASTNode {
 
 }
 
+@ThisIsANode(lang=SyntaxLang)
+public class IndentInfo extends DNode {
+	@nodeAttr int text_size;
+	@nodeAttr int pixel_size;
+	@nodeAttr int next_text_size;
+	@nodeAttr int next_pixel_size;
+	@nodeAttr boolean from_current_position;
+
+	public IndentInfo() {}
+	public IndentInfo(String name, int text_size, int pixel_size, int next_text_size, int next_pixel_size) {
+		this.sname = name;
+		this.text_size = text_size;
+		this.pixel_size = pixel_size;
+		this.next_text_size = next_text_size;
+		this.next_pixel_size = next_pixel_size;
+	}
+
+	public Draw_IndentInfo getCompiled() {
+		Draw_IndentInfo p = new Draw_IndentInfo();
+		p.name = sname;
+		p.text_size = text_size;
+		p.pixel_size = pixel_size;
+		p.next_text_size = next_text_size;
+		p.next_pixel_size = next_pixel_size;
+		p.from_current_position = from_current_position;
+		return p;
+	}
+}
+
 public enum ParagraphFlow {
 	HORIZONTAL,
 	VERTICAL,
@@ -240,15 +269,13 @@ public enum ParagraphFlow {
 }
 
 @ThisIsANode(lang=SyntaxLang)
-public abstract class AParagraphLayout extends DNode {
-	@nodeAttr int indent_text_size;
-	@nodeAttr int indent_pixel_size;
-	@nodeAttr int next_indent_text_size;
-	@nodeAttr int next_indent_pixel_size;
-	@nodeAttr boolean indent_from_current_position;
-	@nodeAttr ParagraphFlow flow;
+public final class ParagraphLayout extends DNode {
+	@nodeAttr SymbolRef<IndentInfo>	indent;
+	@nodeAttr SymbolRef∅				no_indent_if_prev;
+	@nodeAttr SymbolRef∅				no_indent_if_next;
+	@nodeAttr ParagraphFlow				flow;
 	
-	public AParagraphLayout() {}
+	public ParagraphLayout() {}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "indent_text_size" ||
@@ -266,51 +293,79 @@ public abstract class AParagraphLayout extends DNode {
 		return super.includeInDump(dump, attr, val);
 	}
 	
-	public abstract Draw_Paragraph getCompiled();
-
-}
-
-@ThisIsANode(lang=SyntaxLang)
-public final class ParagraphLayout extends AParagraphLayout {
-	public ParagraphLayout() {}
-	public ParagraphLayout(String name, int ind_txt, int ind_pix) {
-		this.sname = name;
-		this.indent_text_size = ind_txt;
-		this.indent_pixel_size = ind_pix;
-	}
-
 	public Draw_Paragraph getCompiled() {
 		Draw_Paragraph p = new Draw_Paragraph();
-		p.indent_text_size = indent_text_size;
-		p.indent_pixel_size = indent_pixel_size;
-		p.next_indent_text_size = next_indent_text_size;
-		p.next_indent_pixel_size = next_indent_pixel_size;
-		p.indent_from_current_position = indent_from_current_position;
-		p.flow = flow;
-		return p;
-	}
-
-}
-
-@ThisIsANode(lang=SyntaxLang)
-public final class ParagraphLayoutBlock extends AParagraphLayout {
-	@nodeAttr public String token_text;
-
-	public Draw_Paragraph getCompiled() {
-		Draw_ParagraphBlock p = new Draw_ParagraphBlock();
-		p.indent_text_size = indent_text_size;
-		p.indent_pixel_size = indent_pixel_size;
-		p.next_indent_text_size = next_indent_text_size;
-		p.next_indent_pixel_size = next_indent_pixel_size;
-		p.indent_from_current_position = indent_from_current_position;
-		p.flow = flow;
-		if (this.token_text != null) {
-			p.tokens = token_text.split("\\s+");
-			for (int i=0; i < p.tokens.length; i++)
-				p.tokens[i] = p.tokens[i].intern();
+		p.name = sname;
+		if (indent != null && indent.dnode != null)
+			p.indent = indent.dnode.getCompiled();
+		if (no_indent_if_prev.length > 0) {
+			p.no_indent_if_prev = new String[no_indent_if_prev.length];
+			for (int i=0; i < no_indent_if_prev.length; i++) {
+				SymbolRef ui = no_indent_if_prev[i];
+				if (ui == null || ui.name == null)
+					p.no_indent_if_prev[i] = "";
+				else
+					p.no_indent_if_prev[i] = ui.name;
+			}
 		}
+		if (no_indent_if_next.length > 0) {
+			p.no_indent_if_next = new String[no_indent_if_next.length];
+			for (int i=0; i < no_indent_if_next.length; i++) {
+				SymbolRef ui = no_indent_if_next[i];
+				if (ui == null || ui.name == null)
+					p.no_indent_if_next[i] = "";
+				else
+					p.no_indent_if_next[i] = ui.name;
+			}
+		}
+		p.flow = flow;
 		return p;
 	}
+
+	public void preResolveOut() {
+		if (indent != null && indent.name != null && indent.name != "") {
+			IndentInfo@ ind;
+			if (!PassInfo.resolveNameR(this,ind,new ResInfo(this,indent.name)))
+				Kiev.reportError(this,"Cannot resolve indent '"+indent.name+"'");
+			else if (indent.symbol != ind)
+				indent.symbol = ind;
+		}
+		foreach (SymbolRef unind; no_indent_if_prev; unind.name != null && unind.name != "") {
+			DNode@ dn;
+			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,unind.name)))
+				Kiev.reportError(this,"Cannot resolve '"+unind.name+"'");
+			else if !(dn instanceof IndentInfo || dn instanceof ParagraphLayout)
+				Kiev.reportError(this,"Resolved '"+unind.name+"' is not indent or paragraph name");
+			else if (unind.symbol != dn)
+				unind.symbol = dn;
+		}
+		foreach (SymbolRef unind; no_indent_if_next; unind.name != null && unind.name != "") {
+			DNode@ dn;
+			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,unind.name)))
+				Kiev.reportError(this,"Cannot resolve indent '"+unind.name+"'");
+			else if !(dn instanceof IndentInfo || dn instanceof ParagraphLayout)
+				Kiev.reportError(this,"Resolved '"+unind.name+"' is not indent or paragraph name");
+			else if (unind.symbol != dn)
+				unind.symbol = dn;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "indent" || slot.name == "no_indent_if_prev" || slot.name == "no_indent_if_next") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<DNode> vect = new Vector<DNode>();
+			DNode@ dn;
+			foreach (PassInfo.resolveNameR(this,dn,info)) {
+				if (dn instanceof IndentInfo || dn instanceof ParagraphLayout) {
+					if (!vect.contains(dn))
+						vect.append(dn);
+				}
+			}
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -686,7 +741,7 @@ public abstract class SyntaxElem extends ASTNode {
 	@nodeAttr
 	public SymbolRef<SyntaxElemFormatDecl>		fmt;
 	@nodeAttr
-	public SymbolRef<AParagraphLayout>			par;
+	public SymbolRef<ParagraphLayout>			par;
 	@nodeAttr(ext_data=true)
 	public SyntaxFunctions						funcs;
 	
@@ -702,7 +757,7 @@ public abstract class SyntaxElem extends ASTNode {
 				fmt.symbol = d;
 		}
 		if (par != null && par.name != null && par.name != "") {
-			AParagraphLayout@ d;
+			ParagraphLayout@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
 				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
 			else if (par.symbol != d)
@@ -721,8 +776,8 @@ public abstract class SyntaxElem extends ASTNode {
 		}
 		if (slot.name == "par") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<AParagraphLayout> vect = new Vector<AParagraphLayout>();
-			AParagraphLayout@ dc;
+			Vector<ParagraphLayout> vect = new Vector<ParagraphLayout>();
+			ParagraphLayout@ dc;
 			foreach (PassInfo.resolveNameR(this,dc,info))
 				if (!vect.contains(dc)) vect.append(dc);
 			return vect.toArray();

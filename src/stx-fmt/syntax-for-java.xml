@@ -110,39 +110,118 @@
       <text_size>2</text_size>
       <pixel_size>20</pixel_size>
      </syntax:SpaceInfo>
+     <syntax:IndentInfo name='indent'>
+      <text_size>2</text_size>
+      <pixel_size>20</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-but-block'>
+      <text_size>2</text_size>
+      <pixel_size>20</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-2'>
+      <text_size>4</text_size>
+      <pixel_size>40</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-next-2'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>4</next_text_size>
+      <next_pixel_size>40</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='unindent'>
+      <text_size>-2</text_size>
+      <pixel_size>-20</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-no'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-from_cur'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>true</from_current_position>
+     </syntax:IndentInfo>
      <syntax:ParagraphLayout name='par-indented'>
-      <indent_text_size>2</indent_text_size>
-      <indent_pixel_size>20</indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent' />
+      </indent>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-flow-indented'>
-      <next_indent_text_size>4</next_indent_text_size>
-      <next_indent_pixel_size>40</next_indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent-next-2' />
+      </indent>
       <flow>FLOW</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-indented-flow'>
-      <indent_text_size>4</indent_text_size>
-      <indent_pixel_size>40</indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent-2' />
+      </indent>
       <flow>FLOW</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-if-cond'>
-      <indent_from_current_position>true</indent_from_current_position>
+      <indent>
+       <core:SymbolRef name='indent-from_cur' />
+      </indent>
       <flow>FLOW</flow>
      </syntax:ParagraphLayout>
-     <syntax:ParagraphLayoutBlock name='par-indented-block'>
-      <token_text>{ #{</token_text>
-      <indent_text_size>2</indent_text_size>
-      <indent_pixel_size>20</indent_pixel_size>
-     </syntax:ParagraphLayoutBlock>
-     <syntax:ParagraphLayoutBlock name='par-indented-block-if'>
-      <token_text>{ if if# #{</token_text>
-      <indent_text_size>2</indent_text_size>
-      <indent_pixel_size>20</indent_pixel_size>
-     </syntax:ParagraphLayoutBlock>
-     <syntax:ParagraphLayout name='par-unindented'>
-      <indent_text_size>-2</indent_text_size>
-      <indent_pixel_size>-20</indent_pixel_size>
+     <syntax:ParagraphLayout name='par-indented-but-block'>
+      <indent>
+       <core:SymbolRef name='indent-but-block' />
+      </indent>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
-     <syntax:ParagraphLayout name='par-block' />
+     <syntax:ParagraphLayout name='par-unindented'>
+      <indent>
+       <core:SymbolRef name='unindent' />
+      </indent>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-block'>
+      <indent>
+       <core:SymbolRef name='indent-no' />
+      </indent>
+      <no_indent_if_prev>
+       <core:SymbolRef name='indent-but-block' />
+      </no_indent_if_prev>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-if-stat'>
+      <indent>
+       <core:SymbolRef name='indent-no' />
+      </indent>
+      <no_indent_if_prev>
+       <core:SymbolRef name='par-if-else' />
+      </no_indent_if_prev>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-if-else'>
+      <indent>
+       <core:SymbolRef name='indent-but-block' />
+      </indent>
+      <no_indent_if_next>
+       <core:SymbolRef name='par-if-stat' />
+      </no_indent_if_next>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
      <syntax:DrawColor name='color-default'>
       <rgb_color>0</rgb_color>
      </syntax:DrawColor>
@@ -1694,6 +1773,9 @@
            </syntax:CalcOptionNot>
           </filter>
           <name>members</name>
+          <par>
+           <core:SymbolRef name='par-indented' />
+          </par>
          </syntax:SyntaxList>
         </list>
         <name>members</name>
@@ -1706,9 +1788,6 @@
           </fmt>
          </syntax:SyntaxToken>
         </empty>
-        <par>
-         <core:SymbolRef name='par-indented' />
-        </par>
        </syntax:SyntaxListWrapper>
       </elem>
      </syntax:PartialSyntaxElemDecl>
@@ -5111,6 +5190,9 @@
           <fmt>
            <core:SymbolRef name='fmt-space-nl++' />
           </fmt>
+          <par>
+           <core:SymbolRef name='par-indented' />
+          </par>
          </syntax:SyntaxNode>
         </element>
         <prefix>
@@ -5139,7 +5221,7 @@
          </syntax:SyntaxToken>
         </empty>
         <par>
-         <core:SymbolRef name='par-indented' />
+         <core:SymbolRef name='par-block' />
         </par>
        </syntax:SyntaxList>
       </elem>
@@ -5156,6 +5238,9 @@
           <fmt>
            <core:SymbolRef name='fmt-space-nl++' />
           </fmt>
+          <par>
+           <core:SymbolRef name='par-indented' />
+          </par>
          </syntax:SyntaxNode>
         </element>
         <prefix>
@@ -5183,6 +5268,9 @@
           </fmt>
          </syntax:SyntaxToken>
         </empty>
+        <par>
+         <core:SymbolRef name='par-block' />
+        </par>
        </syntax:SyntaxList>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -6966,7 +7054,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -6990,7 +7078,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -7894,7 +7982,7 @@
          <syntax:SyntaxSubAttr>
           <name>thenSt</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxOptional>
@@ -7918,11 +8006,14 @@
            <syntax:SyntaxSpace />
           </empty>
           <par>
-           <core:SymbolRef name='par-indented-block-if' />
+           <core:SymbolRef name='par-if-else' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
+        <par>
+         <core:SymbolRef name='par-if-stat' />
+        </par>
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -7957,7 +8048,7 @@
          <syntax:SyntaxSubAttr>
           <name>thenSt</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
@@ -7969,11 +8060,14 @@
          <syntax:SyntaxSubAttr>
           <name>elseSt</name>
           <par>
-           <core:SymbolRef name='par-indented-block-if' />
+           <core:SymbolRef name='par-if-else' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
+        <par>
+         <core:SymbolRef name='par-if-stat' />
+        </par>
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
@@ -8008,7 +8102,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -8032,7 +8126,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
@@ -8154,7 +8248,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -8239,7 +8333,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -8324,7 +8418,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -8664,7 +8758,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxList>
@@ -8725,7 +8819,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>
@@ -8764,7 +8858,7 @@
          <syntax:SyntaxSubAttr>
           <name>body</name>
           <par>
-           <core:SymbolRef name='par-indented-block' />
+           <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
         </elements>

@@ -58,44 +58,53 @@ public final class Draw_Layout implements Serializable {
 		this.spaces_after = LayoutSpace.emptyArray;
 	}
 
-
 	Object readResolve() throws ObjectStreamException {
 		if (this.font_name != null) this.font_name = this.font_name.intern();
 		return this;
 	}
 }
 
-public class Draw_Paragraph implements Serializable {
-	public int indent_text_size;
-	public int indent_pixel_size;
-	public int next_indent_text_size;
-	public int next_indent_pixel_size;
-	public boolean indent_from_current_position;
-	public ParagraphFlow flow;
+public class Draw_IndentInfo implements Serializable {
+	public String name;
+	public int text_size;
+	public int pixel_size;
+	public int next_text_size;
+	public int next_pixel_size;
+	public boolean from_current_position;
 	
-	public boolean enabled(Drawable dr) { return true; }
+	Object readResolve() throws ObjectStreamException {
+		if (this.name != null) this.name = this.name.intern();
+		return this;
+	}
 }
 
-public class Draw_ParagraphBlock extends Draw_Paragraph {
-
-	public String[] tokens = new String[0];
-
-	public boolean enabled(Drawable dr) {
-		if (dr == null)
-			return true;
-		DrawTerm t = dr.getFirstLeaf();
-		if (t instanceof DrawToken) {
-			String str = ((Draw_SyntaxToken)t.syntax).text;
-			foreach (String s; this.tokens; s == str)
-				return false;
-		}
-		return true;
-	}
-
+public class Draw_Paragraph implements Serializable {
+	public String name;
+	public Draw_IndentInfo indent;
+	public String[] no_indent_if_prev;
+	public String[] no_indent_if_next;
+	public ParagraphFlow flow;
+	
 	Object readResolve() throws ObjectStreamException {
-		if (this.tokens != null) {
-			for (int i=0; i < this.tokens.length; i++)
-				this.tokens[i] = this.tokens[i].intern();
+		if (this.name != null)
+			this.name = this.name.intern();
+		if (this.no_indent_if_prev != null) {
+			for (int i=0; i < this.no_indent_if_prev.length; i++) {
+				String s = this.no_indent_if_prev[i];
+				if (s == null)
+					this.no_indent_if_prev[i] = "";
+				else
+					this.no_indent_if_prev[i] = s.intern();
+			}
+		}
+		if (this.no_indent_if_next != null) {
+			for (int i=0; i < this.no_indent_if_next.length; i++) {
+				String s = this.no_indent_if_next[i];
+				if (s == null)
+					this.no_indent_if_next[i] = "";
+				else
+					this.no_indent_if_next[i] = s.intern();
+			}
 		}
 		return this;
 	}
@@ -1042,8 +1051,9 @@ public abstract class Draw_AXmlDumpSyntax extends Draw_ATextSyntax {
 		loutNoNl = sefdNoNl.compile();
 
 		plIndented = new Draw_Paragraph();
-		plIndented.indent_text_size = 1;
-		plIndented.indent_pixel_size = 10;
+		plIndented.indent = new Draw_IndentInfo();
+		plIndented.indent.text_size = 1;
+		plIndented.indent.pixel_size = 10;
 	}
 
 	protected Draw_SyntaxElem tok(String text, Draw_Layout lout) {
@@ -1287,10 +1297,9 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 		loutNoNl = sefdNoNl.compile();
 
 		plIndented = new Draw_Paragraph();
-		plIndented.indent_text_size = 0;
-		plIndented.indent_pixel_size = 0;
-		plIndented.next_indent_text_size = 1;
-		plIndented.next_indent_pixel_size = 20;
+		plIndented.indent = new Draw_IndentInfo();
+		plIndented.indent.next_text_size = 2;
+		plIndented.indent.next_pixel_size = 20;
 	}
 
 	public Draw_SyntaxElem getSyntaxElem(ANode node) {

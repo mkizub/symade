@@ -79,25 +79,56 @@
       <text_size>2</text_size>
       <pixel_size>10</pixel_size>
      </syntax:SpaceInfo>
+     <syntax:IndentInfo name='indent'>
+      <text_size>4</text_size>
+      <pixel_size>20</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-next'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>4</next_text_size>
+      <next_pixel_size>20</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-from_cur'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>true</from_current_position>
+     </syntax:IndentInfo>
      <syntax:ParagraphLayout name='par-indent'>
-      <indent_text_size>4</indent_text_size>
-      <indent_pixel_size>20</indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent' />
+      </indent>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-syntax-body'>
-      <indent_text_size>4</indent_text_size>
-      <indent_pixel_size>20</indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent' />
+      </indent>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-list-body'>
-      <indent_text_size>4</indent_text_size>
-      <indent_pixel_size>20</indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent' />
+      </indent>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-flow'>
-      <next_indent_text_size>4</next_indent_text_size>
-      <next_indent_pixel_size>20</next_indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent-next' />
+      </indent>
       <flow>FLOW</flow>
      </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-indent-from_pos'>
-      <indent_from_current_position>true</indent_from_current_position>
+      <indent>
+       <core:SymbolRef name='indent-from_cur' />
+      </indent>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
      <syntax:DrawColor name='red'>
       <rgb_color>16711680</rgb_color>
@@ -420,8 +451,8 @@
       <title>Syntax Declarations</title>
       <expected_types>
        <core:SymbolRef name='SpaceInfo' />
+       <core:SymbolRef name='IndentInfo' />
        <core:SymbolRef name='ParagraphLayout' />
-       <core:SymbolRef name='ParagraphLayoutBlock' />
        <core:SymbolRef name='DrawColor' />
        <core:SymbolRef name='DrawFont' />
        <core:SymbolRef name='SyntaxElemFormatDecl' />
@@ -804,10 +835,90 @@
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-def-indent-info'>
+      <rnode>
+       <core:SymbolRef name='IndentInfo' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>def-indent</text>
+          <fmt>
+           <core:SymbolRef name='fmt-of-def' />
+          </fmt>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxElemRef>
+          <decl>
+           <core:SymbolRef name='stx-sname' />
+          </decl>
+          <text>sname</text>
+         </syntax:SyntaxElemRef>
+         <syntax:SyntaxToken>
+          <text>start:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>text_size</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxToken>
+          <text>/</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>pixel_size</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>next:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>next_text_size</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>/</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>next_pixel_size</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>from-cur-pos:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>from_current_position</name>
+         </syntax:SyntaxSubAttr>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+        <fmt>
+         <core:SymbolRef name='fmt-nl-space' />
+        </fmt>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-def-paragraph'>
       <rnode>
        <core:SymbolRef name='ParagraphLayout' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>indent</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>no_indent_if_prev</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>no_indent_if_next</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -829,80 +940,79 @@
          <syntax:SyntaxToken>
           <text>indent:</text>
          </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>indent_text_size</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>/</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>indent_pixel_size</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>next:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>next_indent_text_size</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>/</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>next_indent_pixel_size</name>
-         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>indent</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>no_indent_if_prev: {</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>}</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <name>no_indent_if_prev</name>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>no_indent_if_prev: {}</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
+         </syntax:SyntaxList>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>no_indent_if_next: {</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>}</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <name>no_indent_if_next</name>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>no_indent_if_next: {}</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+          <par>
+           <core:SymbolRef name='par-flow' />
+          </par>
+         </syntax:SyntaxList>
          <syntax:SyntaxToken>
           <text>flow:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>flow</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>from_cur_pos:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>indent_from_current_position</name>
-         </syntax:SyntaxSubAttr>
-        </elements>
-        <nested_function_lookup>false</nested_function_lookup>
-        <fmt>
-         <core:SymbolRef name='fmt-nl-space' />
-        </fmt>
-       </syntax:SyntaxSet>
-      </elem>
-     </syntax:SyntaxElemDecl>
-     <syntax:SyntaxElemDecl name='stx-def-paragraph-block'>
-      <rnode>
-       <core:SymbolRef name='ParagraphLayoutBlock' />
-      </rnode>
-      <elem>
-       <syntax:SyntaxSet>
-        <elements>
-         <syntax:SyntaxToken>
-          <text>def-paragraph</text>
-          <fmt>
-           <core:SymbolRef name='fmt-of-def' />
-          </fmt>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxIdentAttr>
-          <decl>
-           <core:SymbolRef name='ident-template' />
-          </decl>
-          <name>sname</name>
-          <fmt>
-           <core:SymbolRef name='fmt-of-symbol' />
-          </fmt>
-         </syntax:SyntaxIdentAttr>
-         <syntax:SyntaxSubAttr>
-          <name>indent_text_size</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>/</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>indent_pixel_size</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxSubAttr>
-          <name>token_text</name>
          </syntax:SyntaxSubAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
@@ -2151,6 +2261,20 @@
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>separator</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSpace' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>prefix</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxSpace' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>sufix</attr_name>
         <expected_types>
          <core:SymbolRef name='SyntaxToken' />
          <core:SymbolRef name='SyntaxSpace' />

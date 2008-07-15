@@ -123,9 +123,21 @@
        <core:SymbolRef name='font-bold' />
       </font>
      </syntax:SyntaxElemFormatDecl>
+     <syntax:IndentInfo name='indent_next'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>1</next_text_size>
+      <next_pixel_size>20</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
      <syntax:ParagraphLayout name='par-tree-branch'>
-      <next_indent_text_size>1</next_indent_text_size>
-      <next_indent_pixel_size>20</next_indent_pixel_size>
+      <indent>
+       <core:SymbolRef name='indent_next' />
+      </indent>
+      <flow>VERTICAL</flow>
+     </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-block'>
+      <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
      <syntax:SyntaxIdentTemplate name='ident-template'>
       <regexp_ok>.*</regexp_ok>
@@ -233,6 +245,9 @@
           <fmt>
            <core:SymbolRef name='fmt-title' />
           </fmt>
+          <par>
+           <core:SymbolRef name='par-block' />
+          </par>
          </syntax:SyntaxSet>
         </folded>
         <element>

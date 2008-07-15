@@ -27,10 +27,70 @@ public abstract class DrawContext implements Cloneable {
 	private boolean						at_flow_break_point;
 	
 	static class Indents implements Cloneable {
-		int cur_indent;
-		int next_indent;
-		Indents() {}
+		final Indents         prev;
+		final Draw_Paragraph  par;
+		private int indent;
+		private boolean initialized;
+		private boolean added_next;
+		Indents(Indents prev, Draw_Paragraph par) {
+			this.prev = prev;
+			this.par = par;
+		}
 		public Object clone() { return super.clone(); }
+		
+		private Indents getPrev() {
+			Indents prev = this.prev;
+		prev_prev:
+			while (prev != null) {
+				if (par.no_indent_if_prev != null) {
+					String prev_par_name = prev.par.name;
+					String prev_ind_name = prev.par.indent == null ? null : prev.par.indent.name;
+					foreach (String ign; par.no_indent_if_prev; ign == prev_par_name || ign == prev_ind_name) {
+						prev = prev.prev;
+						continue prev_prev;
+					}
+				}
+				if (prev.par.no_indent_if_next != null) {
+					String curr_par_name = par.name;
+					String curr_ind_name = par.indent == null ? null : par.indent.name;
+					foreach (String ign; prev.par.no_indent_if_next; ign == curr_par_name || ign == curr_ind_name) {
+						prev = prev.prev;
+						continue prev_prev;
+					}
+				}
+				return prev;
+			}
+			return null;
+		}
+		
+		public void init(int x) {
+			if (!initialized) {
+				if (prev != null)
+					prev.init(x);
+				Indents prev = getPrev();
+				if (par.indent != null && par.indent.from_current_position)
+					indent = x;
+				else if (prev != null && par.indent != null)
+					indent = par.indent.pixel_size + prev.getIndent();
+				else if (prev != null)
+					indent = prev.getIndent();
+				else if (par.indent != null)
+					indent = par.indent.pixel_size;
+				initialized = true;
+			}
+		}
+		
+		public void addNext() {
+			if (!added_next) {
+				if (par.indent != null)
+					indent += par.indent.next_pixel_size;
+				added_next = true;
+			}
+		}
+		
+		public int getIndent() {
+			return indent;
+		}
 	}
 	
 	public DrawContext(Formatter fmt, int width) {
@@ -65,7 +125,7 @@ public abstract class DrawContext implements Cloneable {
 	}
 
 	public void postFormat(DrawLayoutBlock dlb) {
-		this.postFormat(dlb, new Indents());
+		this.postFormat(dlb, new Indents(null,new Draw_Paragraph()));
 	}
 	
 	private void postFormat(DrawLayoutInfo dlb, Indents indents) {
@@ -77,8 +137,10 @@ public abstract class DrawContext implements Cloneable {
 				boolean last = (i >= dlb.getMaxLayout());
 				if (!last)
 					ctx.parent_has_more_attempts = true;
-				foreach (DrawLayoutInfo b; dlb.getBlocks()) {
-					if (dlb.isVertical())
+				DrawLayoutInfo[] blocks = dlb.getBlocks();
+				for (int j=0; j < blocks.length; j++) {
+					DrawLayoutInfo b = blocks[j];
+					if (dlb.isVertical() && j > 0 && j < blocks.length-1)
 						ctx.force_new_line = true;
 					if (b instanceof DrawTermLayoutInfo)
 						ctx.addLeaf((DrawTermLayoutInfo)b, i, ctx_indents);
@@ -172,7 +234,8 @@ public abstract class DrawContext implements Cloneable {
 		x += setXgetWidth(dlb, x);
 		max_x = Math.max(max_x, x);
 		line_started = false;
-		indents.cur_indent = indents.next_indent;
+		indents.addNext();
+		//indents.cur_indent = indents.next_indent;
 		// check flow break point
 		DrawTermLink lnk = dlb.lnk_next;
 		if (lnk != null) {
@@ -185,7 +248,9 @@ public abstract class DrawContext implements Cloneable {
 	private void flushSpaceRequests(DrawTermLayoutInfo dlb, int cur_attempt, Indents indents) {
 		DrawTermLink lnk = dlb.lnk_prev;
 		if (lnk == null) {
-			this.x = indents.cur_indent;
+			indents.init(0);
+			this.x = indents.getIndent();
+			indents.addNext();
 			return;
 		}
 		
@@ -198,13 +263,16 @@ public abstract class DrawContext implements Cloneable {
 			max_space = (lnk.size_1 & 0xFFFF);
 			max_nl = (lnk.size_1 >>> 16);
 		}
-		if (this.line_started)
-			this.x = indents.cur_indent;
-		else
+		if (this.line_started) {
+			indents.init(this.x);
+			this.x = indents.getIndent();
+		} else {
 			this.x += max_space;
+			indents.init(this.x);
+		}
 		if (max_nl > 0 || (this.force_new_line && max_space > 0)) {
 			lnk.do_newline = true;
-			this.x = indents.cur_indent;
+			this.x = indents.getIndent();
 			this.force_new_line = false;
 			if (max_nl > 0)
 				lnk.the_size = max_nl;
@@ -250,18 +318,16 @@ public final class GfxDrawContext extends DrawContext {
 		return gfx_fmt.width;
 	}
 	public Indents makeIndents(Indents from, Draw_Paragraph pl, int cur_x) {
-		if (pl != null) {
-			Indents i = new Indents();
-			int pl_indent = pl.indent_pixel_size;
-			int pl_next_indent = pl.next_indent_pixel_size;
-			if (pl.indent_from_current_position) {
-				i.cur_indent = pl_indent + cur_x;
-				i.next_indent = pl_indent + pl_next_indent + cur_x;
-			} else {
-				i.cur_indent = from.cur_indent + pl_indent;
-				i.next_indent = from.cur_indent + pl_next_indent + pl_indent;
-			}
-			return i;
+		if (pl != null && pl.indent != null) {
+			Indents ind;
+			int pl_indent = pl.indent.pixel_size;
+			int pl_next_indent = pl.indent.next_pixel_size;
+			//if (pl.indent.from_current_position)
+			//	ind = new Indents(pl.indent.name, pl_indent + cur_x, pl_indent + pl_next_indent + cur_x);
+			//else
+			//	ind = new Indents(pl.indent.name, from.cur_indent + pl_indent, from.cur_indent + pl_next_indent + pl_indent);
+			ind = new Indents(from, pl);
+			return ind;
 		}
 		return from;
 	}
@@ -288,18 +354,16 @@ public final class TxtDrawContext extends DrawContext {
 		return txt.length();
 	}
 	public Indents makeIndents(Indents from, Draw_Paragraph pl, int cur_x) {
-		if (pl != null) {
-			Indents i = new Indents();
-			int pl_indent = pl.indent_text_size;
-			int pl_next_indent = pl.next_indent_text_size;
-			if (pl.indent_from_current_position) {
-				i.cur_indent = pl_indent + cur_x;
-				i.next_indent = pl_indent + pl_next_indent + cur_x;
-			} else {
-				i.cur_indent = from.cur_indent + pl_indent;
-				i.next_indent = from.cur_indent + pl_next_indent + pl_indent;
-			}
-			return i;
+		if (pl != null && pl.indent != null) {
+			Indents ind;
+			int pl_indent = pl.indent.text_size;
+			int pl_next_indent = pl.indent.next_text_size;
+			//if (pl.indent.from_current_position)
+			//	ind = new Indents(pl.indent.name, pl_indent + cur_x, pl_indent + pl_next_indent + cur_x);
+			//else
+			//	ind = new Indents(pl.indent.name, from.cur_indent + pl_indent, from.cur_indent + pl_next_indent + pl_indent);
+			ind = new Indents(from, pl);
+			return ind;
 		}
 		return from;
 	}
@@ -456,28 +520,21 @@ public final class DrawLayoutBlock extends DrawLayoutInfo {
 	}
 	
 	private DrawLayoutBlock pushParagraph(Drawable dp, Draw_Paragraph pl) {
-		if (pl.enabled(dp)) {
-			DrawLayoutBlock dlb = new DrawLayoutBlock(this);
-			this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
-			dlb.dr = dp;
-			dlb.par = pl;
-			return dlb;
-		}
-		return this;
+		DrawLayoutBlock dlb = new DrawLayoutBlock(this);
+		this.blocks = (DrawLayoutInfo[])Arrays.append(this.blocks, dlb);
+		dlb.dr = dp;
+		dlb.par = pl;
+		return dlb;
 	}
 	private DrawLayoutBlock popParagraph(Drawable dp, Draw_Paragraph pl) {
-		if (this.dr == dp) {
-			assert (pl.enabled(dp));
-			if (pl.flow == ParagraphFlow.HORIZONTAL) {
-				int max_layout = 0;
-				foreach (DrawLayoutInfo b; blocks)
-					max_layout = Math.max(max_layout, b.getMaxLayout());
-				this.max_layout = max_layout;
-			}
-			return this.parent;
+		assert (this.dr == dp);
+		if (pl.flow == ParagraphFlow.HORIZONTAL) {
+			int max_layout = 0;
+			foreach (DrawLayoutInfo b; blocks)
+				max_layout = Math.max(max_layout, b.getMaxLayout());
+			this.max_layout = max_layout;
 		}
-		assert (!pl.enabled(dp));
-		return this;
+		return this.parent;
 	}
 	
 	public void addLeaf(DrawTermLayoutInfo dlb) {

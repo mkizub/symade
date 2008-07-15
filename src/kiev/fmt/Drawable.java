@@ -65,7 +65,10 @@ public abstract class Drawable extends ANode {
 			return (DrawTerm)this;
 		Drawable[] children = this.getChildren();
 		for (int i=0; i < children.length; i++) {
-			DrawTerm d = children[i].getFirstLeaf();
+			Drawable ch = children[i];
+			if (ch == null || ch.isUnvisible())
+				continue;
+			DrawTerm d = ch.getFirstLeaf();
 			if (d != null && !d.isUnvisible())
 				return d;
 		}
