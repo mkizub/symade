@@ -924,7 +924,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 			}
 			else if (self.isEnum()) {
-				assert (st.getTypeDecl() == StdTypes.tpEnum.meta_type.tdecl);
+				//assert (st.getTypeDecl() == StdTypes.tpEnum.meta_type.tdecl);
 			}
 
 			Struct s = st.getStruct();

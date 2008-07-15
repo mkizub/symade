@@ -821,9 +821,15 @@ public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames
 			node ?= n
 		;	// resolve in imports
 			n @= members,
-			n instanceof Import,
-			trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+n),
-			((Import)n).resolveNameR(node,info)
+			{
+				n instanceof Import,
+				trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+n),
+				((Import)n).resolveNameR(node,info)
+			;
+				n instanceof ImportSyntax,
+				trace( Kiev.debug && Kiev.debugResolve, "In syntax ("+(info.doImportStar() ? "with star" : "no star" )+"): "+n),
+				((ImportSyntax)n).resolveNameR(node,info)
+			}
 		;
 			info.getPrevSlotName() != "super_syntax",
 			trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: resolving in super-syntax of "+this),
@@ -847,8 +853,13 @@ public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames
 			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
 		;
 			member @= members,
-			member instanceof Import,
-			((Import)member).resolveMethodR(node,info,mt)
+			{
+				member instanceof Import,
+				((Import)member).resolveMethodR(node,info,mt)
+			;
+				member instanceof ImportSyntax,
+				((ImportSyntax)member).resolveMethodR(node,info,mt)
+			}
 		;
 			super_stx @= super_syntax,
 			super_stx.dnode != null,

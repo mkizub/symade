@@ -59,16 +59,10 @@ public final view JCallExpr of CallExpr extends JENode {
 		}
 		JENode[] args = this.args;
 		int i = 0;
-		if( func.isRuleMethod() ) {
-			// Very special case for rule call from inside of RuleMethod
-			JNode p = (JNode)this.jparent;
-			if (p instanceof JAssignExpr
-				&& ((JAssignExpr)p).op == Operator.Assign
-				&& ((JAssignExpr)p).lval.getType() ≡ Type.tpRule
-				)
-				((JAssignExpr)p).lval.generate(code,null);
-			else
-				code.addNullConst();
+		if (func.isRuleMethod()) {
+			ENode env_arg = CallExpr.RULE_ENV_ARG.get((CallExpr)this);
+			if (env_arg != null)
+				((JENode)env_arg).generate(code,null);
 		}
 		if !(func.isVarArgs()) {
 			for(; i < args.length; i++)
@@ -234,8 +228,6 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		JMethod call_it = getCallIt(xtype);
 		// Check if we need to call
 		if( is_a_call.booleanValue() ) {
-			if( call_it.mtype.ret() ≡ Type.tpRule )
-				code.addNullConst(); //env_access.generate(code,null);
 			code.addInstr(op_call,call_it,false);
 		}
 		if( call_it.mtype.ret() ≢ Type.tpVoid ) {

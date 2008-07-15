@@ -695,14 +695,18 @@ public final class SFldExpr extends LvalueExpr {
 			this.obj = new TypeRef(StdTypes.tpVoid);
 		
 		Type tp = this.obj.getType();
+		ScopeOfNames scope = tp.meta_type.tdecl;
 		DNode@ v;
-		ResInfo info;
-		tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,this.ident));
+		if (tp ≡ StdTypes.tpVoid)
+			scope = Env.getRoot();
+		else
+			scope = tp.meta_type.tdecl;
+		scope.resolveNameR(v,new ResInfo(this,this.ident));
 		DNode res = (DNode)v;
 		if (res == null)
-			throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
+			throw new CompilerException(this, "Unresolved static field "+ident+" in "+scope);
 		if !(res instanceof Field || !res.isStatic())
-			throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
+			throw new CompilerException(this, "Resolved "+ident+" in "+scope+" is not a static field");
 		this.symbol = res;
 	}
 

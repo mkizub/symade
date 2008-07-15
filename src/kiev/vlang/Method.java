@@ -381,6 +381,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				setFinal(false);
 			}
 		}
+		if (this.isMacro() && this.isInterfaceOnly())
+			return false;
 		return true;
 	}
 

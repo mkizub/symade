@@ -392,8 +392,15 @@ public final class DumpUtils {
 		foreach (DelayedTypeInfo dti; deserializer.delayed_types)
 			dti.applay();
 		ASTNode root = deserializer.root;
-		if (root != null)
-			Kiev.runProcessorsOn(root);
+		if (root != null) {
+			ASTNode fu = root;
+			if!(fu instanceof FileUnit) {
+				fu = FileUnit.makeFile(getRelativePath(new File(tdname.replace('\u001f','/')+".xml")), false);
+				fu.scanned_for_interface_only = true;
+				fu.members += root;
+			}
+			Kiev.runProcessorsOn(fu);
+		}
 		return root;
 	}
 	

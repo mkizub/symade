@@ -33,6 +33,14 @@ public final view RCallExpr of CallExpr extends RENode {
 		CallType mt = this.getCallType();
 		func.makeArgs(args, mt);
 		assert (!(func instanceof Constructor));
+		if (func.isRuleMethod()) {
+			// Very special case for rule call from inside of RuleMethod
+			ENode env_arg = new ConstNullExpr();
+			ANode p = this.parent();
+			if (p instanceof AssignExpr && p.op == Operator.Assign && p.lval.getType() ≡ StdTypes.tpRule)
+				env_arg = p.lval.ncopy();
+			CallExpr.RULE_ENV_ARG.set(this,env_arg);
+		}
 		if (func.isVarArgs()) {
 			Type tn = func.getVarArgParam().getType();
 			Type varg_tp = tn.resolveArg(0);

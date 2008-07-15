@@ -24,6 +24,14 @@ public class CallExpr extends ENode {
 	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	
+	// declare NodeAttr_rule_call_arg
+	static final class NodeAttr_rule_call_arg extends ExtAttAttrSlot {
+		NodeAttr_rule_call_arg() {
+			super("rule-call-arg", TypeInfo.newTypeInfo(ENode.class,null));
+		}
+	}
+	public static final NodeAttr_rule_call_arg RULE_ENV_ARG = new NodeAttr_rule_call_arg();	
 	public static final ExtSpaceAttrSlot TI_EXT_ARG = new ExtSpaceAttrSlot<ENode>("ti-call-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
 
 	@nodeAttr				public ENode				obj;

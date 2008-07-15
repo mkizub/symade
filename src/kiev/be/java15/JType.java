@@ -69,7 +69,6 @@ public abstract class JType {
 	public static final JBaseType tpString			= (JBaseType)StdTypes.tpString.getJType();
 	public static final JBaseType tpCloneable		= (JBaseType)StdTypes.tpCloneable.getJType();
 	public static final JBaseType tpThrowable		= (JBaseType)StdTypes.tpThrowable.getJType();
-	public static final JBaseType tpRule			= (JBaseType)StdTypes.tpRule.getJType();
 	
 	public static final JArrayType tpArray			= (JArrayType)StdTypes.tpArray.getJType();
 
@@ -122,7 +121,6 @@ public abstract class JType {
 		if( t == JType.tpVoid ) return true;
 		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
-		if( this == JType.tpRule && t == JType.tpBoolean ) return true;
 		if( this.isBoolean() && t.isBoolean() ) return true;
 		if( this==tpByte && ( t==tpShort || t==tpInt || t==tpLong || t==tpFloat || t==tpDouble) ) return true;
 		if( (this==tpShort || this==tpChar) && (t==tpInt || t==tpLong || t==tpFloat || t==tpDouble) ) return true;
