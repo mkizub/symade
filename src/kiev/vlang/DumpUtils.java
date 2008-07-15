@@ -394,7 +394,7 @@ public final class DumpUtils {
 		ASTNode root = deserializer.root;
 		if (root != null) {
 			ASTNode fu = root;
-			if!(fu instanceof FileUnit) {
+			if!(fu instanceof FileUnit || fu instanceof KievPackage) {
 				fu = FileUnit.makeFile(getRelativePath(new File(tdname.replace('\u001f','/')+".xml")), false);
 				fu.scanned_for_interface_only = true;
 				fu.members += root;
