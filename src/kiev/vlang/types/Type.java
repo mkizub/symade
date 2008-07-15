@@ -9,13 +9,12 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang.types;
+import syntax kiev.Syntax;
 
 import kiev.be.java15.JType;
 import kiev.be.java15.JBaseType;
 import kiev.be.java15.JArrayType;
 import kiev.be.java15.JMethodType;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

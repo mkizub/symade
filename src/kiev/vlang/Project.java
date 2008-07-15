@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import java.io.File;
-
-import syntax kiev.Syntax;
 
 
 @ThisIsANode(lang=void)

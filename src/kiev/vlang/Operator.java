@@ -9,14 +9,13 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import kiev.vlang.OpArg.EXPR;
 import kiev.vlang.OpArg.TYPE;
 import kiev.vlang.OpArg.IDNT;
 import kiev.vlang.OpArg.OPER;
 import kiev.vlang.OpArg.SEQS;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.stdlib.meta;
+import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
-
-import syntax kiev.stdlib.Syntax;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface #id"transient"# {}

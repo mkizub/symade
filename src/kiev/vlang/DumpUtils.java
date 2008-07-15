@@ -9,6 +9,7 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import java.io.*;
 import java.util.Properties;
@@ -19,8 +20,6 @@ import javax.xml.stream.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

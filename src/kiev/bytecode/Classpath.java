@@ -9,13 +9,12 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.bytecode;
+import syntax kiev.Syntax;
 
 import kiev.stdlib.*;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

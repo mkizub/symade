@@ -9,11 +9,10 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.fmt;
+import syntax kiev.Syntax;
 
 import static kiev.fmt.SpaceAction.*;
 import static kiev.fmt.SpaceKind.*;
-
-import syntax kiev.Syntax;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;

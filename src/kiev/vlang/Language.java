@@ -251,6 +251,7 @@ public final class CoreLang extends LangBase {
 				FileUnit.class,	// file/compilation unit, also acts as a namespace
 			Opdef.class,		// operator declaration
 			Import.class,
+			ImportSyntax.class,
 			Comment.class,		// comments
 		// in parser
 		ASTExpression.class,

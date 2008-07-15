@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.be.java15;
+import syntax kiev.Syntax;
 
 import static kiev.be.java15.Instr.*;
-
-import syntax kiev.Syntax;
 
 @ViewOf(vcast=true, iface=true)
 public final view JShadow of Shadow extends JENode {

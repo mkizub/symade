@@ -18,12 +18,6 @@
    <core:SymbolRef name='stx-fmt' full='true' />
   </srpkg>
   <members>
-   <core:Import all='false' methods='false'>
-    <name>
-     <core:SymbolRef name='kiev&#31;stdlib&#31;Syntax' full='true' />
-    </name>
-    <mode>IMPORT_SYNTAX</mode>
-   </core:Import>
    <syntax:XmlDumpSyntax name='syntax-dump-full'>
     <dump>full</dump>
     <members>

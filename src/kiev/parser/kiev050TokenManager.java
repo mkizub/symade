@@ -10,8 +10,6 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.parser;
-import kiev.Kiev;
-import java.io.Reader;
 
 public class kiev050TokenManager implements kiev050Constants
 {

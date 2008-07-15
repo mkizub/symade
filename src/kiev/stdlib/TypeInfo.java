@@ -9,6 +9,7 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.stdlib;
+import syntax kiev.stdlib.Syntax;
 
 import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
@@ -19,8 +20,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectInput;
-
-import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub

@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import kiev.ir.java15.RSNode;
-
-import syntax kiev.Syntax;
 
 /**
  * A node that is a syntax modifier: import, operator decl, separators, comments, etc.

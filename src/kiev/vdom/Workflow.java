@@ -9,6 +9,7 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vdom;
+import syntax kiev.Syntax;
 
 import java.lang.annotation.*;
 import java.io.*;
@@ -18,8 +19,6 @@ import org.w3c.dom.NodeList;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

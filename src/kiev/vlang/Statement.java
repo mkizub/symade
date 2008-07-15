@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import kiev.ir.java15.RENode;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

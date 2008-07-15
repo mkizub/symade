@@ -24,15 +24,17 @@ PARSER_BEGIN(kiev050)
  *******************************************************************************/
 package kiev.parser;
 
+/*{
+
+import syntax kiev.Syntax;
+
 import kiev.Kiev;
 import java.io.Reader;
 
-/*{
-
 import static kiev.vlang.AccessFlags.*;
-import syntax kiev.Syntax;
 
 typedef SymbolRefPkg = SymbolRef<KievPackage> ;
+typedef SymbolRefStx = SymbolRef<KievSyntax> ;
 typedef SymbolRefFld = SymbolRef<Field> ;
 
 }*/ 
@@ -785,7 +787,7 @@ TOKEN : /* OPERATORS */
  */
 
 FileUnit FileUnit(String filename) :
-{ FileUnit oldFileUnit; }
+{ FileUnit oldFileUnit; SymbolRefPkg pkg; }
 {
 	{
 		oldFileUnit = curFileUnit;
@@ -797,10 +799,19 @@ FileUnit FileUnit(String filename) :
 	try {
 		(
 			Pragma(fu)
+		|
+			LOOKAHEAD({ getToken(1).kind==IMPORT && getToken(2).kind==IDENTIFIER && getToken(2).image.equals("syntax") })
+			fu.syntaxes += ImportSyntax()
+		|
+			//LOOKAHEAD({ getToken(1).kind==PACKAGE && (fu.srpkg == null ||  fu.srpkg.name == null) })
+			pkg = Package()
+			{
+				if (fu.srpkg == null ||  fu.srpkg.name == null)
+					fu.srpkg = pkg;
+				else
+					Kiev.reportError(pkg,"Duplicate package declaration "+pkg);
+			}
 		)*
-		[
-			fu.srpkg = Package()
-		]
 		TopLevelDeclarations(fu)
 		<EOF>
 	}
@@ -927,29 +938,40 @@ void Pragma(FileUnit fu) :
 	{ fu.setPragma(p); }
 }
 
+ImportSyntax ImportSyntax() :
+{ SymbolRef qname; }
+{
+	"import"
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+	<IDENTIFIER>
+	qname = QName()
+	";"
+	{
+		ImportSyntax imp = new ImportSyntax();
+		imp.name = (SymbolRefStx)qname;
+		imp.name.qualified = true;
+		return imp;
+	}
+}
+
 Import Import(ASTModifiers modifiers) :
 { Import imp = new Import(); }
 {
 	"import"
-	(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-		<IDENTIFIER>{ imp.mode = Import.ImportMode.IMPORT_SYNTAX; }
-		imp.name = QName()
-	|
-		[ "static"	{ imp.mode = Import.ImportMode.IMPORT_STATIC; } ]
-		imp.name = QName()
-		[	LOOKAHEAD( "." <OPERATOR>, { getToken(2).image.equals("*") })
-			"." <OPERATOR> { imp.star = true; }
-		|	"("		{ imp.of_method = true; }
-			[
+	[ "static"	{ imp.mode = Import.ImportMode.IMPORT_STATIC; } ]
+	imp.name = QName()
+	[	LOOKAHEAD( "." <OPERATOR>, { getToken(2).image.equals("*") })
+		"." <OPERATOR> { imp.star = true; }
+	|	"("		{ imp.of_method = true; }
+		[
+			imp.args += Type()
+			(
+				","
 				imp.args += Type()
-				(
-					","
-					imp.args += Type()
-				)*
-			]
-			")"
+			)*
 		]
-	)
+		")"
+	]
 	";"
 	{ return imp; }
 }

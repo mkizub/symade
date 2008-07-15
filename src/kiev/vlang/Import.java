@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import java.io.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -21,13 +20,12 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-public final class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
 	public enum ImportMode {
 		IMPORT_CLASS,
-		IMPORT_STATIC,
-		IMPORT_SYNTAX;
+		IMPORT_STATIC;
 	}
 
 	@nodeAttr public SymbolRef<DNode>	name;
@@ -62,7 +60,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
 		if (mode == ImportMode.IMPORT_STATIC)  str.append("static ");
-		if (mode == ImportMode.IMPORT_SYNTAX)  str.append("syntax ");
 		str.append(name);
 		if (star) str.append(".*");
 		return str.toString();
@@ -156,9 +153,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			((TypeDecl)this.name.dnode).resolveNameR(node,path),
 			node instanceof Field && ((Field)node).isStatic() && !((Field)node).isPrivate()
 		}
-	;
-		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof KievSyntax,
-		((KievSyntax)this.name.dnode).resolveNameR(node,path)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
@@ -171,10 +165,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		((TypeDecl)this.name.dnode).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
 		((TypeDecl)this.name.dnode).resolveMethodR(node,path,mt),
-		node instanceof Method && node.isStatic() && !node.isPrivate()
-	;
-		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof KievSyntax,
-		((KievSyntax)this.name.dnode).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && !node.isPrivate()
 	}
 
@@ -201,6 +191,76 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 					head = name.intern();
 					Vector<DNode> vect = new Vector<DNode>();
 					DNode@ node;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
+					if (!by_equals)
+						flags |= ResInfo.noEquals;
+					ResInfo info = new ResInfo(this,head,flags);
+					foreach (scope.resolveNameR(node,info)) {
+						if (!vect.contains(node))
+							vect.append(node);
+					}
+					return vect.toArray();
+				}
+			} while (dot > 0);
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
+}
+
+@ThisIsANode(lang=CoreLang)
+public class ImportSyntax extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
+
+	public static final ImportSyntax[] emptyArray = new ImportSyntax[0];
+
+	@nodeAttr public SymbolRef<KievSyntax>		name;
+
+	public ImportSyntax() {
+		this.name = new SymbolRef<KievSyntax>();
+		this.name.qualified = true;
+	}
+
+	public boolean preResolveIn() { false }
+	public boolean mainResolveIn() { false }
+
+	public String toString() {
+		return "import syntax "+name;
+	}
+
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
+		DNode@ sub;
+	{
+		this.name.dnode instanceof KievSyntax,
+		this.name.dnode.resolveNameR(node,path)
+	}
+
+	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
+	{
+		this.name.dnode instanceof KievSyntax,
+		this.name.dnode.resolveMethodR(node,path,mt),
+		node.isStatic() && !node.isPrivate()
+	}
+
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "name") {
+			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
+			int dot = name.indexOf('\u001f');
+			do {
+				String head;
+				if (dot > 0) {
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1);
+					KievPackage@ node;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					if !(scope.resolveNameR(node,info))
+						return new DNode[0];
+					scope = (ScopeOfNames)node;
+					dot = name.indexOf('\u001f');
+				}
+				if (dot < 0) {
+					head = name.intern();
+					Vector<KievSyntax> vect = new Vector<KievSyntax>();
+					KievSyntax@ node;
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
 					if (!by_equals)
 						flags |= ResInfo.noEquals;

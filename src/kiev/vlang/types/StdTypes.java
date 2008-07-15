@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang.types;
+import syntax kiev.Syntax;
 
 import static kiev.vlang.AccessFlags.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vtree;
+import syntax kiev.Syntax;
 
 import java.lang.annotation.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

@@ -17,13 +17,14 @@
   <srpkg>
    <core:SymbolRef name='kiev&#31;ir' full='true' />
   </srpkg>
-  <members>
-   <core:Import all='false' methods='false'>
+  <syntaxes>
+   <core:ImportSyntax>
     <name>
      <core:SymbolRef name='kiev&#31;stdlib&#31;Syntax' full='true' />
     </name>
-    <mode>IMPORT_SYNTAX</mode>
-   </core:Import>
+   </core:ImportSyntax>
+  </syntaxes>
+  <members>
    <core:Import all='true' methods='false'>
     <name>
      <core:SymbolRef name='kiev&#31;vlang' full='true' />

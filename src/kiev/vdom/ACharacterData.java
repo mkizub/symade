@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vdom;
+import syntax kiev.Syntax;
 
 import org.w3c.dom.DOMException;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

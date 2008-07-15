@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.parser;
+import syntax kiev.Syntax;
 
 import java.util.regex.Pattern;
-
-import syntax kiev.Syntax;
 
 /**
  * EToken is an (unresolved) expression token used by ASTExpression in

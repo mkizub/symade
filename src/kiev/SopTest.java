@@ -1,8 +1,7 @@
 package kiev;
+import syntax kiev.Syntax;
 
 import java.io.*;
-
-import syntax kiev.Syntax;
 
 public class SOPTest {
 	static boolean verbose;

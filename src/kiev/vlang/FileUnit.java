@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.vlang;
+import syntax kiev.Syntax;
 
 import java.io.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -28,6 +27,7 @@ public final class FileUnit extends NameSpace {
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public String					fname;
 	@nodeAttr public boolean				project_file;
+	@nodeAttr public ImportSyntax∅			syntaxes;
 	
 	@nodeData public boolean				scanned_for_interface_only;
 
@@ -111,6 +111,7 @@ public final class FileUnit extends NameSpace {
 	}
 	
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
+		ImportSyntax@ istx;
 	{
 		super.resolveNameR(node, path)
 	;
@@ -118,7 +119,32 @@ public final class FileUnit extends NameSpace {
 		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
 		Env.getRoot().resolveNameR(node,path)
+	;
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
+		istx.resolveNameR(node,path)
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
+		istx.resolveNameR(node,path)
 	}
+
+	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
+		ImportSyntax@ istx;
+	{
+		super.resolveMethodR(node, path, mt)
+	;
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
+		istx.resolveMethodR(node,path,mt)
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
+		istx.resolveMethodR(node,path,mt)
+	}
+
 }
 
 

@@ -9,10 +9,9 @@
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
 package kiev.be.java15;
+import syntax kiev.Syntax;
 
 import java.io.*;
-
-import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
