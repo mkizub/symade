@@ -60,7 +60,7 @@ public final view JMethod of Method extends JDNode {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		foreach(WBCCondition cond; conditions(); cond.cond != WBCType.CondInvariant )
 			((JWBCCondition)cond).generate(constPool,Type.tpVoid);
-		if( !isAbstract() && body != null && !(body instanceof MetaValue)) {
+		if( !isAbstract() && body != null && !(((ENode)body) instanceof MetaValue)) {
 			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {

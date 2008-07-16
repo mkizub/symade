@@ -60,7 +60,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		JENode[] args = this.args;
 		int i = 0;
 		if (func.isRuleMethod()) {
-			ENode env_arg = CallExpr.RULE_ENV_ARG.get((CallExpr)this);
+			ENode env_arg = (ENode)CallExpr.RULE_ENV_ARG.get((CallExpr)this);
 			if (env_arg != null)
 				((JENode)env_arg).generate(code,null);
 		}

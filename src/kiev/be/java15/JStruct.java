@@ -217,8 +217,11 @@ public final view JStruct of Struct extends JTypeDecl {
 					m.addAttr(new RIParMetaAttr(((Method)m).params));
 					break;
 				}
-				if (isAnnotation() && m.body instanceof MetaValue)
-					m.addAttr(new DefaultMetaAttr((MetaValue)m.body));
+				if (isAnnotation()) {
+					ENode mbody = (ENode)m.body;
+					if (mbody instanceof MetaValue)
+						m.addAttr(new DefaultMetaAttr((MetaValue)mbody));
+				}
 
 				if (m.jattrs != null) {
 					foreach (Attr a; m.jattrs)
