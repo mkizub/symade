@@ -336,7 +336,7 @@ public final class DumpUtils {
 		ANode root = deserializer.root;
 		if!(root instanceof FileUnit) {
 			root = FileUnit.makeFile(getRelativePath(f), false);
-			root.current_syntax = "stx-fmt\u001fsyntax-dump-full";
+			root.current_syntax = "<xml-dump>";
 			root.members += deserializer.root;
 		}
 		return (FileUnit)root;
@@ -487,7 +487,7 @@ public final class DumpUtils {
 						}
 						FileUnit fu = FileUnit.makeFile(getRelativePath(file), false);
 						root = fu;
-						fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
+						fu.current_syntax = "<xml-dump>";
 						addAttributes(fu, attributes);
 						if (pkg instanceof KievPackage)
 							fu.srpkg.symbol = (KievPackage)pkg;

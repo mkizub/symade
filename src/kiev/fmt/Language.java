@@ -31,9 +31,7 @@ public final class SyntaxLang extends LangBase {
 	private static Class[] nodeClasses = {
 		ATextSyntax.class,
 			TextSyntax.class,
-			KievTextSyntax.class,
 			XmlDumpSyntax.class,
-			NsXmlDumpSyntax.class,
 			TreeSyntax.class,
 		SpaceInfo.class,
 		SpaceCmd.class,

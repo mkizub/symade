@@ -170,21 +170,18 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		if (slot.name == "name") {
-			TypeDecl scope = Env.getRoot();
+			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');
 			do {
 				String head;
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					DNode@ node;
+					KievPackage@ node;
 					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 					if !(scope.resolveNameR(node,info))
 						return new DNode[0];
-					if (node instanceof TypeDecl)
-						scope = (TypeDecl)node;
-					else
-						return new DNode[0];
+					scope = (ScopeOfNames)node;
 					dot = name.indexOf('\u001f');
 				}
 				if (dot < 0) {

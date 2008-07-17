@@ -30,7 +30,12 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 		}
 		ActionPoint ap = getEditor().getActionPoint(false);
 		if (ap != null && ap.length >= 0) {
-			Draw_SyntaxAttr slst = (Draw_SyntaxAttr)ap.dr.syntax;
+			Draw_SyntaxElem se = ap.dr.syntax;
+			Draw_SyntaxList slst;
+			if (se instanceof Draw_SyntaxListWrapper)
+				slst = ((Draw_SyntaxListWrapper)se).list;
+			else
+				slst = (Draw_SyntaxList)ap.dr.syntax;
 			setIdx(ap.index);
 			makeMenu("Insert new item", ap.node, slst);
 			return;

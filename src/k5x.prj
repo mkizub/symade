@@ -69,6 +69,14 @@
        </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='fmt'>
         <members>
+         <sop:kiev.vlang.DirUnit name='evt'>
+          <members>
+           <core:FileUnit name='Action.java' />
+           <core:FileUnit name='Binding.java' />
+           <core:FileUnit name='KeyboardEvent.java' />
+           <core:FileUnit name='UIEvent.java' />
+          </members>
+         </sop:kiev.vlang.DirUnit>
          <core:FileUnit name='Compiled.java' />
          <core:FileUnit name='Drawable.java' />
          <core:FileUnit name='DrawContext.java' />
@@ -278,8 +286,6 @@
      </sop:kiev.vlang.DirUnit>
      <sop:kiev.vlang.DirUnit name='stx-fmt'>
       <members>
-       <core:FileUnit name='syntax-dump-api.xml' />
-       <core:FileUnit name='syntax-dump-full.xml' />
        <core:FileUnit name='syntax-for-java.xml' />
        <core:FileUnit name='syntax-for-project-tree.xml' />
        <core:FileUnit name='syntax-for-syntax.xml' />

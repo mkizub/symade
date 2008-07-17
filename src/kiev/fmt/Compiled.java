@@ -972,8 +972,22 @@ public class Draw_ATextSyntax implements Serializable {
 		if (for_node != null) {
 			String cl_name = for_node.getClass().getName();
 			Draw_SyntaxElem elem = allSyntax.get(cl_name);
-			if (elem != null)
-				return elem;
+			if (elem != null) {
+				Draw_SyntaxElem se = elem;
+				if (for_node instanceof ENode && se instanceof Draw_SyntaxExpr) {
+					ENode e = (ENode)for_node;
+					Operator op = e.getOp();
+					if (op == null)
+						return se;
+					se = allSyntaxExprs.get(new Pair<Operator,Class>(op,for_node.getClass()));
+					if (se == null) {
+						se = expr(op, (Draw_SyntaxExpr)elem);
+						allSyntaxExprs.put(new Pair<Operator,Class>(op,for_node.getClass()), se);
+					}
+					return se;
+				}
+				return se;
+			}
 		}
 		if (parent_syntax != null)
 			return parent_syntax.getSyntaxElem(for_node);
@@ -1113,58 +1127,6 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 			if (elem != null)
 				return elem;
 		}
-		Draw_SyntaxSet ss = new Draw_SyntaxSet(null);
-		ss.lout = loutNoNl;
-		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
-			Draw_SyntaxElem se = null;
-			if (attr instanceof SpaceAttrSlot) {
-				Draw_SyntaxList sl = new Draw_SyntaxList(null);
-				sl.name = attr.name;
-				sl.element = new Draw_SyntaxNode(null);
-				sl.filter = new Draw_CalcOptionIncludeInDump(this.dump,"this");
-				sl.lout = loutNoNl;
-				se = setl(loutNoNl, open(attr.name), sl, close(attr.name));
-			} else {
-				if (ANode.class.isAssignableFrom(attr.clazz))
-					se = setl(loutNoNl, open(attr.name), par(attr(attr)), close(attr.name));
-				else if (Enum.class.isAssignableFrom(attr.clazz))
-					se = set(open0(attr.name), attr(attr), close0(attr.name));
-				else if (attr.clazz == String.class || attr.clazz == Character.TYPE || attr.clazz == Operator.class)
-					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(null,attr,null,null), close0(attr.name));
-				else if (Type.class.isAssignableFrom(attr.clazz))
-					se = set(open0(attr.name), new Draw_SyntaxXmlTypeAttr(null,attr), close0(attr.name));
-				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
-					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
-					attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
-					)
-					se = set(open0(attr.name), attr(attr), close0(attr.name));
-				else if (attr.is_attr) {
-					se = tok("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />", loutNlNl);
-				}
-			}
-			if (se != null) {
-				//ss.elements += opt(new Draw_CalcOptionIncludeInDump(this.dump,attr.name),se);
-				ss.elements = (Draw_SyntaxElem[])Arrays.append(ss.elements, opt(new Draw_CalcOptionIncludeInDump(this.dump,attr.name),se));
-			}
-		}
-		ss = setl(loutNoNl, tok("<a-node class='"+cl_name+"'>", loutNlNl), par(ss), tok("</a-node>", loutNlNl));
-		allSyntax.put(cl_name,ss);
-		return ss;
-	}
-}
-
-public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
-	
-	public Draw_NsXmlDumpSyntax() { this("full"); }
-	public Draw_NsXmlDumpSyntax(String dump) { super(dump); }
-
-	public Draw_SyntaxElem getSyntaxElem(ANode node) {
-		String cl_name = node.getClass().getName();
-		{
-			Draw_SyntaxElem elem = allSyntax.get(cl_name);
-			if (elem != null)
-				return elem;
-		}
 		Draw_SyntaxSet attrs = new Draw_SyntaxSet(null);
 		Draw_SyntaxSet elems = new Draw_SyntaxSet(null);
 		elems.lout = loutNoNl;
@@ -1242,32 +1204,6 @@ public class Draw_NsXmlDumpSyntax extends Draw_AXmlDumpSyntax {
 		}
 		allSyntax.put(cl_name,sn);
 		return sn;
-	}
-}
-
-public class Draw_KievTextSyntax extends Draw_ATextSyntax {
-	public Draw_SyntaxElem getSyntaxElem(ANode node) {
-		if (node != null) {
-			String cl_name = node.getClass().getName();
-			Draw_SyntaxElem sed = allSyntax.get(cl_name);
-			if (sed != null) {
-				Draw_SyntaxElem se = sed;
-				if (node instanceof ENode && se instanceof Draw_SyntaxExpr) {
-					ENode e = (ENode)node;
-					Operator op = e.getOp();
-					if (op == null)
-						return se;
-					se = allSyntaxExprs.get(new Pair<Operator,Class>(op,node.getClass()));
-					if (se == null) {
-						se = expr(op, (Draw_SyntaxExpr)sed);
-						allSyntaxExprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
-					}
-					return se;
-				}
-				return se;
-			}
-		}
-		return super.getSyntaxElem(node);
 	}
 }
 

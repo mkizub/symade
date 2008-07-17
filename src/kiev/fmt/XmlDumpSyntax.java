@@ -40,29 +40,3 @@ public class XmlDumpSyntax extends ATextSyntax {
 	}
 }
 
-@ThisIsANode(lang=SyntaxLang)
-public class NsXmlDumpSyntax extends ATextSyntax {
-	@nodeAttr public String dump;
-
-	@setter
-	public void set$dump(String value) {
-		this.dump = (value != null) ? value.intern() : null;
-	}
-	
-	public NsXmlDumpSyntax() {
-		this.dump = "full";
-	}
-	public NsXmlDumpSyntax(String dump) {
-		this();
-		this.dump = dump;
-	}
-
-	public Draw_ATextSyntax getCompiled() {
-		if (compiled != null)
-			return compiled;
-		compiled = new Draw_NsXmlDumpSyntax(this.dump);
-		fillCompiled(compiled);
-		return compiled;
-	}
-}
-

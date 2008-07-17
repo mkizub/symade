@@ -134,17 +134,3 @@ public class SyntaxJavaConstructorName extends SyntaxElem {
 	}
 }
 
-@ThisIsANode(lang=SyntaxLang)
-public class KievTextSyntax extends ATextSyntax {
-	public KievTextSyntax() {}
-
-	public Draw_ATextSyntax getCompiled() {
-		if (compiled != null)
-			return compiled;
-		compiled = new Draw_KievTextSyntax();
-		fillCompiled(compiled);
-		return compiled;
-	}
-	
-}
-

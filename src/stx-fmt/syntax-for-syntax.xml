@@ -493,7 +493,6 @@
         <expected_types>
          <core:SymbolRef name='Import' />
          <core:SymbolRef name='TextSyntax' />
-         <core:SymbolRef name='KievTextSyntax' />
          <core:SymbolRef name='TreeSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
@@ -571,67 +570,6 @@
         <elements>
          <syntax:SyntaxToken>
           <text>def-syntax</text>
-          <fmt>
-           <core:SymbolRef name='fmt-of-def' />
-          </fmt>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxIdentAttr>
-          <decl>
-           <core:SymbolRef name='ident-template' />
-          </decl>
-          <name>sname</name>
-          <fmt>
-           <core:SymbolRef name='fmt-of-symbol' />
-          </fmt>
-         </syntax:SyntaxIdentAttr>
-         <syntax:SyntaxToken>
-          <text>extends</text>
-          <fmt>
-           <core:SymbolRef name='fmt-of-kw' />
-          </fmt>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxIdentAttr>
-          <decl>
-           <core:SymbolRef name='ident-template' />
-          </decl>
-          <name>parent_syntax</name>
-          <fmt>
-           <core:SymbolRef name='fmt-of-symbol' />
-          </fmt>
-         </syntax:SyntaxIdentAttr>
-         <syntax:SyntaxElemRef>
-          <decl>
-           <core:SymbolRef name='stx-syntax-members' />
-          </decl>
-          <text>{members}</text>
-         </syntax:SyntaxElemRef>
-         <syntax:SyntaxSpace>
-          <fmt>
-           <core:SymbolRef name='fmt-nl2' />
-          </fmt>
-         </syntax:SyntaxSpace>
-        </elements>
-        <nested_function_lookup>false</nested_function_lookup>
-       </syntax:SyntaxSet>
-      </elem>
-     </syntax:SyntaxElemDecl>
-     <syntax:SyntaxElemDecl name='stx-syntax-decl-java'>
-      <rnode>
-       <core:SymbolRef name='KievTextSyntax' />
-      </rnode>
-      <attr_types>
-       <syntax:SyntaxExpectedAttr>
-        <attr_name>members</attr_name>
-        <expected_types>
-         <core:SymbolRef name='stx-types-of-syntax' />
-        </expected_types>
-       </syntax:SyntaxExpectedAttr>
-      </attr_types>
-      <elem>
-       <syntax:SyntaxSet>
-        <elements>
-         <syntax:SyntaxToken>
-          <text>def-syntax-java</text>
           <fmt>
            <core:SymbolRef name='fmt-of-def' />
           </fmt>
@@ -1298,6 +1236,28 @@
        <core:SymbolRef name='SyntaxElemDecl' />
       </rnode>
       <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>elem</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxToken' />
+         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef name='SyntaxSubAttr' />
+         <core:SymbolRef name='SyntaxIdentAttr' />
+         <core:SymbolRef name='SyntaxJavaConstructorName' />
+         <core:SymbolRef name='SyntaxAutoParenth' />
+         <core:SymbolRef name='SyntaxStrAttr' />
+         <core:SymbolRef name='SyntaxXmlStrAttr' />
+         <core:SymbolRef name='SyntaxCharAttr' />
+         <core:SymbolRef name='SyntaxListWrapper' />
+         <core:SymbolRef name='SyntaxList' />
+         <core:SymbolRef name='SyntaxSet' />
+         <core:SymbolRef name='SyntaxNode' />
+         <core:SymbolRef name='SyntaxExpr' />
+         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef name='SyntaxOptional' />
+         <core:SymbolRef name='SyntaxEnumChoice' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <title>SyntaxExpectedTemplate</title>
         <attr_name>attr_types</attr_name>

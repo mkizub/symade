@@ -19,9 +19,11 @@ import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.Draw_SyntaxElem;
+import kiev.fmt.Draw_SyntaxElemDecl;
 import kiev.fmt.Draw_SyntaxFunction;
 import kiev.fmt.Draw_SyntaxSet;
 import kiev.fmt.Drawable;
+import kiev.fmt.ExpectedAttrTypeInfo;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
@@ -155,11 +157,19 @@ public class Editor extends InfoView implements ElementChangeListener {
 		for(String attr: attrs) {
 			while (dr.parent() instanceof DrawCtrl)
 				dr = (Drawable)dr.parent();
-			for (Drawable d: dr.getChildren()) {
-				Drawable x = checkFunctionTarget(attr, d);
-				if (x != null) {
-					dr = x;
-					continue next_attr;
+			Drawable x = checkFunctionTarget(attr, dr);
+			if (x != null) {
+				dr = x;
+				continue next_attr;
+			}
+			Drawable parent =  (Drawable)dr.parent();
+			if (parent != null) {
+				for (Drawable d: parent.getChildren()) {
+					x = checkFunctionTarget(attr, d);
+					if (x != null) {
+						dr = x;
+						continue next_attr;
+					}
 				}
 			}
 			return null;
@@ -173,6 +183,13 @@ public class Editor extends InfoView implements ElementChangeListener {
 		Drawable x;
 		if (stx0 instanceof Draw_SyntaxAttr && attr.equals(((Draw_SyntaxAttr)stx0).name))
 			return dr;
+		if (dr.syntax.elem_decl != null && dr.syntax.elem_decl.attr_types != null) {
+			Draw_SyntaxElemDecl sted = dr.syntax.elem_decl;
+			for (ExpectedAttrTypeInfo eti: sted.attr_types) {
+				if (attr.equals(eti.attr_name))
+					return dr;
+			}
+		}
 		if (stx0 instanceof Draw_SyntaxSet && ((Draw_SyntaxSet)stx0).nested_function_lookup) {
 			for (Drawable d: dr.getChildren()) 
 				if( (x=checkFunctionTarget(attr, d)) != null)

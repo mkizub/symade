@@ -20,7 +20,6 @@ import javax.swing.text.TextAction;
 import kiev.fmt.ATextSyntax;
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Draw_ATextSyntax;
-import kiev.fmt.NsXmlDumpSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
 import kiev.gui.Editor;
@@ -50,11 +49,8 @@ public final class RenderActions implements Runnable {
 			if (ui instanceof InfoView) {
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java", false)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt\u001fsyntax-for-java", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"TreeDL Syntax", "treedl\u001fsyntax-for-treedl", false)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full, namespace)", NsXmlDumpSyntax.class, "full")));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api, namespace)", NsXmlDumpSyntax.class, "api")));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));

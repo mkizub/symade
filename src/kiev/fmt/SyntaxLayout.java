@@ -213,7 +213,7 @@ public final class SpaceCmd extends ASTNode {
 			si.name = "sp";
 		SpaceInfo@ spi;
 		if (!PassInfo.resolveNameR(this,spi,new ResInfo(this,si.name)))
-			Kiev.reportError(this,"Cannot resolve color '"+si.name+"'");
+			Kiev.reportError(this,"Cannot resolve space info '"+si.name+"'");
 		else if (si.symbol != spi)
 			si.symbol = spi;
 	}

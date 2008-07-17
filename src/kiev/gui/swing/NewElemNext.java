@@ -1,7 +1,9 @@
 package kiev.gui.swing;
 
 import kiev.fmt.Draw_SyntaxAttr;
+import kiev.fmt.Draw_SyntaxElem;
 import kiev.fmt.Draw_SyntaxList;
+import kiev.fmt.Draw_SyntaxListWrapper;
 import kiev.fmt.ExpectedTypeInfo;
 import kiev.gui.ActionPoint;
 import kiev.gui.Editor;
@@ -16,7 +18,12 @@ public final class NewElemNext extends NewElemEditor implements Runnable {
 	public void run() {
 		ActionPoint ap = getEditor().getActionPoint(true);
 		if (ap != null && ap.length >= 0) {
-			Draw_SyntaxList slst = (Draw_SyntaxList)ap.dr.syntax;
+			Draw_SyntaxElem se = ap.dr.syntax;
+			Draw_SyntaxList slst;
+			if (se instanceof Draw_SyntaxListWrapper)
+				slst = ((Draw_SyntaxListWrapper)se).list;
+			else
+				slst = (Draw_SyntaxList)ap.dr.syntax;
 			setIdx(ap.index);
 			makeMenu("Append new item", ap.node, slst);
 			return;

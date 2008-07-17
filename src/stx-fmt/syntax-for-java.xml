@@ -42,7 +42,7 @@
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
-   <syntax:KievTextSyntax name='syntax-for-java'>
+   <syntax:TextSyntax name='syntax-for-java'>
     <members>
      <syntax:SpaceInfo name='sp'>
       <kind>SP_SPACE</kind>
@@ -9517,7 +9517,7 @@
       </elem>
      </syntax:SyntaxElemDecl>
     </members>
-   </syntax:KievTextSyntax>
+   </syntax:TextSyntax>
   </members>
  </core:FileUnit>
 </sop:dump>

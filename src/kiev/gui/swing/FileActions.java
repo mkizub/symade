@@ -52,9 +52,7 @@ public final class FileActions implements Runnable {
 	
 	static DumpFileFilter[] dumpFileFilters = {
 		new DumpFileFilter("stx-fmt\u001fsyntax-for-java",  "Kiev source files", "java"),
-		new DumpFileFilter("treedl\u001fsyntax-for-treedl", "TreeDL source files", "java"),
-		new DumpFileFilter("stx-fmt\u001fsyntax-dump-full", "Kiev XML full dump", "xml"),
-		//new DumpFileFilter("stx-fmt\u001fsyntax-dump-api",  "Kiev XML API dump", "xml"),
+		new DumpFileFilter("<xml-dump>", "Kiev XML full dump", "xml"),
 	};
 	
 	final IWindow wnd;
@@ -96,9 +94,9 @@ public final class FileActions implements Runnable {
 				return;
 			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
-				if ("stx-fmt\u001fsyntax-dump-full".equals(dff.syntax_qname)) {
+				if ("<xml-dump>".equals(dff.syntax_qname)) {
 					DumpUtils.dumpToXMLFile("full", fu, jfc.getSelectedFile());
-					fu.setCurrentSyntax("stx-fmt\u001fsyntax-dump-full");
+					fu.setCurrentSyntax("<xml-dump>");
 				} else {
 					Draw_ATextSyntax stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
 					SyntaxManager.dumpTextFile(fu, jfc.getSelectedFile(), stx);
@@ -112,15 +110,11 @@ public final class FileActions implements Runnable {
 			JFileChooser jfc = new JFileChooser(".");
 			jfc.setDialogType(JFileChooser.SAVE_DIALOG);
 			jfc.setAcceptAllFileFilterUsed(false);
-			jfc.setFileFilter(new DumpFileFilter("stx-fmt\u001fsyntax-dump-api",  "Kiev XML API dump", "xml"));
+			jfc.setFileFilter(new DumpFileFilter("<xml-dump-api>",  "Kiev XML API dump", "xml"));
 			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			try {
-				if (true) {
-					DumpUtils.dumpToXMLFile("api", (ASTNode)uiv.the_root, jfc.getSelectedFile());
-				} else {
-					SyntaxManager.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api").getCompiled().init());
-				}
+				DumpUtils.dumpToXMLFile("api", (ASTNode)uiv.the_root, jfc.getSelectedFile());
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml API exporting: "+e);
 			}
@@ -131,14 +125,14 @@ public final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root;
 			else
 				fu = (FileUnit)uiv.the_root.get$ctx_file_unit();
-			String stx_name = null;
+			String stx_name = fu.getCurrentSyntax();
 			Draw_ATextSyntax stx = null;
-			if (fu.getCurrentSyntax() != null) {
+			if (stx_name != null && !"<xml-dump>".equals(stx_name)) {
 				stx = SyntaxManager.loadLanguageSyntax(fu.getCurrentSyntax());
 				stx_name = fu.getCurrentSyntax();
 			}
 			File f = new File(fu.pname());
-			if (stx == null || stx != uiv.syntax) {
+			if (stx == null && !"<xml-dump>".equals(stx_name) || stx != uiv.syntax) {
 				JFileChooser jfc = new JFileChooser(".");
 				jfc.setDialogType(JFileChooser.SAVE_DIALOG);
 				f = new File(fu.pname());
@@ -154,12 +148,13 @@ public final class FileActions implements Runnable {
 				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
 					return;
 				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
-				stx = SyntaxManager.loadLanguageSyntax(dff.syntax_qname);
 				stx_name = dff.syntax_qname;
 				f = jfc.getSelectedFile();
+				if (!"<xml-dump>".equals(stx_name))
+					stx = SyntaxManager.loadLanguageSyntax(stx_name);
 			}
 			try {
-				if ("stx-fmt\u001fsyntax-dump-full".equals(stx_name)) {
+				if ("<xml-dump>".equals(stx_name)) {
 					DumpUtils.dumpToXMLFile("full", fu, f);
 				} else {
 					SyntaxManager.dumpTextFile(fu, f, stx);
