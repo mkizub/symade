@@ -1,0 +1,175 @@
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<sop:dump version='1.0' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <core:FileUnit>
+  <project_file>false</project_file>
+  <srpkg>
+   <core:SymbolRef name='stx-fmt' full='true' />
+  </srpkg>
+  <members>
+   <core:Import all='true' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;fmt' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <core:Import all='true' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;fmt&#31;evt' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <core:Import all='false' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;vlang&#31;SymbolRef' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <syntax:TextSyntax name='syntax-for-evt'>
+    <members>
+     <syntax:SyntaxElemDecl name='stx-action'>
+      <rnode>
+       <core:SymbolRef name='Action' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>action:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>sname</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>class:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxStrAttr>
+          <name>actonClass</name>
+         </syntax:SyntaxStrAttr>
+         <syntax:SyntaxToken>
+          <text>forPopUpMenu:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>isForPopUpMenu</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>description:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxStrAttr>
+          <name>description</name>
+         </syntax:SyntaxStrAttr>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-keyboard-event'>
+      <rnode>
+       <core:SymbolRef name='KeyboardEvent' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>key:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>keyCode</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>ctrl:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>withCtrl</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>alt:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>withAlt</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>shift:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>withShift</name>
+         </syntax:SyntaxSubAttr>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-binding'>
+      <rnode>
+       <core:SymbolRef name='Binding' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>action</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>events</attr_name>
+        <expected_types>
+         <core:SymbolRef name='KeyboardEvent' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>bind action:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>action</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>||</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>{</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>}</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <name>events</name>
+         </syntax:SyntaxList>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+    </members>
+   </syntax:TextSyntax>
+  </members>
+ </core:FileUnit>
+</sop:dump>
