@@ -15,7 +15,7 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 		Drawable dr = getEditor().getCur_elem().dr;
 		if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
 			ANode n = dr.get$drnode();
-			makeMenu("Set new item", n, (Draw_SyntaxPlaceHolder)dr.syntax);
+			makeMenu("Set new item", n, (Draw_SyntaxPlaceHolder)dr.syntax, dr.text_syntax);
 			return;
 		}
 		if (dr instanceof DrawNodeTerm && (dr.get$drnode() == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
@@ -25,7 +25,7 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 				n = dr.get$drnode();
 			}
 			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
-			makeMenu("Set new item", n, satt);
+			makeMenu("Set new item", n, satt, dr.text_syntax);
 			return;
 		}
 		ActionPoint ap = getEditor().getActionPoint(false);
@@ -37,7 +37,7 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			else
 				slst = (Draw_SyntaxList)ap.dr.syntax;
 			setIdx(ap.index);
-			makeMenu("Insert new item", ap.node, slst);
+			makeMenu("Insert new item", ap.node, slst, dr.text_syntax);
 			return;
 		}
 	}

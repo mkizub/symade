@@ -832,6 +832,30 @@ public class Draw_SyntaxJavaComment extends Draw_SyntaxElem {
 
 
 
+public class Draw_SyntaxNodeTemplate implements Serializable {
+	public String name;
+	public byte[] dump;
+	public transient ASTNode template_node;
+
+	Object readResolve() throws ObjectStreamException {
+		if (this.name != null) this.name = this.name.intern();
+		return this;
+	}
+	
+	public ASTNode getTemplateNode() {
+		if (template_node != null)
+			return template_node;
+		if (dump == null)
+			return null;
+		try {
+			template_node = DumpUtils.deserializeFromXmlData(dump);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return template_node;
+	}
+}
+
 public class Draw_SyntaxElemDecl implements Serializable {
 	public Draw_SyntaxElem					elem;
 	public String 							clazz_name;
@@ -909,6 +933,7 @@ public class Draw_ATextSyntax implements Serializable {
 	public Draw_ATextSyntax				parent_syntax;
 	public Draw_ATextSyntax[]			sub_syntax;
 	public Draw_SyntaxElemDecl[]		declared_syntax_elements;
+	public Draw_SyntaxNodeTemplate[]	node_templates;
 	public String						q_name;	// qualified name
 
 	

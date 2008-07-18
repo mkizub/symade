@@ -121,6 +121,13 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		foreach(ATextSyntax stx; this.members)
 			sub_syntax.append(stx.getCompiled());
 		ts.sub_syntax = sub_syntax.toArray();
+
+		Vector<Draw_SyntaxNodeTemplate> node_templates = new Vector<Draw_SyntaxNodeTemplate>();
+		foreach(SyntaxNodeTemplate snt; this.members; snt.sname != null && snt.sname != "" && snt.template != null) {
+			node_templates.append(snt.getCompiled());
+		}
+		ts.node_templates = node_templates.toArray();
+
 		Vector<Draw_SyntaxElemDecl> syntax_elements = new Vector<Draw_SyntaxElemDecl>();
 		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
 			if !(sed.rnode.dnode instanceof Struct)
@@ -362,6 +369,23 @@ public abstract class ASyntaxElemDecl extends DNode {
 	public ASyntaxElemDecl() {}
 	public ASyntaxElemDecl(SyntaxElem elem) {
 		this.elem = elem;
+	}
+}
+
+@ThisIsANode(lang=SyntaxLang)
+public class SyntaxNodeTemplate extends DNode {
+	public static final SyntaxNodeTemplate[] emptyArray = new SyntaxNodeTemplate[0];
+
+	@nodeAttr public ASTNode				template;
+
+	public Draw_SyntaxNodeTemplate getCompiled() {
+		Draw_SyntaxNodeTemplate templ = new Draw_SyntaxNodeTemplate();
+		templ.name = this.sname;
+		if (template != null) {
+			templ.template_node = template;
+			templ.dump = DumpUtils.serializeToXmlData("full", template);
+		}
+		return templ;
 	}
 }
 

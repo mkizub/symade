@@ -40,6 +40,7 @@ public final class SyntaxLang extends LangBase {
 		DrawColor.class,
 		DrawFont.class,
 		SyntaxExpectedAttr.class,
+		SyntaxNodeTemplate.class,
 		ASyntaxElemDecl.class,
 			PartialSyntaxElemDecl.class,
 			SyntaxElemDecl.class,

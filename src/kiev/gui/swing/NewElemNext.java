@@ -25,7 +25,7 @@ public final class NewElemNext extends NewElemEditor implements Runnable {
 			else
 				slst = (Draw_SyntaxList)ap.dr.syntax;
 			setIdx(ap.index);
-			makeMenu("Append new item", ap.node, slst);
+			makeMenu("Append new item", ap.node, slst, ap.dr.text_syntax);
 			return;
 		}
 	}

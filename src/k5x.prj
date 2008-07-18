@@ -286,7 +286,6 @@
      </sop:kiev.vlang.DirUnit>
      <sop:kiev.vlang.DirUnit name='stx-fmt'>
       <members>
-       <core:FileUnit name='syntax-for-evt.xml' />
        <core:FileUnit name='syntax-for-java.xml' />
        <core:FileUnit name='syntax-for-project-tree.xml' />
        <core:FileUnit name='syntax-for-syntax.xml' />

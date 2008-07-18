@@ -77,6 +77,38 @@ public final class DumpUtils {
 		return langs;
 	}
 
+	public static byte[] serializeToXmlData(String dump, ASTNode node) {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		if (!OLD_XML_WRITE) {
+			org.xmlpull.mxp1_serializer.MXSerializer out = new org.xmlpull.mxp1_serializer.MXSerializer();
+			out.setFeature("http://xmlpull.org/v1/doc/features.html#serializer-attvalue-use-apostrophe", true);
+			out.setFeature("http://xmlpull.org/v1/doc/features.html#names-interned", true);
+			out.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-indentation", " ");
+			out.setOutput(bout, "UTF-8");
+			out.startDocument("1.1", "UTF-8", Boolean.TRUE);
+			out.ignorableWhitespace("\n");
+			out.setPrefix("sop", SOP_URI);
+			foreach (Language lng; collectLanguages(dump,node))
+				out.setPrefix(lng.getName(), lng.getURI());
+			out.startTag(SOP_URI,"dump");
+			out.attribute(null, "version", "1.0");
+			writeNodeToXML(dump,node,out);
+			out.endTag(SOP_URI,"dump");
+			out.endDocument();
+			out.getWriter().close();
+		} else {
+			XMLOutputFactory outf = XMLOutputFactory.newInstance();
+			XMLStreamWriter out = outf.createXMLStreamWriter(bout, "UTF-8");
+			//out.writeStartDocument("UTF-8", "1.1");
+			out.writeProcessingInstruction("xml", "version='1.1' encoding='UTF-8' standalone='yes'");
+			out.writeCharacters("\n");
+			writeNodeToXML(dump,node,out,0);
+			out.writeEndDocument();
+			out.close();
+		}
+		return bout.toByteArray();
+	}
+	
 	public static void dumpToXMLFile(String dump, ASTNode node, File f)
 		throws IOException
 	{
@@ -402,6 +434,26 @@ public final class DumpUtils {
 			Kiev.runProcessorsOn(fu);
 		}
 		return root;
+	}
+	
+	public static ASTNode deserializeFromXmlData(byte[] data) {
+		XMLDeSerializer deserializer = new XMLDeSerializer();
+		if (XPP_PARSER) {
+			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
+			//XmlPullParser xpp = factory.newPullParser();
+			/*XmlPullParser*/org.xmlpull.mxp1.MXParserCachingStrings xpp = new org.xmlpull.mxp1.MXParserCachingStrings();
+			xpp.setFeature("http://xmlpull.org/v1/doc/features.html#process-namespaces",true);
+			xpp.setInput(new ByteArrayInputStream(data), "UTF-8");
+			new PullHandler(deserializer).processDocument(xpp);
+		} else {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(new ByteArrayInputStream(data), new SAXHandler(deserializer));
+		}
+		foreach (DelayedTypeInfo dti; deserializer.delayed_types)
+			dti.applay();
+		return deserializer.root;
 	}
 	
 	final static class DelayedTypeInfo {

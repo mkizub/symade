@@ -17,6 +17,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.text.TextAction;
 
+import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.Draw_SyntaxFunction;
 import kiev.fmt.Draw_SyntaxList;
@@ -81,14 +82,14 @@ public final class FunctionExecutor implements Runnable {
 							if (dr.syntax instanceof Draw_SyntaxList) {
 								Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
 								if (((Object[])dr.get$drnode().getVal(slst.name)).length == 0)
-									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), slst));
+									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), slst, dr.text_syntax));
 							}
 						}
 						else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
 							if (dr.syntax instanceof Draw_SyntaxAttr) {
 								Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
 								if (dr.get$drnode().getVal(satr.name) == null)
-									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), satr));
+									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), satr, dr.text_syntax));
 							}
 						}
 						else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
@@ -139,11 +140,13 @@ public final class FunctionExecutor implements Runnable {
 		private String				text;
 		private ANode				node;
 		private Draw_SyntaxAttr		stx;
-		NewElemAction(String text, ANode node, Draw_SyntaxAttr stx) {
+		private Draw_ATextSyntax	tstx;
+		NewElemAction(String text, ANode node, Draw_SyntaxAttr stx, Draw_ATextSyntax tstx) {
 			super(text);
 			this.text = text;
 			this.node = node;
 			this.stx = stx;
+			this.tstx = tstx;
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null) {
@@ -151,7 +154,7 @@ public final class FunctionExecutor implements Runnable {
 				menu = null;
 			}
 			NewElemHere neh = new NewElemHere(editor);
-			neh.makeMenu(text, node, stx);
+			neh.makeMenu(text, node, stx, tstx);
 			//neh.run();
 		}
 	}
