@@ -239,7 +239,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		((Import)syn).resolveMethodR(node,path,mt)
 	}
 
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "srpkg") {
 			KievPackage scope = Env.getRoot();
 			if (parent() != null && parent().ctx_name_space != null)
@@ -263,9 +263,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 					head = name.intern();
 					Vector<KievPackage> vect = new Vector<KievPackage>();
 					KievPackage@ node;
-					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
-					if (!by_equals)
-						flags |= ResInfo.noEquals;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(node,info)) {
 						if (!vect.contains(node))
@@ -275,7 +273,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 				}
 			} while (dot > 0);
 		}
-		return super.findForResolve(name,slot,by_equals);
+		return super.resolveAutoComplete(name,slot);
 	}
 }
 

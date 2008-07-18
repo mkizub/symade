@@ -1291,7 +1291,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public boolean preVerify() { return true; }
 	public void postVerify() {}
 
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
 		return null;
 	}
 

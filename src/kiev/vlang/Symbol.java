@@ -267,14 +267,78 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ANode parent = parent();
 			if (parent instanceof ASTNode)
-				return parent.findForResolve(name, pslot(), by_equals);
+				return parent.resolveAutoComplete(name, pslot());
 			return null;
 		}
-		return super.findForResolve(name,slot,by_equals);
+		return super.resolveAutoComplete(name,slot);
+	}
+	
+	@unerasable
+	public static DNode[] autoCompleteSymbol(ASTNode resolve_in, String str, (DNode)->boolean check) {
+		if (str == null || str.length() == 0)
+			return new DNode[0];
+		ResInfo info = new ResInfo(resolve_in, str, ResInfo.noEquals);
+		Vector<DNode> vect = new Vector<DNode>();
+		DNode@ a;
+		foreach (PassInfo.resolveNameR(resolve_in,a,info)) {
+			DNode dn = (DNode)a;
+			if (vect.contains(dn) || !check(dn))
+				continue;
+			vect.append(dn);
+		}
+		return vect.toArray();
+	}
+
+	@unerasable
+	public static <A extends DNode> A[] autoCompleteSymbol(SymbolRef<A> self, String str) {
+		if (self == null || str == null || str.length() == 0)
+			return new A[0];
+		ResInfo info = new ResInfo(self, str, ResInfo.noEquals);
+		Vector<A> vect = new Vector<A>();
+		A@ a;
+		foreach (PassInfo.resolveNameR(self,a,info))
+			if (!vect.contains(a)) vect.append(a);
+		return vect.toArray();
+	}
+
+	@unerasable
+	public static <A extends DNode> void resolveSymbol(SeverError sever, SymbolRef<A> self, (DNode)->boolean check) {
+		if (self == null)
+			return;
+		String sname = self.name;
+		if (sname == null || sname == "")
+			return;
+		A@ a;
+		if (!PassInfo.resolveNameR(self,a,new ResInfo(self,sname,ResInfo.noForwards))) {
+			Kiev.reportAs(sever, self,"Unresolved "+self);
+			return;
+		}
+		A dn = (A)a;
+		if (!check(dn)) {
+			Kiev.reportAs(sever, self, "Resolved "+self+" does not match required constraints");
+			return;
+		}
+		if (self.symbol != dn)
+			self.symbol = dn;
+	}
+
+	@unerasable
+	public static <A extends DNode> void resolveSymbol(SeverError sever, SymbolRef<A> self) {
+		if (self == null)
+			return;
+		String sname = self.name;
+		if (sname == null || sname == "")
+			return;
+		A@ a;
+		if (!PassInfo.resolveNameR(self,a,new ResInfo(self,sname,ResInfo.noForwards)))
+			Kiev.reportAs(sever,self,"Unresolved "+self);
+		A dn = (A)a;
+		if (self.symbol != a)
+			self.symbol = a;
 	}
 }
 

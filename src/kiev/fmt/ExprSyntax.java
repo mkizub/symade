@@ -53,25 +53,14 @@ public class SyntaxExpr extends SyntaxElem {
 	}
 
 	public void preResolveOut() {
-		if (template.name != null && template.name != "") {
-			SyntaxExprTemplate@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
-				Kiev.reportError(template,"Unresolved expression template "+template);
-			else if (template.symbol != d)
-				template.symbol = d;
-		}
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, template);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "template") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<SyntaxExprTemplate> vect = new Vector<SyntaxExprTemplate>();
-			SyntaxExprTemplate@ d;
-			foreach (PassInfo.resolveNameR(this,d,info))
-				if (!vect.contains(d)) vect.append(d);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "template")
+			return SymbolRef.autoCompleteSymbol(template,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
@@ -99,25 +88,14 @@ public class SyntaxAutoParenth extends SyntaxElem {
 	public SyntaxAutoParenth() {}
 
 	public void preResolveOut() {
-		if (template.name != null && template.name != "") {
-			SyntaxExprTemplate@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
-				Kiev.reportError(template,"Unresolved expression template "+template);
-			else if (template.symbol != d)
-				template.symbol = d;
-		}
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, template);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "template") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<SyntaxExprTemplate> vect = new Vector<SyntaxExprTemplate>();
-			SyntaxExprTemplate@ d;
-			foreach (PassInfo.resolveNameR(this,d,info))
-				if (!vect.contains(d)) vect.append(d);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "template")
+			return SymbolRef.autoCompleteSymbol(template,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 

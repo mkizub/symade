@@ -168,7 +168,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		node instanceof Method && node.isStatic() && !node.isPrivate()
 	}
 
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');
@@ -188,9 +188,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 					head = name.intern();
 					Vector<DNode> vect = new Vector<DNode>();
 					DNode@ node;
-					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
-					if (!by_equals)
-						flags |= ResInfo.noEquals;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(node,info)) {
 						if (!vect.contains(node))
@@ -200,7 +198,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 				}
 			} while (dot > 0);
 		}
-		return super.findForResolve(name,slot,by_equals);
+		return super.resolveAutoComplete(name,slot);
 	}
 
 }
@@ -238,7 +236,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 		node.isStatic() && !node.isPrivate()
 	}
 
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');
@@ -258,9 +256,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 					head = name.intern();
 					Vector<KievSyntax> vect = new Vector<KievSyntax>();
 					KievSyntax@ node;
-					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext;
-					if (!by_equals)
-						flags |= ResInfo.noEquals;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(node,info)) {
 						if (!vect.contains(node))
@@ -270,7 +266,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 				}
 			} while (dot > 0);
 		}
-		return super.findForResolve(name,slot,by_equals);
+		return super.resolveAutoComplete(name,slot);
 	}
 
 }

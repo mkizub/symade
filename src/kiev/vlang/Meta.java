@@ -249,7 +249,7 @@ public class UserMeta extends MNode {
 		}
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "decl") {
 			TypeDecl scope;
 			String head;
@@ -262,9 +262,7 @@ public class UserMeta extends MNode {
 				name = "";
 			}
 			if (dot < 0) {
-				int flags = ResInfo.noForwards;
-				if (!by_equals)
-					flags |= ResInfo.noEquals;
+				int flags = ResInfo.noForwards|ResInfo.noEquals;
 				Vector<TypeDecl> vect = new Vector<TypeDecl>();
 				TypeDecl@ td;
 				ResInfo info = new ResInfo(this,head,flags);
@@ -289,9 +287,7 @@ public class UserMeta extends MNode {
 					name = "";
 				}
 				if (dot < 0) {
-					int flags = ResInfo.noForwards;
-					if (!by_equals)
-						flags |= ResInfo.noEquals;
+					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					Vector<TypeDecl> vect = new Vector<TypeDecl>();
 					TypeDecl@ td;
 					ResInfo info = new ResInfo(this,head,flags);
@@ -308,7 +304,7 @@ public class UserMeta extends MNode {
 				}
 			}
 		}
-		return super.findForResolve(name,slot,by_equals);
+		return super.resolveAutoComplete(name,slot);
 	}
 
 	public MetaValue get(String name) {

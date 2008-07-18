@@ -89,25 +89,14 @@ public class SyntaxJavaComment extends SyntaxElem {
 	}
 
 	public void preResolveOut() {
-		if (template.name != null && template.name != "") {
-			SyntaxJavaCommentTemplate@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
-				Kiev.reportError(template,"Unresolved java expression template "+template);
-			else if (template.symbol != d)
-				template.symbol = d;
-		}
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, template);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "template") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<SyntaxJavaCommentTemplate> vect = new Vector<SyntaxJavaCommentTemplate>();
-			SyntaxJavaCommentTemplate@ d;
-			foreach (PassInfo.resolveNameR(this,d,info))
-				if (!vect.contains(d)) vect.append(d);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "template")
+			return SymbolRef.autoCompleteSymbol(template,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {

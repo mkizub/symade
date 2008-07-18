@@ -104,16 +104,10 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		return true;
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "parent_syntax") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<ATextSyntax> vect = new Vector<ATextSyntax>();
-			ATextSyntax@ ts;
-			foreach (PassInfo.resolveNameR(this,ts,info))
-				if (!vect.contains(ts)) vect.append(ts);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "parent_syntax")
+			return SymbolRef.autoCompleteSymbol(parent_syntax,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 	
 	public abstract Draw_ATextSyntax getCompiled();
@@ -188,7 +182,7 @@ public class SpaceInfo extends DNode {
 public final class SpaceCmd extends ASTNode {
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
-	@nodeAttr public SymbolRef<SpaceInfo>		si;
+	@nodeAttr public SymbolRef<SpaceInfo>			si;
 	@nodeAttr public SpaceAction					action_before;
 	@nodeAttr public SpaceAction					action_after;
 	@nodeAttr public int							from_attempt;
@@ -209,25 +203,18 @@ public final class SpaceCmd extends ASTNode {
 	}
 
 	public void preResolveOut() {
+		super.preResolveOut();
+		if (si == null)
+			si = new SymbolRef<SpaceInfo>();
 		if (si.name == null)
 			si.name = "sp";
-		SpaceInfo@ spi;
-		if (!PassInfo.resolveNameR(this,spi,new ResInfo(this,si.name)))
-			Kiev.reportError(this,"Cannot resolve space info '"+si.name+"'");
-		else if (si.symbol != spi)
-			si.symbol = spi;
+		SymbolRef.resolveSymbol(SeverError.Error, si);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "si") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<SpaceInfo> vect = new Vector<SpaceInfo>();
-			SpaceInfo@ spi;
-			foreach (PassInfo.resolveNameR(this,spi,info))
-				if (!vect.contains(spi)) vect.append(spi);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "si")
+			return SymbolRef.autoCompleteSymbol(si,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 }
@@ -322,47 +309,24 @@ public final class ParagraphLayout extends DNode {
 	}
 
 	public void preResolveOut() {
-		if (indent != null && indent.name != null && indent.name != "") {
-			IndentInfo@ ind;
-			if (!PassInfo.resolveNameR(this,ind,new ResInfo(this,indent.name)))
-				Kiev.reportError(this,"Cannot resolve indent '"+indent.name+"'");
-			else if (indent.symbol != ind)
-				indent.symbol = ind;
-		}
-		foreach (SymbolRef unind; no_indent_if_prev; unind.name != null && unind.name != "") {
-			DNode@ dn;
-			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,unind.name)))
-				Kiev.reportError(this,"Cannot resolve '"+unind.name+"'");
-			else if !(dn instanceof IndentInfo || dn instanceof ParagraphLayout)
-				Kiev.reportError(this,"Resolved '"+unind.name+"' is not indent or paragraph name");
-			else if (unind.symbol != dn)
-				unind.symbol = dn;
-		}
-		foreach (SymbolRef unind; no_indent_if_next; unind.name != null && unind.name != "") {
-			DNode@ dn;
-			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,unind.name)))
-				Kiev.reportError(this,"Cannot resolve indent '"+unind.name+"'");
-			else if !(dn instanceof IndentInfo || dn instanceof ParagraphLayout)
-				Kiev.reportError(this,"Resolved '"+unind.name+"' is not indent or paragraph name");
-			else if (unind.symbol != dn)
-				unind.symbol = dn;
-		}
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, indent);
+		foreach (SymbolRef unind; no_indent_if_prev)
+			SymbolRef.resolveSymbol(SeverError.Error, unind, fun (DNode dn)->boolean {
+				return dn instanceof IndentInfo || dn instanceof ParagraphLayout;
+			});
+		foreach (SymbolRef unind; no_indent_if_next)
+			SymbolRef.resolveSymbol(SeverError.Error, unind, fun (DNode dn)->boolean {
+				return dn instanceof IndentInfo || dn instanceof ParagraphLayout;
+			});
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "indent" || slot.name == "no_indent_if_prev" || slot.name == "no_indent_if_next") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<DNode> vect = new Vector<DNode>();
-			DNode@ dn;
-			foreach (PassInfo.resolveNameR(this,dn,info)) {
-				if (dn instanceof IndentInfo || dn instanceof ParagraphLayout) {
-					if (!vect.contains(dn))
-						vect.append(dn);
-				}
-			}
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "indent" || slot.name == "no_indent_if_prev" || slot.name == "no_indent_if_next")
+			return SymbolRef.autoCompleteSymbol(this,str, fun (DNode dn)->boolean {
+				return dn instanceof IndentInfo || dn instanceof ParagraphLayout;
+			});
+		return super.resolveAutoComplete(str,slot);
 	}
 
 }
@@ -419,29 +383,22 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	}
 
 	public void preResolveOut() {
+		super.preResolveOut();
 		if (rnode == null)
 			rnode = new SymbolRef<Struct>();
 		if (rnode.name == null)
 			rnode.name = "ASTNode";
-		Struct@ s;
-		if (!PassInfo.resolveNameR(this,s,new ResInfo(this,rnode.name)))
-			Kiev.reportError(this,"Cannot resolve @node '"+rnode.name+"'");
-		else if (!s.isCompilerNode())
-			Kiev.reportWarning(this,"Resolved '"+rnode.name+"' is not @node");
-		if (rnode.symbol != s)
-			rnode.symbol = s;
+		SymbolRef.resolveSymbol(SeverError.Error, rnode, fun (DNode dn)->boolean {
+			return dn instanceof Struct && dn.isCompilerNode();
+		});
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "rnode") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<Struct> vect = new Vector<Struct>();
-			Struct@ s;
-			foreach (PassInfo.resolveNameR(this,s,info))
-				if (s.isCompilerNode() && !vect.contains(s)) vect.append(s);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "rnode")
+			return SymbolRef.autoCompleteSymbol(rnode,str, fun (DNode n)->boolean {
+				return n instanceof Struct && n.isCompilerNode();
+			});
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	private ExpectedTypeInfo makeExpectedTypeInfo(SymbolRef sr) {
@@ -505,6 +462,7 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	}
 
 	public void preResolveOut() {
+		super.preResolveOut();
 		if (regexp_ok == null)
 			regexp_ok = ".*";
 		try {
@@ -547,28 +505,19 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	}
 
 	public void preResolveOut() {
-		foreach (SymbolRef sr; expected_types) {
-			DNode@ dn;
-			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,sr.name)))
-				Kiev.reportError(this,"Cannot resolve @node '"+sr.name+"'");
-			else if !(dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate)
-				Kiev.reportError(this,"Resolved '"+sr.name+"' is not a @node or SyntaxExpectedTemplate");
-			else if (sr.symbol != dn)
-				sr.symbol = dn;
-		}
+		super.preResolveOut();
+		foreach (SymbolRef sr; expected_types)
+			SymbolRef.resolveSymbol(SeverError.Error, sr, fun (DNode dn)->boolean {
+				return dn instanceof Struct && dn.isCompilerNode() || dn instanceof SyntaxExpectedTemplate;
+			});
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "expected_types") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<DNode> vect = new Vector<DNode>();
-			DNode@ dn;
-			foreach (PassInfo.resolveNameR(this,dn,info))
-				if ((dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate) && !vect.contains(dn))
-					vect.append(dn);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "expected_types")
+			return SymbolRef.autoCompleteSymbol(this, str, fun (DNode n)->boolean {
+				return n instanceof Struct && n.isCompilerNode() || n instanceof SyntaxExpectedTemplate;
+			});
+		return super.resolveAutoComplete(str,slot);
 	}
 }
 
@@ -586,41 +535,17 @@ public final class SyntaxElemFormatDecl extends DNode {
 	}
 
 	public void preResolveOut() {
-		if (color != null && color.name != null && color.name != "") {
-			DrawColor@ dc;
-			if (!PassInfo.resolveNameR(this,dc,new ResInfo(this,color.name)))
-				Kiev.reportError(this,"Cannot resolve color '"+color.name+"'");
-			else if (color.symbol != dc)
-				color.symbol = dc;
-		}
-
-		if (font != null && font.name != null && font.name != "") {
-			DrawFont@ df;
-			if (!PassInfo.resolveNameR(this,df,new ResInfo(this,font.name)))
-				Kiev.reportError(this,"Cannot resolve font '"+font.name+"'");
-			else if (font.symbol != df)
-				font.symbol = df;
-		}
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, color);
+		SymbolRef.resolveSymbol(SeverError.Error, font);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "color") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<DrawColor> vect = new Vector<DrawColor>();
-			DrawColor@ dc;
-			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (!vect.contains(dc)) vect.append(dc);
-			return vect.toArray();
-		}
-		if (slot.name == "font") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<DrawFont> vect = new Vector<DrawFont>();
-			DrawFont@ df;
-			foreach (PassInfo.resolveNameR(this,df,info))
-				if (!vect.contains(df)) vect.append(df);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "color")
+			return SymbolRef.autoCompleteSymbol(color,str);
+		if (slot.name == "font")
+			return SymbolRef.autoCompleteSymbol(font,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	public Draw_Layout compile() {
@@ -708,28 +633,19 @@ public class SyntaxExpectedAttr extends ASTNode {
 	public SyntaxExpectedAttr() {}
 
 	public void preResolveOut() {
-		foreach (SymbolRef sr; expected_types) {
-			DNode@ dn;
-			if (!PassInfo.resolveNameR(this,dn,new ResInfo(this,sr.name)))
-				Kiev.reportError(this,"Cannot resolve @node '"+sr.name+"'");
-			else if !(dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate)
-				Kiev.reportError(this,"Resolved '"+sr.name+"' is not a @node or SyntaxExpectedTemplate");
-			else if (sr.symbol != dn)
-				sr.symbol = dn;
-		}
+		super.preResolveOut();
+		foreach (SymbolRef sr; expected_types)
+			SymbolRef.resolveSymbol(SeverError.Error, sr, fun (DNode dn)->boolean {
+				return dn instanceof Struct && dn.isCompilerNode() || dn instanceof SyntaxExpectedTemplate;
+			});
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "expected_types") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<DNode> vect = new Vector<DNode>();
-			DNode@ dn;
-			foreach (PassInfo.resolveNameR(this,dn,info))
-				if ((dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate) && !vect.contains(dn))
-					vect.append(dn);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "expected_types")
+			return SymbolRef.autoCompleteSymbol(this,str, fun (DNode n)->boolean {
+				return n instanceof Struct && n.isCompilerNode() || n instanceof SyntaxExpectedTemplate;
+			});
+		return super.resolveAutoComplete(str,slot);
 	}
 }
 
@@ -748,40 +664,17 @@ public abstract class SyntaxElem extends ASTNode {
 	public SyntaxElem() {}
 
 	public void preResolveOut() {
-		if (fmt != null && fmt.name != null && fmt.name != "") {
-			SyntaxElemFormatDecl@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,fmt.name)))
-				Kiev.reportError(this,"Cannot resolve format declaration '"+fmt.name+"'");
-			else if (fmt.symbol != d)
-				fmt.symbol = d;
-		}
-		if (par != null && par.name != null && par.name != "") {
-			ParagraphLayout@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
-				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
-			else if (par.symbol != d)
-				par.symbol = d;
-		}
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, fmt);
+		SymbolRef.resolveSymbol(SeverError.Error, par);
 	}
 
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "fmt") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<SyntaxElemFormatDecl> vect = new Vector<SyntaxElemFormatDecl>();
-			SyntaxElemFormatDecl@ dc;
-			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (!vect.contains(dc)) vect.append(dc);
-			return vect.toArray();
-		}
-		if (slot.name == "par") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<ParagraphLayout> vect = new Vector<ParagraphLayout>();
-			ParagraphLayout@ dc;
-			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (!vect.contains(dc)) vect.append(dc);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "fmt")
+			return SymbolRef.autoCompleteSymbol(fmt,str);
+		if (slot.name == "par")
+			return SymbolRef.autoCompleteSymbol(par,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	public abstract Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl);
@@ -800,8 +693,16 @@ public abstract class SyntaxElem extends ASTNode {
 			fmt = this.fmt.dnode;
 		if (fmt == null) {
 			SyntaxElemFormatDecl@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,"fmt-default")))
-				return new Draw_Layout();
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,"fmt-default"))) {
+				Draw_Layout dflt = new Draw_Layout();
+				LayoutSpace sp = new LayoutSpace();
+				sp.name = "sp";
+				sp.text_size = 1;
+				sp.pixel_size = 4;
+				dflt.spaces_before = new LayoutSpace[]{ sp };
+				dflt.spaces_after  = new LayoutSpace[]{ sp };
+				return dflt;
+			}
 			fmt = d;
 		}
 		return fmt.compile();
@@ -826,25 +727,13 @@ public final class SyntaxElemRef extends SyntaxElem {
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		if (decl.name != null && decl.name != "") {
-			DNode@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name,ResInfo.noForwards)))
-				Kiev.reportError(decl,"Unresolved syntax element decl "+decl);
-			else if (decl.symbol != d)
-				decl.symbol = d;
-		}
+		SymbolRef.resolveSymbol(SeverError.Error, decl);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "decl") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<ASyntaxElemDecl> vect = new Vector<ASyntaxElemDecl>();
-			ASyntaxElemDecl@ d;
-			foreach (PassInfo.resolveNameR(this,d,info))
-				if (!vect.contains(d)) vect.append(d);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "decl")
+			return SymbolRef.autoCompleteSymbol(decl,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 }
 
@@ -950,25 +839,13 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		if (in_syntax.name != null && in_syntax.name != "") {
-			ATextSyntax@ s;
-			if (!PassInfo.resolveNameR(this,s,new ResInfo(this,in_syntax.name,ResInfo.noForwards)))
-				Kiev.reportError(in_syntax,"Unresolved syntax "+in_syntax);
-			else if (in_syntax.symbol != s)
-				in_syntax.symbol = s;
-		}
+		SymbolRef.resolveSymbol(SeverError.Error, in_syntax);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "in_syntax") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<ATextSyntax> vect = new Vector<ATextSyntax>();
-			ATextSyntax@ s;
-			foreach (PassInfo.resolveNameR(this,s,info))
-				if (!vect.contains(s)) vect.append(s);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "in_syntax")
+			return SymbolRef.autoCompleteSymbol(in_syntax,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
@@ -1046,6 +923,8 @@ public class SyntaxList extends SyntaxAttr {
 		super.fillCompiled(dr_elem);
 		if (this.element != null)
 			dr_elem.element = this.element.getCompiled(dr_elem.elem_decl);
+		else
+			dr_elem.element = new Draw_SyntaxNode(dr_elem.elem_decl);
 		if (this.separator != null)
 			dr_elem.separator = this.separator.getCompiled(dr_elem.elem_decl);
 		if (this.prefix != null)
@@ -1130,25 +1009,13 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		if (decl.name != null && decl.name != "") {
-			SyntaxIdentTemplate@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name,ResInfo.noForwards)))
-				Kiev.reportWarning(decl,"Unresolved ident template "+decl);
-			if (decl.symbol != d)
-				decl.symbol = d;
-		}
+		SymbolRef.resolveSymbol(SeverError.Warning, decl);
 	}
 	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "decl") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<SyntaxIdentTemplate> vect = new Vector<SyntaxIdentTemplate>();
-			SyntaxIdentTemplate@ d;
-			foreach (PassInfo.resolveNameR(this,d,info))
-				if (!vect.contains(d)) vect.append(d);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
+	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "decl")
+			return SymbolRef.autoCompleteSymbol(decl,str);
+		return super.resolveAutoComplete(str,slot);
 	}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
@@ -1160,7 +1027,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
 		Draw_SyntaxIdentAttr dr_elem = (Draw_SyntaxIdentAttr)_dr_elem;
 		super.fillCompiled(dr_elem);
-		dr_elem.template = this.decl.dnode.getCompiled();
+		if (this.decl.dnode != null)
+			dr_elem.template = this.decl.dnode.getCompiled();
 	}
 
 }

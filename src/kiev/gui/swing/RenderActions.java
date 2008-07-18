@@ -56,6 +56,8 @@ public final class RenderActions implements Runnable {
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt\u001fsyntax-for-vdom", false)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt\u001fsyntax-for-vdom", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events", "stx-fmt\u001fsyntax-for-evt", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events (current)", "stx-fmt\u001fsyntax-for-evt", true)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
 				m.show((Component)((InfoView)ui).getView_canvas(), 0, 0);

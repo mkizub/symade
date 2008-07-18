@@ -240,7 +240,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		if (name == null || name.length() == 0)
 			return;
 		boolean qualified = name.indexOf('\u001f') > 0;
-		DNode[] decls = ((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
+		DNode[] decls = ((ASTNode)pattr.node).resolveAutoComplete(name,pattr.slot);
 		if (decls == null)
 			return;
 		if (combo == null) {

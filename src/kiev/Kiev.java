@@ -150,7 +150,7 @@ public final class Kiev {
 		}
         errorPrompt = false;
 		if( debug ) e.printStackTrace(System.out);
-		report( pos, k.curFileUnit, null, null, SeverError.Error, msg);
+		report( pos, k.curFileUnit, null, null, SeverError.Error, msg + ": " + e);
 	}
 
    	public static void reportParserError(int pos, Throwable e) {
@@ -195,6 +195,27 @@ public final class Kiev {
 			report(pos,fu,clazz,method,SeverError.Error,msg);
 		} else {
 			report(0,null,null,null,SeverError.Error,msg);
+		}
+	}
+
+	public static void reportAs(SeverError sever, ASTNode from, String msg) {
+		if( debug ) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			FileUnit fu = null;
+			TypeDecl clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+					pos = f.pos;
+				method = from.ctx_method;
+				clazz = from.ctx_tdecl;
+				fu = from.ctx_file_unit;
+			} catch (Exception e) { /*ignore*/}
+			report(pos,fu,clazz,method,sever,msg);
+		} else {
+			report(0,null,null,null,sever,msg);
 		}
 	}
 
