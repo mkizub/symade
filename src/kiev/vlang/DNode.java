@@ -475,12 +475,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	
 	public String qname() { sname }
 
-	public void initForEditor() {
-		if (sname == null)
-			sname = "<name>";
-		super.initForEditor();
-	}
-
 	public void cleanupOnReload() {
 		this.super_types.delAll();
 		this.metas.delAll();

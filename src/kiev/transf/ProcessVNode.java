@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-abstract class VNode_Base extends TransfProcessor {
+public abstract class VNode_Base extends TransfProcessor {
 	private static final String PROP_BASE				= "symade.transf.vnode";
 	public static final boolean GEN_VERSIONED			= getPropS(PROP_BASE,"genUnversioned","false") != "true";
 	public static final String mnNode					= getPropS(PROP_BASE,"mnNode","kiev\u001fvtree\u001fThisIsANode"); 
@@ -69,13 +69,13 @@ abstract class VNode_Base extends TransfProcessor {
 
 	VNode_Base() { super(KievExt.VNode); }
 
-	static boolean isNodeImpl(Struct s) {
+	public static boolean isNodeImpl(Struct s) {
 		return s.getMeta(mnNode) != null;
 	}
-	static boolean isNodeKind(Struct s) {
+	public static boolean isNodeKind(Struct s) {
 		return s.getMeta(mnNode) != null;
 	}
-	static boolean isNodeKind(Type t) {
+	public static boolean isNodeKind(Type t) {
 		if (t != null && t.getStruct() != null)
 			return isNodeKind(t.getStruct());
 		return false;
@@ -133,7 +133,6 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		foreach (Struct sub; s.members)
 			doProcess(sub);
 		if (isNodeKind(s)) {
-			s.setCompilerNode(true);
 			if (nameNode.equals(s.qname()))
 				return;
 			// Check fields of the @ThisIsANode

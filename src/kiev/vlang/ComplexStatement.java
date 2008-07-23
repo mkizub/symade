@@ -283,18 +283,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 
 	public CatchInfo() {}
 
-	public void initForEditor() {
-		if (body == null) {
-			body = new Block();
-			body.initForEditor();
-		}
-		if (arg == null) {
-			arg = new LVar(0, "e", new TypeNameRef("Exception"), Var.VAR_LOCAL, 0);
-			arg.initForEditor();
-		}
-		super.initForEditor();
-	}
-
 	public String toString() {
 		return "catch( "+arg+" )";
 	}
@@ -318,14 +306,6 @@ public class FinallyInfo extends ENode {
 
 	public FinallyInfo() {}
 
-	public void initForEditor() {
-		if (body == null) {
-			body = new Block();
-			body.initForEditor();
-		}
-		super.initForEditor();
-	}
-
 	public String toString() { return "finally"; }
 }
 
@@ -344,21 +324,6 @@ public class TryStat extends ENode {
 
 	public TryStat() {}
 
-	public void initForEditor() {
-		if (body == null) {
-			body = new Block();
-			body.initForEditor();
-		}
-		if (catchers.length == 0) {
-			catchers += new CatchInfo();
-			catchers[0].initForEditor();
-		}
-		if (finally_catcher == null) {
-			finally_catcher = new FinallyInfo();
-			finally_catcher.initForEditor();
-		}
-		super.initForEditor();
-	}
 }
 
 @ThisIsANode(name="Synchronized", lang=CoreLang)
@@ -375,17 +340,6 @@ public class SynchronizedStat extends ENode {
 
 	public SynchronizedStat() {}
 
-	public void initForEditor() {
-		if (body == null) {
-			body = new Block();
-			body.initForEditor();
-		}
-		if (expr == null) {
-			expr = new ThisExpr();
-			expr.initForEditor();
-		}
-		super.initForEditor();
-	}
 }
 
 @ThisIsANode(name="With", lang=CoreLang)
@@ -402,16 +356,5 @@ public class WithStat extends ENode {
 
 	public WithStat() {}
 
-	public void initForEditor() {
-		if (body == null) {
-			body = new Block();
-			body.initForEditor();
-		}
-		if (expr == null) {
-			expr = new ThisExpr();
-			expr.initForEditor();
-		}
-		super.initForEditor();
-	}
 }
 

@@ -29,6 +29,8 @@ public static view RVar of Var extends RDNode {
 	public final boolean isNeedProxy();
 	public final void setNeedProxy(boolean on);
 
+	public boolean preGenerate() { return true; }
+
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		Type tp = this.getType();

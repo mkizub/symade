@@ -251,15 +251,6 @@ public abstract class Struct extends ComplexTypeDecl {
 			this.is_struct_pre_generated = on;
 		}
 	}
-	// a compiler node (@ThisIsANode)	
-	public final boolean isCompilerNode() {
-		return this.is_struct_compiler_node;
-	}
-	public final void setCompilerNode(boolean on) {
-		if (this.is_struct_compiler_node != on) {
-			this.is_struct_compiler_node = on;
-		}
-	}
 	
 	/** Add information about new method that belongs to this class */
 	public Method addMethod(Method m) {

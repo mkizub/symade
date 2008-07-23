@@ -59,6 +59,8 @@ public view RMethod of Method extends RDNode {
 		return (Enumeration<WBCCondition>)((Method)this).conditions.elements();
 	}
 
+	public boolean preGenerate() { return true; }
+
 	public void resolveDecl() {
 		RMethod.resolveMethod(this);
 	}
@@ -133,6 +135,7 @@ public final view RInitializer of Initializer extends RDNode {
 	public:ro Block			block;
 
 
+	public boolean preGenerate() { return true; }
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		
@@ -152,6 +155,7 @@ public final view RWBCCondition of WBCCondition extends RDNode {
 	public ENode				body;
 	public Method				definer;
 
+	public boolean preGenerate() { return true; }
 	public void resolveDecl() {
 		//if (code_attr != null) return;
 		if (body != null)

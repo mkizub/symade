@@ -186,19 +186,25 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 			editor.stopItemEditor(true);
 			return;
 		}
-		private void makeNewInstance(AttrSlot a) {
-			try {
-				if (tstx != null && tstx.node_templates != null) {
-					Vector<Draw_SyntaxNodeTemplate> templates = new Vector<Draw_SyntaxNodeTemplate>();
+		private void collectTemplates(Draw_ATextSyntax tstx, Vector<Draw_SyntaxNodeTemplate> templates) {
+			if (tstx != null) {
+				if (tstx.node_templates != null) {
 					for (Draw_SyntaxNodeTemplate templ : tstx.node_templates) {
 						ASTNode tnode = templ.getTemplateNode();
 						if (tnode != null && typeinfo.clazz.getName().equals(tnode.getClass().getName()))
 							templates.add(templ);
 					}
-					if (templates.size() > 0) {
-						makeTemplatesMenu(this, templates);
-						return;
-					}
+				}
+				collectTemplates(tstx.parent_syntax, templates);
+			}
+		}
+		private void makeNewInstance(AttrSlot a) {
+			try {
+				Vector<Draw_SyntaxNodeTemplate> templates = new Vector<Draw_SyntaxNodeTemplate>();
+				collectTemplates(tstx, templates);
+				if (templates.size() > 0) {
+					makeTemplatesMenu(this, templates);
+					return;
 				}
 			} catch (Throwable t) {
 				t.printStackTrace();
@@ -209,7 +215,6 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 					obj = template.ncopy();
 				else
 					obj = (ANode)typeinfo.newInstance();
-				obj.initForEditor();
 				if (a instanceof SpaceAttrSlot) {
 					if (idx < 0)
 						idx = 0;

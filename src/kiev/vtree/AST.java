@@ -961,7 +961,6 @@ public abstract class ANode implements INode {
 		return rn;
 	}
 	
-	public void initForEditor() { /* by default do nothing */ }
 }
 
 public class TreeWalker {
@@ -1106,8 +1105,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	// Structures
 	public @packed:1,nodeflags,24 boolean is_struct_fe_passed;
 	public @packed:1,nodeflags,25 boolean is_struct_has_pizza_cases;
-	public @packed:1,nodeflags,26 boolean is_struct_compiler_node;
-	public @packed:1,nodeflags,27 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
+	public @packed:1,nodeflags,26 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
 	// Method flags
 	public @packed:1,nodeflags,24 boolean is_mth_virtual_static;
 	public @packed:1,nodeflags,25 boolean is_mth_operator;

@@ -135,7 +135,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			if (sed.elem == null)
 				continue;
 			Struct s = (Struct)sed.rnode.dnode;
-			if !(s.isCompilerNode())
+			if (!VNode_Base.isNodeKind(s))
 				continue;
 			syntax_elements.append(sed.getCompiled());
 		}
@@ -373,10 +373,14 @@ public abstract class ASyntaxElemDecl extends DNode {
 }
 
 @ThisIsANode(lang=SyntaxLang)
-public class SyntaxNodeTemplate extends DNode {
+public final class SyntaxNodeTemplate extends DNode {
 	public static final SyntaxNodeTemplate[] emptyArray = new SyntaxNodeTemplate[0];
 
 	@nodeAttr public ASTNode				template;
+
+	public boolean preResolveIn() { return false; }
+	public boolean mainResolveIn() { return false; }
+	public boolean preVerify() { return false; }
 
 	public Draw_SyntaxNodeTemplate getCompiled() {
 		Draw_SyntaxNodeTemplate templ = new Draw_SyntaxNodeTemplate();
@@ -413,14 +417,14 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 		if (rnode.name == null)
 			rnode.name = "ASTNode";
 		SymbolRef.resolveSymbol(SeverError.Error, rnode, fun (DNode dn)->boolean {
-			return dn instanceof Struct && dn.isCompilerNode();
+			return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn);
 		});
 	}
 	
 	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "rnode")
 			return SymbolRef.autoCompleteSymbol(rnode,str, fun (DNode n)->boolean {
-				return n instanceof Struct && n.isCompilerNode();
+				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n);
 			});
 		return super.resolveAutoComplete(str,slot);
 	}
@@ -532,14 +536,14 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 		super.preResolveOut();
 		foreach (SymbolRef sr; expected_types)
 			SymbolRef.resolveSymbol(SeverError.Error, sr, fun (DNode dn)->boolean {
-				return dn instanceof Struct && dn.isCompilerNode() || dn instanceof SyntaxExpectedTemplate;
+				return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn) || dn instanceof SyntaxExpectedTemplate;
 			});
 	}
 	
 	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
 			return SymbolRef.autoCompleteSymbol(this, str, fun (DNode n)->boolean {
-				return n instanceof Struct && n.isCompilerNode() || n instanceof SyntaxExpectedTemplate;
+				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n) || n instanceof SyntaxExpectedTemplate;
 			});
 		return super.resolveAutoComplete(str,slot);
 	}
@@ -660,14 +664,14 @@ public class SyntaxExpectedAttr extends ASTNode {
 		super.preResolveOut();
 		foreach (SymbolRef sr; expected_types)
 			SymbolRef.resolveSymbol(SeverError.Error, sr, fun (DNode dn)->boolean {
-				return dn instanceof Struct && dn.isCompilerNode() || dn instanceof SyntaxExpectedTemplate;
+				return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn) || dn instanceof SyntaxExpectedTemplate;
 			});
 	}
 	
 	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
 			return SymbolRef.autoCompleteSymbol(this,str, fun (DNode n)->boolean {
-				return n instanceof Struct && n.isCompilerNode() || n instanceof SyntaxExpectedTemplate;
+				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n) || n instanceof SyntaxExpectedTemplate;
 			});
 		return super.resolveAutoComplete(str,slot);
 	}

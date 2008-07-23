@@ -53,7 +53,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 
 	boolean rewrite(IFldExpr:ANode fa) {
 		Field f = fa.var;
-		if (f.isMacro() && !f.isNative()) {
+		if (f != null && f.isMacro() && !f.isNative()) {
 			if (f.init != null)
 				doRewrite(f.init, fa, new Hashtable<String,Object>());
 		}
@@ -76,7 +76,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 
 	boolean rewrite(CallExpr:ANode ce) {
 		Method m = ce.func;
-		if (m.isMacro() && !m.isNative()) {
+		if (m != null && m.isMacro() && !m.isNative()) {
 			if (m.body != null) {
 				int idx = 0;
 				Hashtable<String,Object> args = new Hashtable<String,Object>();

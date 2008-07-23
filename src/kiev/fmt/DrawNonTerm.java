@@ -139,7 +139,7 @@ public final class DrawNonTermList extends Drawable {
 
 	public DrawNonTermList(ANode node, Draw_SyntaxList syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		foreach (AttrSlot a; node.values(); a.name == syntax.name && a instanceof SpaceAttrSlot || a instanceof ExtSpaceAttrSlot) {
+		foreach (AttrSlot a; node.values(); a.name == syntax.name && (a instanceof SpaceAttrSlot || a instanceof ExtSpaceAttrSlot)) {
 			slst_attr = a;
 			break;
 		}

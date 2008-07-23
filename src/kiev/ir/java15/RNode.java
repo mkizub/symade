@@ -108,7 +108,7 @@ public static view RDNode of DNode extends RNode {
 	public final boolean hasRuntimeVisibleMetas();
 	public final boolean hasRuntimeInvisibleMetas();
 	
-	public boolean preGenerate() { return true; }
+	public boolean preGenerate() { return false; }
 	public void resolveDecl() { /* empty */ }
 }
 
@@ -197,6 +197,8 @@ public view RTypeDecl of TypeDecl extends RDNode {
 
 	public boolean isClazz();
 	public final boolean isStructInner();
+
+	public boolean preGenerate() { return true; }
 }
 
 @ViewOf(vcast=true, iface=true)

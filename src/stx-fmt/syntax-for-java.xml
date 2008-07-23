@@ -1209,6 +1209,249 @@
        <core:SymbolRef name='font-bold' />
       </font>
      </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxNodeTemplate name='Default Method'>
+      <template>
+       <core:Method name='&lt;method>'>
+        <type_ret>
+         <core:TypeNameRef ident='void' />
+        </type_ret>
+        <body>
+         <core:Block />
+        </body>
+        <metas>
+         <core:MetaAccess name='public' />
+        </metas>
+       </core:Method>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Initializer'>
+      <template>
+       <core:InitBlock>
+        <body>
+         <core:Block />
+        </body>
+       </core:InitBlock>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default While'>
+      <template>
+       <core:While>
+        <cond>
+         <core:ConstBoolExpr value='true' />
+        </cond>
+        <body>
+         <core:Block />
+        </body>
+        <lblcnt>
+         <core:Label />
+        </lblcnt>
+        <lblbrk>
+         <core:Label />
+        </lblbrk>
+       </core:While>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Do While'>
+      <template>
+       <core:DoWhile>
+        <cond>
+         <core:ConstBoolExpr value='true' />
+        </cond>
+        <body>
+         <core:Block />
+        </body>
+        <lblcnt>
+         <core:Label />
+        </lblcnt>
+        <lblbrk>
+         <core:Label />
+        </lblbrk>
+       </core:DoWhile>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default For'>
+      <template>
+       <core:For>
+        <body>
+         <core:Block />
+        </body>
+        <lblcnt>
+         <core:Label />
+        </lblcnt>
+        <lblbrk>
+         <core:Label />
+        </lblbrk>
+       </core:For>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default ForEach'>
+      <template>
+       <core:ForEach>
+        <mode>0</mode>
+        <container>
+         <core:LVarExpr ident='container' />
+        </container>
+        <var>
+         <core:LVar name='o'>
+          <vtype>
+           <core:TypeNameRef ident='Object' />
+          </vtype>
+         </core:LVar>
+        </var>
+        <body>
+         <core:Block />
+        </body>
+        <lblcnt>
+         <core:Label />
+        </lblcnt>
+        <lblbrk>
+         <core:Label />
+        </lblbrk>
+       </core:ForEach>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Try-Finally'>
+      <template>
+       <core:Try>
+        <body>
+         <core:Block />
+        </body>
+        <finally_catcher>
+         <core:Finally>
+          <body>
+           <core:Block />
+          </body>
+         </core:Finally>
+        </finally_catcher>
+       </core:Try>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Try-Catch'>
+      <template>
+       <core:Try>
+        <body>
+         <core:Block />
+        </body>
+        <catchers>
+         <core:Catch>
+          <arg>
+           <core:LVar name='t'>
+            <vtype>
+             <core:TypeNameRef ident='Throwable' />
+            </vtype>
+           </core:LVar>
+          </arg>
+          <body>
+           <core:Block>
+            <stats>
+             <core:ExprSt>
+              <expr>
+               <core:Call ident='printStackTrace'>
+                <obj>
+                 <core:LVarExpr ident='t' />
+                </obj>
+               </core:Call>
+              </expr>
+             </core:ExprSt>
+            </stats>
+           </core:Block>
+          </body>
+         </core:Catch>
+        </catchers>
+       </core:Try>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Try-Catch-Finally'>
+      <template>
+       <core:Try>
+        <body>
+         <core:Block />
+        </body>
+        <catchers>
+         <core:Catch>
+          <arg>
+           <core:LVar name='t'>
+            <vtype>
+             <core:TypeNameRef ident='Throwable' />
+            </vtype>
+           </core:LVar>
+          </arg>
+          <body>
+           <core:Block>
+            <stats>
+             <core:ExprSt>
+              <expr>
+               <core:Call ident='printStackTrace'>
+                <obj>
+                 <core:LVarExpr ident='t' />
+                </obj>
+               </core:Call>
+              </expr>
+             </core:ExprSt>
+            </stats>
+           </core:Block>
+          </body>
+         </core:Catch>
+        </catchers>
+        <finally_catcher>
+         <core:Finally>
+          <body>
+           <core:Block />
+          </body>
+         </core:Finally>
+        </finally_catcher>
+       </core:Try>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Catch'>
+      <template>
+       <core:Catch>
+        <arg>
+         <core:LVar name='t'>
+          <vtype>
+           <core:TypeNameRef ident='Throwable' />
+          </vtype>
+         </core:LVar>
+        </arg>
+        <body>
+         <core:Block>
+          <stats>
+           <core:ExprSt>
+            <expr>
+             <core:Call ident='printStackTrace'>
+              <obj>
+               <core:LVarExpr ident='t' />
+              </obj>
+             </core:Call>
+            </expr>
+           </core:ExprSt>
+          </stats>
+         </core:Block>
+        </body>
+       </core:Catch>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Finally'>
+      <template>
+       <core:Finally>
+        <body>
+         <core:Block />
+        </body>
+       </core:Finally>
+      </template>
+     </syntax:SyntaxNodeTemplate>
+     <syntax:SyntaxNodeTemplate name='Default Synchronized'>
+      <template>
+       <core:Synchronized>
+        <expr>
+         <core:This />
+        </expr>
+        <body>
+         <core:Block />
+        </body>
+       </core:Synchronized>
+      </template>
+     </syntax:SyntaxNodeTemplate>
      <syntax:SyntaxElemDecl name='stx-file-unit'>
       <rnode>
        <core:SymbolRef name='FileUnit' />
