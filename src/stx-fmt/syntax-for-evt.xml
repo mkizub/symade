@@ -36,8 +36,64 @@
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
+   <core:Import all='false' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;vlang&#31;Import' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
+   <core:Import all='false' methods='false'>
+    <name>
+     <core:SymbolRef name='kiev&#31;vlang&#31;FileUnit' full='true' />
+    </name>
+    <mode>IMPORT_CLASS</mode>
+   </core:Import>
    <syntax:TextSyntax name='syntax-for-evt'>
     <members>
+     <syntax:DrawFont name='font-default'>
+      <font_name>Dialog-PLAIN-12</font_name>
+     </syntax:DrawFont>
+     <syntax:DrawColor name='color-default'>
+      <rgb_color>0</rgb_color>
+     </syntax:DrawColor>
+     <syntax:DrawColor name='black'>
+      <rgb_color>0</rgb_color>
+     </syntax:DrawColor>
+     <syntax:DrawFont name='bold-font'>
+      <font_name>Dialog-BOLD-12</font_name>
+     </syntax:DrawFont>
+     <syntax:SyntaxElemFormatDecl name='fmt-of-def'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_NOP</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-nl'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl' />
+        </si>
+        <action_before>SP_NOP</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxIdentTemplate name='ident-template'>
+      <regexp_ok>.*</regexp_ok>
+      <elem>
+       <syntax:SyntaxNode>
+        <name></name>
+       </syntax:SyntaxNode>
+      </elem>
+     </syntax:SyntaxIdentTemplate>
      <syntax:SyntaxElemDecl name='stx-action'>
       <rnode>
        <core:SymbolRef name='Action' />
@@ -55,13 +111,13 @@
           <text>class:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxStrAttr>
-          <name>actonClass</name>
+          <name>actionClass</name>
          </syntax:SyntaxStrAttr>
          <syntax:SyntaxToken>
-          <text>forPopUpMenu:</text>
+          <text>forPopupMenu:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
-          <name>isForPopUpMenu</name>
+          <name>isForPopupMenu</name>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>description:</text>
@@ -88,19 +144,19 @@
           <name>keyCode</name>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
-          <text>ctrl:</text>
+          <text>Ctrl:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>withCtrl</name>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
-          <text>alt:</text>
+          <text>Alt:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>withAlt</name>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
-          <text>shift:</text>
+          <text>Shift:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>withShift</name>
@@ -162,6 +218,99 @@
            </syntax:SyntaxToken>
           </sufix>
           <name>events</name>
+         </syntax:SyntaxList>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SpaceInfo name='sp'>
+      <kind>SP_SPACE</kind>
+      <text_size>1</text_size>
+      <pixel_size>4</pixel_size>
+     </syntax:SpaceInfo>
+     <syntax:SpaceInfo name='nl'>
+      <kind>SP_NEW_LINE</kind>
+      <text_size>1</text_size>
+      <pixel_size>1</pixel_size>
+     </syntax:SpaceInfo>
+     <syntax:SpaceInfo name='nl2'>
+      <kind>SP_NEW_LINE</kind>
+      <text_size>2</text_size>
+      <pixel_size>10</pixel_size>
+     </syntax:SpaceInfo>
+     <syntax:SyntaxElemFormatDecl name='fmt-default'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-default' />
+      </color>
+      <font>
+       <core:SymbolRef name='font-default' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-nl2'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl2' />
+        </si>
+        <action_before>SP_NOP</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemDecl name='stx-file-unit'>
+      <rnode>
+       <core:SymbolRef name='FileUnit' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef name='Import' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>namespace</text>
+          <fmt>
+           <core:SymbolRef name='fmt-of-def' />
+          </fmt>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>srpkg</name>
+          <fmt>
+           <core:SymbolRef name='fmt-nl2' />
+          </fmt>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+            <fmt>
+             <core:SymbolRef name='fmt-nl' />
+            </fmt>
+           </syntax:SyntaxNode>
+          </element>
+          <name>members</name>
+          <empty>
+           <syntax:SyntaxToken>
+            <text> </text>
+           </syntax:SyntaxToken>
+          </empty>
          </syntax:SyntaxList>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
