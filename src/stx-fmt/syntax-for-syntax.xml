@@ -142,6 +142,9 @@
      <syntax:DrawColor name='color-default'>
       <rgb_color>0</rgb_color>
      </syntax:DrawColor>
+     <syntax:DrawColor name='color-gray'>
+      <rgb_color>8421504</rgb_color>
+     </syntax:DrawColor>
      <syntax:DrawFont name='font-default'>
       <font_name>Dialog-PLAIN-12</font_name>
      </syntax:DrawFont>
@@ -279,6 +282,21 @@
       <font>
        <core:SymbolRef name='bold-font' />
       </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-placeholder'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-gray' />
+      </color>
      </syntax:SyntaxElemFormatDecl>
      <syntax:SyntaxElemFormatDecl name='fmt-of-string'>
       <spaces>
@@ -445,6 +463,44 @@
           <text_size>2</text_size>
           <pixel_size>10</pixel_size>
          </syntax:SpaceInfo>
+         <syntax:SpaceInfo name='nl_import'>
+          <kind>SP_NEW_LINE</kind>
+          <text_size>2</text_size>
+          <pixel_size>10</pixel_size>
+         </syntax:SpaceInfo>
+         <syntax:DrawColor name='color-red'>
+          <rgb_color>16711680</rgb_color>
+         </syntax:DrawColor>
+         <syntax:DrawColor name='color-blue'>
+          <rgb_color>255</rgb_color>
+         </syntax:DrawColor>
+         <syntax:DrawColor name='color-green'>
+          <rgb_color>65280</rgb_color>
+         </syntax:DrawColor>
+         <syntax:DrawColor name='color-black'>
+          <rgb_color>0</rgb_color>
+         </syntax:DrawColor>
+         <syntax:DrawColor name='color-gray'>
+          <rgb_color>8421504</rgb_color>
+         </syntax:DrawColor>
+         <syntax:DrawColor name='color-default'>
+          <rgb_color>0</rgb_color>
+         </syntax:DrawColor>
+         <syntax:DrawFont name='font-default'>
+          <font_name>Dialog-PLAIN-12</font_name>
+         </syntax:DrawFont>
+         <syntax:DrawFont name='font-plain'>
+          <font_name>Dialog-PLAIN-12</font_name>
+         </syntax:DrawFont>
+         <syntax:DrawFont name='font-bold'>
+          <font_name>Dialog-BOLD-12</font_name>
+         </syntax:DrawFont>
+         <syntax:DrawFont name='font-italic'>
+          <font_name>Dialog-ITALIC-12</font_name>
+         </syntax:DrawFont>
+         <syntax:DrawFont name='font-bold-italic'>
+          <font_name>Dialog-BOLDITALIC-12</font_name>
+         </syntax:DrawFont>
          <syntax:SyntaxElemFormatDecl name='fmt-default'>
           <spaces>
            <syntax:SpaceCmd>
@@ -463,6 +519,54 @@
            <core:SymbolRef name='font-default' />
           </font>
          </syntax:SyntaxElemFormatDecl>
+         <syntax:SyntaxElemFormatDecl name='fmt-of-kw'>
+          <spaces>
+           <syntax:SpaceCmd>
+            <si>
+             <core:SymbolRef name='sp' />
+            </si>
+            <action_before>SP_ADD</action_before>
+            <action_after>SP_ADD</action_after>
+            <from_attempt>0</from_attempt>
+           </syntax:SpaceCmd>
+          </spaces>
+          <color>
+           <core:SymbolRef name='color-black' />
+          </color>
+          <font>
+           <core:SymbolRef name='font-bold' />
+          </font>
+         </syntax:SyntaxElemFormatDecl>
+         <syntax:SyntaxElemFormatDecl name='fmt-placeholder'>
+          <spaces>
+           <syntax:SpaceCmd>
+            <si>
+             <core:SymbolRef name='sp' />
+            </si>
+            <action_before>SP_ADD</action_before>
+            <action_after>SP_ADD</action_after>
+            <from_attempt>0</from_attempt>
+           </syntax:SpaceCmd>
+          </spaces>
+          <color>
+           <core:SymbolRef name='color-gray' />
+          </color>
+          <font>
+           <core:SymbolRef name='font-plain' />
+          </font>
+         </syntax:SyntaxElemFormatDecl>
+         <syntax:SyntaxElemFormatDecl name='fmt-nl'>
+          <spaces>
+           <syntax:SpaceCmd>
+            <si>
+             <core:SymbolRef name='nl' />
+            </si>
+            <action_before>SP_NOP</action_before>
+            <action_after>SP_ADD</action_after>
+            <from_attempt>0</from_attempt>
+           </syntax:SpaceCmd>
+          </spaces>
+         </syntax:SyntaxElemFormatDecl>
          <syntax:SyntaxElemFormatDecl name='fmt-nl2'>
           <spaces>
            <syntax:SpaceCmd>
@@ -475,11 +579,37 @@
            </syntax:SpaceCmd>
           </spaces>
          </syntax:SyntaxElemFormatDecl>
+         <syntax:SyntaxElemFormatDecl name='fmt-nl-import'>
+          <spaces>
+           <syntax:SpaceCmd>
+            <si>
+             <core:SymbolRef name='nl_import' />
+            </si>
+            <action_before>SP_EAT</action_before>
+            <action_after>SP_ADD</action_after>
+            <from_attempt>0</from_attempt>
+           </syntax:SpaceCmd>
+           <syntax:SpaceCmd>
+            <si>
+             <core:SymbolRef name='nl' />
+            </si>
+            <action_before>SP_ADD</action_before>
+            <action_after>SP_ADD</action_after>
+            <from_attempt>0</from_attempt>
+           </syntax:SpaceCmd>
+          </spaces>
+         </syntax:SyntaxElemFormatDecl>
          <syntax:SyntaxElemDecl name='stx-file-unit'>
           <rnode>
            <core:SymbolRef name='FileUnit' />
           </rnode>
           <attr_types>
+           <syntax:SyntaxExpectedAttr>
+            <attr_name>srpkg</attr_name>
+            <expected_types>
+             <core:SymbolRef name='SymbolRef' />
+            </expected_types>
+           </syntax:SyntaxExpectedAttr>
            <syntax:SyntaxExpectedAttr>
             <attr_name>members</attr_name>
             <expected_types>
@@ -492,16 +622,20 @@
             <elements>
              <syntax:SyntaxToken>
               <text>namespace</text>
+              <kind>KEYWORD</kind>
               <fmt>
-               <core:SymbolRef name='fmt-of-def' />
+               <core:SymbolRef name='fmt-of-kw' />
               </fmt>
              </syntax:SyntaxToken>
-             <syntax:SyntaxSubAttr>
+             <syntax:SyntaxIdentAttr>
+              <decl>
+               <core:SymbolRef name='' />
+              </decl>
               <name>srpkg</name>
               <fmt>
                <core:SymbolRef name='fmt-nl2' />
               </fmt>
-             </syntax:SyntaxSubAttr>
+             </syntax:SyntaxIdentAttr>
              <syntax:SyntaxList>
               <element>
                <syntax:SyntaxNode>
@@ -513,14 +647,92 @@
               </element>
               <name>members</name>
               <empty>
-               <syntax:SyntaxToken>
-                <text> </text>
-               </syntax:SyntaxToken>
+               <syntax:SyntaxPlaceHolder>
+                <text>&lt;members></text>
+                <attr_name>members</attr_name>
+                <fmt>
+                 <core:SymbolRef name='fmt-placeholder' />
+                </fmt>
+               </syntax:SyntaxPlaceHolder>
               </empty>
              </syntax:SyntaxList>
             </elements>
             <nested_function_lookup>false</nested_function_lookup>
            </syntax:SyntaxSet>
+          </elem>
+         </syntax:SyntaxElemDecl>
+         <syntax:SyntaxElemDecl name='stx-import'>
+          <rnode>
+           <core:SymbolRef name='Import' />
+          </rnode>
+          <elem>
+           <syntax:SyntaxSet>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>import</text>
+              <kind>KEYWORD</kind>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+              <funcs>
+               <syntax:SyntaxFunctions>
+                <funcs>
+                 <syntax:SyntaxFunction>
+                  <title>Import All</title>
+                  <act>kiev.gui.ChooseItemEditor</act>
+                  <attr>star</attr>
+                 </syntax:SyntaxFunction>
+                </funcs>
+               </syntax:SyntaxFunctions>
+              </funcs>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxEnumChoice>
+              <elements>
+               <syntax:SyntaxToken>
+                <text>just</text>
+                <kind>KEYWORD</kind>
+                <fmt>
+                 <core:SymbolRef name='fmt-of-kw' />
+                </fmt>
+               </syntax:SyntaxToken>
+               <syntax:SyntaxToken>
+                <text>all</text>
+                <kind>KEYWORD</kind>
+                <fmt>
+                 <core:SymbolRef name='fmt-of-kw' />
+                </fmt>
+               </syntax:SyntaxToken>
+              </elements>
+              <name>star</name>
+             </syntax:SyntaxEnumChoice>
+             <syntax:SyntaxIdentAttr>
+              <decl>
+               <core:SymbolRef name='' />
+              </decl>
+              <name>name</name>
+             </syntax:SyntaxIdentAttr>
+            </elements>
+            <nested_function_lookup>false</nested_function_lookup>
+            <fmt>
+             <core:SymbolRef name='fmt-nl-import' />
+            </fmt>
+           </syntax:SyntaxSet>
+          </elem>
+         </syntax:SyntaxElemDecl>
+         <syntax:SyntaxElemDecl name='stx-symbol-ref'>
+          <rnode>
+           <core:SymbolRef name='SymbolRef' />
+          </rnode>
+          <elem>
+           <syntax:SyntaxIdentAttr>
+            <decl>
+             <core:SymbolRef name='' />
+            </decl>
+            <name>name</name>
+            <fmt>
+             <core:SymbolRef name='fmt-default' />
+            </fmt>
+           </syntax:SyntaxIdentAttr>
           </elem>
          </syntax:SyntaxElemDecl>
         </members>
@@ -826,17 +1038,18 @@
            </syntax:SyntaxFunctions>
           </funcs>
          </syntax:SyntaxToken>
-         <syntax:SyntaxIdentAttr>
-          <decl>
-           <core:SymbolRef name='ident-template' />
-          </decl>
-          <name>name</name>
-         </syntax:SyntaxIdentAttr>
          <syntax:SyntaxEnumChoice>
           <elements>
-           <syntax:SyntaxSpace />
            <syntax:SyntaxToken>
-            <text>.*</text>
+            <text>just</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>all</text>
+            <kind>KEYWORD</kind>
             <fmt>
              <core:SymbolRef name='fmt-of-kw' />
             </fmt>
@@ -844,6 +1057,12 @@
           </elements>
           <name>star</name>
          </syntax:SyntaxEnumChoice>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>name</name>
+         </syntax:SyntaxIdentAttr>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
         <fmt>
