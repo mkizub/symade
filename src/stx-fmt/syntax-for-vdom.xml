@@ -10,7 +10,6 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 <a-node class='kiev.vlang.FileUnit'>
- <project_file>true</project_file>
  <srpkg>
   <a-node class='kiev.vlang.SymbolRef'>
    <name>stx-fmt</name>

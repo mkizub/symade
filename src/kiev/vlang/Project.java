@@ -110,7 +110,7 @@ public final class DirUnit extends SNode {
 	}
 	
 	private boolean hasProjectFiles() {
-		foreach (FileUnit fu; members; fu.project_file)
+		foreach (FileUnit fu; members; fu.is_project_file)
 			return true;
 		foreach (DirUnit du; members; du.hasProjectFiles())
 			return true;

@@ -394,7 +394,7 @@ public final class DumpUtils {
 		prj.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
 				if (n instanceof FileUnit) {
-					n.project_file = true;
+					n.is_project_file = true;
 					return false;
 				}
 				return true;

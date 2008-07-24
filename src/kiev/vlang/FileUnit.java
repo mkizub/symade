@@ -26,13 +26,14 @@ public final class FileUnit extends NameSpace {
 
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public String					fname;
-	@nodeAttr public boolean				project_file;
 	@nodeAttr public ImportSyntax∅			syntaxes;
 	
 	@nodeData public boolean				scanned_for_interface_only;
 
 	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
 	public String							current_syntax;
+	@UnVersioned
+	public boolean							is_project_file;
 
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
@@ -73,7 +74,7 @@ public final class FileUnit extends NameSpace {
 
 	public FileUnit(String name, boolean project_file) {
 		this.fname = name;
-		this.project_file = project_file;
+		this.is_project_file = project_file;
 	}
 
 	public String toString() { return fname; }
@@ -81,7 +82,7 @@ public final class FileUnit extends NameSpace {
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "proj") {
 			if (attr == ANode.nodeattr$this)
-				return this.project_file;
+				return this.is_project_file;
 			if (attr.name == "fname")
 				return true;
 			return false;

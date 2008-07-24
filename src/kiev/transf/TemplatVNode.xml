@@ -13,7 +13,6 @@
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
   xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'>
  <core:FileUnit>
-  <project_file>true</project_file>
   <srpkg>
    <core:SymbolRef name='kiev&#31;transf' full='true' />
   </srpkg>

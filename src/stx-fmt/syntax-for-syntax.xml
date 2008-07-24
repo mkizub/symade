@@ -13,7 +13,6 @@
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
   xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
  <core:FileUnit>
-  <project_file>true</project_file>
   <srpkg>
    <core:SymbolRef name='stx-fmt' full='true' />
   </srpkg>
