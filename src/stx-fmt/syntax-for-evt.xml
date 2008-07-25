@@ -257,12 +257,23 @@
          <syntax:SyntaxSubAttr>
           <name>keyCode</name>
          </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>Ctrl:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
+         <syntax:SyntaxEnumChoice>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>Ctrl</text>
+            <fmt>
+             <core:SymbolRef name='fmt-placeholder' />
+            </fmt>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>Ctrl</text>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+          </elements>
           <name>withCtrl</name>
-         </syntax:SyntaxSubAttr>
+         </syntax:SyntaxEnumChoice>
          <syntax:SyntaxToken>
           <text>Alt:</text>
          </syntax:SyntaxToken>
@@ -352,6 +363,8 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
+         <core:SymbolRef name='Action' />
+         <core:SymbolRef name='Binding' />
          <core:SymbolRef name='Import' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>

@@ -12,7 +12,11 @@ package kiev.gui.swing;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.Hashtable;
+
+import kiev.vlang.DumpUtils;
+import kiev.vtree.ASTNode;
 
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Drawable;
@@ -27,6 +31,9 @@ import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
 
 public class Configuration {
+	public static String EVENT_BINDINGS_FILE = "kiev/fmt/evt/bindings.xml";
+	
+	static ASTNode bindings;
 
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
@@ -120,6 +127,10 @@ public class Configuration {
 		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
 		naviMap.put(new InputEventInfo(0,2,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
 		return naviMap;
+	}
+	
+	static {
+		bindings = DumpUtils.loadFromXmlFile(new File(EVENT_BINDINGS_FILE), null);
 	}
 }
 
