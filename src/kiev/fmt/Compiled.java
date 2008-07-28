@@ -531,29 +531,23 @@ public class Draw_SyntaxStrAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxXmlStrAttr extends Draw_SyntaxAttr {
-	public String prefix;
-	public String suffix;
 	
 	public Draw_SyntaxXmlStrAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
-	public Draw_SyntaxXmlStrAttr(Draw_SyntaxElemDecl elem_decl, AttrSlot attr_slot, String prefix, String suffix) {
+	public Draw_SyntaxXmlStrAttr(Draw_SyntaxElemDecl elem_decl, AttrSlot attr_slot) {
 		super(elem_decl);
 		this.name = attr_slot.name;
 		this.attr_slot = attr_slot;
-		this.prefix = prefix;
-		this.suffix = suffix;
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
 		Drawable dr = new DrawXmlStrTerm(node, this, text_syntax);
 		return dr;
 	}
 	public String getPrefix() {
-		if (prefix == null) return "";
-		return prefix;
+		return "";
 	}	
 	public String getSuffix() {
-		if (suffix == null) return "";
-		return suffix;
+		return "";
 	}	
 }
 
@@ -561,7 +555,7 @@ public class Draw_SyntaxXmlTypeAttr extends Draw_SyntaxXmlStrAttr {
 	public Draw_SyntaxXmlTypeAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Draw_SyntaxXmlTypeAttr(Draw_SyntaxElemDecl elem_decl, AttrSlot attr_slot) {
-		super(elem_decl, attr_slot,null,null);
+		super(elem_decl, attr_slot);
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
 		Drawable dr = new DrawXmlTypeTerm(node, this, text_syntax);
@@ -1059,18 +1053,20 @@ public class Draw_ATextSyntax implements Serializable {
 public class Draw_TextSyntax extends Draw_ATextSyntax {
 }
 
-public abstract class Draw_AXmlDumpSyntax extends Draw_ATextSyntax {
+public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 	public String dump = "full";
 	protected Draw_Layout loutSpNo;
 	protected Draw_Layout loutNoNo;
 	protected Draw_Layout loutNlNl;
 	protected Draw_Layout loutNoNl;
 	protected Draw_Paragraph plIndented;
+	
+	private Draw_SyntaxElemDecl elem_decl; 
 
-	public Draw_AXmlDumpSyntax() {
+	public Draw_XmlDumpSyntax() {
 		this("full");
 	}
-	public Draw_AXmlDumpSyntax(String dump) {
+	public Draw_XmlDumpSyntax(String dump) {
 		this.dump = dump;
 		SpaceInfo siSp = new SpaceInfo("sp", SP_SPACE, 1,  4);
 		SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
@@ -1095,12 +1091,12 @@ public abstract class Draw_AXmlDumpSyntax extends Draw_ATextSyntax {
 	}
 
 	protected Draw_SyntaxElem tok(String text, Draw_Layout lout) {
-		Draw_SyntaxToken st = new Draw_SyntaxToken(null,text);
+		Draw_SyntaxToken st = new Draw_SyntaxToken(elem_decl,text);
 		st.lout = lout;
 		return st;
 	}
 	protected Draw_SyntaxElem tok(Draw_Layout lout, String text) {
-		Draw_SyntaxToken st = new Draw_SyntaxToken(null,text);
+		Draw_SyntaxToken st = new Draw_SyntaxToken(elem_decl,text);
 		st.lout = lout;
 		return st;
 	}
@@ -1111,7 +1107,7 @@ public abstract class Draw_AXmlDumpSyntax extends Draw_ATextSyntax {
 	protected Draw_SyntaxElem close0(String name) { tok("</"+name+">", loutNoNo) }
 
 	protected Draw_SyntaxAttr attr(AttrSlot slot) {
-		Draw_SyntaxSubAttr st = new Draw_SyntaxSubAttr(null);
+		Draw_SyntaxSubAttr st = new Draw_SyntaxSubAttr(elem_decl);
 		st.name = slot.name;
 		st.attr_slot = slot;
 		return st;
@@ -1121,30 +1117,24 @@ public abstract class Draw_AXmlDumpSyntax extends Draw_ATextSyntax {
 		return elem;
 	}
 	protected Draw_SyntaxSet set(Draw_SyntaxElem... elems) {
-		Draw_SyntaxSet set = new Draw_SyntaxSet(null);
+		Draw_SyntaxSet set = new Draw_SyntaxSet(elem_decl);
 		set.elements = elems;
 		return set;
 	}
 	protected Draw_SyntaxSet setl(Draw_Layout lout, Draw_SyntaxElem... elems) {
-		Draw_SyntaxSet set = new Draw_SyntaxSet(null);
+		Draw_SyntaxSet set = new Draw_SyntaxSet(elem_decl);
 		set.lout = lout;
 		set.elements = elems;
 		return set;
 	}
 	protected Draw_SyntaxOptional opt(Draw_CalcOption calc, Draw_SyntaxElem opt_true)
 	{
-		Draw_SyntaxOptional st = new Draw_SyntaxOptional(null);
+		Draw_SyntaxOptional st = new Draw_SyntaxOptional(elem_decl);
 		st.calculator = calc;
 		st.opt_true = opt_true;
 		return st;
 	}
-}
 	
-public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
-	
-	public Draw_XmlDumpSyntax() { this("full"); }
-	public Draw_XmlDumpSyntax(String dump) { super(dump); }
-
 	public Draw_SyntaxElem getSyntaxElem(ANode node) {
 		String cl_name = node.getClass().getName();
 		{
@@ -1152,8 +1142,9 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 			if (elem != null)
 				return elem;
 		}
-		Draw_SyntaxSet attrs = new Draw_SyntaxSet(null);
-		Draw_SyntaxSet elems = new Draw_SyntaxSet(null);
+		this.elem_decl = new Draw_SyntaxElemDecl();
+		Draw_SyntaxSet attrs = new Draw_SyntaxSet(elem_decl);
+		Draw_SyntaxSet elems = new Draw_SyntaxSet(elem_decl);
 		elems.lout = loutNoNl;
 		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
 			if (attr.isXmlIgnore())
@@ -1161,9 +1152,9 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 			Draw_SyntaxElem se = null;
 			Draw_SyntaxElem ae = null;
 			if (attr instanceof SpaceAttrSlot) {
-				Draw_SyntaxList sl = new Draw_SyntaxList(null);
+				Draw_SyntaxList sl = new Draw_SyntaxList(elem_decl);
 				sl.name = attr.name;
-				sl.element = new Draw_SyntaxNode(null);
+				sl.element = new Draw_SyntaxNode(elem_decl);
 				sl.filter = new Draw_CalcOptionIncludeInDump(this.dump,"this");
 				sl.lout = loutNoNl;
 				se = setl(loutNoNl, open(attr.name), sl, close(attr.name));
@@ -1175,9 +1166,9 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 				if (Enum.class.isAssignableFrom(attr.clazz))
 					ae = setl(loutSpNo, tok(anm+"='"), attr(attr), tok("'"));
 				else if (attr.clazz == String.class || attr.clazz == Character.TYPE || attr.clazz == Operator.class)
-					ae = setl(loutSpNo, tok(anm+"="), new Draw_SyntaxXmlStrAttr(null,attr,"'","'"));
+					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlStrAttr(elem_decl,attr), tok("'"));
 				else if (Type.class.isAssignableFrom(attr.clazz))
-					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlTypeAttr(null,attr), tok("'"));
+					ae = setl(loutSpNo, tok(anm+"='"), new Draw_SyntaxXmlTypeAttr(elem_decl,attr), tok("'"));
 				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
 					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
@@ -1193,9 +1184,9 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 				else if (Enum.class.isAssignableFrom(attr.clazz))
 					se = set(open0(attr.name), attr(attr), close0(attr.name));
 				else if (attr.clazz == String.class || attr.clazz == Character.TYPE || attr.clazz == Operator.class)
-					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(null,attr,null,null), close0(attr.name));
+					se = set(open0(attr.name), new Draw_SyntaxXmlStrAttr(elem_decl,attr), close0(attr.name));
 				else if (Type.class.isAssignableFrom(attr.clazz))
-					se = set(open0(attr.name), new Draw_SyntaxXmlTypeAttr(null,attr), close0(attr.name));
+					se = set(open0(attr.name), new Draw_SyntaxXmlTypeAttr(elem_decl,attr), close0(attr.name));
 				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
 					attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
@@ -1227,6 +1218,7 @@ public class Draw_XmlDumpSyntax extends Draw_AXmlDumpSyntax {
 			else
 				sn = setl(loutNlNl, tok("<"+node_name), attrs, tok(loutNoNl, ">"), par(elems), tok(loutNlNl, "</"+node_name+">"));
 		}
+		this.elem_decl = null;
 		allSyntax.put(cl_name,sn);
 		return sn;
 	}

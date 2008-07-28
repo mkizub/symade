@@ -10,7 +10,9 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 <sop:dump version='1.0' xmlns:sop='sop://sop/'
-  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'
+  xmlns:logic='sop://languages/logic?class=kiev.vlang.LogicLang'>
  <sop:kiev.vlang.Project>
   <root_dir>
    <sop:kiev.vlang.DirUnit name='.'>

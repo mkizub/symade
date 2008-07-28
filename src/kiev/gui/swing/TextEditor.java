@@ -63,7 +63,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.getView_canvas().setCursor_offset(edit_offset + dr_term.getPrefix().length());
+			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
 		showAutoComplete();
 	}
@@ -98,14 +98,13 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		evt.consume();
 		String text = this.getText();
 		if (text == null) { text = ""; }
-		int prefix_offset = dr_term.getPrefix().length();
 		if (edit_offset < 0) {
 			edit_offset = 0;
-			editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
+			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
 		if (edit_offset > text.length()) {
 			edit_offset = text.length();
-			editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
+			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
 		switch (code) {
 		case KeyEvent.VK_DOWN:
@@ -217,7 +216,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				this.setText(text);
 			}
 		}
-		editor.getView_canvas().setCursor_offset(edit_offset+prefix_offset);
+		editor.getView_canvas().setCursor_offset(edit_offset);
 		editor.formatAndPaint(true);
 	}
 

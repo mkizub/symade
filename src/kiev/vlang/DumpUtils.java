@@ -353,7 +353,7 @@ public final class DumpUtils {
 			if (data != null)
 				xpp.setInput(new ByteArrayInputStream(data), "UTF-8");
 			else
-				xpp.setInput(new FileInputStream(f), "UTF-8");
+				xpp.setInput(new BufferedInputStream(new FileInputStream(f)), "UTF-8");
 			new PullHandler(deserializer).processDocument(xpp);
 		} else {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -383,7 +383,7 @@ public final class DumpUtils {
 			//XmlPullParser xpp = factory.newPullParser();
 			/*XmlPullParser*/org.xmlpull.mxp1.MXParserCachingStrings xpp = new org.xmlpull.mxp1.MXParserCachingStrings();
 			xpp.setFeature("http://xmlpull.org/v1/doc/features.html#process-namespaces",true);
-			xpp.setInput(new FileInputStream(f), "UTF-8");
+			xpp.setInput(new BufferedInputStream(new FileInputStream(f)), "UTF-8");
 			new PullHandler(deserializer).processDocument(xpp);
 		} else {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -437,6 +437,25 @@ public final class DumpUtils {
 		return root;
 	}
 	
+	public static ASTNode deserializeFromXmlFile(File f) {
+		XMLDeSerializer deserializer = new XMLDeSerializer();
+		if (XPP_PARSER) {
+			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
+			//XmlPullParser xpp = factory.newPullParser();
+			/*XmlPullParser*/org.xmlpull.mxp1.MXParserCachingStrings xpp = new org.xmlpull.mxp1.MXParserCachingStrings();
+			xpp.setFeature("http://xmlpull.org/v1/doc/features.html#process-namespaces",true);
+			xpp.setInput(new BufferedInputStream(new FileInputStream(f)), "UTF-8");
+			new PullHandler(deserializer).processDocument(xpp);
+		} else {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(new BufferedInputStream(new FileInputStream(f)), new SAXHandler(deserializer));
+		}
+		foreach (DelayedTypeInfo dti; deserializer.delayed_types)
+			dti.applay();
+		return deserializer.root;
+	}
 	public static ASTNode deserializeFromXmlData(byte[] data) {
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		if (XPP_PARSER) {
@@ -538,7 +557,11 @@ public final class DumpUtils {
 							else if (pkg != null)
 								file = new File(((GlobalDNode)pkg).qname().replace('\u001f','/')+".xml");
 						}
-						FileUnit fu = FileUnit.makeFile(getRelativePath(file), false);
+						FileUnit fu;
+						if (file == null)
+							fu = new FileUnit();
+						else
+							fu = FileUnit.makeFile(getRelativePath(file), false);
 						root = fu;
 						fu.current_syntax = "<xml-dump>";
 						addAttributes(fu, attributes);

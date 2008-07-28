@@ -346,8 +346,17 @@ class DrawableTreeCellRenderer extends DefaultTreeCellRenderer {
 			g.setColor(new Color(leaf.syntax.lout.rgb_color));
 		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font_name);
 		g.setFont(font);
-		String s = leaf.getText();
-		if (s == null) s = "\u25d8"; // ◘
+		Object term_obj = leaf.getTermObj();
+		String s;
+		if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
+			s = "\u25d8"; // ◘
+		else if (term_obj == DrawTerm.NULL_NODE)
+			s = "\u25c6"; // ◆
+		else {
+			s = String.valueOf(term_obj);
+			if (s == null)
+				s = "\u25d8"; // ◘
+		}
 		if (s.length() == 0)
 			return;
 		TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());

@@ -157,11 +157,16 @@ public class NavigateEditor implements Runnable {
 				uiv.getCur_elem().set(prev.getDrawable());
 				uiv.cur_x = prev.getX();
 				if (uiv.insert_mode) {
-					String text = prev.getDrawable().getText();
-					if (text != null)
-						uiv.getView_canvas().setCursor_offset(text.length());
-					else
+					Object term_obj = prev.getDrawable().getTermObj();
+					if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
 						uiv.getView_canvas().setCursor_offset(0);
+					} else {
+						String text = String.valueOf(term_obj);
+						if (text == null)
+							uiv.getView_canvas().setCursor_offset(0);
+						else
+							uiv.getView_canvas().setCursor_offset(text.length());
+					}
 				}
 			}
 		}
@@ -172,15 +177,29 @@ public class NavigateEditor implements Runnable {
 	}
 	private void navigateNext(Editor uiv, boolean repaint) {
 		DrawTerm curr = uiv.getCur_elem().dr;
-		if (curr != null && curr.getText() != null && uiv.insert_mode && uiv.getView_canvas().getCursor_offset() < curr.getText().length()) {
-			uiv.getView_canvas().setCursor_offset(uiv.getView_canvas().getCursor_offset()+1);
-		} else {
-			GfxDrawTermLayoutInfo next = uiv.getCur_elem().dr.getFirstLeaf().getGfxFmtInfo().getNext();
-			if (next != null) {
-				uiv.getCur_elem().set(next.getDrawable());
-				uiv.cur_x = next.getX();
-				uiv.getView_canvas().setCursor_offset(0);
+		if (uiv.insert_mode || curr == null) {
+			Object term_obj = curr == null ? null : curr.getTermObj();
+			String text;
+			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE)
+				text = "";
+			else
+				text = String.valueOf(term_obj);
+			if (text == null)
+				text = "";
+			if (uiv.getView_canvas().getCursor_offset() < text.length()) {
+				uiv.getView_canvas().setCursor_offset(uiv.getView_canvas().getCursor_offset()+1);
+				if (repaint) {
+					uiv.makeCurrentVisible();
+					uiv.formatAndPaint(false);
+				}
+				return;
 			}
+		}
+		GfxDrawTermLayoutInfo next = curr.getFirstLeaf().getGfxFmtInfo().getNext();
+		if (next != null) {
+			uiv.getCur_elem().set(next.getDrawable());
+			uiv.cur_x = next.getX();
+			uiv.getView_canvas().setCursor_offset(0);
 		}
 		if (repaint) {
 			uiv.makeCurrentVisible();

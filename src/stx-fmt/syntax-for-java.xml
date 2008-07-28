@@ -158,6 +158,12 @@
       </indent>
       <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-horiz'>
+      <indent>
+       <core:SymbolRef name='indent-no' />
+      </indent>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
      <syntax:ParagraphLayout name='par-flow-indented'>
       <indent>
        <core:SymbolRef name='indent-next-2' />
@@ -2159,12 +2165,26 @@
            <core:SymbolRef name='fmt-keyword' />
           </fmt>
          </syntax:SyntaxToken>
+         <syntax:SyntaxToken>
+          <text>"</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-separator-eat-right' />
+          </fmt>
+         </syntax:SyntaxToken>
          <syntax:SyntaxStrAttr>
           <name>decl</name>
           <fmt>
            <core:SymbolRef name='fmt-symbol' />
           </fmt>
          </syntax:SyntaxStrAttr>
+         <syntax:SyntaxToken>
+          <text>"</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-separator-eat-left' />
+          </fmt>
+         </syntax:SyntaxToken>
          <syntax:SyntaxToken>
           <text>,</text>
           <fmt>
@@ -4255,9 +4275,23 @@
              <core:SymbolRef name='fmt-keyword' />
             </fmt>
            </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>"</text>
+            <kind>SEPARATOR</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-right' />
+            </fmt>
+           </syntax:SyntaxToken>
            <syntax:SyntaxStrAttr>
             <name>ident</name>
            </syntax:SyntaxStrAttr>
+           <syntax:SyntaxToken>
+            <text>"</text>
+            <kind>SEPARATOR</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-left' />
+            </fmt>
+           </syntax:SyntaxToken>
            <syntax:SyntaxToken>
             <text>;</text>
             <fmt>
@@ -4413,12 +4447,26 @@
              <core:SymbolRef name='fmt-keyword' />
             </fmt>
            </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>"</text>
+            <kind>SEPARATOR</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-right' />
+            </fmt>
+           </syntax:SyntaxToken>
            <syntax:SyntaxStrAttr>
             <name>sname</name>
             <fmt>
              <core:SymbolRef name='fmt-symbol' />
             </fmt>
            </syntax:SyntaxStrAttr>
+           <syntax:SyntaxToken>
+            <text>"</text>
+            <kind>SEPARATOR</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-left' />
+            </fmt>
+           </syntax:SyntaxToken>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
          </syntax:SyntaxSet>
@@ -4901,12 +4949,26 @@
              <core:SymbolRef name='fmt-separator-eat-all' />
             </fmt>
            </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>"</text>
+            <kind>SEPARATOR</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-right' />
+            </fmt>
+           </syntax:SyntaxToken>
            <syntax:SyntaxStrAttr>
             <name>value</name>
             <fmt>
              <core:SymbolRef name='fmt-symbol' />
             </fmt>
            </syntax:SyntaxStrAttr>
+           <syntax:SyntaxToken>
+            <text>"</text>
+            <kind>SEPARATOR</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-left' />
+            </fmt>
+           </syntax:SyntaxToken>
            <syntax:SyntaxToken>
             <text>)</text>
             <fmt>
@@ -9472,12 +9534,34 @@
        <core:SymbolRef name='ConstStringExpr' />
       </rnode>
       <elem>
-       <syntax:SyntaxStrAttr>
-        <name>value</name>
-        <fmt>
-         <core:SymbolRef name='fmt-string' />
-        </fmt>
-       </syntax:SyntaxStrAttr>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>"</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-separator-eat-right' />
+          </fmt>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxStrAttr>
+          <name>value</name>
+          <fmt>
+           <core:SymbolRef name='fmt-string' />
+          </fmt>
+         </syntax:SyntaxStrAttr>
+         <syntax:SyntaxToken>
+          <text>"</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-separator-eat-left' />
+          </fmt>
+         </syntax:SyntaxToken>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+        <par>
+         <core:SymbolRef name='par-horiz' />
+        </par>
+       </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-const-char'>
@@ -9485,12 +9569,34 @@
        <core:SymbolRef name='ConstCharExpr' />
       </rnode>
       <elem>
-       <syntax:SyntaxCharAttr>
-        <name>value</name>
-        <fmt>
-         <core:SymbolRef name='fmt-string' />
-        </fmt>
-       </syntax:SyntaxCharAttr>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>'</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-separator-eat-right' />
+          </fmt>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxCharAttr>
+          <name>value</name>
+          <fmt>
+           <core:SymbolRef name='fmt-string' />
+          </fmt>
+         </syntax:SyntaxCharAttr>
+         <syntax:SyntaxToken>
+          <text>'</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-separator-eat-left' />
+          </fmt>
+         </syntax:SyntaxToken>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+        <par>
+         <core:SymbolRef name='par-horiz' />
+        </par>
+       </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-const-byte'>

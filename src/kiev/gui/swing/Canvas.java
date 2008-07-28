@@ -420,9 +420,16 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 			g.setColor(new Color(leaf.syntax.lout.rgb_color));
 		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font_name);
 		g.setFont(font);
+		Object term_obj = leaf.getTermObj();
 		if (leaf == current && cursor_offset >= 0) {
-			String s = leaf.getText();
-			if (s == null || s.length() == 0) s = " ";
+			String s;
+			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
+				s = " ";
+			} else {
+				s = String.valueOf(term_obj);
+			}
+			if (s == null || s.length() == 0)
+				s = " ";
 			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
 			tl.draw(g, x, y+b);
 			g.translate(x, y+b);
@@ -438,8 +445,15 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 			g.translate(-x, -(y+b));
 		}
 		else {
-			String s = leaf.getText();
-			if (s == null) s = "\u25d8"; // ◘
+			String s;
+			if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
+				s = "\u25d8"; // ◘
+			else if (term_obj == DrawTerm.NULL_NODE)
+				s = "\u25c6"; // ◆
+			else
+				s = String.valueOf(term_obj);
+			if (s == null)
+				s = "\u25d8"; // ◘
 			if (s.length() == 0)
 				return;
 			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());

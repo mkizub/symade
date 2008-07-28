@@ -93,6 +93,13 @@
       <next_pixel_size>0</next_pixel_size>
       <from_current_position>true</from_current_position>
      </syntax:IndentInfo>
+     <syntax:IndentInfo name='indent-no'>
+      <text_size>0</text_size>
+      <pixel_size>0</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
      <syntax:ParagraphLayout name='par-indent'>
       <indent>
        <core:SymbolRef name='indent' />
@@ -120,6 +127,12 @@
      <syntax:ParagraphLayout name='par-indent-from_pos'>
       <indent>
        <core:SymbolRef name='indent-from_cur' />
+      </indent>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
+     <syntax:ParagraphLayout name='par-block'>
+      <indent>
+       <core:SymbolRef name='indent-no' />
       </indent>
       <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
@@ -303,7 +316,43 @@
         <si>
          <core:SymbolRef name='sp' />
         </si>
+        <action_before>SP_EAT</action_before>
+        <action_after>SP_EAT</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-green-dark' />
+      </color>
+      <font>
+       <core:SymbolRef name='bold-font' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-of-string-pref'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
         <action_before>SP_ADD</action_before>
+        <action_after>SP_EAT</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-green-dark' />
+      </color>
+      <font>
+       <core:SymbolRef name='bold-font' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-of-string-suf'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_EAT</action_before>
         <action_after>SP_ADD</action_after>
         <from_attempt>0</from_attempt>
        </syntax:SpaceCmd>
@@ -1448,6 +1497,18 @@
       </rnode>
       <attr_types>
        <syntax:SyntaxExpectedAttr>
+        <attr_name>color</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>font</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
         <title>SpaceCmd</title>
         <attr_name>spaces</attr_name>
         <expected_types>
@@ -1743,12 +1804,33 @@
        <core:SymbolRef name='ConstStringExpr' />
       </rnode>
       <elem>
-       <syntax:SyntaxStrAttr>
-        <name>value</name>
-        <fmt>
-         <core:SymbolRef name='fmt-of-string' />
-        </fmt>
-       </syntax:SyntaxStrAttr>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>"</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-of-string-pref' />
+          </fmt>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxStrAttr>
+          <name>value</name>
+          <fmt>
+           <core:SymbolRef name='fmt-of-string' />
+          </fmt>
+         </syntax:SyntaxStrAttr>
+         <syntax:SyntaxToken>
+          <text>"</text>
+          <fmt>
+           <core:SymbolRef name='fmt-of-string-suf' />
+          </fmt>
+         </syntax:SyntaxToken>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+        <par>
+         <core:SymbolRef name='par-block' />
+        </par>
+       </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-def-token'>

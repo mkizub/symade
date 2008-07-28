@@ -54,7 +54,7 @@ public class UIManager {
 	}
 	
 	public static UIActionFactory newExprEditActionsFlatten(){
-		return kiev.gui.swing.ExprEditActions.newFlatten();
+		return new kiev.gui.swing.ExprEditActions.Flatten();
 	}
 	
 	public static UIActionFactory newFunctionExecutorFactory(){

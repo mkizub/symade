@@ -88,7 +88,7 @@ public class DrawJavaAccess extends DrawTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	String makeText(Formatter fmt) {
+	protected Object makeTermObj(Formatter fmt) {
 		return buildText();
 	}
 
@@ -144,7 +144,7 @@ public class DrawJavaPackedField extends DrawTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	String makeText(Formatter fmt) {
+	protected Object makeTermObj(Formatter fmt) {
 		MetaPacked mp = (MetaPacked)drnode;
 		String text = "@packed("+mp.size;
 		if (mp.fld != null)
@@ -161,7 +161,7 @@ public class DrawJavaConstructorName extends DrawTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	String makeText(Formatter fmt) {
+	protected Object makeTermObj(Formatter fmt) {
 		TypeDecl tdecl = drnode.ctx_tdecl;
 		if (tdecl == null)
 			return "<constructor>";

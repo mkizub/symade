@@ -122,17 +122,20 @@ public final class GfxDrawTermLayoutInfo extends DrawTermLayoutInfo {
 
 @ThisIsANode(copyable=false)
 public abstract class DrawTerm extends Drawable {
-	private static String _uninitialized_ = "uninitialized yet";
+	private static Object _uninitialized_ = new Object();
+	
+	public static final Object NULL_NODE = new Object();
+	public static final Object NULL_VALUE = new Object();
 
 	public DrawTermLayoutInfo dt_fmt;
 	
 	public boolean hidden_as_auto_generated;
 	
-	private String text;
+	private Object term_obj;
 
 	public DrawTerm(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		this.text = _uninitialized_;
+		this.term_obj = _uninitialized_;
 	}
 	
 	public GfxDrawTermLayoutInfo getGfxFmtInfo() { return (GfxDrawTermLayoutInfo)dt_fmt; }
@@ -145,12 +148,12 @@ public abstract class DrawTerm extends Drawable {
 	public Drawable getPrevChild(Drawable dr) { assert ("DrawToken has no children"); return null; }
 	public Drawable[] getChildren() { return Drawable.emptyArray; }
 
-	private boolean textIsUpToDate(String txt) {
-		if (text == _uninitialized_)
+	private boolean isUpToDate(Object obj) {
+		if (term_obj == _uninitialized_)
 			return false;
-		if (text == null)
-			return txt == null;
-		return text.equals(txt);
+		if (term_obj == null)
+			return obj == null;
+		return term_obj.equals(obj);
 	}
 
 	public final void preFormat(DrawContext cont) {
@@ -172,15 +175,15 @@ public abstract class DrawTerm extends Drawable {
 		if (this.dt_fmt == null)
 			this.dt_fmt = cont.makeDrawTermLayoutInfo(this);
 		dt_fmt.x = 0;
-		String tmp = "???";
+		Object tmp = "???";
 		try {
-			tmp = makeText(cont.fmt);
+			tmp = makeTermObj(cont.fmt);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
-		if (!textIsUpToDate(tmp)) {
-			this.text = tmp;
-			cont.formatAsText(this);
+		if (!isUpToDate(tmp)) {
+			this.term_obj = tmp;
+			cont.formatTerm(this);
 		}
 	}
 
@@ -265,10 +268,8 @@ public abstract class DrawTerm extends Drawable {
 		assert(dt.dt_fmt.lnk_next == null);
 	}
 
-	public String getPrefix() { return ""; }	
-	public String getSuffix() { return ""; }	
-	abstract String makeText(Formatter fmt);
-	public final String getText() { return text; }
+	protected abstract Object makeTermObj(Formatter fmt);
+	public final Object getTermObj() { return term_obj; }
 }
 
 @ThisIsANode(copyable=false)
@@ -278,7 +279,7 @@ public final class DrawToken extends DrawTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	String makeText(Formatter fmt) { return ((Draw_SyntaxToken)this.syntax).text; } 
+	protected Object makeTermObj(Formatter fmt) { return ((Draw_SyntaxToken)this.syntax).text; } 
 }
 
 @ThisIsANode(copyable=false)
@@ -288,9 +289,10 @@ public final class DrawPlaceHolder extends DrawTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	String makeText(Formatter fmt) {
+	protected Object makeTermObj(Formatter fmt) {
+		Draw_SyntaxPlaceHolder stx = (Draw_SyntaxPlaceHolder)this.syntax;
 		if (fmt instanceof GfxFormatter)
-			return ((Draw_SyntaxPlaceHolder)this.syntax).text;
+			return stx.text;
 		return "";
 	} 
 
@@ -299,25 +301,33 @@ public final class DrawPlaceHolder extends DrawTerm {
 @ThisIsANode(copyable=false)
 public class DrawNodeTerm extends DrawTerm {
 
-	String attr;
-	ScalarAttrSlot attr_slot;
+	protected String         attr;
+	protected ScalarAttrSlot attr_slot;
 
 	public DrawNodeTerm(ANode node, Draw_SyntaxAttr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
 		this.attr = syntax.name.intern();
 		this.attr_slot = (ScalarAttrSlot)syntax.attr_slot;
+		if (this.attr_slot == null) {
+			foreach (ScalarAttrSlot a; node.values(); a.name == this.attr) {
+				this.attr_slot = a;
+				break;
+			}
+		}
 	}
 
-	String makeText(Formatter fmt) {
+	protected Object makeTermObj(Formatter fmt) {
 		ANode node = this.drnode;
-		if (node instanceof ConstExpr && attr == "value") {
+		if (node instanceof ConstExpr && attr == "value")
 			return String.valueOf(node);
-		} else {
-			Object o = getAttrObject();
-			if (o == null)
-				return null;
-			return String.valueOf(o);
+		Object obj = getAttrObject();
+		if (obj == null) {
+			if (attr_slot != null && attr_slot.is_child)
+				return NULL_NODE;
+			else
+				return NULL_VALUE;
 		}
+		return obj;
 	}
 	
 	public final Object getAttrObject() {
@@ -335,23 +345,17 @@ public class DrawNodeTerm extends DrawTerm {
 @ThisIsANode(copyable=false)
 public class DrawIdent extends DrawNodeTerm {
 
-	private String prefix = "";
-	private String suffix = "";
-
 	public DrawIdent(ANode node, Draw_SyntaxIdentAttr syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
-		//prefix = syntax.getPrefix();
-		//suffix = syntax.getSuffix();
 	}
 
-	String makeText(Formatter fmt) {
-		String text = super.makeText(fmt);
-		// set unescaped
-		prefix = "";
-		suffix = "";
+	protected Object makeTermObj(Formatter fmt) {
+		Object obj = super.makeTermObj(fmt);
+		if (obj == null || obj == NULL_NODE || obj == NULL_VALUE)
+			return obj;
+		String text = String.valueOf(obj);
 		if (text == null)
-			return null;
-		//text = text.intern();
+			return NULL_VALUE;
 		Draw_SyntaxIdentAttr si = (Draw_SyntaxIdentAttr)this.syntax;
 		if (text.indexOf('\u001f') >= 0) {
 			String[] idents = text.split("\u001f");
@@ -371,14 +375,9 @@ public class DrawIdent extends DrawNodeTerm {
 		} else {
 			if (!fmt.getHintEscapes() || si.isOk(text))
 				return text;
-			prefix = si.getPrefix();
-			suffix = si.getSuffix();
-			return getPrefix()+text+getSuffix();
+			return si.getPrefix()+text+si.getSuffix();
 		}
 	}
-	
-	public String getPrefix() { prefix }
-	public String getSuffix() { suffix }
 }
 
 @ThisIsANode(copyable=false)
@@ -388,20 +387,19 @@ public class DrawCharTerm extends DrawNodeTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	public String getPrefix() { return "'"; }	
-	public String getSuffix() { return "'"; }	
-	String makeText(Formatter fmt) {
-		Object o = getAttrObject();
-		if (o instanceof String) {
-			return "'"+o+"'";
-		}
-		else if (o instanceof Character) {
-			Character ch = (Character)o;
+	protected Object makeTermObj(Formatter fmt) {
+		Object obj = getAttrObject();
+		if (obj == null || obj == NULL_NODE || obj == NULL_VALUE)
+			return obj;
+		if (obj instanceof String)
+			return obj;
+		else if (obj instanceof Character) {
+			Character ch = (Character)obj;
 			if (!fmt.getHintEscapes())
-				return "'"+ch+"'";
-			return "'"+Convert.escape(ch.charValue())+"'";
+				return ch;
+			return Convert.escape(ch.charValue());
 		}
-		return "'?'";
+		return "?";
 	}
 }
 
@@ -412,16 +410,14 @@ public class DrawStrTerm extends DrawNodeTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	public String getPrefix() { return "\""; }	
-	public String getSuffix() { return "\""; }	
-	String makeText(Formatter fmt) {
-		Object o = getAttrObject();
-		if (o == null)
-			return null;
-		String str = String.valueOf(o);
+	protected Object makeTermObj(Formatter fmt) {
+		Object obj = getAttrObject();
+		if (obj == null || obj == NULL_NODE || obj == NULL_VALUE)
+			return obj;
+		String str = String.valueOf(obj);
 		if (!fmt.getHintEscapes())
-			return '\"'+str+'\"';
-		return '\"'+new String(Convert.string2source(str), 0)+'\"';
+			return str;
+		return new String(Convert.string2source(str), 0);
 	}
 }
 
@@ -457,13 +453,11 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 		return str;
 	}
 
-	public String getPrefix() { ((Draw_SyntaxXmlStrAttr)this.syntax).getPrefix() }
-	public String getSuffix() { ((Draw_SyntaxXmlStrAttr)this.syntax).getSuffix() }	
-	String makeText(Formatter fmt) {
-		Object o = getAttrObject();
-		if (o == null)
+	protected Object makeTermObj(Formatter fmt) {
+		Object obj = getAttrObject();
+		if (obj == null || obj == NULL_NODE || obj == NULL_VALUE)
 			return "";
-		String str = String.valueOf(o);
+		String str = String.valueOf(obj);
 		return escapeString(str);
 	}
 }
@@ -475,11 +469,11 @@ public class DrawXmlTypeTerm extends DrawXmlStrTerm {
 		super(node, syntax, text_syntax);
 	}
 
-	String makeText(Formatter fmt) {
-		Type t = (Type)getAttrObject();
-		if (t == null)
+	protected Object makeTermObj(Formatter fmt) {
+		Object obj = getAttrObject();
+		if (obj == null || obj == NULL_NODE || obj == NULL_VALUE)
 			return "";
-		String str = t.makeSignature();
+		String str = ((Type)obj).makeSignature();
 		return escapeString(str);
 	}
 }

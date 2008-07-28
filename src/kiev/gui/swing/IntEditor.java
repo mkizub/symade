@@ -48,7 +48,7 @@ public final class IntEditor extends TextEditor {
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.getView_canvas().setCursor_offset(edit_offset + dr_term.getPrefix().length());
+			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
 	}
 

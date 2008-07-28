@@ -99,7 +99,7 @@ public abstract class DrawContext implements Cloneable {
 	}
 	
 	public abstract DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt);
-	public abstract void formatAsText(DrawTerm dr);
+	public abstract void formatTerm(DrawTerm dr);
 	public abstract int setXgetWidth(DrawTermLayoutInfo dlb, int x);
 	public abstract Indents makeIndents(Indents indents, Draw_Paragraph pl, int cur_x);
 
@@ -293,14 +293,23 @@ public final class GfxDrawContext extends DrawContext {
 	public DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt) {
 		return new GfxDrawTermLayoutInfo(dt);
 	}
-	public void formatAsText(DrawTerm dr) {
+	public void formatTerm(DrawTerm dr) {
 		GfxDrawTermLayoutInfo gfx_fmt = (GfxDrawTermLayoutInfo)dr.dt_fmt;
 		gfx_fmt.x = 0;
 		gfx_fmt.y = 0;
 		gfx_fmt.height = 0;
-		String text = dr.getText();
-		if (text == null) text = "\u25d8"; // ◘
-		if (text != null && text.length() != 0) {
+		Object term_obj = dr.getTermObj();
+		String text;
+		if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
+			text = "\u25d8"; // ◘
+		else if (term_obj == DrawTerm.NULL_NODE)
+			text = "\u25c6"; // ◆
+		else {
+			text = String.valueOf(term_obj);
+			if (text == null)
+				text = "\u25d8"; // ◘
+		}
+		if (text.length() != 0) {
 			gfx.layoutText(text, dr.syntax.lout.font_name);
 			gfx_fmt.width = gfx.textWidth();
 			gfx_fmt.height = gfx.textHeight();
@@ -339,7 +348,7 @@ public final class TxtDrawContext extends DrawContext {
 	public DrawTermLayoutInfo makeDrawTermLayoutInfo(DrawTerm dt) {
 		return new TxtDrawTermLayoutInfo(dt);
 	}
-	public void formatAsText(DrawTerm dr) {
+	public void formatTerm(DrawTerm dr) {
 		TxtDrawTermLayoutInfo txt_fmt = (TxtDrawTermLayoutInfo)dr.dt_fmt;
 		txt_fmt.x = 0;
 		txt_fmt.lineno = 0;
@@ -347,10 +356,13 @@ public final class TxtDrawContext extends DrawContext {
 	public int setXgetWidth(DrawTermLayoutInfo dlb, int x) {
 		TxtDrawTermLayoutInfo txt_fmt = (TxtDrawTermLayoutInfo)dlb;
 		txt_fmt.x = x;
-		String txt = dlb.getDrawable().getText();
-		if (txt == null)
+		Object term_obj = dlb.getDrawable().getTermObj();
+		if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE)
 			return 0;
-		return txt.length();
+		String text = String.valueOf(term_obj);
+		if (text == null)
+			return 0;
+		return text.length();
 	}
 	public Indents makeIndents(Indents from, Draw_Paragraph pl, int cur_x) {
 		if (pl != null && pl.indent != null) {

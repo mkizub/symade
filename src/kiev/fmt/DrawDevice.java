@@ -38,14 +38,15 @@ public class TextPrinter {
 				pos_x++;
 			}
 			
-			String text = leaf.dterm.getText();
-			
-			if (text != null) {
-				sb.append(text);
-				pos_x += text.length();
-				x += text.length();
+			Object term_obj = leaf.dterm.getTermObj();
+			if (term_obj != null && term_obj != DrawTerm.NULL_NODE && term_obj != DrawTerm.NULL_VALUE) {
+				String text = String.valueOf(term_obj);
+				if (text != null) {
+					sb.append(text);
+					pos_x += text.length();
+					x += text.length();
+				}
 			}
-
 			while (pos_x < x) {
 				sb.append(' ');
 				pos_x++;

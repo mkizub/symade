@@ -189,8 +189,18 @@ class DrawableTableCellRenderer extends DefaultTableCellRenderer {
 			JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col)
 	{
 		assert (table instanceof ANodeTable);
-		if (value instanceof DrawTerm)
-			value = ((DrawTerm)value).getText();
+		if (value instanceof DrawTerm) {
+			Object term_obj = ((DrawTerm)value).getTermObj();
+			if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
+				value = "\u25d8"; // ◘
+			else if (value == DrawTerm.NULL_NODE)
+				value = "\u25c6"; // ◆
+			else {
+				value = String.valueOf(term_obj);
+				if (value == null)
+					value = "\u25d8"; // ◘
+			}
+		}
 		return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 	}
 }

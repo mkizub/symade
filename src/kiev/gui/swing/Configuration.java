@@ -130,7 +130,7 @@ public class Configuration {
 	}
 	
 	static {
-		bindings = DumpUtils.loadFromXmlFile(new File(EVENT_BINDINGS_FILE), null);
+		bindings = DumpUtils.deserializeFromXmlFile(new File(EVENT_BINDINGS_FILE));
 	}
 }
 
