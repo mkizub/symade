@@ -538,7 +538,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		depth = ((RuleMethod)ctx_method).push();
 		expr.resolve(null);
 		Type xtype = expr.getType();
-		Method@ elems;
+		ISymbol@ elems;
 		if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = new TypeRef(xtype);
 			mode = IsoneofMode.KENUM;
@@ -549,7 +549,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = new TypeRef(Type.getRealType(xtype,elems.mtype.ret()));
+			itype = new TypeRef(Type.getRealType(xtype,((Method)elems.dnode).mtype.ret()));
 			mode = IsoneofMode.ELEMS;
 		} else if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();

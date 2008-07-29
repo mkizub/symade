@@ -442,8 +442,8 @@ public final class Operator implements Constants {
 		return allOperatorDeclsHash.get(nm);
 	}
 
-	public Method resolveMethod(ENode expr) {
-		Method@ m;
+	public ISymbol resolveMethod(ENode expr) {
+		ISymbol@ m;
 		ENode[] args = expr.getArgs();
 		ResInfo info = new ResInfo(expr, this.name, ResInfo.noStatic);
 		Type[] tps = new Type[args.length-1];
@@ -453,25 +453,23 @@ public final class Operator implements Constants {
 		}
 		CallType mt = new CallType(args[0].getType(), null, tps, null, false);
 		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,mt))
-			return (Method)m;
+			return (ISymbol)m;
 		info = new ResInfo(expr, this.name, 0);
 		tps = new Type[args.length];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i].getType();
 		mt = new CallType(null, null, tps, null, false);
 		if (PassInfo.resolveBestMethodR(this,m,info,mt))
-			return (Method)m;
+			return (ISymbol)m;
 		return null;
 	}
 
-	final public rule resolveOperatorMethodR(Method@ node, ResInfo info, CallType mt)
+	final public rule resolveOperatorMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		Method@ m;
 	{
 		m @= this.methods,
-		info.checkNodeName(m),
 		info.check(m),
-		m.equalsByCast(info.getName(),mt,Type.tpVoid,info),
-		node ?= m
+		node ?= m.equalsByCast(info.getName(),mt,Type.tpVoid,info)
 	}
 }
 

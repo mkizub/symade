@@ -34,9 +34,9 @@ public class CallExpr extends ENode {
 	public static final NodeAttr_rule_call_arg RULE_ENV_ARG = new NodeAttr_rule_call_arg();	
 	public static final ExtSpaceAttrSlot TI_EXT_ARG = new ExtSpaceAttrSlot<ENode>("ti-call-args",ANode.nodeattr$parent,TypeInfo.newTypeInfo(ENode.class,null));	
 
-	@nodeAttr				public ENode				obj;
+	@nodeAttr				public ENode			obj;
 	@nodeAttr				public TypeRef∅			targs;
-	@nodeAttr				public ENode∅				args;
+	@nodeAttr				public ENode∅			args;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;
@@ -58,11 +58,11 @@ public class CallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args) {
+	public CallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
 		this(pos, obj, new SymbolRef<Method>(pos,func), targs, args);
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
+	public CallExpr(int pos, ENode obj, ISymbol func, ENode[] args) {
 		this(pos, obj, new SymbolRef<Method>(pos,func), null, args);
 	}
 
@@ -118,7 +118,6 @@ public class CallExpr extends ENode {
 			return;
 		}
 
-		Method@ m;
 		Type tp = ctx_tdecl.xtype;
 		CallType mt = null;
 
@@ -131,14 +130,14 @@ public class CallExpr extends ENode {
 
 		// super-call "super.func(args)"
 		if (obj instanceof SuperExpr) {
-			Method@ m;
+			ISymbol@ m;
 			Type tp = ctx_tdecl.super_types[0].getType();
 			ResInfo info = new ResInfo(this,this.ident);
 			info.enterForward(obj);
 			info.enterSuper();
 			mt = new CallType(tp,ata,ta,null,false);
 			try {
-				if( !PassInfo.resolveBestMethodR(tp,m,info,mt) )
+				if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(this.ident,args,null));
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
@@ -172,7 +171,7 @@ public class CallExpr extends ENode {
 			// try virtual call first
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				Method@ m;
+				ISymbol@ m;
 				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
 				mt = new CallType(tp,ata,ta,null,false);
 				if (obj == null) {
@@ -222,7 +221,7 @@ public class CallExpr extends ENode {
 			// try static call
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				Method@ m;
+				ISymbol@ m;
 				ResInfo info = new ResInfo(this, this.ident);
 				mt = new CallType(null,ata,ta,null,false);
 				if (obj == null) {

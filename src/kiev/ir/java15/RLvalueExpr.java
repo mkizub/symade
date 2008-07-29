@@ -123,14 +123,14 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 		obj.resolve(null);
 		index.resolve(null);
 		// Resolve overloaded access method
-		Method@ m;
+		ISymbol@ m;
 		CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},Type.tpAny,false);
 		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(obj.getType(),m,info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
-		if !(m.isMacro() && m.isNative()) {
+		if !(m.dnode.isMacro() && m.dnode.isNative()) {
 			// Not a standard operator
-			if( m.isStatic() )
+			if( m.dnode.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~obj,~index}));
 			else
 				replaceWithNodeResolve(reqType, new CallExpr(pos,~obj,m,new ENode[]{~index}));

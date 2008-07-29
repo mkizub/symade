@@ -25,18 +25,7 @@ public abstract class BoolExpr extends ENode {
 	public Type getType() { return Type.tpBoolean; }
 
 	public void mainResolveOut() {
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		resolveMethodAndNormalize();
 	}
 
 	public static void checkBool(ENode e) {
@@ -237,18 +226,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	public String toString() { return getOp().toString(this); }
 
 	public void mainResolveOut() {
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		resolveMethodAndNormalize();
 	}
 
 	public boolean	isConstantExpr() {
@@ -257,16 +235,22 @@ public class BinaryBoolExpr extends BoolExpr {
 		if (!expr2.isConstantExpr())
 			return false;
 		DNode m = this.dnode;
-		if (m == null)
-			m = getOp().resolveMethod(this);
+		if (m == null) {
+			ISymbol isym = getOp().resolveMethod(this);
+			if (isym != null)
+				m = isym.dnode;
+		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
 		return true;
 	}
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
-		if (m == null)
-			m = getOp().resolveMethod(this);
+		if (m == null) {
+			ISymbol isym = getOp().resolveMethod(this);
+			if (isym != null)
+				m = (Method)isym.dnode;
+		}
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}

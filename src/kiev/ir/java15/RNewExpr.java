@@ -72,12 +72,12 @@ public static final view RNewExpr of NewExpr extends RENode {
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
 		CallType mt = new CallType(null,null,ta,ntype,false); //(CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
-		Method@ m;
+		ISymbol@ m;
 		// First try overloaded 'new', than real 'new'
 		if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
 			ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 			if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
-				CallExpr n = new CallExpr(pos,new TypeRef(ntype),(Method)m,((NewExpr)this).args.delToArray());
+				CallExpr n = new CallExpr(pos,new TypeRef(ntype),m,((NewExpr)this).args.delToArray());
 				replaceWithNodeResolve(n);
 				return;
 			}
@@ -86,7 +86,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
 			this.symbol = m;
-			m.makeArgs(args,ntype);
+			((Method)m.dnode).makeArgs(args,ntype);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}

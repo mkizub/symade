@@ -68,7 +68,7 @@ public abstract class Type extends AType {
 		super(meta_type, template, flags);
 	}
 
-	public final rule resolveCallAccessR(Method@ node, ResInfo info, CallType mt) {
+	public final rule resolveCallAccessR(ISymbol@ node, ResInfo info, CallType mt) {
 		meta_type.resolveCallAccessR(this,node,info,mt)
 	}
 

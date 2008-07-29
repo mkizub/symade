@@ -150,18 +150,9 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 			return;
 		}
 
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		CallType ct = m.makeType(null,getArgs());
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
@@ -246,18 +237,9 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 			return;
 		}
 		
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		CallType ct = m.makeType(null,getArgs());
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
@@ -302,18 +284,9 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 			return;
 		}
 		
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		CallType ct = m.makeType(null,getArgs());
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
@@ -441,18 +414,9 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 			return;
 		}
 		
-		Method m;                                                                       
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
 			lval.resolve(m.params[0].getType());
@@ -558,19 +522,19 @@ public static final view RCastExpr of CastExpr extends RENode {
 	}
 
 	public final boolean tryOverloadedCast(Type et) {
-		Method@ v;
+		ISymbol@ v;
 		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 		v.$unbind();
 		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
-			Method m = (Method)v;
+			Method m = (Method)v.dnode;
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType();
 				Type tp = info.resolved_type.resolve(at);
 				targs[i] = new TypeRef(tp);
 			}
-			ENode call = info.buildCall((ASTNode)this,~expr,m,targs,ENode.emptyArray).closeBuild();
+			ENode call = info.buildCall((ASTNode)this,~expr,v,targs,ENode.emptyArray).closeBuild();
 			if (this.ctype.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(ctype.getType(),call);
@@ -580,7 +544,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
-			Method m = (Method)v;
+			Method m = (Method)v.dnode;
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType();
@@ -588,7 +552,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 				targs[i] = new TypeRef(tp);
 			}
 			assert(m.isStatic());
-			ENode call = new CallExpr(pos,null,m,targs,new ENode[]{~expr});
+			ENode call = new CallExpr(pos,null,v,targs,new ENode[]{~expr});
 			replaceWithNodeResolve(ctype.getType(),call);
 			return true;
 		}

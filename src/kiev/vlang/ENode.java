@@ -304,8 +304,25 @@ public abstract class ENode extends ASTNode {
 
 	public Operator getOp() { return null; }
 	public void setOp(Operator op) { throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass()); }
-	
-	
+
+	public final Method resolveMethodAndNormalize() {	
+		Method m;
+		if (this.dnode == null) {
+			ISymbol isym = getOp().resolveMethod(this);
+			if (isym == null) {
+				if (ctx_method == null || !ctx_method.isMacro())
+					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return null;
+			}
+			m = (Method)isym.dnode;
+			this.symbol = isym;
+		} else {
+			m = (Method)this.dnode;
+		}
+		m.normilizeExpr(this);
+		return m;
+	}
+
 	public ENode[] getArgs() { return null; }
 
 	public int getPriority() {

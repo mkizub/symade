@@ -173,6 +173,7 @@ public static view RENode of ENode extends RNode {
 	public final boolean valueEquals(Object o);
 	public final boolean isConstantExpr();
 	public final Object	getConstValue();
+	public final Method resolveMethodAndNormalize();
 
 	public void resolve(Type reqType) {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass()+" / "+((ENode)this).getClass());

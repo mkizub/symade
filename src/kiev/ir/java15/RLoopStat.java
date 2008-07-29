@@ -165,9 +165,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 
 		Type itype;
 		Type xtype = container.getType();
-		Method@ elems;
-		Method@ nextelem;
-		Method@ moreelem;
+		ISymbol@ elems;
+		ISymbol@ nextelem;
+		ISymbol@ moreelem;
 		if (xtype instanceof CTimeType) {
 			container = xtype.makeUnboxedExpr(container);
 			container.resolve(null);
@@ -186,7 +186,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = Type.getRealType(xtype,elems.mtype.ret());
+			itype = Type.getRealType(xtype,((Method)elems.dnode).mtype.ret());
 			mode = ForEachStat.ELEMS;
 		} else if( xtype ≡ Type.tpRule &&
 			(

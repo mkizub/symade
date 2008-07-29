@@ -175,7 +175,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		info.check(node)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
 		n @= inits,
@@ -241,7 +241,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		path.checkNodeName(node)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		Var@ n;
 	{
 		{	n ?= var

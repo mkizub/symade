@@ -540,11 +540,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
 		CallType mt = new CallType(null,null,args,ret,false);
-		Method@ m;
+		ISymbol@ m;
 		if (!this.xtype.resolveCallAccessR(m, new ResInfo(this,name,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic), mt) &&
 			!this.resolveMethodR(m, new ResInfo(this,name,ResInfo.noForwards|ResInfo.noSyntaxContext), mt))
 			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
-		return (Method)m;
+		return (Method)m.dnode;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
@@ -577,7 +577,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		sup_ref.getTypeDecl().resolveNameR(node,info)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		TypeRef@ supref;
 	{
 		info.isStaticAllowed(),
@@ -721,7 +721,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 		((Import)syn).resolveNameR(node,info)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		ASTNode@ member;
 		TypeRef@ supref;
 	{
@@ -732,8 +732,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
 			member @= members,
 			member instanceof Method,
 			info.check(member),
-			node ?= ((Method)member),
-			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
+			node ?= ((Method)member).equalsByCast(info.getName(),mt,Type.tpVoid,info)
 		;	info.isSuperAllowed(),
 			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),
@@ -833,7 +832,7 @@ public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames
 		}
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		ASTNode@ member;
 		SymbolRef<KievSyntax>@	super_stx;
 	{
@@ -843,8 +842,7 @@ public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames
 			member @= members,
 			member instanceof Method,
 			info.check(member),
-			node ?= ((Method)member),
-			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
+			node ?= ((Method)member).equalsByCast(info.getName(),mt,Type.tpVoid,info)
 		;
 			member @= members,
 			{

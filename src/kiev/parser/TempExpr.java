@@ -205,17 +205,17 @@ public final class UnresSeqs extends UnresExpr {
 @ThisIsANode(lang=void)
 public final class UnresCallExpr extends UnresExpr {
 
-	@nodeData public ENode				obj;
-	@nodeData public SymbolRef<DNode>	func;
-	@nodeData public TypeRef∅			targs;
+	@nodeData public ENode			obj;
+	@nodeData public SymbolRef		func;
+	@nodeData public TypeRef∅		targs;
 	@nodeData public ENode∅			args;
 
 	public UnresCallExpr() {}
 
-	public UnresCallExpr(int pos, ENode obj, DNode func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef<DNode>(pos, func), targs, args, super_flag);
+	public UnresCallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args, boolean super_flag) {
+		this(pos, obj, new SymbolRef(pos, func), targs, args, super_flag);
 	}
-	public UnresCallExpr(int pos, ENode obj, SymbolRef<DNode> func, TypeRef[] targs, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, SymbolRef func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
 		this.obj = obj;
 		this.func = func;

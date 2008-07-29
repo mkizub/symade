@@ -158,12 +158,12 @@ public final class NewExpr extends ENode {
 			ta[i] = args[i].getType();
 		{
 			CallType mt = (CallType)new CallType(null,null,ta,ntype,false);
-			Method@ m;
+			ISymbol@ m;
 			// First try overloaded 'new', than real 'new'
 			if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
 				ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 				if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
-					CallExpr n = new CallExpr(pos,new TypeRef(ntype),(Method)m,((NewExpr)this).args.delToArray());
+					CallExpr n = new CallExpr(pos,new TypeRef(ntype),m,((NewExpr)this).args.delToArray());
 					replaceWithNodeReWalk(n);
 					return;
 				}

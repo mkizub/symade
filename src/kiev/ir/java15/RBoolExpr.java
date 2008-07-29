@@ -63,18 +63,9 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
 			expr1.resolve(m.params[0].getType());
@@ -160,18 +151,9 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
 			expr.resolve(m.params[0].getType());

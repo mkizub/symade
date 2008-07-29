@@ -131,7 +131,7 @@ public final class FileUnit extends NameSpace {
 		istx.resolveNameR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
 		ImportSyntax@ istx;
 	{
 		super.resolveMethodR(node, path, mt)
@@ -225,7 +225,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		((Import)syn).resolveNameR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
 		ASTNode@ syn;
 	{
 		syn @= members,

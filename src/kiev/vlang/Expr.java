@@ -166,11 +166,11 @@ public class AssignExpr extends ENode {
 			ContainerAccessExpr cae = (ContainerAccessExpr)lval;
 			Type ect1 = cae.obj.getType();
 			Type ect2 = cae.index.getType();
-			Method@ m;
+			ISymbol@ m;
 			ResInfo info = new ResInfo(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
 			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
 			if (PassInfo.resolveBestMethodR(ect1,m,info,mt)) {
-				Method rm = (Method)m;
+				Method rm = (Method)m.dnode;
 				if !(rm.isMacro() && rm.isNative()) {
 					ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
 					res = res.closeBuild();
@@ -178,18 +178,7 @@ public class AssignExpr extends ENode {
 				}
 			}
 		} else {
-			Method m;
-			if (this.dnode == null) {
-				m = getOp().resolveMethod(this);
-				if (m == null) {
-					if (ctx_method == null || !ctx_method.isMacro())
-						Kiev.reportError(this, "Unresolved method for operator "+getOp());
-					return;
-				}
-			} else {
-				m = (Method)this.dnode;
-			}
-			m.normilizeExpr(this);
+			resolveMethodAndNormalize();
 		}
 	}
 
@@ -280,10 +269,11 @@ public class BinaryExpr extends ENode {
 		if (this.dnode != null) {
 			m = (Method)this.dnode;
 		} else {
-			m = op.resolveMethod(this);
-			if (m == null)
+			ISymbol isym = op.resolveMethod(this);
+			if (isym == null)
 				return Type.tpVoid;
-			this.symbol = m;
+			this.symbol = isym;
+			m = (Method)isym.dnode;
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -291,18 +281,7 @@ public class BinaryExpr extends ENode {
 	}
 
 	public void mainResolveOut() {
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		resolveMethodAndNormalize();
 	}
 
 	public boolean	isConstantExpr() {
@@ -311,8 +290,11 @@ public class BinaryExpr extends ENode {
 		if (!expr2.isConstantExpr())
 			return false;
 		DNode m = this.dnode;
-		if (m == null)
-			m = getOp().resolveMethod(this);
+		if (m == null) {
+			ISymbol isym = getOp().resolveMethod(this);
+			if (isym != null)
+				m = isym.dnode;
+		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
 		return true;
@@ -320,7 +302,7 @@ public class BinaryExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = getOp().resolveMethod(this);
+			m = (Method)getOp().resolveMethod(this).dnode;
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}
@@ -367,10 +349,11 @@ public class UnaryExpr extends ENode {
 		if (this.dnode != null) {
 			m = (Method)this.dnode;
 		} else {
-			m = op.resolveMethod(this);
-			if (m == null)
+			ISymbol isym = op.resolveMethod(this);
+			if (isym == null)
 				return Type.tpVoid;
-			this.symbol = m;
+			this.symbol = isym;
+			m = (Method)isym.dnode;
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -378,18 +361,9 @@ public class UnaryExpr extends ENode {
 	}
 
 	public void mainResolveOut() {
-		Method m;
-		if (this.dnode == null) {
-			m = getOp().resolveMethod(this);
-			if (m == null) {
-				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-		} else {
-			m = (Method)this.dnode;
-		}
-		m.normilizeExpr(this);
+		Method m = resolveMethodAndNormalize();
+		if (m == null)
+			return; // error already reported
 		// Check if expression is a constant
 		if (m.body instanceof CoreExpr && expr.isConstantExpr()) {
 			ConstExpr ce = ((CoreExpr)m.body).calc(this);
@@ -401,8 +375,11 @@ public class UnaryExpr extends ENode {
 		if (!expr.isConstantExpr())
 			return false;
 		DNode m = this.dnode;
-		if (m == null)
-			m = getOp().resolveMethod(this);
+		if (m == null) {
+			ISymbol isym = getOp().resolveMethod(this);
+			if (isym != null)
+				m = isym.dnode;
+		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
 		return true;
@@ -410,7 +387,7 @@ public class UnaryExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = getOp().resolveMethod(this);
+			m = (Method)getOp().resolveMethod(this).dnode;
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}
@@ -556,7 +533,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
@@ -652,7 +629,7 @@ public class IncrementExpr extends ENode {
 	public String toString() { return getOp().toString(this); }
 
 	public void mainResolveOut() {
-		Method m = op.resolveMethod(this);
+		ISymbol m = op.resolveMethod(this);
 		if (m == null) {
 			if (ctx_method == null || !ctx_method.isMacro())
 				Kiev.reportWarning(this, "Unresolved method for operator "+op);
@@ -768,18 +745,18 @@ public class CastExpr extends ENode {
 	}
 
 	private boolean resolveOverloadedCast(Type et) {
-		Method@ v;
+		ISymbol@ v;
 		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
-			this.symbol = (Method)v;
+			this.symbol = (ISymbol)v;
 			return true;
 		}
 		v.$unbind();
 		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
-			this.symbol = (Method)v;
+			this.symbol = (ISymbol)v;
 			return true;
 		}
 		return false;

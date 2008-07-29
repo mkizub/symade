@@ -167,7 +167,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, Symbol symbol) {
+	public SymbolRef(int pos, ISymbol symbol) {
 		this.pos = pos;
 		this.symbol = symbol;
 	}

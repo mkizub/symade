@@ -100,13 +100,13 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		}
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
-		Method@ v;
+		ISymbol@ v;
 		CallType mt = new CallType(null,null,types,Type.tpAny,false);
 		if( !((ScopeOfMethods)scope).resolveMethodR(v,new ResInfo(this,name),mt) ) {
 			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
 			return false;
 		}
-		this.name.symbol = (Method)v;
+		this.name.symbol = (ISymbol)v;
 		return false;
 	}
 
@@ -155,17 +155,16 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		}
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && !path.doImportStar() && this.name.dnode instanceof Method,
-		((Method)this.name.dnode).equalsByCast(path.getName(),mt,Type.tpVoid,path),
-		node ?= ((Method)this.name.dnode)
+		node ?= ((Method)this.name.dnode).equalsByCast(path.getName(),mt,Type.tpVoid,path)
 	;
 		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.name.dnode instanceof TypeDecl,
 		((TypeDecl)this.name.dnode).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
 		((TypeDecl)this.name.dnode).resolveMethodR(node,path,mt),
-		node instanceof Method && node.isStatic() && !node.isPrivate()
+		node.dnode.isStatic() && !node.dnode.isPrivate()
 	}
 
 	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
@@ -229,11 +228,11 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 		this.name.dnode.resolveNameR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
 	{
 		this.name.dnode instanceof KievSyntax,
 		this.name.dnode.resolveMethodR(node,path,mt),
-		node.isStatic() && !node.isPrivate()
+		node.dnode.isStatic() && !node.dnode.isPrivate()
 	}
 
 	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {

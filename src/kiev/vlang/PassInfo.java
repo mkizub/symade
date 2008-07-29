@@ -95,14 +95,14 @@ public class PassInfo {
 	}
 
 	private static void addResolvedMethod(
-		Method m, ResInfo info,
-		Vector<Method>  methods, Vector<ResInfo> paths, Vector<CallType> types)
+		ISymbol m, ResInfo info,
+		Vector<ISymbol> methods, Vector<ResInfo> paths, Vector<CallType> types)
 	{
 		trace(Kiev.debug && Kiev.debugResolve,"Candidate method "+m+" with path "+info+" found...");
-		if !(info.check(m))
+		if !(info.check(m.dnode))
 			return;
 		for (int i=0; i < methods.length; i++) {
-			if (methods[i] == m) {
+			if (methods[i].dnode == m.dnode) {
 				trace(Kiev.debug && Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
 				if (info.getTransforms() < paths[i].getTransforms()) {
 					trace(Kiev.debug && Kiev.debugResolve,"Will use "+m+" with paths "+info);
@@ -119,33 +119,33 @@ public class PassInfo {
 	
 	public static boolean resolveBestMethodR(
 		Object sc,
-		Method@ node,
+		ISymbol@ node,
 		ResInfo info,
 		CallType mt)
 	{
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving best method "+Method.toString(info.getName(),mt)+" in "+sc);
-		Vector<Method>  methods  = new Vector<Method>();
-		Vector<ResInfo> paths    = new Vector<ResInfo>();
+		Vector<ISymbol>  methods = new Vector<ISymbol>();
+		Vector<ResInfo>  paths   = new Vector<ResInfo>();
 		Vector<CallType> types   = new Vector<CallType>();
 		if (sc instanceof ScopeOfMethods) {
 			ScopeOfMethods scm = (ScopeOfMethods)sc;
 			foreach( scm.resolveMethodR(node,info,mt) )
-				addResolvedMethod((Method)node,info,methods,paths,types);
+				addResolvedMethod(node,info,methods,paths,types);
 		}
 		else if (sc instanceof Type && info.isStaticAllowed()) {
 			Type tp = (Type)sc;
 			foreach( tp.meta_type.tdecl.resolveMethodR(node,info,mt) )
-				addResolvedMethod((Method)node,info,methods,paths,types);
+				addResolvedMethod(node,info,methods,paths,types);
 		}
 		else if (sc instanceof Type) {
 			Type tp = (Type)sc;
 			foreach( tp.resolveCallAccessR(node,info,mt) )
-				addResolvedMethod((Method)node,info,methods,paths,types);
+				addResolvedMethod(node,info,methods,paths,types);
 		}
 		else if (sc instanceof Operator) {
 			Operator op = (Operator)sc;
 			foreach( op.resolveOperatorMethodR(node,info,mt) )
-				addResolvedMethod((Method)node,info,methods,paths,types);
+				addResolvedMethod(node,info,methods,paths,types);
 		}
 		else
 			throw new RuntimeException("Unknown scope "+sc);
@@ -170,12 +170,12 @@ public class PassInfo {
 		}
 		
 		for (int i=0; i < methods.length; i++) {
-			Method m1 = methods[i];
+			Method m1 = (Method)methods[i].dnode;
 			ResInfo p1 = paths[i];
 			CallType mt1 = types[i];
 		next_method:
 			for (int j=0; j < methods.length; j++) {
-				Method m2 = methods[j];
+				Method m2 = (Method)methods[j].dnode;
 				ResInfo p2 = paths[j];
 				CallType mt2 = types[j];
 				
@@ -267,7 +267,7 @@ public class PassInfo {
 		throw new CompilerException(info.getFrom(), msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, CallType mt)
+	public static rule resolveMethodR(ASTNode from, ISymbol@ node, ResInfo path, CallType mt)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{

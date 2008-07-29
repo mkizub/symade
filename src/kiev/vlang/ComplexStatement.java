@@ -95,7 +95,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		node ?= n
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),

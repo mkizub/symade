@@ -123,7 +123,7 @@ public abstract class MetaType implements Constants {
 		((Field)forw).getType().applay(tp).resolveNameAccessR(node,info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
+	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt)
 		ASTNode@ member;
 		TypeRef@ sup;
 		Field@ forw;
@@ -134,8 +134,7 @@ public abstract class MetaType implements Constants {
 			member @= tdecl.getMembers(),
 			member instanceof Method,
 			info.check(member),
-			node ?= ((Method)member),
-			((Method)node).equalsByCast(info.getName(),mt,tp,info)
+			node ?= ((Method)member).equalsByCast(info.getName(),mt,tp,info)
 		;
 			info.isSuperAllowed(),
 			info.enterSuper(1, ResInfo.noForwards) : info.leaveSuper(),
@@ -334,7 +333,7 @@ public final class ASTNodeMetaType extends MetaType {
 		node instanceof Field && info.checkNodeName(node) && info.check(node)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }
+	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt) { false }
 
 }
 
@@ -609,7 +608,7 @@ public class ArgMetaType extends MetaType {
 		sup.getType().resolveNameAccessR(node, info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
+	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt)
 		TypeRef@ sup;
 	{
 		tdecl.super_types.length == 0,
@@ -804,7 +803,7 @@ public class WrapperMetaType extends MetaType {
 		((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
+	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt)
 	{
 		info.isForwardsAllowed(),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving method "+info.getName()+" in wrapper type "+this),
@@ -972,7 +971,7 @@ public class CallMetaType extends MetaType {
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info) { false }
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }
+	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt) { false }
 
 	public TemplateTVarSet getTemplBindings() {
 		return templ_bindings;

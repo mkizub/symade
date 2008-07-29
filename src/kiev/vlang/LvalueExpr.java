@@ -392,12 +392,12 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			if (t instanceof ArrayType)
 				return Type.getRealType(t,t.arg);
 			// Resolve overloaded access method
-			Method@ v;
+			ISymbol@ v;
 			CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
 			ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(t,v,info,mt) )
 				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
-			return Type.getRealType(t,((Method)v).mtype.ret());
+			return Type.getRealType(t,((Method)v.dnode).mtype.ret());
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -415,12 +415,12 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		Type t = obj.getType();
 		if (t instanceof ArrayType)
 			return new Type[]{Type.getRealType(t,t.arg)};
-		Method@ v;
+		ISymbol@ v;
 		CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
 		ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(t,v,info,mt) )
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
-		return new Type[]{Type.getRealType(t,((Method)v).mtype.ret())};
+		return new Type[]{Type.getRealType(t,((Method)v.dnode).mtype.ret())};
 	}
 }
 

@@ -723,8 +723,11 @@ public class MacroBinaryBoolExpr extends ENode {
 		if (!expr2.isConstantExpr())
 			return false;
 		DNode m = this.dnode;
-		if (m == null)
-			m = getOp().resolveMethod(this);
+		if (m == null) {
+			ISymbol isym = getOp().resolveMethod(this);
+			if (isym != null)
+				m = isym.dnode;
+		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
 		return true;
@@ -732,7 +735,7 @@ public class MacroBinaryBoolExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = getOp().resolveMethod(this);
+			m = (Method)getOp().resolveMethod(this).dnode;
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}

@@ -430,7 +430,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			else
 				expr.ident = this.sname;
 		}
-		expr.symbol = this;
+		if (expr.dnode != this)
+			expr.symbol = this;
 		if (!isMacro())
 			return;
 		UserMeta m = (UserMeta)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fCompilerNode");
@@ -456,7 +457,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			op = Operator.lookupOperatorForMethod(this);
 		en.initFrom(expr, op, this, args);
 		expr.replaceWithNodeReWalk(en);
-		
 	}
 
 	public void makeArgs(ENode[] args, Type t) {
@@ -488,19 +488,32 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 	}
 
-	public boolean equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
-		if (!this.hasName(name)) return false;
+	public ISymbol equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
+		ISymbol isym = null;
+		{
+			String sname = this.sname;
+			if (sname == name) {
+				isym = this;
+			} else {
+				foreach(Symbol s; aliases; s.sname == name) {
+					isym = s;
+					break;
+				}
+				if (isym == null)
+					return null;
+			}
+		}
 		int type_len = this.mtype.arity;
 		int args_len = mt.arity;
 		if( type_len != args_len ) {
 			if( !isVarArgs() ) {
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in number of params: "+type_len+" != "+args_len);
-				return false;
+				return null;
 			} else if( type_len-1 > args_len ) {
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" not match in number of params: "+type_len+" != "+args_len);
-				return false;
+				return null;
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
@@ -515,7 +528,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				Type bound = mt.resolve(arg);
 				if!(bound.isInstanceOf(arg)) {
 					trace(Kiev.debug && Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg);
-					return false;
+					return null;
 				}
 				set.append(arg, bound);
 			}
@@ -527,7 +540,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (mt.arg(i).getAutoCastTo(rt.arg(i)) == null) {
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in param # "+i+": "+mt.arg(i)+" not auto-castable to "+rt.arg(i));
-				return false;
+				return null;
 			}
 		}
 
@@ -548,7 +561,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 				+" infer argument: "+at+" to "+b);
 			if (b ≡ Type.tpAny)
-				return false;
+				return null;
 			rt = (CallType)rt.applay(new TVarBld(at, b));
 		}
 		// check bindings are correct
@@ -558,19 +571,19 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			Type val = rt.resolveArg(i);
 			if (!var.checkBindings(rt, val)) {
 				trace(Kiev.debug && Kiev.debugResolve,"Incorrect bindings for var "+var+" with value "+val+" in type "+rt);
-				return false; 
+				return null; 
 			}
 		}
 		
 		if (mt.ret() ≢ Type.tpAny && rt.ret().getAutoCastTo(mt.ret()) == null) {
 			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
-			return false;
+			return null;
 		}
 		
 		trace(Kiev.debug && Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+" match as "+rt);
 		info.resolved_type = rt;
-		return true;
+		return isym;
 	}
 	
 	public final CallType makeType(TypeRef[] targs, ENode[] args) {
@@ -685,7 +698,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		var.getType().resolveNameAccessR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
 		Var@ n;
 	{
 		info.isForwardsAllowed(),
