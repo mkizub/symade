@@ -36,6 +36,8 @@ public final view JMethod of Method extends JDNode {
 		return (Enumeration<WBCCondition>)((Method)this).conditions.elements();
 	}
 
+	public final boolean hasName(String nm);
+
 	public final boolean isVirtualStatic();
 	public final boolean isVarArgs();
 	public final boolean isRuleMethod();

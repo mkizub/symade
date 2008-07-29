@@ -168,7 +168,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public ForStat() {}
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo info)
+	public rule resolveNameR(ISymbol@ node, ResInfo info)
 	{
 		node @= inits,
 		info.checkNodeName(node),
@@ -180,7 +180,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	{
 		n @= inits,
 		n instanceof Var,
-		info.checkNodeName(n),
 		((Var)n).isForward(),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveCallAccessR(node,info,mt)
@@ -233,7 +232,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.body = body;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 	{
 		{	node ?= var
 		;	node ?= iter

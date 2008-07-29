@@ -87,8 +87,8 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return "case "+val+':';
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info)
-		ASTNode@ n;
+	public rule resolveNameR(ISymbol@ node, ResInfo info)
+		Var@ n;
 	{
 		n @= pattern,
 		info.checkNodeName(n),
@@ -287,10 +287,10 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		return "catch( "+arg+" )";
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info)
+	public rule resolveNameR(ISymbol@ node, ResInfo info)
 	{
-		node ?= arg,
-		info.checkNodeName(node)
+		info.checkNodeName(arg),
+		node ?= arg
 	}
 }
 

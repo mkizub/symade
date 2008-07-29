@@ -829,8 +829,8 @@ public abstract class kiev050 implements kiev050Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public TypeDecl Typedef(ASTModifiers modifiers) throws ParseException {
-  Symbol id; TypeDecl n; TypeRef tr; Token t; EToken et;
+  final public DNode Typedef(ASTModifiers modifiers) throws ParseException {
+  Symbol id; DNode n; TypeRef tr; Token t; EToken et;
     switch (jj_nt.kind) {
     case TYPEDEF:
       jj_consume_token(TYPEDEF);
@@ -953,7 +953,7 @@ public abstract class kiev050 implements kiev050Constants {
       break;
     case STRING_LITERAL:
       cs = StringConstExpression();
-                                                  opd.decl = cs.value;
+                                                  opd.sname = cs.value;
       switch (jj_nt.kind) {
       case COMMA:
         jj_consume_token(COMMA);

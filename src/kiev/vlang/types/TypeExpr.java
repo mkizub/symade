@@ -24,9 +24,9 @@ public class TypeExpr extends TypeRef {
 
 	private Object op_or_name;
 	
-	@nodeAttr           public TypeRef		arg;
-	@nodeAttr @abstract public Operator	op;
-	@nodeAttr @abstract public String		op_name;
+	@nodeAttr           public TypeRef      arg;
+	@nodeAttr @abstract public Operator     op;
+	@nodeAttr @abstract public String       op_name;
 
 	public TypeExpr() {}
 

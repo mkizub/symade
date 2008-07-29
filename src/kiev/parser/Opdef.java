@@ -19,7 +19,15 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-public class Opdef extends SNode {
+public class OpdefSymbol extends Symbol {
+	OpdefSymbol() {}
+	OpdefSymbol(int pos, String name) {
+		super(pos, name);
+	}
+}
+
+@ThisIsANode(lang=CoreLang)
+public class Opdef extends DNode implements ScopeOfNames {
 	// Assign orders
 	public static final int LFY			= 0;
 
@@ -56,17 +64,32 @@ public class Opdef extends SNode {
 		"fxfy"		// FXFY
 	};
 	
-	@nodeAttr public int					prior;
-	@nodeAttr public int					opmode;
+	@nodeAttr public int				prior;
+	@nodeAttr public int				opmode;
 	@nodeAttr public String				image;
-	@nodeAttr public String				decl;
-	@nodeData public Operator			resolved;
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeAttr public Operator			resolved;
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeAttr public Symbol∅			symbols;
 
 	@setter
 	public void set$image(String value) {
 		this.image = (value != null) ? value.intern() : null;
 	}
 	
+	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
+		if (attr.name == "resolved") {
+			symbols.delAll();
+			if (this.resolved != null) {
+				foreach (OpArg.OPER arg; this.resolved.args) {
+					//System.out.println("OpdefSymbol: "+arg.text);
+					symbols += new OpdefSymbol(pos, arg.text);
+				}
+			}
+		}
+		super.callbackChildChanged(ct, attr, data);
+	}
+
 	public Opdef() {}
 	
 	public void setImage(ASTNode n) {
@@ -108,11 +131,15 @@ public class Opdef extends SNode {
 		return image;
 	}
 	
-	public boolean hasName(String name) {
-		if (resolved == null) return false;
-		foreach (OpArg.OPER arg; resolved.args; arg.text == name)
-			return true;
-		return false;
+	public rule resolveNameR(ISymbol@ node, ResInfo info)
+		Symbol@ s;
+	{
+		info.checkNodeName(this),
+		node ?= this
+	;
+		s @= symbols,
+		info.checkNodeName(s),
+		node ?= s
 	}
 }
 

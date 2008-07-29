@@ -75,7 +75,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		}
 	}
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		ATextSyntax@ syn;
 	{
 		path.checkNodeName(this),

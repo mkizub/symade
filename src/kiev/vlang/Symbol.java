@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=void)
-public interface ISymbol extends INode {
+public interface ISymbol extends ASTNode {
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
 	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
@@ -124,7 +124,7 @@ public class Symbol extends ASTNode implements ISymbol {
 	}
 
 	public boolean equals(DNode:Object nm) {
-		if (nm.hasName(this.sname)) return true;
+		if (this.equals(nm.sname)) return true;
 		return false;
 	}
 
@@ -194,7 +194,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 
 	public boolean equals(Object nm) {
-		if (nm instanceof DNode) return nm.hasName(this.name);
+		if (nm instanceof DNode) return nm.sname == this.name;
 		if (nm instanceof Symbol) return nm.equals(this.name);
 		if (nm instanceof SymbolRef) return nm.name == this.name;
 		if (nm instanceof String) return nm == this.name;

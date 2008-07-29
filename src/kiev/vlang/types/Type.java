@@ -72,7 +72,7 @@ public abstract class Type extends AType {
 		meta_type.resolveCallAccessR(this,node,info,mt)
 	}
 
-	public final rule resolveNameAccessR(ASTNode@ node, ResInfo info) {
+	public final rule resolveNameAccessR(ISymbol@ node, ResInfo info) {
 		meta_type.resolveNameAccessR(this,node,info)
 	}
 

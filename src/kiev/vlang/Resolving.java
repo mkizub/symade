@@ -154,10 +154,19 @@ public final class ResInfo {
 			return nm.startsWith(name);
 		return nm == name;
 	}
-	public boolean checkNodeName(ASTNode dn) {
+	public boolean checkNodeName(ASTNode n) {
+		if !(n instanceof ISymbol)
+			return false;
+		return checkNodeName((ISymbol)n);
+	}
+	public boolean checkNodeName(ISymbol isym) {
+		String sname = isym.sname;
 		if (!isCmpByEquals())
-			return dn.hasNameStart(name);
-		return dn.hasName(name);
+			return sname != null && sname.startsWith(name);
+		return sname == name;
+	}
+	public boolean check(ISymbol n) {
+		return this.check((ASTNode)n);
 	}
 	public boolean check(ASTNode n) {
 		if (n instanceof Var || n instanceof SNode) {
@@ -390,7 +399,7 @@ public interface Scope {
 }
 
 public interface ScopeOfNames extends Scope {
-	public rule resolveNameR(ASTNode@ node, ResInfo path);
+	public rule resolveNameR(ISymbol@ node, ResInfo path);
 }
 
 public interface ScopeOfMethods extends Scope {

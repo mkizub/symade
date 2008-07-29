@@ -70,9 +70,6 @@ public view JDNode of DNode extends JNode {
 	public:ro	String		sname;
 	public		Attr[]		jattrs;
 
-	public boolean hasName(String nm);
-	public boolean hasNameStart(String nm);
-
 	public final boolean isPublic()	;
 	public final boolean isPrivate();
 	public final boolean isProtected();

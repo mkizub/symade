@@ -42,7 +42,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		SymbolRef@	sr;
 	{
 		sr @= old_vars,

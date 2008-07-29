@@ -149,7 +149,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		int prior = astn.prior;
 		int opmode = astn.opmode;
 		String image = astn.image;
-		String decl = astn.decl;
+		String decl = astn.sname;
 		if (decl != null) {
 			Operator op = Operator.getOperatorByDecl(decl);
 			if (op != null) {
@@ -194,7 +194,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
 			}
 			astn.resolved = op;
-			astn.decl = op.decl;
+			astn.sname = op.decl;
 		}
 		return;
 	}

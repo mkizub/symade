@@ -290,15 +290,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			return true;
 		return false;
 	}
-	public boolean hasNameStart(String nm) {
-		String sname = this.sname;
-		if (sname == null)
-			return false;
-		if (sname.startsWith(nm)) return true;
-		foreach(Symbol s; aliases; s.sname.startsWith(nm))
-			return true;
-		return false;
-	}
 
 	public ISymbol getSymbol(String nm) {
 		if (sname == nm) return this;
@@ -664,7 +655,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		LVar@ var;
 	{
 		isInlinedByDispatcherMethod() , $cut, false

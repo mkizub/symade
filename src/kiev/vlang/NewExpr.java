@@ -427,7 +427,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		return sb.toString();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		Var@ p;
 	{
 		p @= params,

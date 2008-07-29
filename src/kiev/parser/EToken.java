@@ -223,11 +223,11 @@ public final class EToken extends ENode {
 		else if (patternOper.matcher(ident).matches())
 			this.base_kind = ETokenKind.OPERATOR;
 		// resolve in the path of scopes
-		ASTNode@ v;
+		ISymbol@ v;
 		ResInfo info = new ResInfo(this,ident);
 		if (PassInfo.resolveNameR(this,v,info)) {
 			ASTNode n = (ASTNode)v;
-			if (n instanceof Opdef) {
+			if (n instanceof OpdefSymbol) {
 				this.base_kind = ETokenKind.OPERATOR;
 				value = n;
 			}
@@ -320,18 +320,18 @@ public final class EToken extends ENode {
 //		}
 
 		// resolve in the path of scopes
-		ASTNode@ v;
+		ISymbol@ v;
 		ResInfo info = new ResInfo(this,ident);
 		if( !PassInfo.resolveNameR((ASTNode)this,v,info) )
 			throw new CompilerException(this,"Unresolved token "+ident);
-		if( v instanceof Opdef ) {
+		if( v instanceof OpdefSymbol ) {
 			this.is_token_operator = true;
-			value = v.$var;
+			value = v.dnode;
 			//replaceWithNodeReWalk(op);
 		}
 		else if( v instanceof TypeDecl ) {
 			this.is_token_type_decl = true;
-			value = v.$var;
+			value = v.dnode;
 			TypeDecl td = (TypeDecl)value;
 			//td.checkResolved();
 			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.xtype));

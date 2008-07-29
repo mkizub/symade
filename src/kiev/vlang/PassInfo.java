@@ -75,7 +75,7 @@ public class PassInfo {
 	// No instances
 	private PassInfo() {}
 
-	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path)
+	public static rule resolveNameR(ASTNode from, ISymbol@ node, ResInfo path)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{

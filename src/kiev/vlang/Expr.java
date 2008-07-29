@@ -503,18 +503,18 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void addSymbol(DNode sym) {
-		foreach(ASTNode n; stats; n.hasName(sym.sname))
+		foreach(DNode n; stats; n.sname == sym.sname)
 			Kiev.reportError((ASTNode)sym,"Symbol "+sym.sname+" already declared in this scope");
 		stats.append((ASTNode)sym);
 	}
 
 	public void insertSymbol(DNode sym, int idx) {
-		foreach(ASTNode n; stats; n.hasName(sym.sname))
+		foreach(DNode n; stats; n.sname == sym.sname)
 			Kiev.reportError((ASTNode)sym,"Symbol "+sym.sname+" already declared in this scope");
 		stats.insert(idx,(ASTNode)sym);
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info)
+	public rule resolveNameR(ISymbol@ node, ResInfo info)
 		ASTNode@ n;
 		DNode@ dn;
 	{

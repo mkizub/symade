@@ -77,7 +77,7 @@ public abstract class MetaType implements Constants {
 		return new XType(this, getTemplBindings(), t.bindings().applay_bld(bindings));
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
 	{
 		trace(Kiev.debug && Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in "+tp),
 		tdecl.checkResolved(),
@@ -92,14 +92,14 @@ public abstract class MetaType implements Constants {
 			resolveNameR_4(tp,node,info)	// resolve in forwards
 		}
 	}
-	private rule resolveNameR_1(ASTNode@ node, ResInfo info)
+	private rule resolveNameR_1(ISymbol@ node, ResInfo info)
 		ASTNode@ n;
 	{
 		n @= tdecl.getMembers(),
 		n instanceof Field && info.checkNodeName(n) && info.check(n),
 		node ?= n
 	}
-	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info)
+	private rule resolveNameR_3(Type tp, ISymbol@ node, ResInfo info)
 		TypeRef@ sup;
 	{
 		info.enterSuper(1, ResInfo.noForwards) : info.leaveSuper(),
@@ -107,7 +107,7 @@ public abstract class MetaType implements Constants {
 		sup.getTypeDecl().xmeta_type.resolveNameAccessR(tp,node,info)
 	}
 
-	private rule resolveNameR_4(Type tp, ASTNode@ node, ResInfo info)
+	private rule resolveNameR_4(Type tp, ISymbol@ node, ResInfo info)
 		ASTNode@ forw;
 		TypeRef@ sup;
 	{
@@ -326,11 +326,11 @@ public final class ASTNodeMetaType extends MetaType {
 		built = true;
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
 	{
 		getTemplBindings(),
 		node @= this.fields,
-		node instanceof Field && info.checkNodeName(node) && info.check(node)
+		info.checkNodeName(node) && info.check(node)
 	}
 
 	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt) { false }
@@ -601,7 +601,7 @@ public class ArgMetaType extends MetaType {
 		return bindings.resolve((ArgType)t);
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
 		TypeRef@ sup;
 	{
 		sup @= tdecl.super_types,
@@ -786,7 +786,7 @@ public class WrapperMetaType extends MetaType {
 		return wf;
 	}
 	
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
 	{
 		info.isForwardsAllowed(),
 		trace(Kiev.debug && Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in wrapper type "+tp),
@@ -970,7 +970,7 @@ public class CallMetaType extends MetaType {
 		return mt;
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info) { false }
+	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info) { false }
 	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt) { false }
 
 	public TemplateTVarSet getTemplBindings() {

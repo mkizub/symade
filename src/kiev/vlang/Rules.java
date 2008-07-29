@@ -75,7 +75,7 @@ public class RuleMethod extends Method {
 		return max_vars++;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		Var@ var;
 	{
 		isInlinedByDispatcherMethod() || path.getPrevSlotName() == "targs",$cut,false

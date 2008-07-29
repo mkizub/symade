@@ -196,7 +196,7 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 
 	public RewriteCase() {}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info)
+	public rule resolveNameR(ISymbol@ node, ResInfo info)
 	{
 		info.checkNodeName(var),
 		node ?= var
@@ -520,7 +520,7 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 		return bl;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 	{
 		node ?= var,
 		path.checkNodeName(node)

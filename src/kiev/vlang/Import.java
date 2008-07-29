@@ -110,7 +110,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		return false;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		DNode@ sub;
 	{
 		this.name.dnode instanceof Method, $cut, false
@@ -221,7 +221,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 		return "import syntax "+name;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		DNode@ sub;
 	{
 		this.name.dnode instanceof KievSyntax,
@@ -271,15 +271,30 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
+public final class TypeOpDef extends DNode implements ScopeOfNames {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeDef			arg;
-	@nodeAttr public String				op;
 	@nodeAttr public TypeRef			dtype;
 	
-	public TypeOpDef() { super(null); }
+	@abstract
+	@nodeData public String				op;
+	
+	@getter public String get$op() {
+		String sname = this.sname;
+		if (sname == null || sname.startsWith("T "))
+			return null;
+		return sname.substring(2);
+	}
+	@setter public void set$op(String val) {
+		if (val == null)
+			this.sname = null;
+		else
+			this.sname = "T "+val;
+	}
+	
+	public TypeOpDef() {}
 	
 	public Type getType() { return dtype.getType(); }
 	
@@ -291,30 +306,7 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 		return getType().getStruct();
 	}
 	
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "op") {
-			if (data == null)
-				this.sname = null;
-			else
-				this.sname = "T "+data;
-		}
-		super.callbackChildChanged(ct, attr, data);
-	}
-
-	public boolean hasName(String nm) {
-		String op = this.op;
-		if (op == null || op == "")
-			return false;
-		if (nm.length() != 2+op.length())
-			return false;
-		if (!nm.startsWith("T "))
-			return false;
-		if (!nm.endsWith(op))
-			return false;
-		return true;
-	}
-
-	public rule resolveNameR(ASTNode@ node, ResInfo path) {
+	public rule resolveNameR(ISymbol@ node, ResInfo path) {
 		path.space_prev == this.dtype,
 		path.checkNodeName(this.arg),
 		node ?= this.arg

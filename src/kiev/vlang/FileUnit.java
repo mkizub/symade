@@ -111,7 +111,7 @@ public final class FileUnit extends NameSpace {
 		disabled_extensions[i] = !enabled;
 	}
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		ImportSyntax@ istx;
 	{
 		super.resolveNameR(node, path)
@@ -202,7 +202,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 
 	public String toString() { return srpkg.name; }
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ISymbol@ node, ResInfo path)
 		ASTNode@ syn;
 	{
 		syn @= members,

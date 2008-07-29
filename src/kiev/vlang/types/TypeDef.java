@@ -140,18 +140,18 @@ public final class TypeAssign extends TypeDef {
 			if (parent instanceof TypeDecl) {
 				foreach (TypeRef tr; parent.super_types) {
 					TypeDecl td = tr.getTypeDecl();
-					ASTNode@ node;
+					ISymbol@ node;
 					ResInfo info = new ResInfo(this,this.sname,ResInfo.noForwards|ResInfo.noSyntaxContext);
 					foreach (td.resolveNameR(node,info)) {
-						ASTNode n = node;
-						if !(n instanceof TypeDef) {
+						DNode dn = node.dnode;
+						if !(dn instanceof TypeDef) {
 							Kiev.reportError(this,"Typedef "+parent+"."+sname+" extends non-typedef node");
 							continue;
 						}
-						if (n instanceof TypeAssign) {
+						if (dn instanceof TypeAssign) {
 							Kiev.reportWarning(this,"Typedef "+parent+"."+sname+" extends final typedef");
 						} else {
-							TypeConstr tc = (TypeConstr)n;
+							TypeConstr tc = (TypeConstr)dn;
 							if (!tc.isTypeVirtual())
 								Kiev.reportWarning(this,"Typedef "+parent+"."+sname+" extends non-virtual typedef");
 							//if (!tc.isTypeAbstract())

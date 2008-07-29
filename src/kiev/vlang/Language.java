@@ -101,6 +101,7 @@ public final class CoreLang extends LangBase {
 	private static Class[] nodeClasses = {
 	ASTNode.class,
 		Symbol.class,
+			OpdefSymbol.class,
 		SymbolRef.class,
 		DNode.class,	// declaration nodes
 			KievSyntax.class,
@@ -122,6 +123,7 @@ public final class CoreLang extends LangBase {
 					JavaEnum.class,
 					Env.class,
 			Label.class,		// code label
+			Opdef.class,		// operator declaration
 			Method.class,
 				MethodImpl.class,	// a concrete method
 				Constructor.class,	// type constructor
@@ -249,7 +251,6 @@ public final class CoreLang extends LangBase {
 		SNode.class,	// syntax nodes
 			NameSpace.class,	// name space unit
 				FileUnit.class,	// file/compilation unit, also acts as a namespace
-			Opdef.class,		// operator declaration
 			Import.class,
 			ImportSyntax.class,
 			Comment.class,		// comments

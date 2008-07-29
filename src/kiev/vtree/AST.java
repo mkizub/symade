@@ -1274,9 +1274,6 @@ public abstract class ASTNode extends ANode implements Constants {
 //#endif UNVERSIONED
 	}
 
-	public boolean hasName(String name) { false }
-	public boolean hasNameStart(String nm) { false }
-	
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncOut() for "+getClass()); }
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }

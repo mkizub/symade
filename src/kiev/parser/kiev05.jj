@@ -976,8 +976,8 @@ Import Import(ASTModifiers modifiers) :
 	{ return imp; }
 }
 
-TypeDecl Typedef(ASTModifiers modifiers) :
-{ Symbol id; TypeDecl n; TypeRef tr; Token t; EToken et; }
+DNode Typedef(ASTModifiers modifiers) :
+{ Symbol id; DNode n; TypeRef tr; Token t; EToken et; }
 {
 	("typedef"|"type")
 	(
@@ -1018,7 +1018,7 @@ Opdef Opdef(ASTModifiers modifiers) :
 		","
 		ce = IntConstExpression()		{ opd.setPriority(ce); }
 	|
-		cs = StringConstExpression()	{ opd.decl = cs.value; }
+		cs = StringConstExpression()	{ opd.sname = cs.value; }
 		[ "," ]
 		ce = IntConstExpression()		{ opd.setPriority(ce); }
 	)
