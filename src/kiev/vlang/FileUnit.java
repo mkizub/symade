@@ -240,7 +240,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		((Import)syn).resolveMethodR(node,path,mt)
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "srpkg") {
 			KievPackage scope = Env.getRoot();
 			if (parent() != null && parent().ctx_name_space != null)

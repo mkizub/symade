@@ -57,7 +57,7 @@ public class SyntaxExpr extends SyntaxElem {
 		SymbolRef.resolveSymbol(SeverError.Error, template);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "template")
 			return SymbolRef.autoCompleteSymbol(template,str);
 		return super.resolveAutoComplete(str,slot);
@@ -92,7 +92,7 @@ public class SyntaxAutoParenth extends SyntaxElem {
 		SymbolRef.resolveSymbol(SeverError.Error, template);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "template")
 			return SymbolRef.autoCompleteSymbol(template,str);
 		return super.resolveAutoComplete(str,slot);

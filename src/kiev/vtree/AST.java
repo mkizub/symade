@@ -1286,7 +1286,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public boolean preVerify() { return true; }
 	public void postVerify() {}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		return null;
 	}
 

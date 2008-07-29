@@ -104,7 +104,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		return true;
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "parent_syntax")
 			return SymbolRef.autoCompleteSymbol(parent_syntax,str);
 		return super.resolveAutoComplete(str,slot);
@@ -218,7 +218,7 @@ public final class SpaceCmd extends ASTNode {
 		SymbolRef.resolveSymbol(SeverError.Error, si);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "si")
 			return SymbolRef.autoCompleteSymbol(si,str);
 		return super.resolveAutoComplete(str,slot);
@@ -328,9 +328,9 @@ public final class ParagraphLayout extends DNode {
 			});
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "indent" || slot.name == "no_indent_if_prev" || slot.name == "no_indent_if_next")
-			return SymbolRef.autoCompleteSymbol(this,str, fun (DNode dn)->boolean {
+			return SymbolRef.autoCompleteSymbol(this,str, fun (ISymbol dn)->boolean {
 				return dn instanceof IndentInfo || dn instanceof ParagraphLayout;
 			});
 		return super.resolveAutoComplete(str,slot);
@@ -421,9 +421,9 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 		});
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "rnode")
-			return SymbolRef.autoCompleteSymbol(rnode,str, fun (DNode n)->boolean {
+			return SymbolRef.autoCompleteSymbol(rnode,str, fun (ISymbol n)->boolean {
 				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n);
 			});
 		return super.resolveAutoComplete(str,slot);
@@ -540,9 +540,9 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 			});
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
-			return SymbolRef.autoCompleteSymbol(this, str, fun (DNode n)->boolean {
+			return SymbolRef.autoCompleteSymbol(this, str, fun (ISymbol n)->boolean {
 				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n) || n instanceof SyntaxExpectedTemplate;
 			});
 		return super.resolveAutoComplete(str,slot);
@@ -568,7 +568,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 		SymbolRef.resolveSymbol(SeverError.Error, font);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "color")
 			return SymbolRef.autoCompleteSymbol(color,str);
 		if (slot.name == "font")
@@ -668,9 +668,9 @@ public class SyntaxExpectedAttr extends ASTNode {
 			});
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
-			return SymbolRef.autoCompleteSymbol(this,str, fun (DNode n)->boolean {
+			return SymbolRef.autoCompleteSymbol(this,str, fun (ISymbol n)->boolean {
 				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n) || n instanceof SyntaxExpectedTemplate;
 			});
 		return super.resolveAutoComplete(str,slot);
@@ -697,7 +697,7 @@ public abstract class SyntaxElem extends ASTNode {
 		SymbolRef.resolveSymbol(SeverError.Error, par);
 	}
 
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "fmt")
 			return SymbolRef.autoCompleteSymbol(fmt,str);
 		if (slot.name == "par")
@@ -758,7 +758,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 		SymbolRef.resolveSymbol(SeverError.Error, decl);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "decl")
 			return SymbolRef.autoCompleteSymbol(decl,str);
 		return super.resolveAutoComplete(str,slot);
@@ -839,6 +839,37 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 		dr_elem.text = this.text;
 		dr_elem.attr_name = this.attr_name;
 	}
+
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "attr_name") {
+			try {
+				Struct s = getExpectedType();
+				if (s == null)
+					return null;
+				Class cls = Class.forName(s.qname().replace('\u001f','.'));
+				java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
+				fld.setAccessible(true);
+				Vector<ISymbol> attrs = new Vector<ISymbol>();
+				foreach (AttrSlot s; (AttrSlot[])fld.get(null); s.name.startsWith(str))
+					attrs.append(new Symbol(s.name));
+				return attrs.toArray();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return super.resolveAutoComplete(str,slot);
+	}
+
+	public Struct getExpectedType() {
+		ANode p = parent();
+		while (p != null && !(p instanceof ASyntaxElemDecl))
+			p = p.parent();
+		if (p instanceof SyntaxElemDecl)
+			return ((SyntaxElemDecl)p).rnode.dnode;
+		return null;
+	}
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -846,7 +877,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	public static final SyntaxAttr[] emptyArray = new SyntaxAttr[0];
 
 	@nodeAttr public String							name;
-	@nodeAttr public SymbolRef<ATextSyntax>		in_syntax;
+	@nodeAttr public SymbolRef<ATextSyntax>			in_syntax;
 	@nodeAttr public SyntaxElem						empty;
 	@nodeData public AttrSlot						attr_slot;
 
@@ -870,9 +901,27 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		SymbolRef.resolveSymbol(SeverError.Error, in_syntax);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
-		if (slot.name == "in_syntax")
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "in_syntax") {
 			return SymbolRef.autoCompleteSymbol(in_syntax,str);
+		}
+		if (slot.name == "name") {
+			try {
+				Struct s = getExpectedType();
+				if (s == null)
+					return null;
+				Class cls = Class.forName(s.qname().replace('\u001f','.'));
+				java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
+				fld.setAccessible(true);
+				Vector<ISymbol> attrs = new Vector<ISymbol>();
+				foreach (AttrSlot s; (AttrSlot[])fld.get(null); s.name.startsWith(str))
+					attrs.append(new Symbol(s.name));
+				return attrs.toArray();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
 		return super.resolveAutoComplete(str,slot);
 	}
 
@@ -889,7 +938,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	
 	public Struct getExpectedType() {
 		ANode p = parent();
-		while (p != null && !(p instanceof SyntaxAttr || p instanceof ASyntaxElemDecl))
+		while (p != null && !(p instanceof ASyntaxElemDecl))
 			p = p.parent();
 		if (p instanceof SyntaxElemDecl)
 			return ((SyntaxElemDecl)p).rnode.dnode;
@@ -1040,7 +1089,7 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		SymbolRef.resolveSymbol(SeverError.Warning, decl);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "decl")
 			return SymbolRef.autoCompleteSymbol(decl,str);
 		return super.resolveAutoComplete(str,slot);

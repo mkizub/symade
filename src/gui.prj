@@ -11,6 +11,7 @@
 -->
 <sop:dump version='1.0' xmlns:sop='sop://sop/'
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'
   xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'
   xmlns:logic='sop://languages/logic?class=kiev.vlang.LogicLang'>
  <sop:kiev.vlang.Project>

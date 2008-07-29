@@ -113,7 +113,7 @@ public final class TypeNameRef extends TypeRef {
 		return (TypeDecl)scope;
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -285,7 +285,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		return (TypeDecl)scope;
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -490,7 +490,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		return (TypeDecl)scope;
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;

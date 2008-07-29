@@ -249,7 +249,7 @@ public class UserMeta extends MNode {
 		}
 	}
 	
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "decl") {
 			TypeDecl scope;
 			String head;

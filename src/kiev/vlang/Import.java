@@ -167,7 +167,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		node.dnode.isStatic() && !node.dnode.isPrivate()
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');
@@ -235,7 +235,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 		node.dnode.isStatic() && !node.dnode.isPrivate()
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');

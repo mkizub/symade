@@ -25,7 +25,7 @@ import kiev.fmt.Draw_SyntaxAttr;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.vlang.DNode;
+import kiev.vlang.ISymbol;
 import kiev.vtree.ASTNode;
 import kiev.vtree.ScalarPtr;
 
@@ -65,7 +65,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			edit_offset = text.length();
 			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
-		showAutoComplete();
+		showAutoComplete(false);
 	}
 
 	public TextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr) {
@@ -83,7 +83,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				pattr.set(text.replace('.','\u001f'));
 			else
 				pattr.set(text);
-			showAutoComplete();
+			showAutoComplete(true);
 		}
 	}
 
@@ -93,6 +93,11 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 	public void keyPressed(KeyEvent evt) {
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask == KeyEvent.CTRL_DOWN_MASK && code == KeyEvent.VK_SPACE) {
+			evt.consume();
+			showAutoComplete(true);
+			return;
+		}
 		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
 			return;
 		evt.consume();
@@ -232,14 +237,16 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		}
 	}
 
-	void showAutoComplete() {
+	void showAutoComplete(boolean force) {
 		if (!(pattr.node instanceof ASTNode))
 			return;
 		String name = getText();
-		if (name == null || name.length() == 0)
-			return;
-		boolean qualified = name.indexOf('\u001f') > 0;
-		DNode[] decls = ((ASTNode)pattr.node).resolveAutoComplete(name,pattr.slot);
+		if (name == null || name.length() == 0) {
+			if (!force)
+				return;
+		}
+		boolean qualified = name==null ? false : name.indexOf('\u001f') > 0;
+		ISymbol[] decls = ((ASTNode)pattr.node).resolveAutoComplete(name==null?"":name,pattr.slot);
 		if (decls == null)
 			return;
 		if (combo == null) {
@@ -262,7 +269,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		int h = info.getHeight();
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
-		for (DNode dn: decls) {
+		for (ISymbol dn: decls) {
 			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.get$sname());
 			popup = true;
 		}

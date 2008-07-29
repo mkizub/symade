@@ -267,7 +267,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public DNode[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ANode parent = parent();
 			if (parent instanceof ASTNode)
@@ -278,14 +278,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	@unerasable
-	public static DNode[] autoCompleteSymbol(ASTNode resolve_in, String str, (DNode)->boolean check) {
-		if (str == null || str.length() == 0)
-			return new DNode[0];
+	public static ISymbol[] autoCompleteSymbol(ASTNode resolve_in, String str, (ISymbol)->boolean check) {
+		if (str == null)
+			str = "";
 		ResInfo info = new ResInfo(resolve_in, str, ResInfo.noEquals);
-		Vector<DNode> vect = new Vector<DNode>();
-		DNode@ a;
+		Vector<ISymbol> vect = new Vector<ISymbol>();
+		ISymbol@ a;
 		foreach (PassInfo.resolveNameR(resolve_in,a,info)) {
-			DNode dn = (DNode)a;
+			ISymbol dn = (ISymbol)a;
 			if (vect.contains(dn) || !check(dn))
 				continue;
 			vect.append(dn);
@@ -295,8 +295,8 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	@unerasable
 	public static <A extends DNode> A[] autoCompleteSymbol(SymbolRef<A> self, String str) {
-		if (self == null || str == null || str.length() == 0)
-			return new A[0];
+		if (str == null)
+			str = "";
 		ResInfo info = new ResInfo(self, str, ResInfo.noEquals);
 		Vector<A> vect = new Vector<A>();
 		A@ a;

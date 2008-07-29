@@ -12,7 +12,7 @@ public class Binding extends ENode {
 		SymbolRef.resolveSymbol(SeverError.Error, action);
 	}
 	
-	public DNode[] resolveAutoComplete(String str, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "action")
 			return SymbolRef.autoCompleteSymbol(action,str);
 		return super.resolveAutoComplete(str,slot);
