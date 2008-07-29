@@ -12,7 +12,8 @@
 <sop:dump version='1.0' xmlns:sop='sop://sop/'
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
   xmlns:logic='sop://languages/logic?class=kiev.vlang.LogicLang'
-  xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'>
+  xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
  <sop:kiev.vlang.Project>
   <root_dir>
    <sop:kiev.vlang.DirUnit name='.'>
@@ -119,7 +120,7 @@
            <core:FileUnit name='RVar.java' />
           </members>
          </sop:kiev.vlang.DirUnit>
-         <core:FileUnit name='RuleTemplatesX.xml' />
+         <core:FileUnit name='RuleTemplates.xml' />
         </members>
        </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='parser'>
@@ -209,7 +210,7 @@
          <core:FileUnit name='ProcessVirtFld.java' />
          <core:FileUnit name='ProcessVNode.java' />
          <core:FileUnit name='ProcessXPath.java' />
-         <core:FileUnit name='TemplatVNodeX.xml' />
+         <core:FileUnit name='TemplatVNode.xml' />
          <core:FileUnit name='TransfProcessor.java' />
          <core:FileUnit name='VerifyProcessor.java' />
         </members>
@@ -281,6 +282,14 @@
        <core:FileUnit name='Main.java' />
        <core:FileUnit name='SopTest.java' />
        <core:FileUnit name='Syntax.java' />
+      </members>
+     </sop:kiev.vlang.DirUnit>
+     <sop:kiev.vlang.DirUnit name='stx-fmt'>
+      <members>
+       <core:FileUnit name='syntax-for-java.xml' />
+       <core:FileUnit name='syntax-for-project-tree.xml' />
+       <core:FileUnit name='syntax-for-syntax.xml' />
+       <core:FileUnit name='syntax-for-evt.xml' />
       </members>
      </sop:kiev.vlang.DirUnit>
     </members>

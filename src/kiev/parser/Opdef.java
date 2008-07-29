@@ -67,6 +67,7 @@ public class Opdef extends DNode implements ScopeOfNames {
 	@nodeAttr public int				prior;
 	@nodeAttr public int				opmode;
 	@nodeAttr public String				image;
+	@nodeAttr public boolean			type_operator;
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr public Operator			resolved;
 	@AttrXMLDumpInfo(ignore=true)

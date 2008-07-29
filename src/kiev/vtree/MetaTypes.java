@@ -230,3 +230,13 @@ public class NodeExtSpaceEnumerator<+N extends ANode> implements Enumeration<N>
 	}
 }
 
+public metatype NodeSymbolRef<N extends DNode> extends SymbolRef {
+	
+	@macro
+	private static ENode# getAttr(Field# f) {
+		case Call# self():
+			(f.parent).#id"nodeattr$'f'"#	//new #SFldExpr(obj=f.parent, ident="nodeattr$'f'")
+	}
+	
+}
+

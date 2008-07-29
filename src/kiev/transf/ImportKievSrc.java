@@ -155,11 +155,20 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			if (op != null) {
 				if (prior != op.priority)
 					throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+				if (astn.type_operator && !op.is_type_operator) {
+					if( Kiev.verbose ) System.out.println("Declared operator "+op+" forced to be a type postfix operator");
+					op.is_type_operator = true;
+				}
 				astn.resolved = op;
 				return;
 			}
-			op = Operator.newOperator(prior, decl);
-			if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
+			if (astn.type_operator) {
+				op = Operator.newOperator(255, decl);
+				op.is_type_operator = true;
+			} else {
+				op = Operator.newOperator(prior, decl);
+			}
+			if( Kiev.verbose ) System.out.println("Declared operator "+op+(op.is_type_operator ? " as type postfix " : " with priority "+op.priority));
 			astn.resolved = op;
 			return;
 		}
@@ -189,9 +198,18 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			if (op != null) {
 				if (prior != op.priority)
 					throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+				if (astn.type_operator && !op.is_type_operator) {
+					if( Kiev.verbose ) System.out.println("Declared operator "+op+" forced to be a type postfix operator");
+					op.is_type_operator = true;
+				}
 			} else {
-				op = Operator.newOperator(prior, decl);
-				if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
+				if (astn.type_operator) {
+					op = Operator.newOperator(255, decl);
+					op.is_type_operator = true;
+				} else {
+					op = Operator.newOperator(prior, decl);
+				}
+				if( Kiev.verbose ) System.out.println("Declared operator "+op+(op.is_type_operator ? " as type postfix " : " with priority "+op.priority));
 			}
 			astn.resolved = op;
 			astn.sname = op.decl;

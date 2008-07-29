@@ -1020,7 +1020,11 @@ Opdef Opdef(ASTModifiers modifiers) :
 	|
 		cs = StringConstExpression()	{ opd.sname = cs.value; }
 		[ "," ]
-		ce = IntConstExpression()		{ opd.setPriority(ce); }
+		(
+			"type"							{ opd.prior = 255; opd.type_operator = true; }
+		|
+			ce = IntConstExpression()		{ opd.setPriority(ce); }
+		)
 	)
 	";"
 	{ return opd; }

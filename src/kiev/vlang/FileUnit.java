@@ -165,6 +165,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		}
 	}
 
+	//@nodeAttr public KievPackage⇑	srpkg;
 	@nodeAttr public SymbolRef<KievPackage>	srpkg;
 	@nodeAttr public ASTNode∅					members;
 	
@@ -174,7 +175,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	@getter public Method get$child_ctx_method() { return null; }
 
 	public NameSpace() {
-		this.srpkg = new SymbolRef<KievPackage>(Env.getRoot());
+		this.srpkg = /*(KievPackage⇑)*/new SymbolRef<KievPackage>(Env.getRoot());
 	}
 	
 	public KievPackage getPackage() {
