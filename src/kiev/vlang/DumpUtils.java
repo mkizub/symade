@@ -302,6 +302,7 @@ public final class DumpUtils {
 
 		writeXMLIndent(out,indent);
 		out.writeEndElement();
+		out.writeCharacters("\n");
 	}
 	
 	private static void writeXMLIndent(XMLStreamWriter out, int indent) {
