@@ -837,16 +837,46 @@
        <core:SymbolRef name='TextSyntax' />
        <core:SymbolRef name='SyntaxElemFormatDecl' />
        <core:SymbolRef name='SyntaxExpectedTemplate' />
+       <core:SymbolRef name='SyntaxExpectedType' />
        <core:SymbolRef name='SyntaxNodeTemplate' />
        <core:SymbolRef name='PartialSyntaxElemDecl' />
        <core:SymbolRef name='SyntaxElemDecl' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
+     <syntax:SyntaxExpectedType name='SRef&lt;ATextSyntax>'>
+      <title>sref:TextSyntax</title>
+      <type_ref>
+       <syntax:SyntaxTypeRef>
+        <clazz>
+         <core:SymbolRef name='SymbolRef' />
+        </clazz>
+        <args>
+         <syntax:SyntaxTypeRef>
+          <clazz>
+           <core:SymbolRef name='ATextSyntax' />
+          </clazz>
+         </syntax:SyntaxTypeRef>
+        </args>
+       </syntax:SyntaxTypeRef>
+      </type_ref>
+     </syntax:SyntaxExpectedType>
+     <syntax:SyntaxExpectedType name='SRef&lt;KievPackage>'>
+      <title>sref:Package</title>
+      <type_ref>
+       <syntax:SyntaxTypeRef>
+        <clazz>
+         <core:SymbolRef name='SymbolRef' />
+        </clazz>
+        <args>
+         <syntax:SyntaxTypeRef>
+          <clazz>
+           <core:SymbolRef name='KievPackage' />
+          </clazz>
+         </syntax:SyntaxTypeRef>
+        </args>
+       </syntax:SyntaxTypeRef>
+      </type_ref>
+     </syntax:SyntaxExpectedType>
      <syntax:PartialSyntaxElemDecl name='stx-sname'>
       <elem>
        <syntax:SyntaxIdentAttr>
@@ -875,6 +905,12 @@
        <core:SymbolRef name='FileUnit' />
       </rnode>
       <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>srpkg</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SRef&lt;KievPackage>' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
@@ -945,6 +981,12 @@
        <core:SymbolRef name='TextSyntax' />
       </rnode>
       <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>parent_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SRef&lt;ATextSyntax>' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
@@ -1509,7 +1551,6 @@
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
-        <title>SpaceCmd</title>
         <attr_name>spaces</attr_name>
         <expected_types>
          <core:SymbolRef name='SpaceCmd' />
@@ -1634,7 +1675,6 @@
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
-        <title>SyntaxExpectedTemplate</title>
         <attr_name>attr_types</attr_name>
         <expected_types>
          <core:SymbolRef name='SyntaxExpectedAttr' />
@@ -1695,7 +1735,6 @@
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
-        <title>SyntaxExpectedTemplate</title>
         <attr_name>attr_types</attr_name>
         <expected_types>
          <core:SymbolRef name='SyntaxExpectedAttr' />
@@ -2562,7 +2601,6 @@
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
-        <title>SyntaxExpectedTemplate</title>
         <attr_name>expected_types</attr_name>
         <expected_types>
          <core:SymbolRef name='SymbolRef' />
@@ -2716,7 +2754,6 @@
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
-        <title>SyntaxExpectedTemplate</title>
         <attr_name>expected_types</attr_name>
         <expected_types>
          <core:SymbolRef name='SymbolRef' />
@@ -3522,7 +3559,6 @@
       </rnode>
       <attr_types>
        <syntax:SyntaxExpectedAttr>
-        <title>SymbolRef</title>
         <attr_name>expected_types</attr_name>
         <expected_types>
          <core:SymbolRef name='SymbolRef' />
@@ -3594,13 +3630,123 @@
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-def-expected-type'>
+      <rnode>
+       <core:SymbolRef name='SyntaxExpectedType' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>type_ref</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxTypeRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>def-stx-expected-type</text>
+          <fmt>
+           <core:SymbolRef name='fmt-of-kw' />
+          </fmt>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+          <fmt>
+           <core:SymbolRef name='fmt-of-symbol' />
+          </fmt>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxStrAttr>
+          <name>title</name>
+         </syntax:SyntaxStrAttr>
+         <syntax:SyntaxToken>
+          <text>:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>type_ref</name>
+         </syntax:SyntaxSubAttr>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-def-type-ref'>
+      <rnode>
+       <core:SymbolRef name='SyntaxTypeRef' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>clazz</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>args</attr_name>
+        <expected_types>
+         <core:SymbolRef name='SyntaxTypeRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>clazz</name>
+          <funcs>
+           <syntax:SyntaxFunctions />
+          </funcs>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>&lt;</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>></text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <name>args</name>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>*</text>
+            <attr_name>args</attr_name>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+         </syntax:SyntaxList>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+        <par>
+         <core:SymbolRef name='par-block' />
+        </par>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-def-expected-attr'>
       <rnode>
        <core:SymbolRef name='SyntaxExpectedAttr' />
       </rnode>
       <attr_types>
        <syntax:SyntaxExpectedAttr>
-        <title>SymbolRef</title>
         <attr_name>expected_types</attr_name>
         <expected_types>
          <core:SymbolRef name='SymbolRef' />
@@ -4179,11 +4325,6 @@
        <core:SymbolRef name='CalcOptionHasNoSyntaxParent' />
        <core:SymbolRef name='CalcOptionIsHidden' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxElemDecl name='stx-calc-option-hidden'>
       <rnode>

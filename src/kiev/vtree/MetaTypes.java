@@ -230,7 +230,7 @@ public class NodeExtSpaceEnumerator<+N extends ANode> implements Enumeration<N>
 	}
 }
 
-public metatype NodeSymbolRef<N extends DNode> extends SymbolRef {
+public metatype NodeSymbolRef<N extends DNode> extends SymbolRef<N> {
 	
 	@macro
 	private static ENode# getAttr(Field# f) {

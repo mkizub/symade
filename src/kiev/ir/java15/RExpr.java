@@ -67,6 +67,8 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 			return;
 		Type ttype = this.ttype.getType();
 		Struct clazz = ttype.getStruct();
+		if (clazz == null)
+			clazz = ttype.getErasedType().getStruct();
 		if (clazz == null) {
 			if (ttype instanceof CoreType || ttype.isArray()) {
 				cl_expr = new TypeClassExpr(pos,new TypeRef(ttype));

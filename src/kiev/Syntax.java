@@ -20,13 +20,13 @@ import kiev.transf.*;
 import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 
-//operator "T ∅", type;
-//operator "T ⋈", type;
-//operator "T ⇑", type;
+operator "T ∅", type;
+operator "T ⋈", type;
+operator "T ⇑", type;
 
 typedef elem∅	kiev.vtree.NodeSpace<elem>;
 typedef elem⋈	kiev.vtree.NodeExtSpace<elem>;
-//typedef elem⇑	kiev.vtree.NodeSymbolRef<elem>;
+typedef elem⇑	kiev.vtree.NodeSymbolRef<elem>;
 
 operator ≡ , xfx, 60;	// == equiv
 operator ≢ , xfx, 60;	// !=

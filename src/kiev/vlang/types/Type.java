@@ -315,8 +315,18 @@ public final class XType extends Type {
 		return Type.tpVoid;
 	}
 
-	public Struct getStruct()					{ return null; }
-	public MNode getMeta(String name)			{ return null; }
+	public Struct getStruct() {
+		foreach (Type t; getMetaSupers()) {
+			Struct s = t.getStruct();
+			if (s != null)
+				return s;
+		}
+		return null;
+	}
+	
+	public MNode getMeta(String name) {
+		return tdecl.getMeta(name);
+	}
 
 	public String toString() {
 		TypeDecl tdecl = this.tdecl;

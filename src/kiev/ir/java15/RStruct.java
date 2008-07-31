@@ -88,7 +88,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (ctx_method != null && ctx_method.isStatic()) {
 					// check we have $typeinfo as first argument
 					if (ctx_method.getTypeInfoParam(Var.PARAM_TYPEINFO) == null)
-						throw new CompilerException(from,"$typeinfo cannot be accessed from "+ctx_method);
+						goto make_typeinfo; //throw new CompilerException(from,"$typeinfo cannot be accessed from "+ctx_method);
 					else
 						ti_access = new LVarExpr(from.pos,ctx_method.getTypeInfoParam(Var.PARAM_TYPEINFO));
 				}
@@ -117,6 +117,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 			}
 		}
+
+		make_typeinfo:;
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
@@ -329,6 +331,25 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				null
 			));
 			init.block.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
+			typeinfo_clazz.addMethod(init);
+			mNewTypeInfo = init;
+		}
+
+		// create public default constructor
+		// public static __ti__ newTypeInfo() {
+		// 	return newTypeInfo(<clazz>, <args>);
+		// }
+		{
+			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.xtype, ACC_STATIC|ACC_PUBLIC);
+			init.body = new Block(pos);
+			CallExpr ce = new CallExpr(pos, null, mNewTypeInfo, ENode.emptyArray);
+			ce.args += new TypeClassExpr(pos, new TypeRef(getStruct().xtype));
+			NewInitializedArrayExpr narr = new NewInitializedArrayExpr(pos, new TypeExpr(StdTypes.tpTypeInfo,Operator.PostTypeArray), ENode.emptyArray);
+			foreach (ArgType at; this.getTypeInfoArgs()) {
+				narr.args.append(new TypeInfoExpr(pos, new TypeRef(at)));
+			}
+			ce.args += narr;
+			init.block.stats.add(new ReturnStat(pos,ce));
 			typeinfo_clazz.addMethod(init);
 			mNewTypeInfo = init;
 		}

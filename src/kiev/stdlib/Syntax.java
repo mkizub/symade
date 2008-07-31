@@ -16,14 +16,32 @@ import kiev.stdlib.*;
 import kiev.stdlib.meta.*;
 import java.lang.*;
 
-typedef elem[] kiev.stdlib._array_<elem>;
-typedef elem... kiev.stdlib._vararg_<elem>;
+// array type
+operator "T []", type;
+typedef elem[] kiev.stdlib._array_<elem>;		// creates an array type
+operator "T ...", type;
+typedef elem... kiev.stdlib._vararg_<elem>;		// creates an vararg array type
+
+// wrapper type
+operator "T ⊛", type;
 typedef wtp⊛ kiev.stdlib._wrapper_<wtp>;
-//typedef wctp⁺ kiev.stdlib._wildcard_co_variant_<wctp>;
-//typedef wctp⁻ kiev.stdlib._wildcard_contra_variant_<wctp>;
-typedef pvtp@ kiev.stdlib.PVar<pvtp>⊛;
+
+// Reference wrapper
+operator "T &", type;
 typedef rtp& kiev.stdlib.Ref<rtp>;
-//typedef elem| kiev.stdlib.List<elem>;
+
+// PVar wrapper
+operator "T @", type;
+typedef pvtp@ kiev.stdlib.PVar<pvtp>⊛;
+
+// AST type (for compiler nodes); handled by compiler internally
+operator "T #", type;
+
+// Wildcard types
+operator "T ⁺", type;
+//typedef wctp⁺ kiev.stdlib._wildcard_co_variant_<wctp>;
+operator "T ⁻", type;
+//typedef wctp⁻ kiev.stdlib._wildcard_contra_variant_<wctp>;
 
 // assign operators
 operator  =    , lfy,   5;

@@ -1790,11 +1790,6 @@
        <core:SymbolRef name='TypeDeclRef' />
        <core:SymbolRef name='TypeExpr' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Expr'>
       <title>Expression</title>
@@ -1820,11 +1815,6 @@
        <core:SymbolRef name='ConstIntExpr' />
        <core:SymbolRef name='ConstDoubleExpr' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Stat'>
       <title>Statement</title>
@@ -1848,11 +1838,6 @@
        <core:SymbolRef name='GotoStat' />
        <core:SymbolRef name='GotoCaseStat' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Decl'>
       <title>Declarations</title>
@@ -1860,11 +1845,6 @@
        <core:SymbolRef name='LVar' />
        <core:SymbolRef name='JavaClass' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Macro'>
       <title>Macro</title>
@@ -1878,11 +1858,6 @@
        <core:SymbolRef name='ForEachRewr' />
        <core:SymbolRef name='BlockRewr' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Meta'>
       <title>Meta Data</title>
@@ -1903,11 +1878,6 @@
        <core:SymbolRef name='MetaSynchronized' />
        <core:SymbolRef name='MetaTransient' />
       </expected_types>
-      <elem>
-       <syntax:SyntaxNode>
-        <name></name>
-       </syntax:SyntaxNode>
-      </elem>
      </syntax:SyntaxExpectedTemplate>
      <syntax:PartialSyntaxElemDecl name='stx-nothing'>
       <elem>

@@ -163,12 +163,18 @@ public final class DumpUtils {
 		if (OLD_XML_WRITE) {
 			out.startTag(null,"a-node");
 			out.attribute(null, "class", node.getClass().getName());
+			if (node instanceof TypeInfoInterface)
+				out.attribute(null, "ti", ((TypeInfoInterface)node).getTypeInfoField().toString());
 		}
 		else if (lng != null) {
 			out.startTag(lng.getURI(),node.getCompilerNodeName());
+			if (node instanceof TypeInfoInterface)
+				out.attribute(SOP_URI, "ti", ((TypeInfoInterface)node).getTypeInfoField().toString());
 		}
 		else {
 			out.startTag(SOP_URI,node.getClass().getName());
+			if (node instanceof TypeInfoInterface)
+				out.attribute(SOP_URI, "ti", ((TypeInfoInterface)node).getTypeInfoField().toString());
 		}
 		if (!OLD_XML_WRITE) {
 			foreach (AttrSlot attr; node.values(); attr instanceof ScalarAttrSlot && attr.isXmlAttr()) {
@@ -499,6 +505,7 @@ public final class DumpUtils {
 	
 	static abstract class XMLAttributeSet {
 		public abstract int getCount();
+		public abstract String getURI(int i);
 		public abstract String getName(int i);
 		public abstract String getValue(int i);
 	}
@@ -527,6 +534,15 @@ public final class DumpUtils {
 			return lng;
 		}
 		
+		private String getTypeInfoSign(XMLAttributeSet attributes) {
+			int n = attributes.getCount();
+			for (int i=0; i < n; i++) {
+				String nm = attributes.getName(i);
+				if (nm.equals("ti"))
+					return attributes.getValue(i);
+			}
+			return null;
+		}
 		
 		public void startElement(String elUri, String elName, XMLAttributeSet attributes) {
 			if (ignore_count > 0) {
@@ -539,6 +555,7 @@ public final class DumpUtils {
 				if (root == null) {
 					Language lng = null;
 					String cl_name = null;
+					String ti_sign = getTypeInfoSign(attributes);
 					if (elUri.length() > 0) {
 						if (elUri.equals(SOP_URI)) {
 							cl_name = elName;
@@ -580,7 +597,9 @@ public final class DumpUtils {
 						if (dn != null)
 							assert(dn.getClass().getName().equals(cl_name));
 						else if (lng != null)
-							dn = (DNode)lng.makeNode(elName);
+							dn = (DNode)lng.makeNode(elName, ti_sign);
+						else if (ti_sign != null)
+							dn = (DNode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 						else
 							dn = (DNode)Class.forName(cl_name).newInstance();
 						if (dn instanceof TypeDecl)
@@ -608,7 +627,9 @@ public final class DumpUtils {
 					}
 					else {
 						if (lng != null)
-							root = (ASTNode)lng.makeNode(elName);
+							root = (ASTNode)lng.makeNode(elName,ti_sign);
+						else if (ti_sign != null)
+							root = (ASTNode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 						else
 							root = (ASTNode)Class.forName(cl_name).newInstance();
 						addAttributes(root, attributes);
@@ -625,6 +646,7 @@ public final class DumpUtils {
 				if (elUri.length() == 0 && elName.equals("a-node") || elUri.length() > 0) {
 					Language lng = null;
 					String cl_name = null;
+					String ti_sign = getTypeInfoSign(attributes);
 					if (elUri.length() > 0) {
 						if (elUri.equals(SOP_URI)) {
 							cl_name = elName;
@@ -642,21 +664,31 @@ public final class DumpUtils {
 					if (!attr.isWrittable()) {
 						AttrSlot attr = attrs.peek();
 						if (attr instanceof SpaceAttrSlot || attr instanceof ExtSpaceAttrSlot) {
-							n = (ANode)attr.typeinfo.newInstance();
+							if (ti_sign != null)
+								n = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
+							else
+								n = (ANode)attr.typeinfo.newInstance();
 						} else {
 							n = (ANode)((ScalarAttrSlot)attr).get(nodes.peek());
-							if (n == null)
-								n = (ANode)attr.typeinfo.newInstance();
+							if (n == null) {
+								if (ti_sign != null)
+									n = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
+								else
+									n = (ANode)attr.typeinfo.newInstance();
+							}
 						}
 						addAttributes(n, attributes);
 					}
 					else if (lng != null) {
-						n = lng.makeNode(elName);
+						n = lng.makeNode(elName, ti_sign);
 						addAttributes(n, attributes);
 					}
 					else {
 						try {
-							n = (ANode)Class.forName(cl_name).newInstance();
+							if (ti_sign != null)
+								n = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
+							else
+								n = (ANode)Class.forName(cl_name).newInstance();
 							addAttributes(n, attributes);
 						} catch (ClassNotFoundException e) {
 							e.printStackTrace();
@@ -793,7 +825,7 @@ public final class DumpUtils {
 		next_attr:
 			for (int i=0; i < n; i++) {
 				String nm = attributes.getName(i);
-				if (nm.equals("class"))
+				if (nm.equals("class") || nm.equals("ti"))
 					continue;
 				foreach (ScalarAttrSlot attr; node.values(); !attr.isXmlIgnore() && attr.getXmlLocalName().equals(nm)) {
 					writeAttribute(node, attr, attributes.getValue(i))
@@ -869,6 +901,7 @@ public final class DumpUtils {
 		{
 			XMLAttributeSet attrs = new XMLAttributeSet() {
 				public int getCount() { return xpp.getAttributeCount(); }
+				public String getURI(int i) { return xpp.getAttributeNamespace(i); }
 				public String getName(int i) { return xpp.getAttributeName(i); }
 				public String getValue(int i) { return xpp.getAttributeValue(i); }
 			};
@@ -901,6 +934,7 @@ public final class DumpUtils {
 		{
 			deserializer.startElement(uri, sName, new XMLAttributeSet() {
 				public int getCount() { return attributes.getLength(); }
+				public String getURI(int i) { return attributes.getURI(i); }
 				public String getName(int i) { return attributes.getLocalName(i); }
 				public String getValue(int i) { return attributes.getValue(i); }
 			});

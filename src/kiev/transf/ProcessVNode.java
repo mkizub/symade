@@ -27,7 +27,8 @@ public abstract class VNode_Base extends TransfProcessor {
 	public static final String nameANode				= getPropS(PROP_BASE,"nameANode","kiev\u001fvtree\u001fANode");
 	public static final String nameNode				= getPropS(PROP_BASE,"nameNode","kiev\u001fvtree\u001fASTNode"); 
 	public static final String nameNodeSpace			= getPropS(PROP_BASE,"nameNodeSpace","kiev\u001fvtree\u001fNodeSpace"); 
-	public static final String nameNodeExtSpace		= getPropS(PROP_BASE,"nameNodeExtSpace","kiev\u001fvtree\u001fNodeExtSpace"); 
+	public static final String nameNodeExtSpace		= getPropS(PROP_BASE,"nameNodeExtSpace","kiev\u001fvtree\u001fNodeExtSpace");
+	public static final String nameNodeSymbolRef		= getPropS(PROP_BASE,"nameNodeSymbolRef","kiev\u001fvtree\u001fNodeSymbolRef");
 	public static final String nameTreeWalker			= getPropS(PROP_BASE,"TreeWalker","kiev\u001fvtree\u001fTreeWalker"); 
 	public static final String nameAttrSlot			= getPropS(PROP_BASE,"nameAttrSlot","kiev\u001fvtree\u001fAttrSlot"); 
 	public static final String nameRefAttrSlot			= getPropS(PROP_BASE,"nameRefAttrSlot","kiev\u001fvtree\u001fRefAttrSlot"); 
@@ -48,12 +49,17 @@ public abstract class VNode_Base extends TransfProcessor {
 	public static final String nameWalkerVisitNode		= getPropS(PROP_BASE,"nameWalkerVisitNode","visitANode");
 	public static final String nameWalkerVisitSpace	= getPropS(PROP_BASE,"nameWalkerVisitSpace","visitANodeSpace");
 	
+	public static final String operatorPostTypeSpace		= getPropS(PROP_BASE,"operatorPostTypeSpace","T ∅");		// \u2205
+	public static final String operatorPostTypeExtSpace		= getPropS(PROP_BASE,"operatorPostTypeExtSpace","T ⋈");		// \u22c8
+	public static final String operatorPostTypeSymbolRef	= getPropS(PROP_BASE,"operatorPostTypeSymbolRef","T ⇑");	// \u21d1
+
 	static Type tpINode;
 	static Type tpANode;
 	static Type tpNode;
 	static Type tpNArray;
 	static Type tpNodeSpace;
 	static Type tpNodeExtSpace;
+	static Type tpNodeSymbolRef;
 	static Type tpTreeWalker;
 	static Type tpAttrSlot;
 	static Type tpRefAttrSlot;
@@ -66,6 +72,10 @@ public abstract class VNode_Base extends TransfProcessor {
 	static Type tpExtSpaceAttrSlot;
 	static Type tpLanguageIface;
 	static Type tpCopyContext;
+	
+	static Operator PostTypeSpace;
+	static Operator PostTypeExtSpace;
+	static Operator PostTypeSymbolRef;
 
 	VNode_Base() { super(KievExt.VNode); }
 
@@ -107,6 +117,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpNArray = new ArrayType(tpANode);
 			tpNodeSpace = Env.getRoot().loadTypeDecl(nameNodeSpace, true).xtype;
 			tpNodeExtSpace = Env.getRoot().loadTypeDecl(nameNodeExtSpace, true).xtype;
+			tpNodeSymbolRef = Env.getRoot().loadTypeDecl(nameNodeSymbolRef, true).xtype;
 			tpTreeWalker = Env.getRoot().loadTypeDecl(nameTreeWalker, true).xtype;
 			tpAttrSlot = Env.getRoot().loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.getRoot().loadTypeDecl(nameRefAttrSlot, true).xtype;
@@ -119,6 +130,11 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpExtSpaceAttrSlot = Env.getRoot().loadTypeDecl(nameExtSpaceAttrSlot, true).xtype;
 			tpLanguageIface = Env.getRoot().loadTypeDecl(nameLanguageIface, true).xtype;
 			tpCopyContext = Env.getRoot().loadTypeDecl(nameCopyContext, true).xtype;
+		}
+		if (PostTypeSpace == null) {
+			PostTypeSpace = Operator.getOperatorByDecl(operatorPostTypeSpace);
+			PostTypeExtSpace = Operator.getOperatorByDecl(operatorPostTypeExtSpace);
+			PostTypeSymbolRef = Operator.getOperatorByDecl(operatorPostTypeSymbolRef);
 		}
 		foreach (ASTNode n; fu.members)
 			doProcess(n);
@@ -169,20 +185,20 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 					boolean isExtData = fmatt != null ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 					if (!isExtData) {
 						if (!ft.isInstanceOf(tpNodeSpace)) {
-							Kiev.reportWarning(f,"Use node space \u2205 instead of []"); // ∅
+							Kiev.reportWarning(f,"Use node space operator '"+operatorPostTypeSpace+"' instead of 'T []'");
 							TypeExpr te = (TypeExpr)f.vtype;
-							te.op = Operator.PostTypeSpace;
-							te.ident = Operator.PostTypeSpace.name;
+							te.op = VNode_Base.PostTypeSpace;
+							te.ident = VNode_Base.PostTypeSpace.name;
 							te.type_lnk = null;
 							te.getType();
 							ft = f.getType();
 						}
 					} else {
 						if (!ft.isInstanceOf(tpNodeExtSpace)) {
-							Kiev.reportWarning(f,"Use extended space \u22c8 instead of []"); // ⋈
+							Kiev.reportWarning(f,"Use node extended space operator '"+operatorPostTypeExtSpace+"' instead of 'T []'"); // ⋈
 							TypeExpr te = (TypeExpr)f.vtype;
-							te.op = Operator.PostTypeExtSpace;
-							te.ident = Operator.PostTypeExtSpace.name;
+							te.op = VNode_Base.PostTypeExtSpace;
+							te.ident = VNode_Base.PostTypeExtSpace.name;
 							te.type_lnk = null;
 							te.getType();
 							ft = f.getType();
@@ -506,6 +522,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	static Type tpNode;
 	static Type tpNodeSpace;
 	static Type tpNodeExtSpace;
+	static Type tpNodeSymbolRef;
 	static Type tpAttrSlot;
 	static Type tpSpaceAttrSlot;
 	static Type tpCopyContext;
@@ -539,6 +556,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			tpNode = VNode_Base.tpNode;
 			tpNodeSpace = VNode_Base.tpNodeSpace;
 			tpNodeExtSpace = VNode_Base.tpNodeExtSpace;
+			tpNodeSymbolRef = VNode_Base.tpNodeSymbolRef;
 			tpAttrSlot = VNode_Base.tpAttrSlot;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
 			tpCopyContext = VNode_Base.tpCopyContext;
@@ -938,10 +956,14 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			UserMeta fmref = (UserMeta)f.getMeta(VNode_Base.mnRef);
 			if (fmatt != null || fmref != null) {
 				boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+				boolean isSymRef = f.getType().isInstanceOf(tpNodeSymbolRef);
 				if (isArr && !f.isAbstract()) {
 					TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
 					Field emptyArray = N.resolveField("emptyArray", false);
 					f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
+				}
+				if (isSymRef && !f.isAbstract()) {
+					f.init = new ReinterpExpr(f.pos, f.getType(), new NewExpr(f.pos, f.getType().getMetaSupers()[0], ENode.emptyArray));
 				}
 			}
 			if (f.isVirtual() && f.getMetaPacked() == null) {

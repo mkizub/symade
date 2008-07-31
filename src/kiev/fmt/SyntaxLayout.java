@@ -446,6 +446,13 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 				eti.subtypes[i] = makeExpectedTypeInfo(exp.expected_types[i]);
 			return eti;
 		}
+		else if (sr.dnode instanceof SyntaxExpectedType) {
+			SyntaxExpectedType exp = (SyntaxExpectedType)sr.dnode;
+			ExpectedTypeInfo eti = new ExpectedTypeInfo();
+			eti.title = exp.title;
+			eti.typeinfo = exp.type_ref.getTypeInfo();
+			return eti;
+		}
 		return new ExpectedTypeInfo();
 	}
 
@@ -455,7 +462,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 		dr_decl.clazz_name = this.rnode.dnode.qname().replace('\u001f','.').intern();
 		foreach (SyntaxExpectedAttr exp; attr_types) {
 			ExpectedAttrTypeInfo eti = new ExpectedAttrTypeInfo();
-			eti.title = exp.title;
+			eti.title = null;
 			eti.attr_name = exp.attr_name;
 			eti.subtypes = new ExpectedTypeInfo[exp.expected_types.length];
 			for (int i=0; i < eti.subtypes.length; i++)
@@ -518,32 +525,69 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 }
 
 @ThisIsANode(lang=SyntaxLang)
-public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
+public class SyntaxTypeRef extends ASTNode {
+	public static final SyntaxTypeRef[] emptyArray = new SyntaxTypeRef[0];
+
+	@nodeAttr public SymbolRef<Struct>	clazz; 
+	@nodeAttr public SyntaxTypeRef∅		args; 
+
+	public void preResolveOut() {
+		super.preResolveOut();
+		SymbolRef.resolveSymbol(SeverError.Error, clazz);
+	}
 	
-	public static final SyntaxExpectedTemplate[] emptyArray = new SyntaxExpectedTemplate[0];
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "clazz")
+			return SymbolRef.autoCompleteSymbol(clazz, str);
+		return super.resolveAutoComplete(str,slot);
+	}
+
+	public TypeInfo getTypeInfo() {
+		Struct s = clazz.dnode;
+		if (args.length == 0) {
+			return TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('\u001f','.')),null);
+		} else {
+			TypeInfo[] ti_args = new TypeInfo[args.length];
+			for (int i=0; i < ti_args.length; i++)
+				ti_args[i] = args[i].getTypeInfo();
+			return TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('\u001f','.')),ti_args);
+		}
+	}
+
+}
+
+@ThisIsANode(lang=SyntaxLang)
+public class SyntaxExpectedType extends DNode {
 	
 	@nodeAttr public String				title;
-	@nodeAttr public String				attr_name;
-	@nodeAttr public SymbolRef∅		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
+	@nodeAttr public SyntaxTypeRef		type_ref;
 
-	@nodeData public AttrSlot			attr_slot;
+}
 
-	public SyntaxExpectedTemplate() {
-		super(new SyntaxNode());
-	}
+@ThisIsANode(lang=SyntaxLang)
+public class SyntaxExpectedTemplate extends DNode {
+	
+	@nodeAttr public String				title;
+	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType
 
 	public void preResolveOut() {
 		super.preResolveOut();
 		foreach (SymbolRef sr; expected_types)
 			SymbolRef.resolveSymbol(SeverError.Error, sr, fun (DNode dn)->boolean {
-				return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn) || dn instanceof SyntaxExpectedTemplate;
+				return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn)
+					|| dn instanceof SyntaxExpectedTemplate
+					|| dn instanceof SyntaxExpectedType
+					;
 			});
 	}
 	
 	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
 			return SymbolRef.autoCompleteSymbol(this, str, fun (ISymbol n)->boolean {
-				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n) || n instanceof SyntaxExpectedTemplate;
+				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n)
+					|| n instanceof SyntaxExpectedTemplate
+					|| n instanceof SyntaxExpectedType
+					;
 			});
 		return super.resolveAutoComplete(str,slot);
 	}
@@ -652,9 +696,8 @@ public class SyntaxExpectedAttr extends ASTNode {
 	
 	public static final SyntaxExpectedAttr[] emptyArray = new SyntaxExpectedAttr[0];
 	
-	@nodeAttr public String				title;
 	@nodeAttr public String				attr_name;
-	@nodeAttr public SymbolRef∅		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
+	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType 
 
 	@nodeData public AttrSlot			attr_slot;
 
@@ -664,14 +707,44 @@ public class SyntaxExpectedAttr extends ASTNode {
 		super.preResolveOut();
 		foreach (SymbolRef sr; expected_types)
 			SymbolRef.resolveSymbol(SeverError.Error, sr, fun (DNode dn)->boolean {
-				return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn) || dn instanceof SyntaxExpectedTemplate;
+				return dn instanceof Struct && VNode_Base.isNodeKind((Struct)dn)
+					|| dn instanceof SyntaxExpectedTemplate
+					|| dn instanceof SyntaxExpectedType
+					;
 			});
 	}
 	
+	public Struct getExpectedType() {
+		ANode p = parent();
+		if (p instanceof SyntaxElemDecl)
+			return ((SyntaxElemDecl)p).rnode.dnode;
+		return null;
+	}
+
 	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "attr_name") {
+			try {
+				Struct s = getExpectedType();
+				if (s == null)
+					return null;
+				Class cls = Class.forName(s.qname().replace('\u001f','.'));
+				java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
+				fld.setAccessible(true);
+				Vector<ISymbol> attrs = new Vector<ISymbol>();
+				foreach (AttrSlot s; (AttrSlot[])fld.get(null); s.name.startsWith(str))
+					attrs.append(new Symbol(s.name));
+				return attrs.toArray();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
 		if (slot.name == "expected_types")
 			return SymbolRef.autoCompleteSymbol(this,str, fun (ISymbol n)->boolean {
-				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n) || n instanceof SyntaxExpectedTemplate;
+				return n instanceof Struct && VNode_Base.isNodeKind((Struct)n)
+					|| n instanceof SyntaxExpectedTemplate
+					|| n instanceof SyntaxExpectedType
+					;
 			});
 		return super.resolveAutoComplete(str,slot);
 	}

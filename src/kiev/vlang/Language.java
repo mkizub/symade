@@ -26,7 +26,7 @@ public interface Language {
 	public String getDefaultInfoSyntax();
 	public String getClassByNodeName(String name);
 	public AttrSlot getExtAttrByName(String name);
-	public ANode makeNode(String name);
+	public ANode makeNode(String name, String ti_sign);
 }
 
 public abstract class LangBase implements Language {
@@ -58,10 +58,12 @@ public abstract class LangBase implements Language {
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
 		return c.getName();
 	}
-	public ANode makeNode(String name) {
+	public ANode makeNode(String name, String ti_sign) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
+		if (ti_sign != null)
+			return (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 		return (ANode)c.newInstance();
 	}
 	public AttrSlot getExtAttrByName(String name) {
@@ -86,11 +88,12 @@ public final class CoreLang extends LangBase {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 	
-	public ANode makeNode(String name) {
-		if (name.equals("ASTOperatorAlias"))
-			return new ASTOperatorAlias();
-		return super.makeNode(name);
+	public ANode makeNode(String name, String ti_sign) {
+		if (ti_sign == null && name.equals("SymbolRef"))
+			return new SymbolRef();
+		return super.makeNode(name, ti_sign);
 	}
+
 	public AttrSlot getExtAttrByName(String name) {
 		if (name.equals("comment"))
 			return Comment.ATTR_COMMENT;

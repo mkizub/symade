@@ -91,6 +91,55 @@ public class TypeInfo implements Externalizable {
 		return ti;
 	}
 	
+	public static TypeInfo newTypeInfo(String ti_str) {
+		StringTokenizer st = new StringTokenizer(ti_str, "<,>", true);
+		TypeInfo ti = parseTypeInfo(st, st.nextToken().trim(), ti_str);
+		if (st.hasMoreTokens())
+			throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
+		return ti;
+	}
+	
+	public static TypeInfo makeTypeInfo(Class clazz, TypeInfo[] args) {
+		Class ti_clazz;
+		try {
+			ti_clazz = Class.forName(clazz.getName() + "$__ti__");
+		} catch (ClassNotFoundException e) {
+			return TypeInfo.newTypeInfo(clazz, null);
+		}
+		if (args == null)
+			return (TypeInfo)ti_clazz.getDeclaredMethod("newTypeInfo", new Class[0]).invoke(null,new Object[0]);
+		else
+			return (TypeInfo)ti_clazz.getDeclaredMethod("newTypeInfo", Class.class, TypeInfo[].class).invoke(null,clazz,args);
+	}
+	
+	private static TypeInfo parseTypeInfo(StringTokenizer st, String first_token, String ti_str) {
+		Class clazz = Class.forName(first_token);
+		if (!st.hasMoreTokens())
+			return makeTypeInfo(clazz,null);
+		String t = st.nextToken().trim();
+		if (t.equals(","))
+			return makeTypeInfo(clazz,null);
+		if (!t.equals("<"))
+			throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
+		TypeInfo[] args = null;
+		do {
+			t = st.nextToken().trim();
+			if (t.equals(">"))
+				return makeTypeInfo(clazz,args);
+			if (t.equals(",")) {
+				if (!st.hasMoreTokens())
+					throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
+				t = st.nextToken().trim();
+			}
+			TypeInfo arg = parseTypeInfo(st, t, ti_str);
+			if (args == null)
+				args = new TypeInfo[]{arg};
+			else
+				args = (TypeInfo[])Arrays.append(args, arg);
+		} while (st.hasMoreTokens());
+		throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
+	}
+	
 	public TypeInfo[] getTopArgs() {
 		return null;
 	}
@@ -100,7 +149,19 @@ public class TypeInfo implements Externalizable {
 	}
 
 	public String toString() {
-		return clazz.getName();
+		TypeInfo[] args = getTopArgs();
+		if (args == null || args.length == 0)
+			return clazz.getName();
+		StringBuffer sb = new StringBuffer();
+		sb.append(clazz.getName());
+		sb.append("<");
+		for (int i=0; i < args.length; i++) {
+			if (i > 0)
+				sb.append(",");
+			sb.append(args[i].toString());
+		}
+		sb.append(">");
+		return sb.toString();
 	}
 	
 	public final void writeExternal(ObjectOutput out) throws IOException {
