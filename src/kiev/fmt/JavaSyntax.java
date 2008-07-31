@@ -82,11 +82,9 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaComment extends SyntaxElem {
-	@nodeAttr public SymbolRef<SyntaxJavaCommentTemplate>	template;
+	@nodeAttr public SyntaxJavaCommentTemplate⇑	template;
 
-	public SyntaxJavaComment() {
-		this.template = new SymbolRef<SyntaxJavaCommentTemplate>();
-	}
+	public SyntaxJavaComment() {}
 
 	public void preResolveOut() {
 		super.preResolveOut();

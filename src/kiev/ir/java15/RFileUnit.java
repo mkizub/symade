@@ -48,7 +48,7 @@ public static final view RFileUnit of FileUnit extends RNameSpace {
 
 @ViewOf(vcast=true, iface=true)
 public static view RNameSpace of NameSpace extends RSNode {
-	public		SymbolRef<KievPackage>	srpkg;
+	public:ro	SymbolRef<KievPackage>	srpkg;
 	public:ro	ASTNode[]				members;
 
 	public void resolveDecl() {

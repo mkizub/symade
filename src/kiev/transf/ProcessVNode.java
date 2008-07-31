@@ -971,8 +971,6 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				fixGetterMethod(impl, f, fmatt, fmref);
 			}
 		}
-		foreach(Constructor ctor; impl.members; !ctor.isStatic())
-			fixFinalFieldsInit(impl, ctor);
 	}
 	
 	private Struct makeNodeValuesClass(Struct iface, Struct impl) {
@@ -1040,41 +1038,6 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		return false;
 	}
 	
-	private void fixFinalFieldsInit(Struct s, Constructor ctor) {
-		for (int i=0; i < ctor.block.stats.length; i++) {
-			ANode stat = ctor.block.stats[i];
-			if (stat instanceof ExprStat) stat = stat.expr;
-			if (stat instanceof AssignExpr && stat.lval instanceof IFldExpr) {
-				IFldExpr fe = (IFldExpr)((AssignExpr)stat).lval;
-				if (fe.obj instanceof ThisExpr && fe.var.isFinal() && fe.var.getMeta(VNode_Base.mnAtt) != null) {
-					Field f = fe.var;
-					fe.setAsField(true);
-					Field fatt = f.ctx_tdecl.resolveField(("nodeattr$"+f.sname).intern());
-					ENode p_st = new IfElseStat(0,
-							new BinaryBoolExpr(0, Operator.NotEquals,
-								new IFldExpr(0, new ThisExpr(), f),
-								new ConstNullExpr()
-							),
-							new ExprStat(0,
-								new CallExpr(0,
-									new IFldExpr(0, new ThisExpr(), f),
-									new SymbolRef<Method>("callbackAttached"),
-									null,
-									new ENode[] {
-										new ThisExpr(),
-										new SFldExpr(fe.pos, fatt)
-									}
-								)
-							),
-							null
-						);
-					ctor.block.stats.insert(i+1, p_st);
-					Kiev.runProcessorsOn(p_st);
-				}
-			}
-		}
-	}
-
 	private void fixGetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
 		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
@@ -1286,3 +1249,106 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 
 }
 
+@singleton
+public class VNodeBE_FixResolve extends BackendProcessor {
+	private VNodeBE_FixResolve() { super(KievBackend.Java15); }
+	public String getDescr() { "VNode fix resolved" }
+
+	////////////////////////////////////////////////////
+	//	   PASS - preGenerate                         //
+	////////////////////////////////////////////////////
+
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr,"VNodeBE_FixResolve");
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	final Struct getIFaceOfImpl(Struct impl) {
+		if (impl.parent() instanceof Struct) {
+			Struct iface = (Struct)impl.parent();
+			if (iface.isInterface() && impl.isClazz() && iface.iface_impl == impl)
+				return iface;
+		}
+		return null;
+	}
+	
+	final boolean isNodeImpl(Struct s) {
+		if (s.isClazz() && s.getMeta(VNode_Base.mnNode) != null)
+			return true;
+		Struct iface = getIFaceOfImpl(s);
+		if (iface != null && iface.getMeta(VNode_Base.mnNode) != null)
+			return true;
+		return false;
+	}
+
+	public void doProcess(Struct:ASTNode s) {
+		if (s.isInterface() && !s.isMixin() || !isNodeImpl(s)) {
+			foreach(Struct sub; s.members)
+				doProcess(sub);
+			return;
+		}
+		
+		Struct iface = getIFaceOfImpl(s);
+		if (iface == null)
+			iface = s;
+		Struct impl;
+		if (s.isClazz())
+			impl = s;
+		else
+			impl = s.iface_impl;
+
+		foreach(Constructor ctor; impl.members; !ctor.isStatic())
+			fixFinalFieldsInit(ctor.block);
+	}
+
+	private void fixFinalFieldsInit(Block block) {
+		for (int i=0; i < block.stats.length; i++) {
+			ANode stat = block.stats[i];
+			if (stat instanceof Block) {
+				fixFinalFieldsInit((Block)stat);
+				continue;
+			}
+			if (stat instanceof ExprStat) stat = stat.expr;
+			if (stat instanceof AssignExpr && stat.lval instanceof IFldExpr) {
+				IFldExpr fe = (IFldExpr)((AssignExpr)stat).lval;
+				if (fe.obj instanceof ThisExpr && fe.var.isFinal() && fe.var.getMeta(VNode_Base.mnAtt) != null) {
+					Field f = fe.var;
+					fe.setAsField(true);
+					Field fatt = f.ctx_tdecl.resolveField(("nodeattr$"+f.sname).intern());
+					ENode p_st = new IfElseStat(0,
+							new BinaryBoolExpr(0, Operator.NotEquals,
+								new IFldExpr(0, new ThisExpr(), f),
+								new ConstNullExpr()
+							),
+							new ExprStat(0,
+								new CallExpr(0,
+									new IFldExpr(0, new ThisExpr(), f),
+									new SymbolRef<Method>("callbackAttached"),
+									null,
+									new ENode[] {
+										new ThisExpr(),
+										new SFldExpr(fe.pos, fatt)
+									}
+								)
+							),
+							null
+						);
+					block.stats.insert(i+1, p_st);
+					Kiev.runProcessorsOn(p_st);
+				}
+			}
+		}
+	}
+
+}

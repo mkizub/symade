@@ -18,17 +18,17 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 @ThisIsANode(lang=SyntaxLang)
-public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalDNode, DumpSerialized {
-	@nodeAttr public SymbolRef<ATextSyntax>	parent_syntax;
-	@nodeAttr public ASTNode∅					members;
-	          public String						q_name;	// qualified name
+public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer, DumpSerialized {
+	@nodeAttr public ATextSyntax⇑		parent_syntax;
+	@nodeAttr public ASTNode∅			members;
+	          public String				q_name;	// qualified name
 			  
 	@UnVersioned
 	protected Draw_ATextSyntax compiled;
 
-	public ATextSyntax() {
-		this.parent_syntax = new SymbolRef<ATextSyntax>();
-	}
+	public ATextSyntax() {}
+	
+	public final ASTNode[] getMembers() { this.members }
 	
 	public Object getDataToSerialize() {
 		return this.getCompiled().init();
@@ -189,13 +189,12 @@ public class SpaceInfo extends DNode {
 public final class SpaceCmd extends ASTNode {
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
-	@nodeAttr public SymbolRef<SpaceInfo>			si;
+	@nodeAttr public SpaceInfo⇑						si;
 	@nodeAttr public SpaceAction					action_before;
 	@nodeAttr public SpaceAction					action_after;
 	@nodeAttr public int							from_attempt;
 	
 	public SpaceCmd() {
-		si = new SymbolRef<SpaceInfo>();
 		action_before = SP_NOP;
 		action_after = SP_NOP;
 	}
@@ -203,7 +202,7 @@ public final class SpaceCmd extends ASTNode {
 		this(si, action_before, action_after, 0);
 	}
 	public SpaceCmd(SpaceInfo si, SpaceAction action_before, SpaceAction action_after, int from_attempt) {
-		this.si = new SymbolRef<SpaceInfo>(si);
+		this.si.symbol = si;
 		this.from_attempt = from_attempt;
 		this.action_before = action_before;
 		this.action_after = action_after;
@@ -211,8 +210,6 @@ public final class SpaceCmd extends ASTNode {
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		if (si == null)
-			si = new SymbolRef<SpaceInfo>();
 		if (si.name == null)
 			si.name = "sp";
 		SymbolRef.resolveSymbol(SeverError.Error, si);
@@ -263,7 +260,7 @@ public enum ParagraphFlow {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class ParagraphLayout extends DNode {
-	@nodeAttr SymbolRef<IndentInfo>	indent;
+	@nodeAttr IndentInfo⇑				indent;
 	@nodeAttr SymbolRef∅				no_indent_if_prev;
 	@nodeAttr SymbolRef∅				no_indent_if_next;
 	@nodeAttr ParagraphFlow				flow;
@@ -399,21 +396,17 @@ public final class PartialSyntaxElemDecl extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemDecl extends ASyntaxElemDecl {
-	@nodeAttr public SymbolRef<Struct>			rnode;
+	@nodeAttr public Struct⇑					rnode;
 	@nodeAttr public SyntaxExpectedAttr∅		attr_types;
 
-	public SyntaxElemDecl() {
-		this.rnode = new SymbolRef<Struct>();
-	}
+	public SyntaxElemDecl() {}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
 		super(elem);
-		this.rnode = new SymbolRef<Struct>(cls);
+		this.rnode.symbol = cls;
 	}
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		if (rnode == null)
-			rnode = new SymbolRef<Struct>();
 		if (rnode.name == null)
 			rnode.name = "ASTNode";
 		SymbolRef.resolveSymbol(SeverError.Error, rnode, fun (DNode dn)->boolean {
@@ -528,7 +521,7 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 public class SyntaxTypeRef extends ASTNode {
 	public static final SyntaxTypeRef[] emptyArray = new SyntaxTypeRef[0];
 
-	@nodeAttr public SymbolRef<Struct>	clazz; 
+	@nodeAttr public Struct⇑			clazz; 
 	@nodeAttr public SyntaxTypeRef∅		args; 
 
 	public void preResolveOut() {
@@ -596,8 +589,8 @@ public class SyntaxExpectedTemplate extends DNode {
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemFormatDecl extends DNode {
 	@nodeAttr public SpaceCmd∅				spaces;
-	@nodeAttr public SymbolRef<DrawColor>	color;
-	@nodeAttr public SymbolRef<DrawFont>	font;
+	@nodeAttr public DrawColor⇑				color;
+	@nodeAttr public DrawFont⇑				font;
 	
 	public SyntaxElemFormatDecl() {
 		this.sname = "fmt-";
@@ -755,9 +748,9 @@ public abstract class SyntaxElem extends ASTNode {
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
 	@nodeAttr
-	public SymbolRef<SyntaxElemFormatDecl>		fmt;
+	public SyntaxElemFormatDecl⇑				fmt;
 	@nodeAttr
-	public SymbolRef<ParagraphLayout>			par;
+	public ParagraphLayout⇑						par;
 	@nodeAttr(ext_data=true)
 	public SyntaxFunctions						funcs;
 	
@@ -812,14 +805,12 @@ public abstract class SyntaxElem extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxElemRef extends SyntaxElem {
-	@nodeAttr public SymbolRef<ASyntaxElemDecl>	decl;
-	@nodeAttr public String							text;
+	@nodeAttr public ASyntaxElemDecl⇑		decl;
+	@nodeAttr public String					text;
 
-	public SyntaxElemRef() {
-		this.decl = new SymbolRef<ASyntaxElemDecl>();
-	}
+	public SyntaxElemRef() {}
 	public SyntaxElemRef(ASyntaxElemDecl decl) {
-		this.decl = new SymbolRef<ASyntaxElemDecl>(decl);
+		this.decl.symbol = decl;
 	}
 	
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
@@ -950,7 +941,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	public static final SyntaxAttr[] emptyArray = new SyntaxAttr[0];
 
 	@nodeAttr public String							name;
-	@nodeAttr public SymbolRef<ATextSyntax>			in_syntax;
+	@nodeAttr public ATextSyntax⇑					in_syntax;
 	@nodeAttr public SyntaxElem						empty;
 	@nodeData public AttrSlot						attr_slot;
 
@@ -959,9 +950,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		this.name = (value != null) ? value.intern() : null;
 	}
 	
-	public SyntaxAttr() {
-		this.in_syntax = new SymbolRef<ATextSyntax>();
-	}
+	public SyntaxAttr() {}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "attr_slot")
@@ -1151,10 +1140,10 @@ public class SyntaxTreeBranch extends SyntaxAttr {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxIdentAttr extends SyntaxAttr {
-	@nodeAttr public SymbolRef<SyntaxIdentTemplate>		decl;
+	@nodeAttr public SyntaxIdentTemplate⇑		decl;
 
 	public SyntaxIdentAttr() {
-		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
+		this.decl.name = "ident-template";
 	}
 
 	public void preResolveOut() {

@@ -50,7 +50,7 @@ public final view JFileUnit of FileUnit extends JNameSpace {
 
 @ViewOf(vcast=true, iface=true)
 public view JNameSpace of NameSpace extends JSNode {
-	public		SymbolRef<KievPackage>	srpkg;
+	public:ro	SymbolRef<KievPackage>	srpkg;
 	public:ro	JNode[]					members;
 
 	public void generate() {

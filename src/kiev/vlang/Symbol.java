@@ -139,6 +139,7 @@ public class Symbol extends ASTNode implements ISymbol {
 
 }
 
+@unerasable
 @ThisIsANode(lang=CoreLang)
 public final class SymbolRef<D extends DNode> extends ASTNode {
 
@@ -278,22 +279,6 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	@unerasable
-	public static ISymbol[] autoCompleteSymbol(ASTNode resolve_in, String str, (ISymbol)->boolean check) {
-		if (str == null)
-			str = "";
-		ResInfo info = new ResInfo(resolve_in, str, ResInfo.noEquals);
-		Vector<ISymbol> vect = new Vector<ISymbol>();
-		ISymbol@ a;
-		foreach (PassInfo.resolveNameR(resolve_in,a,info)) {
-			ISymbol dn = (ISymbol)a;
-			if (vect.contains(dn) || !check(dn))
-				continue;
-			vect.append(dn);
-		}
-		return vect.toArray();
-	}
-
-	@unerasable
 	public static <A extends DNode> A[] autoCompleteSymbol(SymbolRef<A> self, String str) {
 		if (str == null)
 			str = "";
@@ -302,6 +287,79 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		A@ a;
 		foreach (PassInfo.resolveNameR(self,a,info))
 			if (!vect.contains(a)) vect.append(a);
+		return vect.toArray();
+	}
+
+	private boolean checkSymbolForAutoComplete(ISymbol isym) {
+		return isym.dnode instanceof D;
+	}
+	
+	public ISymbol[] autoCompleteSymbol(String str) {
+		return autoCompleteSymbol(this, str, fun (ISymbol isym)->boolean {
+			return checkSymbolForAutoComplete(isym);
+		});
+	}
+
+	public static ISymbol[] autoCompleteSymbol(ASTNode resolve_in, String str, (ISymbol)->boolean check) {
+		if (str == null)
+			str = "";
+		int dot = str.indexOf('\u001f');
+		if (dot > 0) {
+			// check we start with a root package
+			String head = str.substring(0,dot).intern();
+			String tail = str.substring(dot+1);
+			foreach (KievPackage pkg; Env.getRoot().pkg_members; pkg.sname == head) {
+				// process as fully-qualified name
+				return autoCompleteSymbolFromRoot(resolve_in, pkg, tail, check);
+			}
+			// otherwice resolve the head and then it's sub-bodes
+			ISymbol@ root;
+			if (!PassInfo.resolveNameR(resolve_in,root,new ResInfo(resolve_in,head)))
+				return null;
+			if !(root instanceof GlobalDNodeContainer)
+				return null;
+			return autoCompleteSymbolFromRoot(resolve_in, (GlobalDNodeContainer)(ISymbol)root, tail, check);
+		}
+		Vector<ISymbol> vect = new Vector<ISymbol>();
+		ResInfo info = new ResInfo(resolve_in, str, ResInfo.noEquals);
+		ISymbol@ node;
+		foreach (PassInfo.resolveNameR(resolve_in,node,info)) {
+			ISymbol isym = (ISymbol)node;
+			if (vect.contains(isym) || !check(isym))
+				continue;
+			vect.append(isym);
+		}
+		return vect.toArray();
+	}
+	
+	private static ISymbol[] autoCompleteSymbolFromRoot(ASTNode resolve_in, GlobalDNodeContainer scope, String tail, (ISymbol)->boolean check) {
+		int dot = tail.indexOf('\u001f');
+		while (dot > 0) {
+			String head = tail.substring(0,dot).intern();
+			tail = tail.substring(dot+1);
+			ISymbol isym = null;
+			foreach (ISymbol s; scope.getMembers(); s.sname == head) {
+				isym = s;
+				break;
+			}
+			dot = tail.indexOf('\u001f');
+			if (isym instanceof GlobalDNodeContainer) {
+				scope = (GlobalDNodeContainer)isym;
+				continue;
+			}
+			return null;
+		}
+		String head = tail.intern();
+		Vector<ISymbol> vect = new Vector<ISymbol>();
+		ISymbol@ node;
+		int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
+		ResInfo info = new ResInfo(resolve_in,head,flags);
+		foreach (scope.resolveNameR(node,info)) {
+			ISymbol isym = (ISymbol)node;
+			if (vect.contains(isym) || !check(isym))
+				continue;
+			vect.append(isym);
+		}
 		return vect.toArray();
 	}
 

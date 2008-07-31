@@ -33,7 +33,6 @@ import java.io.Reader;
 
 import static kiev.vlang.AccessFlags.*;
 
-typedef SymbolRefPkg = SymbolRef<KievPackage> ;
 typedef SymbolRefStx = SymbolRef<KievSyntax> ;
 typedef SymbolRefFld = SymbolRef<Field> ;
 
@@ -787,7 +786,7 @@ TOKEN : /* OPERATORS */
  */
 
 FileUnit FileUnit(String filename) :
-{ FileUnit oldFileUnit; SymbolRefPkg pkg; }
+{ FileUnit oldFileUnit; SymbolRef pkg; }
 {
 	{
 		oldFileUnit = curFileUnit;
@@ -806,9 +805,10 @@ FileUnit FileUnit(String filename) :
 			//LOOKAHEAD({ getToken(1).kind==PACKAGE && (fu.srpkg == null ||  fu.srpkg.name == null) })
 			pkg = Package()
 			{
-				if (fu.srpkg == null ||  fu.srpkg.name == null)
-					fu.srpkg = pkg;
-				else
+				if (fu.srpkg.name == null) {
+					fu.srpkg.name = pkg.name;
+					fu.srpkg.pos = pkg.pos;
+				} else
 					Kiev.reportError(pkg,"Duplicate package declaration "+pkg);
 			}
 		)*
@@ -832,8 +832,8 @@ NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
 		<IDENTIFIER>	// "namespace"
 		(	LOOKAHEAD({ parent.getPackage() instanceof Env })
-			sr = QName()		{ ns.srpkg = (SymbolRefPkg)sr; }
-		|	sr = NameRef()		{ ns.srpkg = (SymbolRefPkg)sr; }
+			sr = QName()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
+		|	sr = NameRef()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
 		)
 		{ parent.members += ns; }
 		"{"
@@ -912,7 +912,7 @@ void InBlockModifiersLA() :
 	| "@uuid"
 }
 
-SymbolRefPkg Package() :
+SymbolRef Package() :
 { SymbolRef qn; }
 {
 	"package"
@@ -920,7 +920,7 @@ SymbolRefPkg Package() :
 	";"
 	{
 		qn.symbol = Env.getRoot().newPackage(qn.name);
-		return (SymbolRefPkg)qn;
+		return qn;
 	}
 }
 

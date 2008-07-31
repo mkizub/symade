@@ -45,12 +45,10 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpr extends SyntaxElem {
-	@nodeAttr public SyntaxAttr∅					attrs;
-	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
+	@nodeAttr public SyntaxAttr∅			attrs;
+	@nodeAttr public SyntaxExprTemplate⇑	template;
 
-	public SyntaxExpr() {
-		this.template = new SymbolRef<SyntaxExprTemplate>();
-	}
+	public SyntaxExpr() {}
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -83,7 +81,7 @@ public class SyntaxExpr extends SyntaxElem {
 public class SyntaxAutoParenth extends SyntaxElem {
 	@nodeAttr public SyntaxAttr						attr;
 	@nodeAttr public int							priority;
-	@nodeAttr public SymbolRef<SyntaxExprTemplate>	template;
+	@nodeAttr public SyntaxExprTemplate⇑			template;
 
 	public SyntaxAutoParenth() {}
 

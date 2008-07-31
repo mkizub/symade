@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="*|classes2/kiev/gui/|classes3/" including="kiev/gui/" kind="src" path="src"/>
+	<classpathentry excluding="*" including="kiev/gui/" kind="src" path="src"/>
 	<classpathentry kind="lib" path="bin/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="src/classes3" sourcepath="src"/>

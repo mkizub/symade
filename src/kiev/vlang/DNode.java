@@ -362,6 +362,9 @@ public interface GlobalDNode {
 	public String qname();
 }
 
+public interface GlobalDNodeContainer extends GlobalDNode, ScopeOfNames {
+	public ASTNode[] getMembers();
+}
 
 @ThisIsANode(lang=CoreLang)
 public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
@@ -585,7 +588,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 }
 
 @ThisIsANode(lang=CoreLang)
-public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNode {
+public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeContainer {
 
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
@@ -768,11 +771,13 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames, ScopeOfMethods {
+public final class KievSyntax extends DNode implements GlobalDNodeContainer, ScopeOfMethods {
 	@nodeAttr public SymbolRef∅		super_syntax;
 	@nodeAttr public ASTNode∅			members;
 
 	public KievSyntax() {}
+	
+	public final ASTNode[] getMembers() { this.members }
 	
 	public String qname() {
 		if (sname == null || sname == "")
@@ -857,9 +862,11 @@ public final class KievSyntax extends DNode implements GlobalDNode, ScopeOfNames
 }
 
 @ThisIsANode(lang=CoreLang)
-public class KievPackage extends DNode implements GlobalDNode, ScopeOfNames {
+public class KievPackage extends DNode implements GlobalDNodeContainer {
 
 	@nodeAttr public DNode∅						pkg_members;
+	
+	public final ASTNode[] getMembers() { this.pkg_members }
 
 	public String qname() {
 		ANode p = parent();

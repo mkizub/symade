@@ -33,7 +33,7 @@ import kiev.gui.UIManager;
 public class Configuration {
 	public static String EVENT_BINDINGS_FILE = "kiev/fmt/evt/bindings.xml";
 	
-	static ASTNode bindings;
+	//static ASTNode bindings;
 
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
@@ -129,9 +129,9 @@ public class Configuration {
 		return naviMap;
 	}
 	
-	static {
-		bindings = DumpUtils.deserializeFromXmlFile(new File(EVENT_BINDINGS_FILE));
-	}
+	//static {
+	//	bindings = DumpUtils.deserializeFromXmlFile(new File(EVENT_BINDINGS_FILE));
+	//}
 }
 
 final class FolderTrigger implements Runnable {

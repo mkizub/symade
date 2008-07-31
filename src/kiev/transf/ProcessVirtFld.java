@@ -378,7 +378,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			Method getter = f.getGetterMethod();
 			Method setter = f.getSetterMethod();
 			if (setter == null) {
-				Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
+				if (!f.isFinal() && MetaAccess.writeable(f))
+					Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}

@@ -20,7 +20,6 @@ import java.io.Reader;
 
 import static kiev.vlang.AccessFlags.*;
 
-typedef SymbolRefPkg = SymbolRef<KievPackage> ;
 typedef SymbolRefStx = SymbolRef<KievSyntax> ;
 typedef SymbolRefFld = SymbolRef<Field> ;
 
@@ -408,7 +407,7 @@ public abstract class kiev050 implements kiev050Constants {
  * Program structuring syntax follows.
  */
   final public FileUnit FileUnit(String filename) throws ParseException {
-  FileUnit oldFileUnit; SymbolRefPkg pkg;
+  FileUnit oldFileUnit; SymbolRef pkg;
                 oldFileUnit = curFileUnit;
                 FileUnit fu = FileUnit.makeFile(filename, false);
                 curFileUnit = fu;
@@ -434,9 +433,10 @@ public abstract class kiev050 implements kiev050Constants {
             case PACKAGE:
               //LOOKAHEAD({ getToken(1).kind==PACKAGE && (fu.srpkg == null ||  fu.srpkg.name == null) })
                                       pkg = Package();
-                                if (fu.srpkg == null ||  fu.srpkg.name == null)
-                                        fu.srpkg = pkg;
-                                else
+                                if (fu.srpkg.name == null) {
+                                        fu.srpkg.name = pkg.name;
+                                        fu.srpkg.pos = pkg.pos;
+                                } else
                                         Kiev.reportError(pkg,"Duplicate package declaration "+pkg);
               break;
             default:
@@ -473,12 +473,12 @@ public abstract class kiev050 implements kiev050Constants {
       jj_consume_token(IDENTIFIER);
       if (parent.getPackage() instanceof Env) {
         sr = QName();
-                                                  ns.srpkg = (SymbolRefPkg)sr;
+                                                  ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos;
       } else {
         switch (jj_nt.kind) {
         case IDENTIFIER:
           sr = NameRef();
-                                                  ns.srpkg = (SymbolRefPkg)sr;
+                                                  ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos;
           break;
         default:
           jj_consume_token(-1);
@@ -711,13 +711,13 @@ public abstract class kiev050 implements kiev050Constants {
     }
   }
 
-  final public SymbolRefPkg Package() throws ParseException {
+  final public SymbolRef Package() throws ParseException {
   SymbolRef qn;
     jj_consume_token(PACKAGE);
     qn = QName();
     jj_consume_token(SEMICOLON);
                 qn.symbol = Env.getRoot().newPackage(qn.name);
-                {if (true) return (SymbolRefPkg)qn;}
+                {if (true) return qn;}
     throw new Error("Missing return statement in function");
   }
 
