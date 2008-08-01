@@ -80,6 +80,20 @@ public @interface AttrXMLDumpInfo {
 	String name() default "";
 }
 
+// attribute is a SymbolRef and is automatically auto-completed in the editor
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SymbolRefAutoComplete {
+	boolean value() default true;
+	Class[] scopes() default { kiev.vlang.GlobalDNodeContainer };
+}
+
+// attribute is a SymbolRef and is automatically resolved by it's type
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SymbolRefAutoResolve {
+	boolean value() default true;
+	SeverError sever() default SeverError.Error;
+}
+
 //
 // data flow annotation
 //

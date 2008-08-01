@@ -163,19 +163,15 @@ public final class DumpUtils {
 		if (OLD_XML_WRITE) {
 			out.startTag(null,"a-node");
 			out.attribute(null, "class", node.getClass().getName());
-			if (node instanceof TypeInfoInterface)
-				out.attribute(null, "ti", ((TypeInfoInterface)node).getTypeInfoField().toString());
 		}
 		else if (lng != null) {
 			out.startTag(lng.getURI(),node.getCompilerNodeName());
-			if (node instanceof TypeInfoInterface)
-				out.attribute(SOP_URI, "ti", ((TypeInfoInterface)node).getTypeInfoField().toString());
 		}
 		else {
 			out.startTag(SOP_URI,node.getClass().getName());
-			if (node instanceof TypeInfoInterface)
-				out.attribute(SOP_URI, "ti", ((TypeInfoInterface)node).getTypeInfoField().toString());
 		}
+		if (node instanceof TypeInfoInterface && node.getTypeInfoField().getTopArgs().length > 0 && (node.pslot()==null || node.pslot().isWrittable()))
+			out.attribute(OLD_XML_WRITE ? null : SOP_URI, "ti", node.getTypeInfoField().toString());
 		if (!OLD_XML_WRITE) {
 			foreach (AttrSlot attr; node.values(); attr instanceof ScalarAttrSlot && attr.isXmlAttr()) {
 				if (!checkIncludeAttrInDump(dump,node,attr))

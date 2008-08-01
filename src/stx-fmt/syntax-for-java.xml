@@ -19,25 +19,25 @@
   <members>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;types' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang&#31;types' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;parser' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;parser' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;fmt' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;fmt' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
@@ -199,7 +199,7 @@
        <core:SymbolRef name='indent-no' />
       </indent>
       <no_indent_if_prev>
-       <core:SymbolRef name='indent-but-block' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='indent-but-block' />
       </no_indent_if_prev>
       <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
@@ -208,7 +208,7 @@
        <core:SymbolRef name='indent-no' />
       </indent>
       <no_indent_if_prev>
-       <core:SymbolRef name='par-if-else' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='par-if-else' />
       </no_indent_if_prev>
       <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
@@ -217,7 +217,7 @@
        <core:SymbolRef name='indent-but-block' />
       </indent>
       <no_indent_if_next>
-       <core:SymbolRef name='par-if-stat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='par-if-stat' />
       </no_indent_if_next>
       <flow>HORIZONTAL</flow>
      </syntax:ParagraphLayout>
@@ -1601,6 +1601,23 @@
        </syntax:SyntaxElemDecl>
       </members>
      </syntax:TextSyntax>
+     <syntax:SyntaxExpectedType name='SRef&lt;KievSyntax>'>
+      <title>sref:Syntax</title>
+      <type_ref>
+       <syntax:SyntaxTypeRef>
+        <clazz>
+         <core:SymbolRef name='SymbolRef' />
+        </clazz>
+        <args>
+         <syntax:SyntaxTypeRef>
+          <clazz>
+           <core:SymbolRef name='KievSyntax' />
+          </clazz>
+         </syntax:SyntaxTypeRef>
+        </args>
+       </syntax:SyntaxTypeRef>
+      </type_ref>
+     </syntax:SyntaxExpectedType>
      <syntax:SyntaxExprTemplate name='expr-template'>
       <l_paren>
        <syntax:SyntaxToken>
@@ -1783,100 +1800,100 @@
      </syntax:SyntaxIdentTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-TypeRef'>
       <expected_types>
-       <core:SymbolRef name='TypeNameRef' />
-       <core:SymbolRef name='TypeRef' />
-       <core:SymbolRef name='TypeClosureRef' />
-       <core:SymbolRef name='MacroSubstTypeRef' />
-       <core:SymbolRef name='TypeDeclRef' />
-       <core:SymbolRef name='TypeExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TypeNameRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TypeRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TypeClosureRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroSubstTypeRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TypeDeclRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TypeExpr' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Expr'>
       <title>Expression</title>
       <expected_types>
-       <core:SymbolRef name='stx-types-Macro' />
-       <core:SymbolRef name='EToken' />
-       <core:SymbolRef name='ThisExpr' />
-       <core:SymbolRef name='SuperExpr' />
-       <core:SymbolRef name='LVarExpr' />
-       <core:SymbolRef name='UnaryExpr' />
-       <core:SymbolRef name='BinaryExpr' />
-       <core:SymbolRef name='AccessExpr' />
-       <core:SymbolRef name='CallExpr' />
-       <core:SymbolRef name='NewExpr' />
-       <core:SymbolRef name='InstanceofExpr' />
-       <core:SymbolRef name='CastExpr' />
-       <core:SymbolRef name='ConditionalExpr' />
-       <core:SymbolRef name='StringConcatExpr' />
-       <core:SymbolRef name='CommaExpr' />
-       <core:SymbolRef name='ConstBoolExpr' />
-       <core:SymbolRef name='ConstNullExpr' />
-       <core:SymbolRef name='ConstStringExpr' />
-       <core:SymbolRef name='ConstIntExpr' />
-       <core:SymbolRef name='ConstDoubleExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Macro' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='EToken' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ThisExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SuperExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVarExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='UnaryExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='BinaryExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='AccessExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CallExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='NewExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='InstanceofExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CastExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConditionalExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='StringConcatExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CommaExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstBoolExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstNullExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstStringExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstIntExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstDoubleExpr' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Stat'>
       <title>Statement</title>
       <expected_types>
-       <core:SymbolRef name='ExprStat' />
-       <core:SymbolRef name='Block' />
-       <core:SymbolRef name='IfElseStat' />
-       <core:SymbolRef name='WhileStat' />
-       <core:SymbolRef name='DoWhileStat' />
-       <core:SymbolRef name='ForStat' />
-       <core:SymbolRef name='ForEachStat' />
-       <core:SymbolRef name='LabeledStat' />
-       <core:SymbolRef name='SwitchStat' />
-       <core:SymbolRef name='TryStat' />
-       <core:SymbolRef name='SynchronizedStat' />
-       <core:SymbolRef name='WithStat' />
-       <core:SymbolRef name='ThrowStat' />
-       <core:SymbolRef name='ReturnStat' />
-       <core:SymbolRef name='BreakStat' />
-       <core:SymbolRef name='ContinueStat' />
-       <core:SymbolRef name='GotoStat' />
-       <core:SymbolRef name='GotoCaseStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ExprStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Block' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='IfElseStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='WhileStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='DoWhileStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ForStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ForEachStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LabeledStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SwitchStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TryStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SynchronizedStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='WithStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ThrowStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ReturnStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='BreakStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ContinueStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='GotoStat' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='GotoCaseStat' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Decl'>
       <title>Declarations</title>
       <expected_types>
-       <core:SymbolRef name='LVar' />
-       <core:SymbolRef name='JavaClass' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVar' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='JavaClass' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Macro'>
       <title>Macro</title>
       <expected_types>
-       <core:SymbolRef name='MacroAccessExpr' />
-       <core:SymbolRef name='MacroSubstExpr' />
-       <core:SymbolRef name='MacroSubstTypeRef' />
-       <core:SymbolRef name='MacroHasMetaExpr' />
-       <core:SymbolRef name='IfElseRewr' />
-       <core:SymbolRef name='SwitchRewr' />
-       <core:SymbolRef name='ForEachRewr' />
-       <core:SymbolRef name='BlockRewr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroAccessExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroSubstExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroSubstTypeRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroHasMetaExpr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='IfElseRewr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SwitchRewr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ForEachRewr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='BlockRewr' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedTemplate name='stx-types-Meta'>
       <title>Meta Data</title>
       <expected_types>
-       <core:SymbolRef name='UserMeta' />
-       <core:SymbolRef name='MetaAccess' />
-       <core:SymbolRef name='MetaUnerasable' />
-       <core:SymbolRef name='MetaSingleton' />
-       <core:SymbolRef name='MetaForward' />
-       <core:SymbolRef name='MetaVirtual' />
-       <core:SymbolRef name='MetaMacro' />
-       <core:SymbolRef name='MetaStatic' />
-       <core:SymbolRef name='MetaAbstract' />
-       <core:SymbolRef name='MetaFinal' />
-       <core:SymbolRef name='MetaBridge' />
-       <core:SymbolRef name='MetaVolatile' />
-       <core:SymbolRef name='MetaNative' />
-       <core:SymbolRef name='MetaSynchronized' />
-       <core:SymbolRef name='MetaTransient' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='UserMeta' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaAccess' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaUnerasable' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaSingleton' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaForward' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaVirtual' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaMacro' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaStatic' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaAbstract' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaFinal' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaBridge' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaVolatile' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaNative' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaSynchronized' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MetaTransient' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:PartialSyntaxElemDecl name='stx-nothing'>
@@ -2143,7 +2160,7 @@
           </fmt>
          </syntax:SyntaxToken>
          <syntax:SyntaxStrAttr>
-          <name>decl</name>
+          <name>sname</name>
           <fmt>
            <core:SymbolRef name='fmt-symbol' />
           </fmt>
@@ -3004,6 +3021,14 @@
       <rnode>
        <core:SymbolRef name='KievSyntax' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>super_syntax</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SRef&lt;KievSyntax>' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -3033,12 +3058,38 @@
            </syntax:SyntaxFunctions>
           </funcs>
          </syntax:SyntaxIdentAttr>
-         <syntax:SyntaxElemRef>
-          <decl>
-           <core:SymbolRef name='stx-type-extends' />
-          </decl>
-          <text>extends &lt;type></text>
-         </syntax:SyntaxElemRef>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>,</text>
+            <fmt>
+             <core:SymbolRef name='fmt-separator-eat-left' />
+            </fmt>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>extends</text>
+            <fmt>
+             <core:SymbolRef name='fmt-keyword' />
+            </fmt>
+           </syntax:SyntaxToken>
+          </prefix>
+          <name>super_syntax</name>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>extends &lt;syntax></text>
+            <fmt>
+             <core:SymbolRef name='fmt-placeholder' />
+            </fmt>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+         </syntax:SyntaxList>
          <syntax:SyntaxElemRef>
           <decl>
            <core:SymbolRef name='stx-type-members' />
@@ -3325,11 +3376,11 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
-         <core:SymbolRef name='Field' />
-         <core:SymbolRef name='JavaClass' />
-         <core:SymbolRef name='Constructor' />
-         <core:SymbolRef name='Initializer' />
-         <core:SymbolRef name='MethodImpl' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Field' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='JavaClass' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Constructor' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Initializer' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MethodImpl' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -5156,6 +5207,22 @@
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-symbol-ref'>
+      <rnode>
+       <core:SymbolRef name='SymbolRef' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxIdentAttr>
+        <decl>
+         <core:SymbolRef name='' />
+        </decl>
+        <name>name</name>
+        <fmt>
+         <core:SymbolRef name='fmt-symref' />
+        </fmt>
+       </syntax:SyntaxIdentAttr>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-type-ref'>

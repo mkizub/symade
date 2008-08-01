@@ -19,19 +19,19 @@
   <members>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;fmt' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;fmt' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='false' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;types&#31;TypeNameRef' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang&#31;types&#31;TypeNameRef' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
@@ -655,13 +655,13 @@
            <syntax:SyntaxExpectedAttr>
             <attr_name>srpkg</attr_name>
             <expected_types>
-             <core:SymbolRef name='SymbolRef' />
+             <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
             </expected_types>
            </syntax:SyntaxExpectedAttr>
            <syntax:SyntaxExpectedAttr>
             <attr_name>members</attr_name>
             <expected_types>
-             <core:SymbolRef name='Import' />
+             <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Import' />
             </expected_types>
            </syntax:SyntaxExpectedAttr>
           </attr_types>
@@ -829,18 +829,18 @@
      <syntax:SyntaxExpectedTemplate name='stx-types-of-syntax'>
       <title>Syntax Declarations</title>
       <expected_types>
-       <core:SymbolRef name='SpaceInfo' />
-       <core:SymbolRef name='IndentInfo' />
-       <core:SymbolRef name='ParagraphLayout' />
-       <core:SymbolRef name='DrawColor' />
-       <core:SymbolRef name='DrawFont' />
-       <core:SymbolRef name='TextSyntax' />
-       <core:SymbolRef name='SyntaxElemFormatDecl' />
-       <core:SymbolRef name='SyntaxExpectedTemplate' />
-       <core:SymbolRef name='SyntaxExpectedType' />
-       <core:SymbolRef name='SyntaxNodeTemplate' />
-       <core:SymbolRef name='PartialSyntaxElemDecl' />
-       <core:SymbolRef name='SyntaxElemDecl' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SpaceInfo' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='IndentInfo' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ParagraphLayout' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='DrawColor' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='DrawFont' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemFormatDecl' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpectedTemplate' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpectedType' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNodeTemplate' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='PartialSyntaxElemDecl' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemDecl' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxExpectedType name='SRef&lt;ATextSyntax>'>
@@ -871,6 +871,23 @@
          <syntax:SyntaxTypeRef>
           <clazz>
            <core:SymbolRef name='KievPackage' />
+          </clazz>
+         </syntax:SyntaxTypeRef>
+        </args>
+       </syntax:SyntaxTypeRef>
+      </type_ref>
+     </syntax:SyntaxExpectedType>
+     <syntax:SyntaxExpectedType name='SRef&lt;DNode>'>
+      <title>sref:DNode</title>
+      <type_ref>
+       <syntax:SyntaxTypeRef>
+        <clazz>
+         <core:SymbolRef name='SymbolRef' />
+        </clazz>
+        <args>
+         <syntax:SyntaxTypeRef>
+          <clazz>
+           <core:SymbolRef name='DNode' />
           </clazz>
          </syntax:SyntaxTypeRef>
         </args>
@@ -908,15 +925,15 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>srpkg</attr_name>
         <expected_types>
-         <core:SymbolRef name='SRef&lt;KievPackage>' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SRef&lt;KievPackage>' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
-         <core:SymbolRef name='Import' />
-         <core:SymbolRef name='TextSyntax' />
-         <core:SymbolRef name='TreeSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Import' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TreeSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -984,13 +1001,13 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>parent_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='SRef&lt;ATextSyntax>' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SRef&lt;ATextSyntax>' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
-         <core:SymbolRef name='stx-types-of-syntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-of-syntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1051,7 +1068,7 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
-         <core:SymbolRef name='stx-types-of-syntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-of-syntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1271,19 +1288,19 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>indent</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>no_indent_if_prev</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>no_indent_if_next</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1541,19 +1558,19 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>color</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>font</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>spaces</attr_name>
         <expected_types>
-         <core:SymbolRef name='SpaceCmd' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SpaceCmd' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1655,29 +1672,29 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>elem</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxElemRef' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxIdentAttr' />
-         <core:SymbolRef name='SyntaxJavaConstructorName' />
-         <core:SymbolRef name='SyntaxAutoParenth' />
-         <core:SymbolRef name='SyntaxStrAttr' />
-         <core:SymbolRef name='SyntaxXmlStrAttr' />
-         <core:SymbolRef name='SyntaxCharAttr' />
-         <core:SymbolRef name='SyntaxListWrapper' />
-         <core:SymbolRef name='SyntaxList' />
-         <core:SymbolRef name='SyntaxSet' />
-         <core:SymbolRef name='SyntaxNode' />
-         <core:SymbolRef name='SyntaxExpr' />
-         <core:SymbolRef name='SyntaxSpace' />
-         <core:SymbolRef name='SyntaxOptional' />
-         <core:SymbolRef name='SyntaxEnumChoice' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxJavaConstructorName' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxAutoParenth' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxCharAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxListWrapper' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxOptional' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxEnumChoice' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>attr_types</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxExpectedAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpectedAttr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1715,35 +1732,35 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>elem</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxElemRef' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxIdentAttr' />
-         <core:SymbolRef name='SyntaxJavaConstructorName' />
-         <core:SymbolRef name='SyntaxAutoParenth' />
-         <core:SymbolRef name='SyntaxStrAttr' />
-         <core:SymbolRef name='SyntaxXmlStrAttr' />
-         <core:SymbolRef name='SyntaxCharAttr' />
-         <core:SymbolRef name='SyntaxListWrapper' />
-         <core:SymbolRef name='SyntaxList' />
-         <core:SymbolRef name='SyntaxSet' />
-         <core:SymbolRef name='SyntaxNode' />
-         <core:SymbolRef name='SyntaxExpr' />
-         <core:SymbolRef name='SyntaxSpace' />
-         <core:SymbolRef name='SyntaxOptional' />
-         <core:SymbolRef name='SyntaxEnumChoice' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxJavaConstructorName' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxAutoParenth' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxCharAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxListWrapper' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxOptional' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxEnumChoice' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>attr_types</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxExpectedAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpectedAttr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>templates</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxNodeTemplate' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNodeTemplate' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1880,13 +1897,13 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -1967,13 +1984,13 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2057,25 +2074,25 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2197,13 +2214,13 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2316,25 +2333,25 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2402,25 +2419,25 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2488,25 +2505,25 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2574,60 +2591,60 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>list</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxList' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>empty</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxPlaceHolder' />
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSpace' />
-         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxPlaceHolder' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>prefix</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>sufix</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>expected_types</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2710,77 +2727,77 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>element</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSet' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxNode' />
-         <core:SymbolRef name='SyntaxExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>separator</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>prefix</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>sufix</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>filter</attr_name>
         <expected_types>
-         <core:SymbolRef name='stx-types-CalcOptions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-CalcOptions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>empty</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxPlaceHolder' />
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSpace' />
-         <core:SymbolRef name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxPlaceHolder' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>expected_types</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -2915,41 +2932,41 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>elements</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxElemRef' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxIdentAttr' />
-         <core:SymbolRef name='SyntaxJavaConstructorName' />
-         <core:SymbolRef name='SyntaxAutoParenth' />
-         <core:SymbolRef name='SyntaxStrAttr' />
-         <core:SymbolRef name='SyntaxXmlStrAttr' />
-         <core:SymbolRef name='SyntaxCharAttr' />
-         <core:SymbolRef name='SyntaxListWrapper' />
-         <core:SymbolRef name='SyntaxList' />
-         <core:SymbolRef name='SyntaxSet' />
-         <core:SymbolRef name='SyntaxNode' />
-         <core:SymbolRef name='SyntaxExpr' />
-         <core:SymbolRef name='SyntaxSpace' />
-         <core:SymbolRef name='SyntaxOptional' />
-         <core:SymbolRef name='SyntaxEnumChoice' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxJavaConstructorName' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxAutoParenth' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxCharAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxListWrapper' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxOptional' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxEnumChoice' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3063,44 +3080,44 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>filter</attr_name>
         <expected_types>
-         <core:SymbolRef name='stx-types-CalcOptions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-CalcOptions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>folded</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSet' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxIdentAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>element</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSet' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxNode' />
-         <core:SymbolRef name='SyntaxExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxExpr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3168,28 +3185,28 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>elements</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxToken' />
-         <core:SymbolRef name='SyntaxSubAttr' />
-         <core:SymbolRef name='SyntaxIdentAttr' />
-         <core:SymbolRef name='SyntaxSpace' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSpace' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3305,25 +3322,25 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>in_syntax</attr_name>
         <expected_types>
-         <core:SymbolRef name='TextSyntax' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3426,19 +3443,19 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3483,7 +3500,7 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>keywords</attr_name>
         <expected_types>
-         <core:SymbolRef name='ConstStringExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstStringExpr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3561,7 +3578,7 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>expected_types</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3638,7 +3655,7 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>type_ref</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxTypeRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxTypeRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3682,13 +3699,13 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>clazz</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>args</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxTypeRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxTypeRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3749,7 +3766,7 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>expected_types</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -3812,19 +3829,19 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunctions' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>par</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -4313,17 +4330,17 @@
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxExpectedTemplate name='stx-types-CalcOptions'>
       <expected_types>
-       <core:SymbolRef name='CalcOptionNot' />
-       <core:SymbolRef name='CalcOptionOr' />
-       <core:SymbolRef name='CalcOptionAnd' />
-       <core:SymbolRef name='CalcOptionNotNull' />
-       <core:SymbolRef name='CalcOptionNotEmpty' />
-       <core:SymbolRef name='CalcOptionTrue' />
-       <core:SymbolRef name='CalcOptionClass' />
-       <core:SymbolRef name='CalcOptionHasMeta' />
-       <core:SymbolRef name='CalcOptionIncludeInDump' />
-       <core:SymbolRef name='CalcOptionHasNoSyntaxParent' />
-       <core:SymbolRef name='CalcOptionIsHidden' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionNot' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionOr' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionAnd' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionNotNull' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionNotEmpty' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionTrue' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionClass' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionHasMeta' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionIncludeInDump' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionHasNoSyntaxParent' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='CalcOptionIsHidden' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
      <syntax:SyntaxElemDecl name='stx-calc-option-hidden'>
@@ -4602,7 +4619,7 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>funcs</attr_name>
         <expected_types>
-         <core:SymbolRef name='SyntaxFunction' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunction' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>

@@ -1041,10 +1041,10 @@ KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) :
 	}
 	[
 		"extends"
-		stx.super_syntax += QName()
+		sr = QName() { stx.super_syntax += new SymbolRefStx(sr.pos, sr.name); }
 		(
 			","
-			stx.super_syntax += QName()
+			sr = QName() { stx.super_syntax += new SymbolRefStx(sr.pos, sr.name); }
 		)*
 	]
 	{ parent.members += stx; }

@@ -82,20 +82,11 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxJavaComment extends SyntaxElem {
-	@nodeAttr public SyntaxJavaCommentTemplate⇑	template;
+	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
+	final
+	public SyntaxJavaCommentTemplate⇑	template;
 
 	public SyntaxJavaComment() {}
-
-	public void preResolveOut() {
-		super.preResolveOut();
-		SymbolRef.resolveSymbol(SeverError.Error, template);
-	}
-	
-	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
-		if (slot.name == "template")
-			return SymbolRef.autoCompleteSymbol(template,str);
-		return super.resolveAutoComplete(str,slot);
-	}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
 		Draw_SyntaxJavaComment dr_elem = new Draw_SyntaxJavaComment(elem_decl);

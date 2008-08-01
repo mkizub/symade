@@ -92,7 +92,7 @@ public class TypeInfo implements Externalizable {
 	}
 	
 	public static TypeInfo newTypeInfo(String ti_str) {
-		StringTokenizer st = new StringTokenizer(ti_str, "<,>", true);
+		StringTokenizer st = new StringTokenizer(ti_str, "«;»", true);
 		TypeInfo ti = parseTypeInfo(st, st.nextToken().trim(), ti_str);
 		if (st.hasMoreTokens())
 			throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
@@ -117,19 +117,20 @@ public class TypeInfo implements Externalizable {
 		if (!st.hasMoreTokens())
 			return makeTypeInfo(clazz,null);
 		String t = st.nextToken().trim();
-		if (t.equals(","))
+		if (t.equals(";"))
 			return makeTypeInfo(clazz,null);
-		if (!t.equals("<"))
+		if (!t.equals("«"))
 			throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
 		TypeInfo[] args = null;
 		do {
 			t = st.nextToken().trim();
-			if (t.equals(">"))
+			if (t.equals("»")) {
+				if (st.hasMoreTokens()) {
+					t = st.nextToken().trim();
+					if (!t.equals(";"))
+						throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
+				}
 				return makeTypeInfo(clazz,args);
-			if (t.equals(",")) {
-				if (!st.hasMoreTokens())
-					throw new RuntimeException("Bad TypeInfo signature: "+ti_str);
-				t = st.nextToken().trim();
 			}
 			TypeInfo arg = parseTypeInfo(st, t, ti_str);
 			if (args == null)
@@ -154,13 +155,12 @@ public class TypeInfo implements Externalizable {
 			return clazz.getName();
 		StringBuffer sb = new StringBuffer();
 		sb.append(clazz.getName());
-		sb.append("<");
+		sb.append("«");
 		for (int i=0; i < args.length; i++) {
-			if (i > 0)
-				sb.append(",");
 			sb.append(args[i].toString());
+			sb.append(";");
 		}
-		sb.append(">");
+		sb.append("»");
 		return sb.toString();
 	}
 	

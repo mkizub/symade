@@ -4,18 +4,10 @@ import syntax kiev.Syntax;
 
 @ThisIsANode
 public class Binding extends ENode {
-	@nodeAttr public UIEvent∅ events;
-	@nodeAttr public Action⇑ action;
+	@nodeAttr
+	public UIEvent∅ events;
 
-	public void preResolveOut() {
-		super.preResolveOut();
-		SymbolRef.resolveSymbol(SeverError.Error, action);
-	}
-	
-	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
-		if (slot.name == "action")
-			return SymbolRef.autoCompleteSymbol(action,str);
-		return super.resolveAutoComplete(str,slot);
-	}
+	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
+	public final Action⇑ action;
 
 }

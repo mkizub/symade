@@ -165,8 +165,8 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		}
 	}
 
-	@nodeAttr public KievPackage⇑				srpkg;
-	@nodeAttr public ASTNode∅					members;
+	@nodeAttr public final KievPackage⇑				srpkg;
+	@nodeAttr public       ASTNode∅					members;
 	
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }

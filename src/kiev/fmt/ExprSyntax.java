@@ -45,21 +45,14 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpr extends SyntaxElem {
-	@nodeAttr public SyntaxAttr∅			attrs;
-	@nodeAttr public SyntaxExprTemplate⇑	template;
+	@nodeAttr
+	public SyntaxAttr∅			attrs;
+
+	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
+	final
+	public SyntaxExprTemplate⇑	template;
 
 	public SyntaxExpr() {}
-
-	public void preResolveOut() {
-		super.preResolveOut();
-		SymbolRef.resolveSymbol(SeverError.Error, template);
-	}
-	
-	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
-		if (slot.name == "template")
-			return SymbolRef.autoCompleteSymbol(template,str);
-		return super.resolveAutoComplete(str,slot);
-	}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
 		Draw_SyntaxExpr dr_elem = new Draw_SyntaxExpr(elem_decl);
@@ -79,23 +72,17 @@ public class SyntaxExpr extends SyntaxElem {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxAutoParenth extends SyntaxElem {
-	@nodeAttr public SyntaxAttr						attr;
-	@nodeAttr public int							priority;
-	@nodeAttr public SyntaxExprTemplate⇑			template;
+	@nodeAttr
+	public SyntaxAttr					attr;
+
+	@nodeAttr
+	public int							priority;
+
+	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
+	final
+	public SyntaxExprTemplate⇑			template;
 
 	public SyntaxAutoParenth() {}
-
-	public void preResolveOut() {
-		super.preResolveOut();
-		SymbolRef.resolveSymbol(SeverError.Error, template);
-	}
-	
-	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
-		if (slot.name == "template")
-			return SymbolRef.autoCompleteSymbol(template,str);
-		return super.resolveAutoComplete(str,slot);
-	}
-
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
 		Draw_SyntaxAutoParenth dr_elem = new Draw_SyntaxAutoParenth(elem_decl);

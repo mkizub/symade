@@ -76,6 +76,11 @@ public abstract class AttrSlot {
 	public final TypeInfo        typeinfo; // type of the fields
 	public final Object          defaultValue;
 	
+	public final boolean         is_auto_complete; // auto-complete SymbolRef-s in the editor
+	public final Class[]         auto_complete_scopes;
+	public final boolean         is_auto_resolve;  // auto-resolve SymbolRef-s
+	public final SeverError      auto_resolve_severity;
+
 	private final boolean        is_xml_ignore;
 	private final boolean        is_xml_attr;
 	private final String         xml_attr_name;
@@ -106,7 +111,23 @@ public abstract class AttrSlot {
 		else if (clazz == String.class) defaultValue = "";
 		else defaultValue = null;
 		
-		AttrXMLDumpInfo dinfo = (AttrXMLDumpInfo)this.getClass().getAnnotation(AttrXMLDumpInfo.class);
+		{
+			SymbolRefAutoComplete aci = this.getClass().getAnnotation(SymbolRefAutoComplete.class);
+			if (aci != null) {
+				is_auto_complete = aci.value();
+				auto_complete_scopes = aci.scopes();
+			}
+		}
+		
+		{
+			SymbolRefAutoResolve ari = this.getClass().getAnnotation(SymbolRefAutoResolve.class);
+			if (ari != null) {
+				is_auto_resolve = ari.value();
+				auto_resolve_severity = ari.sever();
+			}
+		}
+		
+		AttrXMLDumpInfo dinfo = this.getClass().getAnnotation(AttrXMLDumpInfo.class);
 		if (dinfo != null) {
 			is_xml_ignore = dinfo.ignore();
 			is_xml_attr = dinfo.attr();

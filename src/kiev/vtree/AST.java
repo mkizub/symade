@@ -1280,13 +1280,46 @@ public abstract class ASTNode extends ANode implements Constants {
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
 	public boolean preResolveIn() { return true; }
-	public void preResolveOut() {}
+	public void preResolveOut() {
+		foreach (AttrSlot attr; values(); attr.is_auto_resolve && SymbolRef.class.isAssignableFrom(attr.clazz)) {
+			if (attr instanceof ScalarAttrSlot) {
+				Object val = attr.get(this);
+				if (val instanceof SymbolRef)
+					val.resolveSymbol(attr.auto_resolve_severity);
+			}
+			else if (attr instanceof SpaceAttrSlot) {
+				foreach (SymbolRef sr; attr.getArray(this))
+					sr.resolveSymbol(attr.auto_resolve_severity);
+			}
+			else if (attr instanceof ExtSpaceAttrSlot) {
+				foreach (SymbolRef sr; attr.iterate(this))
+					sr.resolveSymbol(attr.auto_resolve_severity);
+			}
+		}
+	}
 	public boolean mainResolveIn() { return true; }
 	public void mainResolveOut() {}
 	public boolean preVerify() { return true; }
 	public void postVerify() {}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.is_auto_complete) {
+			foreach (AttrSlot attr; values(); attr == slot) {
+				if (attr instanceof ScalarAttrSlot) {
+					Object val = attr.get(this);
+					if (val instanceof SymbolRef)
+						return val.autoCompleteSymbol(str);
+				}
+				TypeInfo ti = attr.typeinfo;
+				if (SymbolRef.class == ti.clazz) {
+					ti = ti.getTopArgs()[0];
+					return SymbolRef.autoCompleteSymbol(this, str, slot, fun (ISymbol isym)->boolean {
+						return ti.$instanceof(isym.dnode);
+					});
+				}
+				return null;
+			}
+		}
 		return null;
 	}
 

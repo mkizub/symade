@@ -999,7 +999,8 @@ public abstract class kiev050 implements kiev050Constants {
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
-      stx.super_syntax += QName();
+      sr = QName();
+                               stx.super_syntax += new SymbolRefStx(sr.pos, sr.name);
       label_6:
       while (true) {
         switch (jj_nt.kind) {
@@ -1010,7 +1011,8 @@ public abstract class kiev050 implements kiev050Constants {
           break label_6;
         }
         jj_consume_token(COMMA);
-        stx.super_syntax += QName();
+        sr = QName();
+                                       stx.super_syntax += new SymbolRefStx(sr.pos, sr.name);
       }
       break;
     default:

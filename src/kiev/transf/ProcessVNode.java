@@ -439,12 +439,6 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			} else {
 				s.addField(new Field(fname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			}
-			if (isArr && !f.isAbstract()) {
-				TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
-				Field emptyArray = N.resolveField("emptyArray", false);
-				if (emptyArray == null || emptyArray.ctx_tdecl != N)
-					Kiev.reportError(f, "Cannot find 'emptyArray' field in "+N);
-			}
 			if (isAtt && !isArr && !isSet)
 				f.setVirtual(true);
 			UserMeta fmeta = (UserMeta) (isAtt ? f.getMeta(mnAtt) : f.getMeta(mnRef));
@@ -958,9 +952,12 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
 				boolean isSymRef = f.getType().isInstanceOf(tpNodeSymbolRef);
 				if (isArr && !f.isAbstract()) {
-					TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
-					Field emptyArray = N.resolveField("emptyArray", false);
-					f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
+					f.init = new CastExpr(f.pos, f.getType(),
+						new IFldExpr(f.pos,
+							new SFldExpr(f.pos, iface.resolveField(("nodeattr$"+f.sname).intern(), true)),
+							tpAttrSlot.resolveField("defaultValue")
+						)
+					);
 				}
 				if (isSymRef && !f.isAbstract()) {
 					f.init = new ReinterpExpr(f.pos, f.getType(), new NewExpr(f.pos, f.getType().getMetaSupers()[0], ENode.emptyArray));

@@ -196,6 +196,8 @@ public final class Env extends KievPackage {
 	}
 
 	public KievPackage newPackage(String sname, KievPackage outer) {
+		if (sname.indexOf(" ") >= 0)
+			Kiev.reportWarning(this,"Creating a package with space in the name: '"+qname+"'");
 		KievPackage cl = null;
 		foreach (KievPackage s; outer.pkg_members; s.sname == sname) {
 			cl = s;
@@ -304,6 +306,7 @@ public final class Env extends KievPackage {
 	
 	public DNode loadAnyDecl(String qname) {
 		if (qname.length() == 0) return Env.getRoot();
+		if (qname.indexOf('.') >= 0) return null;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		DNode dn = resolveGlobalDNode(qname);

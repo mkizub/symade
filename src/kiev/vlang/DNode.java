@@ -772,7 +772,8 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 
 @ThisIsANode(lang=CoreLang)
 public final class KievSyntax extends DNode implements GlobalDNodeContainer, ScopeOfMethods {
-	@nodeAttr public SymbolRef∅		super_syntax;
+	@SymbolRefAutoComplete(scopes={KievPackage})
+	@nodeAttr public SymbolRef<KievSyntax>∅		super_syntax;
 	@nodeAttr public ASTNode∅			members;
 
 	public KievSyntax() {}
