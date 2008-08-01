@@ -12,12 +12,14 @@ package kiev.fmt;
 import syntax kiev.Syntax;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 public final class SyntaxManager {
 	private static Hashtable<String,Draw_ATextSyntax>		languageSyntaxMap			= new Hashtable<String,Draw_ATextSyntax>();
 	private static Hashtable<Language,Draw_ATextSyntax>	languageEditorSyntaxMap		= new Hashtable<Language,Draw_ATextSyntax>();
 	private static Hashtable<Language,Draw_ATextSyntax>	languageInfoSyntaxMap		= new Hashtable<Language,Draw_ATextSyntax>();
-
+	static final Logger logger = Logger.getLogger("kiev.gui");
+	
 	private SyntaxManager() {}
 
 	public static Draw_ATextSyntax getDefaultEditorSyntax(Language lng) {
@@ -39,10 +41,13 @@ public final class SyntaxManager {
 	}
 	
 	public static Draw_ATextSyntax getLanguageSyntax(String name, boolean in_project) {
+		logger.fine("getLanguageSyntax name="+name+" in_project="+in_project);
 		if (in_project) {
 			DNode ts = Env.getRoot().resolveGlobalDNode(name);
-			if (ts instanceof ATextSyntax)
+			if (ts instanceof ATextSyntax){
+				logger.fine("getLanguageSyntax ts="+ ts);
 				return ts.getCompiled().init();
+			}
 		}
 		Draw_ATextSyntax stx = languageSyntaxMap.get(name);
 		if (stx != null)

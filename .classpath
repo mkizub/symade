@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="*" including="kiev/gui/" kind="src" path="src"/>
+	<classpathentry excluding="*|kiev/gui/swt/" including="kiev/gui/" kind="src" path="src"/>
+	<classpathentry kind="lib" path="src/classes2" sourcepath="src">
+		<accessrules>
+			<accessrule kind="nonaccessible" pattern="kiev/gui/**"/>
+		</accessrules>
+	</classpathentry>
 	<classpathentry kind="lib" path="bin/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="src/classes3" sourcepath="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.swt"/>
+	<classpathentry kind="lib" path="C:/eclipse-europa/plugins/org.eclipse.draw2d_3.2.100.v20070529.jar"/>
 	<classpathentry kind="output" path="src/classes.gui"/>
 </classpath>

@@ -10,10 +10,19 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.evt.*;
+
+
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.util.Hashtable;
+import java.util.logging.Logger;
 
 import kiev.vlang.DumpUtils;
 import kiev.vtree.ASTNode;
@@ -32,6 +41,7 @@ import kiev.gui.UIManager;
 
 public class Configuration {
 	public static String EVENT_BINDINGS_FILE = "kiev/fmt/evt/bindings.xml";
+	static final Logger logger = Logger.getLogger("kiev.gui");
 	
 	//static ASTNode bindings;
 
@@ -127,6 +137,27 @@ public class Configuration {
 		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
 		naviMap.put(new InputEventInfo(0,2,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
 		return naviMap;
+	}
+
+	public static Draw_ATextSyntax loadBindings(String name) {
+		Draw_ATextSyntax dts = null;
+		InputStream inp = null;
+		try {
+			inp = Binding.class.getClassLoader().getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
+			ObjectInput oi = new ObjectInputStream(inp);
+			dts = (Draw_ATextSyntax)oi.readObject();
+			dts.init();
+		} catch (Exception e) {
+			System.out.println("Read error while bindings deserialization: "+e);
+		} finally {
+			if (inp != null)
+				try {
+					inp.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+		return dts;
 	}
 	
 	//static {
