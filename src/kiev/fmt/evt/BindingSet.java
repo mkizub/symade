@@ -22,13 +22,13 @@ import kiev.vlang.GlobalDNodeContainer;
 @ThisIsANode
 public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSerialized  {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve 
-	final public  BindingSet⇑ parent_set;
-	@nodeAttr 
-		public ASTNode∅	members;
-	  public String	q_name;	// qualified name
-			  
+	final
+	public BindingSet⇑			parent_set;
+	@nodeAttr
+	public ASTNode∅				members;
+	
 	@UnVersioned
-		protected Compiled_BindingSet compiled;
+	protected Compiled_BindingSet compiled;
 
 	public BindingSet() {
 		this.sname = "<binding-set>";
@@ -41,48 +41,14 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 	}
 
 	public String qname() {
-		if (q_name != null)
-			return q_name;
+		String q_name = this.sname;
 		ANode p = parent();
-		if (p instanceof GlobalDNode)
+		if (p instanceof GlobalDNode && p != Env.getRoot())
 			q_name = (((GlobalDNode)p).qname()+"\u001f"+sname).intern();
-		else
-			q_name = sname;
 		return q_name;
 	}
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "sname")
-			resetNames();
-		super.callbackChildChanged(ct, attr, data);
-	}
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic())
-			resetNames();
-		super.callbackAttached(pi);
-	}
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic())
-			resetNames();
-		super.callbackDetached(parent, slot);
-	}
-
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "auto_generated_members")
-			return false;
-		return super.includeInDump(dump, attr, val);
-	}
-
-	private void resetNames() {
-		q_name = null;
-		if (members != null) {
-			foreach (BindingSet s; members)
-				s.resetNames();
-		}
-	}
-	
 	public rule resolveNameR(ISymbol@ node, ResInfo path)
-		BindingSet@ set;
 	{
 		path.checkNodeName(this),
 		node ?= this
@@ -91,23 +57,15 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 		path.checkNodeName(node)
 	;
 		path.isSuperAllowed(),
-		parent_set != null && parent_set.dnode != null,
+		parent_set.dnode != null,
 		path.getPrevSlotName() != "parent_set",
-		set ?= parent_set.dnode,
 		path.enterSuper() : path.leaveSuper(),
-		set.resolveNameR(node,path)
+		parent_set.dnode.resolveNameR(node,path)
 	}
 	
 	public boolean preResolveIn() {
 		this.compiled = null;
-		if (parent_set.name != null && parent_set.name != "") {
-			BindingSet@ bs;
-			if (!PassInfo.resolveNameR(this,bs,new ResInfo(this,parent_set.name)))
-				Kiev.reportError(this,"Cannot resolve syntax '"+parent_set.name+"'");
-			else if (parent_set.symbol != bs)
-				parent_set.symbol = bs;
-		}
-		return true;
+		return super.preResolveIn();
 	}
 		
 
@@ -124,10 +82,14 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 			bs.parent_set = parent_set.dnode.getCompiled();
 		else if (parent() instanceof BindingSet)
 			bs.parent_set = ((BindingSet)parent()).getCompiled();
-		Vector<Compiled_BindingSet> sub_set = new Vector<Compiled_BindingSet>();
+		Vector<Compiled_Item> items = new Vector<Compiled_Item>();
 		foreach(BindingSet set; this.members)
-			sub_set.append(set.getCompiled());
-		bs.sub_set = sub_set.toArray();
+			items.append(set.getCompiled());
+		foreach(Action act; this.members)
+			items.append(act.getCompiled());
+		foreach(Binding bnd; this.members)
+			items.append(bnd.getCompiled());
+		bs.items = items.toArray();
 	}
 }
 

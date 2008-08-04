@@ -15,12 +15,14 @@ import syntax kiev.Syntax;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 
+abstract class Compiled_Item implements Serializable {
+}
 
-public class Compiled_BindingSet implements Serializable {
+public class Compiled_BindingSet extends Compiled_Item {
 
 	public Compiled_BindingSet				parent_set;
-	public Compiled_BindingSet[]			sub_set;
-	public String						q_name;	// qualified name
+	public Compiled_Item[]					items;
+	public String							q_name;	// qualified name
 
 	
 	Object readResolve() throws ObjectStreamException {
@@ -34,17 +36,16 @@ public class Compiled_BindingSet implements Serializable {
 	}
 }
 
-public final class Compiled_Binding implements Serializable {
-	public UIEvent[] events = UIEvent.emptyArray;
-	public String action;
+public final class Compiled_Binding extends Compiled_Item {
+	public Compiled_Event[] events;
+	public Compiled_Action action;
 
 	Object readResolve() throws ObjectStreamException {
-		if (this.action != null) this.action = this.action.intern();
 		return this;
 	}
 }
 
-public final class Compiled_Action implements Serializable {
+public final class Compiled_Action extends Compiled_Item {
 	public String description;
 	public boolean isForPopupMenu;
 	public String actionClass;
@@ -56,7 +57,10 @@ public final class Compiled_Action implements Serializable {
 	}
 }
 
-public final class Compiled_KeyboardEvent implements Serializable {
+public abstract class Compiled_Event implements Serializable {
+}
+
+public final class Compiled_KeyboardEvent extends Compiled_Event {
 	public int keyCode;
 	public boolean withCtrl;
 	public boolean withAlt;
