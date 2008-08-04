@@ -349,6 +349,66 @@
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-binding-set'>
+      <rnode>
+       <core:SymbolRef name='BindingSet' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>parent_set</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>members</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Action' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Binding' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Import' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>extends:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>parent_set</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxList>
+          <element>
+           <syntax:SyntaxNode>
+            <name></name>
+           </syntax:SyntaxNode>
+          </element>
+          <separator>
+           <syntax:SyntaxToken>
+            <text>|</text>
+           </syntax:SyntaxToken>
+          </separator>
+          <prefix>
+           <syntax:SyntaxToken>
+            <text>{</text>
+           </syntax:SyntaxToken>
+          </prefix>
+          <sufix>
+           <syntax:SyntaxToken>
+            <text>}</text>
+           </syntax:SyntaxToken>
+          </sufix>
+          <name>members</name>
+         </syntax:SyntaxList>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-file-unit'>
       <rnode>
        <core:SymbolRef name='FileUnit' />

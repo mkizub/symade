@@ -73,6 +73,8 @@
           <members>
            <core:FileUnit name='Action.java' />
            <core:FileUnit name='Binding.java' />
+           <core:FileUnit name='bindings.xml' />
+           <core:FileUnit name='BindingSet.java' />
            <core:FileUnit name='Compiled.java' />
            <core:FileUnit name='KeyboardEvent.java' />
            <core:FileUnit name='UIEvent.java' />
