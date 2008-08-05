@@ -347,6 +347,9 @@ stop:;
 		Env.getRoot().dumpProjectFile();
 		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
 			reportTotals("Backend");
+		//Kiev.runBackEndCleanup();
+		//Env.getRoot().cleanupBackendEnv();
+		//java.lang.Runtime.getRuntime().gc();
 	}
 
 	

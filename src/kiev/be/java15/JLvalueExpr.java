@@ -55,8 +55,6 @@ public final view JAccessExpr of AccessExpr extends JLvalueExpr {
 @ViewOf(vcast=true, iface=true)
 public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	
-	private static final Field arr_length = Type.tpArray.resolveField("length");
-	
 	public:ro JENode		obj;
 	public:ro JField		var;
 
@@ -66,7 +64,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.getJType().isInstanceOf(var.jctx_tdecl.jtype) )
+		if( !code.jtenv.getJType(ot).isInstanceOf(var.jctx_tdecl.getJType(code.jtenv)) )
 			code.addInstr(Instr.op_checkcast,var.jctx_tdecl.xtype);
 	}
 
@@ -81,6 +79,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 		if (var.isNative()) {
 			Field var = (Field)this.var;
 			assert(var.isMacro());
+			Field arr_length = code.jenv.getFldArrLength();
 			if (var == arr_length) {
 				code.addInstr(Instr.op_arrlength);
 			} else {
@@ -106,6 +105,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 		if (var.isNative()) {
 			Field var = (Field)this.var;
 			assert(var.isMacro());
+			Field arr_length = code.jenv.getFldArrLength();
 			if (var == arr_length) {
 				code.addInstr(Instr.op_arrlength);
 			} else {
@@ -225,7 +225,7 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			ISymbol@ v;
 			// We need to get the type of object in stack
 			JType jt = code.stack_at(0);
-			Type t = Signature.getType(jt.java_signature);
+			Type t = Signature.getType(code.jenv,jt.java_signature);
 			ENode o = new LVarExpr(pos,new LVar(pos,"",t,Var.VAR_LOCAL,0));
 			Struct s = objType.getStruct();
 			CallType mt = new CallType(objType,null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
@@ -250,7 +250,7 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			ISymbol@ v;
 			// We need to get the type of object in stack
 			JType jt = code.stack_at(0);
-			Type t = Signature.getType(jt.java_signature);
+			Type t = Signature.getType(code.jenv,jt.java_signature);
 			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			ENode o = new LVarExpr(pos,new LVar(pos,"",t,Var.VAR_LOCAL,0));
@@ -357,15 +357,15 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 	public:ro	JVar		var;
 
 	public JField resolveProxyVar(Code code) {
-		JField proxy_var = code.clazz.resolveField(this.ident,true);
+		JField proxy_var = code.clazz.resolveField(code.jenv,this.ident,true);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
 	}
 
-	public JField resolveVarVal() {
+	public JField resolveVarVal(JEnv jenv) {
 		CompaundType prt = Type.getProxyType(var.getType());
-		JField var_valf = ((JStruct)(Struct)prt.tdecl).resolveField(nameCellVal);
+		JField var_valf = ((JStruct)(Struct)prt.tdecl).resolveField(jenv,nameCellVal);
 		return var_valf;
 	}
 
@@ -408,7 +408,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		}
 		if( chtp == null )
 			chtp = var.getType().getErasedType();
-		if( !var.getType().getJType().isInstanceOf(chtp.getJType()) ) {
+		if( !code.jtenv.getJType(var.getType()).isInstanceOf(code.jtenv.getJType(chtp)) ) {
 			code.addInstr(op_checkcast,var.getType());
 			return;
 		}
@@ -501,10 +501,10 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		} else {
 			if( isAsField() ) {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(),code.clazz.xtype);
+				code.addInstr(op_putfield,resolveVarVal(code.jenv),code.clazz.xtype);
 			} else {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(),code.clazz.xtype);
+				code.addInstr(op_putfield,resolveVarVal(code.jenv),code.clazz.xtype);
 			}
 		}
 		generateVerifyCheckCast(code);

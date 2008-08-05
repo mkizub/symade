@@ -129,7 +129,7 @@ public class ConstPool {
 		return StringCP.newStringCP(this,val);
 	}
 
-	public void generate() {
+	public void generate(JEnv jenv) {
 
 		foreach(NumberCP cp; poolHash; cp.pos < 1) {
 			if( hwm >= pool.length-2 ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);

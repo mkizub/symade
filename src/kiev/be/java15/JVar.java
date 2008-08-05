@@ -21,7 +21,6 @@ import syntax kiev.Syntax;
 public view JVar of Var extends JDNode {
 	
 	public:ro	Type			vtype;
-	public:ro	JType			jtype;
 	public:ro	JENode			init;
 	public:ro	int				kind;
 
@@ -32,10 +31,7 @@ public view JVar of Var extends JDNode {
 	@getter public final Type get$vtype() {
 		return ((Var)this).vtype.getType();
 	}
-	@getter public final JType get$jtype() {
-		return ((Var)this).getType().getJType();
-	}
-	
+
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating Var declaration");
 		code.setLinePos(this);

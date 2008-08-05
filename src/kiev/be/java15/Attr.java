@@ -166,7 +166,7 @@ public class LocalVarTableAttr extends Attr {
 		for(int i=0; i < vars.length; i++) {
 			JVar v = vars[i].jvar;
 			constPool.addAsciiCP(v.sname);
-			constPool.addAsciiCP(v.jtype.java_signature);
+			constPool.addAsciiCP(vars[i].code.jtenv.getJType(v.vtype).java_signature);
 		}
 	}
 
@@ -176,15 +176,16 @@ public class LocalVarTableAttr extends Attr {
 		int len = vars.length;
 		lvta.vars = new kiev.bytecode.LocalVariableTableAttribute.VarInfo[len];
 		for(int i=0; i < len; i++) {
-			JVar v = vars[i].jvar;
-			KString sign = v.jtype.java_signature;
+			CodeVar cv = vars[i];
+			JVar v = cv.jvar;
+			KString sign = cv.code.jtenv.getJType(v.vtype).java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
-			lvta.vars[i].start_pc = vars[i].start_pc;
-			lvta.vars[i].length_pc = vars[i].end_pc-vars[i].start_pc;
+			lvta.vars[i].start_pc = cv.start_pc;
+			lvta.vars[i].length_pc = cv.end_pc-vars[i].start_pc;
 			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.sname).pos];
 			lvta.vars[i].cp_signature = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(sign).pos];
-			lvta.vars[i].slot = vars[i].stack_pos;
+			lvta.vars[i].slot = cv.stack_pos;
 		}
 		return lvta;
 	}
@@ -247,13 +248,15 @@ public class ExceptionsAttr extends Attr {
 public class InnerClassesAttr extends Attr {
 
 	/** Line number table (see Code class for format description) */
+	public final JEnv		jenv;
 	public JStruct[]		inner;
 	public JStruct[]		outer;
-	public short[]				acc;
+	public short[]			acc;
 
 	/** Constructor for bytecode reader and raw field creation */
-	public InnerClassesAttr() {
+	public InnerClassesAttr(JEnv je) {
 		super(attrInnerClasses);
+		jenv = je;
 		inner = new JStruct[0];
 		outer = new JStruct[0];
 		acc = new short[0];
@@ -263,10 +266,10 @@ public class InnerClassesAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				constPool.addClazzCP(inner[i].jtype.java_signature);
+				constPool.addClazzCP(jenv.getJTypeEnv().getJType(inner[i]).java_signature);
 			}
 			if( outer[i] != null ) {
-				constPool.addClazzCP(outer[i].jtype.java_signature);
+				constPool.addClazzCP(jenv.getJTypeEnv().getJType(outer[i]).java_signature);
 			}
 		}
 	}
@@ -281,13 +284,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].jtype.java_signature).pos];
+				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i]).java_signature).pos];
 			}
 			if( outer[i] != null ) {
-				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(outer[i].jtype.java_signature).pos];
+				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(outer[i]).java_signature).pos];
 			}
 			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].jtype.java_signature).asc.pos];
+				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i]).java_signature).asc.pos];
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}
@@ -433,8 +436,11 @@ public class ContractAttr extends CodeAttr {
 
 public abstract class MetaAttr extends Attr {
 	
-	public MetaAttr(KString name) {
+	final JEnv jenv;
+	
+	public MetaAttr(KString name, JEnv jenv) {
 		super(name);
+		this.jenv = jenv;
 	}
 	
 	protected final void generateValue(ConstPool constPool, ASTNode value) {
@@ -452,19 +458,19 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof String )			constPool.addAsciiCP((String)v);
 		}
 		else if (value instanceof TypeRef) {
-			constPool.addAsciiCP(((TypeRef)value).getType().getJType().java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType()).java_signature);
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.ctx_tdecl;
-			constPool.addAsciiCP(s.xtype.getJType().java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(s).java_signature);
 			constPool.addAsciiCP(f.sname);
 		}
 		else if (value instanceof UserMeta) {
 			UserMeta m = (UserMeta)value;
 			JavaAnnotation tdecl = m.getAnnotationDecl();
-			constPool.addAsciiCP(tdecl.xtype.getJType().java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(tdecl).java_signature);
 			foreach (Method mm; tdecl.members) {
 				MetaValue v = m.get(mm.sname); 
 				generateValue(constPool,v);
@@ -544,7 +550,7 @@ public abstract class MetaAttr extends Attr {
 		else if (value instanceof TypeRef) {
 			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
 			ev.tag = (byte)'c';
-			ev.class_info_index = constPool.getAsciiCP(((TypeRef)value).getType().getJType().java_signature).pos;
+			ev.class_info_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType()).java_signature).pos;
 			return ev;
 		}
 		else if (value instanceof SFldExpr) {
@@ -553,7 +559,7 @@ public abstract class MetaAttr extends Attr {
 			Struct s = (Struct)f.ctx_tdecl;
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
-			ev.type_name_index = constPool.getAsciiCP(s.xtype.getJType().java_signature).pos;
+			ev.type_name_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(s).java_signature).pos;
 			ev.const_name_index = constPool.getAsciiCP(f.sname).pos;
 			return ev;
 		}
@@ -570,7 +576,7 @@ public abstract class MetaAttr extends Attr {
 
 	public void write_annotation(ConstPool constPool, UserMeta m, kiev.bytecode.Annotation.annotation a) {
 		JavaAnnotation tdecl = m.getAnnotationDecl();
-		a.type_index = constPool.getAsciiCP(tdecl.xtype.getJType().java_signature).pos;
+		a.type_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(tdecl).java_signature).pos;
 		int n = 0;
 		foreach (Method mm; tdecl.members)
 			n++;
@@ -593,8 +599,8 @@ public abstract class MetaAttr extends Attr {
 
 public class RVMetaAttr extends MetaAttr {
 	public DNode      ms;
-	public RVMetaAttr(DNode metas) {
-		super(JConstants.attrRVAnnotations);
+	public RVMetaAttr(JEnv jenv, DNode metas) {
+		super(JConstants.attrRVAnnotations, jenv);
 		this.ms = metas;
 	}
 	public void generate(ConstPool constPool) {
@@ -621,8 +627,8 @@ public class RVMetaAttr extends MetaAttr {
 
 public class RIMetaAttr extends MetaAttr {
 	public DNode      ms;
-	public RIMetaAttr(DNode metas) {
-		super(JConstants.attrRIAnnotations);
+	public RIMetaAttr(JEnv jenv, DNode metas) {
+		super(JConstants.attrRIAnnotations, jenv);
 		this.ms = metas;
 	}
 	public void generate(ConstPool constPool) {
@@ -649,8 +655,8 @@ public class RIMetaAttr extends MetaAttr {
 
 public class RVParMetaAttr extends MetaAttr {
 	public DNode[]      mss;
-	public RVParMetaAttr(DNode[] metas) {
-		super(JConstants.attrRVParAnnotations);
+	public RVParMetaAttr(JEnv jenv, DNode[] metas) {
+		super(JConstants.attrRVParAnnotations, jenv);
 		this.mss = mss;
 	}
 	public void generate(ConstPool constPool) {
@@ -687,8 +693,8 @@ public class RVParMetaAttr extends MetaAttr {
 
 public class RIParMetaAttr extends MetaAttr {
 	public DNode[]      mss;
-	public RIParMetaAttr(DNode[] metas) {
-		super(JConstants.attrRIParAnnotations);
+	public RIParMetaAttr(JEnv jenv, DNode[] metas) {
+		super(JConstants.attrRIParAnnotations, jenv);
 		this.mss = mss;
 	}
 	public void generate(ConstPool constPool) {
@@ -726,8 +732,8 @@ public class RIParMetaAttr extends MetaAttr {
 public class DefaultMetaAttr extends MetaAttr {
 	public MetaValue      mv;
 	
-	public DefaultMetaAttr(MetaValue mv) {
-		super(attrAnnotationDefault);
+	public DefaultMetaAttr(JEnv jenv, MetaValue mv) {
+		super(attrAnnotationDefault, jenv);
 		this.mv = mv;
 	}
 

@@ -11,11 +11,6 @@
 package kiev.vlang.types;
 import syntax kiev.Syntax;
 
-import kiev.be.java15.JType;
-import kiev.be.java15.JBaseType;
-import kiev.be.java15.JArrayType;
-import kiev.be.java15.JMethodType;
-
 /**
  * @author Maxim Kizub
  *
@@ -27,9 +22,6 @@ public abstract class Type extends AType {
 
 	public static Type[]	emptyArray = new Type[0];
 
-	public			JType				jtype;
-	
-	public abstract JType getJType();
 	public abstract String toString();
 	public abstract Type getErasedType();
 	
@@ -299,16 +291,6 @@ public final class XType extends Type {
 		super(meta_type, template, 0, bindings);
 	}
 	
-	public JType getJType() {
-		if (jtype == null) {
-			foreach (Type t; getMetaSupers()) {
-				jtype = t.getJType();
-				if (jtype != null)
-					return jtype;
-			}
-		}
-		return jtype;
-	}
 	public Type getErasedType() {
 		foreach (Type t; getMetaSupers(); t != null && t != Type.tpVoid)
 			return t.getErasedType();
@@ -369,8 +351,6 @@ public final class CoreType extends Type {
 	public Type getErasedType()				{ return this; }
 	public String toString()				{ return name.toString(); }
 
-	public JType getJType()					{ return this.jtype; }
-	
 	public Type getAutoCastTo(Type t)
 	{
 		if( t ≡ tpVoid ) return tpVoid;
@@ -488,7 +468,7 @@ public final class ASTNodeType extends Type {
 		else if (tp == StdTypes.tpLong)      clazz = Long.TYPE;
 		else if (tp == StdTypes.tpFloat)     clazz = Float.TYPE;
 		else if (tp == StdTypes.tpDouble)    clazz = Double.TYPE;
-		else if (tp instanceof CompaundType) clazz = Class.forName(tp.getJType().toClassForNameString());
+		else if (tp instanceof CompaundType) clazz = Class.forName(tp.tdecl.qname().replace('\u001f','.'));
 		else
 			throw new RuntimeException("Can't make ASTNodeType for type "+tp);
 		return new ASTNodeType(ASTNodeMetaType.instance(clazz));
@@ -528,8 +508,6 @@ public final class ASTNodeType extends Type {
 	public Type getErasedType()				{ return this; }
 	public String toString()				{ return ((ASTNodeMetaType)meta_type).clazz.getName()+"#"; }
 
-	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
-	
 	public Struct getStruct() {
 		return null;
 	}
@@ -568,12 +546,6 @@ public final class ArgType extends Type {
 		this.name = meta_type.tdecl.sname;
 	}
 	
-	public JType getJType() {
-		if (jtype == null)
-			jtype = getErasedType().getJType();
-		return jtype;
-	}
-
 	public MNode getMeta(String name)				{ return definer.getMeta(name); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public Type getErasedType() {
@@ -664,12 +636,6 @@ public final class CompaundType extends Type {
 		super(meta_type, template, 0, bindings);
 	}
 	
-	public final JType getJType() {
-		if (jtype == null)
-			jtype = new JBaseType((Struct)tdecl);
-		return jtype;
-	}
-
 	public Struct getStruct()					{ return (Struct)tdecl; }
 	public MNode getMeta(String name)			{ return tdecl.getMeta(name); }
 	public Type getErasedType()					{ return tdecl.xtype; }
@@ -734,13 +700,6 @@ public final class ArrayType extends Type {
 		super(ArrayMetaType.instance, ArrayMetaType.instance.getTemplBindings(), 0, new TVarBld(tpArrayArg, arg));
 	}
 
-	public JType getJType() {
-		if (jtype == null) {
-			jtype = new JArrayType(this.arg.getJType());
-		}
-		return jtype;
-	}
-
 	public MNode getMeta(String name)				{ return null; }
 	
 	public Type getErasedType() {
@@ -781,12 +740,6 @@ public final class WildcardCoType extends CTimeType {
 		super(WildcardCoMetaType.instance, 0, tpWildcardCoArg, base_type);
 	}
 	
-	public JType getJType() {
-		if (jtype == null)
-			jtype = getEnclosedType().getJType();
-		return jtype;
-	}
-
 	public final ENode makeUnboxedExpr(ENode from) { from }
 	public final ENode makeInitExpr(Var dn, ENode init) { init }
 	public final Type getUnboxedType()	{ getEnclosedType() }
@@ -829,12 +782,6 @@ public final class WildcardContraType extends CTimeType {
 		super(WildcardContraMetaType.instance, 0, tpWildcardContraArg, base_type);
 	}
 	
-	public JType getJType() {
-		if (jtype == null)
-			jtype = getEnclosedType().getJType();
-		return jtype;
-	}
-
 	public final ENode makeUnboxedExpr(ENode from) { from }
 	public final ENode makeInitExpr(Var dn, ENode init) { init }
 	public final Type getUnboxedType()	{ getEnclosedType() }
@@ -884,12 +831,6 @@ public final class WrapperType extends CTimeType {
 	@getter
 	private Field get$wrapped_field() { return ((WrapperMetaType)this.meta_type).field; }
 	
-	public JType getJType() {
-		if (jtype == null)
-			jtype = getEnclosedType().getJType();
-		return jtype;
-	}
-
 	public final ENode makeUnboxedExpr(ENode from) {
 		Field wf = wrapped_field;
 		if (wf == null)
@@ -962,8 +903,6 @@ public final class TupleType extends Type {
 		super(meta_type,meta_type.getTemplBindings(),0,bindings);
 		this.arity = meta_type.arity;
 	}
-
-	public JType getJType() { StdTypes.tpVoid.getJType() }
 
 	public Type getErasedType() {
 		if (arity == 0)
@@ -1083,27 +1022,6 @@ public final class CallType extends Type {
 		for (int i=0; i < arity; i++)
 			params[i] = this.arg(i);
 		return params;
-	}
-
-	public JType getJType() {
-		if (jtype == null) {
-			if (this.isReference()) {
-				jtype = Type.tpClosure.getJType();
-			} else {
-				JType[] jargs = JType.emptyArray;
-				if (arity > 0) {
-					jargs = new JType[arity];
-					for (int i=0; i < arity; i++) {
-						jargs[i] = arg(i).getJType();
-						assert (!(jargs[i] instanceof JMethodType));
-					}
-				}
-				JType jret = ret().getJType();
-				assert (!(jret instanceof JMethodType));
-				jtype = new JMethodType((CallMetaType)meta_type, jargs, jret);
-			}
-		}
-		return jtype;
 	}
 
 	public boolean isCastableTo(Type t) {

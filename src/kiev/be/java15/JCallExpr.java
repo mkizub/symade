@@ -25,7 +25,7 @@ public final view JCallExpr of CallExpr extends JENode {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.getJType().isInstanceOf(func.jctx_tdecl.jtype) ) {
+		if( !code.jtenv.getJType(ot).isInstanceOf(func.jctx_tdecl.getJType(code.jtenv)) ) {
 			trace( Kiev.debug && Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
 			code.addInstr(Instr.op_checkcast,func.jctx_tdecl.xtype);
 		}
@@ -96,7 +96,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		code.addInstr(op_call,func,isSuperExpr(),obj.getType());
 		if( null_cast_label != null ) {
 			code.stack_pop();
-			code.stack_push(JType.tpNull);
+			code.stack_push(code.jenv.getJTypeEnv().tpNull);
 			code.addInstr(Instr.set_label,null_cast_label);
 		}
 		if( func.mtype.ret() ≢ Type.tpVoid ) {
@@ -215,17 +215,17 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		JENode[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
-			JMethod clone_it = ((JStruct)Type.tpClosureClazz).resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
+			JMethod clone_it = ((JStruct)Type.tpClosureClazz).resolveMethod(code.jenv,nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
 				code.addInstr(op_checkcast,Type.tpClosureClazz.xtype);
 			// Add arguments
 			for(int i=0; i < args.length; i++) {
 				args[i].generate(code,null);
-				code.addInstr(op_call,getMethodFor(xtype.arg(i).getJType()),false);
+				code.addInstr(op_call,getMethodFor(code.jenv,code.jtenv.getJType(xtype.arg(i))),false);
 			}
 		}
-		JMethod call_it = getCallIt(xtype);
+		JMethod call_it = getCallIt(code,xtype);
 		// Check if we need to call
 		if( is_a_call.booleanValue() ) {
 			code.addInstr(op_call,call_it,false);
@@ -240,7 +240,7 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		}
 	}
 
-	public JMethod getCallIt(CallType tp) {
+	public JMethod getCallIt(Code code, CallType tp) {
 		String call_it_name;
 		KString call_it_sign;
 		if( tp.ret().isReference() ) {
@@ -248,9 +248,9 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 			call_it_sign = KString.from("()Ljava/lang/Object;");
 		} else {
 			call_it_name = ("call_"+tp.ret()).intern();
-			call_it_sign = KString.from("()"+tp.ret().getJType().java_signature);
+			call_it_sign = KString.from("()"+code.jtenv.getJType(tp.ret()).java_signature);
 		}
-		return ((JStruct)Type.tpClosureClazz).resolveMethod(call_it_name, call_it_sign);
+		return ((JStruct)Type.tpClosureClazz).resolveMethod(code.jenv, call_it_name, call_it_sign);
 	}
 	
 	static final KString sigZ = KString.from("(Z)Lkiev/stdlib/closure;");
@@ -262,7 +262,7 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 	static final KString sigF = KString.from("(F)Lkiev/stdlib/closure;");
 	static final KString sigD = KString.from("(D)Lkiev/stdlib/closure;");
 	static final KString sigObj = KString.from("(Ljava/lang/Object;)Lkiev/stdlib/closure;");
-	public JMethod getMethodFor(JType tp) {
+	public JMethod getMethodFor(JEnv jenv, JType tp) {
 		KString sig = null;
 		switch(tp.java_signature.byteAt(0)) {
 		case 'B': sig = sigB; break;
@@ -279,7 +279,7 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		case '&':
 		case 'R': sig = sigObj; break;
 		}
-		JMethod m = ((JStruct)Type.tpClosureClazz).resolveMethod("addArg",sig);
+		JMethod m = ((JStruct)Type.tpClosureClazz).resolveMethod(jenv,"addArg",sig);
 		if( m == null )
 			Kiev.reportError(expr,"Unknown method for kiev.vlang.closure");
 		return m;

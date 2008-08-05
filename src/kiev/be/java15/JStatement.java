@@ -80,7 +80,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 		try {
 			if( expr != null ) {
 				expr.generate(code,code.method.mtype.ret());
-				if( !expr.getType().getJType().isInstanceOf(code.method.mtype.ret().getJType()) ) {
+				if( !code.jtenv.getJType(expr.getType()).isInstanceOf(code.jtenv.getJType(code.method.mtype.ret())) ) {
 					trace( Kiev.debug && Kiev.debugNodeTypes, "Need checkcast for return");
 					code.addInstr(Instr.op_checkcast,code.method.mtype.ret());
 				}

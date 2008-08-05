@@ -25,7 +25,7 @@ public final view JFileUnit of FileUnit extends JNameSpace {
 
 	public String pname();
 
-	public void generate() {
+	public void generate(JEnv jenv) {
 		long curr_time = 0L, diff_time = 0L;
 		String cur_file = Kiev.getCurFile();
 		Kiev.setCurFile(pname());
@@ -34,11 +34,11 @@ public final view JFileUnit of FileUnit extends JNameSpace {
         	Kiev.setExtSet(disabled_extensions);
 			foreach (JNode n; members) {
 				if (n instanceof JNameSpace) {
-					n.generate();
+					n.generate(jenv);
 				}
 				else if (n instanceof JStruct) {
 					diff_time = curr_time = System.currentTimeMillis();
-					n.generate();
+					n.generate(jenv);
 					diff_time = System.currentTimeMillis() - curr_time;
 					if( Kiev.verbose )
 						Kiev.reportInfo("Generated clas "+n,diff_time);
@@ -53,15 +53,15 @@ public view JNameSpace of NameSpace extends JSNode {
 	public:ro	SymbolRef<KievPackage>	srpkg;
 	public:ro	JNode[]					members;
 
-	public void generate() {
+	public void generate(JEnv jenv) {
 		long curr_time = 0L, diff_time = 0L;
 		foreach (JNode n; members) {
 			if (n instanceof JNameSpace) {
-				n.generate();
+				n.generate(jenv);
 			}
 			else if (n instanceof JStruct) {
 				diff_time = curr_time = System.currentTimeMillis();
-				n.generate();
+				n.generate(jenv);
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+n,diff_time);

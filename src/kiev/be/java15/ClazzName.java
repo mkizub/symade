@@ -62,22 +62,22 @@ class ClazzName implements Constants {
 			return KString.Empty;
 	}
 
-	public static ClazzName fromSignature(KString signature) {
+	public static ClazzName fromSignature(JEnv jenv, KString signature) {
 		if(signature.equals(KString.Empty)) return Empty;
 		KString bytecode_name = signature.substr(1,signature.length()-1);
-		return fromBytecodeName(bytecode_name);
+		return fromBytecodeName(jenv,bytecode_name);
 	}
 
-	public static ClazzName fromToplevelName(KString name) {
+	public static ClazzName fromToplevelName(JEnv jenv, KString name) {
 		if(name.equals(KString.Empty)) return Empty;
 		KString bytecode_name = name.replace('.','/');
-		return fromBytecodeName(bytecode_name);
+		return fromBytecodeName(jenv,bytecode_name);
 	}
 
-	public static ClazzName fromBytecodeName(KString bytecode_name) {
+	public static ClazzName fromBytecodeName(JEnv jenv, KString bytecode_name) {
 		if(bytecode_name.equals(KString.Empty)) return Empty;
 		KString name = bytecode_name.replace('/','.');
-		name = fixName(name);
+		name = fixName(jenv, name);
 		int i;
 		KString short_name;
 		if( (i=name.lastIndexOf('.')) >= 0 )
@@ -115,14 +115,14 @@ class ClazzName implements Constants {
 
 	public boolean equals(ClazzName nm) { return name == nm.name; }
 
-	public static KString fixName(KString str) {
+	private static KString fixName(JEnv jenv, KString str) {
 		KString.KStringScanner sc = new KString.KStringScanner(str);
 		KStringBuffer sb = new KStringBuffer(str.len);
 		while(sc.hasMoreChars()) {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
 				String tmp = str.substr(0,sc.pos-1).toString().replace('.','\u001f');
-				byte b = (byte)(Env.getRoot().existsTypeDecl(tmp)?'.':'$');
+				byte b = (byte)(jenv.env.existsTypeDecl(tmp)?'.':'$');
 				sb.append_fast(b);
 			} else {
 				sb.append(ch);

@@ -19,13 +19,15 @@ import syntax kiev.Syntax;
 
 public class CodeVar {
 
+	public final Code			code;
 	public final JVar			jvar;
 	public final int			vars_pos;
 	public final int			stack_pos;
 	public       int			start_pc = -1;
 	public       int			end_pc = -1;
 
-	public CodeVar(JVar var, int vars_pos, int stack_pos) {
+	public CodeVar(Code code, JVar var, int vars_pos, int stack_pos) {
+		this.code = code;
 		this.jvar = var;
 		this.vars_pos = vars_pos;
 		this.stack_pos = stack_pos;
@@ -95,9 +97,10 @@ public class CodeLabel implements JConstants {
 					JType tl = stack[stack.length-i-1];
 					JType tc = code.stack_at(i);
 					// Check for object/null, or one is child of other
+					JTypeEnv jtenv = code.jenv.getJTypeEnv();
 					if( tl.isReference() && tc.isReference() ) {
-						if( tl == JType.tpNull || tl.isInstanceOf(tc) ) continue;
-						if( tc == JType.tpNull || tc.isInstanceOf(tl) ) {
+						if( tl == jtenv.tpNull || tl.isInstanceOf(tc) ) continue;
+						if( tc == jtenv.tpNull || tc.isInstanceOf(tl) ) {
 							code.set_stack_at(tl,i);
 							continue;
 						}
@@ -139,9 +142,10 @@ public class CodeLabel implements JConstants {
 						JType tl = stack[stack.length-i-1];
 						JType tc = code.stack_at(i);
 						// Check for object/null, or one is child of other
+						JTypeEnv jtenv = code.jenv.getJTypeEnv();
 						if( tl.isReference() && tc.isReference() ) {
-							if( tl == JType.tpNull || tl.isInstanceOf(tc) ) continue;
-							if( tc == JType.tpNull || tc.isInstanceOf(tl) ) {
+							if( tl == jtenv.tpNull || tl.isInstanceOf(tc) ) continue;
+							if( tc == jtenv.tpNull || tc.isInstanceOf(tl) ) {
 								code.set_stack_at(tl,i);
 								continue;
 							}
@@ -152,7 +156,7 @@ public class CodeLabel implements JConstants {
 							}
 						}
 						else if( tl.isIntegerInCode() && tc.isIntegerInCode() ) {
-							code.set_stack_at(JType.tpInt,i);
+							code.set_stack_at(jtenv.tpInt,i);
 							continue;
 						}
 						throw new RuntimeException("Stack contentce at "+this+" does not match stack contentce of instruction at stack pos "+i+" ("+stack[stack.length-i-1]+" != "+code.stack_at(i)+")");

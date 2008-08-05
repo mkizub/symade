@@ -50,16 +50,16 @@ public final view JStruct of Struct extends JTypeDecl {
 		return (JENode)((RStruct)((Struct)this)).accessTypeInfoField((ASTNode)from, t, from_gen);
 	}
 	
-	public JField resolveField(String name) {
-		return resolveField(name,true);
+	public JField resolveField(JEnv jenv, String name) {
+		return resolveField(jenv,name,true);
 	}
 
-	public JField resolveField(String name, boolean fatal) {
+	public JField resolveField(JEnv jenv, String name, boolean fatal) {
 		checkResolved();
 		foreach (JField f; this.members; f.sname == name)
 			return f;
-		foreach (JType jt; this.super_types) {
-			JField f = jt.getJStruct().resolveField(name, false);
+		foreach (TypeRef t; this.super_types) {
+			JField f = jenv.getJTypeEnv().getJType(t.getType()).getJStruct().resolveField(jenv, name, false);
 			if (f != null)
 				return f;
 		}
@@ -69,33 +69,34 @@ public final view JStruct of Struct extends JTypeDecl {
 	}
 
 
-	public JMethod resolveMethod(String name, KString sign) {
-		return resolveMethod(this,name,sign,this,true);
+	public JMethod resolveMethod(JEnv jenv, String name, KString sign) {
+		return resolveMethod(this,jenv,name,sign,this,true);
 	}
 
-	public JMethod resolveMethod(String name, KString sign, boolean fatal) {
-		return resolveMethod(this,name,sign,this,fatal);
+	public JMethod resolveMethod(JEnv jenv, String name, KString sign, boolean fatal) {
+		return resolveMethod(this,jenv,name,sign,this,fatal);
 	}
 
-	private static JMethod resolveMethod(@forward JStruct self, String name, KString sign, JStruct where, boolean fatal) {
+	private static JMethod resolveMethod(@forward JStruct self, JEnv jenv, String name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
+		JTypeEnv jtenv = jenv.getJTypeEnv();
 		foreach (JMethod m; members) {
-			if( m.hasName(name) && m.mtype.getJType().java_signature.equals(sign))
+			if( m.hasName(name) && jtenv.getJType(m.mtype).java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
 			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
 				foreach (JMethod m; defaults.members) {
-					if( m.hasName(name) && m.mtype.getJType().java_signature.equals(sign))
+					if( m.hasName(name) && jtenv.getJType(m.mtype).java_signature.equals(sign))
 						return m;
 				}
 			}
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+self);
 		JMethod m = null;
-		foreach (JType jst; super_types) {
-			m = resolveMethod(jst.getJStruct(),name,sign,where,fatal);
+		foreach (TypeRef jst; super_types) {
+			m = resolveMethod(jenv.getJTypeEnv().getJType(jst.getType()).getJStruct(),jenv,name,sign,where,fatal);
 			if( m != null ) return m;
 		}
 		if (fatal)
@@ -103,7 +104,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		return null;
 	}
 
-	public void generate() {
+	public void generate(JEnv jenv) {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
@@ -112,16 +113,16 @@ public final view JStruct of Struct extends JTypeDecl {
 		
 		if (inner_info != null) {
 			foreach (Struct sub; inner_info.inners)
-				((JStruct)sub).generate();
+				((JStruct)sub).generate(jenv);
 		}
 
 		ConstPool constPool = new ConstPool();
-		constPool.addClazzCP(this.xtype.getJType().java_signature);
-		foreach (JType jst; super_types)
-			constPool.addClazzCP(jst.java_signature);
+		constPool.addClazzCP(jenv.getJTypeEnv().getJType(this.xtype).java_signature);
+		foreach (TypeRef jst; super_types)
+			constPool.addClazzCP(jenv.getJTypeEnv().getJType(jst.getType()).java_signature);
 		if (inner_info != null) {
 			foreach (Struct sub; inner_info.inners)
-				constPool.addClazzCP(sub.xtype.getJType().java_signature);
+				constPool.addClazzCP(jenv.getJTypeEnv().getJType(sub.xtype).java_signature);
 		}
 		
 		{
@@ -136,7 +137,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			foreach (Struct s; inners)
 				count ++;
 			if (count > 0) {
-				InnerClassesAttr a = new InnerClassesAttr();
+				InnerClassesAttr a = new InnerClassesAttr(jenv);
 				JStruct[] inner = new JStruct[count];
 				JStruct[] outer = new JStruct[count];
 				short[] inner_access = new short[count];
@@ -146,7 +147,7 @@ public final view JStruct of Struct extends JTypeDecl {
 						inner[i] = (JStruct)inn;
 						outer[i] = this;
 						inner_access[i] = inn.getJavaFlags();
-						constPool.addClazzCP(inn.xtype.getJType().java_signature);
+						constPool.addClazzCP(jenv.getJTypeEnv().getJType(inn.xtype).java_signature);
 						i++;
 					}
 				}
@@ -158,28 +159,30 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 
 		if (hasRuntimeVisibleMetas())
-			this.addAttr(new RVMetaAttr(this));
+			this.addAttr(new RVMetaAttr(jenv,this));
 		if (hasRuntimeInvisibleMetas())
-			this.addAttr(new RIMetaAttr(this));
+			this.addAttr(new RIMetaAttr(jenv,this));
 		
+		Attr[] jattrs = getJAttrs();
 		for(int i=0; jattrs!=null && i < jattrs.length; i++)
 			jattrs[i].generate(constPool);
 		foreach (JField f; this.members) {
 			constPool.addAsciiCP(f.sname);
-			constPool.addAsciiCP(f.vtype.getJType().java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(f.vtype).java_signature);
 
 			if (f.hasRuntimeVisibleMetas())
-				f.addAttr(new RVMetaAttr(f));
+				f.addAttr(new RVMetaAttr(jenv,f));
 			if (f.hasRuntimeInvisibleMetas())
-				f.addAttr(new RIMetaAttr(f));
+				f.addAttr(new RIMetaAttr(jenv,f));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
 				Object co = f.init.getConstValue();
 				if (co != null)
 					f.addAttr(new ConstantValueAttr(co));
 			}
 
-			if (f.jattrs != null) {
-				foreach (Attr a; f.jattrs)
+			jattrs = f.getJAttrs();
+			if (jattrs != null) {
+				foreach (Attr a; jattrs)
 					a.generate(constPool);
 			}
 		}
@@ -192,52 +195,54 @@ public final view JStruct of Struct extends JTypeDecl {
 			} else {
 				constPool.addAsciiCP(m.sname);
 			}
-			constPool.addAsciiCP(m.mtype.getJType().java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(m.mtype).java_signature);
 			if( m.etype != null )
-				constPool.addAsciiCP(m.etype.getJType().java_signature);
+				constPool.addAsciiCP(jenv.getJTypeEnv().getJType(m.etype).java_signature);
 
 			try {
-				m.generate(constPool);
+				m.generate(jenv,constPool);
 
 				foreach (WBCCondition cond; m.conditions(); cond.definer == (Method)m) {
 					m.addAttr(((JWBCCondition)cond).getCodeAttr());
 				}
 
 				if (m.hasRuntimeVisibleMetas())
-					m.addAttr(new RVMetaAttr(m));
+					m.addAttr(new RVMetaAttr(jenv,m));
 				if (m.hasRuntimeInvisibleMetas())
-					m.addAttr(new RIMetaAttr(m));
+					m.addAttr(new RIMetaAttr(jenv,m));
 				boolean has_vis_pmeta = false;
 				boolean has_invis_pmeta = false;
 				foreach (Var p; ((Method)m).params; p.hasRuntimeVisibleMetas()) {
-					m.addAttr(new RVParMetaAttr(((Method)m).params));
+					m.addAttr(new RVParMetaAttr(jenv,((Method)m).params));
 					break;
 				}
 				foreach (Var p; ((Method)m).params; p.hasRuntimeInvisibleMetas()) {
-					m.addAttr(new RIParMetaAttr(((Method)m).params));
+					m.addAttr(new RIParMetaAttr(jenv,((Method)m).params));
 					break;
 				}
 				if (isAnnotation()) {
 					ENode mbody = (ENode)m.body;
 					if (mbody instanceof MetaValue)
-						m.addAttr(new DefaultMetaAttr((MetaValue)mbody));
+						m.addAttr(new DefaultMetaAttr(jenv,(MetaValue)mbody));
 				}
 
-				if (m.jattrs != null) {
-					foreach (Attr a; m.jattrs)
+				jattrs = m.getJAttrs();
+				if (jattrs != null) {
+					foreach (Attr a; jattrs)
 						a.generate(constPool);
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(m,"Compilation error: "+e);
-				m.generate(constPool);
-				if (m.jattrs != null) {
-					foreach (Attr a; m.jattrs)
+				m.generate(jenv,constPool);
+				jattrs = m.getJAttrs();
+				if (jattrs != null) {
+					foreach (Attr a; jattrs)
 						a.generate(constPool);
 				}
 			}
 			if( Kiev.safe && isBad() ) return;
 		}
-		constPool.generate();
+		constPool.generate(jenv);
 		foreach (JMethod m; members) {
 			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 			if( ca != null ) {
@@ -248,10 +253,10 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( Kiev.safe && isBad() )
 			return;
 		if (!isMacro())
-			this.toBytecode(constPool);
+			toBytecode(jenv, this, constPool);
 	}
 
-	static void make_output_dir(String top_dir, String filename) throws IOException {
+	private static void make_output_dir(String top_dir, String filename) throws IOException {
 		File dir;
 		dir = new File(top_dir,filename);
 		dir = new File(dir.getParent());
@@ -259,10 +264,10 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
 
-	public void toBytecode(ConstPool constPool) {
+	private static void toBytecode(JEnv jenv, JStruct self, ConstPool constPool) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = "classes";
-		String out_file = this.bname().replace('/',File.separatorChar).toString();
+		String out_file = self.bname().replace('/',File.separatorChar).toString();
 		try {
 			DataOutputStream out;
 			JStruct.make_output_dir(output_dir,out_file);
@@ -275,10 +280,10 @@ public final view JStruct of Struct extends JTypeDecl {
 				System.runFinalization();
 				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
 			}
-			byte[] dump = new Bytecoder((Struct)this,null,constPool).writeClazz();
+			byte[] dump = new Bytecoder(jenv,(Struct)self,null,constPool).writeClazz();
 			out.write(dump);
 			out.close();
-//			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+this.name+"]");
+//			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+self.name+"]");
 		} catch( IOException e ) {
 			System.out.println("Create/write error while Kiev-to-JavaBytecode exporting: "+e);
 		}

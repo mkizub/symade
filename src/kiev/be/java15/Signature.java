@@ -33,11 +33,11 @@ final class Signature {
 		return ( o instanceof Signature && ((Signature)o).sig.equals(sig) );
 	}
 
-	public static Type getType(KString sig) {
-		return Signature.getType(new KString.KStringScanner(sig));
+	public static Type getType(JEnv jenv, KString sig) {
+		return Signature.getType(jenv, new KString.KStringScanner(sig));
 	}
 	
-	public static Type getType(KString.KStringScanner sc) {
+	public static Type getType(JEnv jenv, KString.KStringScanner sc) {
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
 
@@ -63,16 +63,16 @@ final class Signature {
 			// Method signature
 			args = new Type[0];
 			while( sc.hasMoreChars() && sc.peekChar() != ')' )
-				args = (Type[])Arrays.append(args,getType(sc));
+				args = (Type[])Arrays.append(args,getType(jenv,sc));
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
-			ret = getType(sc);
+			ret = getType(jenv,sc);
 			return new CallType(null,null,args,ret,false);
 		}
 
 		// Normal reference type
 		if( ch == '[' )
-			return new ArrayType(getType(sc));
+			return new ArrayType(getType(jenv,sc));
 
 		if( ch != 'L')
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - 'L' expected");
@@ -80,21 +80,21 @@ final class Signature {
 		while( sc.hasMoreChars() && (ch=sc.nextChar()) != ';' );
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
-		ClazzName cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
+		ClazzName cname = ClazzName.fromBytecodeName(jenv,sc.str.substr(pos,sc.pos-1));
 		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
 		return new CompaundType(cmt, null, null);
 	}
 
-	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
+	public static Type getTypeOfClazzCP(JEnv jenv, KString.KStringScanner sc) {
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
 
 		char ch = sc.peekChar();
 
 		// Normal reference type
-		if( ch == '[' ) return new ArrayType(getType(sc));
+		if( ch == '[' ) return new ArrayType(getType(jenv,sc));
 
-		ClazzName cname = ClazzName.fromBytecodeName(sc.str.substr(sc.pos));
+		ClazzName cname = ClazzName.fromBytecodeName(jenv,sc.str.substr(sc.pos));
 		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
 		return new CompaundType(cmt, null, null);
 	}

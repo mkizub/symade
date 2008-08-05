@@ -384,13 +384,13 @@ public final view JTryStat of TryStat extends JENode {
 	public static final ExtRefAttrSlot_end_label END_LABEL_ATTR = new ExtRefAttrSlot_end_label();
 
 	public static final class ExtRefAttrSlot_subr_label extends ExtRefAttrSlot {
-		ExtRefAttrSlot_subr_label() { super("end-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		ExtRefAttrSlot_subr_label() { super("subr-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
 		public CodeLabel getLabel(JNode parent) { return (CodeLabel)get((ASTNode)parent); }
 	}
 	public static final ExtRefAttrSlot_subr_label SUBR_LABEL_ATTR = new ExtRefAttrSlot_subr_label();
 
 	public static final class ExtRefAttrSlot_code_catcher extends ExtRefAttrSlot {
-		ExtRefAttrSlot_code_catcher() { super("end-label", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
+		ExtRefAttrSlot_code_catcher() { super("code-catcher", TypeInfo.newTypeInfo(CodeLabel.class,null)); }
 		public CodeCatchInfo getCatcher(JNode parent) { return (CodeCatchInfo)get((ASTNode)parent); }
 	}
 	public static final ExtRefAttrSlot_code_catcher CODE_CATCHER_ATTR = new ExtRefAttrSlot_code_catcher();
@@ -415,7 +415,7 @@ public final view JTryStat of TryStat extends JENode {
 		for(int i= catchers.length-1; i >= 0 ; i--) {
 			CodeLabel handler = code.newLabel();
 			HANDLER_ATTR.set((CatchInfo)catchers[i], handler);
-			CodeCatchInfo code_catcher = code.newCatcher(handler,catchers[i].arg.vtype.getJType());
+			CodeCatchInfo code_catcher = code.newCatcher(handler,code.jtenv.getJType(catchers[i].arg.vtype));
 			CODE_CATCHER_ATTR.set((CatchInfo)catchers[i],code_catcher);
 			code.addInstr(Instr.start_catcher,code_catcher);
 		}
@@ -510,7 +510,7 @@ public final view JSynchronizedStat of SynchronizedStat extends JENode {
 			}
 
 			code.addInstr(Instr.set_label,handler);
-			code.stack_push(JType.tpThrowable);
+			code.stack_push(code.jenv.getJTypeEnv().tpThrowable);
 			code.addInstr(Instr.op_load,expr_var);
 			code.addInstr(Instr.op_monitorexit);
 			code.addInstr(Instr.op_throw);

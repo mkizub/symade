@@ -34,9 +34,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeAttr
 	public							String			sname; // source code name, may be null for anonymouse symbols
 
-	@nodeData(ext_data=true)
-	public kiev.be.java15.Attr[]					jattrs; // array of java class attributes of this node
-
 	@AttrXMLDumpInfo(attr=true)
 	@UnVersioned
 	@nodeAttr(copyable=false)

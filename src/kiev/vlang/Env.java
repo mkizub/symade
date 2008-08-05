@@ -58,6 +58,10 @@ public final class Env extends KievPackage {
 		return jenv;
 	}
 	
+	public void cleanupBackendEnv() {
+		jenv = null;
+	}
+	
 	public String toString() {
 		return "<root>";
 	}
@@ -246,7 +250,7 @@ public final class Env extends KievPackage {
 	public void InitializeEnv(String path) {
 		if (path == null) path = System.getProperty("java.class.path");
 		this.classpath = new kiev.bytecode.Classpath(path);
-		this.jenv = new JEnv();
+		this.jenv = new JEnv(this);
 		if (Kiev.project_file != null && Kiev.project_file.exists())
 			this.project = DumpUtils.loadProject(Kiev.project_file);
 		if (this.project == null)

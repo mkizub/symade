@@ -34,7 +34,7 @@ public final view JTypeClassExpr of TypeClassExpr extends JENode {
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
-		code.addConst(ttype.getErasedType().getJType());
+		code.addConst(code.jtenv.getJType(ttype.getErasedType()));
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -138,24 +138,9 @@ public view JUnaryExpr of UnaryExpr extends JENode {
 public view JStringConcatExpr of StringConcatExpr extends JENode {
 	public:ro	JENode[]			args;
 
-	public static final Struct clazzStringBuffer;
-	public static final Method clazzStringBufferToString;
-	public static final Method clazzStringBufferInit;
 
-	static {
-		try {
-		clazzStringBuffer = (Struct)Env.getRoot().loadTypeDecl("java\u001flang\u001fStringBuilder", false);
-		if( clazzStringBuffer == null )
-			throw new RuntimeException("Core class java.lang.StringBuilder not found");
-		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);
-		clazzStringBufferInit = clazzStringBuffer.resolveMethod(null,Type.tpVoid);
-		} catch(Exception e ) {
-			throw new RuntimeException("Can't initialize: "+e.getMessage());
-		}
-	}
-
-	public JMethod getMethodFor(JENode expr) {
-		Method m = clazzStringBuffer.resolveMethod("append",clazzStringBuffer.xtype,expr.getType());
+	public JMethod getMethodFor(JEnv jenv, JENode expr) {
+		Method m = jenv.getClsStringBuffer().resolveMethod("append",jenv.getClsStringBuffer().xtype,expr.getType());
 		return (JMethod)m;
 	}
 
@@ -164,14 +149,14 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
 		JENode[] args = this.args;
-		code.addInstr(op_new,clazzStringBuffer.xtype);
+		code.addInstr(op_new,code.jenv.getClsStringBuffer().xtype);
 		code.addInstr(op_dup);
-		code.addInstr(op_call,(JMethod)clazzStringBufferInit,true);
+		code.addInstr(op_call,(JMethod)code.jenv.getMthStringBufferInit(),true);
 		for(int i=0; i < args.length; i++) {
 			args[i].generate(code,null);
-			code.addInstr(op_call,getMethodFor(args[i]),false);
+			code.addInstr(op_call,getMethodFor(code.jenv,args[i]),false);
 		}
-		code.addInstr(op_call,(JMethod)clazzStringBufferToString,false);
+		code.addInstr(op_call,(JMethod)code.jenv.getMthStringBufferToString(),false);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -237,7 +222,7 @@ public view JBlock of Block extends JENode {
 		}
 		JNode p = this.jparent;
 		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.mtype.ret() ≢ Type.tpVoid)
-			code.stack_push(p.etype.ret().getJType());
+			code.stack_push(code.jtenv.getJType(p.etype.ret()));
 		if (lblbrk != null)
 			lblbrk.generate(code,null);
 	}

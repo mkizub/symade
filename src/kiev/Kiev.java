@@ -430,6 +430,7 @@ public final class Kiev {
 	private static VerifyProcessor[]	vfProcessors;
 	private static BackendProcessor[]	meProcessors;
 	private static BackendProcessor[]	beProcessors;
+	private static BackendProcessor		beCleanup;
 	static {
 		{
 			Vector<TransfProcessor> processors = new Vector<TransfProcessor>();
@@ -483,6 +484,7 @@ public final class Kiev {
 			processors.append(KievBE_Cleanup);
 			beProcessors = processors.toArray();
 		}
+		beCleanup = KievBE_Cleanup;
 	}
 	
 	private static boolean[] disabled_extensions = Compiler.getCmdLineExtSet();
@@ -645,6 +647,17 @@ public final class Kiev {
 	public static void closeBackEndFileUnit() {
 		Kiev.setCurFile("");
 		Kiev.setExtSet(Compiler.getCmdLineExtSet());
+	}
+	public static void runBackEndCleanup() {
+		Kiev.setCurFile("");
+		BackendProcessor bp = beCleanup;
+		if (bp == null || !bp.isEnabled())
+			return;
+		try {
+			bp.process(Env.getRoot(),Transaction.get());
+		} catch (Exception e) {
+			Kiev.reportError(e);
+		}
 	}
 	
 	public static String runCurrentBackEndProcessor(FileUnit fu) {

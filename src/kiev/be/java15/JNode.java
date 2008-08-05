@@ -25,17 +25,6 @@ public view JNode of ASTNode implements JConstants {
 		return jarr;
 	}
 
-	@unerasable
-	public static JType[] toJTypeArray(NodeSpace<ASTNode> narr)
-		alias fy operator $cast
-	{
-		int sz = narr.length;
-		JType[] jarr = new JType[sz];
-		for (int i=0; i < sz; i++)
-			jarr[i] = narr[i].getType().getJType();
-		return jarr;
-	}
-
 	public String toString();
 	
 	public:ro	int			pos;
@@ -66,9 +55,15 @@ public view JNode of ASTNode implements JConstants {
 @ViewOf(vcast=true, iface=true)
 public view JDNode of DNode extends JNode {
 
+	public static final class ExtRefAttrSlot_jattrs extends ExtRefAttrSlot {
+		ExtRefAttrSlot_jattrs() { super("jattrs", TypeInfo.newTypeInfo(Attr[].class,null)); }
+		public Attr[] getAttrs(JNode parent) { return (Attr[])get((ASTNode)parent); }
+	}
+	public static final ExtRefAttrSlot_jattrs JATTRS_ATTR = new ExtRefAttrSlot_jattrs();
+	
+
 	public:ro	MNode[]		metas;
 	public:ro	String		sname;
-	public		Attr[]		jattrs;
 
 	public final boolean isPublic()	;
 	public final boolean isPrivate();
@@ -97,7 +92,7 @@ public view JDNode of DNode extends JNode {
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
-		Attr[] jattrs = this.jattrs;
+		Attr[] jattrs = JDNode.JATTRS_ATTR.getAttrs(this);
 		if (jattrs != null) {
 			for(int i=0; i < jattrs.length; i++) {
 				if(jattrs[i].name == a.name) {
@@ -105,15 +100,16 @@ public view JDNode of DNode extends JNode {
 					return a;
 				}
 			}
-			this.jattrs = (Attr[])Arrays.append(jattrs,a);
+			jattrs = (Attr[])Arrays.append(jattrs,a);
 		} else {
-			this.jattrs = new Attr[]{a};
+			jattrs = new Attr[]{a};
 		}
+		JDNode.JATTRS_ATTR.set((DNode)this, jattrs);
 		return a;
 	}
 
 	public Attr getAttr(KString name) {
-		Attr[] jattrs = this.jattrs;
+		Attr[] jattrs = JDNode.JATTRS_ATTR.getAttrs(this);
 		if (jattrs != null) {
 			for(int i=0; i < jattrs.length; i++)
 				if( jattrs[i].name.equals(name) )
@@ -121,9 +117,13 @@ public view JDNode of DNode extends JNode {
 		}
 		return null;
 	}
+	
+	public Attr[] getJAttrs() {
+		return JDNode.JATTRS_ATTR.getAttrs(this);;
+	}
 
 	public void backendCleanup() {
-		this.jattrs = null;
+		JDNode.JATTRS_ATTR.clear((DNode)this);
 	}
 
 }
@@ -179,12 +179,13 @@ public static final view JNopExpr of NopExpr extends JENode {
 
 @ViewOf(vcast=true, iface=true)
 public view JTypeDecl of TypeDecl extends JDNode {
-	public:ro	JType[]				super_types;
+	public:ro	TypeRef[]			super_types;
 
 	public:ro	Type				xtype;
-	public:ro	JType				jtype;
-	@getter
-	public final JType				get$jtype()			{ return this.xtype.getJType(); }
+
+	public final JType getJType(JTypeEnv jtenv) {
+		return jtenv.getJType(this.xtype);
+	}
 
 
 	public final boolean isClazz();
@@ -194,14 +195,6 @@ public view JTypeDecl of TypeDecl extends JDNode {
 	public final boolean isStructInner();
 
 	public void checkResolved();
-	
-	public boolean instanceOf(JTypeDecl cl) {
-		if( cl == null ) return false;
-		if( this.equals(cl) ) return true;
-		foreach (JType jt; super_types; jt.getJTypeDecl().instanceOf(cl))
-			return true;
-		return false;
-	}
 }
 
 @ViewOf(vcast=true, iface=true)

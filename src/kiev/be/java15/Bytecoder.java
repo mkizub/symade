@@ -20,11 +20,13 @@ import static kiev.be.java15.Instr.*;
  */
 
 public class Bytecoder implements JConstants {
+	public final JEnv							jenv;
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
 
-	public Bytecoder(Struct cl, kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+	public Bytecoder(JEnv jenv, Struct cl, kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+		this.jenv = jenv;
 		this.cl = cl;
 		this.bcclazz = bcclazz;
 		this.constPool = constPool;
@@ -92,14 +94,11 @@ public class Bytecoder implements JConstants {
 			CompaundType st;
 			if (cl_sign_sc != null) {
 				st = Signature.getClassTypeSignature(cl,cl_sign_sc);
-				//ClazzName cn = ClazzName.fromBytecodeName(cl_super_name);
-				//if (!st.meta_type.qname().equals(cn.name.toString().replace('.','\u001f')))
-				//	throw new RuntimeException("Class "+cl+" has super-class "+cn+" but in signature super-class name is "+st.tdecl);
 			} else {
-				st = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+				st = (CompaundType)Signature.getTypeOfClazzCP(this.jenv,new KString.KStringScanner(cl_super_name));
 			}
 			cl.super_types.append(new TypeRef(st));
-			if (Env.getRoot().loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
+			if (this.jenv.env.loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
 		}
 
@@ -110,13 +109,10 @@ public class Bytecoder implements JConstants {
 			CompaundType interf;
 			if (cl_sign_sc != null) {
 				interf = Signature.getClassTypeSignature(cl,cl_sign_sc);
-				//ClazzName cn = ClazzName.fromBytecodeName(interfs[i]);
-				//if (!interf.meta_type.qname().equals(cn.name.toString().replace('.','\u001f')))
-				//	throw new RuntimeException("Class "+cl+" has super-interface "+cn+" but in signature super-interface name is "+interf.tdecl);
 			} else {
-				interf = (CompaundType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
+				interf = (CompaundType)Signature.getTypeOfClazzCP(this.jenv,new KString.KStringScanner(interfs[i]));
 			}
-			if (Env.getRoot().loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
+			if (this.jenv.env.loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.tdecl.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");
@@ -165,7 +161,7 @@ public class Bytecoder implements JConstants {
 		if (f_type_sign != null)
 			ftype = Signature.getTypeFromFieldSignature(cl, new KString.KStringScanner(f_type_sign));
 		else
-			ftype = Signature.getType(f_type);
+			ftype = Signature.getType(this.jenv,f_type);
 		if ((f_flags & ACC_ENUM)!=0) {
 			f = new Field(f_name.toString(),ftype,f_flags);
 			f.mflags_is_enum = true;
@@ -219,7 +215,7 @@ public class Bytecoder implements JConstants {
 				Signature.addTypeArgs(m,m_type_sign_sc);
 				mtype = Signature.getTypeFromMethodSignature(m, m_type_sign_sc);
 			} else {
-				mtype = (CallType)Signature.getType(m_type);
+				mtype = (CallType)Signature.getType(this.jenv,m_type);
 			}
 			m.type_ret = new TypeRef(mtype.ret());
 			for (int i=0; i < mtype.arity; i++) {
@@ -277,15 +273,15 @@ public class Bytecoder implements JConstants {
 				try {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
-						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz));
-						outer[i] = (JStruct)(Struct)Env.getRoot().getBackendEnv().loadDecl(cn);
+						cn = ClazzName.fromBytecodeName(this.jenv,ica.getOuterName(i,clazz));
+						outer[i] = (JStruct)(Struct)this.jenv.loadDecl(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
 					} else {
 						outer[i] = null;
 					}
 					if( ica.cp_inners[i] != null ) {
-						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz));
+						cn = ClazzName.fromBytecodeName(this.jenv,ica.getInnerName(i,clazz));
 						// load only non-anonymouse classes
 						boolean anon = false;
 						for (int i=0; i < cn.bytecode_name.len; i++) {
@@ -300,7 +296,7 @@ public class Bytecoder implements JConstants {
 						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
 							inner[i] == null;
 						} else {
-							Struct inn = (Struct)Env.getRoot().getBackendEnv().loadDecl(cn);
+							Struct inn = (Struct)this.jenv.loadDecl(cn);
 							inner[i] = (JStruct)inn;
 							if( inn == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");
@@ -318,10 +314,11 @@ public class Bytecoder implements JConstants {
 					Kiev.reportError(e);
 				}
 			}
-			a = new InnerClassesAttr();
+			a = new InnerClassesAttr(this.jenv);
 			((InnerClassesAttr)a).inner = inner;
 			((InnerClassesAttr)a).outer = outer;
 			((InnerClassesAttr)a).acc = acc;
+			a = null;
 		}
 		else if( name.equals(attrConstantValue) ) {
 			kiev.bytecode.ConstantValueAttribute ca = (kiev.bytecode.ConstantValueAttribute)bca;
@@ -560,7 +557,7 @@ public class Bytecoder implements JConstants {
 				);
 			break;
 		case 'e': {
-			Type tp = Signature.getType(((kiev.bytecode.Annotation.element_value_enum_const)eval).getSignature(clazz));
+			Type tp = Signature.getType(this.jenv,((kiev.bytecode.Annotation.element_value_enum_const)eval).getSignature(clazz));
 			tp.meta_type.tdecl.checkResolved();
 			KString fname = ((kiev.bytecode.Annotation.element_value_enum_const)eval).getFieldName(clazz);
 			Field f = tp.meta_type.tdecl.resolveField(fname.toString().intern());
@@ -568,7 +565,7 @@ public class Bytecoder implements JConstants {
 			}
 			break;
 		case 'c': {
-			Type tp = Signature.getType(((kiev.bytecode.Annotation.element_value_class_info)eval).getSignature(clazz));
+			Type tp = Signature.getType(this.jenv,((kiev.bytecode.Annotation.element_value_class_info)eval).getSignature(clazz));
 			mv = new MetaValueScalar(new SymbolRef(nm),new TypeRef(tp));
 			}
 			break;
@@ -603,13 +600,13 @@ public class Bytecoder implements JConstants {
 	    	bcclazz.flags |= ACC_SUPER;
 
 		// This class name
-		KString cl_sig = cl.xtype.getJType().java_signature;
+		KString cl_sig = jenv.getJTypeEnv().getJType(cl).java_signature;
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name
 	    if (cl.super_types.length > 0) {
 			Type tp = cl.super_types[0].getType();
 			assert(tp.getStruct().isClazz());
-		    KString sup_sig = tp.getJType().java_signature;
+		    KString sup_sig = jenv.getJTypeEnv().getJType(tp.getStruct()).java_signature;
 		    bcclazz.cp_super_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(sup_sig).pos];
 		} else {
 			bcclazz.cp_super_clazz = null;
@@ -620,7 +617,7 @@ public class Bytecoder implements JConstants {
 		for(int i=1; i < cl.super_types.length; i++) {
 			Type tp = cl.super_types[i].getType();
 			assert(tp.getStruct().isInterface());
-		    KString interf_sig = tp.getJType().java_signature;
+		    KString interf_sig = jenv.getJTypeEnv().getJType(tp.getStruct()).java_signature;
 			bcclazz.cp_interfaces[i-1] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(interf_sig).pos];
 		}
 
@@ -642,7 +639,7 @@ public class Bytecoder implements JConstants {
 		}
 
 	    // Number of class attributes
-		Attr[] jattrs = cl.jattrs;
+		Attr[] jattrs = ((JStruct)cl).getJAttrs();
 		if (jattrs != null) {
 			int len = 0;
 			foreach(Attr a; jattrs; !a.isKiev) len++;
@@ -757,11 +754,11 @@ public class Bytecoder implements JConstants {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.sname).pos];
-		JType tp = f.getType().getJType();
+		JType tp = jenv.getJTypeEnv().getJType(f.getType());
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		Attr[] jattrs = f.jattrs;
+		Attr[] jattrs = ((JField)f).getJAttrs();
 		if (jattrs != null) {
 			bcf.attrs = new kiev.bytecode.Attribute[jattrs.length];
 			for(int i=0; i < jattrs.length; i++)
@@ -784,10 +781,10 @@ public class Bytecoder implements JConstants {
 			nm = KString.from(m.sname);
 		}
 		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(nm).pos];
-		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
+		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(jenv.getJTypeEnv().getJType(m.etype).java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		Attr[] jattrs = m.jattrs;
+		Attr[] jattrs = ((JMethod)m).getJAttrs();
 		if (jattrs != null) {
 			bcm.attrs = new kiev.bytecode.Attribute[jattrs.length];
 			for(int i=0; i < jattrs.length; i++)

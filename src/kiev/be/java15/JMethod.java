@@ -58,12 +58,12 @@ public final view JMethod of Method extends JDNode {
 		return block.getBrkLabel();
 	}
 
-	public void generate(ConstPool constPool) {
+	public void generate(JEnv jenv, ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		foreach(WBCCondition cond; conditions(); cond.cond != WBCType.CondInvariant )
-			((JWBCCondition)cond).generate(constPool,Type.tpVoid);
+			((JWBCCondition)cond).generate(jenv,constPool,Type.tpVoid);
 		if( !isAbstract() && body != null && !(((ENode)body) instanceof MetaValue)) {
-			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
+			Code code = new Code(jenv,(JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {
 				JVar thisPar = null;
@@ -126,7 +126,7 @@ public final view JMethod of Method extends JDNode {
 						msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					JMethod func = Type.tpError.getJType().getJStruct().resolveMethod(null,KString.from("(Ljava/lang/String;)V"));
+					JMethod func = jenv.getJTypeEnv().getJType(Type.tpError).getJStruct().resolveMethod(jenv,null,KString.from("(Ljava/lang/String;)V"));
 					code.addInstr(Instr.op_call,func,true);
 					code.addInstr(Instr.op_throw);
 				}
@@ -142,7 +142,7 @@ public final view JMethod of Method extends JDNode {
 			ASTNode[] mthrs = throwns.getThrowns();
         	KString[] thrs = new KString[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = mthrs[i].getType().getJType().java_signature;
+				thrs[i] = jenv.getJTypeEnv().getJType(mthrs[i].getType()).java_signature;
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);
@@ -177,7 +177,7 @@ public final view JInitializer of Initializer extends JDNode {
 public final final view JWBCCondition of WBCCondition extends JDNode {
 
 	public static final class ExtRefAttrSlot_wbc_code_attr extends ExtRefAttrSlot {
-		ExtRefAttrSlot_wbc_code_attr() { super("end-label", TypeInfo.newTypeInfo(CodeAttr.class,null)); }
+		ExtRefAttrSlot_wbc_code_attr() { super("wbc-code-attr", TypeInfo.newTypeInfo(CodeAttr.class,null)); }
 		public CodeAttr getCode(JWBCCondition parent) { return (CodeAttr)get((WBCCondition)parent); }
 	}
 	public static final ExtRefAttrSlot_wbc_code_attr WBC_CODE_ATTR = new ExtRefAttrSlot_wbc_code_attr();
@@ -190,8 +190,8 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 	public CodeAttr getCodeAttr() { return WBC_CODE_ATTR.getCode(this); }
 	public void setCodeAttr(CodeAttr ca) { WBC_CODE_ATTR.set((WBCCondition)this, ca); }
 	
-	public void generate(ConstPool constPool, Type reqType) {
-		Code code = new Code((JStruct)jctx_tdecl, jctx_method, constPool);
+	public void generate(JEnv jenv, ConstPool constPool, Type reqType) {
+		Code code = new Code(jenv,(JStruct)jctx_tdecl, jctx_method, constPool);
 		code.generation = true;
 		code.cond_generation = true;
 		if( cond == WBCType.CondInvariant ) {
