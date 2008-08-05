@@ -27,6 +27,26 @@ public final class Project extends SNode {
 		FileUnit.makeFile(path, true);
 	}
 	
+	public FileUnit getLoadedFile(File f) {
+		String path = DumpUtils.getRelativePath(f);
+		path = path.replace(File.separatorChar, '/');
+		DirUnit dir;
+		String name;
+		int end = path.lastIndexOf('/');
+		if (end < 0) {
+			dir = Env.getProject().root_dir;
+			name = path;
+		} else {
+			dir = Env.getProject().root_dir.getSubDir(path.substring(0,end));
+			name = path.substring(end+1);
+		}
+		if (dir == null)
+			return null;
+		foreach (FileUnit fu; dir.members; name.equals(fu.fname))
+			return fu;
+		return null;
+	}
+	
 	public Enumeration<FileUnit> enumerateAllFiles() {
 		FileEnumerator fe = new FileEnumerator(root_dir);
 		if (Thread.currentThread() instanceof WorkerThread) {
@@ -183,6 +203,40 @@ public final class DirUnit extends SNode {
 			}
 			if (dd == null)
 				dd = dir.addDir(nm);
+			dir = dd;
+		}
+		return dir;
+	}
+	
+	public DirUnit getSubDir(String qname) {
+		qname = qname.replace(File.separatorChar, '/');
+		DirUnit dir = this;
+		int start = 0;
+		int end = qname.indexOf('/', start);
+		while (end > 0) {
+			String nm = qname.substring(start, end).intern();
+			if (nm != "") {
+				DirUnit dd = null;
+				foreach (DirUnit d; dir.members; d.name == nm) {
+					dd = d;
+					break;
+				}
+				if (dd == null)
+					return null;
+				dir = dd;
+			}
+			start = end+1;
+			end = qname.indexOf('/', start);
+		}
+		String nm = qname.substring(start).intern();
+		if (nm != "") {
+			DirUnit dd = null;
+			foreach (DirUnit d; dir.members; d.name == nm) {
+				dd = d;
+				break;
+			}
+			if (dd == null)
+				return null;
 			dir = dd;
 		}
 		return dir;

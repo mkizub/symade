@@ -994,7 +994,7 @@ public final class DumpUtils {
 		return s;
 	}
 
-	private static String getRelativePath(File f)
+	public static String getRelativePath(File f)
 		throws IOException
 	{
 		return getRelativePath(f, new File("."));

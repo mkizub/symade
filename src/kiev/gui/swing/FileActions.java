@@ -172,17 +172,21 @@ public final class FileActions implements Runnable {
 			});
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
-			CompilerParseInfo cpi = new CompilerParseInfo(jfc.getSelectedFile(), false);
-			Transaction tr = Transaction.open("Actions.java:load-as");
-			try {
-				EditorThread thr = EditorThread.getInst();
-				Compiler.runFrontEnd(thr,new CompilerParseInfo[]{cpi},null,true);
-				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
-			} catch( Exception e ) {
-				System.out.println("Read error while Xml-to-Kiev importing: "+e);
-			} finally { tr.close(); }
-			if (cpi.fu != null)
-				wnd.openEditor(cpi.fu);
+			FileUnit fu = Env.getProject().getLoadedFile(jfc.getSelectedFile());
+			if (fu == null) {
+				CompilerParseInfo cpi = new CompilerParseInfo(jfc.getSelectedFile(), false);
+				Transaction tr = Transaction.open("Actions.java:load-as");
+				try {
+					EditorThread thr = EditorThread.getInst();
+					Compiler.runFrontEnd(thr,new CompilerParseInfo[]{cpi},null,true);
+					System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
+					fu = cpi.fu;
+				} catch( Exception e ) {
+					System.out.println("Read error while Xml-to-Kiev importing: "+e);
+				} finally { tr.close(); }
+			}
+			if (fu != null)
+				wnd.openEditor(fu);
 		}
 		else if (action == "merge-all") {
 			Env.getRoot().mergeTree();

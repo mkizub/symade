@@ -72,7 +72,7 @@ public final class FileUnit extends NameSpace {
 
 	public FileUnit() {}
 
-	public FileUnit(String name, boolean project_file) {
+	private FileUnit(String name, boolean project_file) {
 		this.fname = name;
 		this.is_project_file = project_file;
 	}
