@@ -16,10 +16,11 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import kiev.Compiler;
-import kiev.CompilerParseInfo;
 import kiev.CompilerThreadGroup;
+
+import kiev.Compiler;
 import kiev.EditorThreadGroup;
+import kiev.CompilerParseInfo;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;

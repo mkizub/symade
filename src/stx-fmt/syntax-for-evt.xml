@@ -19,31 +19,31 @@
   <members>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;fmt' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;fmt' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;fmt&#31;evt' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;fmt&#31;evt' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='false' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;SymbolRef' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang&#31;SymbolRef' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='false' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;Import' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang&#31;Import' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='false' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;FileUnit' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;vlang&#31;FileUnit' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
@@ -299,13 +299,13 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>action</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>events</attr_name>
         <expected_types>
-         <core:SymbolRef name='KeyboardEvent' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='KeyboardEvent' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>
@@ -373,6 +373,15 @@
        <syntax:SyntaxSet>
         <elements>
          <syntax:SyntaxToken>
+          <text>binding set:</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxIdentAttr>
+          <decl>
+           <core:SymbolRef name='ident-template' />
+          </decl>
+          <name>sname</name>
+         </syntax:SyntaxIdentAttr>
+         <syntax:SyntaxToken>
           <text>extends:</text>
          </syntax:SyntaxToken>
          <syntax:SyntaxIdentAttr>
@@ -417,15 +426,16 @@
        <syntax:SyntaxExpectedAttr>
         <attr_name>srpkg</attr_name>
         <expected_types>
-         <core:SymbolRef name='SymbolRef' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
         <attr_name>members</attr_name>
         <expected_types>
-         <core:SymbolRef name='Action' />
-         <core:SymbolRef name='Binding' />
-         <core:SymbolRef name='Import' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Action' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Binding' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Import' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='BindingSet' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>

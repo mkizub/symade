@@ -16,24 +16,28 @@
    <core:SymbolRef name='kiev&#31;fmt&#31;evt' full='true' />
   </srpkg>
   <members>
-   <sop:kiev.fmt.evt.Action name='Edit'>
-    <description>Edit current item</description>
-    <isForPopupMenu>false</isForPopupMenu>
-    <actionClass>ChooseItemEditor</actionClass>
-   </sop:kiev.fmt.evt.Action>
-   <sop:kiev.fmt.evt.Binding>
-    <events>
-     <sop:kiev.fmt.evt.KeyboardEvent>
-      <keyCode>31</keyCode>
-      <withCtrl>false</withCtrl>
-      <withAlt>true</withAlt>
-      <withShift>false</withShift>
-     </sop:kiev.fmt.evt.KeyboardEvent>
-    </events>
-    <action>
-     <core:SymbolRef name='Edit' />
-    </action>
-   </sop:kiev.fmt.evt.Binding>
+   <sop:kiev.fmt.evt.BindingSet name='bindings'>
+    <members>
+     <sop:kiev.fmt.evt.Action name='Edit'>
+      <description>Edit current item</description>
+      <isForPopupMenu>false</isForPopupMenu>
+      <actionClass>ChooseItemEditor</actionClass>
+     </sop:kiev.fmt.evt.Action>
+     <sop:kiev.fmt.evt.Binding>
+      <events>
+       <sop:kiev.fmt.evt.KeyboardEvent>
+        <keyCode>31</keyCode>
+        <withCtrl>false</withCtrl>
+        <withAlt>true</withAlt>
+        <withShift>false</withShift>
+       </sop:kiev.fmt.evt.KeyboardEvent>
+      </events>
+      <action>
+       <core:SymbolRef name='Edit' />
+      </action>
+     </sop:kiev.fmt.evt.Binding>
+    </members>
+   </sop:kiev.fmt.evt.BindingSet>
   </members>
  </core:FileUnit>
 </sop:dump>

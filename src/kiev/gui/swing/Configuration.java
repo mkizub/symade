@@ -10,24 +10,18 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.fmt.evt.*;
-
-
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.Hashtable;
 
-import kiev.vlang.DumpUtils;
-import kiev.vtree.ASTNode;
-
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Drawable;
+import kiev.fmt.evt.BindingSet;
+import kiev.fmt.evt.Compiled_BindingSet;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.EditActions;
 import kiev.gui.Editor;
@@ -39,9 +33,10 @@ import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
 
 public class Configuration {
+	public static String EVENT_BINDINGS_NAME = "bindings";
 	public static String EVENT_BINDINGS_FILE = "kiev/fmt/evt/bindings.xml";
 	
-	//static ASTNode bindings;
+	static Compiled_BindingSet bindings;
 
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
@@ -137,14 +132,14 @@ public class Configuration {
 		return naviMap;
 	}
 
-	public static Draw_ATextSyntax loadBindings(String name) {
-		Draw_ATextSyntax dts = null;
+	public static Compiled_BindingSet loadBindings(String name) {
+		Compiled_BindingSet cbs = null;
 		InputStream inp = null;
 		try {
-			inp = Binding.class.getClassLoader().getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
+			inp = BindingSet.class.getClassLoader().getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
 			ObjectInput oi = new ObjectInputStream(inp);
-			dts = (Draw_ATextSyntax)oi.readObject();
-			dts.init();
+			cbs = (Compiled_BindingSet)oi.readObject();
+			cbs.init();
 		} catch (Exception e) {
 			System.out.println("Read error while bindings deserialization: "+e);
 		} finally {
@@ -155,12 +150,13 @@ public class Configuration {
 					e.printStackTrace();
 				}
 		}
-		return dts;
+		return cbs;
 	}
 	
-	//static {
+	static {
+		bindings = loadBindings(EVENT_BINDINGS_NAME);
 	//	bindings = DumpUtils.deserializeFromXmlFile(new File(EVENT_BINDINGS_FILE));
-	//}
+	}
 }
 
 final class FolderTrigger implements Runnable {

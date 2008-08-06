@@ -75,7 +75,8 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 	}
 
 	String getText() {
-		return (String)pattr.get();
+		Object o = pattr.get();
+		return o == null?"":o.toString();
 	}
 	void setText(String text) {
 		if (text != null && !text.equals(getText())) {

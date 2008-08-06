@@ -10,38 +10,18 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.Vector;
 
 import javax.swing.JPopupMenu;
 import javax.swing.text.TextAction;
 
-import kiev.Compiler;
-import kiev.EditorThreadGroup;
-import kiev.fmt.DrawNodeTerm;
-import kiev.fmt.DrawNonTerm;
-import kiev.fmt.DrawTerm;
-import kiev.fmt.DrawToken;
-import kiev.fmt.Draw_SyntaxToken;
-import kiev.fmt.Drawable;
-import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.fmt.SyntaxTokenKind;
 import kiev.gui.Editor;
-import kiev.gui.NavigateEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.parser.ASTExpression;
 import kiev.parser.EToken;
 import kiev.parser.ETokenKind;
-import kiev.vlang.ConstExpr;
-import kiev.vlang.ENode;
-import kiev.vlang.FileUnit;
-import kiev.vtree.ANode;
-import kiev.vtree.ASTNode;
-import kiev.vtree.SpaceAttrSlot;
-import kiev.vtree.SpacePtr;
 
 public final class ExprEditActions 
 	implements ItemEditor, Runnable {
