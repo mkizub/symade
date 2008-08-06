@@ -159,14 +159,14 @@ public final class RenderActions implements Runnable {
 			FileUnit fu = null;
 			Transaction tr = Transaction.open("Actions.java:LoadSyntaxAction()");
 			try {
-				EditorThread thr = EditorThread;
+				EditorThreadGroup thrg = EditorThreadGroup;
 				fu = Env.getRoot().loadFromXmlFile(new File(this.file), null);
 				try {
-					thr.errCount = 0;
-					thr.warnCount = 0;
-					Compiler.runFrontEnd(thr,null,fu,true);
+					thrg.errCount = 0;
+					thrg.warnCount = 0;
+					Compiler.runFrontEnd(thrg,null,fu);
 				} catch (Throwable t) { t.printStackTrace(); }
-				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
+				System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
 				Kiev.lockNodeTree(fu);
 			} catch( IOException e ) {
 				System.out.println("Read error while syntax importing: "+e);

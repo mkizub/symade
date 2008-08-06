@@ -18,8 +18,8 @@ import javax.swing.filechooser.FileFilter;
 
 import kiev.Compiler;
 import kiev.CompilerParseInfo;
-import kiev.CompilerThread;
-import kiev.EditorThread;
+import kiev.CompilerThreadGroup;
+import kiev.EditorThreadGroup;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
@@ -177,9 +177,9 @@ public final class FileActions implements Runnable {
 				CompilerParseInfo cpi = new CompilerParseInfo(jfc.getSelectedFile(), false);
 				Transaction tr = Transaction.open("Actions.java:load-as");
 				try {
-					EditorThread thr = EditorThread.getInst();
-					Compiler.runFrontEnd(thr,new CompilerParseInfo[]{cpi},null,true);
-					System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
+					EditorThreadGroup thrg = EditorThreadGroup.getInst();
+					Compiler.runFrontEnd(thrg,new CompilerParseInfo[]{cpi},null);
+					System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
 					fu = cpi.fu;
 				} catch( Exception e ) {
 					System.out.println("Read error while Xml-to-Kiev importing: "+e);
@@ -194,10 +194,10 @@ public final class FileActions implements Runnable {
 		}
 		else if (action == "run-backend") {
 			System.out.println("Running backend compiler...");
-			CompilerThread thr = CompilerThread.getInst();
-			thr.errCount = 0;
-			thr.warnCount = 0;
-			Compiler.runBackEnd(thr, Env.getRoot(), null, false);
+			CompilerThreadGroup thrg = CompilerThreadGroup.getInst();
+			thrg.errCount = 0;
+			thrg.warnCount = 0;
+			Compiler.runBackEnd(thrg, Env.getRoot(), null);
 		}
 		else if (action == "run-frontend-all") {
 			runFrontEndCompiler((Editor)uiv, Env.getRoot());
@@ -212,9 +212,9 @@ public final class FileActions implements Runnable {
 		Transaction tr = Transaction.open("Actions.java:runFrontEndCompiler()");
 		try {
 			editor.changes.push(tr);
-			EditorThread thr = EditorThread.getInst();
-			Compiler.runFrontEnd(thr,null,root,true);
-			System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
+			EditorThreadGroup thrg = EditorThreadGroup.getInst();
+			Compiler.runFrontEnd(thrg,null,root);
+			System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
 		} finally {
 			if (tr.isEmpty()) {
 				tr.close();

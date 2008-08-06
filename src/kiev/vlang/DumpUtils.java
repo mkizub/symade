@@ -344,7 +344,7 @@ public final class DumpUtils {
 	}
 
 	public static FileUnit loadFromXmlFile(File f, byte[] data) {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup);
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		deserializer.file = f;
 		if (XPP_PARSER) {
@@ -378,7 +378,7 @@ public final class DumpUtils {
 	}
 	
 	public static Project loadProject(File f) {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup);
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		if (XPP_PARSER) {
 			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
@@ -407,7 +407,7 @@ public final class DumpUtils {
 	}
 
 	public static ASTNode loadFromXmlData(byte[] data, String tdname, DNode pkg) {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup);
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		deserializer.tdname = tdname;
 		deserializer.pkg = pkg;

@@ -13,16 +13,16 @@
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
   xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'>
  <core:FileUnit>
-  <srpkg>
-   <core:SymbolRef name='kiev&#31;transf' full='true' />
-  </srpkg>
   <syntaxes>
    <core:ImportSyntax>
     <name>
-     <core:SymbolRef name='kiev&#31;Syntax' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev&#31;Syntax' full='true' />
     </name>
    </core:ImportSyntax>
   </syntaxes>
+  <srpkg>
+   <core:SymbolRef name='kiev&#31;transf' full='true' />
+  </srpkg>
   <members>
    <core:MetaTypeDecl name='TemplateVNode'>
     <members>
@@ -145,14 +145,18 @@
               <cond>
                <core:Cmp op='V == V' ident='ref_eq'>
                 <expr1>
-                 <core:Call ident='currentThread'>
+                 <core:Call ident='getThreadGroup'>
                   <obj>
-                   <core:TypeNameRef ident='Thread' />
+                   <core:Call ident='currentThread'>
+                    <obj>
+                     <core:TypeNameRef ident='Thread' />
+                    </obj>
+                   </core:Call>
                   </obj>
                  </core:Call>
                 </expr1>
                 <expr2>
-                 <core:TypeNameRef ident='CompilerThread' />
+                 <core:TypeNameRef ident='CompilerThreadGroup' />
                 </expr2>
                </core:Cmp>
               </cond>
@@ -306,14 +310,18 @@
                 <expr1>
                  <core:Cmp op='V == V' ident='ref_eq'>
                   <expr1>
-                   <core:Call ident='currentThread'>
+                   <core:Call ident='getThreadGroup'>
                     <obj>
-                     <core:TypeNameRef ident='Thread' />
+                     <core:Call ident='currentThread'>
+                      <obj>
+                       <core:TypeNameRef ident='Thread' />
+                      </obj>
+                     </core:Call>
                     </obj>
                    </core:Call>
                   </expr1>
                   <expr2>
-                   <core:TypeNameRef ident='CompilerThread' />
+                   <core:TypeNameRef ident='CompilerThreadGroup' />
                   </expr2>
                  </core:Cmp>
                 </expr1>

@@ -15,7 +15,6 @@ import kiev.ir.java15.RNode;
 import kiev.vlang.FileUnit;
 
 import java.io.*;
-import java.util.logging.Logger;
 
 /**
  * @author Maxim Kizub
@@ -876,7 +875,6 @@ public final class KievFE_MainResolve extends TransfProcessor {
 
 @singleton
 public final class KievME_DumpAPI extends BackendProcessor {
-	static final Logger logger = Logger.getLogger("kiev.gui");
 
 	//private ATextSyntax stx;
 
@@ -896,7 +894,6 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		//if (this.stx == null)
 		//	this.stx = new XmlDumpSyntax("api");
 		try {
-			logger.fine("KievME_DumpAPI.process "+fu.pname());
 			dumpAPI(fu);
 		} catch (Exception rte) { Kiev.reportError(rte); }
 	}

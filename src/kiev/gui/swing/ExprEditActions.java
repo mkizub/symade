@@ -19,7 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.text.TextAction;
 
 import kiev.Compiler;
-import kiev.EditorThread;
+import kiev.EditorThreadGroup;
 import kiev.fmt.DrawNodeTerm;
 import kiev.fmt.DrawNonTerm;
 import kiev.fmt.DrawTerm;
@@ -178,11 +178,11 @@ public final class ExprEditActions
 //			return;
 //		case KeyEvent.VK_ENTER:
 //			editor.insert_mode = true;
-//			EditorThread thr = EditorThread.getInst();
+//			EditorThreadGroup thrg = EditorThreadGroup.getInst();
 //			try {
-//				thr.errCount = 0;
-//				thr.warnCount = 0;
-//				Compiler.runFrontEnd(thr,null,(ASTNode)expr.parent(),true);
+//				thrg.errCount = 0;
+//				thrg.warnCount = 0;
+//				Compiler.runFrontEnd(thrg,null,(ASTNode)expr.parent());
 //			} catch (Throwable t) { t.printStackTrace(); }
 //			editor.insert_mode = false;
 //			editor.stopItemEditor(false);

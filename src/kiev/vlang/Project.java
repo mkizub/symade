@@ -49,20 +49,20 @@ public final class Project extends SNode {
 	
 	public Enumeration<FileUnit> enumerateAllFiles() {
 		FileEnumerator fe = new FileEnumerator(root_dir);
-		if (Thread.currentThread() instanceof WorkerThread) {
-			WorkerThread wt = (WorkerThread)Thread.currentThread();
-			assert (wt.fileEnumerator == null);
-			wt.fileEnumerator = fe;
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
+			WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			assert (wtg.fileEnumerator == null);
+			wtg.fileEnumerator = fe;
 		}
 		return fe;
 	}
 	
 	public Enumeration<FileUnit> enumerateNewFiles() {
 		FileEnumerator fe = new FileEnumerator(null);
-		if (Thread.currentThread() instanceof WorkerThread) {
-			WorkerThread wt = (WorkerThread)Thread.currentThread();
-			assert (wt.fileEnumerator == null);
-			wt.fileEnumerator = fe;
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
+			WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			assert (wtg.fileEnumerator == null);
+			wtg.fileEnumerator = fe;
 		}
 		return fe;
 	}
@@ -166,10 +166,10 @@ public final class DirUnit extends SNode {
 		}
 		if (!fu.isAttached())
 			members.append(fu);
-		if (Thread.currentThread() instanceof WorkerThread) {
-			WorkerThread wt = (WorkerThread)Thread.currentThread();
-			if (wt.fileEnumerator != null)
-				wt.fileEnumerator.addNewFile(fu);
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
+			WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wtg.fileEnumerator != null)
+				wtg.fileEnumerator.addNewFile(fu);
 		}
 		return fu;
 	}

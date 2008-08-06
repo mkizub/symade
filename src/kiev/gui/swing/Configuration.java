@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.Hashtable;
-import java.util.logging.Logger;
 
 import kiev.vlang.DumpUtils;
 import kiev.vtree.ASTNode;
@@ -41,7 +40,6 @@ import kiev.gui.UIManager;
 
 public class Configuration {
 	public static String EVENT_BINDINGS_FILE = "kiev/fmt/evt/bindings.xml";
-	static final Logger logger = Logger.getLogger("kiev.gui");
 	
 	//static ASTNode bindings;
 

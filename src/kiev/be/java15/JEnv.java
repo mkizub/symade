@@ -67,7 +67,7 @@ public final class JEnv {
 	}
 	public Struct getClsStringBuffer() {
 		if (this.clazzStringBuffer == null)
-			this.clazzStringBuffer = (Struct)Env.getRoot().loadTypeDecl("java\u001flang\u001fStringBuilder", true);
+			this.clazzStringBuffer = (Struct)this.env.loadTypeDecl("java\u001flang\u001fStringBuilder", true);
 		return this.clazzStringBuffer;
 	}
 	public Method getMthStringBufferToString() {

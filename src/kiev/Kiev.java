@@ -54,8 +54,10 @@ static public enum KievExt {
 	DFlow					: "dflow"			,
 	XPath					: "xpath"
 }
-	
+
 public final class Kiev {
+
+	private static final ThreadLocal<String> curFile = new ThreadLocal<String>();
 
 	private Kiev() {}
 	
@@ -64,14 +66,11 @@ public final class Kiev {
 	}
 	
 	public static String getCurFile() {
-		if (Thread.currentThread() instanceof WorkerThread)
-			return ((WorkerThread)Thread.currentThread()).curFile;
-		return null;
+		return curFile.get();
 	}
 	
 	public static void setCurFile(String cf) {
-		if (Thread.currentThread() instanceof WorkerThread)
-			((WorkerThread)Thread.currentThread()).curFile = cf;
+		curFile.set(cf);
 	}
 	
    	public static void reportError(Throwable e) {
@@ -220,17 +219,15 @@ public final class Kiev {
 	}
 
 	private static void report(int pos, FileUnit file_unit, TypeDecl clazz, Method method, SeverError err, String msg) {
-		WorkerThread thr = null;
-		if (Thread.currentThread() == CompilerThread)
-			thr = CompilerThread;
-		else if (Thread.currentThread() == EditorThread)
-			thr = EditorThread;
+		WorkerThreadGroup thrg = null;
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup)
+			thrg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
 		if (err == SeverError.Warning) {
-			if (thr != null)
-				thr.warnCount++;
+			if (thrg != null)
+				thrg.warnCount++;
 		} else {
-			if (thr != null)
-				thr.errCount++;
+			if (thrg != null)
+				thrg.errCount++;
 			if( method != null ) method.setBad(true);
 			if( clazz != null ) clazz.setBad(true);
 		}
@@ -567,7 +564,7 @@ public final class Kiev {
 					runCurrentFEP(tp, fu);
 			}
 		} finally {
-			((WorkerThread)Thread.currentThread()).fileEnumerator = null;
+			((WorkerThreadGroup)Thread.currentThread().getThreadGroup()).fileEnumerator = null;
 		}
 		return tp.getDescr();
 	}
@@ -635,7 +632,7 @@ public final class Kiev {
 				}
 			}
 		} finally {
-			((WorkerThread)Thread.currentThread()).fileEnumerator = null;
+			((WorkerThreadGroup)Thread.currentThread().getThreadGroup()).fileEnumerator = null;
 		}
 		return bp.getDescr();
 	}
