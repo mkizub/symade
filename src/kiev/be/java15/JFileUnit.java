@@ -26,6 +26,8 @@ public final view JFileUnit of FileUnit extends JNameSpace {
 	public String pname();
 
 	public void generate(JEnv jenv) {
+		if (scanned_for_interface_only)
+			return;
 		long curr_time = 0L, diff_time = 0L;
 		String cur_file = Kiev.getCurFile();
 		Kiev.setCurFile(pname());

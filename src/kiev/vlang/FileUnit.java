@@ -20,7 +20,7 @@ import java.io.*;
  */
 
 @ThisIsANode(name="FileUnit", lang=CoreLang)
-public final class FileUnit extends NameSpace {
+public final class FileUnit extends NameSpace, CompilationUnit {
 
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
@@ -28,8 +28,7 @@ public final class FileUnit extends NameSpace {
 	@nodeAttr public String					fname;
 	@nodeAttr public ImportSyntax∅			syntaxes;
 	
-	@nodeData public boolean				scanned_for_interface_only;
-
+	public boolean							scanned_for_interface_only;
 	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
 	public String							current_syntax;
 	@UnVersioned
@@ -50,6 +49,8 @@ public final class FileUnit extends NameSpace {
 	public String getCurrentSyntax() { this.current_syntax }
 	// for GUI
 	public void setCurrentSyntax(String val) { this.current_syntax = val; }
+
+	public boolean isInterfaceOnly() { scanned_for_interface_only }
 
 	public static FileUnit makeFile(String qname, boolean project_file) {
 		qname = qname.replace(File.separatorChar, '/');

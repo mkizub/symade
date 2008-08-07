@@ -24,9 +24,9 @@
    <core:SymbolRef name='kiev&#31;transf' full='true' />
   </srpkg>
   <members>
-   <core:MetaTypeDecl name='TemplateVNode'>
+   <core:MetaTypeDecl name='TemplateVNode' uuid='51d8827b-3b3c-4b22-8bd5-b04de89ad105'>
     <members>
-     <core:JavaClass name='VVV'>
+     <core:JavaClass name='VVV' uuid='d00974cc-5126-4a15-9f1a-15e502a67787'>
       <super_types>
        <core:TypeNameRef ident='java&#31;lang&#31;Object' full='true' />
       </super_types>
@@ -208,7 +208,7 @@
                   <obj>
                    <core:Cast>
                     <ctype>
-                     <core:TypeNameRef ident='VVV' />
+                     <core:TypeNameRef type='VVV@d00974cc-5126-4a15-9f1a-15e502a67787' />
                     </ctype>
                     <expr>
                      <core:Call ident='openEdt'>
@@ -363,7 +363,7 @@
               <obj>
                <core:Cast>
                 <ctype>
-                 <core:TypeNameRef ident='VVV' />
+                 <core:TypeNameRef type='VVV@d00974cc-5126-4a15-9f1a-15e502a67787' />
                 </ctype>
                 <expr>
                  <core:Access ident='v_editor'>

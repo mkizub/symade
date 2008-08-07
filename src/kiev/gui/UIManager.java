@@ -16,13 +16,19 @@ import kiev.fmt.DrawTerm;
 import kiev.vtree.ScalarPtr;
 
 public class UIManager {
+	
+	public static final boolean SWT = kiev.Kiev.run_gui_swt;
+	public static final boolean SWING = kiev.Kiev.run_gui_swing;
 
 	public static ICanvas newCanvas(){
 		return new kiev.gui.swing.Canvas();
 	}
 	
 	public static IWindow newWindow(){
-		return new kiev.gui.swing.Window();
+		if (SWT)
+			return new kiev.gui.swt.Window();
+		else
+			return new kiev.gui.swing.Window();
 	}
 	
 	public static Hashtable<Object,UIActionFactory[]> getUIActions(UIView uiv) {

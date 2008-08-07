@@ -27,6 +27,8 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 	}
 
 	public void process(ASTNode node, Transaction tr) {
+		if (node instanceof FileUnit && node.scanned_for_interface_only)
+			return;
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { return rewrite(n); }
 		});

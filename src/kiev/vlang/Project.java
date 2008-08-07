@@ -13,11 +13,11 @@ import syntax kiev.Syntax;
 
 import java.io.File;
 
-
 @ThisIsANode(lang=void)
 public final class Project extends SNode {
 
 	@nodeAttr public DirUnit			root_dir;
+	@nodeData public ASTNode∅			compilationUnits;
 
 	public Project() {
 		this.root_dir = new DirUnit(".");
@@ -47,50 +47,35 @@ public final class Project extends SNode {
 		return null;
 	}
 	
-	public Enumeration<FileUnit> enumerateAllFiles() {
-		FileEnumerator fe = new FileEnumerator(root_dir);
-		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
-			WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
-			assert (wtg.fileEnumerator == null);
-			wtg.fileEnumerator = fe;
-		}
+	public Enumeration<CompilationUnit> enumerateAllCompilationUnits() {
+		CompilationUnitEnumerator fe = new CompilationUnitEnumerator(false);
 		return fe;
 	}
 	
-	public Enumeration<FileUnit> enumerateNewFiles() {
-		FileEnumerator fe = new FileEnumerator(null);
-		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
-			WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
-			assert (wtg.fileEnumerator == null);
-			wtg.fileEnumerator = fe;
-		}
+	public Enumeration<CompilationUnit> enumerateNewCompilationUnits() {
+		CompilationUnitEnumerator fe = new CompilationUnitEnumerator(true);
 		return fe;
 	}
 	
-	public static class FileEnumerator implements Enumeration<FileUnit> {
-		private Vector<FileUnit> files;
+	class CompilationUnitEnumerator implements Enumeration<CompilationUnit> {
 		private int idx;
 		public boolean hasMoreElements() {
-			return idx < files.length;
+			return idx < compilationUnits.length;
 		}
-		public FileUnit nextElement() {
-			return files[idx++];
+		public CompilationUnit nextElement() {
+			return (CompilationUnit)compilationUnits[idx++];
 		}
-		FileEnumerator(DirUnit dir) {
-			this.files = new Vector<FileUnit>();
-			if (dir != null)
-				addFiles(dir);
-		}
-		private void addFiles(DirUnit dir) {
-			foreach (FileUnit fu; dir.members)
-				this.files.append(fu);
-			foreach (DirUnit d; dir.members)
-				addFiles(d);
-		}
-		void addNewFile(FileUnit fu) {
-			this.files.append(fu);
+		CompilationUnitEnumerator(boolean only_new) {
+			if (only_new)
+				idx = compilationUnits.length;
 		}
 	}
+}
+
+@mixin
+@ThisIsANode(lang=void)
+public interface CompilationUnit extends ASTNode {
+	public boolean isInterfaceOnly();
 }
 
 @ThisIsANode(lang=void)
@@ -166,11 +151,7 @@ public final class DirUnit extends SNode {
 		}
 		if (!fu.isAttached())
 			members.append(fu);
-		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
-			WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
-			if (wtg.fileEnumerator != null)
-				wtg.fileEnumerator.addNewFile(fu);
-		}
+		Env.getProject().compilationUnits.append(fu);
 		return fu;
 	}
 
