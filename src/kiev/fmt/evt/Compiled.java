@@ -15,6 +15,8 @@ import syntax kiev.Syntax;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 
+import kiev.fmt.LayoutSpace;
+
 abstract class Compiled_Item implements Serializable {
 }
 
@@ -40,6 +42,10 @@ public final class Compiled_Binding extends Compiled_Item {
 	public Compiled_Event[] events;
 	public Compiled_Action action;
 
+	public Compiled_Binding(){
+		events = Compiled_Event.emptyArray;
+	}
+	
 	Object readResolve() throws ObjectStreamException {
 		return this;
 	}
@@ -58,6 +64,7 @@ public final class Compiled_Action extends Compiled_Item {
 }
 
 public abstract class Compiled_Event implements Serializable {
+	public static final Compiled_Event[] emptyArray = new Compiled_Event[0];
 }
 
 public final class Compiled_KeyboardEvent extends Compiled_Event {

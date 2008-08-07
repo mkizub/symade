@@ -964,8 +964,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 			ObjectOutput so = new ObjectOutputStream(fo);
 			so.writeObject(stx.getDataToSerialize());
 			so.flush();
-		} catch (IOException e) {
-			System.out.println("Create/write error while API dump: "+e);
+		} catch (Exception e) {
+			Kiev.reportWarning("Create/write error while API dump: "+e);
 		} finally {
 			if (fo != null)
 				fo.close();

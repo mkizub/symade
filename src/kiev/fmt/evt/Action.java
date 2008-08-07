@@ -21,7 +21,9 @@ public class Action extends DNode {
 		if (compiled != null)
 			return compiled;
 		compiled = new Compiled_Action();
-		// add code here
+		compiled.actionClass = this.actionClass;
+		compiled.description = this.description;
+		compiled.isForPopupMenu = this.isForPopupMenu;
 		return compiled;
 	}
 }
