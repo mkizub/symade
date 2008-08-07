@@ -8,7 +8,7 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui.event;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -27,21 +27,21 @@ public final class InputEventInfo implements kiev.gui.event.InputEvent {
 	private final EventObject evt;	// native event
 	
 	/** Keyboard event, modifiers + key-code */
-	InputEventInfo(int mask, int code) {
+	public InputEventInfo(int mask, int code) {
 		this.kind = KEYBOARD_EVENT;
 		this.mask = mask;
 		this.code = code;
 		this.evt = null;
 	}
 	/** Mouse event, modifiers + buttons + x + y */
-	InputEventInfo(int mask, int count, int button) {
+	public InputEventInfo(int mask, int count, int button) {
 		this.kind = MOUSE_EVENT;
 		this.mask = mask;
 		this.code = (count << 30) | button;
 		this.evt = null;
 	}
 	/** NativeEvent, keyboard or mouse */
-	InputEventInfo(EventObject evt) {
+	public InputEventInfo(EventObject evt) {
 		this.evt = evt;
 		if (evt instanceof KeyEvent) {
 			KeyEvent k = (KeyEvent)evt;

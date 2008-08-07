@@ -30,6 +30,7 @@ import kiev.fmt.IFmtGfx;
 import kiev.gui.INodeTable;
 import kiev.gui.IUIView;
 import kiev.gui.TableView;
+import kiev.gui.event.InputEventInfo;
 import kiev.vtree.ANode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ExtChildrenIterator;

@@ -31,6 +31,7 @@ import kiev.gui.NavigateView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
+import kiev.gui.event.InputEventInfo;
 
 public class Configuration {
 	public static String EVENT_BINDINGS_NAME = "bindings";
