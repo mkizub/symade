@@ -2,5 +2,6 @@
 @echo OUT_ROOT = %OUT_ROOT%
 @if not exist %OUT_ROOT%\classes4\stx-fmt mkdir %OUT_ROOT%\classes4\stx-fmt
 
-C:\Sun\Java\jdk1.6.0_06\bin\java.exe -server -ea -Xms128M -Xmx128M -Xnoclassgc -classpath %OUT_ROOT%\classes3;%OUT_ROOT%\classes.gui;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar kiev.Main -classpath %OUT_ROOT%\classes4;%OUT_ROOT%\classes.gui;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar -d %OUT_ROOT%\classes4 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g %*
-C:\Sun\Java\jdk1.6.0_06\bin\javac -classpath %OUT_ROOT%\classes4;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar -d %OUT_ROOT%\classes4 -encoding "UTF-8" -g kiev\gui\*.java kiev\gui\event\*.java kiev\gui\swing\*.java
+C:\Sun\Java\jdk1.6.0_06\bin\javac -classpath %OUT_ROOT%\classes4;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar;..\bin\org.eclipse.draw2d.jar -d %OUT_ROOT%\classes4 -encoding "UTF-8" -g kiev\gui\event\*.java 
+C:\Sun\Java\jdk1.6.0_06\bin\java.exe -server -ea -Xms128M -Xmx128M -Xnoclassgc -classpath %OUT_ROOT%\classes3;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar;..\bin\org.eclipse.draw2d.jar kiev.Main -classpath %OUT_ROOT%\classes4;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar;..\bin\org.eclipse.draw2d.jar -d %OUT_ROOT%\classes4 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g %*
+C:\Sun\Java\jdk1.6.0_06\bin\javac -classpath %OUT_ROOT%\classes4;..\bin\xpp3-1.1.4c.jar;..\bin\swt-win.jar;..\bin\org.eclipse.draw2d.jar -d %OUT_ROOT%\classes4 -encoding "UTF-8" -g kiev\gui\*.java kiev\gui\swt\*.java kiev\gui\swing\*.java
