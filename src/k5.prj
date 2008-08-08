@@ -96,6 +96,20 @@
          <core:FileUnit name='XmlDumpSyntax.java' />
         </members>
        </sop:kiev.vlang.DirUnit>
+       <sop:kiev.vlang.DirUnit name='gui'>
+        <members>
+         <sop:kiev.vlang.DirUnit name='event'>
+          <members>
+           <core:FileUnit name='Action.java' />
+           <core:FileUnit name='Binding.java' />
+           <core:FileUnit name='BindingSet.java' />
+           <core:FileUnit name='Event.java' />
+           <core:FileUnit name='Item.java' />
+           <core:FileUnit name='KeyboardEvent.java' />
+          </members>
+         </sop:kiev.vlang.DirUnit>
+        </members>
+       </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='ir'>
         <members>
          <sop:kiev.vlang.DirUnit name='java15'>
