@@ -18,6 +18,8 @@ import kiev.vtree.ASTNode;
 import kiev.vtree.DumpSerialized;
 import kiev.vlang.GlobalDNodeContainer;
 
+import kiev.gui.event.Item;
+
 
 @ThisIsANode
 public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSerialized  {
@@ -28,7 +30,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 	public ASTNode∅				members;
 	
 	@UnVersioned
-	protected Compiled_BindingSet compiled;
+	protected kiev.gui.event.BindingSet compiled;
 
 	public BindingSet() {
 		this.sname = "<binding-set>";
@@ -69,20 +71,20 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 	}
 		
 
-	public Compiled_BindingSet getCompiled() {
+	public kiev.gui.event.BindingSet getCompiled() {
 		if (compiled != null)
 			return compiled;
-		compiled = new Compiled_BindingSet();
+		compiled = new kiev.gui.event.BindingSet();
 		fillCompiled(compiled);
 		return compiled;
 	}
 	
-	public void fillCompiled(Compiled_BindingSet bs) {
+	public void fillCompiled(kiev.gui.event.BindingSet bs) {
 		if (this.parent_set.dnode != null)
 			bs.parent_set = parent_set.dnode.getCompiled();
 		else if (parent() instanceof BindingSet)
 			bs.parent_set = ((BindingSet)parent()).getCompiled();
-		Vector<Compiled_Item> items = new Vector<Compiled_Item>();
+		Vector<Item> items = new Vector<Item>();
 		foreach(BindingSet set; this.members)
 			items.append(set.getCompiled());
 		foreach(Action act; this.members)

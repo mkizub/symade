@@ -18,11 +18,15 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.Hashtable;
 
+import kiev.gui.event.BindingSet;
+import kiev.gui.event.KeyboardEvent;
+
+import kiev.gui.event.Event;
+import kiev.gui.event.Binding;
+import kiev.gui.event.Item;
+
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Drawable;
-import kiev.fmt.evt.BindingSet;
-import kiev.fmt.evt.Compiled_BindingSet;
-import kiev.gui.ChooseItemEditor;
 import kiev.gui.EditActions;
 import kiev.gui.Editor;
 import kiev.gui.MouseActions;
@@ -34,10 +38,10 @@ import kiev.gui.UIManager;
 import kiev.gui.event.InputEventInfo;
 
 public class Configuration {
-	public static String EVENT_BINDINGS_NAME = "bindings";
-	public static String EVENT_BINDINGS_FILE = "kiev/fmt/evt/bindings.xml";
+	public static String EVENT_BINDINGS_NAME = "kiev/gui/swing/bindings";
+	public static String EVENT_BINDINGS_FILE = "kiev/gui/swing/bindings.xml";
 	
-	static Compiled_BindingSet bindings;
+	static BindingSet bindings;
 
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
@@ -80,8 +84,42 @@ public class Configuration {
 		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_A),				new UIActionFactory[]{UIManager.newNewElemNextFactory()});
 		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_V),				new UIActionFactory[]{UIManager.newPasteHereFactory()});
 		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_B),				new UIActionFactory[]{UIManager.newPasteNextFactory()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new UIActionFactory[]{new ChooseItemEditor()});
+//		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new UIActionFactory[]{new ChooseItemEditor()});
 		
+		for (Item item: bindings.items){
+			if (item instanceof Binding){
+				Binding bnd = (Binding)item;
+				for (Event event: bnd.events){
+					if (event instanceof KeyboardEvent){
+						KeyboardEvent kbe = (KeyboardEvent)event;
+						int mask = 0, code;
+						code = kbe.keyCode;
+						if (kbe.withAlt) 
+							mask |= ALT;
+						else if (kbe.withCtrl) 
+							mask |= CTRL;
+						//else if (kbe.withShift)
+							//mask = 0; //TODO  what mask? 
+							
+						//create instance of action class
+						UIActionFactory af = null;
+						try {
+							af = (UIActionFactory) Class.forName(bnd.action.actionClass).newInstance();
+						} catch (InstantiationException e) {
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							e.printStackTrace();
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						} 
+						if (af != null){
+							naviMap.put(new InputEventInfo(mask,	code),	new UIActionFactory[]{af});
+						}
+					}
+					
+				}
+			}
+		}
 		naviMap.put(new InputEventInfo(0,KeyEvent.VK_E), new UIActionFactory[]{
 			new kiev.gui.swing.TextEditor.Factory(),
 			new kiev.gui.swing.IntEditor.Factory(),
@@ -133,14 +171,15 @@ public class Configuration {
 		return naviMap;
 	}
 
-	public static Compiled_BindingSet loadBindings(String name) {
-		Compiled_BindingSet cbs = null;
+	public static BindingSet loadBindings(String name) {
+		BindingSet bs = null;
 		InputStream inp = null;
 		try {
-			inp = BindingSet.class.getClassLoader().getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
+			inp = ClassLoader.getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
+			System.out.println("Compiled_BindingSet loadBindings inp="+inp);
 			ObjectInput oi = new ObjectInputStream(inp);
-			cbs = (Compiled_BindingSet)oi.readObject();
-			cbs.init();
+			bs = (BindingSet)oi.readObject();
+			bs.init();
 		} catch (Exception e) {
 			System.out.println("Read error while bindings deserialization: "+e);
 		} finally {
@@ -151,7 +190,7 @@ public class Configuration {
 					e.printStackTrace();
 				}
 		}
-		return cbs;
+		return bs;
 	}
 	
 	static {

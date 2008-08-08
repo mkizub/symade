@@ -9,7 +9,7 @@ public class Action extends DNode {
 	@nodeAttr public String actionClass;
 	
 	@UnVersioned
-	Compiled_Action compiled;
+	kiev.gui.event.Action compiled;
 
 	public boolean preResolveIn() {
 		this.compiled = null;
@@ -17,10 +17,10 @@ public class Action extends DNode {
 	}
 		
 
-	public Compiled_Action getCompiled() {
+	public kiev.gui.event.Action getCompiled() {
 		if (compiled != null)
 			return compiled;
-		compiled = new Compiled_Action();
+		compiled = new kiev.gui.event.Action();
 		compiled.actionClass = this.actionClass;
 		compiled.description = this.description;
 		compiled.isForPopupMenu = this.isForPopupMenu;

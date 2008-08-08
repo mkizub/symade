@@ -13,7 +13,7 @@
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
  <core:FileUnit>
   <srpkg>
-   <core:SymbolRef name='kiev&#31;fmt&#31;evt' full='true' />
+   <core:SymbolRef name='kiev&#31;gui&#31;swing' full='true' />
   </srpkg>
   <members>
    <sop:kiev.fmt.evt.BindingSet name='bindings'>
@@ -21,14 +21,14 @@
      <sop:kiev.fmt.evt.Action name='Edit'>
       <description>Edit current item</description>
       <isForPopupMenu>false</isForPopupMenu>
-      <actionClass>ChooseItemEditor</actionClass>
+      <actionClass>kiev.gui.ChooseItemEditor</actionClass>
      </sop:kiev.fmt.evt.Action>
      <sop:kiev.fmt.evt.Binding>
       <events>
        <sop:kiev.fmt.evt.KeyboardEvent>
-        <keyCode>31</keyCode>
-        <withCtrl>false</withCtrl>
-        <withAlt>true</withAlt>
+        <keyCode>69</keyCode>
+        <withCtrl>true</withCtrl>
+        <withAlt>false</withAlt>
         <withShift>false</withShift>
        </sop:kiev.fmt.evt.KeyboardEvent>
       </events>

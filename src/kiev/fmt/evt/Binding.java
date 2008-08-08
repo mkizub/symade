@@ -1,15 +1,10 @@
 package kiev.fmt.evt;
 
 import syntax kiev.Syntax;
-import kiev.fmt.Draw_TextSyntax;
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.fmt.evt.Compiled_Action;
-import kiev.fmt.evt.Compiled_Binding;
-import kiev.fmt.evt.Compiled_Event;
-import kiev.fmt.evt.Compiled_KeyboardEvent;
+
 import java.lang.Exception;
 
-import java.util.logging.*;
+import kiev.gui.event.Event;
 
 @ThisIsANode
 public class Binding extends ENode {
@@ -17,13 +12,13 @@ public class Binding extends ENode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	public final Action⇑ action;
 
-	public Compiled_Binding getCompiled() throws Exception {
-		Compiled_Binding bnd = new Compiled_Binding();
-		Compiled_Event[] evt = new Compiled_Event[events.length];
-		Compiled_Action act = new Compiled_Action();
+	public kiev.gui.event.Binding getCompiled() throws Exception {
+		kiev.gui.event.Binding bnd = new kiev.gui.event.Binding();
+		Event[] evt = new Event[events.length];
+		kiev.gui.event.Action act = new kiev.gui.event.Action();
 		for (int i=0; i<events.length; i++){
 			if (events[i] instanceof KeyboardEvent){
-				Compiled_KeyboardEvent ev = new Compiled_KeyboardEvent();
+				kiev.gui.event.KeyboardEvent ev = new kiev.gui.event.KeyboardEvent();
 				KeyboardEvent kbe = (KeyboardEvent)events[i];
 				ev.keyCode = kbe.keyCode;
 				ev.withAlt = kbe.withAlt;
