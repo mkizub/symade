@@ -72,7 +72,6 @@ public final class Project extends SNode {
 	}
 }
 
-@mixin
 @ThisIsANode(lang=void)
 public interface CompilationUnit extends ASTNode {
 	public boolean isInterfaceOnly();

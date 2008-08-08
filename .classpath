@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="*" including="kiev/gui/" kind="src" path="src"/>
-	<classpathentry kind="lib" path="src/classes2" sourcepath="src">
-		<accessrules>
-			<accessrule kind="nonaccessible" pattern="kiev/gui/**"/>
-		</accessrules>
-	</classpathentry>
 	<classpathentry kind="lib" path="bin/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/eclipse-europa/plugins/org.eclipse.draw2d_3.2.100.v20070529.jar"/>
-	<classpathentry kind="lib" path="bin/swt-win.jar"/>
+	<classpathentry kind="lib" path="src/symade-core.jar" sourcepath="src"/>
+	<classpathentry kind="lib" path="bin/org.eclipse.draw2d.jar"/>
+	<classpathentry kind="lib" path="bin/swt-linux.jar"/>
 	<classpathentry kind="output" path="src/classes.gui"/>
 </classpath>

@@ -200,9 +200,10 @@ final class Signature {
 		} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
 		String cname = sc.str.substr(pos,sc.pos-1).toString();
 		CompaundMetaType cmt = new CompaundMetaType(cname.replace('/','\u001f'));
-		cmt.tdecl.checkResolved();
-		TVarBld vs = new TVarBld();
+		CompaundType ct;
 		if (ch == '<') {
+			cmt.tdecl.checkResolved();
+			TVarBld vs = new TVarBld();
 			int aidx = 0;
 			// type arguments
 			while (sc.hasMoreChars() && (ch=sc.peekChar()) != '>') {
@@ -230,8 +231,10 @@ final class Signature {
 			ch = sc.nextChar();
 			assert (ch == '>');
 			ch = sc.nextChar();
+			ct = (CompaundType)cmt.make(vs);
+		} else {
+			ct = (CompaundType)cmt.make(null);
 		}
-		CompaundType ct = (CompaundType)cmt.make(vs);
 		while (ch == '.') {
 			CompaundType outer = ct;
 			outer.checkResolved();
@@ -242,9 +245,9 @@ final class Signature {
 			} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
 			cname = sc.str.substr(pos,sc.pos-1).toString();
 			cmt = new CompaundMetaType(outer.meta_type.qname() + '\u001f' + cname);
-			cmt.tdecl.checkResolved();
-			vs = new TVarBld();
 			if (ch == '<') {
+				cmt.tdecl.checkResolved();
+				TVarBld vs = new TVarBld();
 				int aidx = 0;
 				// type arguments
 				while (sc.hasMoreChars() && (ch=sc.peekChar()) != '>') {
@@ -269,8 +272,10 @@ final class Signature {
 				ch = sc.nextChar();
 				assert (ch == '>');
 				ch = sc.nextChar();
+				ct = (CompaundType)cmt.make(vs);
+			} else {
+				ct = (CompaundType)cmt.make(null);
 			}
-			ct = (CompaundType)cmt.make(vs);
 			ct.checkResolved();
 			TypeAssign ta = ((ComplexTypeDecl)ct.meta_type.tdecl).ometa_tdef;
 			if (ta == null)

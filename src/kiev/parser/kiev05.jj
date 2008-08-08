@@ -1665,6 +1665,7 @@ void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
 		}
 		(
 			","
+			{ init = null; }
 			id = Name()
 			[	"="	init = VariableInitializer()	]
 			{

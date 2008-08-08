@@ -401,6 +401,8 @@ public abstract class AType extends TVSet implements StdTypes {
 		TypeDecl tdecl = meta_type.tdecl;
 		str.append(tdecl.qname());
 		String uuid = tdecl.uuid;
+		if (uuid == null && !tdecl.isInterfaceOnly())
+			uuid = tdecl.UUID;
 		if (uuid != null)
 			str.append('@').append(uuid);
 		this.bindings();
@@ -444,8 +446,8 @@ public abstract class AType extends TVSet implements StdTypes {
 		TypeDecl tdecl = null;
 		if (uuid != null) {
 			tdecl = (TypeDecl)Env.getRoot().getISymbolByUUID(uuid);
-			if (tdecl != null)
-				assert (tdecl.qname().equals(name));
+			//if (tdecl != null)
+			//	assert (tdecl.qname().equals(name));
 		}
 		if (tdecl == null) {
 			tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode(name);

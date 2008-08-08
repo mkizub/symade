@@ -1,0 +1,65 @@
+<project name="SymADE" default="compile" basedir=".">
+  <description>
+      Bootstrap compilation for symade-core.jar
+  </description>
+
+  <!-- set global properties for this build -->
+  <property name="src" location="."/>
+  <property name="build" location="build"/>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+    <uptodate property="build.notRequired" targetfile="${src}/symade-core.jar">
+     <srcfiles dir="${src}/kiev" excludes="gui/**/*.java" />
+    </uptodate>
+  </target>
+
+  <target name="compile1" depends="init" unless="build.notRequired" description="compile the source" >
+    <java classname="kiev.Main" fork="true">
+		<classpath>
+			<pathelement location="../bin/symade-05.jar"/>
+			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
+		</classpath>
+		<jvmarg value="-Xms256M" />
+		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes -verify -enable vnode -enable view -p k5.prj -prop k5.props -g" />
+	</java>
+  	<property name="classes.to.jar" value="${build}/classes" />
+  </target>
+  <target name="compile2" depends="init" unless="build.notRequired" description="compile the source" >
+    <java classname="kiev.Main" fork="true">
+		<classpath>
+			<pathelement location="${build}/classes"/>
+			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
+		</classpath>
+		<jvmarg value="-Xms256M" />
+		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes2 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g" />
+	</java>
+  	<property name="classes.to.jar" value="${build}/classes2" />
+  </target>
+  <target name="compile3" depends="compile2" unless="build.notRequired" description="compile the source" >
+  	<!--
+    <java classname="kiev.Main" fork="true">
+		<classpath>
+			<pathelement location="${build}/classes2"/>
+			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
+		</classpath>
+		<jvmarg value="-Xms256M" />
+		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes3 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g" />
+	</java>
+  	<property name="classes.to.jar" value="${build}/classes3" />
+	-->
+  </target>
+  <target name="compile" depends="compile3" unless="build.notRequired" description="compile the source" >
+	<jar destfile="${src}/symade-core.jar" basedir="${classes.to.jar}" />
+  </target>
+
+  <target name="clean" description="clean up" >
+    <!-- Delete the ${build} directory trees -->
+    <delete dir="${build}"/>
+    <!-- Delete the ${src}/symade-core.jar -->
+    <delete file="${src}/symade-core.jar"/>
+  </target>
+</project>

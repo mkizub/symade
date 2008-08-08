@@ -132,7 +132,7 @@ public class Bytecoder implements JConstants {
 		}
 
 		for(int i=0; i < bcclazz.fields.length; i++) {
-			readField(null,i);
+			readField(i);
 		}
 
 		for(int i=0; i < bcclazz.methods.length; i++) {
@@ -149,9 +149,11 @@ public class Bytecoder implements JConstants {
 		return cl;
 	}
 
-	public Field readField(Field f, int index) {
+	public Field readField(int index) {
 		kiev.bytecode.Field bcf = bcclazz.fields[index];
 		int f_flags = bcf.flags;
+		if ((f_flags & (ACC_PUBLIC|ACC_PROTECTED)) == 0)
+			return null;
 		KString f_name = bcf.getName(bcclazz);
 		KString f_type = bcf.getSignature(bcclazz);
 		KString f_type_sign = bcf.getFieldSignature(bcclazz);
@@ -162,6 +164,7 @@ public class Bytecoder implements JConstants {
 			ftype = Signature.getTypeFromFieldSignature(cl, new KString.KStringScanner(f_type_sign));
 		else
 			ftype = Signature.getType(this.jenv,f_type);
+		Field f;
 		if ((f_flags & ACC_ENUM)!=0) {
 			f = new Field(f_name.toString(),ftype,f_flags);
 			f.mflags_is_enum = true;
@@ -194,6 +197,8 @@ public class Bytecoder implements JConstants {
 
 	public Method readMethod(int index) {
 		kiev.bytecode.Method bcm = bcclazz.methods[index];
+		if ((bcm.flags & (ACC_PUBLIC|ACC_PROTECTED)) == 0)
+			return null;
 		Method m;
 		{
 			int m_flags = bcm.flags;
@@ -263,61 +268,61 @@ public class Bytecoder implements JConstants {
 			((ExceptionsAttr)a).exceptions = exceptions;
 		}
 		else if( name.equals(attrInnerClasses) ) {
-			kiev.bytecode.InnerClassesAttribute ica = (kiev.bytecode.InnerClassesAttribute)bca;
-			int elen = ica.cp_inners.length;
-			JStruct[] inner = new JStruct[elen];
-			JStruct[] outer = new JStruct[elen];
-			KString[] inner_name = new KString[elen];
-			short[] acc = new short[elen];
-			for(int i=0; i < elen; i++) {
-				try {
-					ClazzName cn;
-					if( ica.cp_outers[i] != null ) {
-						cn = ClazzName.fromBytecodeName(this.jenv,ica.getOuterName(i,clazz));
-						outer[i] = (JStruct)(Struct)this.jenv.loadDecl(cn);
-						if( outer[i] == null )
-							throw new RuntimeException("Class "+cn+" not found");
-					} else {
-						outer[i] = null;
-					}
-					if( ica.cp_inners[i] != null ) {
-						cn = ClazzName.fromBytecodeName(this.jenv,ica.getInnerName(i,clazz));
-						// load only non-anonymouse classes
-						boolean anon = false;
-						for (int i=0; i < cn.bytecode_name.len; i++) {
-							i = cn.bytecode_name.indexOf((byte)'$',i);
-							if (i < 0) break;
-							char ch = (char)cn.bytecode_name.byteAt(i+1);
-							if (ch >= '0' && ch <= '9') {
-								anon = true;
-								break;
-							}
-						}
-						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
-							inner[i] == null;
-						} else {
-							Struct inn = (Struct)this.jenv.loadDecl(cn);
-							inner[i] = (JStruct)inn;
-							if( inn == cl ) {
-								Kiev.reportWarning("Class "+cl+" is inner for itself");
-							} else {
-								if( inn == null )
-									throw new RuntimeException("Class "+cn+" not found");
-								cl.members.add(~inn);
-							}
-						}
-					} else {
-						inner[i] = null;
-					}
-					acc[i] = (short)ica.cp_inner_flags[i];
-				} catch(Exception e ) {
-					Kiev.reportError(e);
-				}
-			}
-			a = new InnerClassesAttr(this.jenv);
-			((InnerClassesAttr)a).inner = inner;
-			((InnerClassesAttr)a).outer = outer;
-			((InnerClassesAttr)a).acc = acc;
+//			kiev.bytecode.InnerClassesAttribute ica = (kiev.bytecode.InnerClassesAttribute)bca;
+//			int elen = ica.cp_inners.length;
+//			JStruct[] inner = new JStruct[elen];
+//			JStruct[] outer = new JStruct[elen];
+//			KString[] inner_name = new KString[elen];
+//			short[] acc = new short[elen];
+//			for(int i=0; i < elen; i++) {
+//				try {
+//					acc[i] = (short)ica.cp_inner_flags[i];
+//					ClazzName cn;
+//					if( ica.cp_outers[i] != null ) {
+//						cn = ClazzName.fromBytecodeName(this.jenv,ica.getOuterName(i,clazz));
+//						outer[i] = (JStruct)(Struct)this.jenv.loadDecl(cn);
+//						if( outer[i] == null )
+//							throw new RuntimeException("Class "+cn+" not found");
+//					} else {
+//						outer[i] = null;
+//					}
+//					if( ica.cp_inners[i] != null && (acc[i] & (ACC_PUBLIC|ACC_PROTECTED)) != 0) {
+//						cn = ClazzName.fromBytecodeName(this.jenv,ica.getInnerName(i,clazz));
+//						// load only non-anonymouse classes
+//						boolean anon = false;
+//						for (int i=0; i < cn.bytecode_name.len; i++) {
+//							i = cn.bytecode_name.indexOf((byte)'$',i);
+//							if (i < 0) break;
+//							char ch = (char)cn.bytecode_name.byteAt(i+1);
+//							if (ch >= '0' && ch <= '9') {
+//								anon = true;
+//								break;
+//							}
+//						}
+//						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
+//							inner[i] == null;
+//						} else {
+//							Struct inn = (Struct)this.jenv.loadDecl(cn);
+//							inner[i] = (JStruct)inn;
+//							if( inn == cl ) {
+//								Kiev.reportWarning("Class "+cl+" is inner for itself");
+//							} else {
+//								if( inn == null )
+//									throw new RuntimeException("Class "+cn+" not found");
+//								cl.members.add(~inn);
+//							}
+//						}
+//					} else {
+//						inner[i] = null;
+//					}
+//				} catch(Exception e ) {
+//					Kiev.reportError(e);
+//				}
+//			}
+//			a = new InnerClassesAttr(this.jenv);
+//			((InnerClassesAttr)a).inner = inner;
+//			((InnerClassesAttr)a).outer = outer;
+//			((InnerClassesAttr)a).acc = acc;
 			a = null;
 		}
 		else if( name.equals(attrConstantValue) ) {

@@ -212,12 +212,12 @@ public class ZipClasspathEntry implements ClasspathEntry {
 	public boolean exists(String clazz_name) {
 		String name = clazz_name;
 		ZipEntry f;
-		if( (f=zipfile.getEntry(name+"/")) != null ) {
+		if( (f=zipfile.getEntry(name+"/")) != null )
 			return true;
-		}
-		else if( (f=zipfile.getEntry(name+".class")) != null ) {
+		else if( (f=zipfile.getEntry(name+".class")) != null )
 			return true;
-		}
+		else if( (f=zipfile.getEntry(name+".xml")) != null )
+			return true;
 		return false;
 	}
 
@@ -236,6 +236,13 @@ public class ZipClasspathEntry implements ClasspathEntry {
 			}
 		}
 		else if( (f=zipfile.getEntry(name+".class")) != null ) {
+			byte[] data = new byte[(int)f.getSize()];
+			InputStream zis = zipfile.getInputStream(f);
+			Classpath.readFully(zis,data);
+			zis.close();
+			return data;
+		}
+		else if( (f=zipfile.getEntry(name+".xml")) != null ) {
 			byte[] data = new byte[(int)f.getSize()];
 			InputStream zis = zipfile.getInputStream(f);
 			Classpath.readFully(zis,data);

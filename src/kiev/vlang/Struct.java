@@ -117,6 +117,12 @@ public final class PizzaCase extends Struct {
 		return this.case_fields;
 	}
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "members" && val instanceof Field && case_fields.indexOf((Field)val) >= 0)
+			return false;
+		return super.includeInDump(dump,attr,val);
+	}
+
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (ct == ChildChangeType.ATTACHED) {
 			if (attr.name == "case_fields") {
@@ -175,6 +181,12 @@ public final class JavaEnum extends JavaClass {
 				return i;
 		}
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
+	}
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "members" && val instanceof Field && val.isEnumField())
+			return false;
+		return super.includeInDump(dump,attr,val);
 	}
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {

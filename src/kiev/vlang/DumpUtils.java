@@ -172,6 +172,8 @@ public final class DumpUtils {
 		}
 		if (node instanceof TypeInfoInterface && node.getTypeInfoField().getTopArgs().length > 0 && (node.pslot()==null || node.pslot().isWrittable()))
 			out.attribute(OLD_XML_WRITE ? null : SOP_URI, "ti", node.getTypeInfoField().toString());
+		if (node instanceof DNode && !node.isInterfaceOnly())
+			node.UUID;
 		if (!OLD_XML_WRITE) {
 			foreach (AttrSlot attr; node.values(); attr instanceof ScalarAttrSlot && attr.isXmlAttr()) {
 				if (!checkIncludeAttrInDump(dump,node,attr))
@@ -191,23 +193,15 @@ public final class DumpUtils {
 				continue;
 			if (attr instanceof SpaceAttrSlot) {
 				ANode[] elems = attr.getArray(node);
-				foreach (ANode n; elems; checkIncludeNodeInDump(dump,n))
-					goto write_space;
-				continue;
-			write_space:
 				out.startTag(null, attr.getXmlLocalName());
-				foreach (ANode n; elems; checkIncludeNodeInDump(dump,n))
+				foreach (ANode n; elems; checkIncludeNodeInDump(dump,node,attr,n))
 					writeNodeToXML(dump, n, out);
 				out.endTag(null, attr.getXmlLocalName());
 				continue;
 			}
 			else if (attr instanceof ExtSpaceAttrSlot) {
-				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
-					goto write_list;
-				continue;
-			write_list:
 				out.startTag(null, attr.getXmlLocalName());
-				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
+				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,node,attr,n))
 					writeNodeToXML(dump, n, out);
 				out.endTag(null, attr.getXmlLocalName());
 				continue;
@@ -259,26 +253,18 @@ public final class DumpUtils {
 				continue;
 			if (attr instanceof SpaceAttrSlot) {
 				ANode[] elems = attr.getArray(node);
-				foreach (ANode n; elems; checkIncludeNodeInDump(dump,n))
-					goto write_space;
-				continue;
-			write_space:
 				writeXMLIndent(out,indent+1);
 				out.writeStartElement(attr.name);
-				foreach (ANode n; elems; checkIncludeNodeInDump(dump,n))
+				foreach (ANode n; elems; checkIncludeNodeInDump(dump,node,attr,n))
 					writeNodeToXML(dump, n, out, indent+2);
 				writeXMLIndent(out,indent+1);
 				out.writeEndElement();
 				continue;
 			}
 			else if (attr instanceof ExtSpaceAttrSlot) {
-				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
-					goto write_list;
-				continue;
-			write_list:
 				writeXMLIndent(out,indent+1);
 				out.writeStartElement(attr.name);
-				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,n))
+				foreach (ANode n; attr.iterate(node); checkIncludeNodeInDump(dump,node,attr,n))
 					writeNodeToXML(dump, n, out, indent+2);
 				writeXMLIndent(out,indent+1);
 				out.writeEndElement();
@@ -313,10 +299,14 @@ public final class DumpUtils {
 			out.writeCharacters(" ");
 	}
 
-	private static boolean checkIncludeNodeInDump(String dump, ANode node) {
+	private static boolean checkIncludeNodeInDump(String dump, ANode parent, AttrSlot attr, ANode node) {
 		if (node == null)
 			return false;
-		return node.includeInDump(dump, ASTNode.nodeattr$this, node);
+		if (!parent.includeInDump(dump, attr, node))
+			return false;
+		if (!node.includeInDump(dump, ASTNode.nodeattr$this, node))
+			return false;
+		return true;
 	}
 
 	private static boolean checkIncludeAttrInDump(String dump, ANode node, AttrSlot attr) {
@@ -332,13 +322,21 @@ public final class DumpUtils {
 			ANode[] vals = attr.getArray(node);
 			if (vals.length == 0)
 				return false;
-			return node.includeInDump(dump, attr, vals);
+			if (!node.includeInDump(dump, attr, vals))
+				return false;
+			foreach (ANode n; vals; node.includeInDump(dump, attr, n))
+				return true;
+			return false;
 		}
 		else if (attr instanceof ExtSpaceAttrSlot) {
 			ExtChildrenIterator iter = attr.iterate(node);
 			if (!iter.hasMoreElements())
 				return false;
-			return node.includeInDump(dump, attr, iter);
+			if (!node.includeInDump(dump, attr, iter))
+				return false;
+			foreach (ANode n; iter; node.includeInDump(dump, attr, n))
+				return true;
+			return false;
 		}
 		return false;
 	}

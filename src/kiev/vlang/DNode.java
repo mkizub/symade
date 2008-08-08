@@ -585,7 +585,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 }
 
 @ThisIsANode(lang=CoreLang)
-public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeContainer {
+public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeContainer, CompilationUnit {
 
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
@@ -768,7 +768,7 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class KievSyntax extends DNode, CompilationUnit implements GlobalDNodeContainer, ScopeOfMethods {
+public final class KievSyntax extends DNode implements GlobalDNodeContainer, ScopeOfMethods, CompilationUnit {
 	@SymbolRefAutoComplete(scopes={KievPackage})
 	@nodeAttr public SymbolRef<KievSyntax>∅		super_syntax;
 	@nodeAttr public ASTNode∅			members;

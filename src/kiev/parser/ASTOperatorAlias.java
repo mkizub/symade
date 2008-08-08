@@ -89,6 +89,7 @@ public final class ASTOperatorAlias extends Symbol {
 				return;
 			}
 			op.addMethod(m);
+			m.setOperatorMethod(true);
 			return;
 		}
 		
@@ -204,6 +205,8 @@ public final class ASTOperatorAlias extends Symbol {
 	}
 
 	public String toString() {
-		return image.toString();
+		if (image != null)
+			return image.toString();
+		return sname;
 	}
 }
