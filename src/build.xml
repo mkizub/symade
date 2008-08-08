@@ -28,7 +28,7 @@
 	</java>
   	<property name="classes.to.jar" value="${build}/classes" />
   </target>
-  <target name="compile2" depends="init" unless="build.notRequired" description="compile the source" >
+  <target name="compile2" depends="compile1" unless="build.notRequired" description="compile the source" >
     <java classname="kiev.Main" fork="true">
 		<classpath>
 			<pathelement location="${build}/classes"/>
