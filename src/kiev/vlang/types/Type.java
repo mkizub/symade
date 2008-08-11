@@ -284,6 +284,9 @@ public final class XType extends Type {
 
 	@virtual typedef MType = XMetaType;
 
+	@virtual @abstract
+	public:ro MetaTypeDecl		tdecl;
+
 	@getter
 	public final MetaTypeDecl get$tdecl() { return (MetaTypeDecl)meta_type.tdecl; }
 
@@ -527,6 +530,9 @@ public final class ArgType extends Type {
 	
 	public final String name;
 	
+	@virtual @abstract
+	public:ro TypeDef		definer;
+
 	@getter public final TypeDef get$definer() { return (TypeDef)meta_type.tdecl; }
 
 	private static int makeFlags(ArgMetaType mt) {
@@ -629,6 +635,9 @@ public final class CompaundType extends Type {
 
 	@virtual typedef MType = CompaundMetaType;
 
+	@virtual @abstract
+	public:ro Struct		tdecl;
+
 	@getter
 	public final Struct get$tdecl() { return (Struct)meta_type.tdecl; }
 
@@ -687,6 +696,9 @@ public final class CompaundType extends Type {
 public final class ArrayType extends Type {
 
 	@virtual typedef MType = ArrayMetaType;
+
+	@virtual @abstract
+	public:ro Type		arg;
 
 	@getter public Type get$arg() { return this.resolveArg(0); }
 	
@@ -827,6 +839,9 @@ public final class WrapperType extends CTimeType {
 	public WrapperType(Type unwrapped_type) {
 		super(WrapperMetaType.instance(unwrapped_type), 0, tpWrapperArg, unwrapped_type);
 	}
+
+	@virtual @abstract
+	public:ro Field		wrapped_field;
 
 	@getter
 	private Field get$wrapped_field() { return ((WrapperMetaType)this.meta_type).field; }

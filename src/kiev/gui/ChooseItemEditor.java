@@ -32,7 +32,7 @@ public final class ChooseItemEditor implements UIActionFactory {
 		Editor editor = context.editor;
 		if (context.dt == null || context.node == null)
 			return null;
-		if (context.dt.get$drnode() != context.node)
+		if (context.dt.drnode != context.node)
 			return null;
 		Drawable dr = context.dr;
 		if (dr instanceof DrawNodeTerm) {
@@ -59,14 +59,14 @@ public final class ChooseItemEditor implements UIActionFactory {
 				if (dt == null)
 					dt = editor.getCur_elem().dr.getNextLeaf();
 			}
-			return UIManager.newEnumEditor(editor, dt, dec.get$drnode().getScalarPtr(stx.name));
+			return UIManager.newEnumEditor(editor, dt, dec.drnode.getScalarPtr(stx.name));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
-			return UIManager.newEnumEditor(editor, dr.getFirstLeaf(), dec.get$drnode().getScalarPtr(stx.name));
+			return UIManager.newEnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getScalarPtr(stx.name));
 		}
-		else if (dr instanceof DrawToken && dr.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxTokenKind.OPERATOR) {
+		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxTokenKind.OPERATOR) {
 			return UIManager.newOperatorEditor(editor, (DrawToken)dr);
 		}
 		return null;

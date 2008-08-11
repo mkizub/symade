@@ -204,6 +204,9 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 	public:ro JENode[]		args;
 	public:ro Boolean		is_a_call;
 	
+	@virtual @abstract
+	public:ro CallType		xtype;
+	
 	@getter public final CallType	get$xtype() { return (CallType)((ClosureCallExpr)this).expr.getType(); }
 	
 	public void generate(Code code, Type reqType) {

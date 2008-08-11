@@ -55,7 +55,7 @@ public class AccessEditor
 				return null;
 			if (!(dt instanceof DrawJavaAccess))
 				return null;
-			if (dt.get$drnode() != context.node)
+			if (dt.drnode != context.node)
 				return null;
 			return new AccessEditor(editor, (DrawJavaAccess)dt);
 		}
@@ -70,7 +70,7 @@ public class AccessEditor
 		menu.add(b=new SetSimpleMenuItem("@protected", "protected"));	group.add(b); b.addActionListener(this);
 		menu.add(b=new SetSimpleMenuItem("@access",    ""));			group.add(b); b.addActionListener(this);
 		menu.add(b=new SetSimpleMenuItem("@private",   "private"));	group.add(b); b.addActionListener(this);
-		int flags = ((MetaAccess)cur_elem.get$drnode()).getFlags();
+		int flags = ((MetaAccess)cur_elem.drnode).getFlags();
 		menu.add(b=new JCheckBoxMenuItem("Access bits")); b.setSelected(flags != -1); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("public read",     1<<7, flags)); b.addActionListener(this);
 		menu.add(b=new SetFlagsMenuItem("public write",    1<<6, flags)); b.addActionListener(this);
@@ -108,12 +108,12 @@ public class AccessEditor
 		try {
 			if (e.getSource() instanceof SetSimpleMenuItem) {
 				SetSimpleMenuItem mi = (SetSimpleMenuItem)e.getSource();
-				((MetaAccess)cur_elem.get$drnode()).setSimple(mi.val);
+				((MetaAccess)cur_elem.drnode).setSimple(mi.val);
 				setMenuVisible();
 			}
 			else if (e.getSource() instanceof SetFlagsMenuItem) {
 				SetFlagsMenuItem mi = (SetFlagsMenuItem)e.getSource();
-				MetaAccess ma = (MetaAccess)cur_elem.get$drnode();
+				MetaAccess ma = (MetaAccess)cur_elem.drnode;
 				if (mi.isSelected())
 					ma.setFlags(ma.getFlags() | mi.val);
 				else
@@ -123,7 +123,7 @@ public class AccessEditor
 			else if (e.getSource() instanceof JCheckBoxMenuItem) {
 				JCheckBoxMenuItem mi = (JCheckBoxMenuItem)e.getSource();
 				if (mi.isSelected()) {
-					int flags = ((MetaAccess)cur_elem.get$drnode()).getFlags();
+					int flags = ((MetaAccess)cur_elem.drnode).getFlags();
 					for (SetFlagsMenuItem sf: (SetFlagsMenuItem[])menu.getSubElements()) {
 						sf.setEnabled(true);
 						sf.setSelected((flags & sf.val) != 0);
@@ -133,7 +133,7 @@ public class AccessEditor
 						sf.setEnabled(false);
 						sf.setSelected(false);
 					}
-					((MetaAccess)cur_elem.get$drnode()).setFlags(-1);
+					((MetaAccess)cur_elem.drnode).setFlags(-1);
 				}
 				setMenuVisible();
 			}
@@ -153,7 +153,7 @@ public class AccessEditor
 		SetSimpleMenuItem(String text, String val) {
 			super(text);
 			this.val = val;
-			MetaAccess ma = (MetaAccess)cur_elem.get$drnode();
+			MetaAccess ma = (MetaAccess)cur_elem.drnode;
 			setSelected((ma.getSimple() == val));
 		}
 	}

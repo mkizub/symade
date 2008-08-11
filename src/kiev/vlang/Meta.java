@@ -21,6 +21,9 @@ import syntax kiev.Syntax;
 public abstract class MNode extends ASTNode {
 	public static final MNode[] emptyArray = new MNode[0];
 
+	@virtual @abstract
+	public:ro String			qname;
+
 	@getter
 	public abstract String get$qname();
 	public abstract JavaAnnotation getAnnotationDecl();
@@ -36,7 +39,7 @@ public class UserMeta extends MNode {
 	@abstract
 	@nodeAttr public String							qname;
 	@nodeAttr public SymbolRef<JavaAnnotation>		decl;
-	@nodeAttr public MetaValue∅					values;
+	@nodeAttr public MetaValue∅						values;
 
 	public boolean equals(Object o) {
 		if!(o instanceof UserMeta)
@@ -98,8 +101,8 @@ public class UserMeta extends MNode {
 	}
 
 	@setter
-	public void set$qname(String val) {
-		decl.name = val;
+	public void set$qname(String value) {
+		this.decl.name = value;
 	}
 
 	public final JavaAnnotation getAnnotationDecl() {

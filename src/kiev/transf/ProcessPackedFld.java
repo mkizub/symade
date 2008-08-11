@@ -134,14 +134,13 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			String get_name = (nameGet+f.sname).intern();
 			// setter
 			if (!f.isFinal() && MetaAccess.writeable(f)) {
-				Method set_var = new MethodImpl(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC | ACC_FINAL);
+				Method set_var = new MethodSetter(f);
+				set_var.setFinal(true);
 				set_var.setAbstract(false);
 				if (s.isInterface())
 					set_var.setFinal(false);
 				s.addMethod(set_var);
-				set_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaSetter)).resolve(null);
-				LVar value = new LVar(f.pos,"value",f.getType(),Var.PARAM_NORMAL,0);
-				set_var.params.add(value);
+				Var value = set_var.params[0];
 				if (!f.isInterfaceOnly()) {
 					Block body = new Block(f.pos);
 					set_var.body = body;
@@ -180,12 +179,12 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
-				Method get_var = new MethodImpl(get_name,f.getType(),f.getJavaFlags() | ACC_SYNTHETIC |ACC_FINAL);
+				Method get_var = new MethodGetter(f);
+				get_var.setFinal(true);
 				get_var.setAbstract(false);
 				if (s.isInterface())
 					get_var.setFinal(false);
 				s.addMethod(get_var);
-				get_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaGetter)).resolve(null);
 				if (!f.isInterfaceOnly()) {
 					Block body = new Block(f.pos);
 					get_var.body = body;

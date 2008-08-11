@@ -30,6 +30,9 @@ public final class ScalarPtr {
 }
 
 public final class SpacePtr {
+	@virtual @abstract
+	public:ro int		length;
+
 	public final ANode node;
 	public final SpaceAttrSlot slot;
 	public SpacePtr(ANode node, SpaceAttrSlot slot) {

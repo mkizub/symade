@@ -498,6 +498,9 @@ public final class LVarExpr extends LvalueExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
+	@virtual @abstract
+	public:ro Var			var;
+
 	@getter public Var get$var() {
 		DNode sym = this.dnode;
 		if (sym instanceof Var)
@@ -588,6 +591,9 @@ public final class SFldExpr extends LvalueExpr {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeRef			obj;
+
+	@virtual @abstract
+	public:ro Field			var;
 
 	@getter public Field get$var() {
 		DNode sym = this.dnode;

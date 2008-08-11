@@ -70,7 +70,7 @@ public class Clipboard {
 			// try paste as a node into placeholder
 			if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
 				Draw_SyntaxPlaceHolder dsph = (Draw_SyntaxPlaceHolder)dr.syntax;
-				ANode drnode = dr.get$drnode();
+				ANode drnode = dr.drnode;
 				for (AttrSlot attr: drnode.values()) {
 					if (attr.name != dsph.attr_name)
 						continue;

@@ -49,6 +49,9 @@ public abstract class Var extends DNode implements GlobalDNode {
 	@nodeData(ext_data=true)
 	public ConstExpr				const_value;
 
+	@virtual @abstract
+	public:ro int					kind;
+
 	@getter public int get$kind() { return this.mflags_var_kind; }
 
 	// init wrapper

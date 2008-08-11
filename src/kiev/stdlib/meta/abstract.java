@@ -13,5 +13,5 @@ import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 public @interface #id"abstract"# {}

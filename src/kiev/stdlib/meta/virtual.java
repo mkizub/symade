@@ -13,18 +13,14 @@ import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.FIELD})
 public @interface virtual {}
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-public @interface getter {
-	public String value() default "";
-}
+public @interface getter {}
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-public @interface setter {
-	public String value() default "";
-}
+public @interface setter {}

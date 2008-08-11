@@ -19,20 +19,15 @@ public abstract class Drawable extends ANode {
 	public static final Drawable[] emptyArray = new Drawable[0];
 
 	// the node we draw
-	private final ANode					_node;
+	public final ANode					drnode;
 	// syntax kind & draw layout
 	public final Draw_SyntaxElem		syntax;
 	// syntax, which has produced this drawable, to get
 	// sub-nodes in the same syntax
 	public final Draw_ATextSyntax		text_syntax;
 	
-	@getter
-	public final ANode get$drnode() {
-		return _node;
-	}
-	
 	public Drawable(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
-		this._node = node;
+		this.drnode = node;
 		this.syntax = syntax;
 		this.text_syntax = text_syntax;
 	}

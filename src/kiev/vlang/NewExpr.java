@@ -23,8 +23,8 @@ public final class NewExpr extends ENode {
 	
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		outer;
-	@DataFlowDefinition(in="outer")				TypeRef		ntype;
-	@DataFlowDefinition(in="ntype")				ENode		tpinfo;
+	@DataFlowDefinition(in="outer")					TypeRef		ntype;
+	@DataFlowDefinition(in="ntype")					ENode		tpinfo;
 	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
 	}
 
@@ -33,6 +33,9 @@ public final class NewExpr extends ENode {
 	@nodeAttr(ext_data=true)public ENode				tpinfo;
 	@nodeAttr				public ENode∅				args;
 	@nodeAttr				public Struct				clazz; // if this new expression defines new class
+
+	@virtual @abstract
+	public Method		func;
 
 	@getter public Method get$func() {
 		DNode sym = this.dnode;
@@ -210,6 +213,9 @@ public final class NewEnumExpr extends ENode {
 	}
 
 	@nodeAttr public ENode∅				args;
+
+	@virtual @abstract
+	public Method		func;
 
 	@getter public Method get$func() {
 		DNode sym = this.dnode;

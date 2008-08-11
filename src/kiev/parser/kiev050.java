@@ -197,7 +197,20 @@ public abstract class kiev050 implements kiev050Constants {
 	}
 	
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		Method meth = new MethodImpl(id.sname, ret, 0);
+		Method meth;
+		if (modifiers.isGetter()) {
+			meth = new MethodGetter();
+			meth.sname = id.sname;
+			meth.type_ret = ret;
+		}
+		else if (modifiers.isSetter()) {
+			meth = new MethodSetter();
+			meth.sname = id.sname;
+			meth.type_ret = ret;
+		}
+		else {
+			meth = new MethodImpl(id.sname, ret, 0);
+		}
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth);
 		return meth;
@@ -5397,46 +5410,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3R_239() {
-    if (jj_scan_token(DO)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_197() {
-    if (jj_scan_token(VIEW)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_113() {
-    if (jj_3R_104()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_264() {
-    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_122() {
-    if (jj_scan_token(OPERATOR_AT)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_196() {
-    if (jj_scan_token(ENUM)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_263() {
-    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_195() {
-    if (jj_scan_token(META_INTERFACE)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_189() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
@@ -7357,6 +7330,46 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3_47() {
     if (jj_scan_token(OPERATOR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_239() {
+    if (jj_scan_token(DO)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_197() {
+    if (jj_scan_token(VIEW)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_113() {
+    if (jj_3R_104()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_264() {
+    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_122() {
+    if (jj_scan_token(OPERATOR_AT)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_196() {
+    if (jj_scan_token(ENUM)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_263() {
+    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_195() {
+    if (jj_scan_token(META_INTERFACE)) return true;
     return false;
   }
 

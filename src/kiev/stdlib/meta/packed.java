@@ -13,7 +13,7 @@ import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 public @interface packed {
 	public int    size();
@@ -21,7 +21,7 @@ public @interface packed {
 	public int    offset() default 0;
 }
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 private @interface packer {
 	public int    size() default 0;

@@ -64,8 +64,8 @@ public final class ExprEditActions
 //						enodes.add(new EToken(0, dt.getText(), ETokenKind.OPERATOR, true));
 //				}
 //				else if (dt instanceof DrawNodeTerm) {
-//					if (dt.get$drnode() instanceof ConstExpr)
-//						enodes.add(new EToken((ConstExpr)dt.get$drnode()));
+//					if (dt.drnode instanceof ConstExpr)
+//						enodes.add(new EToken((ConstExpr)dt.drnode));
 //					else
 //						enodes.add(new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false));
 //				}
@@ -112,7 +112,7 @@ public final class ExprEditActions
 //		if (code == KeyEvent.VK_F && mask == KeyEvent.CTRL_DOWN_MASK) {
 //			DrawTerm dt = editor.getCur_elem().dr;
 //			ANode n = editor.getCur_elem().node;
-//			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.get$drnode() != n)
+//			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n)
 //				return;
 //			EToken et = (EToken)n;
 //			menu = new JPopupMenu();
@@ -176,7 +176,7 @@ public final class ExprEditActions
 //			return;
 //		DrawTerm dt = editor.getCur_elem().dr;
 //		ANode n = editor.getCur_elem().node;
-//		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.get$drnode() != n) {
+//		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n) {
 //			java.awt.Toolkit.getDefaultToolkit().beep();
 //			return;
 //		}
@@ -331,8 +331,8 @@ public final class ExprEditActions
 //	private void joinNodes(DrawTerm dt, EToken et, boolean by_backspace) {
 //		if (by_backspace) {
 //			DrawTerm pt = dt.getPrevLeaf();
-//			if (pt != null && pt.get$drnode() instanceof EToken) {
-//				EToken pe = (EToken)pt.get$drnode();
+//			if (pt != null && pt.drnode instanceof EToken) {
+//				EToken pe = (EToken)pt.drnode;
 //				editor.getCur_elem().set(pt);
 //				editor.getView_canvas().setCursor_offset(pt.getText().length());
 //				pe.setText(pe.get$ident() + et.get$ident());
@@ -340,8 +340,8 @@ public final class ExprEditActions
 //			}
 //		} else {
 //			DrawTerm nt = dt.getNextLeaf();
-//			if (nt != null && nt.get$drnode() instanceof EToken) {
-//				EToken pe = (EToken)nt.get$drnode();
+//			if (nt != null && nt.drnode instanceof EToken) {
+//				EToken pe = (EToken)nt.drnode;
 //				et.setText(et.get$ident() + pe.get$ident());
 //				pe.detach();
 //			}

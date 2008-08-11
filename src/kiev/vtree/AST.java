@@ -109,7 +109,7 @@ public abstract class ANode implements INode {
 	public:ro @virtual @abstract FileUnit			ctx_file_unit;
 	public:ro @virtual @abstract NameSpace			ctx_name_space;
 	public:ro @virtual @abstract ComplexTypeDecl	ctx_tdecl;
-	public:ro @virtual @abstract Method			ctx_method;
+	public:ro @virtual @abstract Method				ctx_method;
 
 	@access:no,no,ro,rw AttrSlot				p_slot;
 	@access:no,no,ro,rw ANode					p_parent;
@@ -436,25 +436,25 @@ public abstract class ANode implements INode {
 		ANode p = this.parent();
 		if (p == null)
 			return null;
-		return p.child_ctx_tdecl;
+		return p.get_child_ctx_tdecl();
 	}
-	@getter public ComplexTypeDecl get$child_ctx_tdecl() {
+	public ComplexTypeDecl get_child_ctx_tdecl() {
 		ANode p = this.parent();
 		if (p == null)
 			return null;
-		return p.get$child_ctx_tdecl();
+		return p.get_child_ctx_tdecl();
 	}
 	@getter public Method get$ctx_method() {
 		ANode p = this.parent();
 		if (p == null)
 			return null;
-		return p.child_ctx_method;
+		return p.get_child_ctx_method();
 	}
-	@getter public Method get$child_ctx_method() {
+	public Method get_child_ctx_method() {
 		ANode p = this.parent();
 		if (p == null)
 			return null;
-		return p.get$child_ctx_method();
+		return p.get_child_ctx_method();
 	}
 
 	public AttrSlot[] values() {

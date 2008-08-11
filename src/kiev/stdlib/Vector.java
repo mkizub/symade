@@ -28,6 +28,9 @@ public class Vector<A> implements Cloneable
 
 	public int		capacityIncrement;
 
+	@virtual @abstract
+	public:ro int	length;
+
 	public Vector(int initialCapacity, int capacityIncrement) {
 		this.data = new A[initialCapacity];
 		this.capacityIncrement = capacityIncrement;

@@ -14,15 +14,15 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 	public void run() {
 		Drawable dr = getEditor().getCur_elem().dr;
 		if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
-			ANode n = dr.get$drnode();
+			ANode n = dr.drnode;
 			makeMenu("Set new item", n, (Draw_SyntaxPlaceHolder)dr.syntax, dr.text_syntax);
 			return;
 		}
-		if (dr instanceof DrawNodeTerm && (dr.get$drnode() == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
-			ANode n = dr.get$drnode();
+		if (dr instanceof DrawNodeTerm && (dr.drnode == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
+			ANode n = dr.drnode;
 			while (n == null) {
 				dr = (Drawable)dr.parent();
-				n = dr.get$drnode();
+				n = dr.drnode;
 			}
 			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
 			makeMenu("Set new item", n, satt, dr.text_syntax);
@@ -55,17 +55,17 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
 			if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
-				//ANode n = dr.get$drnode();
+				//ANode n = dr.drnode;
 				ExpectedTypeInfo[] exp = ((Draw_SyntaxPlaceHolder)dr.syntax).getExpectedTypes();
 				if (exp == null)
 					return null;
 				return new NewElemHere(editor);
 			}
-			if (dr instanceof DrawNodeTerm && (dr.get$drnode() == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
-				ANode n = dr.get$drnode();
+			if (dr instanceof DrawNodeTerm && (dr.drnode == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
+				ANode n = dr.drnode;
 				while (n == null) {
 					dr = (Drawable)dr.parent();
-					n = dr.get$drnode();
+					n = dr.drnode;
 				}
 				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
 				ExpectedTypeInfo[] exp = satt.getExpectedTypes();

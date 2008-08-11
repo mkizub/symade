@@ -35,9 +35,9 @@ public final class FileUnit extends NameSpace, CompilationUnit {
 	public boolean							is_project_file;
 
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
-	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
+	public ComplexTypeDecl get_child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
-	@getter public Method get$child_ctx_method() { return null; }
+	public Method get_child_ctx_method() { return null; }
 
 	public String pname() {
 		if!(parent() instanceof DirUnit)
@@ -170,9 +170,9 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	@nodeAttr public       ASTNode∅					members;
 	
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
-	@getter public ComplexTypeDecl get$child_ctx_tdecl() { return null; }
+	public ComplexTypeDecl get_child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
-	@getter public Method get$child_ctx_method() { return null; }
+	public Method get_child_ctx_method() { return null; }
 
 	public NameSpace() {
 		this.srpkg.symbol = Env.getRoot();

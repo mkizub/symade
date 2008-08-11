@@ -68,7 +68,7 @@ public final class FunctionExecutor implements Runnable {
 			Drawable dr = context.dr;
 			if (dr == null)
 				return null;
-			if (dr.get$drnode() != context.node)
+			if (dr.drnode != context.node)
 				return null;
 			Draw_SyntaxFunction[] sfs_funcs = dr.syntax.funcs;
 			FunctionExecutor fe = new FunctionExecutor(editor);
@@ -82,20 +82,20 @@ public final class FunctionExecutor implements Runnable {
 						if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
 							if (dr.syntax instanceof Draw_SyntaxList) {
 								Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
-								if (((Object[])dr.get$drnode().getVal(slst.name)).length == 0)
-									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), slst, dr.text_syntax));
+								if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
+									fe.actions.add(fe.new NewElemAction(sf.title, dr.drnode, slst, dr.text_syntax));
 							}
 						}
 						else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
 							if (dr.syntax instanceof Draw_SyntaxAttr) {
 								Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-								if (dr.get$drnode().getVal(satr.name) == null)
-									fe.actions.add(fe.new NewElemAction(sf.title, dr.get$drnode(), satr, dr.text_syntax));
+								if (dr.drnode.getVal(satr.name) == null)
+									fe.actions.add(fe.new NewElemAction(sf.title, dr.drnode, satr, dr.text_syntax));
 							}
 						}
 						else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
 							if (dr.syntax instanceof Draw_SyntaxToken) {
-								if (dr.get$drnode() instanceof ENode)
+								if (dr.drnode instanceof ENode)
 									fe.actions.add(fe.new EditElemAction(sf.title, dr));
 							}
 						}

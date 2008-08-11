@@ -57,11 +57,11 @@ public abstract class TypeDef extends TypeDecl {
 
 	public static final TypeDef[] emptyArray = new TypeDef[0];
 
-	@getter public ComplexTypeDecl get$child_ctx_tdecl() {
+	public ComplexTypeDecl get_child_ctx_tdecl() {
 		ANode p = this.parent();
 		if (p == null)
 			return null;
-		return p.get$child_ctx_tdecl();
+		return p.get_child_ctx_tdecl();
 	}
 
 	public TypeRef[] getUpperBounds() { return super_types; }

@@ -39,6 +39,15 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeAttr(copyable=false)
 	public							String			uuid;  // UUID of the node, since it's an ISymbol
 
+
+	@virtual @abstract
+	public:ro						String			qname;
+	@virtual @abstract
+	public:ro						DNode			dnode;
+	@virtual @abstract
+	public:ro						String			UUID;
+
+
 	public final MetaAccess getMetaAccess() {
 		return (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
 	}
@@ -379,7 +388,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	@nodeData(ext_data=true, copyable=false) public WrapperMetaType	wmeta_type;
 
-	@getter public ComplexTypeDecl get$child_ctx_tdecl()	{ null }
+	public ComplexTypeDecl get_child_ctx_tdecl()	{ null }
 
 	public ASTNode[] getMembers() { ASTNode.emptyArray }
 
@@ -598,7 +607,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 	@nodeData(ext_data=true, copyable=false) public KString			bytecode_name; // used by backend for anonymouse and inner declarations
 	@nodeData(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
 
-	@getter public ComplexTypeDecl get$child_ctx_tdecl()	{ return this; }
+	public ComplexTypeDecl get_child_ctx_tdecl()	{ return this; }
 
 	public final ASTNode[] getMembers() { this.members }
 	

@@ -129,6 +129,8 @@ public final class CoreLang extends LangBase {
 			Opdef.class,		// operator declaration
 			Method.class,
 				MethodImpl.class,	// a concrete method
+				MethodGetter.class,	// a field getter method
+				MethodSetter.class,	// a field setter method
 				Constructor.class,	// type constructor
 			Initializer.class,
 			WBCCondition.class,		// work-by-contract condition

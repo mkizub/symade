@@ -13,7 +13,7 @@ import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE})
 public @interface pcase {
 	public int tag();

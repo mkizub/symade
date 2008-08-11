@@ -284,7 +284,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 				view_root.walkTree(new TreeWalker() {
 					public boolean pre_exec(ANode n) {
 						if (n instanceof Drawable) {
-							if (n instanceof DrawNodeTerm && ((DrawNodeTerm)n).getAttrObject() == node || ((Drawable)n).get$drnode() == node) {
+							if (n instanceof DrawNodeTerm && ((DrawNodeTerm)n).getAttrObject() == node || ((Drawable)n).drnode == node) {
 								DrawTerm dr = ((DrawNodeTerm)n).getFirstLeaf();
 								cur_elem.set(dr);
 								cur_x = cur_elem.dr.getGfxFmtInfo().getX();
@@ -325,7 +325,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 		public void set(DrawTerm dr) {
 			this.dr = dr;
 			oldNode = node;
-			setNode(dr == null ? null : dr.get$drnode());
+			setNode(dr == null ? null : dr.drnode);
 			Editor.this.view_canvas.setCurrent(dr, node);
 			if (dr != null) {
 				GfxDrawTermLayoutInfo info = dr.getGfxFmtInfo();

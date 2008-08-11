@@ -20,6 +20,15 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=void)
 public interface ISymbol extends ASTNode {
+	@virtual @abstract
+	public:ro String		sname;
+	@virtual @abstract
+	public:ro String		qname;
+	@virtual @abstract
+	public:ro DNode			dnode;
+	@virtual @abstract
+	public:ro String		UUID;
+
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
 	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
@@ -40,10 +49,6 @@ public class Symbol extends ASTNode implements ISymbol {
 	@UnVersioned
 	@nodeAttr(copyable=false)
 	public	String					uuid; // source code name, may be null for anonymouse symbols
-	
-	@getter public ANode get$node() {
-		return parent();
-	}
 	
 	@getter public DNode get$dnode() {
 		ANode p = parent();

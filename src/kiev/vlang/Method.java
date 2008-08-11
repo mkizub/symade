@@ -46,6 +46,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public:ro			CallType		dtype;
 	@abstract @virtual
 	public:ro			CallType		etype;
+	@virtual @abstract
+	public:ro			Block			block;
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "params") {
@@ -246,7 +248,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		this._dtype = new CallType(this, dargs.toArray(), tp_ret);
 	}
 
-	@getter public Method get$child_ctx_method() { return this; }
+	public Method get_child_ctx_method() { return this; }
 
 	public static final Method[]	emptyArray = new Method[0];
 
@@ -877,6 +879,37 @@ public final class MethodImpl extends Method {
 	}
 }
 
+@ThisIsANode(name="Method", lang=CoreLang)
+public final class MethodGetter extends Method {
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Block		body;
+	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
+	}
+	
+	public MethodGetter() {}
+
+	public MethodGetter(Field f) {
+		super(nameGet+f.sname, new TypeRef(f.getType()), f.getJavaFlags());
+		this.pos = f.pos;
+	}
+}
+
+@ThisIsANode(name="Method", lang=CoreLang)
+public final class MethodSetter extends Method {
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	Block		body;
+	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
+	}
+	
+	public MethodSetter() {}
+
+	public MethodSetter(Field f) {
+		super(nameSet+f.sname, new TypeRef(StdTypes.tpVoid), f.getJavaFlags());
+		this.pos = f.pos;
+		this.params += new LVar(f.pos,"value",f.getType(),Var.PARAM_NORMAL,0);
+	}
+}
+
 @ThisIsANode(name="Ctor", lang=CoreLang)
 public final class Constructor extends Method {
 	
@@ -932,6 +965,8 @@ public final class Initializer extends DNode {
 	}
 
 	@nodeAttr public ENode				body;
+	@virtual @abstract
+	public:ro			Block			block;
 
 	@getter public final Block get$block()	{ return (Block)this.body; }
 

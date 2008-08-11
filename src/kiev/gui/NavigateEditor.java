@@ -213,7 +213,7 @@ public class NavigateEditor implements Runnable {
 		GfxDrawTermLayoutInfo n = null;
 		GfxDrawTermLayoutInfo prev = dt.getGfxFmtInfo().getPrev();
 		while (prev != null) {
-			if (prev.get$do_newline()) {
+			if (prev.isDoNewline()) {
 				n = prev;
 				break;
 			}
@@ -224,7 +224,7 @@ public class NavigateEditor implements Runnable {
 			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
 			prev = n.getPrev();
-			if (prev == null || prev.get$do_newline())
+			if (prev == null || prev.isDoNewline())
 				break;
 			w = prev.getWidth();
 			if (prev.getX()+w < uiv.cur_x) 
@@ -243,7 +243,7 @@ public class NavigateEditor implements Runnable {
 		GfxDrawTermLayoutInfo n = null;
 		GfxDrawTermLayoutInfo next = dt.getGfxFmtInfo();
 		while (next != null) {
-			if (next.get$do_newline()) {
+			if (next.isDoNewline()) {
 				n = next.getNext();
 				break;
 			}
@@ -258,7 +258,7 @@ public class NavigateEditor implements Runnable {
 				break;
 			if (next.getX() > uiv.cur_x)
 				break;
-			if (next.get$do_newline())
+			if (next.isDoNewline())
 				break;
 			n = next;
 		}

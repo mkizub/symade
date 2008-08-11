@@ -52,7 +52,7 @@ public abstract class DrawTermLayoutInfo extends DrawLayoutInfo {
 			return null;
 		return lnk_prev.prev;
 	}
-	@getter public final boolean get$do_newline() {
+	public final boolean isDoNewline() {
 		if (lnk_next != null)
 			return lnk_next.do_newline;
 		return false;

@@ -24,7 +24,7 @@ public class ActionPoint {
 	public final int		length;
 	public ActionPoint(Drawable dr, AttrSlot slot) {
 		this.dr = dr;
-		this.node = dr.get$drnode();
+		this.node = dr.drnode;
 		this.slot = slot;
 		if (slot instanceof SpaceAttrSlot) {
 			this.index = 0;
@@ -36,7 +36,7 @@ public class ActionPoint {
 	}
 	public ActionPoint(Drawable dr, SpaceAttrSlot slot, int idx) {
 		this.dr = dr;
-		this.node = dr.get$drnode();
+		this.node = dr.drnode;
 		this.slot = slot;
 		this.length = slot.getArray(node).length;
 		if (idx <= 0) {
@@ -50,7 +50,7 @@ public class ActionPoint {
 	}
 	public ActionPoint(Drawable dr, ExtSpaceAttrSlot slot, int idx) {
 		this.dr = dr;
-		this.node = dr.get$drnode();
+		this.node = dr.drnode;
 		this.slot = slot;
 		int length = 0;
 		kiev.stdlib.Enumeration en = slot.iterate(node);

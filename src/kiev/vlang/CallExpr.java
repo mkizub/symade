@@ -38,6 +38,9 @@ public class CallExpr extends ENode {
 	@nodeAttr				public TypeRef∅			targs;
 	@nodeAttr				public ENode∅			args;
 
+	@virtual @abstract
+	public Method		func;
+
 	@getter public Method get$func() {
 		return (Method)this.dnode;
 	}
@@ -366,6 +369,9 @@ public class CtorCallExpr extends ENode {
 	@nodeAttr					public ENode				obj;
 	@nodeAttr(ext_data=true)	public ENode				tpinfo;
 	@nodeAttr					public ENode∅				args;
+
+	@virtual @abstract
+	public Method		func;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;

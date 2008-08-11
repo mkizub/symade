@@ -13,7 +13,7 @@ import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 public @interface access {
 	public String simple() default "";
 	public int flags() default 0xFFFFFFFF;

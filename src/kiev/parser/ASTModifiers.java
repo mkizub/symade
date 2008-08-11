@@ -53,5 +53,16 @@ public final class ASTModifiers extends ASTNode {
 			return m.value;
 		return null;
 	}
+	
+	public boolean isGetter() {
+		foreach (UserMeta m; annotations; m.qname == VirtFldFE_GenMembers.nameMetaGetter)
+			return true;
+		return false;
+	}
+	public boolean isSetter() {
+		foreach (UserMeta m; annotations; m.qname == VirtFldFE_GenMembers.nameMetaSetter)
+			return true;
+		return false;
+	}
 }
 

@@ -42,7 +42,7 @@ public class OperatorEditor implements ItemEditor, PopupMenuListener, Runnable {
 	public OperatorEditor(Editor editor, DrawTerm cur_elem) {
 		this.editor = editor;
 		this.cur_elem = cur_elem;
-		this.expr = (ENode)cur_elem.get$drnode();
+		this.expr = (ENode)cur_elem.drnode;
 		this.menu = new JPopupMenu();
 	}
 	
@@ -56,9 +56,9 @@ public class OperatorEditor implements ItemEditor, PopupMenuListener, Runnable {
 			DrawTerm dt = context.dt;
 			if (dt == null || context.node == null)
 				return null;
-			if (dt.get$drnode() != context.node)
+			if (dt.drnode != context.node)
 				return null;
-			if (!(dt instanceof DrawToken && dt.get$drnode() instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxTokenKind.OPERATOR))
+			if (!(dt instanceof DrawToken && dt.drnode instanceof ENode && ((Draw_SyntaxToken)dt.syntax).kind == SyntaxTokenKind.OPERATOR))
 				return null;
 			return new OperatorEditor(editor, dt);
 		}

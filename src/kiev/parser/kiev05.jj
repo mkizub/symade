@@ -210,7 +210,20 @@ public abstract class kiev050 {
 	}
 	
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		Method meth = new MethodImpl(id.sname, ret, 0);
+		Method meth;
+		if (modifiers.isGetter()) {
+			meth = new MethodGetter();
+			meth.sname = id.sname;
+			meth.type_ret = ret;
+		}
+		else if (modifiers.isSetter()) {
+			meth = new MethodSetter();
+			meth.sname = id.sname;
+			meth.type_ret = ret;
+		}
+		else {
+			meth = new MethodImpl(id.sname, ret, 0);
+		}
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth);
 		return meth;

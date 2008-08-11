@@ -508,9 +508,6 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 
 @singleton
 public class VNodeME_PreGenerate extends BackendProcessor {
-	public static final String nameMetaGetter	= VirtFldFE_GenMembers.nameMetaGetter; 
-	public static final String nameMetaSetter	= VirtFldFE_GenMembers.nameMetaSetter; 
-
 	static Type tpINode;
 	static Type tpANode;
 	static Type tpNode;

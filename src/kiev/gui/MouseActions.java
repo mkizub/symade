@@ -59,7 +59,7 @@ public class MouseActions implements Runnable {
 			if (uiv instanceof ProjectView) {
 				((ProjectView)uiv).toggleItem(dr);
 			} else {
-				ANode n = dr.get$drnode();
+				ANode n = dr.drnode;
 				if (!(n instanceof FileUnit))
 					return;
 				uiv.parent_window.openEditor((FileUnit)n, ANode.emptyArray);

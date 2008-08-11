@@ -50,9 +50,9 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				return null;
 			if (!(dt.syntax instanceof Draw_SyntaxAttr))
 				return null;
-			if (dt.get$drnode() != context.node)
+			if (dt.drnode != context.node)
 				return null;
-			ScalarPtr pattr = dt.get$drnode().getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
+			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
 			return new TextEditor(editor, dt, pattr);
 		}
 	}
