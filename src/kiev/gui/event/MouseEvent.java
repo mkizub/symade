@@ -12,18 +12,17 @@ package kiev.gui.event;
 
 import java.io.ObjectStreamException;
 
-public final class Binding extends Item {
-	/**
+public final class MouseEvent extends Event {
+  /**
 	 * 
 	 */
-	private static final long serialVersionUID = -2474249288446471032L;
-	public Event[] events;
-	public Action action;
+	private static final long serialVersionUID = 2906572108356310743L;
+	public int button;
+  public int count;
+	public boolean withCtrl;
+	public boolean withAlt;
+	public boolean withShift;
 
-	public Binding(){
-		events = Event.emptyArray;
-	}
-	
 	Object readResolve() throws ObjectStreamException {
 		return this;
 	}

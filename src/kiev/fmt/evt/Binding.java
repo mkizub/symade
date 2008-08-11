@@ -25,7 +25,18 @@ public class Binding extends ENode {
 				ev.withCtrl = kbe.withCtrl;
 				ev.withShift = kbe.withShift;				
 				evt[i] = ev;
-			} else {
+			} 
+			else if (events[i] instanceof MouseEvent){
+				kiev.gui.event.MouseEvent ev = new kiev.gui.event.MouseEvent();
+				MouseEvent me = (MouseEvent)events[i];
+				ev.button = me.button;
+				ev.count = me.count;
+				ev.withAlt = me.withAlt;
+				ev.withCtrl = me.withCtrl;
+				ev.withShift = me.withShift;				
+				evt[i] = ev;
+			} 
+			else {
 				throw new Exception("Unsupported event binding"); 
 			}
 		}

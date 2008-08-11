@@ -20,6 +20,7 @@
        <core:FileUnit name='GUITest.java' />
       </members>
      </sop:kiev.vlang.DirUnit>
+     <core:FileUnit name='-swt' />
     </members>
    </sop:kiev.vlang.DirUnit>
   </root_dir>

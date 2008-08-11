@@ -27,7 +27,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -72,9 +76,11 @@ implements IWindow, SelectionListener, FocusListener {
 //	ANodeTree expl_tree;
 //	ANodeTable prop_table; 
 	TableView prop_view;  
-//	Canvas info_canvas;
-//	Canvas clip_canvas;
-//	Canvas tree_canvas;
+	Canvas info_canvas;
+	Canvas clip_canvas;
+	Canvas tree_canvas;
+	private Color swtColorBlack, swtColorWhite; 
+	private Font swtDefaultFont; 
 
 	Component	cur_component;
 	static ResourceBundle resources = ResourceBundle.getBundle("kiev.gui.swt.symade");
@@ -90,47 +96,74 @@ implements IWindow, SelectionListener, FocusListener {
 			if (!display.readAndDispatch()) display.sleep();
 		display.dispose();
 
-//		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+	}
 
-//		expl_tree   = new ANodeTree();	expl_tree.addFocusListener(this);
-//		info_canvas = new Canvas();		info_canvas.addFocusListener(this);
-//		clip_canvas = new Canvas();		clip_canvas.addFocusListener(this);
-//		tree_canvas = new Canvas();		tree_canvas.addFocusListener(this);
-//		prop_table = new ANodeTable(); prop_table.addFocusListener(this);
-//		explorers = new JTabbedPane();
-//		editors   = new JTabbedPane();
-//		infos     = new JTabbedPane();
-//		split_bottom = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false,
-//		editors, infos);
-//		split_bottom.setResizeWeight(0.75);
-//		split_bottom.setOneTouchExpandable(true);
-//		split_left   = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false,
-//		explorers, split_bottom);
-//		split_left.setResizeWeight(0.25);
-//		split_left.setOneTouchExpandable(true);
-//		explorers.addTab("Explorer", new JScrollPane(expl_tree));
-//		explorers.addTab("Project", (Component)tree_canvas);
-//		infos.addTab("Info", (Component)info_canvas);
-//		infos.addTab("Clipboard", (Component)clip_canvas);
-//		infos.addTab("Inspector", new JScrollPane(prop_table));
+	public void createGUI(Composite parent) {
+		GridLayout gridLayout;
+		GridData gridData;
+		Display display = parent.getDisplay();
+		
+		swtColorWhite = new Color(display, 255, 255, 255);
+		swtColorBlack = new Color(display, 0, 0, 0);		
+		swtDefaultFont = display.getSystemFont();
 
-//		this.getContentPane().add(split_left, BorderLayout.CENTER);
-//		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//		this.setSize(screenSize.width, (screenSize.height*3)/4);
-//		this.setVisible(true);
-//		editor_views = new Editor[0];
-//		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-//		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-//		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-//		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
-//		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
-//		addListeners();
-//		initBgFormatters();
-//		expl_view.setRoot(Env.getProject());
-//		expl_view.formatAndPaint(true);
-//		expl_tree.requestFocus();
-//		tree_view.setRoot(Env.getProject());
-//		tree_view.formatAndPaint(true);
+		Composite displayArea = new Composite(parent, SWT.NONE);
+		gridLayout = new GridLayout();
+		gridLayout.numColumns = 1;
+		displayArea.setLayout(gridLayout);
+		info_canvas = new Canvas(displayArea, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
+			SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		info_canvas.setLayoutData(gridData);
+		info_canvas.setBackground(swtColorWhite);
+//		info_canvas.addFocusListener(this);
+		clip_canvas = new Canvas(displayArea, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
+			SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		clip_canvas.setLayoutData(gridData);
+//		clip_canvas.addFocusListener(this);
+		tree_canvas = new Canvas(displayArea, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
+				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);		
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		tree_canvas.setLayoutData(gridData);
+//		tree_canvas.addFocusListener(this);
+
+//	expl_tree   = new ANodeTree();	expl_tree.addFocusListener(this);
+//	prop_table = new ANodeTable(); prop_table.addFocusListener(this);
+//	explorers = new JTabbedPane();
+//	editors   = new JTabbedPane();
+//	infos     = new JTabbedPane();
+//	split_bottom = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false,
+//	editors, infos);
+//	split_bottom.setResizeWeight(0.75);
+//	split_bottom.setOneTouchExpandable(true);
+//	split_left   = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false,
+//	explorers, split_bottom);
+//	split_left.setResizeWeight(0.25);
+//	split_left.setOneTouchExpandable(true);
+//	explorers.addTab("Explorer", new JScrollPane(expl_tree));
+//	explorers.addTab("Project", (Component)tree_canvas);
+//	infos.addTab("Info", (Component)info_canvas);
+//	infos.addTab("Clipboard", (Component)clip_canvas);
+//	infos.addTab("Inspector", new JScrollPane(prop_table));
+
+//	this.getContentPane().add(split_left, BorderLayout.CENTER);
+//	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//	this.setSize(screenSize.width, (screenSize.height*3)/4);
+//	this.setVisible(true);
+//	editor_views = new Editor[0];
+//	info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+//	clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+//	prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+//	expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
+//	tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
+//	addListeners();
+//	initBgFormatters();
+//	expl_view.setRoot(Env.getProject());
+//	expl_view.formatAndPaint(true);
+//	expl_tree.requestFocus();
+//	tree_view.setRoot(Env.getProject());
+//	tree_view.formatAndPaint(true);
 	}
 
 	void createShell(Display display) {
@@ -147,7 +180,8 @@ implements IWindow, SelectionListener, FocusListener {
 	}
 	public Shell open(Display display) {
 		createShell(display);
-		createMenuBar ();
+		createGUI(shell);
+		createMenuBar();
 		shell.setSize(500, 400);
 		shell.open();
 		return shell;

@@ -36,6 +36,25 @@
        <core:SymbolRef name='Edit' />
       </action>
      </sop:kiev.fmt.evt.Binding>
+     <sop:kiev.fmt.evt.Action name='Select' uuid='30e79585-b221-4da6-8111-f1d3830a36ad'>
+      <description>Select current item</description>
+      <isForPopupMenu>false</isForPopupMenu>
+      <actionClass>kiev.gui.MouseActions$Select</actionClass>
+     </sop:kiev.fmt.evt.Action>
+     <sop:kiev.fmt.evt.Binding>
+      <events>
+       <sop:kiev.fmt.evt.MouseEvent>
+        <button>16</button>
+        <count>1</count>
+        <withCtrl>false</withCtrl>
+        <withAlt>false</withAlt>
+        <withShift>false</withShift>
+       </sop:kiev.fmt.evt.MouseEvent>
+      </events>
+      <action>
+       <core:SymbolRef name='Select' />
+      </action>
+     </sop:kiev.fmt.evt.Binding>
     </members>
    </sop:kiev.fmt.evt.BindingSet>
   </members>

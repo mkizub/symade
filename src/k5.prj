@@ -74,6 +74,7 @@
            <core:FileUnit name='Binding.java' />
            <core:FileUnit name='BindingSet.java' />
            <core:FileUnit name='KeyboardEvent.java' />
+           <core:FileUnit name='MouseEvent.java' />
            <core:FileUnit name='UIEvent.java' />
           </members>
          </sop:kiev.vlang.DirUnit>
@@ -106,6 +107,7 @@
            <core:FileUnit name='Event.java' />
            <core:FileUnit name='Item.java' />
            <core:FileUnit name='KeyboardEvent.java' />
+           <core:FileUnit name='MouseEvent.java' />
           </members>
          </sop:kiev.vlang.DirUnit>
         </members>

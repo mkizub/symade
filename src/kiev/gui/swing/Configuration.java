@@ -11,7 +11,6 @@
 package kiev.gui.swing;
 
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -20,10 +19,10 @@ import java.util.Hashtable;
 
 import kiev.gui.event.BindingSet;
 import kiev.gui.event.KeyboardEvent;
-
 import kiev.gui.event.Event;
 import kiev.gui.event.Binding;
 import kiev.gui.event.Item;
+import kiev.gui.event.MouseEvent;
 
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Drawable;
@@ -49,12 +48,12 @@ public class Configuration {
 
 	public static Hashtable<Object,UIActionFactory[]> getEditorActionMap() {
 		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
-		//final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
+		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
 		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
 		final int ALT   = KeyEvent.ALT_DOWN_MASK;
 
-		naviMap.put(new InputEventInfo(0,1,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.Select()});
-		naviMap.put(new InputEventInfo(0,1,		MouseEvent.BUTTON3_MASK),	new UIActionFactory[]{new MouseActions.PopupContextMenu()});
+//		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.Select()});
+		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON3_MASK),	new UIActionFactory[]{new MouseActions.PopupContextMenu()});
 
 		naviMap.put(new InputEventInfo(ALT,		KeyEvent.VK_X),				new UIActionFactory[]{UIManager.newExprEditActionsFlatten()});
 
@@ -90,6 +89,7 @@ public class Configuration {
 			if (item instanceof Binding){
 				Binding bnd = (Binding)item;
 				for (Event event: bnd.events){
+					InputEventInfo ei = null;
 					if (event instanceof KeyboardEvent){
 						KeyboardEvent kbe = (KeyboardEvent)event;
 						int mask = 0, code;
@@ -98,28 +98,42 @@ public class Configuration {
 							mask |= ALT;
 						else if (kbe.withCtrl) 
 							mask |= CTRL;
-						//else if (kbe.withShift)
-							//mask = 0; //TODO  what mask? 
-							
-						//create instance of action class
-						UIActionFactory af = null;
-						try {
-							af = (UIActionFactory) Class.forName(bnd.action.actionClass).newInstance();
-						} catch (InstantiationException e) {
-							e.printStackTrace();
-						} catch (IllegalAccessException e) {
-							e.printStackTrace();
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
-						} 
-						if (af != null){
-							naviMap.put(new InputEventInfo(mask,	code),	new UIActionFactory[]{af});
-						}
+						else if (kbe.withShift)
+							mask |= SHIFT;  
+						ei = new InputEventInfo(mask,	code); 
+					} 
+					else if (event instanceof MouseEvent){
+						MouseEvent me = (MouseEvent)event;
+						int mask = 0, button, count;
+						count = me.count;
+						button = me.button;
+						if (me.withAlt) 
+							mask |= ALT;
+						else if (me.withCtrl) 
+							mask |= CTRL;
+						else if (me.withShift)
+							mask |= SHIFT;  
+						ei = new InputEventInfo(mask,	count, button); 
+						System.out.println("Mouse event mask="+mask+", count="+count+", button="+button);
+					}		
+					//create instance of action class
+					UIActionFactory af = null;
+					try {
+						af = (UIActionFactory) Class.forName(bnd.action.actionClass).newInstance();
+					} catch (InstantiationException e) {
+						e.printStackTrace();
+					} catch (IllegalAccessException e) {
+						e.printStackTrace();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} 
+					if (af != null && ei != null){
+						naviMap.put(ei,	new UIActionFactory[]{af});
 					}
-					
 				}
 			}
 		}
+		
 		naviMap.put(new InputEventInfo(0,KeyEvent.VK_E), new UIActionFactory[]{
 			new kiev.gui.swing.TextEditor.Factory(),
 			new kiev.gui.swing.IntEditor.Factory(),
@@ -138,8 +152,8 @@ public class Configuration {
 	public static Hashtable<Object,UIActionFactory[]> getProjectViewActionMap() {
 		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
 
-		naviMap.put(new InputEventInfo(0,1,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.Select()});
-		naviMap.put(new InputEventInfo(0,2,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
+		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.Select()});
+		naviMap.put(new InputEventInfo(0,2,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
 
 		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_UP),			new UIActionFactory[]{new NavigateView.LineUp()});
 		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new UIActionFactory[]{new NavigateView.LineDn()});
@@ -154,8 +168,8 @@ public class Configuration {
 //		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
 //		final int ALT   = KeyEvent.ALT_DOWN_MASK;
 
-		naviMap.put(new InputEventInfo(0,1,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.RequestFocus()});
-		naviMap.put(new InputEventInfo(0,1,		MouseEvent.BUTTON3_MASK),	new UIActionFactory[]{new MouseActions.RequestFocus()});
+		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.RequestFocus()});
+		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON3_MASK),	new UIActionFactory[]{new MouseActions.RequestFocus()});
 
 		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_UP),			new UIActionFactory[]{new NavigateView.LineUp()});
 		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new UIActionFactory[]{new NavigateView.LineDn()});
@@ -167,7 +181,7 @@ public class Configuration {
 	
 	public static Hashtable<Object,UIActionFactory[]> getTreeViewActionMap() {
 		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
-		naviMap.put(new InputEventInfo(0,2,		MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
+		naviMap.put(new InputEventInfo(0,2,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
 		return naviMap;
 	}
 
@@ -176,7 +190,7 @@ public class Configuration {
 		InputStream inp = null;
 		try {
 			inp = ClassLoader.getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
-			System.out.println("Compiled_BindingSet loadBindings inp="+inp);
+			System.out.println("Loading event bindings from "+name.replace('\u001f','/')+".ser");
 			ObjectInput oi = new ObjectInputStream(inp);
 			bs = (BindingSet)oi.readObject();
 			bs.init();
