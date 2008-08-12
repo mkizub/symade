@@ -159,12 +159,11 @@ public final class NewExpr extends ENode {
 			ta[i] = args[i].getType();
 		{
 			CallType mt = (CallType)new CallType(null,null,ta,ntype,false);
-			ISymbol@ m;
 			// First try overloaded 'new', than real 'new'
 			if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
-				ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
-				if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
-					CallExpr n = new CallExpr(pos,new TypeRef(ntype),m,((NewExpr)this).args.delToArray());
+				ResInfo<Method> info = new ResInfo<Method>(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+				if (PassInfo.resolveBestMethodR(ntype,info,mt)) {
+					CallExpr n = new CallExpr(pos,new TypeRef(ntype),info.resolvedSymbol(),((NewExpr)this).args.delToArray());
 					replaceWithNodeReWalk(n);
 					return;
 				}
@@ -173,10 +172,9 @@ public final class NewExpr extends ENode {
 		// try to find a constructor
 		{
 			CallType mt = (CallType)new CallType(ntype,null,ta,Type.tpVoid,false);
-			Constructor@ c;
-			ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( PassInfo.resolveBestMethodR(ntype,c,info,mt) ) {
-				this.symbol = c;
+			ResInfo<Constructor> info = new ResInfo<Constructor>(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
+				this.symbol = info.resolvedSymbol();
 				return;
 			}
 		}
@@ -241,10 +239,9 @@ public final class NewEnumExpr extends ENode {
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
 		CallType mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
-		Constructor@ c;
-		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(ntype,c,info,mt) ) {
-			this.symbol = c;
+		ResInfo<Constructor> info = new ResInfo<Constructor>(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
+			this.symbol = info.resolvedSymbol();
 			return;
 		}
 		// try to bind to a class with no constructors
@@ -431,12 +428,9 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		return sb.toString();
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
-		Var@ p;
+	public rule resolveNameR(ResInfo path)
 	{
-		p @= params,
-		path.checkNodeName(p),
-		node ?= p
+		path @= params
 	}
 }
 

@@ -111,12 +111,13 @@ public class UserMeta extends MNode {
 			return td;
 		String name = decl.name;
 		if (name.indexOf('\u001f') < 0) {
-			JavaAnnotation@ node;
-			if( !PassInfo.resolveNameR(this,node,new ResInfo(this,name,ResInfo.noForwards)) )
+			ResInfo<JavaAnnotation> info = new ResInfo<JavaAnnotation>(this,name,ResInfo.noForwards);
+			if (!PassInfo.resolveNameR(this,info))
 				Kiev.reportError(this,"Unresolved annotation name "+name);
-			this.decl.symbol = (JavaAnnotation)node;
-			node.checkResolved();
-			return (JavaAnnotation)node;
+			JavaAnnotation ann = info.resolvedDNode();
+			this.decl.symbol = info.resolvedSymbol();
+			ann.checkResolved();
+			return ann;
 		}
 		DNode scope = Env.getRoot();
 		int dot;
@@ -131,12 +132,12 @@ public class UserMeta extends MNode {
 			} else {
 				head = name;
 			}
-			DNode@ node;
-			if!(((ScopeOfNames)scope).resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			if!(((ScopeOfNames)scope).resolveNameR(info)) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
 				return null;
 			}
-			scope = (DNode)node;
+			scope = info.resolvedDNode();
 		} while (dot > 0);
 		if !(scope instanceof JavaAnnotation) {
 			Kiev.reportError(this,"Unresolved annotation "+decl.name);
@@ -266,19 +267,19 @@ public class UserMeta extends MNode {
 			}
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
-				Vector<TypeDecl> vect = new Vector<TypeDecl>();
-				TypeDecl@ td;
+				Vector<ISymbol> vect = new Vector<ISymbol>();
 				ResInfo info = new ResInfo(this,head,flags);
-				foreach (PassInfo.resolveNameR(this,td,info)) {
-					if ((td instanceof KievPackage || td instanceof JavaAnnotation) && !vect.contains(td))
-						vect.append(td);
+				foreach (PassInfo.resolveNameR(this,info)) {
+					ISymbol isym = info.resolvedSymbol();
+					if ((isym instanceof KievPackage || isym instanceof JavaAnnotation) && !vect.contains(isym))
+						vect.append(isym);
 				}
 				return vect.toArray();
 			} else {
-				TypeDecl@ td;
-				if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
-					return new TypeDecl[0];
-				scope = (TypeDecl)td;
+				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,ResInfo.noForwards);
+				if (!PassInfo.resolveNameR(this,info))
+					return null;
+				scope = info.resolvedDNode();
 			}
 			while (dot >= 0) {
 				dot = name.indexOf('\u001f');
@@ -291,19 +292,19 @@ public class UserMeta extends MNode {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<TypeDecl> vect = new Vector<TypeDecl>();
-					TypeDecl@ td;
+					Vector<ISymbol> vect = new Vector<ISymbol>();
 					ResInfo info = new ResInfo(this,head,flags);
-					foreach (scope.resolveNameR(td,info)) {
-						if ((td instanceof KievPackage || td instanceof JavaAnnotation) && !vect.contains(td))
-							vect.append(td);
+					foreach (scope.resolveNameR(info)) {
+						DNode dn = info.resolvedDNode();
+						if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				} else {
-					TypeDecl@ td;
-					if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
-						return new TypeDecl[0];
-					scope = td;
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,ResInfo.noForwards);
+					if!(scope.resolveNameR(info))
+						return null;
+					scope = info.resolvedDNode();
 				}
 			}
 		}

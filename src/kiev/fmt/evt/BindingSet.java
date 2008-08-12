@@ -50,19 +50,17 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 		return q_name;
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 	{
-		path.checkNodeName(this),
-		node ?= this
+		path ?= this
 	;
-		node @= members,
-		path.checkNodeName(node)
+		path @= members
 	;
 		path.isSuperAllowed(),
 		parent_set.dnode != null,
 		path.getPrevSlotName() != "parent_set",
 		path.enterSuper() : path.leaveSuper(),
-		parent_set.dnode.resolveNameR(node,path)
+		parent_set.dnode.resolveNameR(path)
 	}
 	
 	public boolean preResolveIn() {

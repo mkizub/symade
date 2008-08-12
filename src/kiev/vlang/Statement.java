@@ -42,12 +42,13 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		SymbolRef@	sr;
 	{
 		sr @= old_vars,
-		path.checkNodeName((Var)sr.dnode),
-		node ?= getNewVar((Var)sr.dnode)
+		//path.checkNodeName((Var)sr.dnode),
+		//path ?= getNewVar((Var)sr.dnode)
+		path ?= (Var)sr.dnode
 	}
 	
 	private Var getNewVar(Var old) {

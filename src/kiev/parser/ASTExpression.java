@@ -49,12 +49,13 @@ public class ASTExpression extends ENode {
 					ENode n2 = nodes[i+2];
 					if (n2 instanceof EToken && n2.isIdentifier()) {
 						KievPackage scope = (KievPackage)n0.asScope();
-						DNode@ dn;
-						if (!scope.resolveNameR(dn,new ResInfo(n2,n2.ident,ResInfo.noSyntaxContext|ResInfo.noForwards)))
+						ResInfo info = new ResInfo(n2,n2.ident,ResInfo.noSyntaxContext|ResInfo.noForwards);
+						if (!scope.resolveNameR(info))
 							continue;
+						DNode dn = info.resolvedDNode();
 						if (dn instanceof KievPackage) {
 							EToken res = new EToken(n2.pos, scope.qname()+'\u001f'+n2.ident, ETokenKind.SCOPE_DECL, true);
-							res.value = (DNode)dn;
+							res.value = dn;
 							n0.detach();
 							n1.detach();
 							n2.detach();
@@ -65,7 +66,7 @@ public class ASTExpression extends ENode {
 						}
 						if (dn instanceof TypeDecl) {
 							TypeNameRef res = new TypeNameRef(scope.qname()+'\u001f'+n2.ident);
-							res.symbol = (TypeDecl)dn;
+							res.symbol = info.resolvedSymbol();
 							res.pos = n2.pos;
 							n0.detach();
 							n1.detach();
@@ -451,9 +452,10 @@ public class ASTExpression extends ENode {
 				tr = (TypeRef)result[0];
 			if (op == Operator.TypeAccess) {
 				EToken id = (EToken)result[2];
-				TypeDecl@ td;
-				if (!tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noSyntaxContext|ResInfo.noForwards)))
+				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(id,id.ident,ResInfo.noSyntaxContext|ResInfo.noForwards);
+				if (!tr.getTypeDecl().resolveNameR(info))
 					return null;
+				TypeDecl td = info.resolvedDNode();
 				if (td.parent() != tr.getTypeDecl())
 					return null;
 				TypeRef ret;
@@ -461,7 +463,7 @@ public class ASTExpression extends ENode {
 					ret = new TypeNameRef(tr.ident+"\u001f"+id.ident);
 				else
 					ret = new TypeInnerNameRef(tr.ncopy(),id.ident);
-				ret.symbol = (TypeDecl)td;
+				ret.symbol = info.resolvedSymbol();
 				ret.pos = id.pos;
 				return ret;
 			}
@@ -514,8 +516,9 @@ public class ASTExpression extends ENode {
 				tr = (TypeRef)result[0];
 			if (tr != null) {
 				EToken id = (EToken)result[2];
-				TypeDecl@ td;
-				if (tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noSyntaxContext|ResInfo.noForwards))) {
+				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(id,id.ident,ResInfo.noSyntaxContext|ResInfo.noForwards);
+				if (tr.getTypeDecl().resolveNameR(info)) {
+					TypeDecl td = info.resolvedDNode();
 					if (td.parent() == tr.getTypeDecl())
 						return null;
 				}

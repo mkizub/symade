@@ -178,14 +178,13 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			code.addInstr(Instr.op_arr_load);
 		} else {
 			// Resolve overloaded access method
-			ISymbol@ v;
 			CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,mt) )
+			ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(obj.getType(),info,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
 			obj.generate(code,null);
 			index.generate(code,null);
-			Method func = (Method)v.dnode;
+			Method func = info.resolvedDNode();
 			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
 			if( Kiev.verify
 			 && func.mtype.ret().isReference()
@@ -222,17 +221,16 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			code.addInstr(Instr.op_arr_store);
 		} else {
 			// Resolve overloaded set method
-			ISymbol@ v;
 			// We need to get the type of object in stack
 			JType jt = code.stack_at(0);
 			Type t = Signature.getType(code.jenv,jt.java_signature);
 			ENode o = new LVarExpr(pos,new LVar(pos,"",t,Var.VAR_LOCAL,0));
 			Struct s = objType.getStruct();
 			CallType mt = new CallType(objType,null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(objType,v,info,mt) )
+			ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(objType,info,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArraySetOp,mt)+" in "+objType);
-			Method func = (Method)v.dnode;
+			Method func = info.resolvedDNode();
 			code.addInstr(Instr.op_call,(JMethod)func,false,objType);
 			// Pop return value
 			code.addInstr(Instr.op_pop);
@@ -247,7 +245,6 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			code.addInstr(Instr.op_arr_store);
 		} else {
 			// Resolve overloaded set method
-			ISymbol@ v;
 			// We need to get the type of object in stack
 			JType jt = code.stack_at(0);
 			Type t = Signature.getType(code.jenv,jt.java_signature);
@@ -256,11 +253,11 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			ENode o = new LVarExpr(pos,new LVar(pos,"",t,Var.VAR_LOCAL,0));
 			Struct s = obj.getType().getStruct();
 			CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,mt) )
+			ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(obj.getType(),info,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArraySetOp,mt));
 			// The method must return the value to duplicate
-			Method func = (Method)v.dnode;
+			Method func = info.resolvedDNode();
 			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
 			if( Kiev.verify
 			 && func.mtype.ret().isReference()

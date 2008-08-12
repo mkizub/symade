@@ -77,53 +77,53 @@ public abstract class MetaType implements Constants {
 		return new XType(this, getTemplBindings(), t.bindings().applay_bld(bindings));
 	}
 
-	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ResInfo info)
 	{
 		trace(Kiev.debug && Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in "+tp),
 		tdecl.checkResolved(),
 		{
 			trace(Kiev.debug && Kiev.debugResolve,"Type: resolving in "+tp),
-			resolveNameR_1(node,info)	// resolve in this class
+			resolveNameR_1(info)	// resolve in this class
 		;	info.isSuperAllowed(),
 			trace(Kiev.debug && Kiev.debugResolve,"Type: resolving in super-type of "+tp),
-			resolveNameR_3(tp,node,info)	// resolve in super-classes
+			resolveNameR_3(tp,info)	// resolve in super-classes
 		;	info.isForwardsAllowed(),
 			trace(Kiev.debug && Kiev.debugResolve,"Type: resolving in forwards of "+tp),
-			resolveNameR_4(tp,node,info)	// resolve in forwards
+			resolveNameR_4(tp,info)	// resolve in forwards
 		}
 	}
-	private rule resolveNameR_1(ISymbol@ node, ResInfo info)
+	private rule resolveNameR_1(ResInfo info)
 		ASTNode@ n;
 	{
 		n @= tdecl.getMembers(),
-		n instanceof Field && info.checkNodeName(n) && info.check(n),
-		node ?= n
+		n instanceof Field,
+		info ?= n
 	}
-	private rule resolveNameR_3(Type tp, ISymbol@ node, ResInfo info)
+	private rule resolveNameR_3(Type tp, ResInfo info)
 		TypeRef@ sup;
 	{
 		info.enterSuper(1, ResInfo.noForwards) : info.leaveSuper(),
 		sup @= tdecl.super_types,
-		sup.getTypeDecl().xmeta_type.resolveNameAccessR(tp,node,info)
+		sup.getTypeDecl().xmeta_type.resolveNameAccessR(tp,info)
 	}
 
-	private rule resolveNameR_4(Type tp, ISymbol@ node, ResInfo info)
+	private rule resolveNameR_4(Type tp, ResInfo info)
 		ASTNode@ forw;
 		TypeRef@ sup;
 	{
 		forw @= tdecl.getMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).getType().applay(tp).resolveNameAccessR(node,info)
+		((Field)forw).getType().applay(tp).resolveNameAccessR(info)
 	;	info.isSuperAllowed(),
 		sup @= tdecl.super_types,
 		forw @= sup.getTypeDecl().getMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).getType().applay(tp).resolveNameAccessR(node,info)
+		((Field)forw).getType().applay(tp).resolveNameAccessR(info)
 	}
 
-	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt)
+	public rule resolveCallAccessR(Type tp, ResInfo info, CallType mt)
 		ASTNode@ member;
 		TypeRef@ sup;
 		Field@ forw;
@@ -133,26 +133,25 @@ public abstract class MetaType implements Constants {
 		{
 			member @= tdecl.getMembers(),
 			member instanceof Method,
-			info.check(member),
-			node ?= ((Method)member).equalsByCast(info.getName(),mt,tp,info)
+			info ?= ((Method)member).equalsByCast(info.getName(),mt,tp,info)
 		;
 			info.isSuperAllowed(),
 			info.enterSuper(1, ResInfo.noForwards) : info.leaveSuper(),
 			sup @= tdecl.super_types,
-			sup.getTypeDecl().xmeta_type.resolveCallAccessR(tp,node,info,mt)
+			sup.getTypeDecl().xmeta_type.resolveCallAccessR(tp,info,mt)
 		;
 			info.isForwardsAllowed(),
 			member @= tdecl.getMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).getType().applay(tp).resolveCallAccessR(node,info,mt)
+			((Field)member).getType().applay(tp).resolveCallAccessR(info,mt)
 		;
 			info.isForwardsAllowed(),
 			sup @= tdecl.super_types,
 			member @= sup.getTypeDecl().getMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).getType().applay(tp).resolveCallAccessR(node,info,mt)
+			((Field)member).getType().applay(tp).resolveCallAccessR(info,mt)
 		}
 	}
 
@@ -326,14 +325,13 @@ public final class ASTNodeMetaType extends MetaType {
 		built = true;
 	}
 
-	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ResInfo info)
 	{
 		getTemplBindings(),
-		node @= this.fields,
-		info.checkNodeName(node) && info.check(node)
+		info @= this.fields
 	}
 
-	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt) { false }
+	public rule resolveCallAccessR(Type tp, ResInfo info, CallType mt) { false }
 
 }
 
@@ -601,20 +599,20 @@ public class ArgMetaType extends MetaType {
 		return bindings.resolve((ArgType)t);
 	}
 
-	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ResInfo info)
 		TypeRef@ sup;
 	{
 		sup @= tdecl.super_types,
-		sup.getType().resolveNameAccessR(node, info)
+		sup.getType().resolveNameAccessR(info)
 	}
 
-	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt)
+	public rule resolveCallAccessR(Type tp, ResInfo info, CallType mt)
 		TypeRef@ sup;
 	{
 		tdecl.super_types.length == 0,
-		StdTypes.tpObject.resolveCallAccessR(node, info, mt)
+		StdTypes.tpObject.resolveCallAccessR(info, mt)
 	;	sup @= tdecl.super_types,
-		sup.getType().resolveCallAccessR(node, info, mt)
+		sup.getType().resolveCallAccessR(info, mt)
 	}
 }
 
@@ -786,7 +784,7 @@ public class WrapperMetaType extends MetaType {
 		return wf;
 	}
 	
-	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info)
+	public rule resolveNameAccessR(Type tp, ResInfo info)
 	{
 		info.isForwardsAllowed(),
 		trace(Kiev.debug && Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in wrapper type "+tp),
@@ -794,16 +792,16 @@ public class WrapperMetaType extends MetaType {
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(field, 0) : info.leaveForward(field, 0),
-			((WrapperType)tp).getUnboxedType().resolveNameAccessR(node, info)
+			((WrapperType)tp).getUnboxedType().resolveNameAccessR(info)
 		;	info.enterSuper(10) : info.leaveSuper(10),
-			((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info)
+			((WrapperType)tp).getEnclosedType().resolveNameAccessR(info)
 		}
 	;
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
-		((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info)
+		((WrapperType)tp).getEnclosedType().resolveNameAccessR(info)
 	}
 
-	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt)
+	public rule resolveCallAccessR(Type tp, ResInfo info, CallType mt)
 	{
 		info.isForwardsAllowed(),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving method "+info.getName()+" in wrapper type "+this),
@@ -811,13 +809,13 @@ public class WrapperMetaType extends MetaType {
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(field, 0) : info.leaveForward(field, 0),
-			((WrapperType)tp).getUnboxedType().resolveCallAccessR(node, info, mt)
+			((WrapperType)tp).getUnboxedType().resolveCallAccessR(info, mt)
 		;	info.enterSuper(10) : info.leaveSuper(10),
-			((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, mt)
+			((WrapperType)tp).getEnclosedType().resolveCallAccessR(info, mt)
 		}
 	;
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
-		((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, mt)
+		((WrapperType)tp).getEnclosedType().resolveCallAccessR(info, mt)
 	}
 	
 }
@@ -970,8 +968,8 @@ public class CallMetaType extends MetaType {
 		return mt;
 	}
 
-	public rule resolveNameAccessR(Type tp, ISymbol@ node, ResInfo info) { false }
-	public rule resolveCallAccessR(Type tp, ISymbol@ node, ResInfo info, CallType mt) { false }
+	public rule resolveNameAccessR(Type tp, ResInfo info) { false }
+	public rule resolveCallAccessR(Type tp, ResInfo info, CallType mt) { false }
 
 	public TemplateTVarSet getTemplBindings() {
 		return templ_bindings;

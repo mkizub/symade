@@ -123,10 +123,11 @@ public class TypeExpr extends TypeRef {
 			}
 			throw new CompilerException(this, "Cannot find ASTNodeType for name: "+arg.toString());
 		}
-		TypeOpDef@ tod;
+		ResInfo<TypeOpDef> info = new ResInfo<TypeOpDef>(this,this.op_name);
 		Type t;
 		ArgType a;
-		if (PassInfo.resolveNameR(((TypeExpr)this),tod,new ResInfo(this,this.op_name))) {
+		if (PassInfo.resolveNameR((TypeExpr)this,info)) {
+			TypeOpDef tod = info.resolvedDNode();
 			t = tod.dtype.getType();
 			a = tod.arg.getAType();
 		}
@@ -154,16 +155,16 @@ public class TypeExpr extends TypeRef {
 			return this.type_lnk.getStruct();
 		if (this.op_name == Operator.PostTypeArray.name || this.op_name == Operator.PostTypeVararg.name)
 			return null;
-		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.op_name))) {
+		ResInfo info = new ResInfo(this,this.op_name);
+		if (!PassInfo.resolveNameR(this,info)) {
 			if (op == Operator.PostTypeAST)
 				return arg.getStruct();
 			else
 				throw new CompilerException(this,"Typedef for type operator "+op_name+" not found");
 		}
-		if (v instanceof TypeDecl)
-			return ((TypeDecl)v).getStruct();
-		throw new CompilerException(this,"Expected to find type for "+op_name+", but found "+v);
+		if (info.resolvedDNode() instanceof TypeDecl)
+			return ((TypeDecl)info.resolvedDNode()).getStruct();
+		throw new CompilerException(this,"Expected to find type for "+op_name+", but found "+info.resolvedSymbol());
 	}
 	public TypeDecl getTypeDecl() {
 		if (this.type_lnk != null)
@@ -172,16 +173,16 @@ public class TypeExpr extends TypeRef {
 			return ArrayMetaType.instance.tdecl;
 		if (this.op_name == Operator.PostTypeVararg.name)
 			return StdTypes.tpVararg.meta_type.tdecl;
-		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.op_name))) {
+		ResInfo info = new ResInfo(this,this.op_name);
+		if (!PassInfo.resolveNameR(this,info)) {
 			if (op == Operator.PostTypeAST)
 				return StdTypes.tdASTNodeType;
 			else
 				throw new CompilerException(this,"Typedef for type operator "+op_name+" not found");
 		}
-		if (v instanceof TypeDecl)
-			return (TypeDecl)v;
-		throw new CompilerException(this,"Expected to find type for "+op_name+", but found "+v);
+		if (info.resolvedDNode() instanceof TypeDecl)
+			return (TypeDecl)info.resolvedDNode();
+		throw new CompilerException(this,"Expected to find type for "+op_name+", but found "+info.resolvedSymbol());
 	}
 
 	public String toString() {

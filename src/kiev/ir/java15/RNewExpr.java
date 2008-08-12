@@ -72,21 +72,20 @@ public static final view RNewExpr of NewExpr extends RENode {
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
 		CallType mt = new CallType(null,null,ta,ntype,false); //(CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
-		ISymbol@ m;
 		// First try overloaded 'new', than real 'new'
 		if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
-			ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
-			if (PassInfo.resolveBestMethodR(ntype,m,info,mt)) {
-				CallExpr n = new CallExpr(pos,new TypeRef(ntype),m,((NewExpr)this).args.delToArray());
+			ResInfo<Method> info = new ResInfo<Method>(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			if (PassInfo.resolveBestMethodR(ntype,info,mt)) {
+				CallExpr n = new CallExpr(pos,new TypeRef(ntype),info.resolvedSymbol(),((NewExpr)this).args.delToArray());
 				replaceWithNodeResolve(n);
 				return;
 			}
 		}
 		mt = new CallType(ntype,null,ta,Type.tpVoid,false); //(CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
-		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
-			this.symbol = m;
-			((Method)m.dnode).makeArgs(args,ntype);
+		ResInfo<Method> info = new ResInfo<Method>(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
+			this.symbol = info.resolvedSymbol();
+			info.resolvedDNode().makeArgs(args,ntype);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}
@@ -119,12 +118,11 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
 		CallType mt = (CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
-		Constructor@ m;
 		mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,Type.tpVoid,false));
-		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(ntype,m,info,mt) ) {
-			this.symbol = m;
-			m.makeArgs(args,ntype);
+		ResInfo<Constructor> info = new ResInfo<Constructor>(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
+			this.symbol = info.resolvedSymbol();
+			info.resolvedDNode().makeArgs(args,ntype);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}

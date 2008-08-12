@@ -80,31 +80,29 @@ public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer,
 		}
 	}
 	
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		ATextSyntax@ syn;
 	{
-		path.checkNodeName(this),
-		node ?= this
+		path ?= this
 	;
-		node @= members,
-		path.checkNodeName(node)
+		path @= members
 	;
 		path.isSuperAllowed(),
 		parent_syntax != null && parent_syntax.dnode != null,
 		path.getPrevSlotName() != "parent_syntax",
 		syn ?= parent_syntax.dnode,
 		path.enterSuper() : path.leaveSuper(),
-		syn.resolveNameR(node,path)
+		syn.resolveNameR(path)
 	}
 	
 	public boolean preResolveIn() {
 		this.compiled = null;
 		if (parent_syntax.name != null && parent_syntax.name != "") {
-			ATextSyntax@ ts;
-			if (!PassInfo.resolveNameR(this,ts,new ResInfo(this,parent_syntax.name)))
+			ResInfo<ATextSyntax> info = new ResInfo<ATextSyntax>(this,parent_syntax.name);
+			if (!PassInfo.resolveNameR(this,info))
 				Kiev.reportError(this,"Cannot resolve syntax '"+parent_syntax.name+"'");
-			else if (parent_syntax.symbol != ts)
-				parent_syntax.symbol = ts;
+			else if (parent_syntax.symbol != info.resolvedSymbol())
+				parent_syntax.symbol = info.resolvedSymbol();
 		}
 		return true;
 	}
@@ -763,8 +761,8 @@ public abstract class SyntaxElem extends ASTNode {
 		if (this.fmt != null)
 			fmt = this.fmt.dnode;
 		if (fmt == null) {
-			SyntaxElemFormatDecl@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,"fmt-default"))) {
+			ResInfo<SyntaxElemFormatDecl> info = new ResInfo<SyntaxElemFormatDecl>(this,"fmt-default");
+			if (!PassInfo.resolveNameR(this,info)) {
 				Draw_Layout dflt = new Draw_Layout();
 				LayoutSpace sp = new LayoutSpace();
 				sp.name = "sp";
@@ -774,7 +772,7 @@ public abstract class SyntaxElem extends ASTNode {
 				dflt.spaces_after  = new LayoutSpace[]{ sp };
 				return dflt;
 			}
-			fmt = d;
+			fmt = info.resolvedDNode();
 		}
 		return fmt.compile();
 	}

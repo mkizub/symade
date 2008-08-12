@@ -196,15 +196,14 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 
 	public RewriteCase() {}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo info)
+	public rule resolveNameR(ResInfo info)
 	{
-		info.checkNodeName(var),
-		node ?= var
+		info ?= var
 	;
 		info.isForwardsAllowed(),
 		var.isForward(),
 		info.enterForward(var) : info.leaveForward(var),
-		var.getType().resolveNameAccessR(node,info)
+		var.getType().resolveNameAccessR(info)
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
@@ -520,10 +519,9 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 		return bl;
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 	{
-		node ?= var,
-		path.checkNodeName(node)
+		path ?= var
 	}
 
 }
@@ -595,9 +593,8 @@ public final class MacroAccessExpr extends ENode {
 		Type tp = obj.getType().getErasedType();
 		if!(tp instanceof ASTNodeType)
 			throw new CompilerException(this, "Accessor must be an AST node");
-		Field@ v;
-		ResInfo info = new ResInfo(this,ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards);
-		if!(tp.resolveNameAccessR(v,info)) {
+		ResInfo<Field> info = new ResInfo<Field>(this,ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards);
+		if!(tp.resolveNameAccessR(info)) {
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
 			msg.append("\t").append(tp).append('\n');
 			msg.append("while resolving ").append(this);

@@ -657,7 +657,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return;
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		LVar@ var;
 	{
 		isInlinedByDispatcherMethod() , $cut, false
@@ -667,43 +667,39 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		path.getPrevSlotName() == "type_ref" ||
 		path.getPrevSlotName() == "dtype_ref",
 		$cut,
-		node @= targs,
-		path.checkNodeName(node)
+		path @= targs
 	;
-		var @= params,
-		path.checkNodeName(var),
-		node ?= var
+		path @= params
+	//;
+	//	path.getName() == nameResultVar,
+	//	path ?= ret_var
 	;
-		path.getName() == nameResultVar,
-		node ?= ret_var
-	;
-		node @= targs,
-		path.checkNodeName(node)
+		path @= targs
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveNameAccessR(node,path)
+		this.ctx_tdecl.xtype.resolveNameAccessR(path)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.getType().resolveNameAccessR(node,path)
+		var.getType().resolveNameAccessR(path)
 	}
 
-	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ResInfo info, CallType mt)
 		Var@ n;
 	{
 		info.isForwardsAllowed(),
 	{
 		!this.isStatic(),
 		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveCallAccessR(node,info,mt)
+		this.ctx_tdecl.xtype.resolveCallAccessR(info,mt)
 	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(node,info,mt)
+		n.getType().resolveCallAccessR(info,mt)
 	}
 	}
 
@@ -879,7 +875,7 @@ public final class MethodImpl extends Method {
 	}
 }
 
-@ThisIsANode(name="Method", lang=CoreLang)
+@ThisIsANode(name="Getter", lang=CoreLang)
 public final class MethodGetter extends Method {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in")	Block		body;
@@ -894,7 +890,7 @@ public final class MethodGetter extends Method {
 	}
 }
 
-@ThisIsANode(name="Method", lang=CoreLang)
+@ThisIsANode(name="Setter", lang=CoreLang)
 public final class MethodSetter extends Method {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in")	Block		body;

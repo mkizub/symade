@@ -52,13 +52,11 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			if (res[si] != null)
 				continue;
 			Type tp = tps[si];
-			DNode@ v;
 			ResInfo info;
-			if (!(obj instanceof TypeRef) &&
-				tp.resolveNameAccessR(v,info=new ResInfo(this,this.ident,ResInfo.noStatic|ResInfo.noSyntaxContext)) )
-				res[si] = makeExpr(v,info,obj);
-			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,this.ident)))
-				res[si] = makeExpr(v,info,tp.getStruct());
+			if (!(obj instanceof TypeRef) && tp.resolveNameAccessR(info=new ResInfo(this,this.ident,ResInfo.noStatic|ResInfo.noSyntaxContext)))
+				res[si] = makeExpr(info.resolvedSymbol(),info,obj);
+			else if (tp.meta_type.tdecl.resolveNameR(info=new ResInfo(this,this.ident)))
+				res[si] = makeExpr(info.resolvedSymbol(),info,tp.getStruct());
 		}
 		int cnt = 0;
 		int idx = -1;
@@ -123,17 +121,17 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 		obj.resolve(null);
 		index.resolve(null);
 		// Resolve overloaded access method
-		ISymbol@ m;
 		CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},Type.tpAny,false);
-		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-		if( !PassInfo.resolveBestMethodR(obj.getType(),m,info,mt) )
+		ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		if( !PassInfo.resolveBestMethodR(obj.getType(),info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
-		if !(m.dnode.isMacro() && m.dnode.isNative()) {
+		Method m = info.resolvedDNode();
+		if !(m.isMacro() && m.isNative()) {
 			// Not a standard operator
 			if( m.dnode.isStatic() )
-				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~obj,~index}));
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,info.resolvedSymbol(),new ENode[]{~obj,~index}));
 			else
-				replaceWithNodeResolve(reqType, new CallExpr(pos,~obj,m,new ENode[]{~index}));
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~obj,info.resolvedSymbol(),new ENode[]{~index}));
 			return;
 		}
 		setResolved(true);

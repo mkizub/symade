@@ -524,29 +524,26 @@ public static final view RCastExpr of CastExpr extends RENode {
 	}
 
 	public final boolean tryOverloadedCast(Type et) {
-		ISymbol@ v;
-		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
-		v.$unbind();
+		ResInfo<Method> info = new ResInfo<Method>(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
-		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
-			Method m = (Method)v.dnode;
+		if( PassInfo.resolveBestMethodR(et,info,mt) ) {
+			Method m = info.resolvedDNode();
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType();
 				Type tp = info.resolved_type.resolve(at);
 				targs[i] = new TypeRef(tp);
 			}
-			ENode call = info.buildCall((ASTNode)this,~expr,v,targs,ENode.emptyArray).closeBuild();
+			ENode call = info.buildCall((ASTNode)this,~expr,targs,ENode.emptyArray).closeBuild();
 			if (this.ctype.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(ctype.getType(),call);
 			return true;
 		}
-		v.$unbind();
-		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		info = new ResInfo<Method>(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
-		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
-			Method m = (Method)v.dnode;
+		if( PassInfo.resolveMethodR(this,info,mt) ) {
+			Method m = info.resolvedDNode();
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType();
@@ -554,7 +551,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 				targs[i] = new TypeRef(tp);
 			}
 			assert(m.isStatic());
-			ENode call = new CallExpr(pos,null,v,targs,new ENode[]{~expr});
+			ENode call = new CallExpr(pos,null,info.resolvedSymbol(),targs,new ENode[]{~expr});
 			replaceWithNodeResolve(ctype.getType(),call);
 			return true;
 		}

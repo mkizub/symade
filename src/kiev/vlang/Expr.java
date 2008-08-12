@@ -166,13 +166,12 @@ public class AssignExpr extends ENode {
 			ContainerAccessExpr cae = (ContainerAccessExpr)lval;
 			Type ect1 = cae.obj.getType();
 			Type ect2 = cae.index.getType();
-			ISymbol@ m;
-			ResInfo info = new ResInfo(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
+			ResInfo<Method> info = new ResInfo<Method>(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
 			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
-			if (PassInfo.resolveBestMethodR(ect1,m,info,mt)) {
-				Method rm = (Method)m.dnode;
+			if (PassInfo.resolveBestMethodR(ect1,info,mt)) {
+				Method rm = info.resolvedDNode();
 				if !(rm.isMacro() && rm.isNative()) {
-					ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
+					ENode res = info.buildCall((ASTNode)this, cae.obj, null, new ENode[]{~cae.index,~value});
 					res = res.closeBuild();
 					this.replaceWithNodeReWalk(res);
 				}
@@ -514,37 +513,35 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		stats.insert(idx,(ASTNode)sym);
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo info)
+	public rule resolveNameR(ResInfo info)
 		ASTNode@ n;
-		DNode@ dn;
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof CaseLabel,
-			((CaseLabel)n).resolveNameR(node,info)
+			((CaseLabel)n).resolveNameR(info)
 		;
-			info.checkNodeName(n),
-			node ?= n
+			info ?= n
 		;
 			info.isForwardsAllowed(),
 			n instanceof Var && ((Var)n).isForward(),
 			info.enterForward((Var)n) : info.leaveForward((Var)n),
-			n.getType().resolveNameAccessR(node,info)
+			n.getType().resolveNameAccessR(info)
 		}
 	}
 
-	public rule resolveMethodR(ISymbol@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof CaseLabel,
-			((CaseLabel)n).resolveMethodR(node, info, mt)
+			((CaseLabel)n).resolveMethodR(info, mt)
 		;
 			n instanceof Var && ((Var)n).isForward(),
 			info.enterForward((Var)n) : info.leaveForward((Var)n),
-			((Var)n).getType().resolveCallAccessR(node,info,mt)
+			((Var)n).getType().resolveCallAccessR(info, mt)
 		}
 	}
 
@@ -745,18 +742,16 @@ public class CastExpr extends ENode {
 	}
 
 	private boolean resolveOverloadedCast(Type et) {
-		ISymbol@ v;
-		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+		ResInfo<Method> info = new ResInfo<Method>(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
 		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
-		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
-			this.symbol = (ISymbol)v;
+		if( PassInfo.resolveBestMethodR(et,info,mt) ) {
+			this.symbol = info.resolvedSymbol();
 			return true;
 		}
-		v.$unbind();
-		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		info = new ResInfo<Method>(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
-		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
-			this.symbol = (ISymbol)v;
+		if( PassInfo.resolveMethodR(this,info,mt) ) {
+			this.symbol = info.resolvedSymbol();
 			return true;
 		}
 		return false;

@@ -132,15 +132,10 @@ public class Opdef extends DNode implements ScopeOfNames {
 		return image;
 	}
 	
-	public rule resolveNameR(ISymbol@ node, ResInfo info)
-		Symbol@ s;
+	public rule resolveNameR(ResInfo info)
 	{
-		info.checkNodeName(this),
-		node ?= this
-	;
-		s @= symbols,
-		info.checkNodeName(s),
-		node ?= s
+		info ?= this
+	;	info @= symbols
 	}
 }
 

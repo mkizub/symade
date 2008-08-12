@@ -60,12 +60,12 @@ public abstract class Type extends AType {
 		super(meta_type, template, flags);
 	}
 
-	public final rule resolveCallAccessR(ISymbol@ node, ResInfo info, CallType mt) {
-		meta_type.resolveCallAccessR(this,node,info,mt)
+	public final rule resolveCallAccessR(ResInfo info, CallType mt) {
+		meta_type.resolveCallAccessR(this,info,mt)
 	}
 
-	public final rule resolveNameAccessR(ISymbol@ node, ResInfo info) {
-		meta_type.resolveNameAccessR(this,node,info)
+	public final rule resolveNameAccessR(ResInfo info) {
+		meta_type.resolveNameAccessR(this,info)
 	}
 
 	public boolean isInstanceOf(Type t2) alias xfx operator ≥ {

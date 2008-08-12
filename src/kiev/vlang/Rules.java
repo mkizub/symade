@@ -75,7 +75,7 @@ public class RuleMethod extends Method {
 		return max_vars++;
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		Var@ var;
 	{
 		isInlinedByDispatcherMethod() || path.getPrevSlotName() == "targs",$cut,false
@@ -84,26 +84,21 @@ public class RuleMethod extends Method {
 		path.getPrevSlotName() == "type_ref" ||
 		path.getPrevSlotName() == "dtype_ref",
 		$cut,
-		node @= targs,
-		path.checkNodeName(node)
+		path @= targs
 	;
-		var @= localvars,
-		path.checkNodeName(var),
-		node ?= var
+		path @= localvars
 	;
-		var @= params,
-		path.checkNodeName(var),
-		node ?= var
+		path @= params
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveNameAccessR(node,path)
+		this.ctx_tdecl.xtype.resolveNameAccessR(path)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.getType().resolveNameAccessR(node,path)
+		var.getType().resolveNameAccessR(path)
 	}
 
     public void pass3() {
@@ -538,18 +533,18 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		depth = ((RuleMethod)ctx_method).push();
 		expr.resolve(null);
 		Type xtype = expr.getType();
-		ISymbol@ elems;
+		ResInfo<Method> elems;
 		if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = new TypeRef(xtype);
 			mode = IsoneofMode.KENUM;
 		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
 			itype = new TypeRef(xtype);
 			mode = IsoneofMode.JENUM;
-		} else if( PassInfo.resolveBestMethodR(xtype,elems,
-				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+		} else if( PassInfo.resolveBestMethodR(xtype,
+				elems=new ResInfo<Method>(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = new TypeRef(Type.getRealType(xtype,((Method)elems.dnode).mtype.ret()));
+			itype = new TypeRef(Type.getRealType(xtype,elems.resolvedDNode().mtype.ret()));
 			mode = IsoneofMode.ELEMS;
 		} else if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();

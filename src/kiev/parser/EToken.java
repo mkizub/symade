@@ -223,21 +223,20 @@ public final class EToken extends ENode {
 		else if (patternOper.matcher(ident).matches())
 			this.base_kind = ETokenKind.OPERATOR;
 		// resolve in the path of scopes
-		ISymbol@ v;
 		ResInfo info = new ResInfo(this,ident);
-		if (PassInfo.resolveNameR(this,v,info)) {
-			ASTNode n = (ASTNode)v;
-			if (n instanceof OpdefSymbol) {
+		if (PassInfo.resolveNameR(this,info)) {
+			ISymbol isym = info.resolvedSymbol();
+			if (isym instanceof OpdefSymbol) {
 				this.base_kind = ETokenKind.OPERATOR;
-				value = n;
+				value = isym;
 			}
-			if (n instanceof KievPackage) {
+			if (isym instanceof KievPackage) {
 				this.base_kind = ETokenKind.SCOPE_DECL;
-				value = n;
+				value = isym;
 			}
-			if (n instanceof TypeDecl) {
+			if (isym instanceof TypeDecl) {
 				this.base_kind = ETokenKind.TYPE_DECL;
-				value = n;
+				value = isym;
 			}
 		}
 	}
@@ -320,24 +319,24 @@ public final class EToken extends ENode {
 //		}
 
 		// resolve in the path of scopes
-		ISymbol@ v;
 		ResInfo info = new ResInfo(this,ident);
-		if( !PassInfo.resolveNameR((ASTNode)this,v,info) )
+		if (!PassInfo.resolveNameR((ASTNode)this,info))
 			throw new CompilerException(this,"Unresolved token "+ident);
-		if( v instanceof OpdefSymbol ) {
+		ISymbol isym = info.resolvedSymbol();
+		if (isym instanceof OpdefSymbol) {
 			this.is_token_operator = true;
-			value = v.dnode;
+			value = isym;
 			//replaceWithNodeReWalk(op);
 		}
-		else if( v instanceof TypeDecl ) {
+		else if (isym instanceof TypeDecl) {
 			this.is_token_type_decl = true;
-			value = v.dnode;
-			TypeDecl td = (TypeDecl)value;
+			value = isym;
+			TypeDecl td = (TypeDecl)isym;
 			//td.checkResolved();
 			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.xtype));
 		}
 		else {
-			replaceWithNodeReWalk(info.buildAccess((ASTNode)this, null, v).closeBuild());
+			replaceWithNodeReWalk(info.buildAccess((ASTNode)this, null, info.resolvedSymbol()).closeBuild());
 		}
 		return false;
 	}

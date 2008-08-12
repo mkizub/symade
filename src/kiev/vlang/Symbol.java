@@ -309,18 +309,17 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				return autoCompleteSymbolFromRoot(resolve_in, pkg, tail, for_slot, check);
 			}
 			// otherwice resolve the head and then it's sub-bodes
-			ISymbol@ root;
-			if (!PassInfo.resolveNameR(resolve_in,root,new ResInfo(resolve_in,head)))
+			ResInfo info = new ResInfo(resolve_in,head);
+			if (!PassInfo.resolveNameR(resolve_in,info))
 				return null;
-			if !(root instanceof GlobalDNodeContainer)
+			if !(info.resolvedDNode() instanceof GlobalDNodeContainer)
 				return null;
-			return autoCompleteSymbolFromRoot(resolve_in, (GlobalDNodeContainer)(ISymbol)root, tail, for_slot, check);
+			return autoCompleteSymbolFromRoot(resolve_in, (GlobalDNodeContainer)info.resolvedDNode(), tail, for_slot, check);
 		}
 		Vector<ISymbol> vect = new Vector<ISymbol>();
 		ResInfo info = new ResInfo(resolve_in, str, ResInfo.noEquals);
-		ISymbol@ node;
-		foreach (PassInfo.resolveNameR(resolve_in,node,info)) {
-			ISymbol isym = (ISymbol)node;
+		foreach (PassInfo.resolveNameR(resolve_in,info)) {
+			ISymbol isym = info.resolvedSymbol();
 			if (vect.contains(isym))
 				continue;
 			// check if this node match
@@ -375,11 +374,10 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		String head = tail.intern();
 		Vector<ISymbol> vect = new Vector<ISymbol>();
-		ISymbol@ node;
 		int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 		ResInfo info = new ResInfo(resolve_in,head,flags);
-		foreach (scope.resolveNameR(node,info)) {
-			ISymbol isym = (ISymbol)node;
+		foreach (scope.resolveNameR(info)) {
+			ISymbol isym = info.resolvedSymbol();
 			if (vect.contains(isym))
 				continue;
 			// check if this node match
@@ -419,30 +417,30 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				return;
 			}
 			// otherwice resolve the head and then it's sub-bodes
-			ISymbol@ root;
-			if (!PassInfo.resolveNameR(this,root,new ResInfo(this,head))) {
-				Kiev.reportAs(sever, this, "Unresolved identifier "+head+" in "+root);
+			ResInfo info = new ResInfo(this,head);
+			if (!PassInfo.resolveNameR(this,info)) {
+				Kiev.reportAs(sever, this, "Unresolved identifier "+head);
 				return;
 			}
-			if !(root instanceof GlobalDNodeContainer) {
-				Kiev.reportAs(sever, this, "Resolved identifier "+head+" in "+root+" is not a global node container");
+			if !(info.resolvedDNode() instanceof GlobalDNodeContainer) {
+				Kiev.reportAs(sever, this, "Resolved identifier "+head+" is not a global node container");
 				return;
 			}
-			resolveSymbolFromRoot(sever, (GlobalDNodeContainer)(ISymbol)root, tail, check);
+			resolveSymbolFromRoot(sever, (GlobalDNodeContainer)info.resolvedDNode(), tail, check);
 			return;
 		}
-		D@ a;
-		if (!PassInfo.resolveNameR(this, a, new ResInfo(this,name,ResInfo.noForwards))) {
+		ResInfo<D> info = new ResInfo(this,name,ResInfo.noForwards);
+		if (!PassInfo.resolveNameR(this, info)) {
 			Kiev.reportAs(sever, this, "Unresolved "+this);
 			return;
 		}
-		D dn = (D)a;
+		D dn = info.resolvedDNode();
 		if (!check(dn)) {
 			Kiev.reportAs(sever, this, "Resolved "+this+" does not match required constraints");
 			return;
 		}
-		if (this.symbol != dn)
-			this.symbol = dn;
+		if (this.symbol != info.resolvedSymbol())
+			this.symbol = info.resolvedSymbol();
 	}
 
 	private void resolveSymbolFromRoot(SeverError sever, GlobalDNodeContainer scope, String tail, (ISymbol)->boolean check) {
@@ -464,19 +462,18 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			return;
 		}
 		String head = tail.intern();
-		D@ a;
-		ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
-		if (!scope.resolveNameR(a,info)) {
+		ResInfo<D> info = new ResInfo<D>(this,head,ResInfo.noForwards);
+		if (!scope.resolveNameR(info)) {
 			Kiev.reportAs(sever, this, "Unresolved "+this+" in "+scope);
 			return;
 		}
-		D dn = (D)a;
+		D dn = info.resolvedDNode();
 		if (!check(dn)) {
 			Kiev.reportAs(sever, this, "Resolved "+this+" does not match required constraints");
 			return;
 		}
-		if (this.symbol != dn)
-			this.symbol = dn;
+		if (this.symbol != info.resolvedSymbol())
+			this.symbol = info.resolvedSymbol();
 	}
 
 }

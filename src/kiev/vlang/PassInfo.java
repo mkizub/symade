@@ -75,7 +75,7 @@ public class PassInfo {
 	// No instances
 	private PassInfo() {}
 
-	public static rule resolveNameR(ASTNode from, ISymbol@ node, ResInfo path)
+	public static rule resolveNameR(ASTNode from, ResInfo path)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
@@ -91,16 +91,13 @@ public class PassInfo {
 		p instanceof ScopeOfNames,
 		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name '"+path.getName()+"' in scope '"+p+"'"),
 		path.space_prev = pe.n,
-		((ScopeOfNames)p).resolveNameR(node,path)
+		((ScopeOfNames)p).resolveNameR(path)
 	}
 
-	private static void addResolvedMethod(
-		ISymbol m, ResInfo info,
-		Vector<ISymbol> methods, Vector<ResInfo> paths, Vector<CallType> types)
+	private static void addResolvedMethod(ResInfo info, Vector<ISymbol> methods, Vector<ResInfo> paths, Vector<CallType> types)
 	{
+		ISymbol m = info.resolvedSymbol();
 		trace(Kiev.debug && Kiev.debugResolve,"Candidate method "+m+" with path "+info+" found...");
-		if !(info.check(m.dnode))
-			return;
 		for (int i=0; i < methods.length; i++) {
 			if (methods[i].dnode == m.dnode) {
 				trace(Kiev.debug && Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
@@ -119,7 +116,6 @@ public class PassInfo {
 	
 	public static boolean resolveBestMethodR(
 		Object sc,
-		ISymbol@ node,
 		ResInfo info,
 		CallType mt)
 	{
@@ -129,23 +125,23 @@ public class PassInfo {
 		Vector<CallType> types   = new Vector<CallType>();
 		if (sc instanceof ScopeOfMethods) {
 			ScopeOfMethods scm = (ScopeOfMethods)sc;
-			foreach( scm.resolveMethodR(node,info,mt) )
-				addResolvedMethod(node,info,methods,paths,types);
+			foreach( scm.resolveMethodR(info,mt) )
+				addResolvedMethod(info,methods,paths,types);
 		}
 		else if (sc instanceof Type && info.isStaticAllowed()) {
 			Type tp = (Type)sc;
-			foreach( tp.meta_type.tdecl.resolveMethodR(node,info,mt) )
-				addResolvedMethod(node,info,methods,paths,types);
+			foreach( tp.meta_type.tdecl.resolveMethodR(info,mt) )
+				addResolvedMethod(info,methods,paths,types);
 		}
 		else if (sc instanceof Type) {
 			Type tp = (Type)sc;
-			foreach( tp.resolveCallAccessR(node,info,mt) )
-				addResolvedMethod(node,info,methods,paths,types);
+			foreach( tp.resolveCallAccessR(info,mt) )
+				addResolvedMethod(info,methods,paths,types);
 		}
 		else if (sc instanceof Operator) {
 			Operator op = (Operator)sc;
-			foreach( op.resolveOperatorMethodR(node,info,mt) )
-				addResolvedMethod(node,info,methods,paths,types);
+			foreach( op.resolveOperatorMethodR(info,mt) )
+				addResolvedMethod(info,methods,paths,types);
 		}
 		else
 			throw new RuntimeException("Unknown scope "+sc);
@@ -164,7 +160,6 @@ public class PassInfo {
 		}
 
 		if( methods.size() == 1 ) {
-			node = methods[0];
 			info.set(paths[0]);
 			return true;
 		}
@@ -253,7 +248,6 @@ public class PassInfo {
 			}
 		}
 		if( methods.size() == 1 ) {
-			node = methods[0];
 			info.set(paths[0]);
 			return true;
 		}
@@ -267,7 +261,7 @@ public class PassInfo {
 		throw new CompilerException(info.getFrom(), msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, ISymbol@ node, ResInfo path, CallType mt)
+	public static rule resolveMethodR(ASTNode from, ResInfo path, CallType mt)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
@@ -275,8 +269,8 @@ public class PassInfo {
 		p @= pe,
 		p instanceof ScopeOfMethods,
 		path.space_prev = pe.n,
-		resolveBestMethodR((ScopeOfMethods)p,node,path,mt),
-		trace(Kiev.debug && Kiev.debugResolve,"Best method is "+node+" with path/transform "+path+" found...")
+		resolveBestMethodR((ScopeOfMethods)p,path,mt),
+		trace(Kiev.debug && Kiev.debugResolve,"Best method is "+path.resolvedSymbol()+" with path/transform "+path+" found...")
 	}
 
 	public static boolean checkException(ASTNode from, Type exc) throws RuntimeException {

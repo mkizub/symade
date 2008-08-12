@@ -112,39 +112,39 @@ public final class FileUnit extends NameSpace, CompilationUnit {
 		disabled_extensions[i] = !enabled;
 	}
 	
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		ImportSyntax@ istx;
 	{
-		super.resolveNameR(node, path)
+		super.resolveNameR(path)
 	;
 		srpkg.name != "",
 		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
-		Env.getRoot().resolveNameR(node,path)
+		Env.getRoot().resolveNameR(path)
 	;
 		istx @= syntaxes,
 		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
-		istx.resolveNameR(node,path)
+		istx.resolveNameR(path)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		istx @= syntaxes,
 		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
-		istx.resolveNameR(node,path)
+		istx.resolveNameR(path)
 	}
 
-	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ResInfo path, CallType mt)
 		ImportSyntax@ istx;
 	{
-		super.resolveMethodR(node, path, mt)
+		super.resolveMethodR(path,mt)
 	;
 		istx @= syntaxes,
 		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
-		istx.resolveMethodR(node,path,mt)
+		istx.resolveMethodR(path,mt)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		istx @= syntaxes,
 		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
-		istx.resolveMethodR(node,path,mt)
+		istx.resolveMethodR(path,mt)
 	}
 
 }
@@ -204,42 +204,41 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 
 	public String toString() { return srpkg.name; }
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		ASTNode@ syn;
 	{
 		syn @= members,
 		{
-			path.checkNodeName(syn),
-			node ?= syn
+			path ?= syn
 		;	syn instanceof Import,
 			trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
-			((Import)syn).resolveNameR(node,path)
+			((Import)syn).resolveNameR(path)
 		}
 	;
 		path.getPrevSlotName() != "srpkg",
 		trace( Kiev.debug && Kiev.debugResolve, "In namespace package: "+srpkg),
-		getPackage().resolveNameR(node,path)
+		getPackage().resolveNameR(path)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		syn @= members,
 		syn instanceof Import,
 		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
-		((Import)syn).resolveNameR(node,path)
+		((Import)syn).resolveNameR(path)
 	}
 
-	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ResInfo path, CallType mt)
 		ASTNode@ syn;
 	{
 		syn @= members,
 		syn instanceof Import,
 		trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
-		((Import)syn).resolveMethodR(node,path,mt)
+		((Import)syn).resolveMethodR(path,mt)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		syn @= members,
 		syn instanceof Import,
 		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
-		((Import)syn).resolveMethodR(node,path,mt)
+		((Import)syn).resolveMethodR(path,mt)
 	}
 
 	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
@@ -255,22 +254,20 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					KievPackage@ node;
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
-					if !(scope.resolveNameR(node,info))
-						return new KievPackage[0];
-					scope = (KievPackage)node;
+					ResInfo<KievPackage> info = new ResInfo<KievPackage>(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					if !(scope.resolveNameR(info))
+						return null;
+					scope = info.resolvedDNode();
 					dot = name.indexOf('\u001f');
 				}
 				if (dot < 0) {
 					head = name.intern();
-					Vector<KievPackage> vect = new Vector<KievPackage>();
-					KievPackage@ node;
+					Vector<ISymbol> vect = new Vector<ISymbol>();
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
-					foreach (scope.resolveNameR(node,info)) {
-						if (!vect.contains(node))
-							vect.append(node);
+					foreach (scope.resolveNameR(info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				}

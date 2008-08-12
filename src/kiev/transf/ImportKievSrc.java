@@ -95,12 +95,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			} else {
 				head = name;
 			}
-			DNode@ node;
-			if!(scope.resolveNameR(node,new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
+			ResInfo info = new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			if!(scope.resolveNameR(info)) {
 				Kiev.reportError(astn,"Unresolved identifier "+head+" in "+scope);
 				return;
 			}
-			n = node;
+			n = info.resolvedDNode();
 			if (n instanceof ScopeOfNames)
 				scope = (ScopeOfNames)n;
 		} while (dot > 0);
@@ -128,12 +128,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			} else {
 				head = name;
 			}
-			DNode@ node;
-			if!(scope.resolveNameR(node,new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
+			ResInfo info = new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			if!(scope.resolveNameR(info)) {
 				Kiev.reportError(astn,"Unresolved identifier "+head+" in "+scope);
 				return;
 			}
-			n = node;
+			n = info.resolvedDNode();
 			if (n instanceof ScopeOfNames)
 				scope = (ScopeOfNames)n;
 		} while (dot > 0);
@@ -230,20 +230,20 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				name = name.substring(dot+1).intern();
 				if (scope == null)
 					scope = Env.getRoot();
-				KievPackage@ pkg;
-				if!(scope.resolveNameR(pkg,new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
+				ResInfo<KievPackage> info = new ResInfo<KievPackage>(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+				if!(scope.resolveNameR(info)) {
 					Kiev.reportError(sr,"Unresolved package "+head+" in "+scope);
 					continue next_super_syntax;
 				}
-				scope = (KievPackage)pkg;
+				scope = info.resolvedDNode();
 				dot = name.indexOf('\u001f');
 			}
-			KievSyntax@ stx;
-			if!(scope.resolveNameR(stx,new ResInfo(astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
+			ResInfo<KievSyntax> info = new ResInfo<KievSyntax>(astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			if!(scope.resolveNameR(info)) {
 				Kiev.reportError(sr,"Unresolved syntax "+name+" in "+scope);
 				continue next_super_syntax;
 			}
-			sr.symbol = (KievSyntax)stx;
+			sr.symbol = info.resolvedDNode();
 		}
 		foreach (ASTNode n; astn.members) {
 			try {

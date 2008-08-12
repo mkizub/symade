@@ -86,10 +86,10 @@ public final class TypeNameRef extends TypeRef {
 				head = name;
 				name = "";
 			}
-			DNode@ td;
-			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			if( !PassInfo.resolveNameR(this,info) )
 				throw new CompilerException(this,"Unresolved type "+head);
-			scope = (DNode)td;
+			scope = info.resolvedDNode();
 		}
 		while (name.length() > 0) {
 			if !(scope instanceof ScopeOfNames)
@@ -102,10 +102,10 @@ public final class TypeNameRef extends TypeRef {
 				head = name.intern();
 				name = "";
 			}
-			DNode@ td;
-			if!(((ScopeOfNames)scope).resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			if!(((ScopeOfNames)scope).resolveNameR(info))
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
-			scope = (DNode)td;
+			scope = info.resolvedDNode();
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+name);
@@ -127,19 +127,18 @@ public final class TypeNameRef extends TypeRef {
 			}
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
-				Vector<TypeDecl> vect = new Vector<TypeDecl>();
-				TypeDecl@ td;
-				ResInfo info = new ResInfo(this,head,flags);
-				foreach (PassInfo.resolveNameR(this,td,info)) {
-					if (!vect.contains(td))
-						vect.append(td);
+				Vector<ISymbol> vect = new Vector<ISymbol>();
+				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+				foreach (PassInfo.resolveNameR(this,info)) {
+					if (!vect.contains(info.resolvedSymbol()))
+						vect.append(info.resolvedSymbol());
 				}
 				return vect.toArray();
 			} else {
-				DNode@ td;
-				if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
-					return new TypeDecl[0];
-				scope = (DNode)td;
+				ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+				if( !PassInfo.resolveNameR(this,info) )
+					return null;
+				scope = info.resolvedDNode();
 			}
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
@@ -154,19 +153,18 @@ public final class TypeNameRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<TypeDecl> vect = new Vector<TypeDecl>();
-					TypeDecl@ td;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (((ScopeOfNames)scope).resolveNameR(td,info)) {
-						if (!vect.contains(td))
-							vect.append(td);
+					Vector<ISymbol> vect = new Vector<ISymbol>();
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				} else {
-					DNode@ td;
-					if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
-						return new TypeDecl[0];
-					scope = (DNode)td;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					if!(scope.resolveNameR(info))
+						return null;
+					scope = info.resolvedDNode();
 				}
 			}
 		}
@@ -258,10 +256,10 @@ public final class TypeNameArgsRef extends TypeRef {
 				head = name;
 				name = "";
 			}
-			DNode@ td;
-			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			if( !PassInfo.resolveNameR(this,info) )
 				throw new CompilerException(this,"Unresolved type "+head);
-			scope = (DNode)td;
+			scope = info.resolvedDNode();
 		}
 		while (name.length() > 0) {
 			if !(scope instanceof ScopeOfNames)
@@ -274,10 +272,10 @@ public final class TypeNameArgsRef extends TypeRef {
 				head = name.intern();
 				name = "";
 			}
-			DNode@ td;
-			if!(((ScopeOfNames)scope).resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			if!(((ScopeOfNames)scope).resolveNameR(info))
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
-			scope = (DNode)td;
+			scope = info.resolvedDNode();
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+name);
@@ -300,19 +298,18 @@ public final class TypeNameArgsRef extends TypeRef {
 			{
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<TypeDecl> vect = new Vector<TypeDecl>();
-					TypeDecl@ td;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (PassInfo.resolveNameR(this,td,info)) {
-						if (!vect.contains(td))
-							vect.append(td);
+					Vector<ISymbol> vect = new Vector<ISymbol>();
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					foreach (PassInfo.resolveNameR(this,info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				} else {
-					DNode@ td;
-					if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
-						return new TypeDecl[0];
-					scope = (DNode)td;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					if( !PassInfo.resolveNameR(this,info) )
+						return null;
+					scope = info.resolvedDNode();
 				}
 			}
 			while (dot >= 0) {
@@ -328,19 +325,18 @@ public final class TypeNameArgsRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<TypeDecl> vect = new Vector<TypeDecl>();
-					TypeDecl@ td;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (((ScopeOfNames)scope).resolveNameR(td,info)) {
-						if (!vect.contains(td))
-							vect.append(td);
+					Vector<ISymbol> vect = new Vector<ISymbol>();
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				} else {
-					DNode@ td;
-					if!(((ScopeOfNames)scope).resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
-						return new TypeDecl[0];
-					scope = (DNode)td;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					if!(((ScopeOfNames)scope).resolveNameR(info))
+						return null;
+					scope = info.resolvedDNode();
 				}
 			}
 		}
@@ -460,10 +456,10 @@ public final class TypeInnerNameRef extends TypeRef {
 				head = name;
 				name = "";
 			}
-			DNode@ td;
-			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			if( !PassInfo.resolveNameR(this,info) )
 				throw new CompilerException(this,"Unresolved type "+head);
-			scope = (DNode)td;
+			scope = info.resolvedDNode();
 		} else {
 			Type outer = this.outer.getType();
 			scope = outer.meta_type.tdecl;
@@ -479,10 +475,10 @@ public final class TypeInnerNameRef extends TypeRef {
 				head = name.intern();
 				name = "";
 			}
-			DNode@ td;
-			if!(((ScopeOfNames)scope).resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			if!(((ScopeOfNames)scope).resolveNameR(info))
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
-			scope = (DNode)td;
+			scope = info.resolvedDNode();
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+name);
@@ -505,19 +501,18 @@ public final class TypeInnerNameRef extends TypeRef {
 			if (this.outer == null) {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<TypeDecl> vect = new Vector<TypeDecl>();
-					TypeDecl@ td;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (PassInfo.resolveNameR(this,td,info)) {
-						if (!vect.contains(td))
-							vect.append(td);
+					Vector<ISymbol> vect = new Vector<ISymbol>();
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					foreach (PassInfo.resolveNameR(this,info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				} else {
-					DNode@ td;
-					if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
-						return new TypeDecl[0];
-					scope = (DNode)td;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					if( !PassInfo.resolveNameR(this,info) )
+						return null;
+					scope = info.resolvedDNode();
 				}
 			} else {
 				Type outer = this.outer.getType();
@@ -536,19 +531,18 @@ public final class TypeInnerNameRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<TypeDecl> vect = new Vector<TypeDecl>();
-					TypeDecl@ td;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (((ScopeOfNames)scope).resolveNameR(td,info)) {
-						if (!vect.contains(td))
-							vect.append(td);
+					Vector<ISymbol> vect = new Vector<ISymbol>();
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				} else {
-					DNode@ td;
-					if!(((ScopeOfNames)scope).resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
-						return new TypeDecl[0];
-					scope = (DNode)td;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					if!(((ScopeOfNames)scope).resolveNameR(info))
+						return null;
+					scope = info.resolvedDNode();
 				}
 			}
 		}

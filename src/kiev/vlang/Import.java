@@ -77,12 +77,12 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 			name = name.substring(dot+1).intern();
 			if (scope == null)
 				scope = (ScopeOfNames)Env.getRoot();
-			DNode@ node;
-			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext))) {
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			if!(scope.resolveNameR(info)) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
 				return false;
 			}
-			scope = (ScopeOfNames)node;
+			scope = (ScopeOfNames)info.resolvedDNode();
 			dot = name.indexOf('\u001f');
 		}
 		if !(scope instanceof ScopeOfMethods) {
@@ -100,17 +100,17 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		}
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
-		ISymbol@ v;
 		CallType mt = new CallType(null,null,types,Type.tpAny,false);
-		if( !((ScopeOfMethods)scope).resolveMethodR(v,new ResInfo(this,name),mt) ) {
+		ResInfo<Method> info = new ResInfo<Method>(this,name);
+		if( !((ScopeOfMethods)scope).resolveMethodR(info,mt) ) {
 			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
 			return false;
 		}
-		this.name.symbol = (ISymbol)v;
+		this.name.symbol = info.resolvedSymbol();
 		return false;
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
+	public rule resolveNameR(ResInfo path)
 		DNode@ sub;
 	{
 		this.name.dnode instanceof Method, $cut, false
@@ -118,53 +118,48 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		mode == ImportMode.IMPORT_CLASS, this.name.dnode instanceof ComplexTypeDecl,
 		{
 			!star && !path.doImportStar(),
-			path.checkNodeName((ComplexTypeDecl)this.name.dnode),
-			node ?= (ComplexTypeDecl)this.name.dnode
+			path ?= (ComplexTypeDecl)this.name.dnode
 		;
 			star && path.doImportStar(),
 			((ComplexTypeDecl)this.name.dnode).checkResolved(),
-			sub @= ((ComplexTypeDecl)this.name.dnode).members,
-			path.checkNodeName(sub),
-			node ?= sub.$var
+			path @= ((ComplexTypeDecl)this.name.dnode).members
 		}
 	;
 		mode == ImportMode.IMPORT_CLASS, this.name.dnode instanceof KievPackage,
 		{
 			!star && !path.doImportStar(),
-			path.checkNodeName((KievPackage)this.name.dnode),
-			node ?= (KievPackage)this.name.dnode
+			path ?= (KievPackage)this.name.dnode
 		;
 			star && path.doImportStar(),
-			((KievPackage)this.name.dnode).resolveNameR(node,path)
+			((KievPackage)this.name.dnode).resolveNameR(path)
 		}
 	;
 		mode == ImportMode.IMPORT_STATIC,
 		{
 			!(this.name.dnode instanceof TypeDecl),
 			!star && !path.doImportStar(),
-			node ?= this.name.dnode,
-			path.checkNodeName(node)
+			path ?= this.name.dnode
 		;
 			this.name.dnode instanceof TypeDecl,
 			star && path.doImportStar(),
 			path.isStaticAllowed(),
 			((TypeDecl)this.name.dnode).checkResolved(),
 			path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
-			((TypeDecl)this.name.dnode).resolveNameR(node,path),
-			node instanceof Field && ((Field)node).isStatic() && !((Field)node).isPrivate()
+			((TypeDecl)this.name.dnode).resolveNameR(path),
+			path.resolvedDNode() instanceof Field && path.resolvedDNode().isStatic() && !path.resolvedDNode().isPrivate()
 		}
 	}
 
-	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ResInfo path, CallType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && !path.doImportStar() && this.name.dnode instanceof Method,
-		node ?= ((Method)this.name.dnode).equalsByCast(path.getName(),mt,Type.tpVoid,path)
+		path ?= ((Method)this.name.dnode).equalsByCast(path.getName(),mt,Type.tpVoid,path)
 	;
 		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.name.dnode instanceof TypeDecl,
 		((TypeDecl)this.name.dnode).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
-		((TypeDecl)this.name.dnode).resolveMethodR(node,path,mt),
-		node.dnode.isStatic() && !node.dnode.isPrivate()
+		((TypeDecl)this.name.dnode).resolveMethodR(path,mt),
+		path.resolvedDNode().isStatic() && !path.resolvedDNode().isPrivate()
 	}
 
 	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
@@ -176,22 +171,20 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					KievPackage@ node;
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
-					if !(scope.resolveNameR(node,info))
+					ResInfo<KievPackage> info = new ResInfo<KievPackage>(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					if !(scope.resolveNameR(info))
 						return new DNode[0];
-					scope = (ScopeOfNames)node;
+					scope = (ScopeOfNames)info.resolvedDNode();
 					dot = name.indexOf('\u001f');
 				}
 				if (dot < 0) {
 					head = name.intern();
-					Vector<DNode> vect = new Vector<DNode>();
-					DNode@ node;
+					Vector<ISymbol> vect = new Vector<ISymbol>();
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
-					foreach (scope.resolveNameR(node,info)) {
-						if (!vect.contains(node))
-							vect.append(node);
+					foreach (scope.resolveNameR(info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				}
@@ -221,18 +214,17 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 		return "import syntax "+name;
 	}
 
-	public rule resolveNameR(ISymbol@ node, ResInfo path)
-		DNode@ sub;
+	public rule resolveNameR(ResInfo path)
 	{
 		this.name.dnode instanceof KievSyntax,
-		this.name.dnode.resolveNameR(node,path)
+		this.name.dnode.resolveNameR(path)
 	}
 
-	public rule resolveMethodR(ISymbol@ node, ResInfo path, CallType mt)
+	public rule resolveMethodR(ResInfo path, CallType mt)
 	{
 		this.name.dnode instanceof KievSyntax,
-		this.name.dnode.resolveMethodR(node,path,mt),
-		node.dnode.isStatic() && !node.dnode.isPrivate()
+		this.name.dnode.resolveMethodR(path,mt),
+		path.resolvedDNode().isStatic() && !path.resolvedDNode().isPrivate()
 	}
 
 	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
@@ -244,22 +236,20 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					KievPackage@ node;
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
-					if !(scope.resolveNameR(node,info))
-						return new DNode[0];
-					scope = (ScopeOfNames)node;
+					ResInfo<KievPackage> info = new ResInfo<KievPackage>(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					if !(scope.resolveNameR(info))
+						return null;
+					scope = (ScopeOfNames)info.resolvedDNode();
 					dot = name.indexOf('\u001f');
 				}
 				if (dot < 0) {
 					head = name.intern();
-					Vector<KievSyntax> vect = new Vector<KievSyntax>();
-					KievSyntax@ node;
+					Vector<ISymbol> vect = new Vector<ISymbol>();
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (scope.resolveNameR(node,info)) {
-						if (!vect.contains(node))
-							vect.append(node);
+					ResInfo<KievSyntax> info = new ResInfo<KievSyntax>(this,head,flags);
+					foreach (scope.resolveNameR(info)) {
+						if (!vect.contains(info.resolvedSymbol()))
+							vect.append(info.resolvedSymbol());
 					}
 					return vect.toArray();
 				}
@@ -306,10 +296,9 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 		return getType().getStruct();
 	}
 	
-	public rule resolveNameR(ISymbol@ node, ResInfo path) {
+	public rule resolveNameR(ResInfo path) {
 		path.space_prev == this.dtype,
-		path.checkNodeName(this.arg),
-		node ?= this.arg
+		path ?= this.arg
 	}
 
 	public String toString() {

@@ -165,9 +165,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 
 		Type itype;
 		Type xtype = container.getType();
-		ISymbol@ elems;
-		ISymbol@ nextelem;
-		ISymbol@ moreelem;
+		ResInfo<Method> elems = null;
+		ResInfo<Method> nextelem = null;
+		ResInfo<Method> moreelem = null;
 		if (xtype instanceof CTimeType) {
 			container = xtype.makeUnboxedExpr(container);
 			container.resolve(null);
@@ -182,11 +182,11 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
 			itype = xtype;
 			mode = ForEachStat.JENUM;
-		} else if( PassInfo.resolveBestMethodR(xtype,elems,
-				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+		} else if( PassInfo.resolveBestMethodR(xtype,
+				elems=new ResInfo<Method>(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = Type.getRealType(xtype,((Method)elems.dnode).mtype.ret());
+			itype = Type.getRealType(xtype,elems.resolvedDNode().mtype.ret());
 			mode = ForEachStat.ELEMS;
 		} else if( xtype ≡ Type.tpRule &&
 			(
@@ -251,7 +251,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* iter = container.elements(); */
 			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter),
-				new CallExpr(container.pos,container.ncopy(),elems,ENode.emptyArray)
+				new CallExpr(container.pos,container.ncopy(),elems.resolvedSymbol(),ENode.emptyArray)
 				);
 			Kiev.runProcessorsOn(iter_init);
 			iter_init.resolve(iter.getType());
@@ -283,14 +283,14 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JENUM:
 		case ForEachStat.ELEMS:
 			/* iter.hasMoreElements() */
-			if( !PassInfo.resolveBestMethodR(itype,moreelem,
-					new ResInfo(this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+			if( !PassInfo.resolveBestMethodR(itype,
+					moreelem=new ResInfo<Method>(this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
 					new CallType(itype,null,null,Type.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
-			iter_cond = new CallExpr(	iter.pos,
+			iter_cond = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),
-					moreelem,
+					moreelem.resolvedSymbol(),
 					ENode.emptyArray
 				);
 			break;
@@ -324,14 +324,14 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JENUM:
 		case ForEachStat.ELEMS:
 			/* var = iter.nextElement() */
-			if( !PassInfo.resolveBestMethodR(itype,nextelem,
-					new ResInfo(this,nameNextElement,ResInfo.noStatic|ResInfo.noSyntaxContext),
+			if( !PassInfo.resolveBestMethodR(itype,
+					nextelem=new ResInfo<Method>(this,nameNextElement,ResInfo.noStatic|ResInfo.noSyntaxContext),
 					new CallType(itype,null,null,Type.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			ce = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),
-					nextelem,
+					nextelem.resolvedSymbol(),
 					ENode.emptyArray
 				);
 			break;

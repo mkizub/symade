@@ -41,7 +41,6 @@ public final class PVar<A> implements TypeInfoInterface
 {
 
 	private A			$_var_;
-	private PVar<A>		$_pvar_;
 	
 	@virtual
 	@forward
@@ -63,18 +62,13 @@ public final class PVar<A> implements TypeInfoInterface
 		alias $get_var
 		alias fy operator $cast
 	{
-		if ($_pvar_ != null)
-			return $_pvar_.$get_var();
-		else
-			return $_var_;
+		return $_var_;
 	}
 
 	@getter
 	public boolean get$$is_bound()
 		alias $get_is_bound
 	{
-		if ($_pvar_ != null)
-			return $_pvar_.$get_is_bound();
 		return $_var_ != null;
 	}
 
@@ -85,55 +79,24 @@ public final class PVar<A> implements TypeInfoInterface
 			return "???";
 	}
 
-	public boolean equals(Object:Object value) {
+	public boolean equals(Object value) {
 		A v = $var;
 		return (v==null && value==null) || v.equals(value);
-	}
-
-	public boolean equals(PVar<A>:Object value) {
-		A v1 = $var;
-		A v2 = value.$var;
-		return (v1==null && v2==null) || v1.equals(v2);
 	}
 
 	@setter
 	public void $bind(A var)
 		alias set$$var
 	{
-		this.$_pvar_ = null;
 		this.$_var_ = (A)var;
-	}
-
-	public void $bind(PVar<A> var)
-	{
-		this.$_var_ = null;
-		if (var.$is_bound)
-			this.$_var_ = (A)var.$var;
-		else
-			this.$_pvar_ = var;
 	}
 
 	public boolean $bind_chk(Object var)
 	{
 		if !(var instanceof A)
 			return false;
-		this.$_pvar_ = null;
 		this.$_var_ = /*(A)*/var;
 		return true;
-	}
-
-	public boolean $bind_chk(PVar<Object> var)
-	{
-		if !(var instanceof PVar<A>/*!this.getTypeInfoField().$instanceof(var)*/)
-			return false;
-		this.$_var_ = null;
-		if (var.$is_bound) {
-			this.$_var_ = /*(A)*/var.$var;
-			return true;
-		} else {
-			this.$_pvar_ = var;
-			return false;
-		}
 	}
 
 	public boolean $rebind_chk(Object var)
@@ -142,20 +105,8 @@ public final class PVar<A> implements TypeInfoInterface
 		return $bind_chk(var);
 	}
 
-	public boolean $rebind_chk(PVar<Object> var)
-	{
-		$unbind();
-		return $bind_chk(var);
-	}
-
 	public void $unbind() {
 		this.$_var_ = null;
-		this.$_pvar_ = null;
-	}
-
-	public void $checkIsBinded(String name) {
-		if( !$is_bound )
-			throw new RuntimeException("Internal prolog error: var "+name+" is expected to be bounded");
 	}
 }
 
