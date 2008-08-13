@@ -460,6 +460,7 @@ public abstract class kiev050 implements kiev050Constants {
         }
       }
       TopLevelDeclarations(fu);
+                  fu.line_count = getToken(0).endLine;
       jj_consume_token(0);
     } catch (ParseError e) {
                               rpe("Bad declaration",e);

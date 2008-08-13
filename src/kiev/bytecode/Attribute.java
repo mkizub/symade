@@ -27,6 +27,7 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 		attrMap = new Hashtable<KString,Class>();
 		attrMap.put(attrCode,			Class.forName("kiev.bytecode.CodeAttribute"));
 		attrMap.put(attrSourceFile,		Class.forName("kiev.bytecode.SourceFileAttribute"));
+		attrMap.put(attrSourceDebugExtension, Class.forName("kiev.bytecode.SourceDebugExtensionAttribute"));
 		attrMap.put(attrSignature,		Class.forName("kiev.bytecode.GenericsSignatureAttribute"));
 		attrMap.put(attrLocalVarTable,	Class.forName("kiev.bytecode.LocalVariableTableAttribute"));
 		attrMap.put(attrLinenoTable,	Class.forName("kiev.bytecode.LineNumberTableAttribute"));
@@ -149,6 +150,26 @@ public class SourceFileAttribute extends Attribute {
 	}
 	public KString getFileName(Clazz clazz) {
 		return cp_filename.value;
+	}
+}
+
+public class SourceDebugExtensionAttribute extends Attribute {
+
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		cont.read(data);
+		trace(Clazz.traceRead,cont.offset+": smap is "+ new String(data,"UTF-8"));
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": smap is "+new String(data,"UTF-8"));
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(data.length);
+		cont.write(data);
+	}
+	public String getSMAP(Clazz clazz) {
+		return new String(data,"UTF-8");
 	}
 }
 

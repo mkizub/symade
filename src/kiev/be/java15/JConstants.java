@@ -46,6 +46,7 @@ public interface JConstants extends Constants {
 	// Well known attributes
 	public final static KString attrCode				= KString.from("Code");
 	public final static KString attrSourceFile			= KString.from("SourceFile");
+	public final static KString attrSourceDebugExtension= KString.from("SourceDebugExtension");
 	public final static KString attrSignature			= KString.from("Signature");
 	public final static KString attrLocalVarTable		= KString.from("LocalVariableTable");
 	public final static KString attrLinenoTable		= KString.from("LineNumberTable");

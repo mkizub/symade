@@ -826,6 +826,7 @@ FileUnit FileUnit(String filename) :
 			}
 		)*
 		TopLevelDeclarations(fu)
+		{ fu.line_count = getToken(0).endLine; }
 		<EOF>
 	}
 	catch(ParseError e) { rpe("Bad declaration",e); }

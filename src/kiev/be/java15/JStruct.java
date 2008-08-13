@@ -126,9 +126,16 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		
 		{
-			String fu = jctx_file_unit.fname;
-			SourceFileAttr sfa = new SourceFileAttr(KString.from(fu));
+			FileUnit fu = (FileUnit)jctx_file_unit;
+			String fname = fu.fname;
+			SourceFileAttr sfa = new SourceFileAttr(KString.from(fname));
 			this.addAttr(sfa);
+			int line_count = fu.line_count;
+			if (line_count > 0) {
+				String smap = "SMAP\n"+fname+"\nKiev\n*S Kiev\n*F\n1 "+fname+"\n*L\n1#1,"+line_count+":1\n"+"*E";
+				SourceDebugExtensionAttr sda = new SourceDebugExtensionAttr(smap.toString());
+				this.addAttr(sda);
+			}
 		}
 		
 		if (inner_info != null) {

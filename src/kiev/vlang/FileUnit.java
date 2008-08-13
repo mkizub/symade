@@ -33,6 +33,8 @@ public final class FileUnit extends NameSpace, CompilationUnit {
 	public String							current_syntax;
 	@UnVersioned
 	public boolean							is_project_file;
+	@UnVersioned
+	public int								line_count;		// for text source files
 
 	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
 	public ComplexTypeDecl get_child_ctx_tdecl() { return null; }

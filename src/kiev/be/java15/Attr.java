@@ -147,6 +147,29 @@ public class SourceFileAttr extends Attr {
 	}
 }
 
+public class SourceDebugExtensionAttr extends Attr {
+
+	/** File name */
+	public String		smap;
+
+	/** Constructor for bytecode reader and raw field creation */
+	public SourceDebugExtensionAttr(String smap) {
+		super(attrSourceDebugExtension);
+		this.smap = smap;
+	}
+
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+	}
+
+	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+		kiev.bytecode.SourceDebugExtensionAttribute sda = new kiev.bytecode.SourceDebugExtensionAttribute();
+		sda.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
+		sda.data = smap.getBytes("UTF-8");
+		return sda;
+	}
+}
+
 public class LocalVarTableAttr extends Attr {
 
 	public CodeVar[]		vars;
