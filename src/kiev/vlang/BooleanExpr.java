@@ -236,9 +236,9 @@ public class BinaryBoolExpr extends BoolExpr {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			ISymbol isym = getOp().resolveMethod(this);
-			if (isym != null)
-				m = isym.dnode;
+			Symbol sym = getOp().resolveMethod(this);
+			if (sym != null)
+				m = sym.dnode;
 		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
@@ -247,9 +247,9 @@ public class BinaryBoolExpr extends BoolExpr {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null) {
-			ISymbol isym = getOp().resolveMethod(this);
-			if (isym != null)
-				m = (Method)isym.dnode;
+			Symbol sym = getOp().resolveMethod(this);
+			if (sym != null)
+				m = (Method)sym.dnode;
 		}
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();

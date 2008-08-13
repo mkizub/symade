@@ -1302,7 +1302,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public boolean preVerify() { return true; }
 	public void postVerify() {}
 
-	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.is_auto_complete) {
 			foreach (AttrSlot attr; values(); attr == slot) {
 				if (attr instanceof ScalarAttrSlot) {
@@ -1313,8 +1313,8 @@ public abstract class ASTNode extends ANode implements Constants {
 				TypeInfo ti = attr.typeinfo;
 				if (SymbolRef.class == ti.clazz) {
 					ti = ti.getTopArgs()[0];
-					return SymbolRef.autoCompleteSymbol(this, str, slot, fun (ISymbol isym)->boolean {
-						return ti.$instanceof(isym.dnode);
+					return SymbolRef.autoCompleteSymbol(this, str, slot, fun (DNode dn)->boolean {
+						return ti.$instanceof(dn);
 					});
 				}
 				return null;

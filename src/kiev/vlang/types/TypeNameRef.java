@@ -113,7 +113,7 @@ public final class TypeNameRef extends TypeRef {
 		return (TypeDecl)scope;
 	}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -127,7 +127,7 @@ public final class TypeNameRef extends TypeRef {
 			}
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
-				Vector<ISymbol> vect = new Vector<ISymbol>();
+				Vector<Symbol> vect = new Vector<Symbol>();
 				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
 				foreach (PassInfo.resolveNameR(this,info)) {
 					if (!vect.contains(info.resolvedSymbol()))
@@ -142,7 +142,7 @@ public final class TypeNameRef extends TypeRef {
 			}
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
-					return new TypeDecl[0];
+					return null;
 				dot = name.indexOf('\u001f');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
@@ -153,7 +153,7 @@ public final class TypeNameRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
 						if (!vect.contains(info.resolvedSymbol()))
@@ -283,7 +283,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		return (TypeDecl)scope;
 	}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -298,7 +298,7 @@ public final class TypeNameArgsRef extends TypeRef {
 			{
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
 					foreach (PassInfo.resolveNameR(this,info)) {
 						if (!vect.contains(info.resolvedSymbol()))
@@ -314,7 +314,7 @@ public final class TypeNameArgsRef extends TypeRef {
 			}
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
-					return new TypeDecl[0];
+					return null;
 				dot = name.indexOf('\u001f');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
@@ -325,7 +325,7 @@ public final class TypeNameArgsRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
 						if (!vect.contains(info.resolvedSymbol()))
@@ -486,7 +486,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		return (TypeDecl)scope;
 	}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -501,7 +501,7 @@ public final class TypeInnerNameRef extends TypeRef {
 			if (this.outer == null) {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
 					foreach (PassInfo.resolveNameR(this,info)) {
 						if (!vect.contains(info.resolvedSymbol()))
@@ -520,7 +520,7 @@ public final class TypeInnerNameRef extends TypeRef {
 			}
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
-					return new TypeDecl[0];
+					return null;
 				dot = name.indexOf('\u001f');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
@@ -531,7 +531,7 @@ public final class TypeInnerNameRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
 						if (!vect.contains(info.resolvedSymbol()))

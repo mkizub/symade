@@ -293,8 +293,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return false;
 	}
 
-	public ISymbol getSymbol(String nm) {
-		if (sname == nm) return this;
+	public Symbol getSymbol(String nm) {
+		if (sname == nm) return this.symbol;
 		foreach(Symbol s; aliases; s.sname == nm)
 			return s;
 		assert (false, "Symbol "+nm+" not found in "+this);
@@ -481,18 +481,18 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 	}
 
-	public ISymbol equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
-		ISymbol isym = null;
+	public Symbol equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
+		Symbol sym = null;
 		{
 			String sname = this.sname;
 			if (sname == name) {
-				isym = this;
+				sym = this.symbol;
 			} else {
 				foreach(Symbol s; aliases; s.sname == name) {
-					isym = s;
+					sym = s;
 					break;
 				}
-				if (isym == null)
+				if (sym == null)
 					return null;
 			}
 		}
@@ -576,7 +576,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		
 		trace(Kiev.debug && Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+" match as "+rt);
 		info.resolved_type = rt;
-		return isym;
+		return sym;
 	}
 	
 	public final CallType makeType(TypeRef[] targs, ENode[] args) {

@@ -62,11 +62,11 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,func), targs, args);
+		this(pos, obj, new SymbolRef<Method>(pos,func.symbol), targs, args);
 	}
 
 	public CallExpr(int pos, ENode obj, ISymbol func, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,func), null, args);
+		this(pos, obj, new SymbolRef<Method>(pos,func.symbol), null, args);
 	}
 
 	public ENode[] getArgs() {

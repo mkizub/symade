@@ -436,7 +436,7 @@ public final class Operator implements Constants {
 		return allOperatorDeclsHash.get(nm);
 	}
 
-	public ISymbol resolveMethod(ENode expr) {
+	public Symbol resolveMethod(ENode expr) {
 		ENode[] args = expr.getArgs();
 		ResInfo<Method> info = new ResInfo<Method>(expr, this.name, ResInfo.noStatic);
 		Type[] tps = new Type[args.length-1];

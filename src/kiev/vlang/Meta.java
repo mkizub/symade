@@ -253,7 +253,7 @@ public class UserMeta extends MNode {
 		}
 	}
 	
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "decl") {
 			TypeDecl scope;
 			String head;
@@ -267,12 +267,12 @@ public class UserMeta extends MNode {
 			}
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
-				Vector<ISymbol> vect = new Vector<ISymbol>();
+				Vector<Symbol> vect = new Vector<Symbol>();
 				ResInfo info = new ResInfo(this,head,flags);
 				foreach (PassInfo.resolveNameR(this,info)) {
-					ISymbol isym = info.resolvedSymbol();
-					if ((isym instanceof KievPackage || isym instanceof JavaAnnotation) && !vect.contains(isym))
-						vect.append(isym);
+					DNode dn = info.resolvedDNode();
+					if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !vect.contains(info.resolvedSymbol()))
+						vect.append(info.resolvedSymbol());
 				}
 				return vect.toArray();
 			} else {
@@ -292,7 +292,7 @@ public class UserMeta extends MNode {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(info)) {
 						DNode dn = info.resolvedDNode();

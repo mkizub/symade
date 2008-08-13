@@ -243,7 +243,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		((Import)syn).resolveMethodR(path,mt)
 	}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "srpkg") {
 			KievPackage scope = Env.getRoot();
 			if (parent() != null && parent().ctx_name_space != null)
@@ -264,7 +264,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 				}
 				if (dot < 0) {
 					head = name.intern();
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(info)) {

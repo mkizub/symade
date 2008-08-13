@@ -213,7 +213,7 @@ public final class UnresCallExpr extends UnresExpr {
 	public UnresCallExpr() {}
 
 	public UnresCallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos, func), targs, args, super_flag);
+		this(pos, obj, new SymbolRef(pos, func.symbol), targs, args, super_flag);
 	}
 	public UnresCallExpr(int pos, ENode obj, SymbolRef func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;

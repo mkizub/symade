@@ -268,11 +268,11 @@ public class BinaryExpr extends ENode {
 		if (this.dnode != null) {
 			m = (Method)this.dnode;
 		} else {
-			ISymbol isym = op.resolveMethod(this);
-			if (isym == null)
+			Symbol sym = op.resolveMethod(this);
+			if (sym == null)
 				return Type.tpVoid;
-			this.symbol = isym;
-			m = (Method)isym.dnode;
+			this.symbol = sym;
+			m = (Method)sym.dnode;
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -290,9 +290,9 @@ public class BinaryExpr extends ENode {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			ISymbol isym = getOp().resolveMethod(this);
-			if (isym != null)
-				m = isym.dnode;
+			Symbol sym = getOp().resolveMethod(this);
+			if (sym != null)
+				m = sym.dnode;
 		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
@@ -348,11 +348,11 @@ public class UnaryExpr extends ENode {
 		if (this.dnode != null) {
 			m = (Method)this.dnode;
 		} else {
-			ISymbol isym = op.resolveMethod(this);
-			if (isym == null)
+			Symbol sym = op.resolveMethod(this);
+			if (sym == null)
 				return Type.tpVoid;
-			this.symbol = isym;
-			m = (Method)isym.dnode;
+			this.symbol = sym;
+			m = (Method)sym.dnode;
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -375,9 +375,9 @@ public class UnaryExpr extends ENode {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			ISymbol isym = getOp().resolveMethod(this);
-			if (isym != null)
-				m = isym.dnode;
+			Symbol sym = getOp().resolveMethod(this);
+			if (sym != null)
+				m = sym.dnode;
 		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;
@@ -626,7 +626,7 @@ public class IncrementExpr extends ENode {
 	public String toString() { return getOp().toString(this); }
 
 	public void mainResolveOut() {
-		ISymbol m = op.resolveMethod(this);
+		Symbol m = op.resolveMethod(this);
 		if (m == null) {
 			if (ctx_method == null || !ctx_method.isMacro())
 				Kiev.reportWarning(this, "Unresolved method for operator "+op);

@@ -162,7 +162,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 		path.resolvedDNode().isStatic() && !path.resolvedDNode().isPrivate()
 	}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');
@@ -173,13 +173,13 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 					name = name.substring(dot+1);
 					ResInfo<KievPackage> info = new ResInfo<KievPackage>(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 					if !(scope.resolveNameR(info))
-						return new DNode[0];
+						return null;
 					scope = (ScopeOfNames)info.resolvedDNode();
 					dot = name.indexOf('\u001f');
 				}
 				if (dot < 0) {
 					head = name.intern();
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(info)) {
@@ -227,7 +227,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 		path.resolvedDNode().isStatic() && !path.resolvedDNode().isPrivate()
 	}
 
-	public ISymbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
 			int dot = name.indexOf('\u001f');
@@ -244,7 +244,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 				}
 				if (dot < 0) {
 					head = name.intern();
-					Vector<ISymbol> vect = new Vector<ISymbol>();
+					Vector<Symbol> vect = new Vector<Symbol>();
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 					ResInfo<KievSyntax> info = new ResInfo<KievSyntax>(this,head,flags);
 					foreach (scope.resolveNameR(info)) {

@@ -180,7 +180,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, ISymbol symbol) {
+	public SymbolRef(int pos, Symbol symbol) {
 		this.pos = pos;
 		this.symbol = symbol.symbol;
 	}
@@ -278,7 +278,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public ISymbol[] resolveAutoComplete(String str, AttrSlot slot) {
+	public Symbol[] resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "name") {
 			AttrSlot pslot = pslot();
 			if (pslot != null && pslot.is_auto_complete)
@@ -291,17 +291,17 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		return super.resolveAutoComplete(str,slot);
 	}
 	
-	public final boolean checkSymbolMatch(ISymbol isym) {
-		return isym.dnode instanceof D;
+	public final boolean checkSymbolMatch(DNode dn) {
+		return dn instanceof D;
 	}
 	
-	public ISymbol[] autoCompleteSymbol(String str) {
-		return autoCompleteSymbol(this, str, this.pslot(), fun (ISymbol isym)->boolean {
-			return checkSymbolMatch(isym);
+	public Symbol[] autoCompleteSymbol(String str) {
+		return autoCompleteSymbol(this, str, this.pslot(), fun (DNode dn)->boolean {
+			return checkSymbolMatch(dn);
 		});
 	}
 
-	public static ISymbol[] autoCompleteSymbol(ASTNode resolve_in, String str, AttrSlot for_slot, (ISymbol)->boolean check) {
+	public static Symbol[] autoCompleteSymbol(ASTNode resolve_in, String str, AttrSlot for_slot, (DNode)->boolean check) {
 		if (str == null)
 			str = "";
 		int dot = str.indexOf('\u001f');
@@ -321,20 +321,21 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				return null;
 			return autoCompleteSymbolFromRoot(resolve_in, (GlobalDNodeContainer)info.resolvedDNode(), tail, for_slot, check);
 		}
-		Vector<ISymbol> vect = new Vector<ISymbol>();
+		Vector<Symbol> vect = new Vector<Symbol>();
 		ResInfo info = new ResInfo(resolve_in, str, ResInfo.noEquals);
 		foreach (PassInfo.resolveNameR(resolve_in,info)) {
-			ISymbol isym = info.resolvedSymbol();
-			if (vect.contains(isym))
+			Symbol sym = info.resolvedSymbol();
+			if (vect.contains(sym))
 				continue;
 			// check if this node match
-			if (check(isym)) {
-				vect.append(isym);
+			if (check(sym.dnode)) {
+				vect.append(sym);
 				continue;
 			}
 			// check if it's a node from path prefix
-			foreach (Class c; scopesForAutoResolve(for_slot); c.isAssignableFrom(isym.getClass())) {
-				vect.append(isym);
+			DNode dn = sym.dnode;
+			foreach (Class c; scopesForAutoResolve(for_slot); dn != null && c.isAssignableFrom(dn.getClass())) {
+				vect.append(sym);
 				break;
 			}
 		}
@@ -348,7 +349,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		return for_slot.auto_complete_scopes;
 	}
 	
-	private static ISymbol[] autoCompleteSymbolFromRoot(ASTNode resolve_in, GlobalDNodeContainer scope, String tail, AttrSlot for_slot, (ISymbol)->boolean check) {
+	private static Symbol[] autoCompleteSymbolFromRoot(ASTNode resolve_in, GlobalDNodeContainer scope, String tail, AttrSlot for_slot, (DNode)->boolean check) {
 		// check if the scope is a valid node path prefix
 		boolean valid_scope = false;
 		foreach (Class c; scopesForAutoResolve(for_slot); c.isAssignableFrom(scope.getClass())) {
@@ -362,14 +363,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		while (dot > 0) {
 			String head = tail.substring(0,dot).intern();
 			tail = tail.substring(dot+1);
-			ISymbol isym = null;
-			foreach (ISymbol s; scope.getMembers(); s.sname == head) {
-				isym = s;
+			DNode dn = null;
+			foreach (DNode n; scope.getMembers(); n.sname == head) {
+				dn = n;
 				break;
 			}
 			dot = tail.indexOf('\u001f');
-			if (isym instanceof GlobalDNodeContainer) {
-				scope = (GlobalDNodeContainer)isym;
+			if (dn instanceof GlobalDNodeContainer) {
+				scope = (GlobalDNodeContainer)dn;
 				valid_scope = false;
 				foreach (Class c; scopesForAutoResolve(for_slot); c.isAssignableFrom(scope.getClass()))
 					continue next_scope;
@@ -378,21 +379,22 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			return null;
 		}
 		String head = tail.intern();
-		Vector<ISymbol> vect = new Vector<ISymbol>();
+		Vector<Symbol> vect = new Vector<Symbol>();
 		int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
 		ResInfo info = new ResInfo(resolve_in,head,flags);
 		foreach (scope.resolveNameR(info)) {
-			ISymbol isym = info.resolvedSymbol();
-			if (vect.contains(isym))
+			Symbol sym = info.resolvedSymbol();
+			if (vect.contains(sym))
 				continue;
 			// check if this node match
-			if (check(isym)) {
-				vect.append(isym);
+			if (check(sym.dnode)) {
+				vect.append(sym);
 				continue;
 			}
 			// check if it's a node from path prefix
-			foreach (Class c; scopesForAutoResolve(for_slot); c.isAssignableFrom(isym.getClass())) {
-				vect.append(isym);
+			DNode dn = sym.dnode;
+			foreach (Class c; scopesForAutoResolve(for_slot); dn != null && c.isAssignableFrom(dn.getClass())) {
+				vect.append(sym);
 				break;
 			}
 		}
@@ -400,12 +402,12 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 
 	public void resolveSymbol(SeverError sever) {
-		return resolveSymbol(sever, fun (ISymbol isym)->boolean {
-			return checkSymbolMatch(isym);
+		return resolveSymbol(sever, fun (DNode dn)->boolean {
+			return checkSymbolMatch(dn);
 		});
 	}
 
-	public void resolveSymbol(SeverError sever, (ISymbol)->boolean check) {
+	public void resolveSymbol(SeverError sever, (DNode)->boolean check) {
 		String name = this.name;
 		if (name == null || name == "") {
 			//Kiev.reportAs(sever, this, "Empty reference name");
@@ -439,8 +441,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			Kiev.reportAs(sever, this, "Unresolved "+this);
 			return;
 		}
-		D dn = info.resolvedDNode();
-		if (!check(dn)) {
+		if (!check(info.resolvedDNode())) {
 			Kiev.reportAs(sever, this, "Resolved "+this+" does not match required constraints");
 			return;
 		}
@@ -448,19 +449,19 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			this.symbol = info.resolvedSymbol();
 	}
 
-	private void resolveSymbolFromRoot(SeverError sever, GlobalDNodeContainer scope, String tail, (ISymbol)->boolean check) {
+	private void resolveSymbolFromRoot(SeverError sever, GlobalDNodeContainer scope, String tail, (DNode)->boolean check) {
 		int dot = tail.indexOf('\u001f');
 		while (dot > 0) {
 			String head = tail.substring(0,dot).intern();
 			tail = tail.substring(dot+1);
-			ISymbol isym = null;
-			foreach (ISymbol s; scope.getMembers(); s.sname == head) {
-				isym = s;
+			DNode dn = null;
+			foreach (DNode n; scope.getMembers(); n.sname == head) {
+				dn = n;
 				break;
 			}
 			dot = tail.indexOf('\u001f');
-			if (isym instanceof GlobalDNodeContainer) {
-				scope = (GlobalDNodeContainer)isym;
+			if (dn instanceof GlobalDNodeContainer) {
+				scope = (GlobalDNodeContainer)dn;
 				continue;
 			}
 			Kiev.reportAs(sever, this, "Resolved identifier "+head+" in "+scope+" is not a global node container");
@@ -472,8 +473,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			Kiev.reportAs(sever, this, "Unresolved "+this+" in "+scope);
 			return;
 		}
-		D dn = info.resolvedDNode();
-		if (!check(dn)) {
+		if (!check(info.resolvedDNode())) {
 			Kiev.reportAs(sever, this, "Resolved "+this+" does not match required constraints");
 			return;
 		}

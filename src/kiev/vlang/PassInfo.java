@@ -94,24 +94,21 @@ public class PassInfo {
 		((ScopeOfNames)p).resolveNameR(path)
 	}
 
-	private static void addResolvedMethod(ResInfo info, Vector<ISymbol> methods, Vector<ResInfo> paths, Vector<CallType> types)
+	private static void addResolvedMethod(ResInfo info, Vector<ResInfo> paths)
 	{
-		ISymbol m = info.resolvedSymbol();
+		DNode m = info.resolvedDNode();
 		trace(Kiev.debug && Kiev.debugResolve,"Candidate method "+m+" with path "+info+" found...");
-		for (int i=0; i < methods.length; i++) {
-			if (methods[i].dnode == m.dnode) {
+		for (int i=0; i < paths.length; i++) {
+			if (paths[i].resolvedDNode() == m.dnode) {
 				trace(Kiev.debug && Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
 				if (info.getTransforms() < paths[i].getTransforms()) {
 					trace(Kiev.debug && Kiev.debugResolve,"Will use "+m+" with paths "+info);
-					methods[i] = m;
 					paths[i] = info.copy();
 				}
 				return;
 			}
 		}
-		methods.append(m);
 		paths.append(info.copy());
-		types.append(info.resolved_type);
 	}
 	
 	public static boolean resolveBestMethodR(
@@ -120,59 +117,58 @@ public class PassInfo {
 		CallType mt)
 	{
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving best method "+Method.toString(info.getName(),mt)+" in "+sc);
-		Vector<ISymbol>  methods = new Vector<ISymbol>();
 		Vector<ResInfo>  paths   = new Vector<ResInfo>();
-		Vector<CallType> types   = new Vector<CallType>();
 		if (sc instanceof ScopeOfMethods) {
 			ScopeOfMethods scm = (ScopeOfMethods)sc;
 			foreach( scm.resolveMethodR(info,mt) )
-				addResolvedMethod(info,methods,paths,types);
+				addResolvedMethod(info,paths);
 		}
 		else if (sc instanceof Type && info.isStaticAllowed()) {
 			Type tp = (Type)sc;
 			foreach( tp.meta_type.tdecl.resolveMethodR(info,mt) )
-				addResolvedMethod(info,methods,paths,types);
+				addResolvedMethod(info,paths);
 		}
 		else if (sc instanceof Type) {
 			Type tp = (Type)sc;
 			foreach( tp.resolveCallAccessR(info,mt) )
-				addResolvedMethod(info,methods,paths,types);
+				addResolvedMethod(info,paths);
 		}
 		else if (sc instanceof Operator) {
 			Operator op = (Operator)sc;
 			foreach( op.resolveOperatorMethodR(info,mt) )
-				addResolvedMethod(info,methods,paths,types);
+				addResolvedMethod(info,paths);
 		}
 		else
 			throw new RuntimeException("Unknown scope "+sc);
-		if( methods.size() == 0 ) {
+		if( paths.size() == 0 ) {
 			trace(Kiev.debug && Kiev.debugResolve,"Nothing found...");
 			return false;
 		}
 
 		if (Kiev.debug && Kiev.debugResolve) {
-			StringBuffer msg = new StringBuffer("Found "+methods.length+" candidate methods:\n");
-			for(int i=0; i < methods.length; i++) {
-				msg.append("\t").append(methods[i].parent()).append('.').append(paths[i]).append(methods[i]).append('\n');
+			StringBuffer msg = new StringBuffer("Found "+paths.length+" candidate methods:\n");
+			for(int i=0; i < paths.length; i++) {
+				Method m = (Method)paths[i].resolvedDNode();
+				msg.append("\t").append(m.parent()).append('.').append(paths[i]).append(m).append('\n');
 			}
 			msg.append("while resolving ").append(Method.toString(info.getName(),mt));
 			trace(Kiev.debug && Kiev.debugResolve,msg.toString());
 		}
 
-		if( methods.size() == 1 ) {
+		if( paths.size() == 1 ) {
 			info.set(paths[0]);
 			return true;
 		}
 		
-		for (int i=0; i < methods.length; i++) {
-			Method m1 = (Method)methods[i].dnode;
+		for (int i=0; i < paths.length; i++) {
+			Method m1 = (Method)paths[i].resolvedDNode();
 			ResInfo p1 = paths[i];
-			CallType mt1 = types[i];
+			CallType mt1 = paths[i].resolved_type;
 		next_method:
-			for (int j=0; j < methods.length; j++) {
-				Method m2 = (Method)methods[j].dnode;
+			for (int j=0; j < paths.length; j++) {
+				Method m2 = (Method)paths[j].resolvedDNode();
 				ResInfo p2 = paths[j];
-				CallType mt2 = types[j];
+				CallType mt2 = paths[j].resolved_type;
 				
 				if (m1 == m2)
 					continue;
@@ -239,23 +235,22 @@ public class PassInfo {
 				}
 			is_more_specific:;
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+m1+" is more specific then "+m2+" resolving for "+Method.toString(info.getName(),mt));
-				methods.remove(j);
 				paths.remove(j);
-				types.remove(j);
 				j--;
 				if (i >= j)
 					i--;
 			}
 		}
-		if( methods.size() == 1 ) {
+		if( paths.size() == 1 ) {
 			info.set(paths[0]);
 			return true;
 		}
 		
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
-		for(int i=0; i < methods.length; i++) {
-			msg.append("\t").append(methods[i].parent()).append('.');
-			msg.append(paths[i]).append(methods[i]).append('\n');
+		for(int i=0; i < paths.length; i++) {
+			Method m = (Method)paths[i].resolvedDNode();
+			msg.append("\t").append(m.parent()).append('.');
+			msg.append(paths[i]).append(m).append('\n');
 		}
 		msg.append("while resolving ").append(Method.toString(info.getName(),mt));
 		throw new CompilerException(info.getFrom(), msg.toString());

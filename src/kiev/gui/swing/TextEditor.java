@@ -25,7 +25,7 @@ import kiev.fmt.Draw_SyntaxAttr;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.vlang.ISymbol;
+import kiev.vlang.Symbol;
 import kiev.vtree.ASTNode;
 import kiev.vtree.ScalarPtr;
 
@@ -247,7 +247,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				return;
 		}
 		boolean qualified = name==null ? false : name.indexOf('\u001f') > 0;
-		ISymbol[] decls = ((ASTNode)pattr.node).resolveAutoComplete(name==null?"":name,pattr.slot);
+		Symbol[] decls = ((ASTNode)pattr.node).resolveAutoComplete(name==null?"":name,pattr.slot);
 		if (decls == null)
 			return;
 		if (combo == null) {
@@ -270,7 +270,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		int h = info.getHeight();
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
-		for (ISymbol dn: decls) {
+		for (Symbol dn: decls) {
 			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.get$sname());
 			popup = true;
 		}

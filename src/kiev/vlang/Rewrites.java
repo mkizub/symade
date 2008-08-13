@@ -721,9 +721,9 @@ public class MacroBinaryBoolExpr extends ENode {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			ISymbol isym = getOp().resolveMethod(this);
-			if (isym != null)
-				m = isym.dnode;
+			Symbol sym = getOp().resolveMethod(this);
+			if (sym != null)
+				m = sym.dnode;
 		}
 		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
 			return false;

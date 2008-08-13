@@ -308,14 +308,14 @@ public abstract class ENode extends ASTNode {
 	public final Method resolveMethodAndNormalize() {	
 		Method m;
 		if (this.dnode == null) {
-			ISymbol isym = getOp().resolveMethod(this);
-			if (isym == null) {
+			Symbol sym = getOp().resolveMethod(this);
+			if (sym == null) {
 				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return null;
 			}
-			m = (Method)isym.dnode;
-			this.symbol = isym;
+			m = (Method)sym.dnode;
+			this.symbol = sym;
 		} else {
 			m = (Method)this.dnode;
 		}
