@@ -44,7 +44,7 @@
      <sop:kiev.fmt.evt.Binding>
       <events>
        <sop:kiev.fmt.evt.MouseEvent>
-        <button>16</button>
+        <button>3</button>
         <count>1</count>
         <withCtrl>false</withCtrl>
         <withAlt>false</withAlt>

@@ -152,6 +152,14 @@ public class Window extends JFrame
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
 			menu.add(mi);
 
+			mi = new UIActionMenuItem((IWindow)this, "Enter Key Code", KeyEvent.VK_K, new KeyCodeEditor.Factory());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK));
+			menu.add(mi);
+
+			mi = new UIActionMenuItem((IWindow)this, "Enter Mouse Code", KeyEvent.VK_M, new MouseButtonEditor.Factory());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.ALT_MASK));
+			menu.add(mi);
+
 			menuBar.add(menu);
 		}
 		{
