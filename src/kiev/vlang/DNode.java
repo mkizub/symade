@@ -30,10 +30,16 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@nodeAttr(ext_data=true)
 	public MNode⋈		metas;
 
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeAttr
+	public Symbol		symbol;
+
+	@abstract
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr
 	public							String			sname; // source code name, may be null for anonymouse symbols
 
+	@abstract
 	@AttrXMLDumpInfo(attr=true)
 	@UnVersioned
 	@nodeAttr(copyable=false)
@@ -53,12 +59,13 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	@getter final public DNode get$dnode() { return this; }
+	@getter final public Symbol get$symbol() { return this.symbol; }
 
 	@getter final public String get$sname() {
-		return this.sname;
+		return this.symbol.sname;
 	}
 	@setter final public void set$sname(String value) {
-		this.sname = (value == null) ? null : value.intern();
+		this.symbol.sname = value;
 	}
 	@getter final public String get$qname() {
 		if (this instanceof GlobalDNode)
@@ -66,20 +73,13 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return this.sname;
 	}
 	@getter final public String get$UUID() {
-		String u = this.uuid;
-		if (u == null) {
-			u = java.util.UUID.randomUUID().toString();
-			this.uuid = u;
-		}
-		return u;
+		return this.symbol.get$UUID();
+	}
+	@getter final public String get$uuid() {
+		return this.symbol.uuid;
 	}
 	@setter final public void set$uuid(String value) {
-		value = value.intern();
-		assert (this.uuid == null || this.uuid == value);
-		if (this.uuid == null) {
-			Env.getRoot().registerISymbol(value,this);
-			this.uuid = value;
-		}
+		this.symbol.uuid = value;
 	}
 	
 	public final boolean isPublic()			{ return this.mflags_access == MASK_ACC_PUBLIC; }
@@ -287,7 +287,9 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 
-	public DNode() {}
+	public DNode() {
+		this.symbol = new Symbol();
+	}
 
 	public Object copy(CopyContext cc) {
 		ANode obj = cc.hasCopyOf(this);

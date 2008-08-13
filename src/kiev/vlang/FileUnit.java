@@ -177,7 +177,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 	public Method get_child_ctx_method() { return null; }
 
 	public NameSpace() {
-		this.srpkg.symbol = Env.getRoot();
+		this.srpkg.symbol = Env.getRoot().symbol;
 		this.srpkg.qualified = true;
 	}
 	
@@ -187,17 +187,17 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 			return td;
 		if (srpkg.name == "") {
 			td = Env.getRoot();
-			srpkg.symbol = td;
+			srpkg.symbol = td.symbol;
 		} else {
 			if (parent() != null && parent().ctx_name_space != null)
 				td = parent().ctx_name_space.getPackage();
 			if (td == null || td instanceof Env) {
 				td = Env.getRoot().newPackage(srpkg.name);
-				srpkg.symbol = td;
+				srpkg.symbol = td.symbol;
 				srpkg.qualified = true;
 			} else {
 				td = Env.getRoot().newPackage(td.qname() + "\u001f" + srpkg.name);
-				srpkg.symbol = td;
+				srpkg.symbol = td.symbol;
 				srpkg.qualified = false;
 			}
 		}

@@ -110,7 +110,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			Kiev.reportError(astn,"Identifier "+name+" is not a field");
 		else {
 			assert (n != null);
-			astn.name.symbol = n;
+			astn.name.symbol = n.symbol;
 		}
 	}
 
@@ -141,7 +141,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			Kiev.reportError(astn,"Identifier "+name+" is not a syntax");
 		else {
 			assert (n != null);
-			astn.name.symbol = n;
+			astn.name.symbol = n.symbol;
 		}
 	}
 
@@ -243,7 +243,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				Kiev.reportError(sr,"Unresolved syntax "+name+" in "+scope);
 				continue next_super_syntax;
 			}
-			sr.symbol = info.resolvedDNode();
+			sr.symbol = info.resolvedSymbol();
 		}
 		foreach (ASTNode n; astn.members) {
 			try {

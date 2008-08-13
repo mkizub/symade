@@ -44,7 +44,7 @@ public final class PackedFldFE_Verify extends VerifyProcessor {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
-			mp.fld.symbol = p;
+			mp.fld.symbol = p.symbol;
 			assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 		}
 	}
@@ -108,12 +108,12 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						~mp;
 						continue;
 					}
-					mp.fld.symbol = p;
+					mp.fld.symbol = p.symbol;
 					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 				}
 				else if (locatePackerField(packer,mp.size,s)) {
 					// Found
-					mp.fld.symbol = packer;
+					mp.fld.symbol = packer.symbol;
 					MetaPacker mpr = packer.getMetaPacker();
 					mp.offset = mpr.size;
 					mpr.size += mpr.size;
@@ -124,7 +124,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					MetaPacker mpr = new MetaPacker();
 					p.setMeta(mpr);
 					s.addField(p);
-					mp.fld.symbol = p;
+					mp.fld.symbol = p.symbol;
 					mp.offset = 0;
 					mpr.size += mp.size;
 				}

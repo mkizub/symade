@@ -225,18 +225,18 @@ public final class EToken extends ENode {
 		// resolve in the path of scopes
 		ResInfo info = new ResInfo(this,ident);
 		if (PassInfo.resolveNameR(this,info)) {
-			ISymbol isym = info.resolvedSymbol();
-			if (isym instanceof OpdefSymbol) {
+			if (info.resolvedSymbol() instanceof OpdefSymbol) {
 				this.base_kind = ETokenKind.OPERATOR;
-				value = isym;
+				value = info.resolvedSymbol();
 			}
-			if (isym instanceof KievPackage) {
+			DNode dn = info.resolvedDNode();
+			if (dn instanceof KievPackage) {
 				this.base_kind = ETokenKind.SCOPE_DECL;
-				value = isym;
+				value = dn;
 			}
-			if (isym instanceof TypeDecl) {
+			if (dn instanceof TypeDecl) {
 				this.base_kind = ETokenKind.TYPE_DECL;
-				value = isym;
+				value = dn;
 			}
 		}
 	}
@@ -322,16 +322,17 @@ public final class EToken extends ENode {
 		ResInfo info = new ResInfo(this,ident);
 		if (!PassInfo.resolveNameR((ASTNode)this,info))
 			throw new CompilerException(this,"Unresolved token "+ident);
-		ISymbol isym = info.resolvedSymbol();
-		if (isym instanceof OpdefSymbol) {
+		if (info.resolvedSymbol() instanceof OpdefSymbol) {
 			this.is_token_operator = true;
-			value = isym;
+			value = info.resolvedSymbol();
 			//replaceWithNodeReWalk(op);
+			return false;
 		}
-		else if (isym instanceof TypeDecl) {
+		DNode dn = info.resolvedDNode();
+		if (dn instanceof TypeDecl) {
 			this.is_token_type_decl = true;
-			value = isym;
-			TypeDecl td = (TypeDecl)isym;
+			value = dn;
+			TypeDecl td = (TypeDecl)dn;
 			//td.checkResolved();
 			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.xtype));
 		}

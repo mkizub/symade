@@ -584,7 +584,7 @@ public final class DumpUtils {
 						fu.current_syntax = "<xml-dump>";
 						addAttributes(fu, attributes);
 						if (pkg instanceof KievPackage)
-							fu.srpkg.symbol = (KievPackage)pkg;
+							fu.srpkg.symbol = pkg.symbol;
 						nodes.push(root);
 					}
 					else if (pkg != null) {

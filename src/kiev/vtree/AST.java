@@ -195,7 +195,7 @@ public abstract class ANode implements INode {
 					if (n instanceof SymbolRef) {
 						SymbolRef sr = (SymbolRef)n;
 						if (sr.symbol == si.sold)
-							sr.symbol = si.snew;
+							sr.symbol = si.snew.symbol;
 					}
 					else if (n instanceof TypeArgRef) {
 						TypeArgRef en = (TypeArgRef)n;

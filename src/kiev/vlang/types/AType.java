@@ -445,7 +445,9 @@ public abstract class AType extends TVSet implements StdTypes {
 		}
 		TypeDecl tdecl = null;
 		if (uuid != null) {
-			tdecl = (TypeDecl)Env.getRoot().getISymbolByUUID(uuid);
+			Symbol sym = Env.getRoot().getSymbolByUUID(uuid);
+			if (sym != null && sym.dnode instanceof TypeDecl)
+				tdecl = (TypeDecl)sym.dnode;
 			//if (tdecl != null)
 			//	assert (tdecl.qname().equals(name));
 		}

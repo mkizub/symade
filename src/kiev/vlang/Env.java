@@ -33,14 +33,14 @@ public final class Env extends KievPackage {
 	private static Env								root = new Env();
 
 	/** Class/library path */
-	private kiev.bytecode.Classpath				classpath;
+	private kiev.bytecode.Classpath					classpath;
 
 	/** Backend environment */
 	private JEnv									jenv;
 
 	@nodeAttr public Project						project;
 	
-	private java.util.WeakHashMap					uuidToSymbolMap	= new java.util.WeakHashMap();
+	private java.util.WeakHashMap<String,Symbol>	uuidToSymbolMap	= new java.util.WeakHashMap<String,Symbol>();
 	
 	public static Env getRoot() { return root; }
 	public static Project getProject() { return root.project; }
@@ -106,8 +106,8 @@ public final class Env extends KievPackage {
 		return null;
 	}
 	
-	public void registerISymbol(String uuid, ISymbol sym) {
-		ISymbol old = (ISymbol)this.uuidToSymbolMap.get(uuid);
+	public void registerSymbol(String uuid, Symbol sym) {
+		Symbol old = this.uuidToSymbolMap.get(uuid);
 		if (old != null) {
 			if (old == sym)
 				return;
@@ -116,8 +116,8 @@ public final class Env extends KievPackage {
 		this.uuidToSymbolMap.put(uuid,sym);
 	}
 	
-	public ISymbol getISymbolByUUID(String uuid) {
-		return (ISymbol)this.uuidToSymbolMap.get(uuid);
+	public Symbol getSymbolByUUID(String uuid) {
+		return this.uuidToSymbolMap.get(uuid);
 	}
 	
 	public Struct newStruct(String sname, Struct outer, int acces, Struct variant) {

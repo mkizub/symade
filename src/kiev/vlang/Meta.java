@@ -143,7 +143,7 @@ public class UserMeta extends MNode {
 			Kiev.reportError(this,"Unresolved annotation "+decl.name);
 			return null;
 		}
-		this.decl.symbol = (JavaAnnotation)scope;
+		this.decl.symbol = scope.symbol;
 		scope.checkResolved();
 		return (JavaAnnotation)scope;
 	}

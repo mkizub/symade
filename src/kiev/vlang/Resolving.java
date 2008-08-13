@@ -27,7 +27,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	public static final int noEquals        = 0x0010; // to compare as startsWith
 	public static final int doImportStar    = 0x0020; // to lookup in specific imports, then in the package, then in import with star
 
-	private ISymbol		resolved_symbol;
+	private Symbol		resolved_symbol;
 	
 	private String		name;
 	private int			flags;
@@ -52,7 +52,9 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	public boolean isCmpByEquals()     { return (flags & noEquals)        == 0; }
 	public boolean doImportStar()      { return (flags & doImportStar)    != 0; }
 
-	public ISymbol resolvedSymbol() { return resolved_symbol; }
+	public Symbol resolvedSymbol() {
+		return resolved_symbol;
+	}
 	public D resolvedDNode() {
 		if (resolved_symbol == null)
 			return null;
@@ -200,7 +202,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 			return false;
 		if !(check(var))
 			return false;
-		this.resolved_symbol = var;
+		this.resolved_symbol = var.symbol;
 		return true;
 	}
 
@@ -275,6 +277,8 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 
 	private ENode buildAccess(ASTNode at, ASTNode from, Object node, boolean node_is_generated) {
 		trace(Kiev.debug && Kiev.debugResolve,"Building access from "+from+" to "+node+" via "+this);
+		if (node instanceof Symbol)
+			node = node.dnode;
 		if (from == null && isEmpty()) {
 			// var or static field
 			if (node instanceof Field) {
@@ -355,7 +359,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);
 	}
 	
-	public ENode buildAccess(ASTNode at, ASTNode from, Object node) {
+	public ENode buildAccess(ASTNode at, ASTNode from, Symbol node) {
 		return buildAccess(at, from, node, false);
 	}
 

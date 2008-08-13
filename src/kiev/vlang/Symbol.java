@@ -27,11 +27,14 @@ public interface ISymbol extends ASTNode {
 	@virtual @abstract
 	public:ro DNode			dnode;
 	@virtual @abstract
+	public:ro Symbol		symbol;
+	@virtual @abstract
 	public:ro String		UUID;
 
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
 	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
+	@getter public Symbol	get$symbol();
 	@getter public String	get$UUID(); // UUID of this symbol (auto-generated, if not exists)
 }
 
@@ -57,6 +60,10 @@ public class Symbol extends ASTNode implements ISymbol {
 		return null;
 	}
 	
+	@getter public Symbol get$symbol() {
+		return this;
+	}
+	
 	@getter final public String get$UUID() {
 		String u = this.uuid;
 		if (u == null) {
@@ -68,7 +75,7 @@ public class Symbol extends ASTNode implements ISymbol {
 	@setter final public void set$uuid(String value) {
 		assert (this.uuid == null);
 		value = value.intern();
-		Env.getRoot().registerISymbol(value,this);
+		Env.getRoot().registerSymbol(value,this);
 		this.uuid = value;
 	}
 
@@ -159,7 +166,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@AttrXMLDumpInfo(attr=true, name="full")
 	@abstract @nodeAttr public		boolean		qualified; // stored name may be qualified name
 	@AttrXMLDumpInfo(ignore=true)
-	@abstract @nodeData public		ISymbol		symbol; // resolved symbol
+	@abstract @nodeData public		Symbol		symbol; // resolved symbol
 	@abstract           public:ro	D			dnode; // resolved dnode (symbol.parent())
 		 
 	public SymbolRef() {}
@@ -175,12 +182,12 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	public SymbolRef(int pos, ISymbol symbol) {
 		this.pos = pos;
-		this.symbol = symbol;
+		this.symbol = symbol.symbol;
 	}
 
 	public SymbolRef(int pos, D symbol) {
 		this.pos = pos;
-		this.symbol = symbol;
+		this.symbol = symbol.symbol;
 	}
 
 	public SymbolRef(Symbol symbol) {
@@ -188,7 +195,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 
 	public SymbolRef(D symbol) {
-		this.symbol = symbol;
+		this.symbol = symbol.symbol;
 	}
 
 	@getter public final boolean get$qualified() {
@@ -219,10 +226,10 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		Object id = ident_or_symbol_or_type;
 		if (id instanceof String)
 			return (String)id;
-		if (id instanceof ISymbol) {
+		if (id instanceof Symbol) {
 			if (qualified)
-				return ((ISymbol)id).qname;
-			return ((ISymbol)id).sname;
+				return ((Symbol)id).qname;
+			return ((Symbol)id).sname;
 		}
 		if (id instanceof Type) {
 			if (qualified)
@@ -232,21 +239,19 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		return null;
 	}
 
-	@getter public final ISymbol get$symbol() {
+	@getter public final Symbol get$symbol() {
 		Object id = ident_or_symbol_or_type;
-		if (id instanceof ISymbol)
-			return (ISymbol)id;
+		if (id instanceof Symbol)
+			return (Symbol)id;
 		if (id instanceof Type)
-			return ((Type)id).meta_type.tdecl;
+			return ((Type)id).meta_type.tdecl.symbol;
 		return null;
 	}
 	
 	@getter public final D get$dnode() {
 		Object id = ident_or_symbol_or_type;
-		if (id instanceof DNode)
-			return (DNode)id;
-		if (id instanceof ISymbol)
-			return ((ISymbol)id).dnode;
+		if (id instanceof Symbol)
+			return ((Symbol)id).dnode;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
 		return null;
@@ -261,7 +266,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		ident_or_symbol_or_type = val;
 	}
 	
-	@setter public final void set$symbol(ISymbol val) {
+	@setter public final void set$symbol(Symbol val) {
 		ident_or_symbol_or_type = val;
 	}
 	

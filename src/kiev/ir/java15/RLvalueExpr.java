@@ -26,7 +26,7 @@ public abstract static view RLvalueExpr of LvalueExpr extends RENode {
 public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 	public ENode		obj;
 
-	public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o);
+	public final ENode makeExpr(ResInfo info, ASTNode o);
 
 	public void resolve(Type reqType) throws CompilerException {
 		ENode[] res;
@@ -54,9 +54,9 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			Type tp = tps[si];
 			ResInfo info;
 			if (!(obj instanceof TypeRef) && tp.resolveNameAccessR(info=new ResInfo(this,this.ident,ResInfo.noStatic|ResInfo.noSyntaxContext)))
-				res[si] = makeExpr(info.resolvedSymbol(),info,obj);
+				res[si] = makeExpr(info,obj);
 			else if (tp.meta_type.tdecl.resolveNameR(info=new ResInfo(this,this.ident)))
-				res[si] = makeExpr(info.resolvedSymbol(),info,tp.getStruct());
+				res[si] = makeExpr(info,tp.getStruct());
 		}
 		int cnt = 0;
 		int idx = -1;

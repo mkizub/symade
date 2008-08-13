@@ -169,9 +169,9 @@ public abstract class kiev050 implements kiev050Constants {
 		TypeConstr arg = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null) {
-			DNode dn = (DNode)Env.getRoot().getISymbolByUUID(uuid);
-			if (dn instanceof TypeConstr) {
-				arg = (TypeConstr)dn;
+			Symbol sym = Env.getRoot().getSymbolByUUID(uuid);
+			if (sym != null && sym.dnode instanceof TypeConstr) {
+				arg = (TypeConstr)sym.dnode;
 				arg.sname = name.sname;
 				arg.metas.delAll();
 				arg.super_types.delAll();
@@ -730,7 +730,7 @@ public abstract class kiev050 implements kiev050Constants {
     jj_consume_token(PACKAGE);
     qn = QName();
     jj_consume_token(SEMICOLON);
-                qn.symbol = Env.getRoot().newPackage(qn.name);
+                qn.symbol = Env.getRoot().newPackage(qn.name).symbol;
                 {if (true) return qn;}
     throw new Error("Missing return statement in function");
   }

@@ -182,9 +182,9 @@ public abstract class kiev050 {
 		TypeConstr arg = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null) {
-			DNode dn = (DNode)Env.getRoot().getISymbolByUUID(uuid);
-			if (dn instanceof TypeConstr) {
-				arg = (TypeConstr)dn;
+			Symbol sym = Env.getRoot().getSymbolByUUID(uuid);
+			if (sym != null && sym.dnode instanceof TypeConstr) {
+				arg = (TypeConstr)sym.dnode;
 				arg.sname = name.sname;
 				arg.metas.delAll();
 				arg.super_types.delAll();
@@ -933,7 +933,7 @@ SymbolRef Package() :
 	qn = QName()
 	";"
 	{
-		qn.symbol = Env.getRoot().newPackage(qn.name);
+		qn.symbol = Env.getRoot().newPackage(qn.name).symbol;
 		return qn;
 	}
 }

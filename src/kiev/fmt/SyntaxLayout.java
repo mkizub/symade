@@ -207,7 +207,7 @@ public final class SpaceCmd extends ASTNode {
 		this(si, action_before, action_after, 0);
 	}
 	public SpaceCmd(SpaceInfo si, SpaceAction action_before, SpaceAction action_after, int from_attempt) {
-		this.si.symbol = si;
+		this.si.symbol = si.symbol;
 		this.from_attempt = from_attempt;
 		this.action_before = action_before;
 		this.action_after = action_after;
@@ -401,7 +401,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	public SyntaxElemDecl() {}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
 		super(elem);
-		this.rnode.symbol = cls;
+		this.rnode.symbol = cls.symbol;
 	}
 
 	public void preResolveOut() {
@@ -789,7 +789,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 
 	public SyntaxElemRef() {}
 	public SyntaxElemRef(ASyntaxElemDecl decl) {
-		this.decl.symbol = decl;
+		this.decl.symbol = decl.symbol;
 	}
 	
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
