@@ -22,13 +22,14 @@ import kiev.Compiler;
 import kiev.EditorThreadGroup;
 import kiev.CompilerParseInfo;
 import kiev.fmt.Draw_ATextSyntax;
+import kiev.fmt.Drawable;
 import kiev.fmt.SyntaxManager;
-import kiev.fmt.XmlDumpSyntax;
 import kiev.gui.Editor;
 import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
+import kiev.gui.UIManager;
 import kiev.vlang.DumpUtils;
 import kiev.vlang.Env;
 import kiev.vlang.FileUnit;
@@ -58,18 +59,28 @@ public final class FileActions implements Runnable {
 	
 	final IWindow wnd;
 	final InfoView uiv;
+	final Drawable dr;
 	final String action;
 	
 	FileActions(IWindow wnd, String action) {
 		this.wnd = wnd;
 		this.action = action;
 		this.uiv = null;
+		this.dr = null;
 	}
 	
 	FileActions(InfoView uiv, String action) {
 		this.wnd = uiv.parent_window;
 		this.uiv = uiv;
 		this.action = action;
+		this.dr = null;
+	}
+	
+	FileActions(InfoView uiv, Drawable dr, String action) {
+		this.wnd = uiv.parent_window;
+		this.uiv = uiv;
+		this.action = action;
+		this.dr = dr;
 	}
 	
 	public void run() {
@@ -206,6 +217,13 @@ public final class FileActions implements Runnable {
 		else if (action == "run-frontend") {
 			runFrontEndCompiler((Editor)uiv, uiv.the_root);
 		}
+		else if (action == "use-bindings") {
+			kiev.fmt.evt.BindingSet bs = (kiev.fmt.evt.BindingSet)dr.drnode;
+			UIManager.attachEventBindings(bs.getCompiled().init());
+		}
+		else if (action == "reset-bindings") {
+			UIManager.resetEventBindings();
+		}
 	}
 
 	private void runFrontEndCompiler(Editor editor, ANode root) {
@@ -303,4 +321,23 @@ public final class FileActions implements Runnable {
 			return null;
 		}
 	}
+	
+	final static class UseEventBindings implements UIActionFactory {
+		public String getDescr() { return "Compile and use event bindings"; }
+		public boolean isForPopupMenu() { return false; }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor != null && context.dr != null && context.dr.drnode instanceof kiev.fmt.evt.BindingSet)
+				return new FileActions(context.editor, context.dr, "use-bindings");
+			return null;
+		}
+	}
+
+	final static class ResetEventBindings implements UIActionFactory {
+		public String getDescr() { return "Reset event bindings to default"; }
+		public boolean isForPopupMenu() { return false; }
+		public Runnable getAction(UIActionViewContext context) {
+			return new FileActions(context.wnd, "reset-bindings");
+		}
+	}
+
 }

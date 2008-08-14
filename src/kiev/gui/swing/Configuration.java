@@ -11,13 +11,12 @@
 package kiev.gui.swing;
 
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.util.Hashtable;
 
 import kiev.gui.event.BindingSet;
+import kiev.gui.event.EventActionMap;
 import kiev.gui.event.KeyboardEvent;
 import kiev.gui.event.Event;
 import kiev.gui.event.Binding;
@@ -34,182 +33,238 @@ import kiev.gui.NavigateView;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
+import kiev.gui.ChooseItemEditor;
 import kiev.gui.event.InputEventInfo;
 
 public class Configuration {
-	public static String EVENT_BINDINGS_NAME = "kiev/gui/swing/bindings";
-	public static String EVENT_BINDINGS_FILE = "kiev/gui/swing/bindings.xml";
-	
-	static BindingSet bindings;
+
+	private static final int SHIFT  = java.awt.event.KeyEvent.SHIFT_DOWN_MASK;
+	private static final int CTRL   = java.awt.event.KeyEvent.CTRL_DOWN_MASK;
+	private static final int ALT    = java.awt.event.KeyEvent.ALT_DOWN_MASK;
+	private static final int MOUSE1 = java.awt.event.MouseEvent.BUTTON1_MASK;
+	//private static final int MOUSE2 = java.awt.event.MouseEvent.BUTTON2_MASK;
+	private static final int MOUSE3 = java.awt.event.MouseEvent.BUTTON3_MASK;
+
+	private static BindingSet editorBindingsDefault;
+	private static BindingSet editorBindings;
+	private static EventActionMap editorNaviMap;
+
+	private static BindingSet infoBindingsDefault;
+	private static BindingSet infoBindings;
+	private static EventActionMap infoNaviMap;
+
+	private static BindingSet projectBindingsDefault;
+	private static BindingSet projectBindings;
+	private static EventActionMap projectNaviMap;
+
+	private static BindingSet treeBindingsDefault;
+	private static BindingSet treeBindings;
+	private static EventActionMap treeNaviMap;
 
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
 	}
-
-	public static Hashtable<Object,UIActionFactory[]> getEditorActionMap() {
-		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
-		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
-		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
-		final int ALT   = KeyEvent.ALT_DOWN_MASK;
-
-//		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.Select()});
-		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON3_MASK),	new UIActionFactory[]{new MouseActions.PopupContextMenu()});
-
-		naviMap.put(new InputEventInfo(ALT,		KeyEvent.VK_X),				new UIActionFactory[]{UIManager.newExprEditActionsFlatten()});
-
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_UP),			new UIActionFactory[]{NavigateView.newLineUp()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_DOWN),			new UIActionFactory[]{NavigateView.newLineDn()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_UP),		new UIActionFactory[]{NavigateView.newPageUp()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_DOWN),		new UIActionFactory[]{NavigateView.newPageDn()});
-
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_LEFT),			new UIActionFactory[]{NavigateEditor.newGoPrev()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_RIGHT),			new UIActionFactory[]{NavigateEditor.newGoNext()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_UP),			new UIActionFactory[]{NavigateEditor.newGoLineUp()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new UIActionFactory[]{NavigateEditor.newGoLineDn()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_HOME),			new UIActionFactory[]{NavigateEditor.newGoLineHome()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_END),			new UIActionFactory[]{NavigateEditor.newGoLineEnd()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new UIActionFactory[]{NavigateEditor.newGoPageUp()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new UIActionFactory[]{NavigateEditor.newGoPageDn()});
-
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_Z),				new UIActionFactory[]{EditActions.newUndo()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_C),				new UIActionFactory[]{EditActions.newCopy()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_X),				new UIActionFactory[]{EditActions.newCut()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_DELETE),		new UIActionFactory[]{EditActions.newDel()});
-
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_F),				new UIActionFactory[]{UIManager.newFunctionExecutorFactory()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_F),				new UIActionFactory[]{UIManager.newFunctionExecutorFactory()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_O),				new UIActionFactory[]{FolderTrigger.newFactory()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_N),				new UIActionFactory[]{UIManager.newNewElemHereFactory()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_A),				new UIActionFactory[]{UIManager.newNewElemNextFactory()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_V),				new UIActionFactory[]{UIManager.newPasteHereFactory()});
-		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_B),				new UIActionFactory[]{UIManager.newPasteNextFactory()});
-//		naviMap.put(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new UIActionFactory[]{new ChooseItemEditor()});
-		
+	
+	public static void resetBindings() {
+		editorBindings = editorBindingsDefault;
+		infoBindings = infoBindingsDefault;
+		projectBindings = projectBindingsDefault;
+		treeBindings = treeBindingsDefault;
+	}
+	
+	private static void addBindings(EventActionMap naviMap, BindingSet bindings) {
+		if (bindings == null)
+			return;
 		for (Item item: bindings.items){
-			if (item instanceof Binding){
-				Binding bnd = (Binding)item;
-				for (Event event: bnd.events){
-					InputEventInfo ei = null;
-					if (event instanceof KeyboardEvent){
-						KeyboardEvent kbe = (KeyboardEvent)event;
-						int mask = 0, code;
-						code = kbe.keyCode;
-						if (kbe.withAlt) 
-							mask |= ALT;
-						else if (kbe.withCtrl) 
-							mask |= CTRL;
-						else if (kbe.withShift)
-							mask |= SHIFT;  
-						ei = new InputEventInfo(mask,	code); 
-					} 
-					else if (event instanceof MouseEvent){
-						MouseEvent me = (MouseEvent)event;
-						int mask = 0, button, count;
-						count = me.count;
-						button = me.button;
-						if (me.withAlt) 
-							mask |= ALT;
-						else if (me.withCtrl) 
-							mask |= CTRL;
-						else if (me.withShift)
-							mask |= SHIFT;  
-						ei = new InputEventInfo(mask,	count, button); 
-						System.out.println("Mouse event mask="+mask+", count="+count+", button="+button);
-					}		
-					//create instance of action class
-					UIActionFactory af = null;
-					try {
-						af = (UIActionFactory) Class.forName(bnd.action.actionClass).newInstance();
-					} catch (InstantiationException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
-					} 
-					if (af != null && ei != null){
-						naviMap.put(ei,	new UIActionFactory[]{af});
+			try {
+				if (item instanceof Binding){
+					Binding bnd = (Binding)item;
+					for (Event event: bnd.events){
+						InputEventInfo ei = null;
+						if (event instanceof KeyboardEvent){
+							KeyboardEvent kbe = (KeyboardEvent)event;
+							int mask = 0, code;
+							code = kbe.keyCode;
+							if (kbe.withAlt) 
+								mask |= ALT;
+							else if (kbe.withCtrl) 
+								mask |= CTRL;
+							else if (kbe.withShift)
+								mask |= SHIFT;  
+							ei = new InputEventInfo(mask,	code); 
+						} 
+						else if (event instanceof MouseEvent){
+							MouseEvent me = (MouseEvent)event;
+							int mask = 0, button, count;
+							count = me.count;
+							button = me.button;
+							if (me.withAlt) 
+								mask |= ALT;
+							else if (me.withCtrl) 
+								mask |= CTRL;
+							else if (me.withShift)
+								mask |= SHIFT;  
+							ei = new InputEventInfo(mask,	count, button); 
+							System.out.println("Mouse event mask="+mask+", count="+count+", button="+button);
+						}		
+						//create instance of action class
+						UIActionFactory af = (UIActionFactory) Class.forName(bnd.action.actionClass).newInstance();
+						naviMap.add(ei,	af);
 					}
 				}
-			}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} 
 		}
+	}
+
+	public static EventActionMap getEditorActionMap() {
+		if (editorNaviMap != null)
+			return editorNaviMap;
 		
-		naviMap.put(new InputEventInfo(0,KeyEvent.VK_E), new UIActionFactory[]{
-			new kiev.gui.swing.TextEditor.Factory(),
-			new kiev.gui.swing.IntEditor.Factory(),
-			new kiev.gui.swing.EnumEditor.Factory(),
-			new kiev.gui.swing.AccessEditor.Factory(),
-			new kiev.gui.ChooseItemEditor()});
-		naviMap.put(new InputEventInfo(0,KeyEvent.VK_O), new UIActionFactory[]{
-			new kiev.gui.swing.FolderTrigger.Factory()});
-		naviMap.put(new InputEventInfo(0,KeyEvent.VK_N), new UIActionFactory[]{
-			new kiev.gui.swing.NewElemHere.Factory()});
-		naviMap.put(new InputEventInfo(0,KeyEvent.VK_A), new UIActionFactory[]{
-			new kiev.gui.swing.NewElemNext.Factory()});
+		EventActionMap naviMap = new EventActionMap();
+		editorNaviMap = naviMap;
+
+		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
+		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.PopupContextMenu());
+
+		naviMap.add(new InputEventInfo(ALT,		KeyEvent.VK_X),				UIManager.newExprEditActionsFlatten());
+
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_UP),			NavigateView.newLineUp());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_DOWN),			NavigateView.newLineDn());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_UP),		NavigateView.newPageUp());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_DOWN),		NavigateView.newPageDn());
+
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_LEFT),			NavigateEditor.newGoPrev());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_RIGHT),			NavigateEditor.newGoNext());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			NavigateEditor.newGoLineUp());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			NavigateEditor.newGoLineDn());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_HOME),			NavigateEditor.newGoLineHome());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_END),			NavigateEditor.newGoLineEnd());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		NavigateEditor.newGoPageUp());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		NavigateEditor.newGoPageDn());
+
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_Z),				EditActions.newUndo());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_C),				EditActions.newCopy());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_X),				EditActions.newCut());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DELETE),		EditActions.newDel());
+
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_O),				FolderTrigger.newFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_N),				UIManager.newNewElemHereFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_A),				UIManager.newNewElemNextFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_V),				UIManager.newPasteHereFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_B),				UIManager.newPasteNextFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new ChooseItemEditor());
 		
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.TextEditor.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.IntEditor.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.EnumEditor.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.AccessEditor.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.ChooseItemEditor());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_O), new kiev.gui.swing.FolderTrigger.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_N), new kiev.gui.swing.NewElemHere.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_A), new kiev.gui.swing.NewElemNext.Factory());
+
+		addBindings(naviMap, editorBindings);
+	
 		return naviMap;
 	}
-	public static Hashtable<Object,UIActionFactory[]> getProjectViewActionMap() {
-		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
 
-		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.Select()});
-		naviMap.put(new InputEventInfo(0,2,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
+	public static EventActionMap getProjectViewActionMap() {
+		if (projectNaviMap != null)
+			return projectNaviMap;
+		
+		EventActionMap naviMap = new EventActionMap();
+		projectNaviMap = naviMap;
 
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_UP),			new UIActionFactory[]{new NavigateView.LineUp()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new UIActionFactory[]{new NavigateView.LineDn()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new UIActionFactory[]{new NavigateView.PageUp()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new UIActionFactory[]{new NavigateView.PageDn()});
+		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
+		naviMap.add(new InputEventInfo(0,2,		MOUSE1),	new MouseActions.TreeToggle());
 
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			new NavigateView.LineUp());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new NavigateView.LineDn());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
+
+		addBindings(naviMap, projectBindings);
 		return naviMap;
 	}
-	public static Hashtable<Object,UIActionFactory[]> getInfoViewActionMap() {
-		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
-//		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
-//		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
-//		final int ALT   = KeyEvent.ALT_DOWN_MASK;
 
-		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.RequestFocus()});
-		naviMap.put(new InputEventInfo(0,1,		java.awt.event.MouseEvent.BUTTON3_MASK),	new UIActionFactory[]{new MouseActions.RequestFocus()});
+	public static EventActionMap getInfoViewActionMap() {
+		if (infoNaviMap != null)
+			return infoNaviMap;
+		
+		EventActionMap naviMap = new EventActionMap();
+		infoNaviMap = naviMap;
 
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_UP),			new UIActionFactory[]{new NavigateView.LineUp()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new UIActionFactory[]{new NavigateView.LineDn()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new UIActionFactory[]{new NavigateView.PageUp()});
-		naviMap.put(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new UIActionFactory[]{new NavigateView.PageDn()});
+		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.RequestFocus());
+		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.RequestFocus());
 
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			new NavigateView.LineUp());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new NavigateView.LineDn());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
+
+		addBindings(naviMap, infoBindings);
 		return naviMap;
 	}
 	
-	public static Hashtable<Object,UIActionFactory[]> getTreeViewActionMap() {
-		Hashtable<Object,UIActionFactory[]> naviMap = new Hashtable<Object,UIActionFactory[]>();
-		naviMap.put(new InputEventInfo(0,2,		java.awt.event.MouseEvent.BUTTON1_MASK),	new UIActionFactory[]{new MouseActions.TreeToggle()});
+	public static EventActionMap getTreeViewActionMap() {
+		if (treeNaviMap != null)
+			return treeNaviMap;
+		
+		EventActionMap naviMap = new EventActionMap();
+		treeNaviMap = naviMap;
+
+		naviMap.add(new InputEventInfo(0,2,		MOUSE1),	new MouseActions.TreeToggle());
+
+		addBindings(naviMap, treeBindings);
 		return naviMap;
 	}
 
+	public static void attachBindings(BindingSet bs) {
+		if ("kiev.gui.swing.bindings-editor".equals(bs.qname)) {
+			editorBindings = bs;
+			editorNaviMap = null;
+		}
+		if ("kiev.gui.swing.bindings-info".equals(bs.qname)) {
+			infoBindings = bs;
+			infoNaviMap = null;
+		}
+		if ("kiev.gui.swing.bindings-project".equals(bs.qname)) {
+			projectBindings = bs;
+			projectNaviMap = null;
+		}
+		if ("kiev.gui.swing.bindings-tree".equals(bs.qname)) {
+			treeBindings = bs;
+			treeNaviMap = null;
+		}
+	}
+	
 	public static BindingSet loadBindings(String name) {
-		BindingSet bs = null;
 		InputStream inp = null;
 		try {
-			inp = ClassLoader.getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
-			System.out.println("Loading event bindings from "+name.replace('\u001f','/')+".ser");
+			inp = ClassLoader.getSystemResourceAsStream(name);
+			System.out.println("Loading event bindings from "+name);
 			ObjectInput oi = new ObjectInputStream(inp);
-			bs = (BindingSet)oi.readObject();
+			BindingSet bs = (BindingSet)oi.readObject();
 			bs.init();
+			attachBindings(bs);
+			return bs;
 		} catch (Exception e) {
 			System.out.println("Read error while bindings deserialization: "+e);
 		} finally {
-			if (inp != null)
-				try {
-					inp.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			try { inp.close(); } catch (Exception e) {}
 		}
-		return bs;
+		return null;
 	}
 	
 	static {
-		bindings = loadBindings(EVENT_BINDINGS_NAME);
-	//	bindings = DumpUtils.deserializeFromXmlFile(new File(EVENT_BINDINGS_FILE));
+		editorBindingsDefault = loadBindings("kiev/gui/swing/bindings-editor.ser");
+		infoBindingsDefault = loadBindings("kiev/gui/swing/bindings-info.ser");
+		projectBindingsDefault = loadBindings("kiev/gui/swing/bindings-project.ser");
+		treeBindingsDefault = loadBindings("kiev/gui/swing/bindings-tree.ser");
 	}
 }
 

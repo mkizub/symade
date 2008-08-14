@@ -15,12 +15,10 @@ import kiev.vtree.ANode;
 
 public interface IUIView {
 
-	public boolean isRegisteredToElementEvent();
 	public Draw_ATextSyntax getSyntax();
 	public void setSyntax(Draw_ATextSyntax syntax);
 	public abstract void setRoot(ANode root);
 	public abstract void formatAndPaint(boolean full);
 	public abstract void formatAndPaintLater(ANode node);
-	public BgFormatter setBg_formatter(BgFormatter bg_formatter);
 		
 }

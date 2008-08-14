@@ -15,46 +15,70 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
 
 import kiev.fmt.DrawTerm;
-import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.fmt.evt.KeyboardEvent;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.vtree.ScalarPtr;
 
 public class KeyCodeEditor 
 	implements ItemEditor, Runnable {
 	private final Editor		editor;
 	private final DrawTerm		cur_elem;
-	private final ScalarPtr		pattr;
-	private final JDialog	dialog;
-	private  JLabel label;
+	private final KeyboardEvent	node;
+	private final JDialog		dialog;
+	private final JLabel		labelKey;
+	private final JLabel		labelMessage;
+	private       boolean		done;
+	private       int			keyPressed;
+	private       int			keyCode;
+	private       int			keyModifiers;
 	
-	public KeyCodeEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr) {
-		this.editor = editor;
-		this.cur_elem = cur_elem;
-		this.pattr = pattr;
-		this.dialog = new JDialog();
+	KeyCodeEditor(Editor editor, DrawTerm cur_elem, KeyboardEvent node) {
+		this.editor    = editor;
+		this.cur_elem  = cur_elem;
+		this.node      = node;
+		this.keyCode   = node.get$keyCode();
+		if (node.get$withCtrl())
+			this.keyModifiers |= KeyEvent.CTRL_DOWN_MASK;
+		if (node.get$withAlt())
+			this.keyModifiers |= KeyEvent.ALT_DOWN_MASK;
+		if (node.get$withShift())
+			this.keyModifiers |= KeyEvent.SHIFT_DOWN_MASK;
+		this.dialog    = new JDialog();
 		dialog.setLayout(new BorderLayout());
-		label = new JLabel();
-		dialog.add(label, BorderLayout.CENTER);
+		labelMessage = new JLabel();
+		labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
+		dialog.add(labelMessage, BorderLayout.NORTH);
+		labelKey = new JLabel();
+		labelKey.setHorizontalAlignment(SwingConstants.CENTER);
+		labelKey.setVerticalAlignment(SwingConstants.CENTER);
+		labelKey.setBorder(new BevelBorder(BevelBorder.RAISED));
+		dialog.add(labelKey, BorderLayout.CENTER);
 	}
 	
-	int getKeyCode() {
-		Integer code = (Integer)pattr.get();
-		return code == null?0:code.intValue();
+	String getKeyText() {
+		String text = "";
+		String mods = KeyEvent.getModifiersExText(keyModifiers);
+		if (mods != null && mods.length() > 0)
+			text += mods + "+";
+		if (keyCode == KeyEvent.VK_UNDEFINED)
+			return text;
+		if (keyCode == KeyEvent.VK_CONTROL)
+			return text;
+		if (keyCode == KeyEvent.VK_ALT || keyCode == KeyEvent.VK_ALT_GRAPH)
+			return text;
+		if (keyCode == KeyEvent.VK_SHIFT)
+			return text;
+		text += KeyEvent.getKeyText(keyCode);
+		return text;
 	}
-	
-	void setKeyCode(int keyCode ) {
-		int oldCode = getKeyCode();
-		if (keyCode != oldCode) {
-			pattr.set(new Integer(keyCode));
-		}
-	}
-	
-	final static class Factory implements UIActionFactory {
+
+	public final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Edit the key code value"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -64,12 +88,9 @@ public class KeyCodeEditor
 			DrawTerm dt = context.dt;
 			if (dt == null || context.node == null)
 				return null;
-			if (!(dt.syntax instanceof Draw_SyntaxAttr))
+			if (!(dt.drnode instanceof KeyboardEvent))
 				return null;
-			if (dt.drnode != context.node)
-				return null;
-			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
-			return new KeyCodeEditor(editor, dt, pattr);
+			return new KeyCodeEditor(editor, dt, (KeyboardEvent)dt.drnode);
 		}
 	}
 
@@ -83,23 +104,60 @@ public class KeyCodeEditor
 		dialog.setTitle("Type the key...");
 		dialog.setModal(true);
 		dialog.setBounds(x, y, 200, 100);
-		label.setText("Current key code is "+getKeyCode());
+		labelMessage.setText("Type the key...");
+		labelKey.setText("Current key is: " + getKeyText());
 		dialog.setVisible(true);
 	}
-
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {
-		int code = evt.getKeyCode();
-		switch (code) {
-		case KeyEvent.VK_ESCAPE:
-			dialog.setVisible(false);
-			editor.stopItemEditor(true);
+	
+	private void setKeysFromEvent(KeyEvent evt, boolean released) {
+		if (released && keyPressed == 0)
 			return;
+		keyModifiers = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		keyCode = KeyEvent.VK_UNDEFINED;
+		if (released) {
+			if (keyPressed == evt.getKeyCode())
+				keyCode = evt.getKeyCode();
+		} else {
+			keyPressed = evt.getKeyCode();
 		}
-		dialog.setVisible(false);
-		setKeyCode(code);
-		editor.stopItemEditor(false);
+		if (keyCode == KeyEvent.VK_CONTROL)
+			keyCode = KeyEvent.VK_UNDEFINED;
+		if (keyCode == KeyEvent.VK_ALT || keyCode == KeyEvent.VK_ALT_GRAPH)
+			keyCode = KeyEvent.VK_UNDEFINED;
+		if (keyCode == KeyEvent.VK_SHIFT)
+			keyCode = KeyEvent.VK_UNDEFINED;
+		labelKey.setText("New key is: " + getKeyText());
+	}
+
+	public void keyTyped(KeyEvent evt) {}
+	public void keyReleased(KeyEvent evt) {
+		if (done)
+			return;
+		setKeysFromEvent(evt, true);
+		if (keyCode != KeyEvent.VK_UNDEFINED && keyCode == keyPressed) {
+			done = true;
+			labelMessage.setText("ENTER to save, ESC to cansel");
+		}
+	}
+	public void keyPressed(KeyEvent evt) {
+		if (done) {
+			int code = evt.getKeyCode();
+			if (code == KeyEvent.VK_ENTER && keyCode != KeyEvent.VK_UNDEFINED) {
+				node.set$keyCode(keyCode);
+				node.set$withCtrl((keyModifiers & KeyEvent.CTRL_DOWN_MASK) != 0);
+				node.set$withAlt((keyModifiers & KeyEvent.ALT_DOWN_MASK) != 0);
+				node.set$withShift((keyModifiers & KeyEvent.SHIFT_DOWN_MASK) != 0);
+				node.set$text(getKeyText());
+				dialog.setVisible(false);
+				editor.stopItemEditor(false);
+			}
+			else if (code == KeyEvent.VK_ESCAPE) {
+				dialog.setVisible(false);
+				editor.stopItemEditor(true);
+			}
+		} else {
+			setKeysFromEvent(evt, false);
+		}
 	}
 	
 }

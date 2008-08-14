@@ -13,6 +13,7 @@ import syntax kiev.Syntax;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.awt.event.KeyEvent;
 
 import kiev.vtree.ASTNode;
 import kiev.vtree.DumpSerialized;
@@ -32,9 +33,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 	@UnVersioned
 	protected kiev.gui.event.BindingSet compiled;
 
-	public BindingSet() {
-		this.sname = "<binding-set>";
-	}
+	public BindingSet() {}
 
 	public final ASTNode[] getMembers() { this.members }
 
@@ -67,8 +66,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 		this.compiled = null;
 		return super.preResolveIn();
 	}
-		
-
+	
 	public kiev.gui.event.BindingSet getCompiled() {
 		if (compiled != null)
 			return compiled;
@@ -78,6 +76,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 	}
 	
 	public void fillCompiled(kiev.gui.event.BindingSet bs) {
+		bs.qname = qname().replace('\u001f', '.');
 		if (this.parent_set.dnode != null)
 			bs.parent_set = parent_set.dnode.getCompiled();
 		else if (parent() instanceof BindingSet)

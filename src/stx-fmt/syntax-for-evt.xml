@@ -69,6 +69,19 @@
       <text_size>2</text_size>
       <pixel_size>10</pixel_size>
      </syntax:SpaceInfo>
+     <syntax:IndentInfo name='indent'>
+      <text_size>4</text_size>
+      <pixel_size>20</pixel_size>
+      <next_text_size>0</next_text_size>
+      <next_pixel_size>0</next_pixel_size>
+      <from_current_position>false</from_current_position>
+     </syntax:IndentInfo>
+     <syntax:ParagraphLayout name='par-indent'>
+      <indent>
+       <core:SymbolRef name='indent' />
+      </indent>
+      <flow>HORIZONTAL</flow>
+     </syntax:ParagraphLayout>
      <syntax:DrawColor name='color-red'>
       <rgb_color>16711680</rgb_color>
      </syntax:DrawColor>
@@ -138,6 +151,42 @@
        <core:SymbolRef name='font-bold' />
       </font>
      </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-of-symbol'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-blue' />
+      </color>
+      <font>
+       <core:SymbolRef name='font-bold' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-of-symref'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='sp' />
+        </si>
+        <action_before>SP_ADD</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+      <color>
+       <core:SymbolRef name='color-black' />
+      </color>
+      <font>
+       <core:SymbolRef name='font-italic' />
+      </font>
+     </syntax:SyntaxElemFormatDecl>
      <syntax:SyntaxElemFormatDecl name='fmt-placeholder'>
       <spaces>
        <syntax:SpaceCmd>
@@ -163,6 +212,18 @@
          <core:SymbolRef name='nl' />
         </si>
         <action_before>SP_NOP</action_before>
+        <action_after>SP_ADD</action_after>
+        <from_attempt>0</from_attempt>
+       </syntax:SpaceCmd>
+      </spaces>
+     </syntax:SyntaxElemFormatDecl>
+     <syntax:SyntaxElemFormatDecl name='fmt-nl-nl'>
+      <spaces>
+       <syntax:SpaceCmd>
+        <si>
+         <core:SymbolRef name='nl' />
+        </si>
+        <action_before>SP_ADD</action_before>
         <action_after>SP_ADD</action_after>
         <from_attempt>0</from_attempt>
        </syntax:SpaceCmd>
@@ -217,24 +278,43 @@
         <elements>
          <syntax:SyntaxToken>
           <text>action:</text>
+          <kind>KEYWORD</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-of-kw' />
+          </fmt>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>sname</name>
+          <fmt>
+           <core:SymbolRef name='fmt-of-symbol' />
+          </fmt>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>class:</text>
+          <kind>KEYWORD</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-of-kw' />
+          </fmt>
          </syntax:SyntaxToken>
          <syntax:SyntaxStrAttr>
           <name>actionClass</name>
          </syntax:SyntaxStrAttr>
          <syntax:SyntaxToken>
           <text>forPopupMenu:</text>
+          <kind>KEYWORD</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-of-kw' />
+          </fmt>
          </syntax:SyntaxToken>
          <syntax:SyntaxSubAttr>
           <name>isForPopupMenu</name>
          </syntax:SyntaxSubAttr>
          <syntax:SyntaxToken>
           <text>description:</text>
+          <kind>KEYWORD</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-of-kw' />
+          </fmt>
          </syntax:SyntaxToken>
          <syntax:SyntaxStrAttr>
           <name>description</name>
@@ -244,51 +324,113 @@
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
-     <syntax:SyntaxElemDecl name='stx-keyboard-event'>
+     <syntax:SyntaxElemDecl name='stx-keyboard-event' uuid='d7b2756d-da8e-4583-8957-b74212641f0b'>
       <rnode>
        <core:SymbolRef name='KeyboardEvent' />
       </rnode>
       <elem>
-       <syntax:SyntaxSet>
-        <elements>
-         <syntax:SyntaxToken>
-          <text>key:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>keyCode</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxEnumChoice>
+       <syntax:SyntaxFolder>
+        <folded_by_default>true</folded_by_default>
+        <folded>
+         <syntax:SyntaxSet>
           <elements>
            <syntax:SyntaxToken>
-            <text>Ctrl</text>
+            <text>[</text>
+            <kind>KEYWORD</kind>
             <fmt>
-             <core:SymbolRef name='fmt-placeholder' />
+             <core:SymbolRef name='fmt-of-kw' />
             </fmt>
            </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>text</name>
+           </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
-            <text>Ctrl</text>
+            <text>]</text>
+            <kind>KEYWORD</kind>
             <fmt>
              <core:SymbolRef name='fmt-of-kw' />
             </fmt>
            </syntax:SyntaxToken>
           </elements>
-          <name>withCtrl</name>
-         </syntax:SyntaxEnumChoice>
-         <syntax:SyntaxToken>
-          <text>Alt:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>withAlt</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>Shift:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>withShift</name>
-         </syntax:SyntaxSubAttr>
-        </elements>
-        <nested_function_lookup>false</nested_function_lookup>
-       </syntax:SyntaxSet>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <unfolded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>[ key</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>keyCode</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxEnumChoice>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>Ctrl</text>
+              <fmt>
+               <core:SymbolRef name='fmt-placeholder' />
+              </fmt>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxToken>
+              <text>Ctrl</text>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </elements>
+            <name>withCtrl</name>
+           </syntax:SyntaxEnumChoice>
+           <syntax:SyntaxEnumChoice>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>Alt</text>
+              <fmt>
+               <core:SymbolRef name='fmt-placeholder' />
+              </fmt>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxToken>
+              <text>Alt</text>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </elements>
+            <name>withAlt</name>
+           </syntax:SyntaxEnumChoice>
+           <syntax:SyntaxEnumChoice>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>Shift</text>
+              <fmt>
+               <core:SymbolRef name='fmt-placeholder' />
+              </fmt>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxToken>
+              <text>Shift</text>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </elements>
+            <name>withShift</name>
+           </syntax:SyntaxEnumChoice>
+           <syntax:SyntaxToken>
+            <text>]</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </unfolded>
+       </syntax:SyntaxFolder>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-mouse-event'>
@@ -296,52 +438,118 @@
        <core:SymbolRef name='MouseEvent' />
       </rnode>
       <elem>
-       <syntax:SyntaxSet>
-        <elements>
-         <syntax:SyntaxToken>
-          <text>button:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>button</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>count:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>count</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxEnumChoice>
+       <syntax:SyntaxFolder>
+        <folded_by_default>true</folded_by_default>
+        <folded>
+         <syntax:SyntaxSet>
           <elements>
            <syntax:SyntaxToken>
-            <text>Ctrl</text>
+            <text>[</text>
+            <kind>KEYWORD</kind>
             <fmt>
-             <core:SymbolRef name='fmt-placeholder' />
+             <core:SymbolRef name='fmt-of-kw' />
             </fmt>
            </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>text</name>
+           </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
-            <text>Ctrl</text>
+            <text>]</text>
+            <kind>KEYWORD</kind>
             <fmt>
              <core:SymbolRef name='fmt-of-kw' />
             </fmt>
            </syntax:SyntaxToken>
           </elements>
-          <name>withCtrl</name>
-         </syntax:SyntaxEnumChoice>
-         <syntax:SyntaxToken>
-          <text>Alt:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>withAlt</name>
-         </syntax:SyntaxSubAttr>
-         <syntax:SyntaxToken>
-          <text>Shift:</text>
-         </syntax:SyntaxToken>
-         <syntax:SyntaxSubAttr>
-          <name>withShift</name>
-         </syntax:SyntaxSubAttr>
-        </elements>
-        <nested_function_lookup>false</nested_function_lookup>
-       </syntax:SyntaxSet>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <unfolded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>[ button</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>button</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>cnt:</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>count</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxEnumChoice>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>Ctrl</text>
+              <fmt>
+               <core:SymbolRef name='fmt-placeholder' />
+              </fmt>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxToken>
+              <text>Ctrl</text>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </elements>
+            <name>withCtrl</name>
+           </syntax:SyntaxEnumChoice>
+           <syntax:SyntaxEnumChoice>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>Alt</text>
+              <fmt>
+               <core:SymbolRef name='fmt-placeholder' />
+              </fmt>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxToken>
+              <text>Alt</text>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </elements>
+            <name>withAlt</name>
+           </syntax:SyntaxEnumChoice>
+           <syntax:SyntaxEnumChoice>
+            <elements>
+             <syntax:SyntaxToken>
+              <text>Shift</text>
+              <fmt>
+               <core:SymbolRef name='fmt-placeholder' />
+              </fmt>
+             </syntax:SyntaxToken>
+             <syntax:SyntaxToken>
+              <text>Shift</text>
+              <fmt>
+               <core:SymbolRef name='fmt-of-kw' />
+              </fmt>
+             </syntax:SyntaxToken>
+            </elements>
+            <name>withShift</name>
+           </syntax:SyntaxEnumChoice>
+           <syntax:SyntaxToken>
+            <text>]</text>
+            <kind>KEYWORD</kind>
+            <fmt>
+             <core:SymbolRef name='fmt-of-kw' />
+            </fmt>
+           </syntax:SyntaxToken>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </unfolded>
+       </syntax:SyntaxFolder>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-binding'>
@@ -368,12 +576,19 @@
         <elements>
          <syntax:SyntaxToken>
           <text>bind action:</text>
+          <kind>KEYWORD</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-of-kw' />
+          </fmt>
          </syntax:SyntaxToken>
          <syntax:SyntaxIdentAttr>
           <decl>
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>action</name>
+          <fmt>
+           <core:SymbolRef name='fmt-of-symref' />
+          </fmt>
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxList>
           <element>
@@ -434,6 +649,9 @@
            <core:SymbolRef name='ident-template' />
           </decl>
           <name>sname</name>
+          <fmt>
+           <core:SymbolRef name='fmt-of-symbol' />
+          </fmt>
          </syntax:SyntaxIdentAttr>
          <syntax:SyntaxToken>
           <text>extends:</text>
@@ -449,15 +667,13 @@
            <syntax:SyntaxNode>
             <name></name>
             <fmt>
-             <core:SymbolRef name='fmt-nl' />
+             <core:SymbolRef name='fmt-nl-nl' />
             </fmt>
+            <par>
+             <core:SymbolRef name='par-indent' />
+            </par>
            </syntax:SyntaxNode>
           </element>
-          <separator>
-           <syntax:SyntaxToken>
-            <text>||</text>
-           </syntax:SyntaxToken>
-          </separator>
           <prefix>
            <syntax:SyntaxToken>
             <text>{</text>

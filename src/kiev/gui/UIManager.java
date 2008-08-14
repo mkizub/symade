@@ -10,9 +10,9 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.util.Hashtable;
-
 import kiev.fmt.DrawTerm;
+import kiev.gui.event.BindingSet;
+import kiev.gui.event.EventActionMap;
 import kiev.vtree.ScalarPtr;
 
 public class UIManager {
@@ -31,7 +31,13 @@ public class UIManager {
 			return new kiev.gui.swing.Window();
 	}
 	
-	public static Hashtable<Object,UIActionFactory[]> getUIActions(UIView uiv) {
+	public static void attachEventBindings(BindingSet bs) {
+		kiev.gui.swing.Configuration.attachBindings(bs);
+	}
+	public static void resetEventBindings() {
+		kiev.gui.swing.Configuration.resetBindings();
+	}
+	public static EventActionMap getUIActions(UIView uiv) {
 		if (uiv instanceof Editor)
 			return kiev.gui.swing.Configuration.getEditorActionMap();
 		if (uiv instanceof ProjectView)
@@ -40,7 +46,7 @@ public class UIManager {
 			return kiev.gui.swing.Configuration.getInfoViewActionMap();
 		if (uiv instanceof TreeView)
 			return kiev.gui.swing.Configuration.getTreeViewActionMap();
-		return new Hashtable<Object,UIActionFactory[]>();
+		return new EventActionMap();
 	}
 	
 	public static Runnable newEnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr){

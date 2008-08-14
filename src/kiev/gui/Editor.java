@@ -118,7 +118,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 	}
 
 	public boolean inputEvent(InputEvent evt) {
-		UIActionFactory[] actions = naviMap.get(evt);
+		UIActionFactory[] actions = UIManager.getUIActions(this).get(evt);
 		if (actions == null)
 			return false;
 		Draw_SyntaxFunction[] funcs = null;

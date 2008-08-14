@@ -28,6 +28,7 @@ import kiev.gui.ChooseItemEditor;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
+import kiev.gui.UIManager;
 import kiev.gui.event.InputEventInfo;
 import kiev.vlang.ENode;
 import kiev.vtree.ANode;
@@ -72,7 +73,7 @@ public final class FunctionExecutor implements Runnable {
 				return null;
 			Draw_SyntaxFunction[] sfs_funcs = dr.syntax.funcs;
 			FunctionExecutor fe = new FunctionExecutor(editor);
-			if (sfs_funcs != null || sfs_funcs.length > 0) {
+			if (sfs_funcs != null && sfs_funcs.length > 0) {
 				for (Draw_SyntaxFunction sf: sfs_funcs) 
 					if(sf.act != null) {
 					try {
@@ -119,15 +120,13 @@ public final class FunctionExecutor implements Runnable {
 					} catch (Throwable t) {}
 				}
 			}
-			for (UIActionFactory[] actions: editor.naviMap.values()) {
-				for (UIActionFactory af: actions) {
-					if(af.isForPopupMenu()) {
-						try {
-							Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
-							if (r != null)
-								fe.actions.add(fe.new RunFuncAction(af.getDescr(), r));
-						} catch (Throwable t) {}
-					}
+			for (UIActionFactory af: UIManager.getUIActions(context.ui).getAllActions()) {
+				if(af.isForPopupMenu()) {
+					try {
+						Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
+						if (r != null)
+							fe.actions.add(fe.new RunFuncAction(af.getDescr(), r));
+					} catch (Throwable t) {}
 				}
 			}
 			if (fe.actions.size() > 0)

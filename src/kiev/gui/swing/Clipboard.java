@@ -18,6 +18,7 @@ import kiev.vtree.ExtSpaceAttrSlot;
 import kiev.vtree.ScalarAttrSlot;
 import kiev.vtree.ScalarPtr;
 import kiev.vtree.SpaceAttrSlot;
+import kiev.vtree.ExtChildrenIterator;
 import kiev.vtree.Transaction;
 
 public class Clipboard {
@@ -143,15 +144,31 @@ final class PasteElemHere implements Runnable {
 			if (paste_node.isAttached())
 				paste_node = paste_node.ncopy();
 			if (attr_slot != null) {
-				if (attr_slot instanceof SpaceAttrSlot)
+				if (attr_slot instanceof SpaceAttrSlot) {
+					if (((SpaceAttrSlot)attr_slot).indexOf(into_node, paste_node) >= 0)
+						paste_node = paste_node.ncopy();
 					((SpaceAttrSlot)attr_slot).insert(into_node, 0, paste_node);
-				else if (attr_slot instanceof ExtSpaceAttrSlot)
+				}
+				else if (attr_slot instanceof ExtSpaceAttrSlot) {
+					for (ExtChildrenIterator iter = ((ExtSpaceAttrSlot)attr_slot).iterate(into_node); iter.hasMoreElements();) {
+						if (iter.nextElement() == paste_node) {
+							paste_node = paste_node.ncopy();
+							break;
+						}
+					}
 					((ExtSpaceAttrSlot)attr_slot).add(into_node, paste_node);
-				else if (attr_slot instanceof ScalarAttrSlot)
+				}
+				else if (attr_slot instanceof ScalarAttrSlot) {
+					if (((ScalarAttrSlot)attr_slot).get(into_node) == paste_node)
+						paste_node = paste_node.ncopy();
 					((ScalarAttrSlot)attr_slot).set(into_node, paste_node);
+				}
 			}
-			else if (ap != null)
+			else if (ap != null) {
+				if (((SpaceAttrSlot)ap.slot).indexOf(into_node, paste_node) >= 0)
+					paste_node = paste_node.ncopy();
 				((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,paste_node);
+			}
 		} finally {
 			editor.changes.peek().close();
 		}
@@ -166,9 +183,9 @@ final class PasteElemNext implements Runnable {
 	}
 	public void run() {
 		Transferable content = Clipboard.clipboard.getContents(null);
-		ANode node = null;
+		ANode paste_node = null;
 		try {
-			node = (ANode)content.getTransferData(TransferableANode.getTransferableANodeFlavor());
+			paste_node = (ANode)content.getTransferData(TransferableANode.getTransferableANodeFlavor());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -176,9 +193,23 @@ final class PasteElemNext implements Runnable {
 		ActionPoint ap = editor.getActionPoint(true);
 		editor.changes.push(Transaction.open("Editor.java:PasteElemNext"));
 		try {
-			if (node.isAttached())
-				node = node.ncopy();
-			((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
+			if (paste_node.isAttached())
+				paste_node = paste_node.ncopy();
+			AttrSlot attr_slot = ap.slot;
+			if (attr_slot instanceof SpaceAttrSlot) {
+				if (((SpaceAttrSlot)attr_slot).indexOf(ap.node, paste_node) >= 0)
+					paste_node = paste_node.ncopy();
+				((SpaceAttrSlot)attr_slot).insert(ap.node,ap.index,paste_node);
+			}
+			else if (attr_slot instanceof ExtSpaceAttrSlot) {
+				for (ExtChildrenIterator iter = ((ExtSpaceAttrSlot)attr_slot).iterate(ap.node); iter.hasMoreElements();) {
+					if (iter.nextElement() == paste_node) {
+						paste_node = paste_node.ncopy();
+						break;
+					}
+				}
+				((ExtSpaceAttrSlot)attr_slot).add(ap.node, paste_node);
+			}
 		} finally {
 			editor.changes.peek().close();
 		}

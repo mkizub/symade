@@ -10,10 +10,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import java.util.Hashtable;
-
-import kiev.gui.event.EventListenerList;
-
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxFormatter;
@@ -47,28 +43,14 @@ public abstract class UIView extends ANode implements IUIView, ElementChangeList
 	public boolean				show_hint_escapes;
 	
 	/** A background thread to format and paint */
-	protected BgFormatter	bg_formatter;
-
-	public final Hashtable<Object,UIActionFactory[]> naviMap;
+	public BgFormatter			bg_formatter;
 
 	public UIView(IWindow window, IUIViewPeer peer, Draw_ATextSyntax syntax) {
 		this.parent_window = window;
 		this.peer = peer;
 		this.syntax = syntax;
-		this.naviMap = UIManager.getUIActions(this);
 	}
 	
-	public boolean isRegisteredToElementEvent() {
-		EventListenerList l = parent_window.getListenerList();
-		Object[] listeners = l.getListenerList();
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == ElementChangeListener.class) 
-				if (((ElementChangeListener)listeners[i+1]) == this)
-					return true;			
-		}
-		return false;
-	}
-
 	public Draw_ATextSyntax getSyntax() { return syntax; }
 
 	public void setSyntax(Draw_ATextSyntax syntax) {
@@ -84,7 +66,7 @@ public abstract class UIView extends ANode implements IUIView, ElementChangeList
 	public abstract void formatAndPaintLater(ANode node);
 
 	public boolean inputEvent(InputEvent evt) {
-		UIActionFactory[] actions = naviMap.get(evt);
+		UIActionFactory[] actions = UIManager.getUIActions(this).get(evt);
 		if (actions == null)
 			return false;
 		for (UIActionFactory af: actions) {
@@ -98,14 +80,6 @@ public abstract class UIView extends ANode implements IUIView, ElementChangeList
 	}
 	
 	public void elementChanged(ElementEvent e) {}
-
-	/**
-	 * @param bg_formatter the bg_formatter to set
-	 */
-	public BgFormatter setBg_formatter(BgFormatter bg_formatter) {
-		this.bg_formatter = bg_formatter;
-		return this.bg_formatter;
-	}
 
 	/**
 	 * @return the item_editor

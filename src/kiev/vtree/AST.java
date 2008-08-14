@@ -1279,8 +1279,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public boolean preResolveIn() { return true; }
-	public void preResolveOut() {
+	public boolean preResolveIn() {
 		foreach (AttrSlot attr; values(); attr.is_auto_resolve && SymbolRef.class.isAssignableFrom(attr.clazz)) {
 			if (attr instanceof ScalarAttrSlot) {
 				Object val = attr.get(this);
@@ -1296,7 +1295,9 @@ public abstract class ASTNode extends ANode implements Constants {
 					sr.resolveSymbol(attr.auto_resolve_severity);
 			}
 		}
+		return true;
 	}
+	public void preResolveOut() {}
 	public boolean mainResolveIn() { return true; }
 	public void mainResolveOut() {}
 	public boolean preVerify() { return true; }

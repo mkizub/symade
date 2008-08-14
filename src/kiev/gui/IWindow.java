@@ -10,13 +10,11 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.gui.event.EventListenerList;
 import kiev.gui.event.ElementEvent;
 import kiev.vlang.FileUnit;
 import kiev.vtree.ANode;
 
 public interface IWindow {
-	public EventListenerList getListenerList();
 	public void fireElementChanged(ElementEvent e);
 	public void openEditor(FileUnit fu);
 	public void openEditor(FileUnit fu, ANode[] path);

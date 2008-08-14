@@ -11,51 +11,65 @@
 package kiev.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
 
 import kiev.fmt.DrawTerm;
-import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.vtree.ScalarPtr;
 
 public class MouseButtonEditor 
 	implements ItemEditor, MouseListener, Runnable {
 	private final Editor		editor;
 	private final DrawTerm		cur_elem;
-	private final ScalarPtr		pattr;
-	private final JDialog	dialog;
-	private  JLabel label;
+	private final kiev.fmt.evt.MouseEvent	node;
+	private final JDialog		dialog;
+	private final JLabel		labelKey;
+	private final JLabel		labelMessage;
+	private       boolean		done;
+	private       int			mouseButton;
+	private       int			mouseCount;
+	private       int			mouseModifiers;
 	
-	public MouseButtonEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr) {
+	public MouseButtonEditor(Editor editor, DrawTerm cur_elem, kiev.fmt.evt.MouseEvent node) {
 		this.editor = editor;
 		this.cur_elem = cur_elem;
-		this.pattr = pattr;
-		this.dialog = new JDialog();
+		this.node = node;
+		this.mouseButton   = node.get$button();
+		this.mouseCount    = node.get$count();
+		if (node.get$withCtrl())
+			this.mouseModifiers |= KeyEvent.CTRL_DOWN_MASK;
+		if (node.get$withAlt())
+			this.mouseModifiers |= KeyEvent.ALT_DOWN_MASK;
+		if (node.get$withShift())
+			this.mouseModifiers |= KeyEvent.SHIFT_DOWN_MASK;
+		this.dialog    = new JDialog();
 		dialog.setLayout(new BorderLayout());
-		label = new JLabel();
-		dialog.add(label, BorderLayout.CENTER);
+		labelMessage = new JLabel();
+		labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
+		dialog.add(labelMessage, BorderLayout.NORTH);
+		labelKey = new JLabel();
+		labelKey.setHorizontalAlignment(SwingConstants.CENTER);
+		labelKey.setVerticalAlignment(SwingConstants.CENTER);
+		labelKey.setBorder(new BevelBorder(BevelBorder.RAISED));
+		dialog.add(labelKey, BorderLayout.CENTER);
 	}
 	
-	int getMouseCode() {
-		Integer code = (Integer)pattr.get();
-		return code == null?0:code.intValue();
+	String getMouseText() {
+		String text = MouseEvent.getModifiersExText(mouseModifiers);
+		text += " # "+mouseCount;
+		return text;
 	}
-	
-	void setMouseCode(int mouseCode ) {
-		int oldCode = getMouseCode();
-		if (mouseCode != oldCode) {
-			pattr.set(new Integer(mouseCode));
-		}
-	}
-	
+
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Edit the mouse code value"; }
 		public boolean isForPopupMenu() { return false; }
@@ -66,12 +80,9 @@ public class MouseButtonEditor
 			DrawTerm dt = context.dt;
 			if (dt == null || context.node == null)
 				return null;
-			if (!(dt.syntax instanceof Draw_SyntaxAttr))
+			if (!(dt.drnode instanceof kiev.fmt.evt.MouseEvent))
 				return null;
-			if (dt.drnode != context.node)
-				return null;
-			ScalarPtr pattr = dt.drnode.getScalarPtr(((Draw_SyntaxAttr)dt.syntax).name);
-			return new MouseButtonEditor(editor, dt, pattr);
+			return new MouseButtonEditor(editor, dt, (kiev.fmt.evt.MouseEvent)dt.drnode);
 		}
 	}
 
@@ -86,8 +97,18 @@ public class MouseButtonEditor
 		dialog.setTitle("Press the button...");
 		dialog.setModal(true);
 		dialog.setBounds(x, y, 200, 100);
-		label.setText("Current mouse code is "+getMouseCode());
+		labelMessage.setText("Press the button...");
+		labelKey.setText("Current mouse code is "+getMouseText());
 		dialog.setVisible(true);
+	}
+
+	private void setKeysFromEvent(InputEvent evt, boolean released) {
+		mouseModifiers = evt.getModifiersEx();
+		if (evt instanceof MouseEvent) {
+			mouseButton = ((MouseEvent)evt).getButton();
+			mouseCount = ((MouseEvent)evt).getClickCount();
+		}
+		labelKey.setText("New button is: " + getMouseText());
 	}
 
 	public void keyReleased(KeyEvent evt) {}
@@ -95,6 +116,26 @@ public class MouseButtonEditor
 	public void keyPressed(KeyEvent evt) {
 		int code = evt.getKeyCode();
 		switch (code) {
+		case KeyEvent.VK_CONTROL:
+		case KeyEvent.VK_ALT:
+		case KeyEvent.VK_ALT_GRAPH:
+		case KeyEvent.VK_SHIFT:
+			setKeysFromEvent(evt, false);
+			return;
+		case KeyEvent.VK_ENTER:
+			dialog.setVisible(false);
+			if (mouseButton != 0 && mouseButton != MouseEvent.NOBUTTON) {
+				node.set$button(mouseButton);
+				node.set$count(mouseCount);
+				node.set$withCtrl((mouseModifiers & KeyEvent.CTRL_DOWN_MASK) != 0);
+				node.set$withAlt((mouseModifiers & KeyEvent.ALT_DOWN_MASK) != 0);
+				node.set$withShift((mouseModifiers & KeyEvent.SHIFT_DOWN_MASK) != 0);
+				node.set$text(getMouseText());
+				editor.stopItemEditor(false);
+			} else {
+				editor.stopItemEditor(true);
+			}
+			return;
 		case KeyEvent.VK_ESCAPE:
 			dialog.setVisible(false);
 			editor.stopItemEditor(true);
@@ -102,23 +143,25 @@ public class MouseButtonEditor
 		}
 	}
 
-	public void mouseClicked(MouseEvent e) {		
-	}
-
-	public void mouseEntered(MouseEvent e) {		
-	}
-
-	public void mouseExited(MouseEvent e) {		
-	}
+	public void mouseClicked(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
 
 	public void mousePressed(MouseEvent e) {
-		int code = e.getButton();
-		dialog.setVisible(false);
-		setMouseCode(code);
-		editor.stopItemEditor(false);		
+		if (!done) {
+			setKeysFromEvent(e, false);
+			return;
+		}
+		if (e.getModifiersEx() == mouseModifiers && e.getClickCount() > mouseCount) {
+			setKeysFromEvent(e, false);
+		}
 	}
 
-	public void mouseReleased(MouseEvent e) {		
+	public void mouseReleased(MouseEvent e) {
+		if (!done && e.getClickCount() > 0) {
+			done = true;
+			labelMessage.setText("ENTER to save, ESC to cansel");
+		}
 	}
 	
 }

@@ -37,8 +37,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import kiev.gui.event.EventListenerList;
-
 import kiev.fmt.SyntaxManager;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.EditActions;
@@ -87,7 +85,7 @@ implements IWindow, SelectionListener, FocusListener {
 
 
 	/** List of listeners */
-	protected EventListenerList listenerList = new EventListenerList();
+	protected ElementChangeListener[] elementChangeListeners = new ElementChangeListener[0];
 
 	public Window() {
 		Display display = new Display();
@@ -338,10 +336,10 @@ implements IWindow, SelectionListener, FocusListener {
 	}
 	
 	private void initBgFormatters() {
-		if (info_view.isRegisteredToElementEvent())
-			info_view.setBg_formatter(new BgFormatter(info_view)).start();
-		if (prop_view.isRegisteredToElementEvent())
-			prop_view.setBg_formatter(new BgFormatter(prop_view)).start();
+		info_view.bg_formatter = new BgFormatter(info_view);
+		info_view.bg_formatter.start();
+		prop_view.bg_formatter = new BgFormatter(prop_view);
+		prop_view.bg_formatter.start();
 	}
 
 	private void addListeners() {
@@ -433,14 +431,8 @@ implements IWindow, SelectionListener, FocusListener {
 	 * @see EventListenerList
 	 */
 	public void fireElementChanged(ElementEvent e) {
-		//Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		//Process the listeners last to first, notifying
-		//those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == ElementChangeListener.class) {
-				((ElementChangeListener)listeners[i+1]).elementChanged(e);
-			}
+		for (ElementChangeListener l : elementChangeListeners) {
+			l.elementChanged(e);
 		}
 	}
 
@@ -451,14 +443,15 @@ implements IWindow, SelectionListener, FocusListener {
 	 * @param	l		the ElementChangeListener
 	 */
 	public void addElementChangeListener(ElementChangeListener l) {
-		listenerList.add(ElementChangeListener.class, l);
-	}
-
-	/**
-	 * @return the listenerList
-	 */
-	public EventListenerList getListenerList() {
-		return listenerList;
+		for (ElementChangeListener ecl : elementChangeListeners) {
+			if (ecl == l)
+				return;
+		}
+		ElementChangeListener[] tmp = new ElementChangeListener[elementChangeListeners.length + 1];
+		for (int i = 0; i < elementChangeListeners.length; i++)
+			tmp[i] = elementChangeListeners[i];
+		tmp[elementChangeListeners.length] = l;
+		elementChangeListeners = tmp;
 	}
 
 	/**

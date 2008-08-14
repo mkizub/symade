@@ -21,11 +21,11 @@ public class BindingSet extends Item {
 	private static final long serialVersionUID = 257503403766220469L;
 	public BindingSet				parent_set;
 	public Item[]					items;
-	public String							q_name;	// qualified name
+	public String					qname;	// qualified name
 
 	
 	Object readResolve() throws ObjectStreamException {
-		if (this.q_name != null) this.q_name = this.q_name.intern();
+		if (this.qname != null) this.qname = this.qname.intern();
 		this.init();
 		return this;
 	}
