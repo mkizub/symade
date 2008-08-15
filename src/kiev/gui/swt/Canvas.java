@@ -88,7 +88,6 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	private int               bg_drawed_y;
 	private boolean           selected;
 
-	private Composite parent;
 	final Renderer renderer = new Renderer();
 
 	Listener paintListener = new Listener() {
@@ -108,7 +107,6 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 
 	public Canvas(Composite parent, int style) {
 		super(parent, style);
-		this.parent = parent;
 //		this.setFocusable(true);
 		defaultTextColor = getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		autoGenTextColor = java.awt.Color.GRAY;

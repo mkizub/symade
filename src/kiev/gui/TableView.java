@@ -53,7 +53,7 @@ public class TableView extends UIView {
 	public void elementChanged(ElementEvent e) {
 		super.elementChanged(e);
 		ANode node = ((Editor)e.getSource()).getCur_elem().node;
-		table.createModel(node);
+		table.setRoot(node);
 		formatAndPaintLater(node);		
 	}
 

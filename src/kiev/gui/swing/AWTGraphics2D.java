@@ -52,6 +52,7 @@ public final class AWTGraphics2D implements IFmtGfx {
 	public Graphics2D getNative() { return gfx; }
 	
 	public void layoutText(String text, String font_name) {
+		if (gfx == null) return;
 		TextLayout tl = new TextLayout(text, decodeFont(font_name), gfx.getFontRenderContext());
 		this.textWidth = (int)Math.ceil(tl.getAdvance());
 		this.textHeight = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());

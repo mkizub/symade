@@ -15,7 +15,7 @@ import kiev.vtree.ANode;
 public interface INodeTable extends IUIViewPeer {
 	
 	public void setRoot();
+	public void setRoot(ANode node);
 	public void format();
-	public void createModel(ANode node);
 		
 }

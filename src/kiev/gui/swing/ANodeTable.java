@@ -73,7 +73,7 @@ public class ANodeTable extends JTable implements INodeTable, MouseListener {
 		model.format(table_view);
 	}
 
-	public void createModel(ANode node) {
+	public void setRoot(ANode node) {
 		DefaultTableModel tm = (DefaultTableModel)this.getModel();
 		if (node == null){ tm.setDataVector ((Object[][])null, null); return;}
 		String[] newIdentifiers = new String[] {"Class", "Attr", "Node"};
