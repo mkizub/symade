@@ -22,7 +22,7 @@ public final class MetaUUID extends UserMeta {
 	@AttrXMLDumpInfo(attr=true, name="uuid")
 	@nodeAttr public String				value;
 
-	public MetaUUID() { super("kiev\u001fstdlib\u001fmeta\u001fuuid"); }
+	public MetaUUID() { super("kiev·stdlib·meta·uuid"); }
 
 	public void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {
@@ -80,7 +80,7 @@ public final class MetaPacked extends UserMeta {
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int					offset;
 
-	public MetaPacked() { super("kiev\u001fstdlib\u001fmeta\u001fpacked"); fld = new SymbolRef<Field>(); }
+	public MetaPacked() { super("kiev·stdlib·meta·packed"); fld = new SymbolRef<Field>(); }
 
 	@setter public void set$size(int val) {
 		size = val;
@@ -112,7 +112,7 @@ public final class MetaPacker extends UserMeta {
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int		 size = -1;
 
-	public MetaPacker() { super("kiev\u001fstdlib\u001fmeta\u001fpacker"); }
+	public MetaPacker() { super("kiev·stdlib·meta·packer"); }
 
 	@setter public void set$size(int val) {
 		size = val;
@@ -124,7 +124,7 @@ public final class MetaPacker extends UserMeta {
 public final class MetaThrows extends UserMeta {
 	@nodeData @abstract public ASTNode∅		 exceptions;
 
-	public MetaThrows() { super("kiev\u001fstdlib\u001fmeta\u001fthrows"); }
+	public MetaThrows() { super("kiev·stdlib·meta·throws"); }
 
 	public void add(TypeRef thr) {
 		exceptions += thr;
@@ -153,9 +153,8 @@ public final class MetaThrows extends UserMeta {
 
 @ThisIsANode(lang=CoreLang)
 public abstract class MetaFlag extends MNode {
-	@getter public abstract String get$qname();
 
-	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)Env.getRoot().resolveGlobalDNode(this.qname); }
+	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)Env.getRoot().resolveGlobalDNode(this.qname()); }
 
 	public final void callbackAttached(ParentInfo pi) {
 		if (pi.isSemantic()) {
@@ -212,7 +211,7 @@ public final class MetaAccess extends MetaFlag {
 		this.flags = flags;
 	}
 
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001faccess"; }
+	public String qname() { return "kiev·stdlib·meta·access"; }
 
 	public boolean equals(Object o) {
 		if (o instanceof MetaAccess)
@@ -529,97 +528,97 @@ public final class MetaAccess extends MetaFlag {
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaUnerasable extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001funerasable"; }
+	public String qname() { return "kiev·stdlib·meta·unerasable"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_type_unerasable = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSingleton extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsingleton"; }
+	public String qname() { return "kiev·stdlib·meta·singleton"; }
 	void setFlag(DNode dn, boolean on) {}
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaMixin extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmixin"; }
+	public String qname() { return "kiev·stdlib·meta·mixin"; }
 	void setFlag(DNode dn, boolean on) {}
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaForward extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fforward"; }
+	public String qname() { return "kiev·stdlib·meta·forward"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_forward = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVirtual extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvirtual"; }
+	public String qname() { return "kiev·stdlib·meta·virtual"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_virtual = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaMacro extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmacro"; }
+	public String qname() { return "kiev·stdlib·meta·macro"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_macro = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaStatic extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fstatic"; }
+	public String qname() { return "kiev·stdlib·meta·static"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_static = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaAbstract extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fabstract"; }
+	public String qname() { return "kiev·stdlib·meta·abstract"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_abstract = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaFinal extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001ffinal"; }
+	public String qname() { return "kiev·stdlib·meta·final"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_final = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaNative extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fnative"; }
+	public String qname() { return "kiev·stdlib·meta·native"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_native = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSynchronized extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsynchronized"; }
+	public String qname() { return "kiev·stdlib·meta·synchronized"; }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.mflags_is_mth_synchronized = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaTransient extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001ftransient"; }
+	public String qname() { return "kiev·stdlib·meta·transient"; }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.mflags_is_fld_transient = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVolatile extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvolatile"; }
+	public String qname() { return "kiev·stdlib·meta·volatile"; }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.mflags_is_fld_volatile = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaBridge extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fbridge"; }
+	public String qname() { return "kiev·stdlib·meta·bridge"; }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.mflags_is_mth_bridge = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVarArgs extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fvarargs"; }
+	public String qname() { return "kiev·stdlib·meta·varargs"; }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.mflags_is_mth_varargs = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSynthetic extends MetaFlag {
-	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fsynthetic"; }
+	public String qname() { return "kiev·stdlib·meta·synthetic"; }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_synthetic = on; }
 }
 

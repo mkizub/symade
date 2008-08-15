@@ -19,28 +19,28 @@ import syntax kiev.Syntax;
 public abstract class VNode_Base extends TransfProcessor {
 	private static final String PROP_BASE				= "symade.transf.vnode";
 	public static final boolean GEN_VERSIONED			= getPropS(PROP_BASE,"genUnversioned","false") != "true";
-	public static final String mnNode					= getPropS(PROP_BASE,"mnNode","kiev\u001fvtree\u001fThisIsANode"); 
-	public static final String mnAtt					= getPropS(PROP_BASE,"mnAtt","kiev\u001fvtree\u001fnodeAttr"); 
-	public static final String mnRef					= getPropS(PROP_BASE,"mnRef","kiev\u001fvtree\u001fnodeData"); 
-	public static final String mnUnVersioned			= getPropS(PROP_BASE,"mnUnVersioned","kiev\u001fvtree\u001fUnVersioned"); 
-	public static final String nameINode				= getPropS(PROP_BASE,"nameINode","kiev\u001fvtree\u001fINode");
-	public static final String nameANode				= getPropS(PROP_BASE,"nameANode","kiev\u001fvtree\u001fANode");
-	public static final String nameNode				= getPropS(PROP_BASE,"nameNode","kiev\u001fvtree\u001fASTNode"); 
-	public static final String nameNodeSpace			= getPropS(PROP_BASE,"nameNodeSpace","kiev\u001fvtree\u001fNodeSpace"); 
-	public static final String nameNodeExtSpace		= getPropS(PROP_BASE,"nameNodeExtSpace","kiev\u001fvtree\u001fNodeExtSpace");
-	public static final String nameNodeSymbolRef		= getPropS(PROP_BASE,"nameNodeSymbolRef","kiev\u001fvtree\u001fNodeSymbolRef");
-	public static final String nameTreeWalker			= getPropS(PROP_BASE,"TreeWalker","kiev\u001fvtree\u001fTreeWalker"); 
-	public static final String nameAttrSlot			= getPropS(PROP_BASE,"nameAttrSlot","kiev\u001fvtree\u001fAttrSlot"); 
-	public static final String nameRefAttrSlot			= getPropS(PROP_BASE,"nameRefAttrSlot","kiev\u001fvtree\u001fRefAttrSlot"); 
-	public static final String nameAttAttrSlot			= getPropS(PROP_BASE,"nameAttAttrSlot","kiev\u001fvtree\u001fAttAttrSlot"); 
-	public static final String nameExtRefAttrSlot		= getPropS(PROP_BASE,"nameExtRefAttrSlot","kiev\u001fvtree\u001fExtRefAttrSlot"); 
-	public static final String nameExtAttAttrSlot		= getPropS(PROP_BASE,"nameExtAttAttrSlot","kiev\u001fvtree\u001fExtAttAttrSlot"); 
-	public static final String nameSpaceAttrSlot		= getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev\u001fvtree\u001fSpaceAttrSlot"); 
-	public static final String nameSpaceRefAttrSlot	= getPropS(PROP_BASE,"nameSpaceRefAttrSlot","kiev\u001fvtree\u001fSpaceRefAttrSlot"); 
-	public static final String nameSpaceAttAttrSlot	= getPropS(PROP_BASE,"nameSpaceAttAttrSlot","kiev\u001fvtree\u001fSpaceAttAttrSlot"); 
-	public static final String nameExtSpaceAttrSlot	= getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev\u001fvtree\u001fExtSpaceAttrSlot"); 
-	public static final String nameLanguageIface		= getPropS(PROP_BASE,"nameLanguageIface","kiev\u001fvlang\u001fLanguage"); 
-	public static final String nameCopyContext			= getPropS(PROP_BASE,"nameCopyContext","kiev\u001fvtree\u001fANode\u001fCopyContext"); 
+	public static final String mnNode					= getPropS(PROP_BASE,"mnNode","kiev·vtree·ThisIsANode"); 
+	public static final String mnAtt					= getPropS(PROP_BASE,"mnAtt","kiev·vtree·nodeAttr"); 
+	public static final String mnRef					= getPropS(PROP_BASE,"mnRef","kiev·vtree·nodeData"); 
+	public static final String mnUnVersioned			= getPropS(PROP_BASE,"mnUnVersioned","kiev·vtree·UnVersioned"); 
+	public static final String nameINode				= getPropS(PROP_BASE,"nameINode","kiev·vtree·INode");
+	public static final String nameANode				= getPropS(PROP_BASE,"nameANode","kiev·vtree·ANode");
+	public static final String nameNode				= getPropS(PROP_BASE,"nameNode","kiev·vtree·ASTNode"); 
+	public static final String nameNodeSpace			= getPropS(PROP_BASE,"nameNodeSpace","kiev·vtree·NodeSpace"); 
+	public static final String nameNodeExtSpace		= getPropS(PROP_BASE,"nameNodeExtSpace","kiev·vtree·NodeExtSpace");
+	public static final String nameNodeSymbolRef		= getPropS(PROP_BASE,"nameNodeSymbolRef","kiev·vtree·NodeSymbolRef");
+	public static final String nameTreeWalker			= getPropS(PROP_BASE,"TreeWalker","kiev·vtree·TreeWalker"); 
+	public static final String nameAttrSlot			= getPropS(PROP_BASE,"nameAttrSlot","kiev·vtree·AttrSlot"); 
+	public static final String nameRefAttrSlot			= getPropS(PROP_BASE,"nameRefAttrSlot","kiev·vtree·RefAttrSlot"); 
+	public static final String nameAttAttrSlot			= getPropS(PROP_BASE,"nameAttAttrSlot","kiev·vtree·AttAttrSlot"); 
+	public static final String nameExtRefAttrSlot		= getPropS(PROP_BASE,"nameExtRefAttrSlot","kiev·vtree·ExtRefAttrSlot"); 
+	public static final String nameExtAttAttrSlot		= getPropS(PROP_BASE,"nameExtAttAttrSlot","kiev·vtree·ExtAttAttrSlot"); 
+	public static final String nameSpaceAttrSlot		= getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev·vtree·SpaceAttrSlot"); 
+	public static final String nameSpaceRefAttrSlot	= getPropS(PROP_BASE,"nameSpaceRefAttrSlot","kiev·vtree·SpaceRefAttrSlot"); 
+	public static final String nameSpaceAttAttrSlot	= getPropS(PROP_BASE,"nameSpaceAttAttrSlot","kiev·vtree·SpaceAttAttrSlot"); 
+	public static final String nameExtSpaceAttrSlot	= getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev·vtree·ExtSpaceAttrSlot"); 
+	public static final String nameLanguageIface		= getPropS(PROP_BASE,"nameLanguageIface","kiev·vlang·Language"); 
+	public static final String nameCopyContext			= getPropS(PROP_BASE,"nameCopyContext","kiev·vtree·ANode·CopyContext"); 
 	public static final String nameCopyable			= getPropS(PROP_BASE,"nameCopyable","copyable");
 	public static final String nameExtData				= getPropS(PROP_BASE,"nameExtData","ext_data");
 	public static final String nameNodeName			= getPropS(PROP_BASE,"nameNodeName","name");
@@ -258,8 +258,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		if (!s.isAttached())
 			snode.members.add(s);
 		{
-			String nameTreePkg = nameANode.substring(0,nameANode.lastIndexOf('\u001f'));
-			foreach (UserMeta m; f.metas; m.qname.startsWith(nameTreePkg))
+			String nameTreePkg = nameANode.substring(0,nameANode.lastIndexOf('·'));
+			foreach (UserMeta m; f.metas; m.qname().startsWith(nameTreePkg))
 				s.setMeta(m.ncopy());
 		}
 		if (isSet) {
@@ -305,7 +305,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						new LVarExpr(f.pos, ctor.params[1])
 					}
 				);
-			ce.symbol = sctor;
+			ce.symbol = sctor.symbol;
 			ctor.body = new Block(0);
 			ctor.block.stats.add(new ExprStat(ce));
 		}
@@ -559,7 +559,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeSet() {
 		if (_codeSet == null) {
-			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode", true);
+			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev·transf·TemplateVNode", true);
 			_codeSet = td.resolveMethod("codeSet", StdTypes.tpVoid)
 		}
 		return _codeSet;
@@ -567,7 +567,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	
 	public Method getCodeGet() {
 		if (_codeGet == null) {
-			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev\u001ftransf\u001fTemplateVNode", true);
+			TypeDecl td = (TypeDecl)Env.getRoot().loadTypeDecl("kiev·transf·TemplateVNode", true);
 			_codeGet = td.resolveMethod("codeGet", StdTypes.tpVoid)
 		}
 		return _codeGet;
@@ -878,7 +878,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			if (iface.xtype.isInstanceOf(tpNode))
 				makeNodeValuesClass(iface, impl);
 	
-			Type tpNodeVVV = ((TypeDecl)Env.getRoot().loadTypeDecl(VNode_Base.nameNode+"\u001fVVV", true)).xtype;
+			Type tpNodeVVV = ((TypeDecl)Env.getRoot().loadTypeDecl(VNode_Base.nameNode+"·VVV", true)).xtype;
 			// nodeRestore(ASTNode.VVV from), a reverted nodeBackup()
 			if (!iface.xtype.isInstanceOf(tpNode) || hasMethod(impl, "nodeRestore")) {
 				//Kiev.reportWarning(s,"Method "+s+"."+"nodeRestore already exists, @node member is not generated");
@@ -1003,7 +1003,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	private void collectAllAttrFields(Vector<Field> aflds, Struct iface) {
 		if (iface == null)
 			return;
-		if (iface.qname.equals(VNode_Base.nameANode)) {
+		if (iface.qname().equals(VNode_Base.nameANode)) {
 			aflds.append(iface.resolveField("parent"));
 			return;
 		}

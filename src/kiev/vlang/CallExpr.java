@@ -45,7 +45,7 @@ public class CallExpr extends ENode {
 		return (Method)this.dnode;
 	}
 	@setter public void set$func(Method m) {
-		this.symbol = m;
+		this.symbol = m.symbol;
 	}
 
 	public CallExpr() {}
@@ -372,7 +372,7 @@ public class CtorCallExpr extends ENode {
 		return (Method)this.dnode;
 	}
 	@setter public void set$func(Method m) {
-		this.symbol = m;
+		this.symbol = m.symbol;
 	}
 
 	public CtorCallExpr() {}

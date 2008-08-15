@@ -70,7 +70,7 @@ public final class Env extends KievPackage {
 		//assert(qname.indexOf('.') < 0);
 		DNode pkg = (DNode)Env.getRoot();
 		int start = 0;
-		int end = qname.indexOf('\u001f', start);
+		int end = qname.indexOf('·', start);
 		while (end > 0) {
 			String nm = qname.substring(start, end).intern();
 			DNode ss = null;
@@ -92,7 +92,7 @@ public final class Env extends KievPackage {
 				return null;
 			pkg = ss;
 			start = end+1;
-			end = qname.indexOf('\u001f', start);
+			end = qname.indexOf('·', start);
 		}
 		String nm = qname.substring(start).intern();
 		if (pkg instanceof KievPackage) {
@@ -192,7 +192,7 @@ public final class Env extends KievPackage {
 		if (qname == "")
 			return Env.getRoot();
 		assert(qname.indexOf('.') < 0);
-		int end = qname.lastIndexOf('\u001f');
+		int end = qname.lastIndexOf('·');
 		if (end < 0)
 			return newPackage(qname,Env.getRoot());
 		else
@@ -201,7 +201,7 @@ public final class Env extends KievPackage {
 
 	public KievPackage newPackage(String sname, KievPackage outer) {
 		if (sname.indexOf(" ") >= 0)
-			Kiev.reportWarning(this,"Creating a package with space in the name: '"+qname+"'");
+			Kiev.reportWarning(this,"Creating a package with space in the name: '"+sname+"'");
 		KievPackage cl = null;
 		foreach (KievPackage s; outer.pkg_members; s.sname == sname) {
 			cl = s;
@@ -284,14 +284,14 @@ public final class Env extends KievPackage {
 		if (dn instanceof TypeDecl)
 			return true;
 		// Check if not loaded
-		return this.classpath.exists(qname.replace('\u001f','/'));
+		return this.classpath.exists(qname.replace('·','/'));
 
 	}
 
 	public TypeDecl loadTypeDecl(String qname, boolean fatal) {
 		DNode dn = loadAnyDecl(qname);
 		if (fatal && !(dn instanceof TypeDecl))
-			throw new RuntimeException("Cannot find TypeDecl "+qname.replace('\u001f','.'));
+			throw new RuntimeException("Cannot find TypeDecl "+qname.replace('·','.'));
 		return (TypeDecl)dn;
 	}
 

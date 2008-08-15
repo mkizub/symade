@@ -44,7 +44,7 @@ public final class NewExpr extends ENode {
 		return null;
 	}
 	@setter public void set$func(Method m) {
-		this.symbol = m;
+		this.symbol = m.symbol;
 	}
 
 	public NewExpr() {}
@@ -222,7 +222,7 @@ public final class NewEnumExpr extends ENode {
 		return null;
 	}
 	@setter public void set$func(Method m) {
-		this.symbol = m;
+		this.symbol = m.symbol;
 	}
 
 	public NewEnumExpr() {}

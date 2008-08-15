@@ -65,11 +65,11 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 	Editor[] editor_views;
 	InfoView info_view;
 	InfoView clip_view;
-	TreeView expl_view;
+	//TreeView expl_view;
 	InfoView tree_view;
-	ANodeTree expl_tree;
-	ANodeTable prop_table; 
-	TableView prop_view;  
+	//ANodeTree expl_tree;
+	//ANodeTable prop_table; 
+	//TableView prop_view;  
 	Canvas info_canvas;
 	Canvas clip_canvas;
 	Canvas tree_canvas;
@@ -137,8 +137,8 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		Composite expl_page = new Composite(explorers, SWT.NONE);
 		item.setControl(expl_page);
 
-		expl_tree   = new ANodeTree(expl_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);	
+//		expl_tree   = new ANodeTree(expl_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
+//				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);	
 //		expl_tree.addFocusListener(this);
 
 		item = new TabItem (explorers, SWT.NONE);
@@ -180,27 +180,27 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		Composite prop_page = new Composite(infos, SWT.NONE);
 		item.setControl(prop_page);
 
-		prop_table = new ANodeTable(prop_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);	
+//		prop_table = new ANodeTable(prop_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
+//				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);	
 //		prop_table.addFocusListener(this);
 
 		
 		editor_views = new Editor[0];
-		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+//		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 
-		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));	
-		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
+//		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));	
+		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
 		addListeners();
 		initBgFormatters();
-		expl_view.setRoot(Env.getProject());
-		expl_tree.setInput(expl_view.view_root);
-		expl_view.formatAndPaint(true);
+//		expl_view.setRoot(Env.getProject());
+//		expl_tree.setInput(expl_view.view_root);
+//		expl_view.formatAndPaint(true);
 
-		expl_tree.requestFocus();
-//		tree_view.setRoot(Env.getProject());
-//		tree_view.formatAndPaint(true);
+//		expl_tree.requestFocus();
+		tree_view.setRoot(Env.getProject());
+		tree_view.formatAndPaint(true);
 		Rectangle screenSize = display.getClientArea();
 		parent.setSize(screenSize.width*4/5, screenSize.height*4/5-20);
 	}
@@ -362,29 +362,35 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 	}
 
 	private void initBgFormatters() {
-		info_view.bg_formatter = new BgFormatter(info_view);
-		info_view.bg_formatter.start();
-		prop_view.bg_formatter = new BgFormatter(prop_view);
-		prop_view.bg_formatter.start();
+		if (info_view != null) {
+			info_view.bg_formatter = new BgFormatter(info_view);
+			info_view.bg_formatter.start();
+		}
+//		if (prop_view != null) {
+//			prop_view.bg_formatter = new BgFormatter(prop_view);
+//			prop_view.bg_formatter.start();
+//		}
 	}
 
 	private void addListeners() {
-		addElementChangeListener(info_view);
-		addElementChangeListener(prop_view);
+		if (info_view != null)
+			addElementChangeListener(info_view);
+//		if (prop_view != null)
+//			addElementChangeListener(prop_view);
 	}
 
 	public void focusGained(FocusEvent e) {
 		if (e.getSource() instanceof Canvas)
 		cur_comp = (Canvas)e.getSource();
-		else if (e.getSource() instanceof ANodeTree)
-		cur_comp = (ANodeTree)e.getSource();
+//		else if (e.getSource() instanceof ANodeTree)
+//		cur_comp = (ANodeTree)e.getSource();
 	}
 
 	public void focusLost(FocusEvent e) {
 		if (e.getSource() instanceof Canvas)
 		cur_comp = null;
-		else if (e.getSource() instanceof ANodeTree)
-		cur_comp = null;
+//		else if (e.getSource() instanceof ANodeTree)
+//		cur_comp = null;
 	}
 
 	public UIView getCurrentView() {
@@ -397,8 +403,8 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 			return info_view;
 		if (clip_view.getView_canvas() == cc)
 			return clip_view;
-		if (expl_view.getView_tree() == cc)
-			return expl_view;
+//		if (expl_view.getView_tree() == cc)
+//			return expl_view;
 		if (tree_view.getView_canvas() == cc)
 			return tree_view;
 		return null;
@@ -429,7 +435,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 		edit_canvas.addFocusListener(this);
 		editors.setSelection(item);
-		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);
 		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);

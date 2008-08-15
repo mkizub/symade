@@ -53,7 +53,7 @@ public final class FileActions implements Runnable {
 	}
 	
 	static DumpFileFilter[] dumpFileFilters = {
-		new DumpFileFilter("stx-fmt\u001fsyntax-for-java",  "Kiev source files", "java"),
+		new DumpFileFilter("stx-fmt·syntax-for-java",  "Kiev source files", "java"),
 		new DumpFileFilter("<xml-dump>", "Kiev XML full dump", "xml"),
 	};
 	

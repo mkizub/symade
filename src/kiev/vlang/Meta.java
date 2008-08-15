@@ -21,11 +21,7 @@ import syntax kiev.Syntax;
 public abstract class MNode extends ASTNode {
 	public static final MNode[] emptyArray = new MNode[0];
 
-	@virtual @abstract
-	public:ro String			qname;
-
-	@getter
-	public abstract String get$qname();
+	public abstract String qname();
 	public abstract JavaAnnotation getAnnotationDecl();
 	public void resolve(Type reqType) {}
 	public void verify() {}
@@ -36,16 +32,15 @@ public abstract class MNode extends ASTNode {
 
 @ThisIsANode(name="UserMeta", lang=CoreLang)
 public class UserMeta extends MNode {
-	@abstract
-	@nodeAttr public String							qname;
-	@nodeAttr public SymbolRef<JavaAnnotation>		decl;
-	@nodeAttr public MetaValue∅						values;
+	@AttrXMLDumpInfo(attr=true, name="name")
+	@nodeAttr public final JavaAnnotation⇑		decl;
+	@nodeAttr public       MetaValue∅			values;
 
 	public boolean equals(Object o) {
 		if!(o instanceof UserMeta)
 			return false;
 		UserMeta meta = (UserMeta)o;
-		if (qname != o.qname)
+		if (qname() != o.qname())
 			return false;
 		foreach (Method m; getAnnotationDecl().members) {
 			MetaValue v1 = this.get(m.sname);
@@ -60,16 +55,6 @@ public class UserMeta extends MNode {
 		return true;
 	}
 
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api") {
-			if (attr.name == "decl")
-				return false;
-			if (attr.name == "qname")
-				return true;
-		}
-		return super.includeInDump(dump, attr, val);
-	}
-
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (isAttached()) {
 			if      (attr.name == "decl")
@@ -80,29 +65,21 @@ public class UserMeta extends MNode {
 		super.callbackChildChanged(ct, attr, data);
 	}
 
-	public UserMeta() {
-		this.decl = new SymbolRef<JavaAnnotation>("");
-	}
+	public UserMeta() {}
 
 	public UserMeta(JavaAnnotation decl) {
-		this.decl = new SymbolRef<JavaAnnotation>(decl);
+		this.decl.symbol = decl.symbol;
 	}
 	
 	public UserMeta(String name) {
-		this.decl = new SymbolRef<JavaAnnotation>(name);
+		this.decl.name = name;
 	}
 	
-	@getter
-	public String get$qname() {
+	public String qname() {
 		TypeDecl s = decl.dnode;
 		if (s != null)
 			return s.qname();
 		return decl.name;
-	}
-
-	@setter
-	public void set$qname(String value) {
-		this.decl.name = value;
 	}
 
 	public final JavaAnnotation getAnnotationDecl() {
@@ -110,7 +87,7 @@ public class UserMeta extends MNode {
 		if (td != null)
 			return td;
 		String name = decl.name;
-		if (name.indexOf('\u001f') < 0) {
+		if (name.indexOf('·') < 0) {
 			ResInfo<JavaAnnotation> info = new ResInfo<JavaAnnotation>(this,name,ResInfo.noForwards);
 			if (!PassInfo.resolveNameR(this,info))
 				Kiev.reportError(this,"Unresolved annotation name "+name);
@@ -124,7 +101,7 @@ public class UserMeta extends MNode {
 		do {
 			if !(scope instanceof ScopeOfNames)
 				Kiev.reportError(this,"Unresolved identifier "+name+" in "+scope);
-			dot = name.indexOf('\u001f');
+			dot = name.indexOf('·');
 			String head;
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
@@ -150,7 +127,7 @@ public class UserMeta extends MNode {
 	
 	public boolean isRuntimeVisible() {
 		JavaAnnotation tdecl = getAnnotationDecl();
-		UserMeta retens = (UserMeta)tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
+		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
 		if (retens == null)
 			return false;
 		MetaValue val = retens.get("value");
@@ -164,7 +141,7 @@ public class UserMeta extends MNode {
 
 	public boolean isRuntimeInvisible() {
 		JavaAnnotation tdecl = getAnnotationDecl();
-		UserMeta retens = (UserMeta)tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
+		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
 		if (retens == null)
 			return true;
 		MetaValue val = retens.get("value");
@@ -222,7 +199,7 @@ public class UserMeta extends MNode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+tdecl);
-			v.symbol = m;
+			v.symbol = m.symbol;
 			Type t = m.mtype.ret();
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
@@ -257,7 +234,7 @@ public class UserMeta extends MNode {
 		if (slot.name == "decl") {
 			TypeDecl scope;
 			String head;
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -282,7 +259,7 @@ public class UserMeta extends MNode {
 				scope = info.resolvedDNode();
 			}
 			while (dot >= 0) {
-				dot = name.indexOf('\u001f');
+				dot = name.indexOf('·');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
@@ -472,7 +449,7 @@ public abstract class MetaValue extends ENode {
 		if (parent() instanceof Method && pslot().name == "body") {
 			Method m = (Method)parent();
 			if (this.dnode != m)
-				this.symbol = m;
+				this.symbol = m.symbol;
 		}
 		else if (ident == null) {
 			if (ident != "value")

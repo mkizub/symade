@@ -252,11 +252,11 @@ public class Window extends JFrame
 		this.setSize(screenSize.width, (screenSize.height*3)/4);
 		this.setVisible(true);
 		editor_views = new Editor[0];
-		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
-		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
-		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-project-tree"));
+		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
+		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
 		addListeners();
 		initBgFormatters();
 		expl_view.setRoot(Env.getProject());
@@ -341,7 +341,7 @@ public class Window extends JFrame
 		edit_canvas.addFocusListener(this);
 		editors.addTab(fu.pname(), edit_canvas);
 		editors.setSelectedComponent(edit_canvas);
-		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt\u001fsyntax-for-java"));
+		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);
 		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);

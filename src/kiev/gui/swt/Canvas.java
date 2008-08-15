@@ -38,8 +38,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 
-import sun.security.action.GetBooleanAction;
-
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Drawable;
@@ -599,7 +597,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 
 	public IFmtGfx getFmtGraphics() {
 		// TODO Auto-generated method stub
-		return null;
+		return new AWTGraphics2D(renderer.getGraphics2D());
 	}
 
 	public void controlMoved(ControlEvent e) {

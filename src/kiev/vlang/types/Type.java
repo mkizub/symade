@@ -316,7 +316,7 @@ public final class XType extends Type {
 	public String toString() {
 		TypeDecl tdecl = this.tdecl;
 		StringBuffer str = new StringBuffer();
-		str.append(tdecl.qname().replace('\u001f','.'));
+		str.append(tdecl.qname().replace('·','.'));
 		int n = tdecl.args.length;
 		if (n > 0) {
 			str.append('<');
@@ -471,7 +471,7 @@ public final class ASTNodeType extends Type {
 		else if (tp == StdTypes.tpLong)      clazz = Long.TYPE;
 		else if (tp == StdTypes.tpFloat)     clazz = Float.TYPE;
 		else if (tp == StdTypes.tpDouble)    clazz = Double.TYPE;
-		else if (tp instanceof CompaundType) clazz = Class.forName(tp.tdecl.qname().replace('\u001f','.'));
+		else if (tp instanceof CompaundType) clazz = Class.forName(tp.tdecl.qname().replace('·','.'));
 		else
 			throw new RuntimeException("Can't make ASTNodeType for type "+tp);
 		return new ASTNodeType(ASTNodeMetaType.instance(clazz));

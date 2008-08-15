@@ -78,7 +78,7 @@ public final class TypeNameRef extends TypeRef {
 		String name = this.ident;
 		String head;
 		{
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -94,7 +94,7 @@ public final class TypeNameRef extends TypeRef {
 		while (name.length() > 0) {
 			if !(scope instanceof ScopeOfNames)
 				throw new CompilerException(this,"Scope "+scope+" has no names");
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -109,7 +109,7 @@ public final class TypeNameRef extends TypeRef {
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+name);
-		this.symbol = scope;
+		this.symbol = scope.symbol;
 		return (TypeDecl)scope;
 	}
 
@@ -117,7 +117,7 @@ public final class TypeNameRef extends TypeRef {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -143,7 +143,7 @@ public final class TypeNameRef extends TypeRef {
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
 					return null;
-				dot = name.indexOf('\u001f');
+				dot = name.indexOf('·');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
@@ -172,7 +172,7 @@ public final class TypeNameRef extends TypeRef {
 	}
 
 	public String toString() {
-		return ident.replace('\u001f','.');
+		return ident.replace('·','.');
 	}
 }
 
@@ -193,7 +193,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		this.pos = pos;
 		this.ident = nm;
 		if (td != null)
-			this.symbol = td;
+			this.symbol = td.symbol;
 	}
 
 	public String qname() {
@@ -248,7 +248,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		String name = this.ident;
 		String head;
 		{
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -264,7 +264,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		while (name.length() > 0) {
 			if !(scope instanceof ScopeOfNames)
 				throw new CompilerException(this,"Scope "+scope+" has no names");
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -279,7 +279,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+name);
-		this.symbol = scope;
+		this.symbol = scope.symbol;
 		return (TypeDecl)scope;
 	}
 
@@ -287,7 +287,7 @@ public final class TypeNameArgsRef extends TypeRef {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -315,7 +315,7 @@ public final class TypeNameArgsRef extends TypeRef {
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
 					return null;
-				dot = name.indexOf('\u001f');
+				dot = name.indexOf('·');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
@@ -345,9 +345,9 @@ public final class TypeNameArgsRef extends TypeRef {
 
 	public String toString() {
 		if (args.length == 0)
-			return ident.replace('\u001f','.');
+			return ident.replace('·','.');
 		StringBuffer sb = new StringBuffer();
-		sb.append(ident.replace('\u001f','.'));
+		sb.append(ident.replace('·','.'));
 		sb.append('<');
 		for (int i=0; i < args.length; i++) {
 			sb.append(args[i]);
@@ -377,7 +377,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		this.outer = outer;
 		this.ident = nm;
 		if (td != null)
-			this.symbol = td;
+			this.symbol = td.symbol;
 	}
 
 	public String qname() {
@@ -387,7 +387,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		if (outer == null)
 			return ident;
 		if (outer instanceof TypeNameRef)
-			return (outer.qname() + '\u001f' + ident);
+			return (outer.qname() + '·' + ident);
 		return ident;
 	}
 	
@@ -448,7 +448,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		String name = this.ident;
 		String head;
 		if (this.outer == null) {
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -467,7 +467,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		while (name.length() > 0) {
 			if !(scope instanceof ScopeOfNames)
 				throw new CompilerException(this,"Scope "+scope+" has no names");
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -482,7 +482,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+name);
-		this.symbol = scope;
+		this.symbol = scope.symbol;
 		return (TypeDecl)scope;
 	}
 
@@ -490,7 +490,7 @@ public final class TypeInnerNameRef extends TypeRef {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
@@ -521,7 +521,7 @@ public final class TypeInnerNameRef extends TypeRef {
 			while (dot >= 0) {
 				if !(scope instanceof ScopeOfNames)
 					return null;
-				dot = name.indexOf('\u001f');
+				dot = name.indexOf('·');
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
@@ -551,9 +551,9 @@ public final class TypeInnerNameRef extends TypeRef {
 
 	public String toString() {
 		if (outer == null && args.length == 0)
-			return ident.replace('\u001f','.');
+			return ident.replace('·','.');
 		StringBuffer sb = new StringBuffer();
-		sb.append(outer).append('.').append(ident.replace('\u001f','.'));
+		sb.append(outer).append('.').append(ident.replace('·','.'));
 		if (args.length > 0) {
 			sb.append('<');
 			for (int i=0; i < args.length; i++) {

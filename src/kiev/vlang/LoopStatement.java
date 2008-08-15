@@ -55,7 +55,7 @@ public final class Label extends DNode {
 	}	
 
 	public ANode doRewrite(RewriteContext ctx) {
-		if (getMeta("kiev\u001fstdlib\u001fmeta\u001fextern") != null)
+		if (getMeta("kiev·stdlib·meta·extern") != null)
 			return null;
 		return super.doRewrite(ctx);
 	}

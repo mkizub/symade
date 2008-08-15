@@ -67,7 +67,7 @@ public final class JEnv {
 	}
 	public Struct getClsStringBuffer() {
 		if (this.clazzStringBuffer == null)
-			this.clazzStringBuffer = (Struct)this.env.loadTypeDecl("java\u001flang\u001fStringBuilder", true);
+			this.clazzStringBuffer = (Struct)this.env.loadTypeDecl("java·lang·StringBuilder", true);
 		return this.clazzStringBuffer;
 	}
 	public Method getMthStringBufferToString() {
@@ -85,7 +85,7 @@ public final class JEnv {
 	public DNode loadDecl(ClazzName name) {
 		if (name.name == KString.Empty) return this.env;
 		// Check class is already loaded
-		String qname = name.name.toString().replace('.','\u001f');
+		String qname = name.name.toString().replace('.','·');
 		if (Env.classHashOfFails.get(qname) != null ) return null;
 		DNode cl = this.env.resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
@@ -100,13 +100,13 @@ public final class JEnv {
 
 	/** Actually load class from specified file and dir */
 	public DNode actuallyLoadDecl(String qname) {
-		int p = qname.lastIndexOf('\u001f');
+		int p = qname.lastIndexOf('·');
 		if (p < 0)
 			return actuallyLoadDecl(ClazzName.fromToplevelName(this,KString.from(qname)));
 		String pname = qname.substring(0,p);
 		DNode dn = this.env.loadAnyDecl(pname);
 		if (dn == null)
-			throw new RuntimeException("Cannot find class/package "+pname.replace('\u001f','.'));
+			throw new RuntimeException("Cannot find class/package "+pname.replace('·','.'));
 		// maybe an inner class is already loaded by outer class
 		DNode cl = this.env.resolveGlobalDNode(qname);
 		if (cl != null && !cl.isTypeDeclNotLoaded())
@@ -132,7 +132,7 @@ public final class JEnv {
 		// Ensure the parent package/outer class is loaded
 		DNode pkg = loadDecl(ClazzName.fromBytecodeName(this,name.package_bytecode_name()));
 		if (pkg == null)
-			pkg = this.env.newPackage(name.package_name().toString().replace('.','\u001f'));
+			pkg = this.env.newPackage(name.package_name().toString().replace('.','·'));
 		if (pkg.isTypeDeclNotLoaded())
 			pkg = loadDecl(ClazzName.fromBytecodeName(this,((JStruct)pkg).bname()));
 
@@ -146,7 +146,7 @@ public final class JEnv {
 		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
 			DumpUtils.loadFromXmlData(data, name.src_name.toString(), pkg);
-			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
+			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
 		}
 		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing .class data for clazz "+name);
@@ -155,7 +155,7 @@ public final class JEnv {
 		}
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)
-				td = this.env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
+				td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
 			if (td == null || td.isTypeDeclNotLoaded())
 				td = new Bytecoder(this,(Struct)td,clazz,null).readClazz(name, pkg);
 		}

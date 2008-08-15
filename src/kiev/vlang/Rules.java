@@ -255,7 +255,7 @@ public final class RuleBlock extends ENode {
 
 	public void testGenerate(SpacePtr space, Struct frame) {
 		try {
-			TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+			TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 			if (tdecl == null)
 				return;
 			Method m = tdecl.resolveMethod("mkRuleBlock", StdTypes.tpVoid);
@@ -276,7 +276,7 @@ public final class RuleBlock extends ENode {
 				frame.members += new Field(v.sname, v.getType(), 0);
 			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
 			//if (Kiev.debug && Kiev.debugRules)
-			//	SyntaxManager.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt\u001fsyntax-for-java")).getCompiled());
+			//	SyntaxManager.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt·syntax-for-java")).getCompiled());
 			this.replaceWithNode(rn);
 		} catch (Throwable t) {
 			System.out.println("Error: test.txt dump");
@@ -471,7 +471,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 		if (tdecl == null)
 			return;
 		Method m = tdecl.resolveMethod("mkRuleIstheExpr", StdTypes.tpVoid, new ASTNodeType(RuleIstheExpr.class));
@@ -566,7 +566,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 		if (tdecl == null)
 			return;
 		Method m = tdecl.resolveMethod("mkRuleIsoneofExpr", StdTypes.tpVoid, new ASTNodeType(RuleIsoneofExpr.class));
@@ -601,7 +601,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 		if (tdecl == null)
 			return;
 		Method m = tdecl.resolveMethod("mkRuleCutExpr", StdTypes.tpVoid, new ASTNodeType(RuleCutExpr.class));
@@ -671,7 +671,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 		if (tdecl == null)
 			return;
 		Method m = tdecl.resolveMethod("mkRuleCallExpr", StdTypes.tpVoid, new ASTNodeType(RuleCallExpr.class), StdTypes.tpBoolean);
@@ -756,7 +756,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 		if (tdecl == null)
 			return;
 		Method m = tdecl.resolveMethod("mkRuleWhile", StdTypes.tpVoid, new ASTNodeType(RuleWhileExpr.class), StdTypes.tpBoolean);
@@ -813,7 +813,7 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
 		if (tdecl == null)
 			return;
 		Method m = tdecl.resolveMethod("mkRuleExpr", StdTypes.tpVoid, new ASTNodeType(RuleExpr.class), StdTypes.tpBoolean, StdTypes.tpBoolean);

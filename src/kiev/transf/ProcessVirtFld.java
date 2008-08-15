@@ -20,8 +20,8 @@ import syntax kiev.Syntax;
 public final class VirtFldFE_GenMembers extends TransfProcessor {
 
 	private static final String PROP_BASE		= "symade.transf.virtfld";
-	public static final String nameMetaGetter	= getPropS(PROP_BASE,"nameMetaGetter","kiev\u001fstdlib\u001fmeta\u001fgetter"); 
-	public static final String nameMetaSetter	= getPropS(PROP_BASE,"nameMetaSetter","kiev\u001fstdlib\u001fmeta\u001fsetter"); 
+	public static final String nameMetaGetter	= getPropS(PROP_BASE,"nameMetaGetter","kiev·stdlib·meta·getter"); 
+	public static final String nameMetaSetter	= getPropS(PROP_BASE,"nameMetaSetter","kiev·stdlib·meta·setter"); 
 	
 	private VirtFldFE_GenMembers() { super(KievExt.VirtualFields); }
 	public String getDescr() { "Virtual fields members generation" }

@@ -451,7 +451,7 @@ public class SwitchRewr extends SwitchStat {
 	private CaseLabel findEnumCase(ConstEnumExpr e) {
 		int tag = e.value.ordinal();
 		String name = e.value.name().intern();
-		String type_name = e.value.getClass().getName().replace('.','\u001f').replace('$','\u001f');
+		String type_name = e.value.getClass().getName().replace('.','·').replace('$','·');
 		foreach (CaseLabel cl; stats) {
 			ENode val = cl.val;
 			if (val instanceof ConstIntExpr && val.value == tag)
@@ -763,7 +763,7 @@ public class MacroHasMetaExpr extends ENode {
 			return new ConstBoolExpr(false);
 		if!(meta instanceof MNode)
 			return new ConstBoolExpr(false);
-		MNode m = ((DNode)expr).getMeta(meta.qname);
+		MNode m = ((DNode)expr).getMeta(meta.qname());
 		if (m == null)
 			return new ConstBoolExpr(false);
 		return new ConstBoolExpr(m.equals(meta));

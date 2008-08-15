@@ -167,7 +167,7 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 							diff_time = curr_time = System.currentTimeMillis();
 							Kiev.k.ReInit(bis);
 							cpi.fu = Kiev.k.FileUnit(cpi.fname);
-							cpi.fu.current_syntax = "stx-fmt\u001fsyntax-for-java";
+							cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
 							bis.close();
 						}
 						diff_time = System.currentTimeMillis() - curr_time;

@@ -14,25 +14,25 @@
   xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'>
  <core:FileUnit>
   <srpkg>
-   <core:SymbolRef name='kiev&#31;ir' full='true' />
+   <core:SymbolRef name='kiev·ir' full='true' />
   </srpkg>
   <syntaxes>
    <core:ImportSyntax>
     <name>
-     <core:SymbolRef name='kiev&#31;stdlib&#31;Syntax' full='true' />
+     <core:SymbolRef name='kiev·stdlib·Syntax' full='true' />
     </name>
    </core:ImportSyntax>
   </syntaxes>
   <members>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang' full='true' />
+     <core:SymbolRef name='kiev·vlang' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='false' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;RuleIsoneofExpr&#31;IsoneofMode' full='true' />
+     <core:SymbolRef name='kiev·vlang·RuleIsoneofExpr·IsoneofMode' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
@@ -51,9 +51,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -61,9 +60,8 @@
          <core:Label name='enter$1'>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -254,9 +252,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -267,9 +264,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -277,9 +273,8 @@
          <core:Label name='enter${node>next_back>idx}'>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -427,9 +422,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -440,9 +434,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -450,9 +443,8 @@
          <core:Label name='enter${node>next_check>idx}'>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -576,9 +568,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -589,9 +580,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -846,7 +836,7 @@
            </core:Case>
            <core:Call ident='contains'>
             <obj>
-             <core:TypeNameRef ident='kiev&#31;stdlib&#31;ArrayEnumerator' full='true' />
+             <core:TypeNameRef ident='kiev·stdlib·ArrayEnumerator' full='true' />
             </obj>
             <args>
              <macro:MacroSubstExpr>
@@ -884,7 +874,7 @@
            </core:Case>
            <core:Call ident='contains'>
             <obj>
-             <core:TypeNameRef ident='kiev&#31;stdlib&#31;rule' full='true' />
+             <core:TypeNameRef ident='kiev·stdlib·rule' full='true' />
             </obj>
             <args>
              <macro:MacroSubstExpr>
@@ -922,7 +912,7 @@
            </core:Case>
            <core:Call ident='jcontains'>
             <obj>
-             <core:TypeNameRef ident='kiev&#31;stdlib&#31;rule' full='true' />
+             <core:TypeNameRef ident='kiev·stdlib·rule' full='true' />
             </obj>
             <args>
              <macro:MacroSubstExpr>
@@ -1021,9 +1011,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -1034,9 +1023,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -1509,9 +1497,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -1582,9 +1569,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -1595,9 +1581,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -1788,9 +1773,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -1801,9 +1785,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -2051,9 +2034,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>
@@ -2064,9 +2046,8 @@
           </vtype>
           <metas>
            <core:UserMeta>
-            <qname>kiev&#31;stdlib&#31;meta&#31;extern</qname>
             <decl>
-             <core:SymbolRef name='kiev&#31;stdlib&#31;meta&#31;extern' full='true' />
+             <core:SymbolRef name='kiev·stdlib·meta·extern' full='true' />
             </decl>
            </core:UserMeta>
           </metas>

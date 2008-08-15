@@ -70,7 +70,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 			return false;
 		String name = this.name.name;
 		ScopeOfNames scope = null;
-		int dot = name.indexOf('\u001f');
+		int dot = name.indexOf('·');
 		while (dot > 0) {
 			String head;
 			head = name.substring(0,dot).intern();
@@ -83,7 +83,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 				return false;
 			}
 			scope = (ScopeOfNames)info.resolvedDNode();
-			dot = name.indexOf('\u001f');
+			dot = name.indexOf('·');
 		}
 		if !(scope instanceof ScopeOfMethods) {
 			Kiev.reportError(this,"Scope "+scope+" has no methods");
@@ -165,7 +165,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			do {
 				String head;
 				if (dot > 0) {
@@ -175,7 +175,7 @@ public class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMet
 					if !(scope.resolveNameR(info))
 						return null;
 					scope = (ScopeOfNames)info.resolvedDNode();
-					dot = name.indexOf('\u001f');
+					dot = name.indexOf('·');
 				}
 				if (dot < 0) {
 					head = name.intern();
@@ -230,7 +230,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "name") {
 			ScopeOfNames scope = (ScopeOfNames)Env.getRoot();
-			int dot = name.indexOf('\u001f');
+			int dot = name.indexOf('·');
 			do {
 				String head;
 				if (dot > 0) {
@@ -240,7 +240,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 					if !(scope.resolveNameR(info))
 						return null;
 					scope = (ScopeOfNames)info.resolvedDNode();
-					dot = name.indexOf('\u001f');
+					dot = name.indexOf('·');
 				}
 				if (dot < 0) {
 					head = name.intern();

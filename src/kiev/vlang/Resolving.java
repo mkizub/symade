@@ -172,7 +172,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 
 	@virtual
 	@abstract
-	public:ro ISymbol	$var;
+	public:ro Symbol	$var;
 
 	@getter
 	public boolean get$$is_bound() {
@@ -180,7 +180,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	}
 
 	@getter
-	public ISymbol get$$var() {
+	public Symbol get$$var() {
 		return this.resolved_symbol;
 	}
 

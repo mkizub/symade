@@ -57,7 +57,7 @@ public final class SyntaxManager {
 		Draw_ATextSyntax dts = null;
 		InputStream inp = null;
 		try {
-			inp = Env.class.getClassLoader().getSystemResourceAsStream(name.replace('\u001f','/')+".ser");
+			inp = Env.class.getClassLoader().getSystemResourceAsStream(name.replace('·','/')+".ser");
 			ObjectInput oi = new ObjectInputStream(inp);
 			dts = (Draw_ATextSyntax)oi.readObject();
 			dts.init();

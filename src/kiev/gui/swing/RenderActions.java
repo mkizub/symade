@@ -47,24 +47,24 @@ public final class RenderActions implements Runnable {
 			// build a menu of types to instantiate
 			JPopupMenu m = new JPopupMenu();
 			if (ui instanceof InfoView) {
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt\u001fsyntax-for-java", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt·syntax-for-java", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt·syntax-for-java", true)));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
 				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt\u001fsyntax-for-api", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt\u001fsyntax-for-vdom", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt\u001fsyntax-for-vdom", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events", "stx-fmt\u001fsyntax-for-evt", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events (current)", "stx-fmt\u001fsyntax-for-evt", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt\u001fsyntax-for-syntax", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt·syntax-for-project-tree", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt·syntax-for-project-tree", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt·syntax-for-api", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt·syntax-for-vdom", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt·syntax-for-vdom", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events", "stx-fmt·syntax-for-evt", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events (current)", "stx-fmt·syntax-for-evt", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt·syntax-for-syntax", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt·syntax-for-syntax", true)));
 				m.show((Component)((InfoView)ui).getView_canvas(), 0, 0);
 			}
 			else if (ui instanceof TreeView) {
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt\u001fsyntax-for-project-tree", true)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt·syntax-for-project-tree", false)));
+				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt·syntax-for-project-tree", true)));
 				m.show((Component)((TreeView)ui).getView_tree(), 0, 0);
 			}
 		}

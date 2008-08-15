@@ -47,15 +47,11 @@ public abstract class DNode extends ASTNode implements ISymbol {
 
 
 	@virtual @abstract
-	public:ro						String			qname;
-	@virtual @abstract
 	public:ro						DNode			dnode;
-	@virtual @abstract
-	public:ro						String			UUID;
 
 
 	public final MetaAccess getMetaAccess() {
-		return (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
+		return (MetaAccess)this.getMeta("kiev·stdlib·meta·access");
 	}
 
 	@getter final public DNode get$dnode() { return this; }
@@ -66,14 +62,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 	@setter final public void set$sname(String value) {
 		this.symbol.sname = value;
-	}
-	@getter final public String get$qname() {
-		if (this instanceof GlobalDNode)
-			return ((GlobalDNode)this).qname();
-		return this.sname;
-	}
-	@getter final public String get$UUID() {
-		return this.symbol.get$UUID();
 	}
 	@getter final public String get$uuid() {
 		return this.symbol.uuid;
@@ -161,7 +149,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	public void setStatic(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fstatic");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·static");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -169,7 +157,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setFinal(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001ffinal");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·final");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -177,7 +165,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setSynchronized(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fsynchronized");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·synchronized");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -185,7 +173,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setFieldVolatile(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fvolatile");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·volatile");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -193,7 +181,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setMethodBridge(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fbridge");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·bridge");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -201,7 +189,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setFieldTransient(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001ftransient");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·transient");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -209,7 +197,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setMethodVarargs(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fvarargs");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·varargs");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -217,7 +205,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setNative(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fnative");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·native");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -225,7 +213,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setAbstract(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fabstract");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·abstract");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -233,7 +221,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 	public void setSynthetic(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fsynthetic");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·synthetic");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -242,7 +230,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	public void setMacro(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fmacro");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·macro");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -251,7 +239,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	public void setTypeUnerasable(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001funerasable");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·unerasable");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -260,7 +248,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	public final void setVirtual(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fvirtual");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·virtual");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -269,7 +257,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	public final void setForward(boolean on) {
-		MetaFlag m = (MetaFlag)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fforward");
+		MetaFlag m = (MetaFlag)this.getMeta("kiev·stdlib·meta·forward");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -336,15 +324,15 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 
 	public final MNode getMeta(String name) {
-		foreach (MNode m; metas; m.qname == name)
+		foreach (MNode m; metas; m.qname() == name)
 			return m;
 		return null;
 	}
 	
 	public final MNode setMeta(MNode meta)  alias add alias lfy operator +=
 	{
-		String qname = meta.qname;
-		foreach (MNode m; metas; m.qname == qname) {
+		String qname = meta.qname();
+		foreach (MNode m; metas; m.qname() == qname) {
 			if (meta != m)
 				m.replaceWithNode(meta);
 			return meta;
@@ -431,11 +419,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	// a structure with the only one instance (singleton)	
 	public final boolean isSingleton() {
-		return this.getMeta("kiev\u001fstdlib\u001fmeta\u001fsingleton") != null;
+		return this.getMeta("kiev·stdlib·meta·singleton") != null;
 	}
 	// an interface with methdos and fields (mixin)	
 	public final boolean isMixin() {
-		return this.getMeta("kiev\u001fstdlib\u001fmeta\u001fmixin") != null;
+		return this.getMeta("kiev·stdlib·meta·mixin") != null;
 	}
 
 	// indicates that type of the structure was attached
@@ -660,7 +648,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 			return null;
 		ANode p = parent();
 		if (p instanceof GlobalDNode)
-			q_name = (p.qname()+"\u001f"+sname).intern();
+			q_name = (p.qname()+"·"+sname).intern();
 		else
 			q_name = sname;
 		return q_name;
@@ -670,7 +658,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		String q = qname();
 		if (q == null)
 			return "<anonymouse>";
-		return q.replace('\u001f','.');
+		return q.replace('·','.');
 	}
 
 	static class TypeDeclDFFunc extends DFFunc {
@@ -786,7 +774,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 			return null;
 		ANode p = parent();
 		if (p instanceof GlobalDNode)
-			return (p.qname()+"\u001f"+sname).intern();
+			return (p.qname()+"·"+sname).intern();
 		return sname;
 	}
 
@@ -794,7 +782,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		String q = qname();
 		if (q == null)
 			return "<anonymouse>";
-		return q.replace('\u001f','.');
+		return q.replace('·','.');
 	}
 
 	public rule resolveNameR(ResInfo info)
@@ -868,7 +856,7 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 	public String qname() {
 		ANode p = parent();
 		if ((p instanceof KievPackage) && !(p instanceof Env))
-			return (p.qname()+"\u001f"+sname).intern();
+			return (p.qname()+"·"+sname).intern();
 		return sname;
 	}
 
@@ -876,7 +864,7 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 		String q = qname();
 		if (q == null)
 			return "<anonymouse>";
-		return q.replace('\u001f','.');
+		return q.replace('·','.');
 	}
 
 	public final rule resolveNameR(ResInfo info)
@@ -902,7 +890,7 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 		if (this instanceof Env)
 			dn = Env.getRoot().loadAnyDecl(qn);
 		else
-			dn = Env.getRoot().loadAnyDecl(qn=(this.qname()+"\u001f"+name));
+			dn = Env.getRoot().loadAnyDecl(qn=(this.qname()+"·"+name));
 		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;
 	}

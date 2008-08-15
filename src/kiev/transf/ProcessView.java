@@ -64,7 +64,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		
 		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
-		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
+		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev·stdlib·meta·ViewOf");
 
 		if (view_meta != null && view_meta.getZ("iface"))
 			clazz.mflags_is_struct_interface = true; //clazz.setInterface();
@@ -196,7 +196,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		Struct super_view_impl = null;
 
 		// generate implementation
-		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
+		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev·stdlib·meta·ViewOf");
 		if (view_meta != null && view_meta.getZ("iface")) {
 			impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
 			if (clazz.isInterfaceOnly())

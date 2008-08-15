@@ -19,25 +19,25 @@
   <members>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang' full='true' />
+     <core:SymbolRef name='kiev·vlang' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;vlang&#31;types' full='true' />
+     <core:SymbolRef name='kiev·vlang·types' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;parser' full='true' />
+     <core:SymbolRef name='kiev·parser' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev&#31;fmt' full='true' />
+     <core:SymbolRef name='kiev·fmt' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
@@ -325,7 +325,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>
@@ -365,7 +365,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>
@@ -435,7 +435,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>
@@ -475,7 +475,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>
@@ -515,7 +515,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>
@@ -555,7 +555,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>
@@ -595,7 +595,7 @@
          <syntax:CalcOptionNot>
           <opt>
            <syntax:CalcOptionHasMeta>
-            <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
+            <name>kiev·stdlib·meta·synthetic</name>
            </syntax:CalcOptionHasMeta>
           </opt>
          </syntax:CalcOptionNot>

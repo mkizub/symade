@@ -63,7 +63,7 @@ public final class KievView extends Struct {
 	}
 	
 	public Struct getViewImpl() {
-		UserMeta view_meta = (UserMeta)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fViewOf");
+		UserMeta view_meta = (UserMeta)this.getMeta("kiev·stdlib·meta·ViewOf");
 		if (view_meta != null && view_meta.getZ("iface"))
 			return this.iface_impl;
 		return this;

@@ -196,7 +196,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 				srpkg.symbol = td.symbol;
 				srpkg.qualified = true;
 			} else {
-				td = Env.getRoot().newPackage(td.qname() + "\u001f" + srpkg.name);
+				td = Env.getRoot().newPackage(td.qname() + "·" + srpkg.name);
 				srpkg.symbol = td.symbol;
 				srpkg.qualified = false;
 			}
@@ -250,7 +250,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 				scope = (KievPackage)parent().ctx_name_space.getPackage();
 			int dot = -1;
 			if (scope instanceof Env)
-				dot = name.indexOf('\u001f');
+				dot = name.indexOf('·');
 			do {
 				String head;
 				if (dot > 0) {
@@ -260,7 +260,7 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 					if !(scope.resolveNameR(info))
 						return null;
 					scope = info.resolvedDNode();
-					dot = name.indexOf('\u001f');
+					dot = name.indexOf('·');
 				}
 				if (dot < 0) {
 					head = name.intern();

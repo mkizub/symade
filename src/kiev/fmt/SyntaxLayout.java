@@ -44,7 +44,7 @@ public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer,
 			return q_name;
 		ANode p = parent();
 		if (p instanceof GlobalDNode)
-			q_name = (((GlobalDNode)p).qname()+"\u001f"+sname).intern();
+			q_name = (((GlobalDNode)p).qname()+"·"+sname).intern();
 		else
 			q_name = sname;
 		return q_name;
@@ -426,7 +426,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 			Struct s = (Struct)sr.dnode;
 			ExpectedTypeInfo eti = new ExpectedTypeInfo();
 			eti.title = s.sname;
-			eti.typeinfo = TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('\u001f','.')),null);
+			eti.typeinfo = TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('·','.')),null);
 			return eti;
 		}
 		else if (sr.dnode instanceof SyntaxExpectedTemplate) {
@@ -451,7 +451,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	public Draw_SyntaxElemDecl getCompiled() {
 		Draw_SyntaxElemDecl dr_decl = new Draw_SyntaxElemDecl();
 		dr_decl.elem = this.elem.getCompiled(dr_decl);
-		dr_decl.clazz_name = this.rnode.dnode.qname().replace('\u001f','.').intern();
+		dr_decl.clazz_name = this.rnode.dnode.qname().replace('·','.').intern();
 		foreach (SyntaxExpectedAttr exp; attr_types) {
 			ExpectedAttrTypeInfo eti = new ExpectedAttrTypeInfo();
 			eti.title = null;
@@ -530,12 +530,12 @@ public class SyntaxTypeRef extends ASTNode {
 	public TypeInfo getTypeInfo() {
 		Struct s = clazz.dnode;
 		if (args.length == 0) {
-			return TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('\u001f','.')),null);
+			return TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('·','.')),null);
 		} else {
 			TypeInfo[] ti_args = new TypeInfo[args.length];
 			for (int i=0; i < ti_args.length; i++)
 				ti_args[i] = args[i].getTypeInfo();
-			return TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('\u001f','.')),ti_args);
+			return TypeInfo.makeTypeInfo(Class.forName(s.qname().replace('·','.')),ti_args);
 		}
 	}
 
@@ -705,7 +705,7 @@ public class SyntaxExpectedAttr extends ASTNode {
 				Struct s = getExpectedType();
 				if (s == null)
 					return null;
-				Class cls = Class.forName(s.qname().replace('\u001f','.'));
+				Class cls = Class.forName(s.qname().replace('·','.'));
 				java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
 				fld.setAccessible(true);
 				Vector<Symbol> attrs = new Vector<Symbol>();
@@ -878,7 +878,7 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 				Struct s = getExpectedType();
 				if (s == null)
 					return null;
-				Class cls = Class.forName(s.qname().replace('\u001f','.'));
+				Class cls = Class.forName(s.qname().replace('·','.'));
 				java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
 				fld.setAccessible(true);
 				Vector<Symbol> attrs = new Vector<Symbol>();
@@ -940,7 +940,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 				Struct s = getExpectedType();
 				if (s == null)
 					return null;
-				Class cls = Class.forName(s.qname().replace('\u001f','.'));
+				Class cls = Class.forName(s.qname().replace('·','.'));
 				java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
 				fld.setAccessible(true);
 				Vector<Symbol> attrs = new Vector<Symbol>();
@@ -991,7 +991,7 @@ public final class SyntaxSubAttr extends SyntaxAttr {
 		super.mainResolveOut();
 		Struct s = getExpectedType();
 		if (s != null) {
-			Class cls = Class.forName(s.qname().replace('\u001f','.'));
+			Class cls = Class.forName(s.qname().replace('·','.'));
 			java.lang.reflect.Field fld = cls.getDeclaredField(nameEnumValuesFld);
 			fld.setAccessible(true);
 			AttrSlot[] slots = (AttrSlot[])fld.get(null);
@@ -1382,7 +1382,7 @@ public class CalcOptionHasMeta implements CalcOption {
 	@setter
 	public void set$name(String value) {
 		if (value != null && value.indexOf('.') >= 0)
-			value = value.replace('.','\u001f');
+			value = value.replace('.','·');
 		this.name = (value != null) ? value.intern() : null;
 	}
 

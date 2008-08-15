@@ -28,8 +28,8 @@ import javax.xml.xpath.*;
 @singleton
 public final class JobLang extends LangBase {
 	static {
-		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-vdom";
-		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-vdom";
+		defaultEditorSyntaxName = "stx-fmt·syntax-for-vdom";
+		defaultInfoSyntaxName = "stx-fmt·syntax-for-vdom";
 	}
 	public String getName() { "job" }
 	public Class[] getSuperLanguages() { superLanguages }
@@ -134,8 +134,8 @@ public final class JobState extends JobBase {
 @singleton
 public final class WorkflowLang extends LangBase {
 	static {
-		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-vdom";
-		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-vdom";
+		defaultEditorSyntaxName = "stx-fmt·syntax-for-vdom";
+		defaultInfoSyntaxName = "stx-fmt·syntax-for-vdom";
 	}
 	public String getName() { "wf" }
 	public Class[] getSuperLanguages() { superLanguages }

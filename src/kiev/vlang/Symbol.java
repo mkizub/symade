@@ -23,19 +23,13 @@ public interface ISymbol extends ASTNode {
 	@virtual @abstract
 	public:ro String		sname;
 	@virtual @abstract
-	public:ro String		qname;
-	@virtual @abstract
 	public:ro DNode			dnode;
 	@virtual @abstract
 	public:ro Symbol		symbol;
-	@virtual @abstract
-	public:ro String		UUID;
 
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
-	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
 	@getter public Symbol	get$symbol();
-	@getter public String	get$UUID(); // UUID of this symbol (auto-generated, if not exists)
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -64,7 +58,7 @@ public class Symbol extends ASTNode implements ISymbol {
 		return this;
 	}
 	
-	@getter final public String get$UUID() {
+	final public String getUUID() {
 		String u = this.uuid;
 		if (u == null) {
 			u = java.util.UUID.randomUUID().toString();
@@ -73,10 +67,21 @@ public class Symbol extends ASTNode implements ISymbol {
 		return u;
 	}
 	@setter final public void set$uuid(String value) {
-		assert (this.uuid == null);
 		value = value.intern();
+		if (this.uuid == value)
+			return;
+		assert (this.uuid == null);
 		Env.getRoot().registerSymbol(value,this);
 		this.uuid = value;
+	}
+	
+	public String qname() {
+		if (sname == null)
+			return null;
+		DNode dn = this.dnode;
+		if (dn instanceof GlobalDNode)
+			return ((GlobalDNode)dn).qname();
+		return sname;
 	}
 
 	public Symbol() {}
@@ -112,20 +117,6 @@ public class Symbol extends ASTNode implements ISymbol {
 		this.sname = (value == null) ? null : value.intern();
 	}
 	
-	@getter public final String get$qname() {
-		ANode p = parent();
-		if (p instanceof GlobalDNode) {
-			String qn = ((GlobalDNode)p).qname();
-			if (qn == null)
-				return sname;
-			int dot = qn.lastIndexOf('\u001f');
-			if (dot < 0)
-				return sname;
-			return qn.substring(0,dot+1) + sname;
-		}
-		return sname;
-	}
-
 	public boolean equals(Object:Object nm) {
 		return false;
 	}
@@ -148,7 +139,12 @@ public class Symbol extends ASTNode implements ISymbol {
 	public String toString() {
 		return sname;
 	}
-
+	
+	public String makeSignature() {
+		if (sname == null)
+			return '‣' + getUUID(); // UUID separator is \u2023
+		return sname + '‣' + getUUID(); // UUID separator is \u2023
+	}
 }
 
 @unerasable
@@ -159,7 +155,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
-	private Object	ident_or_symbol_or_type;
+	private Object ident_or_symbol_or_type;
 	
 	@AttrXMLDumpInfo(attr=true)
 	@abstract @nodeAttr public		String		name; // unresolved name
@@ -228,7 +224,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			return (String)id;
 		if (id instanceof Symbol) {
 			if (qualified)
-				return ((Symbol)id).qname;
+				return ((Symbol)id).qname();
 			return ((Symbol)id).sname;
 		}
 		if (id instanceof Type) {
@@ -260,7 +256,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@setter public final void set$name(String val) {
 		if (val != null) {
 			val = val.intern();
-			if (val.indexOf('\u001f') >= 0)
+			if (val.indexOf('·') >= 0)
 				qualified = true;
 		}
 		ident_or_symbol_or_type = val;
@@ -271,6 +267,20 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	public String toString() { return name; }
+
+	
+	public String makeSignature() {
+		Object id = this.ident_or_symbol_or_type;
+		if (id instanceof Type)
+			return ((Type)id).makeSignature();
+		if (id instanceof Symbol) {
+			Symbol sym = (Symbol)id;
+			if (sym.sname == null)
+				return '‣' + sym.getUUID();
+			return sym.qname() + '‣' + sym.getUUID();
+		}
+		return (String)id;
+	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "qualified")
@@ -304,7 +314,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	public static Symbol[] autoCompleteSymbol(ASTNode resolve_in, String str, AttrSlot for_slot, (DNode)->boolean check) {
 		if (str == null)
 			str = "";
-		int dot = str.indexOf('\u001f');
+		int dot = str.indexOf('·');
 		if (dot > 0) {
 			// check we start with a root package
 			String head = str.substring(0,dot).intern();
@@ -358,7 +368,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		if (!valid_scope)
 			return null;
-		int dot = tail.indexOf('\u001f');
+		int dot = tail.indexOf('·');
 	next_scope:
 		while (dot > 0) {
 			String head = tail.substring(0,dot).intern();
@@ -368,7 +378,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				dn = n;
 				break;
 			}
-			dot = tail.indexOf('\u001f');
+			dot = tail.indexOf('·');
 			if (dn instanceof GlobalDNodeContainer) {
 				scope = (GlobalDNodeContainer)dn;
 				valid_scope = false;
@@ -413,7 +423,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			//Kiev.reportAs(sever, this, "Empty reference name");
 			return;
 		}
-		int dot = name.indexOf('\u001f');
+		int dot = name.indexOf('·');
 		if (dot > 0) {
 			// check we start with a root package
 			String head = name.substring(0,dot).intern();
@@ -450,7 +460,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 
 	private void resolveSymbolFromRoot(SeverError sever, GlobalDNodeContainer scope, String tail, (DNode)->boolean check) {
-		int dot = tail.indexOf('\u001f');
+		int dot = tail.indexOf('·');
 		while (dot > 0) {
 			String head = tail.substring(0,dot).intern();
 			tail = tail.substring(dot+1);
@@ -459,7 +469,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				dn = n;
 				break;
 			}
-			dot = tail.indexOf('\u001f');
+			dot = tail.indexOf('·');
 			if (dn instanceof GlobalDNodeContainer) {
 				scope = (GlobalDNodeContainer)dn;
 				continue;

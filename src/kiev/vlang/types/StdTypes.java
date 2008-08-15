@@ -113,11 +113,11 @@ public interface StdTypes {
 		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, MetaType.flFloat);								tpFloat.meta_type.tdecl.setTypeDeclNotLoaded(true);
 		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, MetaType.flFloat   | MetaType.flDoubleSize);		tpDouble.meta_type.tdecl.setTypeDeclNotLoaded(true);
 
-		KievPackage java_lang            = env.newPackage("java\u001flang");
-		KievPackage java_lang_annotation = env.newPackage("java\u001flang\u001fannotation");
-		KievPackage java_util            = env.newPackage("java\u001futil");
-		KievPackage kiev_stdlib          = env.newPackage("kiev\u001fstdlib");
-		KievPackage kiev_stdlib_meta     = env.newPackage("kiev\u001fstdlib\u001fmeta");
+		KievPackage java_lang            = env.newPackage("java·lang");
+		KievPackage java_lang_annotation = env.newPackage("java·lang·annotation");
+		KievPackage java_util            = env.newPackage("java·util");
+		KievPackage kiev_stdlib          = env.newPackage("kiev·stdlib");
+		KievPackage kiev_stdlib_meta     = env.newPackage("kiev·stdlib·meta");
 
 		Struct tpObjectClazz = env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass());
 		tpObjectClazz.setTypeDeclNotLoaded(true);

@@ -20,14 +20,14 @@ import syntax kiev.Syntax;
 public class XPathME_PreGenerate extends BackendProcessor implements Constants {
 
 	private static final String PROP_BASE				= "symade.transf.xpath";
-	public static final String nmXPathUtils			= getPropS(PROP_BASE,"baseView","kiev\u001fvdom\u001fXPathUtils");
-	public static final String mnXPathExpr				= getPropS(PROP_BASE,"xpathExpr","kiev\u001fvdom\u001fXPathExpr");
-	public static final String mnXPathNSMap			= getPropS(PROP_BASE,"xpathNSMap","kiev\u001fvdom\u001fXPathNSMap");
-	public static final String nmQNameValue			= getPropS(PROP_BASE,"qnameValue","kiev\u001fvdom\u001fQNameValue");
-	public static final String nmNamespaceMap			= getPropS(PROP_BASE,"nsMap","kiev\u001fvdom\u001fNamespaceMap");
-	public static final String nmW3CDomNode			= getPropS(PROP_BASE,"w3cDomNode","org\u001fw3c\u001fdom\u001fNode");
-	public static final String nmW3CDomNodeList		= getPropS(PROP_BASE,"w3cDomNodeList","org\u001fw3c\u001fdom\u001fNodeList");
-	public static final String nmVDomNode				= getPropS(PROP_BASE,"vDomNode","kiev\u001fvdom\u001fADomNode");
+	public static final String nmXPathUtils			= getPropS(PROP_BASE,"baseView","kiev·vdom·XPathUtils");
+	public static final String mnXPathExpr				= getPropS(PROP_BASE,"xpathExpr","kiev·vdom·XPathExpr");
+	public static final String mnXPathNSMap			= getPropS(PROP_BASE,"xpathNSMap","kiev·vdom·XPathNSMap");
+	public static final String nmQNameValue			= getPropS(PROP_BASE,"qnameValue","kiev·vdom·QNameValue");
+	public static final String nmNamespaceMap			= getPropS(PROP_BASE,"nsMap","kiev·vdom·NamespaceMap");
+	public static final String nmW3CDomNode			= getPropS(PROP_BASE,"w3cDomNode","org·w3c·dom·Node");
+	public static final String nmW3CDomNodeList		= getPropS(PROP_BASE,"w3cDomNodeList","org·w3c·dom·NodeList");
+	public static final String nmVDomNode				= getPropS(PROP_BASE,"vDomNode","kiev·vdom·ADomNode");
 	
 	static Type tpXPathUtils;
 	static Type tpQNameValue;

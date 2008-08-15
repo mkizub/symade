@@ -142,7 +142,7 @@ public view JSNode of SNode extends JNode {
 public view JENode of ENode extends JNode {
 	
 	public:ro	String			ident;
-	public:ro	ISymbol			symbol;
+	public:ro	Symbol			symbol;
 	public:ro	DNode			dnode;
 
 	//

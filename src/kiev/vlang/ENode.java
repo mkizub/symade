@@ -32,7 +32,7 @@ public abstract class ENode extends ASTNode {
 	@nodeAttr @abstract public boolean			primary_expr; // a primary expression; i.e. in parenthethis
 	@AttrXMLDumpInfo(attr=true, name="super")
 	@nodeAttr @abstract public boolean			super_expr; // a super-expression; i.e. super.something
-	@nodeData @abstract public ISymbol			symbol;
+	@nodeData @abstract public Symbol			symbol;
 	@AttrXMLDumpInfo(attr=true, name="type")
 	@nodeData @abstract public Type			type_lnk;
 	@nodeData @abstract public:ro DNode		dnode;
@@ -43,10 +43,10 @@ public abstract class ENode extends ASTNode {
 			return null;
 		if (id instanceof String)
 			return (String)id;
-		if (id instanceof ISymbol) {
+		if (id instanceof Symbol) {
 			if (qualified)
-				return ((ISymbol)id).qname;
-			return ((ISymbol)id).sname;
+				return ((Symbol)id).qname();
+			return ((Symbol)id).sname;
 		}
 		if (id instanceof Type) {
 			if (qualified)
@@ -56,14 +56,14 @@ public abstract class ENode extends ASTNode {
 		return null;
 	}
 
-	@getter public final ISymbol get$symbol() {
+	@getter public final Symbol get$symbol() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
 			return null;
-		if (id instanceof ISymbol)
-			return (ISymbol)id;
+		if (id instanceof Symbol)
+			return (Symbol)id;
 		if (id instanceof Type)
-			return ((Type)id).meta_type.tdecl;
+			return ((Type)id).meta_type.tdecl.symbol;
 		return null;
 	}
 	
@@ -71,10 +71,8 @@ public abstract class ENode extends ASTNode {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
 			return null;
-		if (id instanceof DNode)
-			return (DNode)id;
-		if (id instanceof ISymbol)
-			return ((ISymbol)id).dnode;
+		if (id instanceof Symbol)
+			return ((Symbol)id).dnode;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
 		return null;
@@ -101,13 +99,13 @@ public abstract class ENode extends ASTNode {
 	@setter public final void set$ident(String val) {
 		if (val != null) {
 			val = val.intern();
-			if (val.indexOf('\u001f') >= 0)
+			if (val.indexOf('·') >= 0)
 				qualified = true;
 		}
 		ident_or_symbol_or_type = val;
 	}
 	
-	@setter public final void set$symbol(ISymbol val) {
+	@setter public final void set$symbol(Symbol val) {
 		//assert (!(this instanceof TypeRef) || (this instanceof TypeNameRef));
 		ident_or_symbol_or_type = val;
 	}

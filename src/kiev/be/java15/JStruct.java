@@ -39,7 +39,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public final KString bname() {
 		if (bytecode_name == null) {
 			if (isTypeDeclNotLoaded())
-				return KString.from(qname().replace('\u001f', '/'));
+				return KString.from(qname().replace('·', '/'));
 			throw new RuntimeException("Bytecode name is not generated for "+this);
 		}
 		return bytecode_name;

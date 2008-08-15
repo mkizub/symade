@@ -153,19 +153,16 @@ public abstract class kiev050 implements kiev050Constants {
 		return stx;
 	}
 
-	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers, boolean mkUUID) {
+	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		TypeAssign arg = new TypeAssign(name.sname);
 		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
-		if (uuid == null && mkUUID) {
-			String uuid = arg.UUID; // will auti-generate
-		}
 		return arg;
 	}
 
-	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers, boolean mkUUID) {
+	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
 		TypeConstr arg = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null) {
@@ -183,9 +180,6 @@ public abstract class kiev050 implements kiev050Constants {
 		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
-		if (uuid == null && mkUUID) {
-			String uuid = arg.UUID; // will auti-generate
-		}
 		return arg;
 	}
 
@@ -860,11 +854,11 @@ public abstract class kiev050 implements kiev050Constants {
       id = Name();
       jj_consume_token(ASSIGN);
       tr = Type();
-                  n = mkTypeAssign(id, modifiers,true); n.super_types += tr;
+                  n = mkTypeAssign(id, modifiers); n.super_types += tr;
     } else if (jj_2_6(3)) {
                   n = new TypeOpDef();
       id     = Name();
-                                          n.arg = mkTypeAssign(id, new ASTModifiers(),true);
+                                          n.arg = mkTypeAssign(id, new ASTModifiers());
       switch (jj_nt.kind) {
       case OPERATOR_ID:
       case LT:
@@ -901,7 +895,7 @@ public abstract class kiev050 implements kiev050Constants {
       case LPAREN:
         tr = Type();
         id = Name();
-                  n = mkTypeAssign(id, modifiers,true); n.super_types += tr;
+                  n = mkTypeAssign(id, modifiers); n.super_types += tr;
         break;
       default:
         jj_consume_token(-1);
@@ -1573,14 +1567,14 @@ public abstract class kiev050 implements kiev050Constants {
     switch (jj_nt.kind) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
-                          arg = mkTypeAssign(name,modifiers,true);
+                          arg = mkTypeAssign(name,modifiers);
       t = Type();
                                      arg.super_types += t;
       jj_consume_token(SEMICOLON);
       break;
     case OPERATOR_UPPER_BOUND:
     case OPERATOR_LOWER_BOUND:
-                          arg = mkTypeConstr(name,modifiers,true);
+                          arg = mkTypeConstr(name,modifiers);
       label_19:
       while (true) {
         switch (jj_nt.kind) {
@@ -1633,7 +1627,7 @@ public abstract class kiev050 implements kiev050Constants {
       ;
     }
     name      = Name();
-                arg = mkTypeConstr(name,modifiers,true); arg.setAbstract(true);
+                arg = mkTypeConstr(name,modifiers); arg.setAbstract(true);
                 if (variance != null)
                         arg.variance = variance;
     switch (jj_nt.kind) {
@@ -3153,7 +3147,7 @@ ENode MaybeSkipBlock(ASTNode target) :
       }
       jj_consume_token(DOT);
       id = NameRef();
-                                  res.ident = res.ident + '\u001f' + id.name; res.qualified = true;
+                                  res.ident = res.ident + '\u00b7' + id.name; res.qualified = true;
     }
           {if (true) return res;}
     throw new Error("Missing return statement in function");
@@ -3386,7 +3380,7 @@ ENode MaybeSkipBlock(ASTNode target) :
       }
       jj_consume_token(DOT);
       id2 = NameRef();
-                  id.name = id.name+'\u001f'+id2.name;
+                  id.name = id.name+'\u00b7'+id2.name;
     }
                 id.qualified = true;
                 {if (true) return id;}
@@ -5411,6 +5405,16 @@ ENode MaybeSkipBlock(ASTNode target) :
     catch(LookaheadSuccess ls) { return true; }
   }
 
+  final private boolean jj_3R_263() {
+    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_195() {
+    if (jj_scan_token(META_INTERFACE)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_189() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
@@ -6581,13 +6585,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_97() {
-    if (jj_scan_token(COMMA)) return true;
+  final private boolean jj_3_37() {
+    if (jj_3R_105()) return true;
     return false;
   }
 
-  final private boolean jj_3_37() {
-    if (jj_3R_105()) return true;
+  final private boolean jj_3R_97() {
+    if (jj_scan_token(COMMA)) return true;
     return false;
   }
 
@@ -7361,16 +7365,6 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_196() {
     if (jj_scan_token(ENUM)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_263() {
-    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_195() {
-    if (jj_scan_token(META_INTERFACE)) return true;
     return false;
   }
 

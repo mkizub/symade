@@ -20,7 +20,7 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;stdlib&#31;Syntax</name>
+     <name>kiev·stdlib·Syntax</name>
      <qualified>true</qualified>
     </a-node>
    </name>
@@ -31,7 +31,7 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;vdom</name>
+     <name>kiev·vdom</name>
      <qualified>true</qualified>
     </a-node>
    </name>
@@ -42,7 +42,7 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev&#31;vlang&#31;FileUnit</name>
+     <name>kiev·vlang·FileUnit</name>
      <qualified>true</qualified>
     </a-node>
    </name>

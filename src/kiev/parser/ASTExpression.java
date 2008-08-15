@@ -54,7 +54,7 @@ public class ASTExpression extends ENode {
 							continue;
 						DNode dn = info.resolvedDNode();
 						if (dn instanceof KievPackage) {
-							EToken res = new EToken(n2.pos, scope.qname()+'\u001f'+n2.ident, ETokenKind.SCOPE_DECL, true);
+							EToken res = new EToken(n2.pos, scope.qname()+'·'+n2.ident, ETokenKind.SCOPE_DECL, true);
 							res.value = dn;
 							n0.detach();
 							n1.detach();
@@ -65,7 +65,7 @@ public class ASTExpression extends ENode {
 							continue;
 						}
 						if (dn instanceof TypeDecl) {
-							TypeNameRef res = new TypeNameRef(scope.qname()+'\u001f'+n2.ident);
+							TypeNameRef res = new TypeNameRef(scope.qname()+'·'+n2.ident);
 							res.symbol = info.resolvedSymbol();
 							res.pos = n2.pos;
 							n0.detach();
@@ -460,7 +460,7 @@ public class ASTExpression extends ENode {
 					return null;
 				TypeRef ret;
 				if (tr instanceof TypeNameRef)
-					ret = new TypeNameRef(tr.ident+"\u001f"+id.ident);
+					ret = new TypeNameRef(tr.ident+"·"+id.ident);
 				else
 					ret = new TypeInnerNameRef(tr.ncopy(),id.ident);
 				ret.symbol = info.resolvedSymbol();

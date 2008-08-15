@@ -81,8 +81,8 @@ public abstract class LangBase implements Language {
 @singleton
 public final class CoreLang extends LangBase {
 	static {
-		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-java";
-		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-java";
+		defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
+		defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
 	}
 	public String getName() { "core" }
 	public Class[] getSuperLanguages() { superLanguages }
@@ -271,8 +271,8 @@ public final class CoreLang extends LangBase {
 @singleton
 public final class LogicLang extends LangBase {
 	static {
-		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-java";
-		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-java";
+		defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
+		defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
 	}
 	public String getName() { "logic" }
 	public Class[] getSuperLanguages() { superLanguages }
@@ -298,8 +298,8 @@ public final class LogicLang extends LangBase {
 @singleton
 public final class MacroLang extends LangBase {
 	static {
-		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-java";
-		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-java";
+		defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
+		defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
 	}
 	public String getName() { "macro" }
 	public Class[] getSuperLanguages() { superLanguages }

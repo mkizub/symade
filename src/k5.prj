@@ -136,7 +136,7 @@
            <core:FileUnit name='RVar.java' />
           </members>
          </sop:kiev.vlang.DirUnit>
-         <core:FileUnit name='RuleTemplates.xml' />
+         <core:FileUnit name='RuleTemplatesX.xml' />
         </members>
        </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='parser'>
@@ -226,7 +226,7 @@
          <core:FileUnit name='ProcessVirtFld.java' />
          <core:FileUnit name='ProcessVNode.java' />
          <core:FileUnit name='ProcessXPath.java' />
-         <core:FileUnit name='TemplatVNode.xml' />
+         <core:FileUnit name='TemplatVNodeX.xml' />
          <core:FileUnit name='TransfProcessor.java' />
          <core:FileUnit name='VerifyProcessor.java' />
         </members>

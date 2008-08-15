@@ -116,7 +116,7 @@ public static view RDNode of DNode extends RNode {
 public static view RENode of ENode extends RNode {
 
 	public		String			ident;
-	public		ISymbol			symbol;
+	public		Symbol			symbol;
 	public:ro	DNode			dnode;
 	
 	//

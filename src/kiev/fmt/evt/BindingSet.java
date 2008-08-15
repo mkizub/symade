@@ -45,7 +45,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 		String q_name = this.sname;
 		ANode p = parent();
 		if (p instanceof GlobalDNode && p != Env.getRoot())
-			q_name = (((GlobalDNode)p).qname()+"\u001f"+sname).intern();
+			q_name = (((GlobalDNode)p).qname()+"·"+sname).intern();
 		return q_name;
 	}
 
@@ -76,7 +76,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 	}
 	
 	public void fillCompiled(kiev.gui.event.BindingSet bs) {
-		bs.qname = qname().replace('\u001f', '.');
+		bs.qname = qname().replace('·', '.');
 		if (this.parent_set.dnode != null)
 			bs.parent_set = parent_set.dnode.getCompiled();
 		else if (parent() instanceof BindingSet)

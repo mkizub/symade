@@ -402,9 +402,9 @@ public abstract class AType extends TVSet implements StdTypes {
 		str.append(tdecl.qname());
 		String uuid = tdecl.uuid;
 		if (uuid == null && !tdecl.isInterfaceOnly())
-			uuid = tdecl.UUID;
+			uuid = tdecl.symbol.getUUID();
 		if (uuid != null)
-			str.append('@').append(uuid);
+			str.append('‣').append(uuid);
 		this.bindings();
 		if (this.binds.length == 0)
 			return str.toString();
@@ -438,7 +438,9 @@ public abstract class AType extends TVSet implements StdTypes {
 	private static Type fromSignature(StringTokenizer st, String[] sep, boolean full) {
 		String name = st.nextToken();
 		String uuid = null;
-		int p = name.indexOf('@');
+		int p = name.indexOf('‣');
+		if (p < 0)
+			p = name.indexOf('@');
 		if (p > 0) {
 			uuid = name.substring(p+1);
 			name = name.substring(0, p);
@@ -456,12 +458,12 @@ public abstract class AType extends TVSet implements StdTypes {
 		}
 		if (tdecl == null) {
 			// pre-load all top-level classes, to find an inner class
-			int p = name.indexOf('\u001f');
+			int p = name.indexOf('·');
 			while (p > 0) {
 				String pnm = name.substring(0,p);
 				if (Env.getRoot().existsTypeDecl(pnm))
 					Env.getRoot().loadAnyDecl(pnm);
-				p = name.indexOf('\u001f', p+1);
+				p = name.indexOf('·', p+1);
 			}
 			if (Env.getRoot().existsTypeDecl(name))
 				tdecl = Env.getRoot().loadTypeDecl(name,false);

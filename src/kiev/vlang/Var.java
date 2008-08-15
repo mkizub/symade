@@ -86,11 +86,11 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
               
 	public final MetaPacked getMetaPacked() {
-		return (MetaPacked)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacked");
+		return (MetaPacked)this.getMeta("kiev·stdlib·meta·packed");
 	}
 
 	public final MetaPacker getMetaPacker() {
-		return (MetaPacker)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacker");
+		return (MetaPacker)this.getMeta("kiev·stdlib·meta·packer");
 	}
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
@@ -151,7 +151,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 		if (p == null || p instanceof Env)
 			return sname;
 		if (p instanceof GlobalDNode)
-			return (((GlobalDNode)p).qname()+'\u001f'+sname);
+			return (((GlobalDNode)p).qname()+'·'+sname);
 		return sname;
 	}
 
@@ -230,7 +230,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
-		if (getMeta("kiev\u001fstdlib\u001fmeta\u001fextern") != null)
+		if (getMeta("kiev·stdlib·meta·extern") != null)
 			return null;
 		return super.doRewrite(ctx);
 	}

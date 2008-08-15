@@ -19,7 +19,6 @@ import javax.swing.JComboBox;
 
 import kiev.fmt.GfxDrawTermLayoutInfo;
 
-import kiev.fmt.DrawIdent;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.gui.Editor;
@@ -61,10 +60,8 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		editor.startItemEditor(this);
 		editor.getView_canvas().setCursor_offset(edit_offset);
 		String text = this.getText();
-		if (text != null) {
-			edit_offset = text.length();
-			editor.getView_canvas().setCursor_offset(edit_offset);
-		}
+		edit_offset = text.length();
+		editor.getView_canvas().setCursor_offset(edit_offset);
 		showAutoComplete(false);
 	}
 
@@ -80,30 +77,12 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 	}
 	void setText(String text) {
 		if (text != null && !text.equals(getText())) {
-			if (dr_term instanceof DrawIdent)
-				pattr.set(text.replace('.','\u001f'));
-			else
-				pattr.set(text);
+			pattr.set(text);
 			showAutoComplete(true);
 		}
 	}
-
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	
-	public void keyPressed(KeyEvent evt) {
-		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask == KeyEvent.CTRL_DOWN_MASK && code == KeyEvent.VK_SPACE) {
-			evt.consume();
-			showAutoComplete(true);
-			return;
-		}
-		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
-			return;
-		evt.consume();
+	void checkEditOffset() {
 		String text = this.getText();
-		if (text == null) { text = ""; }
 		if (edit_offset < 0) {
 			edit_offset = 0;
 			editor.getView_canvas().setCursor_offset(edit_offset);
@@ -112,8 +91,48 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			edit_offset = text.length();
 			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
+	}
+
+	public void keyTyped(KeyEvent evt) {
+		int ch = evt.getKeyChar();
+		if (ch == KeyEvent.CHAR_UNDEFINED)
+			return;
+		evt.consume();
+		checkEditOffset();
+		typeChar((char)ch);
+	}
+	private void typeChar(char ch) {
+		String text = this.getText();
+		text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+		edit_offset++;
+		this.setText(text);
+		editor.getView_canvas().setCursor_offset(edit_offset);
+		editor.formatAndPaint(true);
+	}
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {
+		int code = evt.getKeyCode();
+		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask == KeyEvent.CTRL_DOWN_MASK && code == KeyEvent.VK_SPACE) {
+			evt.consume();
+			showAutoComplete(true);
+			return;
+		}
+		if (code == KeyEvent.VK_PERIOD) {
+			evt.consume();
+			typeChar('·');
+			return;
+		}
+		if (mask != 0)
+			return;
+		checkEditOffset();
+		String text = this.getText();
 		switch (code) {
+		default:
+			return;
 		case KeyEvent.VK_DOWN:
+			evt.consume();
 			if (in_combo) {
 				int count = combo.getItemCount();
 				if (count == 0) {
@@ -134,6 +153,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			}
 			break;
 		case KeyEvent.VK_UP:
+			evt.consume();
 			if (in_combo) {
 				int count = combo.getItemCount();
 				if (count == 0) {
@@ -154,26 +174,32 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			}
 			break;
 		case KeyEvent.VK_HOME:
+			evt.consume();
 			edit_offset = 0;
 			break;
 		case KeyEvent.VK_END:
+			evt.consume();
 			edit_offset = text.length();
 			break;
 		case KeyEvent.VK_LEFT:
+			evt.consume();
 			if (edit_offset > 0)
 				edit_offset--;
 			break;
 		case KeyEvent.VK_RIGHT:
+			evt.consume();
 			if (edit_offset < text.length())
 				edit_offset++;
 			break;
 		case KeyEvent.VK_DELETE:
+			evt.consume();
 			if (edit_offset < text.length()) {
 				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
 				this.setText(text);
 			}
 			break;
 		case KeyEvent.VK_BACK_SPACE:
+			evt.consume();
 			if (edit_offset > 0) {
 				edit_offset--;
 				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
@@ -181,6 +207,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			}
 			break;
 		case KeyEvent.VK_ENTER:
+			evt.consume();
 			if (in_combo) {
 				in_combo = false;
 				text = (String)combo.getSelectedItem();
@@ -197,6 +224,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 				return;
 			}
 		case KeyEvent.VK_ESCAPE:
+			evt.consume();
 			if (in_combo) {
 				in_combo = false;
 				combo.setSelectedIndex(-1);
@@ -212,20 +240,11 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 					((Canvas)editor.getView_canvas()).remove(combo);
 				return;
 			}
-		default:
-			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
-				char ch = evt.getKeyChar();
-				if (ch == '.' && dr_term instanceof DrawIdent)
-					ch = '\u001f';
-				text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
-				edit_offset++;
-				this.setText(text);
-			}
 		}
 		editor.getView_canvas().setCursor_offset(edit_offset);
 		editor.formatAndPaint(true);
 	}
-
+	
 	public void addActionListener(ActionListener l) {}
 	public void removeActionListener(ActionListener l) {}
 	public Component getEditorComponent() { return null; }
@@ -246,7 +265,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 			if (!force)
 				return;
 		}
-		boolean qualified = name==null ? false : name.indexOf('\u001f') > 0;
+		boolean qualified = name==null ? false : name.indexOf('·') > 0;
 		Symbol[] decls = ((ASTNode)pattr.node).resolveAutoComplete(name==null?"":name,pattr.slot);
 		if (decls == null)
 			return;
@@ -270,8 +289,8 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		int h = info.getHeight();
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
-		for (Symbol dn: decls) {
-			combo.addItem(qualified ? dn.get$qname().replace('\u001f','.') : dn.get$sname());
+		for (Symbol sym: decls) {
+			combo.addItem(qualified ? sym.qname().replace('·','.') : sym.get$sname());
 			popup = true;
 		}
 		if (popup) {

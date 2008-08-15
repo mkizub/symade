@@ -87,7 +87,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		if (p == null || p instanceof Env)
 			return sname;
 		if (p instanceof GlobalDNode)
-			return (((GlobalDNode)p).qname()+'\u001f'+sname);
+			return (((GlobalDNode)p).qname()+'·'+sname);
 		return sname;
 	}
 
@@ -101,7 +101,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)getMeta("kiev\u001fstdlib\u001fmeta\u001fthrows");
+		return (MetaThrows)getMeta("kiev·stdlib·meta·throws");
 	}
 
 	// virtual static method
@@ -424,10 +424,10 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				expr.ident = this.sname;
 		}
 		if (expr.dnode != this)
-			expr.symbol = this;
+			expr.symbol = this.symbol;
 		if (!isMacro())
 			return;
-		UserMeta m = (UserMeta)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fCompilerNode");
+		UserMeta m = (UserMeta)this.getMeta("kiev·stdlib·meta·CompilerNode");
 		if (m == null)
 			return;
 		Class cls = ASTNodeMetaType.allNodes.get(m.getS("value"));
@@ -761,7 +761,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 
 		if (isMacro() && isNative() && body == null) {
-			String name = clazz.qname().replace('\u001f','.')+":"+sname;
+			String name = clazz.qname().replace('·','.')+":"+sname;
 			body = CoreExpr.makeInstance(pos,name);
 		}
 	}

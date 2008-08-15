@@ -299,7 +299,7 @@ public class Bytecoder implements JConstants {
 //								break;
 //							}
 //						}
-//						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
+//						if (anon || cn.package_name() != KString.from(cl.qname().replace('·','.'))) {
 //							inner[i] == null;
 //						} else {
 //							Struct inn = (Struct)this.jenv.loadDecl(cn);
@@ -502,7 +502,7 @@ public class Bytecoder implements JConstants {
 		KString sign = ann.getSignature(clazz);
 		assert (sign.byteAt(0) == 'L' && sign.byteAt(sign.len-1) == ';');
 		String nm = sign.toString();
-		nm = nm.substring(1,nm.length()-1).replace('/','\u001f');
+		nm = nm.substring(1,nm.length()-1).replace('/','·');
 		UserMeta um = new UserMeta(nm);
 		for (int i=0; i < ann.names.length; i++) {
 			String nm = ann.getName(i,clazz).toString();

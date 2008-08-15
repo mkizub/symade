@@ -20,8 +20,8 @@ import syntax kiev.Syntax;
 @singleton
 public final class SyntaxLang extends LangBase {
 	static {
-		defaultEditorSyntaxName = "stx-fmt\u001fsyntax-for-syntax";
-		defaultInfoSyntaxName = "stx-fmt\u001fsyntax-for-syntax";
+		defaultEditorSyntaxName = "stx-fmt·syntax-for-syntax";
+		defaultInfoSyntaxName = "stx-fmt·syntax-for-syntax";
 	}
 	public String getName() { "syntax" }
 	public Class[] getSuperLanguages() { superLanguages }

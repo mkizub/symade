@@ -144,22 +144,22 @@ public abstract class ANode implements INode {
 	
 	public static final class CopyContext {
 		public static final class SymbolInfo {
-			ISymbol sold; // old symbol
-			ISymbol snew; // new symbol, copied from sold
+			Symbol sold; // old symbol
+			Symbol snew; // new symbol, copied from sold
 			List<ASTNode> srefs; // new symbol ref, to be changed to point from sold to snew
-			SymbolInfo(ISymbol sold, ISymbol snew) {
+			SymbolInfo(Symbol sold, Symbol snew) {
 				this.sold = sold;
 				this.snew = snew;
 				this.srefs = List.newList<ASTNode>();
 			}
-			SymbolInfo(ISymbol sold, ASTNode sref) {
+			SymbolInfo(Symbol sold, ASTNode sref) {
 				this.sold = sold;
 				this.snew = null;
 				this.srefs = List.newList(sref);
 			}
 		};
 		private Vector<SymbolInfo> infos;
-		void addSymbol(ISymbol sold, ISymbol snew) {
+		void addSymbol(Symbol sold, Symbol snew) {
 			if (infos == null)
 				infos = new Vector<SymbolInfo>();
 			foreach (SymbolInfo si; infos; si.sold == sold) {
@@ -169,7 +169,7 @@ public abstract class ANode implements INode {
 			}
 			infos.append(new SymbolInfo(sold, snew));
 		}
-		void addSymbolRef(ASTNode sref, ISymbol sold) {
+		void addSymbolRef(ASTNode sref, Symbol sold) {
 			if (sold == null)
 				return;
 			if (infos == null)
@@ -200,12 +200,12 @@ public abstract class ANode implements INode {
 					else if (n instanceof TypeArgRef) {
 						TypeArgRef en = (TypeArgRef)n;
 						if (en.symbol == si.sold)
-							en.type_lnk = ((TypeDef)si.snew).getAType();
+							en.type_lnk = ((TypeDef)si.snew.dnode).getAType();
 					}
 					else if (n instanceof ENode) {
 						ENode en = (ENode)n;
 						if (en.symbol == si.sold)
-							en.symbol = si.snew;
+							en.symbol = si.snew.symbol;
 					}
 				}
 			}
@@ -837,8 +837,8 @@ public abstract class ANode implements INode {
 					node.ext_data = (Object[])Arrays.cloneToSize(node.ext_data,j);
 			}
 		}
-		if (this instanceof ISymbol)
-			in$context.addSymbol((ISymbol)this,(ISymbol)node);
+		if (this instanceof Symbol)
+			in$context.addSymbol((Symbol)this,(Symbol)node);
 		else if (this instanceof SymbolRef)
 			in$context.addSymbolRef((SymbolRef)node, ((SymbolRef)this).symbol);
 		else if (this instanceof ENode)

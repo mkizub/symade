@@ -94,8 +94,8 @@ class ClazzName implements Constants {
 		KString name;
 		if (outer instanceof KievPackage) {
 			if (outer.qname() != "") {
-				bytecode_name = KString.from(outer.qname().replace('\u001f','/')+delim+short_name);
-				name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
+				bytecode_name = KString.from(outer.qname().replace('·','/')+delim+short_name);
+				name = KString.from(outer.qname().replace('·','.')+"."+short_name);
 			} else {
 				bytecode_name = short_name;
 				name = short_name;
@@ -103,10 +103,10 @@ class ClazzName implements Constants {
 		} else {
 			outer = (ComplexTypeDecl)outer;
 			if (outer.bytecode_name == null)
-				bytecode_name = KString.from(outer.qname().replace('\u001f','/')+delim+short_name);
+				bytecode_name = KString.from(outer.qname().replace('·','/')+delim+short_name);
 			else
 				bytecode_name = KString.from(outer.bytecode_name+delim+short_name);
-			name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
+			name = KString.from(outer.qname().replace('·','.')+"."+short_name);
 		}
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
@@ -121,7 +121,7 @@ class ClazzName implements Constants {
 		while(sc.hasMoreChars()) {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
-				String tmp = str.substr(0,sc.pos-1).toString().replace('.','\u001f');
+				String tmp = str.substr(0,sc.pos-1).toString().replace('.','·');
 				byte b = (byte)(jenv.env.existsTypeDecl(tmp)?'.':'$');
 				sb.append_fast(b);
 			} else {

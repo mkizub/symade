@@ -81,7 +81,7 @@ final class Signature {
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
 		ClazzName cname = ClazzName.fromBytecodeName(jenv,sc.str.substr(pos,sc.pos-1));
-		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
+		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','·'));
 		return new CompaundType(cmt, null, null);
 	}
 
@@ -95,7 +95,7 @@ final class Signature {
 		if( ch == '[' ) return new ArrayType(getType(jenv,sc));
 
 		ClazzName cname = ClazzName.fromBytecodeName(jenv,sc.str.substr(sc.pos));
-		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
+		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','·'));
 		return new CompaundType(cmt, null, null);
 	}
 	
@@ -199,7 +199,7 @@ final class Signature {
 			ch = sc.nextChar();
 		} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
 		String cname = sc.str.substr(pos,sc.pos-1).toString();
-		CompaundMetaType cmt = new CompaundMetaType(cname.replace('/','\u001f'));
+		CompaundMetaType cmt = new CompaundMetaType(cname.replace('/','·'));
 		CompaundType ct;
 		if (ch == '<') {
 			cmt.tdecl.checkResolved();
@@ -244,7 +244,7 @@ final class Signature {
 				ch = sc.nextChar();
 			} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
 			cname = sc.str.substr(pos,sc.pos-1).toString();
-			cmt = new CompaundMetaType(outer.meta_type.qname() + '\u001f' + cname);
+			cmt = new CompaundMetaType(outer.meta_type.qname() + '·' + cname);
 			if (ch == '<') {
 				cmt.tdecl.checkResolved();
 				TVarBld vs = new TVarBld();

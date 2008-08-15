@@ -166,19 +166,16 @@ public abstract class kiev050 {
 		return stx;
 	}
 
-	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers, boolean mkUUID) {
+	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		TypeAssign arg = new TypeAssign(name.sname);
 		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
-		if (uuid == null && mkUUID) {
-			String uuid = arg.UUID; // will auti-generate
-		}
 		return arg;
 	}
 
-	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers, boolean mkUUID) {
+	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
 		TypeConstr arg = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null) {
@@ -196,9 +193,6 @@ public abstract class kiev050 {
 		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
-		if (uuid == null && mkUUID) {
-			String uuid = arg.UUID; // will auti-generate
-		}
 		return arg;
 	}
 
@@ -999,11 +993,11 @@ DNode Typedef(ASTModifiers modifiers) :
 		id = Name()
 		"="
 		tr = Type()
-		{ n = mkTypeAssign(id, modifiers,true); n.super_types += tr; }
+		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	|
 		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>)
 		{ n = new TypeOpDef(); }
-		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers(),true); }
+		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers()); }
 		(	et   = Operator()            { n.op = et.ident; }
 		|	t    = <OPERATOR_LRBRACKETS> { n.op = "[]"; }
 		|	t    = "..."                 { n.op = "..."; }
@@ -1012,7 +1006,7 @@ DNode Typedef(ASTModifiers modifiers) :
 	|
 		tr = Type()
 		id = Name()
-		{ n = mkTypeAssign(id, modifiers,true); n.super_types += tr; }
+		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	) ";"
 	{ return n; }
 }
@@ -1321,11 +1315,11 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 		name      = Name()
 		(
 			"="
-			{ arg = mkTypeAssign(name,modifiers,true); }
+			{ arg = mkTypeAssign(name,modifiers); }
 			t = Type() { arg.super_types += t; }
 			";"
 		|
-			{ arg = mkTypeConstr(name,modifiers,true); }
+			{ arg = mkTypeConstr(name,modifiers); }
 			(
 				<OPERATOR_UPPER_BOUND> t = Type() { arg.super_types.add(t);}
 			|	<OPERATOR_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
@@ -1356,7 +1350,7 @@ TypeConstr ArgumentDeclaration() :
 	)?
 	name      = Name()
 	{
-		arg = mkTypeConstr(name,modifiers,true); arg.setAbstract(true);
+		arg = mkTypeConstr(name,modifiers); arg.setAbstract(true);
 		if (variance != null)
 			arg.variance = variance;
 	}
@@ -2145,7 +2139,7 @@ TypeNameRef TypeQName() :
 	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
 	(	LOOKAHEAD("." <IDENTIFIER>)
 		"."
-		id = NameRef()  { res.ident = res.ident + '\u001f' + id.name; res.qualified = true; }
+		id = NameRef()  { res.ident = res.ident + '·' + id.name; res.qualified = true; }
 	)*
 	{ return res; }
 }
@@ -2274,7 +2268,7 @@ SymbolRef QName() :
 		LOOKAHEAD(2)
 		"."
 		id2 = NameRef()
-		{ id.name = id.name+'\u001f'+id2.name; }
+		{ id.name = id.name+'·'+id2.name; }
 	)*
 	{
 		id.qualified = true;

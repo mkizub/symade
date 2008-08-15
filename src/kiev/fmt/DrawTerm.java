@@ -357,8 +357,8 @@ public class DrawIdent extends DrawNodeTerm {
 		if (text == null)
 			return NULL_VALUE;
 		Draw_SyntaxIdentAttr si = (Draw_SyntaxIdentAttr)this.syntax;
-		if (text.indexOf('\u001f') >= 0) {
-			String[] idents = text.split("\u001f");
+		if (text.indexOf('·') >= 0) {
+			String[] idents = text.split("·");
 			StringBuffer sb = new StringBuffer(text.length());
 			foreach (String id; idents) {
 				if (sb.length() > 0)

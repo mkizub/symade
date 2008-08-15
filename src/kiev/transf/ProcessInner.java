@@ -71,7 +71,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 		if (func == null || !MetaAccess.accessedFromInner(ce,func))
 			return true;
 		Method m = func.makeAccessor();
-		ce.symbol = m;
+		ce.symbol = m.symbol;
 		if (!func.isStatic()) {
 			ce.args.insert(0, ~ce.obj);
 			ce.obj = new TypeRef(m.ctx_tdecl.xtype);
@@ -327,7 +327,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			// already top-level class, just make bytecode name
 			if (s.bytecode_name != null)
 				return;
-			String pkg_name = outer.qname().replace('\u001f','/');
+			String pkg_name = outer.qname().replace('·','/');
 			String bc_name = pkg_name + '/' + s.sname;
 			s.bytecode_name = KString.from(bc_name);
 			return;
