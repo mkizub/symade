@@ -92,8 +92,7 @@ public final class SyntaxLang extends LangBase {
 		SyntaxJavaAccessExpr.class,
 		SyntaxJavaAccess.class,
 		SyntaxJavaPackedField.class,
-		SyntaxJavaComment.class,
-		SyntaxJavaConstructorName.class,
+		SyntaxJavaComment.class
 	};
 }
 

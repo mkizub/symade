@@ -155,21 +155,6 @@ public class DrawJavaPackedField extends DrawTerm {
 }
 
 @ThisIsANode(copyable=false)
-public class DrawJavaConstructorName extends DrawTerm {
-
-	public DrawJavaConstructorName(ANode node, Draw_SyntaxJavaConstructorName syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
-	}
-
-	protected Object makeTermObj(Formatter fmt) {
-		TypeDecl tdecl = drnode.ctx_tdecl;
-		if (tdecl == null)
-			return "<constructor>";
-		return tdecl.sname;
-	}
-}
-
-@ThisIsANode(copyable=false)
 public final class JavaComment extends ANode {
 	@nodeData public String text;
 

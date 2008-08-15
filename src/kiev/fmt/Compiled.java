@@ -804,15 +804,6 @@ public class Draw_SyntaxJavaPackedField extends Draw_SyntaxElem {
 	}
 }
 
-public class Draw_SyntaxJavaConstructorName extends Draw_SyntaxElem {
-	public Draw_SyntaxJavaConstructorName(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
-
-	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaConstructorName(node, this, text_syntax);
-		return dr;
-	}
-}
-
 public class Draw_SyntaxJavaComment extends Draw_SyntaxElem {
 	public Draw_SyntaxJavaCommentTemplate	template;
 

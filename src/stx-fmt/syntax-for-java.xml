@@ -4112,6 +4112,22 @@
        </syntax:SyntaxSet>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-decl-ctor-symbol' uuid='cde6bfbc-a5c9-48e7-84d3-d81d2db7bfd4'>
+      <rnode>
+       <core:SymbolRef name='CtorSymbol' />
+      </rnode>
+      <elem>
+       <syntax:SyntaxIdentAttr>
+        <decl>
+         <core:SymbolRef name='ident-template' />
+        </decl>
+        <name>decl_sname</name>
+        <fmt>
+         <core:SymbolRef name='fmt-symbol-14' />
+        </fmt>
+       </syntax:SyntaxIdentAttr>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-decl-constructor'>
       <rnode>
        <core:SymbolRef name='Constructor' />
@@ -4168,37 +4184,9 @@
            </syntax:SyntaxElemRef>
           </empty>
          </syntax:SyntaxList>
-         <syntax:SyntaxJavaConstructorName>
-          <fmt>
-           <core:SymbolRef name='fmt-symbol-14' />
-          </fmt>
-          <funcs>
-           <syntax:SyntaxFunctions>
-            <funcs>
-             <syntax:SyntaxFunction>
-              <title>Add metadata</title>
-              <act>kiev.gui.FuncNewElemOfEmptyList</act>
-              <attr>meta.metas</attr>
-             </syntax:SyntaxFunction>
-             <syntax:SyntaxFunction>
-              <title>Add type decls</title>
-              <act>kiev.gui.FuncNewElemOfEmptyList</act>
-              <attr>targs</attr>
-             </syntax:SyntaxFunction>
-             <syntax:SyntaxFunction>
-              <title>Add condition</title>
-              <act>kiev.gui.FuncNewElemOfEmptyList</act>
-              <attr>conditions</attr>
-             </syntax:SyntaxFunction>
-             <syntax:SyntaxFunction>
-              <title>Add body</title>
-              <act>kiev.gui.FuncNewElemOfNull</act>
-              <attr>body</attr>
-             </syntax:SyntaxFunction>
-            </funcs>
-           </syntax:SyntaxFunctions>
-          </funcs>
-         </syntax:SyntaxJavaConstructorName>
+         <syntax:SyntaxSubAttr>
+          <name>symbol</name>
+         </syntax:SyntaxSubAttr>
          <syntax:SyntaxList>
           <element>
            <syntax:SyntaxNode>

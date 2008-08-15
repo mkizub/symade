@@ -105,6 +105,7 @@ public final class CoreLang extends LangBase {
 	ASTNode.class,
 		Symbol.class,
 			OpdefSymbol.class,
+			CtorSymbol.class,
 		SymbolRef.class,
 		DNode.class,	// declaration nodes
 			KievSyntax.class,

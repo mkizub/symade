@@ -101,14 +101,3 @@ public class SyntaxJavaComment extends SyntaxElem {
 	}
 }
 
-@ThisIsANode(lang=SyntaxLang)
-public class SyntaxJavaConstructorName extends SyntaxElem {
-	public SyntaxJavaConstructorName() {}
-
-	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
-		Draw_SyntaxJavaConstructorName dr_elem = new Draw_SyntaxJavaConstructorName(elem_decl);
-		fillCompiled(dr_elem);
-		return dr_elem;
-	}
-}
-

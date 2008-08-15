@@ -1676,7 +1676,6 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxJavaConstructorName' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxAutoParenth' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
@@ -1736,7 +1735,6 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxJavaConstructorName' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxAutoParenth' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
@@ -2936,7 +2934,6 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxJavaConstructorName' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxAutoParenth' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
@@ -4078,57 +4075,6 @@
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
-      </elem>
-     </syntax:SyntaxElemDecl>
-     <syntax:SyntaxElemDecl name='stx-def-java-ctor-name'>
-      <rnode>
-       <core:SymbolRef name='SyntaxJavaConstructorName' />
-      </rnode>
-      <elem>
-       <syntax:SyntaxFolder>
-        <folded_by_default>true</folded_by_default>
-        <folded>
-         <syntax:SyntaxToken>
-          <text>ctor-name</text>
-         </syntax:SyntaxToken>
-        </folded>
-        <unfolded>
-         <syntax:SyntaxSet>
-          <elements>
-           <syntax:SyntaxToken>
-            <text>&lt;ctor-name:</text>
-            <funcs>
-             <syntax:SyntaxFunctions>
-              <funcs>
-               <syntax:SyntaxFunction>
-                <title>Add functions</title>
-                <act>kiev.gui.FuncNewElemOfNull</act>
-                <attr>funcs</attr>
-               </syntax:SyntaxFunction>
-              </funcs>
-             </syntax:SyntaxFunctions>
-            </funcs>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxToken>
-            <text>fmt:</text>
-           </syntax:SyntaxToken>
-           <syntax:SyntaxSubAttr>
-            <name>fmt</name>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxSubAttr>
-            <name>funcs</name>
-            <empty>
-             <syntax:SyntaxSpace />
-            </empty>
-           </syntax:SyntaxSubAttr>
-           <syntax:SyntaxToken>
-            <text>></text>
-           </syntax:SyntaxToken>
-          </elements>
-          <nested_function_lookup>false</nested_function_lookup>
-         </syntax:SyntaxSet>
-        </unfolded>
-       </syntax:SyntaxFolder>
       </elem>
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-def-java-comment'>

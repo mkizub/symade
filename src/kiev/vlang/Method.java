@@ -906,6 +906,25 @@ public final class MethodSetter extends Method {
 	}
 }
 
+@ThisIsANode(lang=CoreLang)
+public final class CtorSymbol extends Symbol {
+	@abstract
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData
+	public:ro String	decl_sname;
+	
+	@getter String get$decl_sname() {
+		ANode p = parent();
+		AttrSlot pslot = pslot();
+		if (p instanceof Constructor && pslot.name == "symbol") {
+			p = p.parent();
+			if (p instanceof DNode)
+				return p.sname;
+		}
+		return "<constructor>";
+	}
+}
+
 @ThisIsANode(name="Ctor", lang=CoreLang)
 public final class Constructor extends Method {
 	
@@ -917,10 +936,13 @@ public final class Constructor extends Method {
 
 	@nodeAttr public ENode∅				addstats;
 
-	public Constructor() {}
+	public Constructor() {
+		this.symbol = new CtorSymbol();
+	}
 
 	public Constructor(int fl) {
 		super(null, new TypeRef(Type.tpVoid), fl);
+		this.symbol = new CtorSymbol();
 	}
 	
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
