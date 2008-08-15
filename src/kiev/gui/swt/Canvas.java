@@ -15,29 +15,6 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.MouseWheelEvent;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseWheelListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.TextLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ScrollBar;
-
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Drawable;
@@ -51,10 +28,30 @@ import kiev.gui.swing.AWTGraphics2D;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 
-public class Canvas extends Composite implements ICanvas, 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ScrollBar;
+
+public class Canvas implements ICanvas, 
 KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListener
 {
-	private static final long serialVersionUID = 4713633504436057499L;
 	static Color defaultTextColor;
 	static java.awt.Color autoGenTextColor;
 	static Color selectedNodeColor;
@@ -85,40 +82,39 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	private int               bg_drawed_x;
 	private int               bg_drawed_y;
 	private boolean           selected;
-
+	private org.eclipse.swt.widgets.Canvas control;
 	final Renderer renderer = new Renderer();
 
-	Listener paintListener = new Listener() {
-		public void handleEvent(Event e) {
+	private PaintListener paintListener = new PaintListener() {
+		public void paintControl(PaintEvent e) {
 			if (e.gc == null) return;
 			GC gc = e.gc;
-			Rectangle bounds = getClientArea();
-			if (bounds.width != imgWidth || bounds.height != imgHeight){
-				Rectangle imgBounds = new Rectangle(bounds.x, bounds.y, imgWidth, imgHeight);				
-				gc.setClipping(imgBounds);
-			}
+//			Rectangle bounds = control.getClientArea();
+//			if (bounds.width != imgWidth || bounds.height != imgHeight){
+//				Rectangle imgBounds = new Rectangle(bounds.x, bounds.y, imgWidth, imgHeight);				
+//				gc.setClipping(imgBounds);
+//			}
 			renderer.prepareRendering(gc);
-			renderOffscreen();
+			paint(renderer.getGraphics2D());
 			renderer.render(gc);
 		}
 	};
 
 	public Canvas(Composite parent, int style) {
-		super(parent, style);
 //		this.setFocusable(true);
-		defaultTextColor = getDisplay().getSystemColor(SWT.COLOR_BLACK);
+		control = new org.eclipse.swt.widgets.Canvas(parent, style);
+		defaultTextColor = control.getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		autoGenTextColor = java.awt.Color.GRAY;
-		selectedNodeColor = new Color(getDisplay(), 224,224,224);
-		defaultTextFont = new Font(getDisplay(), "Dialog", 12, SWT.NONE);
-		verticalScrollBar = getVerticalBar();
+		selectedNodeColor = new Color(control.getDisplay(), 224,224,224);
+		defaultTextFont = new Font(control.getDisplay(), "Dialog", 12, SWT.NONE);
+		verticalScrollBar = control.getVerticalBar();
 		verticalScrollBar.addSelectionListener(this);
 //		this.add(this.verticalScrollBar);
-		addMouseListener(this);
-		addMouseWheelListener(this);
-		addKeyListener(this);
+		control.addMouseListener(this);
+		control.addMouseWheelListener(this);
+		control.addKeyListener(this);
 		imgWidth = 100;
 		imgHeight = 100;
-		addListener(SWT.Paint, paintListener);
 	}
 
 	public void setUIView(IUIView uiv) {
@@ -187,7 +183,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 		int mask = evt.stateMask & (SWT.CTRL +SWT.DOWN|SWT.SHIFT +SWT.DOWN|SWT.ALT +SWT.DOWN);
 		if (mask == 0) {
 			if (!(code==SWT.SHIFT || code==SWT.ALT || code==SWT.ALT + SWT.PRINT_SCREEN || code==SWT.CONTROL || code==SWT.CAPS_LOCK))
-				getDisplay().beep();
+				control.getDisplay().beep();
 			return;
 		}
 	}
@@ -298,11 +294,10 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 		return image;
 	}
 
-	void renderOffscreen() {
-		Graphics2D g = renderer.getGraphics2D();
-		g.setClip(0, 0, getBounds().width, getBounds().height);
+	void paint(Graphics2D g) {
+		g.setClip(0, 0, control.getBounds().width, control.getBounds().height);
 		g.setColor(java.awt.Color.WHITE);
-		g.fillRect(0, 0, getBounds().width, getBounds().height);
+		g.fillRect(0, 0, control.getBounds().width, control.getBounds().height);
 		//g.clearRect(0, 0, getWidth(), getHeight());
 		if (dlb_root != null) {
 			lineno = 1;
@@ -402,7 +397,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 			g.translate(0, -y);
 			translated = true;
 		}
-		if (y + h - translated_y >= getBounds().height)
+		if (y + h - translated_y >= control.getBounds().height)
 			return;
 
 		last_visible = dtli;
@@ -555,13 +550,12 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	}
 
 	public void repaint() {
-		// TODO Auto-generated method stub
+		control.redraw();
 
 	}
 
 	public void requestFocus() {
-		// TODO Auto-generated method stub
-
+		control.setFocus();
 	}
 
 	public void mouseDoubleClick(MouseEvent e) {
@@ -586,8 +580,6 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 
 
 	public void widgetDefaultSelected(SelectionEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void widgetSelected(SelectionEvent e) {
@@ -596,13 +588,40 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	}
 
 	public IFmtGfx getFmtGraphics() {
-		// TODO Auto-generated method stub
 		return new AWTGraphics2D(renderer.getGraphics2D());
 	}
 
 	public void controlMoved(ControlEvent e) {
 		// TODO Auto-generated method stub
 
+	}
+
+	/**
+	 * @return the control
+	 */
+	public org.eclipse.swt.widgets.Canvas getControl() {
+		return control;
+	}
+
+	/**
+	 * @param control the control to set
+	 */
+	public void setControl(org.eclipse.swt.widgets.Canvas control) {
+		this.control = control;
+	}
+
+	/**
+	 * @return the paintListener
+	 */
+	public PaintListener getPaintListener() {
+		return paintListener;
+	}
+
+	/**
+	 * @param paintListener the paintListener to set
+	 */
+	public void setPaintListener(PaintListener paintListener) {
+		this.paintListener = paintListener;
 	}
 
 

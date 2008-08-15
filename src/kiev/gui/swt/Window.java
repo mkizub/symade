@@ -47,7 +47,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
@@ -103,10 +102,11 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		while (! shell.isDisposed()) {
 			if (! display.readAndDispatch()) display.sleep();
 		}
+		display.dispose();
+		System.exit(0);
 	}
 
 	public void createGUI(Composite parent) {
-		GridLayout gridLayout;
 		GridData gridData;
 		Display display = parent.getDisplay();
 
@@ -120,70 +120,57 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		displayArea.setLayout(new FillLayout());
 
 		split_right   = new SashForm(displayArea, SWT.HORIZONTAL);
-//	split_left.setResizeWeight(0.25);
-//	split_left.setOneTouchExpandable(true);
 		Composite right_page = new Composite(split_right, SWT.NONE);
 		right_page.setLayout(new FillLayout());
 		split_bottom = new SashForm(right_page, SWT.VERTICAL);
-//		split_bottom.setResizeWeight(0.75);
-//		split_bottom.setOneTouchExpandable(true);
+
 
 		explorers = new TabFolder(split_right, SWT.NONE);
 		editors   = new TabFolder(split_bottom, SWT.NONE);
 		infos     = new TabFolder(split_bottom, SWT.NONE);
 
+		split_right.setWeights(new int[]{1,1});
+		split_right.SASH_WIDTH = 5;
+		split_bottom.setWeights(new int[]{1,1});
+		split_bottom.SASH_WIDTH = 5;
+
 		TabItem item = new TabItem (explorers, SWT.NONE);
 		item.setText("Explorer");
-		Composite expl_page = new Composite(explorers, SWT.NONE);
-		item.setControl(expl_page);
-
-//		expl_tree   = new ANodeTree(expl_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-//				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);	
-//		expl_tree.addFocusListener(this);
+//		expl_tree   = new ANodeTree(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);					
+//		item.setControl(expl_tree.getControl());
+//		expl_tree.getControl().addFocusListener(this);
 
 		item = new TabItem (explorers, SWT.NONE);
 		item.setText("Project");
-		Composite proj_page = new Composite(explorers, SWT.NONE);
-		item.setControl(proj_page);
-
-		tree_canvas = new Canvas(proj_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);		
+		tree_canvas = new Canvas(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);// |
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
-		tree_canvas.setLayoutData(gridData);
-//		tree_canvas.addFocusListener(this);
+		tree_canvas.getControl().setLayoutData(gridData);
+		tree_canvas.getControl().addFocusListener(this);
+		item.setControl(tree_canvas.getControl());
+		tree_canvas.getControl().addPaintListener(tree_canvas.getPaintListener());
 
 		item = new TabItem (infos, SWT.NONE);
 		item.setText("Info");
-		Composite info_page = new Composite(infos, SWT.NONE);
-		item.setControl(info_page);
-
-		info_canvas = new Canvas(info_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);
+		info_canvas = new Canvas(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
-		info_canvas.setLayoutData(gridData);
-		info_canvas.setBackground(swtColorWhite);
-//		info_canvas.addFocusListener(this);
+		info_canvas.getControl().setLayoutData(gridData);
+		info_canvas.getControl().setBackground(swtColorWhite);
+		info_canvas.getControl().addFocusListener(this);
+		item.setControl(info_canvas.getControl());
 
 		item = new TabItem (infos, SWT.NONE);
 		item.setText("Clipboard");
-		Composite clip_page = new Composite(infos, SWT.NONE);
-		item.setControl(clip_page);
-
-		clip_canvas = new Canvas(clip_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);
+		clip_canvas = new Canvas(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
-		clip_canvas.setLayoutData(gridData);
-//		clip_canvas.addFocusListener(this);
+		clip_canvas.getControl().setLayoutData(gridData);
+		clip_canvas.getControl().addFocusListener(this);
+		item.setControl(clip_canvas.getControl());
 
 		item = new TabItem (infos, SWT.NONE);
 		item.setText("Inspector");
-		Composite prop_page = new Composite(infos, SWT.NONE);
-		item.setControl(prop_page);
-
-//		prop_table = new ANodeTable(prop_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-//				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);	
-//		prop_table.addFocusListener(this);
-
+//		prop_table = new ANodeTable(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);	
+//		prop_table.getControl().addFocusListener(this);
+//		item.setControl(prop_table.getControl());
 		
 		editor_views = new Editor[0];
 		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
@@ -431,9 +418,9 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		Canvas edit_canvas = new Canvas(edit_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
 				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);		
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
-		tree_canvas.setLayoutData(gridData);
+		tree_canvas.getControl().setLayoutData(gridData);
 
-		edit_canvas.addFocusListener(this);
+		edit_canvas.getControl().addFocusListener(this);
 		editors.setSelection(item);
 		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		editor_views = (Editor[])kiev.stdlib.Arrays.append(editor_views, editor_view);
@@ -450,7 +437,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		v.add(e);
 		continue;
 		}
-		((Canvas)e.getView_canvas()).getShell().close();
+		((Canvas)e.getView_canvas()).getControl().getShell().close();
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
 	}
