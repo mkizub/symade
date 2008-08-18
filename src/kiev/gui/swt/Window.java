@@ -13,7 +13,6 @@ package kiev.gui.swt;
 import java.util.ResourceBundle;
 
 import kiev.fmt.SyntaxManager;
-import kiev.gui.BgFormatter;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.EditActions;
 import kiev.gui.Editor;

@@ -13,6 +13,7 @@ package kiev.gui;
 import kiev.fmt.DrawTerm;
 import kiev.gui.event.BindingSet;
 import kiev.gui.event.EventActionMap;
+import kiev.gui.IBgFormatter;
 import kiev.vtree.ScalarPtr;
 
 public class UIManager {
@@ -31,6 +32,16 @@ public class UIManager {
 			return new kiev.gui.swing.Window();
 	}
 	
+	public static IBgFormatter getBgFormatter(UIView view) {
+		IBgFormatter f;
+		if (SWT) {
+			f = new kiev.gui.swt.BgFormatter(view);
+		} else {
+			f = new kiev.gui.swing.BgFormatter(view);
+		}
+		return f;
+	}
+
 	public static void attachEventBindings(BindingSet bs) {
 		kiev.gui.swing.Configuration.attachBindings(bs);
 	}

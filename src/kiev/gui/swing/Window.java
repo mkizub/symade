@@ -41,7 +41,6 @@ import kiev.gui.ProjectView;
 import kiev.gui.TableView;
 import kiev.gui.TreeView;
 import kiev.gui.UIActionViewContext;
-import kiev.gui.BgFormatter;
 import kiev.gui.UIView;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;

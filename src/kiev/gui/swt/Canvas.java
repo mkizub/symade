@@ -192,12 +192,16 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
 	public void mouseClicked(MouseEvent evt) {
-		boolean consume = ui_view.inputEvent(new InputEventInfo(evt));
-		if (consume) {
-//			evt.consume();
-			return;
-		}
+		final MouseEvent me = evt;
+		control.getDisplay().syncExec(
+				new Runnable() {
+					public void run(){
+						ui_view.inputEvent(new InputEventInfo(me));
+					}
+				});
+
 	}
+	
 
 	public void controlResized(ControlEvent e) {
 		this.ui_view.formatAndPaint(true);

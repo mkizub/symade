@@ -43,7 +43,7 @@ public abstract class UIView extends ANode implements IUIView, ElementChangeList
 	public boolean				show_hint_escapes;
 	
 	/** A background thread to format and paint */
-	public BgFormatter			bg_formatter;
+	public IBgFormatter			bg_formatter;
 
 	public UIView(IWindow window, IUIViewPeer peer, Draw_ATextSyntax syntax) {
 		this.parent_window = window;

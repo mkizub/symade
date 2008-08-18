@@ -8,9 +8,12 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui;
+package kiev.gui.swing;
 
-public class BgFormatter extends Thread {
+import kiev.gui.IBgFormatter;
+import kiev.gui.UIView;
+
+public class BgFormatter extends Thread implements IBgFormatter {
 	private boolean do_format;
 	private UIView view;
 	public BgFormatter(UIView view) {
