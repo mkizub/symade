@@ -789,7 +789,7 @@
      </syntax:SyntaxNodeTemplate>
      <syntax:PartialSyntaxElemDecl name='stx-syntax-members'>
       <elem>
-       <syntax:SyntaxListWrapper>
+       <syntax:SyntaxElemWrapper>
         <prefix>
          <syntax:SyntaxToken>
           <text>{</text>
@@ -803,7 +803,7 @@
           </fmt>
          </syntax:SyntaxToken>
         </sufix>
-        <list>
+        <element>
          <syntax:SyntaxList>
           <element>
            <syntax:SyntaxNode>
@@ -821,9 +821,8 @@
            <core:SymbolRef name='par-indent' />
           </par>
          </syntax:SyntaxList>
-        </list>
-        <name>members</name>
-       </syntax:SyntaxListWrapper>
+        </element>
+       </syntax:SyntaxElemWrapper>
       </elem>
      </syntax:PartialSyntaxElemDecl>
      <syntax:SyntaxExpectedTemplate name='stx-types-of-syntax'>
@@ -1680,7 +1679,7 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxCharAttr' />
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxListWrapper' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemWrapper' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
@@ -1739,7 +1738,7 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxCharAttr' />
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxListWrapper' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemWrapper' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
@@ -1795,7 +1794,7 @@
            <core:SymbolRef name='fmt-nl' />
           </fmt>
          </syntax:SyntaxSubAttr>
-         <syntax:SyntaxListWrapper>
+         <syntax:SyntaxElemWrapper>
           <prefix>
            <syntax:SyntaxToken>
             <text>attr_types: [</text>
@@ -1806,7 +1805,12 @@
             <text>]</text>
            </syntax:SyntaxToken>
           </sufix>
-          <list>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>[attr_types]</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+          <element>
            <syntax:SyntaxList>
             <element>
              <syntax:SyntaxNode>
@@ -1826,20 +1830,14 @@
              <core:SymbolRef name='par-indent-from_pos' />
             </par>
            </syntax:SyntaxList>
-          </list>
-          <name>attr_types</name>
-          <empty>
-           <syntax:SyntaxPlaceHolder>
-            <text>[attr_types]</text>
-           </syntax:SyntaxPlaceHolder>
-          </empty>
+          </element>
           <fmt>
            <core:SymbolRef name='fmt-nl' />
           </fmt>
           <par>
            <core:SymbolRef name='par-indent' />
           </par>
-         </syntax:SyntaxListWrapper>
+         </syntax:SyntaxElemWrapper>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
@@ -2583,13 +2581,14 @@
      </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='std-def-list-wrapper'>
       <rnode>
-       <core:SymbolRef name='SyntaxListWrapper' />
+       <core:SymbolRef name='SyntaxElemWrapper' />
       </rnode>
       <attr_types>
        <syntax:SyntaxExpectedAttr>
-        <attr_name>list</attr_name>
+        <attr_name>element</attr_name>
         <expected_types>
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
@@ -2616,12 +2615,6 @@
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
-        <attr_name>expected_types</attr_name>
-        <expected_types>
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
-        </expected_types>
-       </syntax:SyntaxExpectedAttr>
-       <syntax:SyntaxExpectedAttr>
         <attr_name>fmt</attr_name>
         <expected_types>
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
@@ -2631,12 +2624,6 @@
         <attr_name>funcs</attr_name>
         <expected_types>
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
-        </expected_types>
-       </syntax:SyntaxExpectedAttr>
-       <syntax:SyntaxExpectedAttr>
-        <attr_name>in_syntax</attr_name>
-        <expected_types>
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='TextSyntax' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
        <syntax:SyntaxExpectedAttr>
@@ -2656,7 +2643,7 @@
             <text>[</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
-            <name>list</name>
+            <name>element</name>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>]</text>
@@ -2669,10 +2656,10 @@
          <syntax:SyntaxSet>
           <elements>
            <syntax:SyntaxToken>
-            <text>&lt;list-wrapper:</text>
+            <text>&lt;wrapper:</text>
            </syntax:SyntaxToken>
            <syntax:SyntaxSubAttr>
-            <name>list</name>
+            <name>element</name>
            </syntax:SyntaxSubAttr>
            <syntax:SyntaxToken>
             <text>emp=</text>
@@ -2869,7 +2856,7 @@
            <syntax:SyntaxSubAttr>
             <name>par</name>
            </syntax:SyntaxSubAttr>
-           <syntax:SyntaxListWrapper>
+           <syntax:SyntaxElemWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>[</text>
@@ -2880,7 +2867,7 @@
               <text>]</text>
              </syntax:SyntaxToken>
             </sufix>
-            <list>
+            <element>
              <syntax:SyntaxList>
               <element>
                <syntax:SyntaxNode>
@@ -2903,12 +2890,11 @@
                <core:SymbolRef name='par-indent' />
               </par>
              </syntax:SyntaxList>
-            </list>
-            <name>expected_types</name>
+            </element>
             <par>
              <core:SymbolRef name='par-flow' />
             </par>
-           </syntax:SyntaxListWrapper>
+           </syntax:SyntaxElemWrapper>
            <syntax:SyntaxToken>
             <text>></text>
            </syntax:SyntaxToken>
@@ -2938,7 +2924,7 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxXmlStrAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxCharAttr' />
-         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxListWrapper' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemWrapper' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxList' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSet' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxNode' />
@@ -2973,7 +2959,7 @@
         <folded>
          <syntax:SyntaxSet>
           <elements>
-           <syntax:SyntaxListWrapper>
+           <syntax:SyntaxElemWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>{</text>
@@ -2984,7 +2970,7 @@
               <text>}</text>
              </syntax:SyntaxToken>
             </sufix>
-            <list>
+            <element>
              <syntax:SyntaxList>
               <element>
                <syntax:SyntaxNode>
@@ -2996,9 +2982,8 @@
                <core:SymbolRef name='par-flow' />
               </par>
              </syntax:SyntaxList>
-            </list>
-            <name>elements</name>
-           </syntax:SyntaxListWrapper>
+            </element>
+           </syntax:SyntaxElemWrapper>
           </elements>
           <nested_function_lookup>false</nested_function_lookup>
           <par>
@@ -3012,7 +2997,7 @@
            <syntax:SyntaxToken>
             <text>&lt;set:</text>
            </syntax:SyntaxToken>
-           <syntax:SyntaxListWrapper>
+           <syntax:SyntaxElemWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>{</text>
@@ -3023,7 +3008,7 @@
               <text>}</text>
              </syntax:SyntaxToken>
             </sufix>
-            <list>
+            <element>
              <syntax:SyntaxList>
               <element>
                <syntax:SyntaxNode>
@@ -3035,9 +3020,8 @@
                <core:SymbolRef name='par-flow' />
               </par>
              </syntax:SyntaxList>
-            </list>
-            <name>elements</name>
-           </syntax:SyntaxListWrapper>
+            </element>
+           </syntax:SyntaxElemWrapper>
            <syntax:SyntaxToken>
             <text>func_lookup:</text>
            </syntax:SyntaxToken>
@@ -3213,7 +3197,7 @@
         <folded>
          <syntax:SyntaxSet>
           <elements>
-           <syntax:SyntaxListWrapper>
+           <syntax:SyntaxElemWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>(</text>
@@ -3224,7 +3208,7 @@
               <text>)</text>
              </syntax:SyntaxToken>
             </sufix>
-            <list>
+            <element>
              <syntax:SyntaxList>
               <element>
                <syntax:SyntaxNode>
@@ -3243,9 +3227,8 @@
                </syntax:SyntaxToken>
               </empty>
              </syntax:SyntaxList>
-            </list>
-            <name>elements</name>
-           </syntax:SyntaxListWrapper>
+            </element>
+           </syntax:SyntaxElemWrapper>
            <syntax:SyntaxToken>
             <text>)</text>
            </syntax:SyntaxToken>
@@ -3262,7 +3245,7 @@
            <syntax:SyntaxSubAttr>
             <name>name</name>
            </syntax:SyntaxSubAttr>
-           <syntax:SyntaxListWrapper>
+           <syntax:SyntaxElemWrapper>
             <prefix>
              <syntax:SyntaxToken>
               <text>(</text>
@@ -3273,7 +3256,7 @@
               <text>)</text>
              </syntax:SyntaxToken>
             </sufix>
-            <list>
+            <element>
              <syntax:SyntaxList>
               <element>
                <syntax:SyntaxNode>
@@ -3292,9 +3275,8 @@
                </syntax:SyntaxToken>
               </empty>
              </syntax:SyntaxList>
-            </list>
-            <name>elements</name>
-           </syntax:SyntaxListWrapper>
+            </element>
+           </syntax:SyntaxElemWrapper>
            <syntax:SyntaxToken>
             <text>fmt:</text>
            </syntax:SyntaxToken>
@@ -3531,7 +3513,7 @@
          <syntax:SyntaxToken>
           <text>keywords:</text>
          </syntax:SyntaxToken>
-         <syntax:SyntaxListWrapper>
+         <syntax:SyntaxElemWrapper>
           <prefix>
            <syntax:SyntaxToken>
             <text>{</text>
@@ -3542,7 +3524,7 @@
             <text>}</text>
            </syntax:SyntaxToken>
           </sufix>
-          <list>
+          <element>
            <syntax:SyntaxList>
             <element>
              <syntax:SyntaxNode>
@@ -3556,12 +3538,11 @@
             </separator>
             <name>keywords</name>
            </syntax:SyntaxList>
-          </list>
-          <name>keywords</name>
+          </element>
           <par>
            <core:SymbolRef name='par-flow' />
           </par>
-         </syntax:SyntaxListWrapper>
+         </syntax:SyntaxElemWrapper>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
@@ -3600,7 +3581,7 @@
          <syntax:SyntaxStrAttr>
           <name>title</name>
          </syntax:SyntaxStrAttr>
-         <syntax:SyntaxListWrapper>
+         <syntax:SyntaxElemWrapper>
           <prefix>
            <syntax:SyntaxToken>
             <text>attr_types: [</text>
@@ -3611,7 +3592,12 @@
             <text>]</text>
            </syntax:SyntaxToken>
           </sufix>
-          <list>
+          <empty>
+           <syntax:SyntaxPlaceHolder>
+            <text>attr_types: []</text>
+           </syntax:SyntaxPlaceHolder>
+          </empty>
+          <element>
            <syntax:SyntaxList>
             <element>
              <syntax:SyntaxNode>
@@ -3631,14 +3617,8 @@
              <core:SymbolRef name='par-flow' />
             </par>
            </syntax:SyntaxList>
-          </list>
-          <name>expected_types</name>
-          <empty>
-           <syntax:SyntaxPlaceHolder>
-            <text>attr_types: []</text>
-           </syntax:SyntaxPlaceHolder>
-          </empty>
-         </syntax:SyntaxListWrapper>
+          </element>
+         </syntax:SyntaxElemWrapper>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
        </syntax:SyntaxSet>
@@ -4570,7 +4550,7 @@
        </syntax:SyntaxExpectedAttr>
       </attr_types>
       <elem>
-       <syntax:SyntaxListWrapper>
+       <syntax:SyntaxElemWrapper>
         <prefix>
          <syntax:SyntaxToken>
           <text>funcs: {</text>
@@ -4581,7 +4561,7 @@
           <text>}</text>
          </syntax:SyntaxToken>
         </sufix>
-        <list>
+        <element>
          <syntax:SyntaxList>
           <element>
            <syntax:SyntaxNode>
@@ -4593,12 +4573,11 @@
           </element>
           <name>funcs</name>
          </syntax:SyntaxList>
-        </list>
-        <name>funcs</name>
+        </element>
         <par>
          <core:SymbolRef name='par-flow' />
         </par>
-       </syntax:SyntaxListWrapper>
+       </syntax:SyntaxElemWrapper>
       </elem>
      </syntax:SyntaxElemDecl>
     </members>

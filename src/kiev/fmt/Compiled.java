@@ -580,19 +580,16 @@ public class Draw_SyntaxList extends Draw_SyntaxAttr {
 	}
 }
 
-public class Draw_SyntaxListWrapper extends Draw_SyntaxAttr {
+public class Draw_SyntaxElemWrapper extends Draw_SyntaxElem {
 	public Draw_SyntaxElem					prefix;
 	public Draw_SyntaxElem					sufix;
-	public Draw_SyntaxList					list;
+	public Draw_SyntaxElem					empty;
+	public Draw_SyntaxElem					element;
 
-	public Draw_SyntaxListWrapper(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
+	public Draw_SyntaxElemWrapper(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
-		if (in_syntax != null)
-			text_syntax = in_syntax;
-		if (list != null)
-			this.name = list.name;
-		Drawable dr = new DrawListWrapper(node, this, text_syntax);
+		Drawable dr = new DrawElemWrapper(node, this, text_syntax);
 		return dr;
 	}
 }

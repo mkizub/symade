@@ -43,7 +43,7 @@ public class Renderer {
 
 	public Graphics2D getGraphics2D() {
 		if (awtImage == null)
-			return null;
+			return (Graphics2D) new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB).getGraphics();
 		return (Graphics2D) awtImage.getGraphics();
 	}
 

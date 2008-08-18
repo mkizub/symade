@@ -18,7 +18,7 @@ public final class MouseEvent extends Event {
 	 */
 	private static final long serialVersionUID = 2906572108356310743L;
 	public int button;
-  public int count;
+	public int count;
 	public boolean withCtrl;
 	public boolean withAlt;
 	public boolean withShift;

@@ -97,6 +97,8 @@ public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
 		int ch = evt.getKeyChar();
 		if (ch == KeyEvent.CHAR_UNDEFINED)
 			return;
+		if (ch < 32)
+			return;
 		evt.consume();
 		checkEditOffset();
 		typeChar((char)ch);

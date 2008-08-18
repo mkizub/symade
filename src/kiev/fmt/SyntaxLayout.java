@@ -1045,37 +1045,29 @@ public class SyntaxList extends SyntaxAttr {
 }
 
 @ThisIsANode(lang=SyntaxLang)
-public class SyntaxListWrapper extends SyntaxAttr {
+public class SyntaxElemWrapper extends SyntaxElem {
 	@nodeAttr public SyntaxElem						prefix;
 	@nodeAttr public SyntaxElem						sufix;
-	@nodeAttr public SyntaxList						list;
+	@nodeAttr public SyntaxElem						empty;
+	@nodeAttr public SyntaxAttr						element;
 
-	public SyntaxListWrapper() {
-		this.list = new SyntaxList();
-	}
-
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "list" && data instanceof SyntaxList) {
-			this.name = ((SyntaxList)data).name;
-		}
-		super.callbackChildChanged(ct, attr, data);
-	}
+	public SyntaxElemWrapper() {}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
-		Draw_SyntaxListWrapper dr_elem = new Draw_SyntaxListWrapper(elem_decl);
+		Draw_SyntaxElemWrapper dr_elem = new Draw_SyntaxElemWrapper(elem_decl);
 		fillCompiled(dr_elem);
 		return dr_elem;
 	}
 
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
-		Draw_SyntaxListWrapper dr_elem = (Draw_SyntaxListWrapper)_dr_elem;
+		Draw_SyntaxElemWrapper dr_elem = (Draw_SyntaxElemWrapper)_dr_elem;
 		super.fillCompiled(dr_elem);
 		if (this.prefix != null)
 			dr_elem.prefix = this.prefix.getCompiled(dr_elem.elem_decl);
 		if (this.sufix != null)
 			dr_elem.sufix = this.sufix.getCompiled(dr_elem.elem_decl);
-		if (this.list != null)
-			dr_elem.list = (Draw_SyntaxList)this.list.getCompiled(dr_elem.elem_decl);
+		if (this.element != null)
+			dr_elem.element = this.element.getCompiled(dr_elem.elem_decl);
 	}
 
 }

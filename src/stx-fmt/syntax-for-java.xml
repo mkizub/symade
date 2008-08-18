@@ -1965,7 +1965,7 @@
      </syntax:PartialSyntaxElemDecl>
      <syntax:PartialSyntaxElemDecl name='stx-type-members'>
       <elem>
-       <syntax:SyntaxListWrapper>
+       <syntax:SyntaxElemWrapper>
         <prefix>
          <syntax:SyntaxElemRef>
           <decl>
@@ -1982,7 +1982,16 @@
           <text>}</text>
          </syntax:SyntaxElemRef>
         </sufix>
-        <list>
+        <empty>
+         <syntax:SyntaxToken>
+          <text>{}</text>
+          <kind>SEPARATOR</kind>
+          <fmt>
+           <core:SymbolRef name='fmt-type-block-start' />
+          </fmt>
+         </syntax:SyntaxToken>
+        </empty>
+        <element>
          <syntax:SyntaxList>
           <element>
            <syntax:SyntaxNode>
@@ -2006,18 +2015,8 @@
            <core:SymbolRef name='par-indented' />
           </par>
          </syntax:SyntaxList>
-        </list>
-        <name>members</name>
-        <empty>
-         <syntax:SyntaxToken>
-          <text>{}</text>
-          <kind>SEPARATOR</kind>
-          <fmt>
-           <core:SymbolRef name='fmt-type-block-start' />
-          </fmt>
-         </syntax:SyntaxToken>
-        </empty>
-       </syntax:SyntaxListWrapper>
+        </element>
+       </syntax:SyntaxElemWrapper>
       </elem>
      </syntax:PartialSyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-import'>
@@ -8308,30 +8307,27 @@
            <core:SymbolRef name='par-indented-but-block' />
           </par>
          </syntax:SyntaxSubAttr>
-         <syntax:SyntaxOptional>
-          <calculator>
-           <syntax:CalcOptionNotNull>
-            <name>elseSt</name>
-           </syntax:CalcOptionNotNull>
-          </calculator>
-          <opt_true>
+         <syntax:SyntaxElemWrapper>
+          <prefix>
            <syntax:SyntaxToken>
             <text>else</text>
             <fmt>
              <core:SymbolRef name='fmt-keyword-else' />
             </fmt>
            </syntax:SyntaxToken>
-          </opt_true>
-         </syntax:SyntaxOptional>
-         <syntax:SyntaxSubAttr>
-          <name>elseSt</name>
+          </prefix>
           <empty>
            <syntax:SyntaxSpace />
           </empty>
-          <par>
-           <core:SymbolRef name='par-if-else' />
-          </par>
-         </syntax:SyntaxSubAttr>
+          <element>
+           <syntax:SyntaxSubAttr>
+            <name>elseSt</name>
+            <par>
+             <core:SymbolRef name='par-if-else' />
+            </par>
+           </syntax:SyntaxSubAttr>
+          </element>
+         </syntax:SyntaxElemWrapper>
         </elements>
         <nested_function_lookup>false</nested_function_lookup>
         <par>

@@ -141,8 +141,16 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 		return null;
 	}
 
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
+	public void keyReleased(KeyEvent evt) {
+		KeyListener item_editor = (KeyListener)ui_view.getItem_editor();
+		if (item_editor != null)
+			item_editor.keyReleased(evt);
+	}
+	public void keyTyped(KeyEvent evt) {
+		KeyListener item_editor = (KeyListener)ui_view.getItem_editor();
+		if (item_editor != null)
+			item_editor.keyTyped(evt);
+	}
 	public void keyPressed(KeyEvent evt) {
 		KeyListener item_editor = (KeyListener)ui_view.getItem_editor();
 		if (item_editor != null) {
