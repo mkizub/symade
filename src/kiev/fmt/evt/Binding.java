@@ -15,7 +15,6 @@ public class Binding extends ENode {
 	public kiev.gui.event.Binding getCompiled() throws Exception {
 		kiev.gui.event.Binding bnd = new kiev.gui.event.Binding();
 		Event[] evt = new Event[events.length];
-		kiev.gui.event.Action act = new kiev.gui.event.Action();
 		for (int i=0; i<events.length; i++){
 			if (events[i] instanceof KeyboardEvent){
 				kiev.gui.event.KeyboardEvent ev = new kiev.gui.event.KeyboardEvent();
@@ -40,9 +39,8 @@ public class Binding extends ENode {
 				throw new Exception("Unsupported event binding"); 
 			}
 		}
-		act = action.dnode.getCompiled();
 		bnd.events = evt;
-		bnd.action = act;
+		bnd.action = action.dnode.getCompiled();
 		return bnd;
 	}
 }

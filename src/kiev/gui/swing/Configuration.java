@@ -34,7 +34,6 @@ import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
 import kiev.gui.ChooseItemEditor;
-import kiev.gui.event.InputEventInfo;
 
 public class Configuration {
 

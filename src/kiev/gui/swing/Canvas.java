@@ -40,7 +40,6 @@ import kiev.fmt.IFmtGfx;
 import kiev.gui.ICanvas;
 import kiev.gui.IUIView;
 import kiev.gui.UIView;
-import kiev.gui.event.InputEventInfo;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 

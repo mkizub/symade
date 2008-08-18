@@ -23,7 +23,7 @@ public final class EventActionMap {
 		naviMap = new Hashtable<InputEvent,UIActionFactory[]>();
 	}
 
-	public void add(InputEventInfo evt, UIActionFactory factory) {
+	public void add(InputEvent evt, UIActionFactory factory) {
 		if (evt == null || factory == null)
 			return;
 		UIActionFactory[] actions = naviMap.get(evt);

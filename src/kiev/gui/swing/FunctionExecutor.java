@@ -29,7 +29,6 @@ import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
-import kiev.gui.event.InputEventInfo;
 import kiev.vlang.ENode;
 import kiev.vtree.ANode;
 

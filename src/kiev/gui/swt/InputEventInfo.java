@@ -8,12 +8,11 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.event;
+package kiev.gui.swt;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.util.EventObject;
+import org.eclipse.swt.events.TypedEvent;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseEvent;
 
 public final class InputEventInfo implements kiev.gui.event.InputEvent {
 	
@@ -24,7 +23,7 @@ public final class InputEventInfo implements kiev.gui.event.InputEvent {
 	private final int         kind;
 	private final int         mask;
 	private final int         code;
-	private final EventObject evt;	// native event
+	private final TypedEvent  evt;	// native event
 	
 	/** Keyboard event, modifiers + key-code */
 	public InputEventInfo(int mask, int code) {
@@ -41,20 +40,20 @@ public final class InputEventInfo implements kiev.gui.event.InputEvent {
 		this.evt = null;
 	}
 	/** NativeEvent, keyboard or mouse */
-	public InputEventInfo(EventObject evt) {
+	public InputEventInfo(TypedEvent evt) {
 		this.evt = evt;
 		if (evt instanceof KeyEvent) {
 			KeyEvent k = (KeyEvent)evt;
 			this.kind = KEYBOARD_EVENT;
-			this.mask = k.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-			this.code = k.getKeyCode();
+			this.mask = k.stateMask;
+			this.code = k.keyCode;
 		}
 		else if (evt instanceof MouseEvent) {
 			MouseEvent m = (MouseEvent)evt;
 			this.kind = MOUSE_EVENT;
-			this.mask = m.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-			int buttons = m.getModifiers() & (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK);
-			this.code = (m.getClickCount() << 30) | buttons;
+			this.mask = m.stateMask;
+			int buttons = m.button;
+			this.code = (m.count << 30) | buttons;
 		}
 		else {
 			this.kind = UNKNOWN_EVENT;
@@ -73,19 +72,19 @@ public final class InputEventInfo implements kiev.gui.event.InputEvent {
 		return false;
 	}
 	
-	public EventObject getNativeEvent() {
+	public TypedEvent getNativeEvent() {
 		return this.evt;
 	}
 	
 	public String toString() {
-		String mod = InputEvent.getModifiersExText(mask);
+		String mod = Integer.toString(mask);
 		if (kind == KEYBOARD_EVENT) {
 			if (mod == null || mod.length() == 0)
-				return "keybr: "+KeyEvent.getKeyText(code);
-			return "keybr: "+mod+"+"+KeyEvent.getKeyText(code);
+				return "keybr: "+code;
+			return "keybr: "+mod+"+"+code;
 		}
 		else if (kind == MOUSE_EVENT) {
-			return "mouse: "+(code >> 30)+" "+MouseEvent.getMouseModifiersText(code);
+			return "mouse: "+(code >> 30)+" "+code;
 		}
 		else {
 			return "unknowns event:";
@@ -94,12 +93,12 @@ public final class InputEventInfo implements kiev.gui.event.InputEvent {
 
 	public int getX() {
 		if (this.evt instanceof MouseEvent)
-			return ((MouseEvent)this.evt).getX();
+			return ((MouseEvent)this.evt).x;
 		return -1;
 	}
 	public int getY() {
 		if (this.evt instanceof MouseEvent)
-			return ((MouseEvent)this.evt).getY();
+			return ((MouseEvent)this.evt).y;
 		return -1;
 	}
 

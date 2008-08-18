@@ -45,7 +45,6 @@ import kiev.fmt.IFmtGfx;
 import kiev.gui.INodeTree;
 import kiev.gui.IUIView;
 import kiev.gui.TreeView;
-import kiev.gui.event.InputEventInfo;
 
 
 public class ANodeTree extends JTree implements INodeTree, MouseListener {

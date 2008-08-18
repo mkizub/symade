@@ -23,7 +23,6 @@ import kiev.fmt.IFmtGfx;
 import kiev.gui.ICanvas;
 import kiev.gui.IUIView;
 import kiev.gui.UIView;
-import kiev.gui.event.InputEventInfo;
 import kiev.gui.swing.AWTGraphics2D;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
@@ -559,18 +558,13 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	}
 
 	public void mouseDoubleClick(MouseEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void mouseDown(MouseEvent e) {
-		// TODO Auto-generated method stub
-
+		ui_view.inputEvent(new InputEventInfo(e));
 	}
 
 	public void mouseUp(MouseEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void mouseScrolled(MouseEvent e) {

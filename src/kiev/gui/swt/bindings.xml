@@ -1,0 +1,136 @@
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<sop:dump version='1.0' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
+ <core:FileUnit>
+  <srpkg>
+   <core:SymbolRef name='kiev·gui·swt' full='true' />
+  </srpkg>
+  <members>
+   <sop:kiev.fmt.evt.BindingSet name='bindings-base'>
+    <members>
+     <sop:kiev.fmt.evt.Action name='Edit'>
+      <description>Edit current item</description>
+      <isForPopupMenu>false</isForPopupMenu>
+      <actionClass>kiev.gui.ChooseItemEditor</actionClass>
+     </sop:kiev.fmt.evt.Action>
+     <sop:kiev.fmt.evt.Action name='Select'>
+      <description>Select current item</description>
+      <isForPopupMenu>false</isForPopupMenu>
+      <actionClass>kiev.gui.MouseActions$Select</actionClass>
+     </sop:kiev.fmt.evt.Action>
+    </members>
+   </sop:kiev.fmt.evt.BindingSet>
+   <sop:kiev.fmt.evt.BindingSet name='bindings-editor'>
+    <parent_set>
+     <core:SymbolRef name='bindings-base' />
+    </parent_set>
+    <members>
+     <sop:kiev.fmt.evt.Binding>
+      <events>
+       <sop:kiev.fmt.evt.KeyboardEvent>
+        <keyCode>69</keyCode>
+        <withCtrl>true</withCtrl>
+        <withAlt>false</withAlt>
+        <withShift>false</withShift>
+        <text>Ctrl+E</text>
+       </sop:kiev.fmt.evt.KeyboardEvent>
+      </events>
+      <action>
+       <core:SymbolRef name='Edit' />
+      </action>
+     </sop:kiev.fmt.evt.Binding>
+     <sop:kiev.fmt.evt.Binding>
+      <events>
+       <sop:kiev.fmt.evt.MouseEvent>
+        <button>3</button>
+        <count>1</count>
+        <withCtrl>false</withCtrl>
+        <withAlt>false</withAlt>
+        <withShift>false</withShift>
+        <text>Button3 # 1</text>
+       </sop:kiev.fmt.evt.MouseEvent>
+      </events>
+      <action>
+       <core:SymbolRef name='Select' />
+      </action>
+     </sop:kiev.fmt.evt.Binding>
+    </members>
+   </sop:kiev.fmt.evt.BindingSet>
+   <sop:kiev.fmt.evt.BindingSet name='bindings-info'>
+    <parent_set>
+     <core:SymbolRef name='bindings-base' />
+    </parent_set>
+   </sop:kiev.fmt.evt.BindingSet>
+   <sop:kiev.fmt.evt.BindingSet name='bindings-project'>
+    <parent_set>
+     <core:SymbolRef name='bindings-base' />
+    </parent_set>
+    <members>
+     <sop:kiev.fmt.evt.Action name='Select' uuid='5c5a8ce7-ff3c-4cde-a29b-395ce10b9b72'>
+      <description>Select current item</description>
+      <isForPopupMenu>false</isForPopupMenu>
+      <actionClass>kiev.gui.MouseActions$Select</actionClass>
+     </sop:kiev.fmt.evt.Action>
+     <sop:kiev.fmt.evt.Action name='Toggle' uuid='1648f026-d64e-417d-9657-17544a464ed0'>
+      <description>Toggle open-close state</description>
+      <isForPopupMenu>true</isForPopupMenu>
+      <actionClass>kiev.gui.MouseActions$TreeToggle</actionClass>
+     </sop:kiev.fmt.evt.Action>
+     <sop:kiev.fmt.evt.Binding>
+      <events>
+       <sop:kiev.fmt.evt.MouseEvent>
+        <button>1</button>
+        <count>1</count>
+        <withCtrl>false</withCtrl>
+        <withAlt>false</withAlt>
+        <withShift>false</withShift>
+        <text>Button1 # 1</text>
+       </sop:kiev.fmt.evt.MouseEvent>
+      </events>
+      <action>
+       <core:SymbolRef name='Select' />
+      </action>
+     </sop:kiev.fmt.evt.Binding>
+     <sop:kiev.fmt.evt.Binding>
+      <events>
+       <sop:kiev.fmt.evt.MouseEvent>
+        <button>1</button>
+        <count>1</count>
+        <withCtrl>true</withCtrl>
+        <withAlt>false</withAlt>
+        <withShift>false</withShift>
+        <text>Ctrl+Button1 # 1</text>
+       </sop:kiev.fmt.evt.MouseEvent>
+       <sop:kiev.fmt.evt.MouseEvent>
+        <button>1</button>
+        <count>2</count>
+        <withCtrl>false</withCtrl>
+        <withAlt>false</withAlt>
+        <withShift>false</withShift>
+        <text>Button1 # 2</text>
+       </sop:kiev.fmt.evt.MouseEvent>
+      </events>
+      <action>
+       <core:SymbolRef name='Toggle' />
+      </action>
+     </sop:kiev.fmt.evt.Binding>
+    </members>
+   </sop:kiev.fmt.evt.BindingSet>
+   <sop:kiev.fmt.evt.BindingSet name='bindings-tree'>
+    <parent_set>
+     <core:SymbolRef name='bindings-base' />
+    </parent_set>
+   </sop:kiev.fmt.evt.BindingSet>
+  </members>
+ </core:FileUnit>
+</sop:dump>

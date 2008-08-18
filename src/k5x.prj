@@ -116,6 +116,11 @@
            <core:FileUnit name='bindings.xml' />
           </members>
          </sop:kiev.vlang.DirUnit>
+         <sop:kiev.vlang.DirUnit name='swt'>
+          <members>
+           <core:FileUnit name='bindings.xml' />
+          </members>
+         </sop:kiev.vlang.DirUnit>
         </members>
        </sop:kiev.vlang.DirUnit>
        <sop:kiev.vlang.DirUnit name='ir'>

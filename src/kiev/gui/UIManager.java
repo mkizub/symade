@@ -38,14 +38,23 @@ public class UIManager {
 		kiev.gui.swing.Configuration.resetBindings();
 	}
 	public static EventActionMap getUIActions(UIView uiv) {
-		if (uiv instanceof Editor)
-			return kiev.gui.swing.Configuration.getEditorActionMap();
-		if (uiv instanceof ProjectView)
-			return kiev.gui.swing.Configuration.getProjectViewActionMap();
-		if (uiv instanceof InfoView)
-			return kiev.gui.swing.Configuration.getInfoViewActionMap();
-		if (uiv instanceof TreeView)
-			return kiev.gui.swing.Configuration.getTreeViewActionMap();
+		if (SWT) {
+			if (uiv instanceof Editor)
+				return kiev.gui.swt.Configuration.getEditorActionMap();
+			if (uiv instanceof ProjectView)
+				return kiev.gui.swt.Configuration.getProjectViewActionMap();
+			if (uiv instanceof InfoView)
+				return kiev.gui.swt.Configuration.getInfoViewActionMap();
+		} else {
+			if (uiv instanceof Editor)
+				return kiev.gui.swing.Configuration.getEditorActionMap();
+			if (uiv instanceof ProjectView)
+				return kiev.gui.swing.Configuration.getProjectViewActionMap();
+			if (uiv instanceof InfoView)
+				return kiev.gui.swing.Configuration.getInfoViewActionMap();
+			if (uiv instanceof TreeView)
+				return kiev.gui.swing.Configuration.getTreeViewActionMap();
+		}
 		return new EventActionMap();
 	}
 	
