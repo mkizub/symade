@@ -1,4 +1,4 @@
-package kiev.gui.swing;
+package kiev.gui;
 
 import kiev.fmt.*;
 import kiev.gui.ActionPoint;
@@ -12,7 +12,7 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 	public NewElemHere(Editor editor) { super(editor); }
 
 	public void run() {
-		Drawable dr = getEditor().getCur_elem().dr;
+		Drawable dr = editor.getCur_elem().dr;
 		if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
 			ANode n = dr.drnode;
 			makeMenu("Set new item", n, (Draw_SyntaxPlaceHolder)dr.syntax, dr.text_syntax);
@@ -28,7 +28,7 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			makeMenu("Set new item", n, satt, dr.text_syntax);
 			return;
 		}
-		ActionPoint ap = getEditor().getActionPoint(false);
+		ActionPoint ap = editor.getActionPoint(false);
 		if (ap != null && ap.length >= 0) {
 			Draw_SyntaxElem se = ap.dr.syntax;
 			Draw_SyntaxList slst;
@@ -36,17 +36,13 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			//	slst = ((Draw_SyntaxElemWrapper)se).list;
 			//else
 				slst = (Draw_SyntaxList)ap.dr.syntax;
-			setIdx(ap.index);
+			idx = ap.index;
 			makeMenu("Insert new item", ap.node, slst, dr.text_syntax);
 			return;
 		}
 	}
 	
-	public static Factory newFactory(){
-		return new Factory();
-	}
-
-	final static class Factory implements UIActionFactory {
+	public final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Create a new element at this position"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {

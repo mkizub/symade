@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.vtree.ANode;
+public interface IPopupMenuPeer extends ISubMenuPeer {
 
-public interface IUIView {
-
-	public Draw_ATextSyntax getSyntax();
-	public void setSyntax(Draw_ATextSyntax syntax);
-	public void setRoot(ANode root);
-	public void formatAndPaint(boolean full);
-	public void formatAndPaintLater(ANode node);
-	public IUIViewPeer getViewPeer();
-
+	public void showAt(int x, int y);
+	public void remove();
+	
 }

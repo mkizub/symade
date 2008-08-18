@@ -69,38 +69,18 @@ public class UIManager {
 		return new EventActionMap();
 	}
 	
-	public static Runnable newEnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr){
-		return new kiev.gui.swing.EnumEditor(editor, cur_elem, pattr);
-	}
-	
 	public static Runnable newIntEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
 		return new kiev.gui.swing.IntEditor(editor, dr_term, pattr);
 	}
 
-	public static Runnable newOperatorEditor(Editor editor, DrawTerm cur_elem){
-		return new kiev.gui.swing.OperatorEditor(editor, cur_elem);
-	}
-	
 	public static Runnable newTextEditor(Editor editor, DrawTerm dr_term, ScalarPtr pattr){
 		return new kiev.gui.swing.TextEditor(editor, dr_term, pattr);
 	}
 	
-	public static UIActionFactory newExprEditActionsFlatten(){
-		return new kiev.gui.swing.ExprEditActions.Flatten();
-	}
-	
 	public static UIActionFactory newFunctionExecutorFactory(){
-		return kiev.gui.swing.FunctionExecutor.newFactory();
+		return new kiev.gui.FunctionExecutor.Factory();
 	}
 	
-	public static UIActionFactory newNewElemHereFactory(){
-		return kiev.gui.swing.NewElemHere.newFactory();
-	}
-	
-	public static UIActionFactory newNewElemNextFactory(){
-		return kiev.gui.swing.NewElemNext.newFactory();
-	}
-
 	public static UIActionFactory newPasteHereFactory(){
 		return kiev.gui.swing.Clipboard.newPasteHereFactory();
 	}
@@ -117,4 +97,7 @@ public class UIManager {
 		kiev.gui.swing.Configuration.doGUIBeep();
 	}
 
+	public static IPopupMenuPeer newPopupMenu(IUIView view, IPopupMenuListener listener) {
+		return new kiev.gui.swing.PopupMenu(view.getViewPeer(), listener);
+	}
 }

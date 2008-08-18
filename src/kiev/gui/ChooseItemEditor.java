@@ -48,7 +48,7 @@ public final class ChooseItemEditor implements UIActionFactory {
 			else if (obj instanceof ConstIntExpr)
 				return UIManager.newIntEditor(editor, dt, ((ConstIntExpr)obj).getScalarPtr("value"));
 			else if (obj instanceof Boolean || Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
-				return UIManager.newEnumEditor(editor, dt, pattr);
+				return new EnumEditor(editor, dt, pattr);
 		}
 		else if (dr instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr;
@@ -59,15 +59,15 @@ public final class ChooseItemEditor implements UIActionFactory {
 				if (dt == null)
 					dt = editor.getCur_elem().dr.getNextLeaf();
 			}
-			return UIManager.newEnumEditor(editor, dt, dec.drnode.getScalarPtr(stx.name));
+			return new EnumEditor(editor, dt, dec.drnode.getScalarPtr(stx.name));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			Draw_SyntaxEnumChoice stx = (Draw_SyntaxEnumChoice)dec.syntax;
-			return UIManager.newEnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getScalarPtr(stx.name));
+			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getScalarPtr(stx.name));
 		}
 		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((Draw_SyntaxToken)dr.syntax).kind == SyntaxTokenKind.OPERATOR) {
-			return UIManager.newOperatorEditor(editor, (DrawToken)dr);
+			return new OperatorEditor(editor, (DrawToken)dr);
 		}
 		return null;
 	}

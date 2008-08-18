@@ -27,9 +27,12 @@ import kiev.fmt.DrawFolded;
 import kiev.fmt.Drawable;
 import kiev.gui.EditActions;
 import kiev.gui.Editor;
+import kiev.gui.ExprEditActions;
 import kiev.gui.MouseActions;
 import kiev.gui.NavigateEditor;
 import kiev.gui.NavigateView;
+import kiev.gui.NewElemHere;
+import kiev.gui.NewElemNext;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
@@ -127,7 +130,7 @@ public class Configuration {
 		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
 		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.PopupContextMenu());
 
-		naviMap.add(new InputEventInfo(ALT,		KeyEvent.VK_X),				UIManager.newExprEditActionsFlatten());
+		naviMap.add(new InputEventInfo(ALT,		KeyEvent.VK_X),				new ExprEditActions.Flatten());
 
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_UP),			NavigateView.newLineUp());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_DOWN),			NavigateView.newLineDn());
@@ -151,20 +154,20 @@ public class Configuration {
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
 		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_O),				FolderTrigger.newFactory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_N),				UIManager.newNewElemHereFactory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_A),				UIManager.newNewElemNextFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_N),				new NewElemHere.Factory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_A),				new NewElemNext.Factory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_V),				UIManager.newPasteHereFactory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_B),				UIManager.newPasteNextFactory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new ChooseItemEditor());
 		
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.TextEditor.Factory());
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.IntEditor.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.EnumEditor.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.AccessEditor.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.EnumEditor.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.AccessEditor.Factory());
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.ChooseItemEditor());
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_O), new kiev.gui.swing.FolderTrigger.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_N), new kiev.gui.swing.NewElemHere.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_A), new kiev.gui.swing.NewElemNext.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_N), new kiev.gui.NewElemHere.Factory());
+		naviMap.add(new InputEventInfo(0,KeyEvent.VK_A), new kiev.gui.NewElemNext.Factory());
 
 		addBindings(naviMap, editorBindings);
 	

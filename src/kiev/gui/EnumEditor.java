@@ -8,18 +8,9 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.EnumSet;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.text.TextAction;
 
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
@@ -29,21 +20,19 @@ import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vtree.ScalarPtr;
 
-public class EnumEditor 
-	implements ItemEditor, PopupMenuListener, Runnable {
-	private final Editor		editor;
-	private final DrawTerm		cur_elem;
-	private final ScalarPtr		pattr;
-	private final JPopupMenu	menu;
+public class EnumEditor implements ItemEditor, IPopupMenuListener {
+	private final Editor			editor;
+	private final DrawTerm			cur_elem;
+	private final ScalarPtr			pattr;
+	private IPopupMenuPeer			menu;
 	
 	public EnumEditor(Editor editor, DrawTerm cur_elem, ScalarPtr pattr) {
 		this.editor = editor;
 		this.cur_elem = cur_elem;
 		this.pattr = pattr;
-		this.menu = new JPopupMenu();
 	}
 	
-	final static class Factory implements UIActionFactory {
+	public final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Edit the attribute as an enumerated value"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -63,50 +52,46 @@ public class EnumEditor
 	}
 
 	public void run() {
+		this.menu = UIManager.newPopupMenu(editor, this);
 		editor.startItemEditor(this);
 		if (pattr.slot.typeinfo.clazz == Boolean.class || pattr.slot.typeinfo.clazz == boolean.class) {
-			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
-			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
+			menu.addItem(new SetSyntaxAction(Boolean.FALSE));
+			menu.addItem(new SetSyntaxAction(Boolean.TRUE));
 		} else {
 			for (Object e: EnumSet.allOf(pattr.slot.typeinfo.clazz))
-				menu.add(new JMenuItem(new SetSyntaxAction(e)));
+				menu.addItem(new SetSyntaxAction(e));
 		}
 		GfxDrawTermLayoutInfo cur_dtli = cur_elem.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
 		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
-		menu.addPopupMenuListener(this);
-		menu.show((Component)editor.getView_canvas(), x, y);
+		menu.showAt(x, y);
 	}
 
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {}
-	
-	public void popupMenuCanceled(PopupMenuEvent e) {
-		((Canvas)editor.getView_canvas()).remove(menu);
+	public void popupMenuCanceled() {
+		menu.remove();
 		editor.stopItemEditor(true);
 	}
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+	public void popupMenuExecuted(IMenuItem item) {
+		SetSyntaxAction sa = (SetSyntaxAction)item;
+		menu.remove();
+		try {
+			pattr.set(sa.val);
+			sa = null;
+		} catch (Throwable t) {
+			t.printStackTrace();
+		} finally {
+			editor.stopItemEditor(sa != null);
+		}
+	}
 
-	class SetSyntaxAction extends TextAction {
-		private static final long serialVersionUID = -5941342241938414111L;
-		private Object val; // Enum or Boolean
+	class SetSyntaxAction implements IMenuItem {
+		final Object val; // Enum or Boolean
 		SetSyntaxAction(Object val) {
-			super(String.valueOf(val));
 			this.val = val;
 		}
-		public void actionPerformed(ActionEvent e) {
-			((Canvas)editor.getView_canvas()).remove(menu);
-			try {
-				pattr.set(val);
-			} catch (Throwable t) {
-				editor.stopItemEditor(true);
-				e = null;
-			}
-			if (e != null)
-				editor.stopItemEditor(false);
+		public String getText() {
+			return String.valueOf(val);
 		}
 	}
 }

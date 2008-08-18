@@ -8,33 +8,22 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.text.TextAction;
+package kiev.gui;
 
 import kiev.fmt.ATextSyntax;
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.SyntaxManager;
 import kiev.fmt.XmlDumpSyntax;
-import kiev.gui.Editor;
-import kiev.gui.InfoView;
-import kiev.gui.TreeView;
-import kiev.gui.UIActionFactory;
-import kiev.gui.UIActionViewContext;
-import kiev.gui.UIView;
 import kiev.vtree.ANode;
 import kiev.vtree.TreeWalker;
 
-public final class RenderActions implements Runnable {
+public final class RenderActions implements IPopupMenuListener, Runnable {
 	
 	final UIView ui;
 	final String action;
+	
+	private IPopupMenuPeer menu;
 	
 	RenderActions(UIView ui, String action) {
 		this.ui = ui;
@@ -45,27 +34,27 @@ public final class RenderActions implements Runnable {
 		UIView ui = this.ui;
 		if (action == "select-syntax") {
 			// build a menu of types to instantiate
-			JPopupMenu m = new JPopupMenu();
+			menu = UIManager.newPopupMenu(ui, this);
 			if (ui instanceof InfoView) {
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt·syntax-for-java", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt·syntax-for-java", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt·syntax-for-project-tree", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt·syntax-for-project-tree", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt·syntax-for-api", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt·syntax-for-vdom", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt·syntax-for-vdom", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events", "stx-fmt·syntax-for-evt", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Events (current)", "stx-fmt·syntax-for-evt", true)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt·syntax-for-syntax", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt·syntax-for-syntax", true)));
-				m.show((Component)((InfoView)ui).getView_canvas(), 0, 0);
+				menu.addItem(new SetSyntaxAction(ui,"Kiev Syntax", "stx-fmt·syntax-for-java", false));
+				menu.addItem(new SetSyntaxAction(ui,"Kiev Syntax (current)", "stx-fmt·syntax-for-java", true));
+				menu.addItem(new SetSyntaxAction(ui,"XML dump Syntax (full)", XmlDumpSyntax.class, "full"));
+				menu.addItem(new SetSyntaxAction(ui,"XML dump Syntax (api)", XmlDumpSyntax.class, "api"));
+				menu.addItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt·syntax-for-project-tree", false));
+				menu.addItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt·syntax-for-project-tree", true));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for API", "stx-fmt·syntax-for-api", false));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for VDOM", "stx-fmt·syntax-for-vdom", false));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for VDOM (current)", "stx-fmt·syntax-for-vdom", true));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for Events", "stx-fmt·syntax-for-evt", false));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for Events (current)", "stx-fmt·syntax-for-evt", true));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for Syntax", "stx-fmt·syntax-for-syntax", false));
+				menu.addItem(new SetSyntaxAction(ui,"Syntax for Syntax (current)", "stx-fmt·syntax-for-syntax", true));
+				menu.showAt(0, 0);
 			}
-			else if (ui instanceof TreeView) {
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt·syntax-for-project-tree", false)));
-				m.add(new JMenuItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt·syntax-for-project-tree", true)));
-				m.show((Component)((TreeView)ui).getView_tree(), 0, 0);
+			else if (ui instanceof ProjectView) {
+				menu.addItem(new SetSyntaxAction(ui,"Project Tree Syntax", "stx-fmt·syntax-for-project-tree", false));
+				menu.addItem(new SetSyntaxAction(ui,"Project Tree Syntax  (current)", "stx-fmt·syntax-for-project-tree", true));
+				menu.showAt(0, 0);
 			}
 		}
 		else if (action == "unfold-all") {
@@ -108,25 +97,44 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	static class SetSyntaxAction extends TextAction {
-		private static final long serialVersionUID = 1958269373146488263L;
+	public void popupMenuCanceled() {
+		menu.remove();
+		((Editor)ui).stopItemEditor(true);
+	}
+	public void popupMenuExecuted(IMenuItem item) {
+		SetSyntaxAction sa = (SetSyntaxAction)item;
+		menu.remove();
+		try {
+			sa.run();
+			sa = null;
+		} catch (Throwable t) {
+			t.printStackTrace();
+		} finally {
+			((Editor)ui).stopItemEditor(sa != null);
+		}
+	}
+	static class SetSyntaxAction implements IMenuItem {
+		private String text;
 		private UIView uiv;
 		private Class<? extends ATextSyntax> clazz;
 		private String qname;
 		private boolean in_project;
 		SetSyntaxAction(UIView uiv, String text, Class<? extends ATextSyntax> clazz, String name) {
-			super(text);
+			this.text = text;
 			this.uiv = uiv;
 			this.clazz = clazz;
 			this.qname = name;
 		}
 		SetSyntaxAction(UIView uiv, String text, String qname, boolean in_project) {
-			super(text);
+			this.text = text;
 			this.uiv = uiv;
 			this.qname = qname;
 			this.in_project = in_project;
 		}
-		public void actionPerformed(ActionEvent e) {
+		public String getText() {
+			return text;
+		}
+		public void run() {
 			if (clazz != null) {
 				ATextSyntax stx = null;
 				try {
@@ -179,7 +187,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 */
-	final static class SyntaxFileAs implements UIActionFactory {
+	public final static class SyntaxFileAs implements UIActionFactory {
 		public String getDescr() { return "Set the syntax of the curret view"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -187,7 +195,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	final static class OpenFoldedAll implements UIActionFactory {
+	public final static class OpenFoldedAll implements UIActionFactory {
 		public String getDescr() { return "Open (unfold) all folded elements"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -197,7 +205,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	final static class CloseFoldedAll implements UIActionFactory {
+	public final static class CloseFoldedAll implements UIActionFactory {
 		public String getDescr() { return "Close (fold) all foldable elements"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -207,7 +215,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	final static class ToggleShowAutoGenerated implements UIActionFactory {
+	public final static class ToggleShowAutoGenerated implements UIActionFactory {
 		public String getDescr() { return "Toggle show of auto-generated code"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -215,7 +223,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	final static class ToggleShowPlaceholders implements UIActionFactory {
+	public final static class ToggleShowPlaceholders implements UIActionFactory {
 		public String getDescr() { return "Toggle show of editor placeholders"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -223,7 +231,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	final static class ToggleHintEscaped implements UIActionFactory {
+	public final static class ToggleHintEscaped implements UIActionFactory {
 		public String getDescr() { return "Toggle idents and strings escaping"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -231,7 +239,7 @@ public final class RenderActions implements Runnable {
 		}
 	}
 
-	final static class Redraw implements UIActionFactory {
+	public final static class Redraw implements UIActionFactory {
 		public String getDescr() { return "Redraw the window"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {

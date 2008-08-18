@@ -8,30 +8,24 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JPopupMenu;
-import javax.swing.text.TextAction;
+package kiev.gui;
 
 import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.parser.ASTExpression;
 import kiev.parser.EToken;
 import kiev.parser.ETokenKind;
 
-public final class ExprEditActions 
-	implements ItemEditor, Runnable {
+public final class ExprEditActions implements ItemEditor {
 	
 	final Editor editor;
 	final UIActionViewContext context;
 	final String action;
 	
 	private ASTExpression		expr;
-	private JPopupMenu			menu;
+	private IPopupMenuPeer		menu;
 	
 	public ExprEditActions(UIActionViewContext context, String action) {
 		this.editor = context.editor;
@@ -79,18 +73,19 @@ public final class ExprEditActions
 //		}
 	}
 	
-	class SetKindAction extends TextAction {
-		private static final long serialVersionUID = 8225219266004726459L;
+	class SetKindAction implements IMenuItem {
 		private EToken et;
 		private ETokenKind kind;
 		SetKindAction(EToken et, ETokenKind kind) {
-			super(String.valueOf(kind));
 			this.et = et;
 			this.kind = kind;
 		}
-		public void actionPerformed(ActionEvent e) {
+		public String getText() {
+			return String.valueOf(kind);
+		}
+		public void run() {
 			if (menu != null)
-				((Canvas)editor.getView_canvas()).remove(menu);
+				menu.remove();
 			menu = null;
 			if (kind == ETokenKind.UNKNOWN) {
 				et.setKind(ETokenKind.UNKNOWN);
@@ -104,9 +99,9 @@ public final class ExprEditActions
 		}
 	}
   
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {
+//	public void keyReleased(KeyEvent evt) {}
+//	public void keyTyped(KeyEvent evt) {}
+//	public void keyPressed(KeyEvent evt) {
 //		int code = evt.getKeyCode();
 //		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 //		if (code == KeyEvent.VK_F && mask == KeyEvent.CTRL_DOWN_MASK) {
@@ -115,7 +110,7 @@ public final class ExprEditActions
 //			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n)
 //				return;
 //			EToken et = (EToken)n;
-//			menu = new JPopupMenu();
+//			menu = UIManager.newPopupMenu(editor, this);
 //			for (ETokenKind k: ETokenKind.class.getEnumConstants())
 //				menu.add(new SetKindAction(et, k));
 //			GfxDrawTermLayoutInfo dtli = dt.getGfxFmtInfo();
@@ -316,7 +311,7 @@ public final class ExprEditActions
 //		}
 //		editor.getView_canvas().setCursor_offset(edit_offset);
 //		editor.formatAndPaint(true);
-	}
+//	}
 	
 //	private void deleteNode(DrawTerm dt, EToken et, boolean by_backspace) {
 //		dt = (by_backspace ? dt.getPrevLeaf() : dt.getNextLeaf());

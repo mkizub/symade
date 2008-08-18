@@ -8,21 +8,14 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.Vector;
-
-import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.text.TextAction;
 
 import kiev.fmt.*;
 import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
+import kiev.gui.IPopupMenuPeer;
 import kiev.vtree.ANode;
 import kiev.vtree.ASTNode;
 import kiev.vtree.AttrSlot;
@@ -30,22 +23,28 @@ import kiev.vtree.ExtSpaceAttrSlot;
 import kiev.vtree.ScalarAttrSlot;
 import kiev.vtree.SpaceAttrSlot;
 
-public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
+public abstract class NewElemEditor implements ItemEditor, IPopupMenuListener {
 
 	static class Menu {
 		String			title;
 		Menu[]			menus;
-		TextAction[]	actions;
+		IMenuItem[]		actions;
 		Menu(String title) {
 			this.title = title;
 			this.menus = new Menu[0];
-			this.actions = new TextAction[0];
+			this.actions = new IMenuItem[0];
+		}
+		void append(Menu m) {
+			menus = (Menu[])kiev.stdlib.Arrays.append(menus, m);
+		}
+		void append(IMenuItem m) {
+			actions = (IMenuItem[])kiev.stdlib.Arrays.append(actions, m);
 		}
 	}
 	
-	private Editor editor;
-	private int idx;
-	JPopupMenu	menu;
+	final Editor	editor;
+	int				idx;
+	IPopupMenuPeer	menu;
 
 	public NewElemEditor(Editor editor) {
 		this.editor = editor;
@@ -59,46 +58,44 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 				String title = eti.title;
 				if (title == null)
 					title = eti.typeinfo.clazz.getName();
-				menu.actions = (TextAction[])kiev.stdlib.Arrays.append(menu.actions, new NewElemAction(title, eti.typeinfo, n, name, tstx));
+				menu.append(new NewElemAction(title, eti.typeinfo, n, name, tstx));
 			}
 			else if (eti.subtypes != null && eti.subtypes.length > 0) {
 				if (eti.title == null || eti.title.length() == 0) {
 					addItems(menu, eti.subtypes, n, name, tstx);
 				} else {
 					Menu sub_menu = new Menu(eti.title);
-					menu.menus = (Menu[])kiev.stdlib.Arrays.append(menu.menus, sub_menu);
+					menu.append(sub_menu);
 					addItems(sub_menu, eti.subtypes, n, name, tstx);
 				}
 			}
 		}
 	}
 	
-	private JMenu makeSubMenu(Menu m) {
-		JMenu jm = new JMenu(m.title);
+	private void makeSubMenu(ISubMenuPeer jm, Menu m) {
 		for (Menu sub: m.menus) {
 			while (sub.actions.length == 0 && sub.menus.length == 1)
 				sub = sub.menus[0];
 			if (sub.actions.length == 0 && sub.menus.length == 0)
 				continue;
-			jm.add(makeSubMenu(sub));
+			makeSubMenu(jm.newSubMenu(sub.title), sub);
 		}
-		for (TextAction a: m.actions)
-			jm.add(a);
-		return jm;
+		for (IMenuItem a: m.actions)
+			jm.addItem(a);
 	}
-	private JPopupMenu makePopupMenu(Menu m) {
+	private IPopupMenuPeer makePopupMenu(Menu m) {
 		while (m.actions.length == 0 && m.menus.length == 1)
 			m = m.menus[0];
-		JPopupMenu jp = new JPopupMenu(m.title);
+		IPopupMenuPeer jp = UIManager.newPopupMenu(editor, this); //m.title;
 		for (Menu sub: m.menus) {
 			while (sub.actions.length == 0 && sub.menus.length == 1)
 				sub = sub.menus[0];
 			if (sub.actions.length == 0 && sub.menus.length == 0)
 				continue;
-			jp.add(makeSubMenu(sub));
+			makeSubMenu(jp.newSubMenu(sub.title), sub);
 		}
-		for (TextAction a: m.actions)
-			jp.add(a);
+		for (IMenuItem a: m.actions)
+			jp.addItem(a);
 		return jp;
 	}
 
@@ -106,12 +103,11 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 		Menu m = new Menu(title);
 		addItems(m, satt.getExpectedTypes(), n, satt.name, tstx);
 		menu = makePopupMenu(m);
-		menu.addPopupMenuListener(this);
 		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
 		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
-		this.menu.show((Component)editor.getView_canvas(), x, y);
+		this.menu.showAt(x, y);
 		editor.startItemEditor(this);
 	}
 
@@ -119,64 +115,64 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 		Menu m = new Menu(title);
 		addItems(m, splh.getExpectedTypes(), n, splh.attr_name, tstx);
 		this.menu = makePopupMenu(m);
-		this.menu.addPopupMenuListener(this);
 		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
 		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
-		this.menu.show((Component)editor.getView_canvas(), x, y);
+		this.menu.showAt(x, y);
 		editor.startItemEditor(this);
 	}
 
 	private void makeTemplatesMenu(NewElemAction act, Vector<Draw_SyntaxNodeTemplate> templates) {
 		Menu m = new Menu("Choose template");
-		m.actions = (TextAction[])kiev.stdlib.Arrays.append(m.actions, new NewElemAction("Empty", act.typeinfo, act.node, act.attr, (ASTNode)null));
+		m.append(new NewElemAction("Empty", act.typeinfo, act.node, act.attr, (ASTNode)null));
 		for (Draw_SyntaxNodeTemplate templ : templates)
-			m.actions = (TextAction[])kiev.stdlib.Arrays.append(m.actions, new NewElemAction(templ.name, act.typeinfo, act.node, act.attr, templ.getTemplateNode()));
+			m.append(new NewElemAction(templ.name, act.typeinfo, act.node, act.attr, templ.getTemplateNode()));
 		this.menu = makePopupMenu(m);
-		this.menu.addPopupMenuListener(this);
 		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
 		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
-		this.menu.show((Component)editor.getView_canvas(), x, y);
+		this.menu.showAt(x, y);
 	}
 
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {}
-	public void popupMenuCanceled(PopupMenuEvent e) {
+	public void popupMenuCanceled() {
 		if (menu != null)
-			((Canvas)editor.getView_canvas()).remove(menu);
+			menu.remove();
 		editor.stopItemEditor(true);
 	}
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 
-	class NewElemAction extends TextAction {
-		private static final long serialVersionUID = -1977610069684717721L;
+	public void popupMenuExecuted(IMenuItem item) {
+		NewElemAction sa = (NewElemAction)item;
+		menu.remove();
+		sa.actionPerformed();
+	}
+
+	class NewElemAction implements IMenuItem {
+		private String					title;
 		private kiev.stdlib.TypeInfo	typeinfo;
 		private ANode					node;
 		private String					attr;
 		private Draw_ATextSyntax		tstx;
 		private ASTNode					template;
 		NewElemAction(String title, kiev.stdlib.TypeInfo typeinfo, ANode node, String attr, Draw_ATextSyntax tstx) {
-			super(title);
+			this.title = title;
 			this.typeinfo = typeinfo;
 			this.node = node;
 			this.attr = attr;
 			this.tstx = tstx;
 		}
 		NewElemAction(String title, kiev.stdlib.TypeInfo typeinfo, ANode node, String attr, ASTNode template) {
-			super(title);
+			this.title = title;
 			this.typeinfo = typeinfo;
 			this.node = node;
 			this.attr = attr;
 			this.template = template;
 		}
-		public void actionPerformed(ActionEvent e) {
-			if (menu != null)
-				((Canvas)editor.getView_canvas()).remove(menu);
+		public String getText() {
+			return title;
+		}
+		public void actionPerformed() {
 			for (AttrSlot a: node.values()) {
 				if (a.name == attr) {
 					makeNewInstance(a);
@@ -234,26 +230,5 @@ public abstract class NewElemEditor implements ItemEditor, PopupMenuListener {
 				editor.stopItemEditor(true);
 			}
 		}
-	}
-
-	/**
-	 * @return the editor
-	 */
-	public Editor getEditor() {
-		return editor;
-	}
-
-	/**
-	 * @return the idx
-	 */
-	public int getIdx() {
-		return idx;
-	}
-
-	/**
-	 * @param idx the idx to set
-	 */
-	public void setIdx(int idx) {
-		this.idx = idx;
 	}
 }

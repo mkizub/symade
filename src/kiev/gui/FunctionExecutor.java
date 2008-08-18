@@ -8,14 +8,7 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.text.TextAction;
+package kiev.gui;
 
 import kiev.fmt.Draw_ATextSyntax;
 import kiev.fmt.Draw_SyntaxAttr;
@@ -26,36 +19,33 @@ import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.ChooseItemEditor;
 import kiev.gui.Editor;
+import kiev.gui.NewElemHere;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
 import kiev.vlang.ENode;
 import kiev.vtree.ANode;
 
-public final class FunctionExecutor implements Runnable {
+public final class FunctionExecutor implements IPopupMenuListener, Runnable {
 
-	public JPopupMenu			menu;
-	final java.util.Vector<TextAction>	actions;
+	IPopupMenuPeer						menu;
+	final java.util.Vector<IMenuItem>	actions;
+	final Editor						editor;
 
-	private final Editor editor;
 	FunctionExecutor(Editor editor) {
 		this.editor = editor;
-		actions = new java.util.Vector<TextAction>();
+		actions = new java.util.Vector<IMenuItem>();
 	}
 	
 	public void run() {
-		menu = new JPopupMenu();
-		for (TextAction act: actions)
-			menu.add(new JMenuItem(act));
+		menu = UIManager.newPopupMenu(editor, this);
+		for (IMenuItem act: actions)
+			menu.addItem(act);
 		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.getHeight();
 		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
-		menu.show((Component)editor.getView_canvas(), x, y);
-	}
-
-	public static Factory newFactory(){
-		return new Factory();
+		menu.showAt(x, y);
 	}
 
 	final static class Factory implements UIActionFactory {
@@ -134,61 +124,72 @@ public final class FunctionExecutor implements Runnable {
 		}
 	}
 	
-	class NewElemAction extends TextAction {
-		private static final long serialVersionUID = -6884163900635124561L;
+	public void popupMenuCanceled() {
+		menu.remove();
+		editor.stopItemEditor(true);
+	}
+
+	public void popupMenuExecuted(IMenuItem item) {
+		Runnable act = (Runnable)item;
+		menu.remove();
+		try {
+			act.run();
+			act = null;
+		} catch (Throwable t) {
+			t.printStackTrace();
+		} finally {
+			editor.stopItemEditor(act != null);
+		}
+	}
+
+	class NewElemAction implements IMenuItem, Runnable {
 		private String				text;
 		private ANode				node;
 		private Draw_SyntaxAttr		stx;
 		private Draw_ATextSyntax	tstx;
 		NewElemAction(String text, ANode node, Draw_SyntaxAttr stx, Draw_ATextSyntax tstx) {
-			super(text);
 			this.text = text;
 			this.node = node;
 			this.stx = stx;
 			this.tstx = tstx;
 		}
-		public void actionPerformed(ActionEvent e) {
-			if (menu != null) {
-				((Canvas)editor.getView_canvas()).remove(menu);
-				menu = null;
-			}
+		public String getText() {
+			return text;
+		}
+		public void run() {
 			NewElemHere neh = new NewElemHere(editor);
 			neh.makeMenu(text, node, stx, tstx);
-			//neh.run();
 		}
 	}
 
-	class EditElemAction extends TextAction {
-		private static final long serialVersionUID = -2651552143135646233L;
-		private Drawable	dr;
+	class EditElemAction implements IMenuItem, Runnable {
+		private String				text;
+		private Drawable			dr;
 		EditElemAction(String text, Drawable dr) {
-			super(text);
+			this.text = text;
 			this.dr = dr;
 		}
-		public void actionPerformed(ActionEvent e) {
-			if (menu != null) {
-				((Canvas)editor.getView_canvas()).remove(menu);
-				menu = null;
-			}
-			InputEventInfo evt = new InputEventInfo(e);
-			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, evt, editor, dr));
+		public String getText() {
+			return text;
+		}
+		public void run() {
+			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
 			if (r != null)
 				r.run();
 		}
 	}
 
-	class RunFuncAction extends TextAction {
-		private static final long serialVersionUID = -1481340712427352335L;
-		private Runnable	r;
+	class RunFuncAction implements IMenuItem, Runnable {
+		private String				text;
+		private Runnable			r;
 		RunFuncAction(String text, Runnable r) {
-			super(text);
+			this.text = text;
 			this.r = r;
 		}
-		public void actionPerformed(ActionEvent e) {
-			if (menu != null) {
-				((Canvas)editor.getView_canvas()).remove(menu);
-				menu = null;
-			}
+		public String getText() {
+			return text;
+		}
+		public void run() {
 			r.run();
 		}
 	}

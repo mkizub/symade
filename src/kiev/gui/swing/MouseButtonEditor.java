@@ -13,6 +13,7 @@ package kiev.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -24,11 +25,11 @@ import javax.swing.border.BevelBorder;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 
-public class MouseButtonEditor 
-	implements ItemEditor, MouseListener, Runnable {
+public class MouseButtonEditor implements ItemEditor, MouseListener, KeyListener {
 	private final Editor		editor;
 	private final DrawTerm		cur_elem;
 	private final kiev.fmt.evt.MouseEvent	node;

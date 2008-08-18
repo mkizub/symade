@@ -1,4 +1,4 @@
-package kiev.gui.swing;
+package kiev.gui;
 
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.fmt.Draw_SyntaxElem;
@@ -12,11 +12,9 @@ import kiev.gui.UIActionViewContext;
 
 public final class NewElemNext extends NewElemEditor implements Runnable {
 	NewElemNext(Editor editor) { super(editor); }
-	public static Factory newFactory(){
-		return new Factory();
-	}
+
 	public void run() {
-		ActionPoint ap = getEditor().getActionPoint(true);
+		ActionPoint ap = editor.getActionPoint(true);
 		if (ap != null && ap.length >= 0) {
 			Draw_SyntaxElem se = ap.dr.syntax;
 			Draw_SyntaxList slst;
@@ -24,12 +22,12 @@ public final class NewElemNext extends NewElemEditor implements Runnable {
 			//	slst = ((Draw_SyntaxElemWrapper)se).list;
 			//else
 				slst = (Draw_SyntaxList)ap.dr.syntax;
-			setIdx(ap.index);
+			idx = ap.index;
 			makeMenu("Append new item", ap.node, slst, ap.dr.text_syntax);
 			return;
 		}
 	}
-	final static class Factory implements UIActionFactory {
+	public final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Create a new element at next position"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {

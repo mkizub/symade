@@ -12,6 +12,7 @@ package kiev.gui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -22,11 +23,11 @@ import kiev.fmt.DrawTerm;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.evt.KeyboardEvent;
 import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 
-public class KeyCodeEditor 
-	implements ItemEditor, Runnable {
+public class KeyCodeEditor implements ItemEditor, KeyListener {
 	private final Editor		editor;
 	private final DrawTerm		cur_elem;
 	private final KeyboardEvent	node;

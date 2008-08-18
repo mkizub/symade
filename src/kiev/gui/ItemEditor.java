@@ -8,10 +8,8 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.gui.swing;
+package kiev.gui;
 
-import java.awt.event.KeyListener;
-
-public interface ItemEditor extends KeyListener, Runnable {
+public interface ItemEditor extends Runnable {
 
 }

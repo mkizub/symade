@@ -22,13 +22,14 @@ import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.DrawTerm;
 import kiev.fmt.Draw_SyntaxAttr;
 import kiev.gui.Editor;
+import kiev.gui.ItemEditor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.vlang.Symbol;
 import kiev.vtree.ASTNode;
 import kiev.vtree.ScalarPtr;
 
-public class TextEditor implements ItemEditor, ComboBoxEditor, Runnable {
+public class TextEditor implements ItemEditor, ComboBoxEditor {
 	
 	protected final Editor		editor;
 	protected final DrawTerm	dr_term;

@@ -37,7 +37,10 @@ import kiev.gui.Editor;
 import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
+import kiev.gui.NewElemHere;
+import kiev.gui.NewElemNext;
 import kiev.gui.ProjectView;
+import kiev.gui.RenderActions;
 import kiev.gui.TableView;
 import kiev.gui.TreeView;
 import kiev.gui.UIActionViewContext;
@@ -128,11 +131,11 @@ public class Window extends JFrame
 
 			menu.add(new JSeparator());
 
-			mi = new UIActionMenuItem((IWindow)this, "New Element Here", KeyEvent.VK_H, NewElemHere.newFactory());
+			mi = new UIActionMenuItem((IWindow)this, "New Element Here", KeyEvent.VK_H, new NewElemHere.Factory());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem((IWindow)this, "New Element Next", KeyEvent.VK_N,  NewElemNext.newFactory());
+			mi = new UIActionMenuItem((IWindow)this, "New Element Next", KeyEvent.VK_N, new NewElemNext.Factory());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
