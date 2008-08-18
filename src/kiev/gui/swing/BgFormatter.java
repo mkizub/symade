@@ -21,6 +21,7 @@ public class BgFormatter extends Thread implements IBgFormatter {
 		this.setDaemon(true);
 		this.setPriority(Thread.NORM_PRIORITY - 1);
 	}
+	@Override
 	public void run() {
 		for (;;) {
 			while (!do_format) {

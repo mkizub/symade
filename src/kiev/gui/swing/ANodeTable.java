@@ -185,6 +185,7 @@ final class ANodeTableModel extends DefaultTableModel {
 class DrawableTableCellRenderer extends DefaultTableCellRenderer {
 	private static final long serialVersionUID = -2246801602064539807L;
 
+	@Override
 	public Component getTableCellRendererComponent(
 			JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col)
 	{

@@ -57,17 +57,20 @@ public class Editor extends InfoView implements ElementChangeListener {
 		cur_elem = new CurElem();
 	}
 	
+	@Override
 	public void setRoot(ANode root) {
 		super.setRoot(root);
 		cur_elem.set(view_root.getFirstLeaf());
 		
 	}
 	
+	@Override
 	public void setSyntax(Draw_ATextSyntax syntax) {
 		super.setSyntax(syntax);
 		cur_elem.restore();
 	}
 
+	@Override
 	public void formatAndPaint(boolean full) {
 		if (cur_elem == null)
 			return;
@@ -117,6 +120,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 		return null;
 	}
 
+	@Override
 	public boolean inputEvent(InputEvent evt) {
 		UIActionFactory[] actions = UIManager.getUIActions(this).get(evt);
 		if (actions == null)
@@ -176,6 +180,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 		}
 		return dr;
 	}
+	
 	private Drawable checkFunctionTarget(String attr, Drawable dr) {
 		if (dr == null)
 			return null;
@@ -401,6 +406,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 	/**
 	 * @return the item_editor
 	 */
+	@Override
 	public Runnable getItem_editor() {
 		return item_editor;
 	}

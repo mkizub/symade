@@ -47,8 +47,10 @@ public class Renderer {
 		return (Graphics2D) awtImage.getGraphics();
 	}
 	public void render(GC gc) {
-		if (awtImage == null)
+		if (awtImage == null){
+			System.out.println("Image is null?");
 			return;
+		}
 
 		org.eclipse.swt.graphics.Rectangle clip = gc.getClipping();
 		transferPixels(clip.x, clip.y, clip.width, clip.height);
@@ -57,8 +59,10 @@ public class Renderer {
 	}
 
 	public void render(org.eclipse.draw2d.Graphics graphics) {
-		if (awtImage == null)
+		if (awtImage == null){
+			System.out.println("Image is null?");
 			return;
+		}
 
 		org.eclipse.draw2d.geometry.Rectangle clip = graphics
 		.getClip(new org.eclipse.draw2d.geometry.Rectangle());

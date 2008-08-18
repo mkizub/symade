@@ -25,6 +25,7 @@ public class TreeView extends UIView {
 		this.setRoot(null);
 	}
 
+	@Override
 	public void setRoot(ANode root) {
 		this.the_root = root;
 		this.the_tree.setRoot();

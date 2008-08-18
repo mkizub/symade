@@ -27,6 +27,7 @@ public class InfoView extends UIView {
 		this.formatter = new GfxFormatter(view_canvas.getFmtGraphics());
 	}
 
+	@Override
 	public void setRoot(ANode root) {
 		the_root = root;
 		view_root = null;

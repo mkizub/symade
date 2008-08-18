@@ -42,6 +42,7 @@ public final class IntEditor extends TextEditor {
 		}
 	}
 
+	@Override
 	public void run() {
 		editor.startItemEditor(this);
 		editor.getView_canvas().setCursor_offset(edit_offset);
@@ -52,12 +53,15 @@ public final class IntEditor extends TextEditor {
 		}
 	}
 
+	@Override
 	String getText() {
 		Object o = pattr.get();
 		if (o == null)
 			return null;
 		return String.valueOf(o);
 	}
+	
+	@Override
 	void setText(String text) {
 		pattr.set(Integer.valueOf(text));
 	}

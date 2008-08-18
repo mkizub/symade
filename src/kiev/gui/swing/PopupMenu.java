@@ -70,20 +70,17 @@ public class PopupMenu extends JPopupMenu implements IPopupMenuPeer, PopupMenuLi
 			super(item.getText());
 			this.item = item;
 		}
-		@Override
+
 		public void actionPerformed(ActionEvent e) {
 			listener.popupMenuExecuted(item);
 		}
 	}
 
-	@Override
 	public void popupMenuCanceled(PopupMenuEvent e) {
 		listener.popupMenuCanceled();
 	}
 
-	@Override
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
 
-	@Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 }

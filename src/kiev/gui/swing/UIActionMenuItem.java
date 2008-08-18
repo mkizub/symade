@@ -37,6 +37,7 @@ public class UIActionMenuItem extends JMenuItem {
 		this.addActionListener((Window)wnd);
 	}
 	
+	@Override
 	public boolean isEnabled() {
 		if (factory == null || !super.isEnabled()) return false;
 		return factory.getAction(new UIActionViewContext(wnd, null, wnd.getCurrentView())) != null;
@@ -45,6 +46,7 @@ public class UIActionMenuItem extends JMenuItem {
 	class UIActionButtonModel extends javax.swing.DefaultButtonModel {
 		private static final long serialVersionUID = 1322172964914939491L;
 
+		@Override
 		public boolean isEnabled() {
 			try {
 				if (UIActionMenuItem.this == null || factory == null || !super.isEnabled()) return false;

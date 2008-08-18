@@ -254,14 +254,16 @@ class DrawableTreeCellRenderer extends DefaultTreeCellRenderer {
 		return this;
 	}
 	
-    public Dimension getPreferredSize() {
+	@Override
+   public Dimension getPreferredSize() {
 		Dimension dim = super.getPreferredSize();
 		if (dim == null)
 			return cur_dim;
     	return new Dimension(cur_dim.width+dim.width, Math.max(cur_dim.height, dim.height));
 	}
 
-    public Dimension getMinimumSize() {
+   @Override
+   public Dimension getMinimumSize() {
 		Dimension dim = super.getMinimumSize();
 		if (dim == null)
 			return cur_dim;

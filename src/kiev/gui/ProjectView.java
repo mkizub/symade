@@ -12,6 +12,7 @@ public class ProjectView extends InfoView {
 		super(window, view_canvas, syntax);
 	}
 	
+	@Override
 	public void formatAndPaint(boolean full) {
 		view_canvas.setCurrent(cur_dr, cur_dr == null ? null : cur_dr.drnode);
 		if (full) {

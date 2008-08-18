@@ -140,7 +140,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 		item = new TabItem (explorers, SWT.NONE);
 		item.setText("Project");
-		tree_canvas = new Canvas(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);// |
+		tree_canvas = new Canvas(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
 		tree_canvas.getControl().setLayoutData(gridData);
 		tree_canvas.getControl().addFocusListener(this);
@@ -410,14 +410,12 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		}
 		TabItem item = new TabItem (editors, SWT.NONE);
 		item.setText(fu.pname());
-		Composite edit_page = new Composite(editors, SWT.NONE);
-		item.setControl(edit_page);
 
-		Canvas edit_canvas = new Canvas(edit_page, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL |
-				SWT.NO_REDRAW_RESIZE | SWT.NO_BACKGROUND);		
+		Canvas edit_canvas = new Canvas(editors, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);		
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
-		tree_canvas.getControl().setLayoutData(gridData);
-
+		edit_canvas.getControl().setLayoutData(gridData);
+		item.setControl(edit_canvas.getControl());
+		edit_canvas.getControl().addPaintListener(edit_canvas.getPaintListener());
 		edit_canvas.getControl().addFocusListener(this);
 		editors.setSelection(item);
 		Editor editor_view = new Editor  ((IWindow)this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));

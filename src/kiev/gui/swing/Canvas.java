@@ -106,6 +106,7 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 	public int getImgWidth() { return imgWidth; }
 	public int getImgHeight() { return imgHeight; }
 
+	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		int pw = verticalScrollBar.getPreferredSize().width;
 		int oldWidth = imgWidth;
@@ -268,13 +269,16 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 		}
 	}
 
+	@Override
 	public VolatileImage createVolatileImage(int w, int h) {
 		System.out.println("create volatile image "+w+" : "+h);
 		return super.createVolatileImage(w, h);
 	}
 	
+	@Override
 	public void update(Graphics gScreen) { paint(gScreen); }
 
+	@Override
 	public void paintComponent(Graphics gScreen) {
 		// copying from the image (here, gScreen is the Graphics
 		// object for the onscreen window)
@@ -332,6 +336,7 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 		} while (vImg.contentsLost());
 	}	
 	
+	@Override
 	public boolean isDoubleBuffered() {
 		return true;
 	}
