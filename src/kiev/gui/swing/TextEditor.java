@@ -12,7 +12,9 @@ package kiev.gui.swing;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
@@ -29,7 +31,7 @@ import kiev.vlang.Symbol;
 import kiev.vtree.ASTNode;
 import kiev.vtree.ScalarPtr;
 
-public class TextEditor implements ItemEditor, ComboBoxEditor {
+public class TextEditor implements ItemEditor, KeyListener, ComboBoxEditor {
 	
 	protected final Editor		editor;
 	protected final DrawTerm	dr_term;
@@ -95,10 +97,12 @@ public class TextEditor implements ItemEditor, ComboBoxEditor {
 	}
 
 	public void keyTyped(KeyEvent evt) {
+		if ((evt.getModifiersEx() & ~InputEvent.SHIFT_DOWN_MASK) != 0)
+			return;
 		int ch = evt.getKeyChar();
 		if (ch == KeyEvent.CHAR_UNDEFINED)
 			return;
-		if (ch < 32)
+		if (ch < 32 || ch == 127)
 			return;
 		evt.consume();
 		checkEditOffset();
@@ -116,16 +120,18 @@ public class TextEditor implements ItemEditor, ComboBoxEditor {
 	public void keyReleased(KeyEvent evt) {}
 	public void keyPressed(KeyEvent evt) {
 		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask == KeyEvent.CTRL_DOWN_MASK && code == KeyEvent.VK_SPACE) {
-			evt.consume();
-			showAutoComplete(true);
-			return;
-		}
-		if (code == KeyEvent.VK_PERIOD) {
-			evt.consume();
-			typeChar('·');
-			return;
+		int mask = evt.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK);
+		if (mask == InputEvent.CTRL_DOWN_MASK) {
+			if (code == KeyEvent.VK_SPACE) {
+				evt.consume();
+				showAutoComplete(true);
+				return;
+			}
+			if (code == KeyEvent.VK_PERIOD) {
+				evt.consume();
+				typeChar('·');
+				return;
+			}
 		}
 		if (mask != 0)
 			return;
@@ -293,7 +299,7 @@ public class TextEditor implements ItemEditor, ComboBoxEditor {
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		for (Symbol sym: decls) {
-			combo.addItem(qualified ? sym.qname().replace('·','.') : sym.get$sname());
+			combo.addItem(qualified ? sym.qname() : sym.get$sname());
 			popup = true;
 		}
 		if (popup) {

@@ -1972,6 +1972,87 @@
        </syntax:SyntaxFolder>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-def-icon'>
+      <rnode>
+       <core:SymbolRef name='SyntaxIcon' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>fmt</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>funcs</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxFunctions' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxFolder>
+        <folded_by_default>true</folded_by_default>
+        <folded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxSubAttr>
+            <name>icon_name</name>
+           </syntax:SyntaxSubAttr>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </folded>
+        <unfolded>
+         <syntax:SyntaxSet>
+          <elements>
+           <syntax:SyntaxToken>
+            <text>&lt;icon:</text>
+            <funcs>
+             <syntax:SyntaxFunctions>
+              <funcs>
+               <syntax:SyntaxFunction>
+                <title>Add functions</title>
+                <act>kiev.gui.FuncNewElemOfNull</act>
+                <attr>funcs</attr>
+               </syntax:SyntaxFunction>
+              </funcs>
+             </syntax:SyntaxFunctions>
+            </funcs>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>'</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>icon_name</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>'</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxToken>
+            <text>fmt:</text>
+           </syntax:SyntaxToken>
+           <syntax:SyntaxSubAttr>
+            <name>fmt</name>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxSubAttr>
+            <name>funcs</name>
+            <empty>
+             <syntax:SyntaxPlaceHolder>
+              <text>funcs: {}</text>
+             </syntax:SyntaxPlaceHolder>
+            </empty>
+           </syntax:SyntaxSubAttr>
+           <syntax:SyntaxToken>
+            <text>></text>
+           </syntax:SyntaxToken>
+          </elements>
+          <nested_function_lookup>false</nested_function_lookup>
+         </syntax:SyntaxSet>
+        </unfolded>
+       </syntax:SyntaxFolder>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-def-placeholder'>
       <rnode>
        <core:SymbolRef name='SyntaxPlaceHolder' />
@@ -2917,6 +2998,7 @@
         <attr_name>elements</attr_name>
         <expected_types>
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxToken' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIcon' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxElemRef' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxSubAttr' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SyntaxIdentAttr' />

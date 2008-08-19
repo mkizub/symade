@@ -346,7 +346,7 @@ class DrawableTreeCellRenderer extends DefaultTreeCellRenderer {
 			g.setColor(Color.WHITE);
 		else
 			g.setColor(new Color(leaf.syntax.lout.rgb_color));
-		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font_name);
+		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font);
 		g.setFont(font);
 		Object term_obj = leaf.getTermObj();
 		String s;

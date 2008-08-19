@@ -16,7 +16,8 @@ import static kiev.fmt.SpaceKind.*;
 
 public interface IFmtGfx {
 	public Object getNative();
-	public void layoutText(String text, String font_name);
+	public void layoutText(String text, Draw_Font font);
+	public void layoutIcon(Draw_Icon icon);
 	public int  textWidth();
 	public int  textHeight();
 	public int  textBaseline();
@@ -207,6 +208,7 @@ public class GfxFormatter extends AbstractFormatter {
 		int lineno = 1;
 		int max_h = 10;
 		int max_b = 0;
+		int max_x = 0;
 		int line_indent = 0;
 		int next_indent = line_indent;
 		int y = 0;
@@ -218,7 +220,11 @@ public class GfxFormatter extends AbstractFormatter {
 			dr.y = y;
 			max_h = Math.max(max_h, dr.height);
 			max_b = Math.max(max_b, dr.baseline);
+			if (dr.baseline > 0)
+				max_x = Math.max(max_x, dr.height - dr.baseline);
 			if (dr.lnk_next != null && dr.lnk_next.do_newline) {
+				if (max_b < max_h - max_x)
+					max_b = max_h - max_x;
 				for (GfxDrawTermLayoutInfo l=line_start; l != null; l=l.getNext()) {
 					l.lineno = lineno;
 					l.y = y;
@@ -230,11 +236,14 @@ public class GfxFormatter extends AbstractFormatter {
 				y += max_h + dr.lnk_next.the_size;
 				max_h = 10;
 				max_b = 0;
+				max_x = 0;
 				line_start = dr.getNext();
 				lineno++;
 			}
 		}
 		// fill the rest
+		if (max_b < max_h - max_x)
+			max_b = max_h - max_x;
 		for (GfxDrawTermLayoutInfo l=line_start; l != null; l=l.getNext()) {
 			l.lineno = lineno;
 			l.y = y;

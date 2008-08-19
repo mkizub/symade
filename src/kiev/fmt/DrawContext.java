@@ -11,6 +11,8 @@
 package kiev.fmt;
 import syntax kiev.Syntax;
 
+import java.awt.Image;
+
 import static kiev.fmt.SpaceAction.*;
 import static kiev.fmt.SpaceKind.*;
 
@@ -298,26 +300,31 @@ public final class GfxDrawContext extends DrawContext {
 		gfx_fmt.x = 0;
 		gfx_fmt.y = 0;
 		gfx_fmt.height = 0;
+		gfx_fmt.width = 0;
+		gfx_fmt.height = 10;
+		gfx_fmt.baseline = 0;
 		Object term_obj = dr.getTermObj();
-		String text;
-		if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
-			text = "\u25d8"; // ◘
-		else if (term_obj == DrawTerm.NULL_NODE)
-			text = "\u25c6"; // ◆
-		else {
-			text = String.valueOf(term_obj);
-			if (text == null)
-				text = "\u25d8"; // ◘
-		}
-		if (text.length() != 0) {
-			gfx.layoutText(text, dr.syntax.lout.font_name);
+		if (term_obj instanceof Draw_Icon) {
+			gfx.layoutIcon((Draw_Icon)term_obj);
 			gfx_fmt.width = gfx.textWidth();
 			gfx_fmt.height = gfx.textHeight();
-			gfx_fmt.baseline = gfx.textBaseline();
 		} else {
-			gfx_fmt.width = 0;
-			gfx_fmt.height = 10;
-			gfx_fmt.baseline = 0;
+			String text;
+			if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
+				text = "\u25d8"; // ◘
+			else if (term_obj == DrawTerm.NULL_NODE)
+				text = "\u25c6"; // ◆
+			else {
+				text = String.valueOf(term_obj);
+				if (text == null)
+					text = "\u25d8"; // ◘
+			}
+			if (text.length() != 0) {
+				gfx.layoutText(text, dr.syntax.lout.font);
+				gfx_fmt.width = gfx.textWidth();
+				gfx_fmt.height = gfx.textHeight();
+				gfx_fmt.baseline = gfx.textBaseline();
+			}
 		}
 	}
 	public int setXgetWidth(DrawTermLayoutInfo dlb, int x) {

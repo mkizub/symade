@@ -424,7 +424,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 			g.setColor(autoGenTextColor);
 		else
 			g.setColor(new java.awt.Color(leaf.syntax.lout.rgb_color));
-		java.awt.Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font_name);
+		java.awt.Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font);
 		g.setFont(font);
 		Object term_obj = leaf.getTermObj();
 		if (leaf == current && cursor_offset >= 0) {

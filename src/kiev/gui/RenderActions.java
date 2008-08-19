@@ -109,8 +109,6 @@ public final class RenderActions implements IPopupMenuListener, Runnable {
 			sa = null;
 		} catch (Throwable t) {
 			t.printStackTrace();
-		} finally {
-			((Editor)ui).stopItemEditor(sa != null);
 		}
 	}
 	static class SetSyntaxAction implements IMenuItem {

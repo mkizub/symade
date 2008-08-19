@@ -352,6 +352,10 @@ public final class DrawFont extends DNode {
 		this.sname = font_name;
 		this.font_name = font_name;
 	}
+
+	public Draw_Font compile() {
+		return new Draw_Font(font_name);
+	}
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -631,7 +635,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 		if (this.color != null && this.color.dnode != null)
 			lout.rgb_color = this.color.dnode.rgb_color;
 		if (this.font != null && this.font.dnode != null && this.font.dnode.font_name != null)
-			lout.font_name = this.font.dnode.font_name.intern();
+			lout.font = this.font.dnode.compile();
 		return lout;
 	}
 }
@@ -838,6 +842,34 @@ public final class SyntaxToken extends SyntaxElem {
 		super.fillCompiled(dr_elem);
 		dr_elem.text = this.text;
 		dr_elem.kind = this.kind;
+	}
+
+}
+
+@ThisIsANode(lang=SyntaxLang)
+public final class SyntaxIcon extends SyntaxElem {
+
+	@nodeAttr public String					icon_name;
+
+	@setter
+	public void set$icon_name(String value) {
+		this.icon_name = (value != null) ? value.intern() : null;
+	}
+	
+	public SyntaxIcon() {}
+	public SyntaxIcon(String icon_name) {
+		this.icon_name = icon_name;
+	}
+	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
+		Draw_SyntaxIcon dr_elem = new Draw_SyntaxIcon(elem_decl);
+		fillCompiled(dr_elem);
+		return dr_elem;
+	}
+
+	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
+		Draw_SyntaxIcon dr_elem = (Draw_SyntaxIcon)_dr_elem;
+		super.fillCompiled(dr_elem);
+		dr_elem.icon = new Draw_Icon(icon_name);
 	}
 
 }

@@ -54,6 +54,7 @@ public final class SyntaxLang extends LangBase {
 		SyntaxElem.class,
 			SyntaxElemRef.class,
 			SyntaxToken.class,
+			SyntaxIcon.class,
 			SyntaxPlaceHolder.class,
 			SyntaxAttr.class,
 				SyntaxSubAttr.class,

@@ -283,6 +283,16 @@ public final class DrawToken extends DrawTerm {
 }
 
 @ThisIsANode(copyable=false)
+public final class DrawIcon extends DrawTerm {
+
+	public DrawIcon(ANode node, Draw_SyntaxIcon syntax, Draw_ATextSyntax text_syntax) {
+		super(node, syntax, text_syntax);
+	}
+
+	protected Object makeTermObj(Formatter fmt) { return ((Draw_SyntaxIcon)this.syntax).icon; } 
+}
+
+@ThisIsANode(copyable=false)
 public final class DrawPlaceHolder extends DrawTerm {
 
 	public DrawPlaceHolder(ANode node, Draw_SyntaxPlaceHolder syntax, Draw_ATextSyntax text_syntax) {

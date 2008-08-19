@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.AdjustmentEvent;
@@ -34,6 +35,7 @@ import javax.swing.JScrollBar;
 
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
+import kiev.fmt.Draw_Icon;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.IFmtGfx;
@@ -431,10 +433,14 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 			g.setColor(autoGenTextColor);
 		else
 			g.setColor(new Color(leaf.syntax.lout.rgb_color));
-		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font_name);
+		Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font);
 		g.setFont(font);
 		Object term_obj = leaf.getTermObj();
-		if (leaf == current && cursor_offset >= 0) {
+		if (term_obj instanceof Draw_Icon) {
+			Draw_Icon di = (Draw_Icon)term_obj;
+			Image img = AWTGraphics2D.decodeImage(di);
+			g.drawImage(img, x, y, null);
+		} else if (leaf == current && cursor_offset >= 0) {
 			String s;
 			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
 				s = " ";
@@ -456,8 +462,7 @@ public class Canvas extends JPanel implements ICanvas, ComponentListener,
 				}
 			} catch (java.lang.IllegalArgumentException e) {} 
 			g.translate(-x, -(y+b));
-		}
-		else {
+		} else {
 			String s;
 			if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
 				s = "\u25d8"; // ◘

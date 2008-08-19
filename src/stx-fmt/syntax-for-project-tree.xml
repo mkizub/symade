@@ -19,25 +19,25 @@
   <members>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev·vlang' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·vlang' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev·vlang·types' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·vlang·types' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev·parser' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·parser' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
    <core:Import all='true' methods='false'>
     <name>
-     <core:SymbolRef name='kiev·fmt' full='true' />
+     <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·fmt' full='true' />
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
@@ -217,6 +217,9 @@
         <folded>
          <syntax:SyntaxSet>
           <elements>
+           <syntax:SyntaxIcon>
+            <icon_name>stx-fmt/dir.png</icon_name>
+           </syntax:SyntaxIcon>
            <syntax:SyntaxIdentAttr>
             <decl>
              <core:SymbolRef name='ident-template' />
@@ -264,6 +267,9 @@
         <folded>
          <syntax:SyntaxSet>
           <elements>
+           <syntax:SyntaxIcon>
+            <icon_name>stx-fmt/file.png</icon_name>
+           </syntax:SyntaxIcon>
            <syntax:SyntaxIdentAttr>
             <decl>
              <core:SymbolRef name='ident-template' />

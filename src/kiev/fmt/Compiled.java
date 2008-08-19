@@ -41,25 +41,52 @@ public final class LayoutSpace implements Cloneable, Serializable {
 	}
 }
 
+public final class Draw_Font implements Serializable {
+	public String			font_name;
+	transient
+	public Object			font_object;
+
+	public Draw_Font(String font_name) {
+		if (font_name != null)
+			this.font_name = font_name.intern();
+	}
+	
+	Object readResolve() throws ObjectStreamException {
+		if (this.font_name != null) this.font_name = this.font_name.intern();
+		return this;
+	}
+}
+
+public final class Draw_Icon implements Serializable {
+	public String			icon_name;
+	transient
+	public Object			icon_object;
+
+	public Draw_Icon(String icon_name) {
+		if (icon_name != null)
+			this.icon_name = icon_name.intern();
+	}
+	
+	Object readResolve() throws ObjectStreamException {
+		if (this.icon_name != null) this.icon_name = this.icon_name.intern();
+		return this;
+	}
+}
+
 public final class Draw_Layout implements Serializable {
 
 	public int				count;
 	public int				rgb_color;
-	public String			font_name;
+	public Draw_Font		font;
 	public LayoutSpace[]	spaces_before;
 	public LayoutSpace[]	spaces_after;
 
 	public Draw_Layout() {
 		this.count = 0;
 		this.rgb_color = 0;
-		this.font_name = "Dialog-PLAIN-12";
+		this.font = new Draw_Font("Dialog-PLAIN-12");
 		this.spaces_before = LayoutSpace.emptyArray;
 		this.spaces_after = LayoutSpace.emptyArray;
-	}
-
-	Object readResolve() throws ObjectStreamException {
-		if (this.font_name != null) this.font_name = this.font_name.intern();
-		return this;
 	}
 }
 
@@ -401,6 +428,21 @@ public class Draw_SyntaxToken extends Draw_SyntaxElem implements Cloneable {
 	Object readResolve() throws ObjectStreamException {
 		if (this.text != null) this.text = this.text.intern();
 		return this;
+	}
+}
+
+public class Draw_SyntaxIcon extends Draw_SyntaxElem implements Cloneable {
+	public Draw_Icon					icon;
+
+	public Draw_SyntaxIcon(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
+	public Draw_SyntaxIcon(Draw_SyntaxElemDecl elem_decl, String icon_name) {
+		super(elem_decl);
+		this.icon = new Draw_Icon(icon_name);
+	}
+	
+	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
+		Drawable dr = new DrawIcon(node, this, text_syntax);
+		return dr;
 	}
 }
 
