@@ -48,7 +48,7 @@ public final class FunctionExecutor implements IPopupMenuListener, Runnable {
 		menu.showAt(x, y);
 	}
 
-	final static class Factory implements UIActionFactory {
+	public final static class Factory implements UIActionFactory {
 		public String getDescr() { return "Popup list of functions for a current element"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {

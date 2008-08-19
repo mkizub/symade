@@ -36,7 +36,6 @@ import kiev.gui.NewElemHere;
 import kiev.gui.NewElemNext;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.gui.UIManager;
 import kiev.gui.ChooseItemEditor;
 
 public class Configuration {
@@ -147,13 +146,13 @@ public class Configuration {
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_X),				EditActions.newCut());
 		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DELETE),		EditActions.newDel());
 
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_F),				UIManager.newFunctionExecutorFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_F),				new kiev.gui.FunctionExecutor.Factory());
+		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_F),				new kiev.gui.FunctionExecutor.Factory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_O),				FolderTrigger.newFactory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_N),				new NewElemHere.Factory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_A),				new NewElemNext.Factory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_V),				UIManager.newPasteHereFactory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_B),				UIManager.newPasteNextFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_V),				new kiev.gui.Clipboard.PasteHereFactory());
+		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_B),				new kiev.gui.Clipboard.PasteNextFactory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new ChooseItemEditor());
 		
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.TextEditor.Factory());

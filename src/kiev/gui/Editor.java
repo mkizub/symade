@@ -108,13 +108,13 @@ public class Editor extends InfoView implements ElementChangeListener {
 				else if (slot instanceof ExtSpaceAttrSlot)
 					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawNonTermList)p).getInsertIndex(dr, next));
 			}
-			//else if (p instanceof DrawElemWrapper) {
-			//	slot = ((DrawElemWrapper)p).slst_attr;
-			//	if (slot instanceof SpaceAttrSlot)
-			//		return new ActionPoint(p,(SpaceAttrSlot)slot,((DrawElemWrapper)p).getInsertIndex(dr, next));
-			//	else if (slot instanceof ExtSpaceAttrSlot)
-			//		return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawElemWrapper)p).getInsertIndex(dr, next));
-			//}
+			else if (p instanceof DrawElemWrapper) {
+				slot = ((DrawElemWrapper)p).sub_attr;
+				if (slot instanceof SpaceAttrSlot)
+					return new ActionPoint(p,(SpaceAttrSlot)slot,((DrawElemWrapper)p).getInsertIndex(dr, next));
+				else if (slot instanceof ExtSpaceAttrSlot)
+					return new ActionPoint(p,(ExtSpaceAttrSlot)slot,((DrawElemWrapper)p).getInsertIndex(dr, next));
+			}
 			dr = p;
 		}
 		return null;

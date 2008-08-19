@@ -21,10 +21,6 @@ public class UIManager {
 	public static final boolean SWT = kiev.Kiev.run_gui_swt;
 	public static final boolean SWING = kiev.Kiev.run_gui_swing;
 
-	public static ICanvas newCanvas(){
-		return new kiev.gui.swing.Canvas();
-	}
-	
 	public static IWindow newWindow(){
 		if (SWT)
 			return new kiev.gui.swt.Window();
@@ -75,18 +71,10 @@ public class UIManager {
 		return new kiev.gui.swing.TextEditor(editor, dr_term, pattr);
 	}
 	
-	public static UIActionFactory newFunctionExecutorFactory(){
-		return new kiev.gui.FunctionExecutor.Factory();
-	}
-	
-	public static UIActionFactory newPasteHereFactory(){
-		return kiev.gui.swing.Clipboard.newPasteHereFactory();
+	public static Object getClipboardContent() {
+		return kiev.gui.swing.Clipboard.getClipboardContent();
 	}
 
-	public static UIActionFactory newPasteNextFactory(){
-		return kiev.gui.swing.Clipboard.newPasteNextFactory();
-	}
-	
 	public static void setClipboardContent(Object obj) {
 		kiev.gui.swing.Clipboard.setClipboardContent(obj);
 	}

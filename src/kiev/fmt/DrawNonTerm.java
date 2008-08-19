@@ -38,6 +38,7 @@ public abstract class DrawNonTerm extends Drawable {
 public final class DrawElemWrapper extends Drawable {
 
 	public boolean					draw_empty;
+	public final AttrSlot			sub_attr;
 
 	@nodeAttr public Drawable		empty;
 	@nodeAttr public Drawable		prefix;
@@ -46,6 +47,17 @@ public final class DrawElemWrapper extends Drawable {
 	
 	public DrawElemWrapper(ANode node, Draw_SyntaxElemWrapper syntax, Draw_ATextSyntax text_syntax) {
 		super(node, syntax, text_syntax);
+		if (syntax.element instanceof Draw_SyntaxAttr) {
+			Draw_SyntaxAttr sa = (Draw_SyntaxAttr)syntax.element;
+			if (sa.attr_slot != null) {
+				sub_attr = sa.attr_slot;
+			} else {
+				foreach (AttrSlot a; node.values(); a.name == sa.name) {
+					sub_attr = a;
+					break;
+				}
+			}
+		}
 	}
 
 	public void preFormat(DrawContext cont) {

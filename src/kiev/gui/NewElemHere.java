@@ -31,13 +31,11 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 		ActionPoint ap = editor.getActionPoint(false);
 		if (ap != null && ap.length >= 0) {
 			Draw_SyntaxElem se = ap.dr.syntax;
-			Draw_SyntaxList slst;
-			//if (se instanceof Draw_SyntaxElemWrapper)
-			//	slst = ((Draw_SyntaxElemWrapper)se).list;
-			//else
-				slst = (Draw_SyntaxList)ap.dr.syntax;
+			if (se instanceof Draw_SyntaxElemWrapper)
+				se = ((Draw_SyntaxElemWrapper)se).element;
 			idx = ap.index;
-			makeMenu("Insert new item", ap.node, slst, dr.text_syntax);
+			if (se instanceof Draw_SyntaxAttr)
+				makeMenu("Insert new item", ap.node, (Draw_SyntaxAttr)se, dr.text_syntax);
 			return;
 		}
 	}
@@ -51,7 +49,6 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
 			if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
-				//ANode n = dr.drnode;
 				ExpectedTypeInfo[] exp = ((Draw_SyntaxPlaceHolder)dr.syntax).getExpectedTypes();
 				if (exp == null)
 					return null;
@@ -72,11 +69,17 @@ public final class NewElemHere extends NewElemEditor implements Runnable {
 			ActionPoint ap = editor.getActionPoint(false);
 			if (ap == null || ap.length < 0)
 				return null;
-			Draw_SyntaxAttr slst = (Draw_SyntaxAttr)ap.dr.syntax;
-			ExpectedTypeInfo[] exp = slst.getExpectedTypes();
-			if (exp == null)
-				return null;
-			return new NewElemHere(editor);
+			Draw_SyntaxElem se = ap.dr.syntax;
+			if (se instanceof Draw_SyntaxElemWrapper)
+				se = ((Draw_SyntaxElemWrapper)se).element;
+			if (se instanceof Draw_SyntaxAttr) {
+				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)se;
+				ExpectedTypeInfo[] exp = satt.getExpectedTypes();
+				if (exp == null)
+					return null;
+				return new NewElemHere(editor);
+			}
+			return null;
 		}
 	}
 }

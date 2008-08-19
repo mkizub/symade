@@ -44,7 +44,7 @@ public class MouseActions implements Runnable {
 			if (dr instanceof DrawTerm && uiv instanceof Editor) {
 				Editor edt = (Editor)uiv;
 				edt.selectDrawTerm((DrawTerm)dr);
-				UIActionFactory af =  UIManager.newFunctionExecutorFactory();
+				UIActionFactory af =  new FunctionExecutor.Factory();
 				Runnable r = af.getAction(new UIActionViewContext(edt.parent_window, null, edt));
 				if (r != null)
 					r.run();
