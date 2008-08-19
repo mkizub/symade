@@ -221,19 +221,19 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		MenuItem item;
 		UIActionMenuItem mi;
 
-//		//Load 
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Load_menuitem"), SWT.MOD1 + 'L', new FileActions.LoadFileAs());
+		//Load 
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Load_menuitem"), SWT.MOD1 + 'L', new FileActions.LoadFileAs());
 
-//		//Save As...
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("SaveAs_menuitem"), SWT.ALT + 'S', new FileActions.SaveFileAs());
+		//Save As...
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("SaveAs_menuitem"), SWT.ALT + 'S', new FileActions.SaveFileAs());
 
-//		//Save As API
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("SaveAsAPI_menuitem"), 0, new FileActions.SaveFileAsApi());
+		//Save As API
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("SaveAsAPI_menuitem"), 0, new FileActions.SaveFileAsApi());
 
-//		//Save
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Save_menuitem"), SWT.CTRL + 'S', new FileActions.SaveFile());
+		//Save
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Save_menuitem"), SWT.CTRL + 'S', new FileActions.SaveFile());
 
-//		item = new MenuItem(menu, SWT.SEPARATOR);
+		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		//Close
 		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Close_menuitem"), SWT.CTRL + 'W',  EditActions.newCloseWindow());
@@ -363,14 +363,17 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 	}
 
 	public void focusGained(FocusEvent e) {
-		if (e.getSource() instanceof Canvas)
-		cur_comp = (Canvas)e.getSource();
+		if (e.getSource() instanceof org.eclipse.swt.widgets.Canvas){	
+			org.eclipse.swt.widgets.Canvas control = (org.eclipse.swt.widgets.Canvas)e.getSource();
+			cur_comp = Canvas.registry.get(control);
+			
 //		else if (e.getSource() instanceof ANodeTree)
 //		cur_comp = (ANodeTree)e.getSource();
+		}
 	}
 
 	public void focusLost(FocusEvent e) {
-		if (e.getSource() instanceof Canvas)
+		if (e.getSource() instanceof org.eclipse.swt.widgets.Canvas)
 		cur_comp = null;
 //		else if (e.getSource() instanceof ANodeTree)
 //		cur_comp = null;
@@ -399,15 +402,15 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 	public void openEditor(FileUnit fu, ANode[] path) {
 		for (Editor e: editor_views) {
-		if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
-		e.goToPath(path);
-//		editors.setSelection(e.getView_canvas());
-		e.getView_canvas().requestFocus();
-		return;
-		}
+			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
+				e.goToPath(path);
+//				editors.setSelection(e.getView_canvas());
+				e.getView_canvas().requestFocus();
+				return;
+			}
 		}
 		TabItem item = new TabItem (editors, SWT.NONE);
-		item.setText(fu.pname());
+		item.setText(fu.get$fname());
 
 		Canvas edit_canvas = new Canvas(editors, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);		
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
@@ -427,11 +430,20 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 	public void closeEditor(Editor ed) {
 		java.util.Vector<Editor> v = new java.util.Vector<Editor>();
 		for (Editor e: editor_views) {
-		if (e != ed) {
-		v.add(e);
-		continue;
-		}
-		((Canvas)e.getView_canvas()).getControl().getShell().close();
+			if (e != ed) {
+				v.add(e);
+				continue;
+			}
+			Canvas can = (Canvas)e.getView_canvas();
+			TabFolder tf = (TabFolder)can.getControl().getParent();
+			for (TabItem ti: tf.getItems()){
+				if (ti.getControl() == can.getControl()){
+					Canvas.unregister(can.getControl());
+					ti.dispose();
+					break;
+				}
+			}
+			
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
 	}

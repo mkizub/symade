@@ -36,7 +36,11 @@ public class Renderer {
 
 	private void prepareRendering(int clipX, int clipY, int clipW, int clipH) {
 		checkOffScreenImages(clipW, clipH);
-		java.awt.Graphics awtGraphics = awtImage.getGraphics();
+		java.awt.Graphics awtGraphics;
+		if (awtImage == null) 
+			awtGraphics = (Graphics2D) new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB).getGraphics();
+		else
+			awtGraphics = awtImage.getGraphics();
 		awtGraphics.setColor(new java.awt.Color(TRANSPARENT_COLOR));
 		awtGraphics.fillRect(clipX, clipY, clipW, clipH);
 	}

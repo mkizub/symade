@@ -14,6 +14,7 @@ package kiev.gui.swt;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.MouseWheelEvent;
+import java.util.HashMap;
 
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
@@ -46,6 +47,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ScrollBar;
 
 public class Canvas implements ICanvas, 
@@ -84,6 +86,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	private org.eclipse.swt.widgets.Canvas control;
 	final Renderer renderer = new Renderer();
 
+	static HashMap<Control, Canvas> registry = new HashMap<Control, Canvas>();
 	private PaintListener paintListener = new PaintListener() {
 		public void paintControl(PaintEvent e) {
 			if (e.gc == null) return;
@@ -102,6 +105,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 	public Canvas(Composite parent, int style) {
 //		this.setFocusable(true);
 		control = new org.eclipse.swt.widgets.Canvas(parent, style);
+		registry.put(control, this);
 		defaultTextColor = control.getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		autoGenTextColor = java.awt.Color.GRAY;
 		selectedNodeColor = new Color(control.getDisplay(), 224,224,224);
@@ -116,6 +120,14 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 		imgHeight = 100;
 	}
 
+	public static void register(Control control,  Canvas canvas){
+		registry.put(control, canvas);
+	}
+	
+	public static void unregister(Control control){
+		registry.remove(control);
+	}
+	
 	public void setUIView(IUIView uiv) {
 		if (uiv instanceof UIView){
 			this.ui_view = (UIView)uiv;
