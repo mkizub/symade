@@ -126,11 +126,6 @@
      </sop:kiev.fmt.evt.Binding>
     </members>
    </sop:kiev.fmt.evt.BindingSet>
-   <sop:kiev.fmt.evt.BindingSet name='bindings-tree'>
-    <parent_set>
-     <core:SymbolRef name='bindings-base' />
-    </parent_set>
-   </sop:kiev.fmt.evt.BindingSet>
   </members>
  </core:FileUnit>
 </sop:dump>

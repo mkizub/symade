@@ -10,6 +10,7 @@
  *******************************************************************************/
 package kiev.gui.swing;
 
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -40,12 +41,12 @@ import kiev.gui.ChooseItemEditor;
 
 public class Configuration {
 
-	private static final int SHIFT  = java.awt.event.KeyEvent.SHIFT_DOWN_MASK;
-	private static final int CTRL   = java.awt.event.KeyEvent.CTRL_DOWN_MASK;
-	private static final int ALT    = java.awt.event.KeyEvent.ALT_DOWN_MASK;
-	private static final int MOUSE1 = java.awt.event.MouseEvent.BUTTON1_MASK;
-	//private static final int MOUSE2 = java.awt.event.MouseEvent.BUTTON2_MASK;
-	private static final int MOUSE3 = java.awt.event.MouseEvent.BUTTON3_MASK;
+	private static final int SHIFT  = InputEvent.SHIFT_DOWN_MASK;
+	private static final int CTRL   = InputEvent.CTRL_DOWN_MASK;
+	private static final int ALT    = InputEvent.ALT_DOWN_MASK;
+	private static final int MOUSE1 = InputEvent.BUTTON1_MASK;
+	private static final int MOUSE2 = InputEvent.BUTTON2_MASK;
+	private static final int MOUSE3 = InputEvent.BUTTON3_MASK;
 
 	private static BindingSet editorBindingsDefault;
 	private static BindingSet editorBindings;
@@ -59,10 +60,6 @@ public class Configuration {
 	private static BindingSet projectBindings;
 	private static EventActionMap projectNaviMap;
 
-	private static BindingSet treeBindingsDefault;
-	private static BindingSet treeBindings;
-	private static EventActionMap treeNaviMap;
-
 	public static void doGUIBeep() {
 		java.awt.Toolkit.getDefaultToolkit().beep();
 	}
@@ -71,7 +68,6 @@ public class Configuration {
 		editorBindings = editorBindingsDefault;
 		infoBindings = infoBindingsDefault;
 		projectBindings = projectBindingsDefault;
-		treeBindings = treeBindingsDefault;
 	}
 	
 	private static void addBindings(EventActionMap naviMap, BindingSet bindings) {
@@ -212,19 +208,6 @@ public class Configuration {
 		return naviMap;
 	}
 	
-	public static EventActionMap getTreeViewActionMap() {
-		if (treeNaviMap != null)
-			return treeNaviMap;
-		
-		EventActionMap naviMap = new EventActionMap();
-		treeNaviMap = naviMap;
-
-		naviMap.add(new InputEventInfo(0,2,		MOUSE1),	new MouseActions.TreeToggle());
-
-		addBindings(naviMap, treeBindings);
-		return naviMap;
-	}
-
 	public static void attachBindings(BindingSet bs) {
 		if ("kiev.gui.swing.bindings-editor".equals(bs.qname)) {
 			editorBindings = bs;
@@ -237,10 +220,6 @@ public class Configuration {
 		if ("kiev.gui.swing.bindings-project".equals(bs.qname)) {
 			projectBindings = bs;
 			projectNaviMap = null;
-		}
-		if ("kiev.gui.swing.bindings-tree".equals(bs.qname)) {
-			treeBindings = bs;
-			treeNaviMap = null;
 		}
 	}
 	
@@ -266,7 +245,6 @@ public class Configuration {
 		editorBindingsDefault = loadBindings("kiev/gui/swing/bindings-editor.ser");
 		infoBindingsDefault = loadBindings("kiev/gui/swing/bindings-info.ser");
 		projectBindingsDefault = loadBindings("kiev/gui/swing/bindings-project.ser");
-		treeBindingsDefault = loadBindings("kiev/gui/swing/bindings-tree.ser");
 	}
 }
 

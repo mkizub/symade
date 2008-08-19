@@ -281,6 +281,9 @@
           <fmt>
            <core:SymbolRef name='fmt-title' />
           </fmt>
+          <par>
+           <core:SymbolRef name='par-block' />
+          </par>
          </syntax:SyntaxSet>
         </folded>
         <element>

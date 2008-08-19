@@ -23,7 +23,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -41,8 +40,6 @@ import kiev.gui.NewElemHere;
 import kiev.gui.NewElemNext;
 import kiev.gui.ProjectView;
 import kiev.gui.RenderActions;
-import kiev.gui.TableView;
-import kiev.gui.TreeView;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIView;
 import kiev.gui.event.ElementChangeListener;
@@ -62,11 +59,7 @@ public class Window extends JFrame
 	Editor[] editor_views;
 	InfoView info_view;
 	InfoView clip_view;
-	TreeView expl_view;
 	InfoView tree_view;
-	ANodeTree expl_tree;
-	ANodeTable prop_table; 
-	TableView prop_view;  
 	Canvas info_canvas;
 	Canvas clip_canvas;
 	Canvas tree_canvas;
@@ -226,11 +219,9 @@ public class Window extends JFrame
 		}
 		this.setJMenuBar(menuBar);
 
-		expl_tree   = new ANodeTree();	expl_tree.addFocusListener(this);
 		info_canvas = new Canvas();		info_canvas.addFocusListener(this);
 		clip_canvas = new Canvas();		clip_canvas.addFocusListener(this);
 		tree_canvas = new Canvas();		tree_canvas.addFocusListener(this);
-		prop_table = new ANodeTable(); prop_table.addFocusListener(this);
 		explorers = new JTabbedPane();
 		editors   = new JTabbedPane();
 		infos     = new JTabbedPane();
@@ -242,11 +233,10 @@ public class Window extends JFrame
 				explorers, split_bottom);
 		split_left.setResizeWeight(0.25);
 		split_left.setOneTouchExpandable(true);
-		explorers.addTab("Explorer", new JScrollPane(expl_tree));
 		explorers.addTab("Project", (Component)tree_canvas);
 		infos.addTab("Info", (Component)info_canvas);
 		infos.addTab("Clipboard", (Component)clip_canvas);
-		infos.addTab("Inspector", new JScrollPane(prop_table));
+		//infos.addTab("Inspector", new JScrollPane(prop_table));
 		
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -255,14 +245,9 @@ public class Window extends JFrame
 		editor_views = new Editor[0];
 		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
-		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
-		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
 		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
 		addListeners();
 		initBgFormatters();
-		expl_view.setRoot(Env.getProject());
-		expl_view.formatAndPaint(true);
-		expl_tree.requestFocus();
 		tree_view.setRoot(Env.getProject());
 		tree_view.formatAndPaint(true);
 	}
@@ -270,13 +255,10 @@ public class Window extends JFrame
 	private void initBgFormatters() {
 		info_view.bg_formatter = new BgFormatter(info_view);
 		info_view.bg_formatter.start();
-		prop_view.bg_formatter = new BgFormatter(prop_view);
-		prop_view.bg_formatter.start();
 	}
 
 	private void addListeners() {
 		addElementChangeListener(info_view);
-		addElementChangeListener(prop_view);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -295,16 +277,12 @@ public class Window extends JFrame
 			return;
 		else if (e.getSource() instanceof Canvas)
 			cur_component = (Canvas)e.getSource();
-		else if (e.getSource() instanceof ANodeTree)
-			cur_component = (ANodeTree)e.getSource();
 	}
 	
 	public void focusLost(FocusEvent e) {
 		if (e.isTemporary())
 			return;
 		else if (e.getSource() instanceof Canvas)
-			cur_component = null;
-		else if (e.getSource() instanceof ANodeTree)
 			cur_component = null;
 	}
 	
@@ -318,8 +296,6 @@ public class Window extends JFrame
 			return info_view;
 		if (clip_view.getView_canvas() == cc)
 			return clip_view;
-		if (expl_view.getView_tree() == cc)
-			return expl_view;
 		if (tree_view.getView_canvas() == cc)
 			return tree_view;
 		return null;

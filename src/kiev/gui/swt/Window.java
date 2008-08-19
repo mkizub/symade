@@ -20,8 +20,6 @@ import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
 import kiev.gui.ProjectView;
-import kiev.gui.TableView;
-import kiev.gui.TreeView;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIView;
 import kiev.gui.event.ElementChangeListener;

@@ -63,8 +63,6 @@ public class UIManager {
 				return kiev.gui.swing.Configuration.getProjectViewActionMap();
 			if (uiv instanceof InfoView)
 				return kiev.gui.swing.Configuration.getInfoViewActionMap();
-			if (uiv instanceof TreeView)
-				return kiev.gui.swing.Configuration.getTreeViewActionMap();
 		}
 		return new EventActionMap();
 	}

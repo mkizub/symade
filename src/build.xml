@@ -51,6 +51,12 @@
 	-->
   </target>
   <target name="compile" depends="compile3" unless="build.notRequired" description="compile the source" >
+  	<copy todir="${classes.to.jar}">
+  		<fileset dir="${src}">
+  			<include name="kiev/**/*.properties"/>
+  			<include name="stx-fmt/**/*.png"/>
+  		</fileset>
+  	</copy>
   	<echo message="Jar classes from ${classes.to.jar}" />
 	<jar destfile="${src}/symade-core.jar" basedir="${classes.to.jar}" />
   </target>

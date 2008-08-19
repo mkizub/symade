@@ -121,7 +121,7 @@ public class MouseActions implements Runnable {
 		public String getDescr() { return "Open/close selection"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
-			if (!(context.ui instanceof TreeView || context.ui instanceof ProjectView))
+			if (!(context.ui instanceof ProjectView))
 				return null;
 			if (context.evt == null || !context.evt.isMouseEvent())
 				return null;
