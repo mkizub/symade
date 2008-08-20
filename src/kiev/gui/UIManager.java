@@ -84,6 +84,8 @@ public class UIManager {
 	}
 
 	public static IPopupMenuPeer newPopupMenu(IUIView view, IPopupMenuListener listener) {
+		if (SWT)
+			return new kiev.gui.swt.PopupMenu(view.getViewPeer(), listener);
 		return new kiev.gui.swing.PopupMenu(view.getViewPeer(), listener);
 	}
 }

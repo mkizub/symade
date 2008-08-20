@@ -19,7 +19,10 @@ import kiev.gui.Editor;
 import kiev.gui.IWindow;
 import kiev.gui.InfoView;
 import kiev.gui.NavigateNode;
+import kiev.gui.NewElemHere;
+import kiev.gui.NewElemNext;
 import kiev.gui.ProjectView;
+import kiev.gui.RenderActions;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIView;
 import kiev.gui.event.ElementChangeListener;
@@ -60,19 +63,19 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 	Editor[] editor_views;
 	InfoView info_view;
 	InfoView clip_view;
-	//TreeView expl_view;
+	InfoView expl_view;
 	InfoView tree_view;
-	//ANodeTree expl_tree;
-	//ANodeTable prop_table; 
-	//TableView prop_view;  
+	InfoView prop_view;  
+	Canvas expl_tree;
+	Canvas prop_table; 
 	Canvas info_canvas;
 	Canvas clip_canvas;
 	Canvas tree_canvas;
 	private Color swtColorBlack, swtColorWhite; 
 	private Font swtDefaultFont; 
 	Composite displayArea;
-	final Shell shell;
-	final Display display;
+	static Shell shell;
+	static Display display;
 	Object cur_comp;
 	static ResourceBundle resources = ResourceBundle.getBundle("kiev.gui.swt.symade");
 
@@ -131,13 +134,13 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		split_bottom.SASH_WIDTH = 5;
 
 		TabItem item = new TabItem (explorers, SWT.NONE);
-		item.setText("Explorer");
+		item.setText(resources.getString("Explorer_title"));
 //		expl_tree   = new ANodeTree(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);					
 //		item.setControl(expl_tree.getControl());
 //		expl_tree.getControl().addFocusListener(this);
 
 		item = new TabItem (explorers, SWT.NONE);
-		item.setText("Project");
+		item.setText(resources.getString("Project_title"));
 		tree_canvas = new Canvas(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
 		tree_canvas.getControl().setLayoutData(gridData);
@@ -146,7 +149,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		tree_canvas.getControl().addPaintListener(tree_canvas.getPaintListener());
 
 		item = new TabItem (infos, SWT.NONE);
-		item.setText("Info");
+		item.setText(resources.getString("Info_title"));
 		info_canvas = new Canvas(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
 		info_canvas.getControl().setLayoutData(gridData);
@@ -155,7 +158,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		item.setControl(info_canvas.getControl());
 
 		item = new TabItem (infos, SWT.NONE);
-		item.setText("Clipboard");
+		item.setText(resources.getString("Clipboard_title"));
 		clip_canvas = new Canvas(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
 		clip_canvas.getControl().setLayoutData(gridData);
@@ -163,7 +166,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		item.setControl(clip_canvas.getControl());
 
 		item = new TabItem (infos, SWT.NONE);
-		item.setText("Inspector");
+		item.setText(resources.getString("Inspector_title"));
 //		prop_table = new ANodeTable(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);	
 //		prop_table.getControl().addFocusListener(this);
 //		item.setControl(prop_table.getControl());
@@ -188,6 +191,8 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		parent.setSize(screenSize.width*4/5, screenSize.height*4/5-20);
 	}
 
+	public static Display getDisplay(){return display;}
+	public static Shell getShell(){return shell;}
 	public void dispose() {
 		displayArea = null;
 	}
@@ -222,7 +227,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		UIActionMenuItem mi;
 
 		//Load 
-		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Load_menuitem"), SWT.MOD1 + 'L', new FileActions.LoadFileAs());
+		new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Load_menuitem"), SWT.MOD1 + 'L', new FileActions.LoadFileAs());
 
 		//Save As...
 		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("SaveAs_menuitem"), SWT.ALT + 'S', new FileActions.SaveFileAs());
@@ -273,11 +278,11 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
-//		//New Element Here
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("New_Element_Here_menuitem"), SWT.CTRL + 'N',  NewElemHere.newFactory());
+		//New Element Here
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("New_Element_Here_menuitem"), SWT.CTRL + 'N',  new NewElemHere.Factory());
 
-//		//New Element Next
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("New_Element_Next_menuitem"), SWT.CTRL + 'A',  NewElemNext.newFactory());
+		//New Element Next
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("New_Element_Next_menuitem"), SWT.CTRL + 'A',  new NewElemNext.Factory());
 
 		//Edit Element
 		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Edit_Element_menuitem"), SWT.CTRL + 'E',  new ChooseItemEditor());
@@ -297,28 +302,28 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		MenuItem item;
 		UIActionMenuItem mi;
 
-//		//Syntax As... 
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Syntax_As_menuitem"), SWT.CTRL + SWT.ALT + 'S', new RenderActions.SyntaxFileAs());
+		//Syntax As... 
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Syntax_As_menuitem"), SWT.CTRL + SWT.ALT + 'S', new RenderActions.SyntaxFileAs());
 
-//		//Unfold all
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Unfold_all_menuitem"), SWT.CTRL + SWT.ALT + 'O', new RenderActions.OpenFoldedAll());
+		//Unfold all
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Unfold_all_menuitem"), SWT.CTRL + SWT.ALT + 'O', new RenderActions.OpenFoldedAll());
 
-//		//Fold all
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Fold_all_menuitem"), SWT.CTRL + SWT.ALT + SWT.SHIFT+ 'O', new RenderActions.CloseFoldedAll());
+		//Fold all
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Fold_all_menuitem"), SWT.CTRL + SWT.ALT + SWT.SHIFT+ 'O', new RenderActions.CloseFoldedAll());
 
-//		//AutoGenerated
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("AutoGenerated_menuitem"), SWT.CTRL + SWT.ALT + 'H', new RenderActions.ToggleShowAutoGenerated());
+		//AutoGenerated
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("AutoGenerated_menuitem"), SWT.CTRL + SWT.ALT + 'H', new RenderActions.ToggleShowAutoGenerated());
 
-//		item = new MenuItem(menu, SWT.SEPARATOR);
+		item = new MenuItem(menu, SWT.SEPARATOR);
 
-//		//Placeholders
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Placeholders_menuitem"), SWT.CTRL + SWT.ALT + 'P',  new RenderActions.ToggleShowPlaceholders());
+		//Placeholders
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Placeholders_menuitem"), SWT.CTRL + SWT.ALT + 'P',  new RenderActions.ToggleShowPlaceholders());
 
-//		//HintEscaped
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("HintEscaped_menuitem"), SWT.CTRL + SWT.ALT + 'E',  new RenderActions.ToggleHintEscaped());
+		//HintEscaped
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("HintEscaped_menuitem"), SWT.CTRL + SWT.ALT + 'E',  new RenderActions.ToggleHintEscaped());
 
-//		//Redraw
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Redraw_menuitem"), SWT.CTRL + SWT.ALT+ 'R',  new RenderActions.Redraw());
+		//Redraw
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Redraw_menuitem"), SWT.CTRL + SWT.ALT+ 'R',  new RenderActions.Redraw());
 
 		return menu;
 	}
@@ -329,17 +334,17 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		MenuItem item;
 		UIActionMenuItem mi;
 
-//		//Merge Tree 
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Merge_Tree_menuitem"), SWT.CTRL + SWT.ALT + 'M', new FileActions.MergeTreeAll());
+		//Merge Tree 
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Merge_Tree_menuitem"), SWT.CTRL + SWT.ALT + 'M', new FileActions.MergeTreeAll());
 
-//		//Compile Backend All
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Compile_Backend_All_menuitem"), SWT.CTRL + SWT.ALT + 'C', new FileActions.RunBackendAll());
+		//Compile Backend All
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Compile_Backend_All_menuitem"), SWT.CTRL + SWT.ALT + 'C', new FileActions.RunBackendAll());
 
-//		//Compile Frontend All
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Compile_Frontend_All_menuitem"), SWT.CTRL + SWT.ALT + 'V', new FileActions.RunFrontendAll());
+		//Compile Frontend All
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Compile_Frontend_All_menuitem"), SWT.CTRL + SWT.ALT + 'V', new FileActions.RunFrontendAll());
 
-//		//Compile Frontend
-//		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Compile_Frontend_menuitem"), SWT.ALT + 'V', new FileActions.RunFrontend());
+		//Compile Frontend
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Compile_Frontend_menuitem"), SWT.ALT + 'V', new FileActions.RunFrontend());
 
 		return menu;
 	}

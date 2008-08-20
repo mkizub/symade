@@ -7,8 +7,8 @@ import kiev.gui.UIActionViewContext;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-public class UIActionMenuItem {
-	MenuItem item;
+public final class UIActionMenuItem {
+	final MenuItem item;
 	final IWindow wnd;
 	final UIActionFactory factory;
 	
@@ -25,7 +25,6 @@ public class UIActionMenuItem {
 		item.setAccelerator(accelerator);
 		this.wnd = wnd;
 		this.factory = factory;
-//		this.getAccessibleContext().setAccessibleDescription(factory.getDescr());		
 		item.addSelectionListener((Window)wnd);
 		item.setData(this);
 	}
