@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
+import kiev.fmt.Draw_Icon;
 import kiev.fmt.Drawable;
 import kiev.fmt.GfxDrawTermLayoutInfo;
 import kiev.fmt.IFmtGfx;
@@ -439,7 +440,11 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 		java.awt.Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font);
 		g.setFont(font);
 		Object term_obj = leaf.getTermObj();
-		if (leaf == current && cursor_offset >= 0) {
+		if (term_obj instanceof Draw_Icon) {
+			Draw_Icon di = (Draw_Icon)term_obj;
+			java.awt.Image img = AWTGraphics2D.decodeImage(di);
+			g.drawImage(img, x, y, null);
+		} else if (leaf == current && cursor_offset >= 0) {
 			String s;
 			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
 				s = " ";
@@ -461,8 +466,7 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 				}
 			} catch (java.lang.IllegalArgumentException e) {} 
 			g.translate(-x, -(y+b));
-		}
-		else {
+		} else {
 			String s;
 			if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
 				s = "\u25d8"; // ◘

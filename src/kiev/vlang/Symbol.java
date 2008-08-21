@@ -155,6 +155,15 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
+	final static class NameAndUUID {
+		final String name;
+		final String uuid;
+		NameAndUUID(String name, String uuid) {
+			this.name = name.intern();
+			this.uuid = uuid.intern();
+		}
+	}
+	
 	private Object ident_or_symbol_or_type;
 	
 	@AttrXMLDumpInfo(attr=true)
@@ -217,6 +226,10 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		else
 			this.name = t.image;
 	}
+	
+	public void setNameAndUUID(String name, String uuid) {
+		this.ident_or_symbol_or_type = new NameAndUUID(name, uuid);
+	}
 
 	@getter public final String get$name() {
 		Object id = ident_or_symbol_or_type;
@@ -232,6 +245,9 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				return ((Type)id).meta_type.qname();
 			return ((Type)id).meta_type.tdecl.sname;
 		}
+		if (id instanceof NameAndUUID) {
+			return ((NameAndUUID)id).name;
+		}
 		return null;
 	}
 
@@ -241,6 +257,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			return (Symbol)id;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl.symbol;
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			Symbol sym = Env.getRoot().getSymbolByUUID(nid.uuid);
+			if (sym != null) {
+				this.symbol = sym;
+				return sym;
+			}
+		}
 		return null;
 	}
 	
@@ -250,6 +274,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			return ((Symbol)id).dnode;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			Symbol sym = Env.getRoot().getSymbolByUUID(nid.uuid);
+			if (sym != null) {
+				this.symbol = sym;
+				return sym.dnode;
+			}
+		}
 		return null;
 	}
 	

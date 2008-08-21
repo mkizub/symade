@@ -87,7 +87,7 @@ public class TypeExpr extends TypeRef {
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "arg" || attr.name == "op" || attr.name == "op_name") {
-			if (!this.is_expr_id_signature && this.type_lnk != null)
+			if (!this.isExptTypeSignature() && this.type_lnk != null)
 				this.type_lnk = null;
 		}
 		super.callbackChildChanged(ct, attr, data);
@@ -97,7 +97,7 @@ public class TypeExpr extends TypeRef {
 	public void setOp(Operator op) {
 		if (!op.name.startsWith("T "))
 			throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass());
-		if (!this.is_expr_id_signature)
+		if (!this.isExptTypeSignature())
 			this.type_lnk = null;
 		this.op = op;
 	}

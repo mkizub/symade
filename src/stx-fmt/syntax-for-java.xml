@@ -3380,6 +3380,7 @@
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Constructor' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Initializer' />
          <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MethodImpl' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Macro' />
         </expected_types>
        </syntax:SyntaxExpectedAttr>
       </attr_types>

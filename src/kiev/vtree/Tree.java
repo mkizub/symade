@@ -75,6 +75,7 @@ public abstract class AttrSlot {
 	public final boolean         is_attr; // @nodeAttr, not @nodeData
 	public final boolean         is_child; // @nodeAttr and ANode
 	public final boolean         is_external; // not a field, declared externally of the node, not in values(), stored in ANode.ext_data[]
+	public final boolean         is_not_copyable; // shell not be copied
 	public final Class           clazz; // type of the fields
 	public final TypeInfo        typeinfo; // type of the fields
 	public final Object          defaultValue;
@@ -113,6 +114,17 @@ public abstract class AttrSlot {
 		else if (clazz == Double.class) defaultValue = new Double(0.);
 		else if (clazz == String.class) defaultValue = "";
 		else defaultValue = null;
+		
+		{
+			nodeAttr att = this.getClass().getAnnotation(nodeAttr.class);
+			if (att != null) {
+				is_not_copyable = !att.copyable();
+			}
+			nodeData dat = this.getClass().getAnnotation(nodeData.class);
+			if (dat != null) {
+				is_not_copyable = !dat.copyable();
+			}
+		}
 		
 		{
 			SymbolRefAutoComplete aci = this.getClass().getAnnotation(SymbolRefAutoComplete.class);

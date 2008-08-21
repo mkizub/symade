@@ -33,7 +33,7 @@ public class PathTypeRef extends TypeRef {
 
 	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
 		if (attr.name == "path") {
-			if (!this.is_expr_id_signature && this.type_lnk != null)
+			if (!this.isExptTypeSignature() && this.type_lnk != null)
 				this.type_lnk = null;
 			if (this.isAttached())
 				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);

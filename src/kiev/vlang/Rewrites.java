@@ -23,6 +23,35 @@ public final class RewriteContext {
 	public final ASTNode root;
 	public final Hashtable<String,Object> args;
 
+	public static ANode rewriteByMacro(String tdecl_name, String macro_name, Object... args) {
+		TypeDecl tdecl = (TypeDecl)Env.getRoot().loadAnyDecl(tdecl_name);
+		if (tdecl == null)
+			return null;
+		Type[] types = new Type[args.length];
+		for (int i=0; i < args.length; i++) {
+			Object arg = args[i];
+			if      (arg instanceof ASTNode)			types[i] = new ASTNodeType(arg.getClass());
+			else if (arg instanceof Boolean)			types[i] = StdTypes.tpBoolean;
+			else if (arg instanceof Character)			types[i] = StdTypes.tpChar;
+			else if (arg instanceof Byte)				types[i] = StdTypes.tpByte;
+			else if (arg instanceof Short)				types[i] = StdTypes.tpShort;
+			else if (arg instanceof Integer)			types[i] = StdTypes.tpInt;
+			else if (arg instanceof Long)				types[i] = StdTypes.tpLong;
+			else if (arg instanceof Float)				types[i] = StdTypes.tpFloat;
+			else if (arg instanceof Double)				types[i] = StdTypes.tpDouble;
+			else										types[i] = new ASTNodeType(arg.getClass());
+		}
+		Method m = tdecl.resolveMethod(macro_name, StdTypes.tpVoid, types);
+		if (m == null || m.body == null)
+			return null;
+		Hashtable<String,Object> params = new Hashtable<String,Object>();
+		Var[] mparams = m.params;
+		for (int i=0; i < mparams.length; i++)
+			params.put(mparams[i].sname, args[i]);
+		RewriteContext rctx = new RewriteContext(m.body, params);
+		return m.body.doRewrite(rctx);
+	}
+	
 	public RewriteContext(ASTNode root, Hashtable<String,Object> args) {
 		this.root = root;
 		this.args = args;

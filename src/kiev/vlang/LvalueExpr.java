@@ -252,11 +252,11 @@ public final class IFldExpr extends LvalueExpr {
 
 	public String toString() {
 		if (obj == null)
-			return String.valueOf(ident);
+			return this.ident;
 		if (obj.getPriority() < opAccessPriority)
-			return "("+obj.toString()+")."+var.toString();
+			return "("+obj.toString()+")."+this.ident;
 		else
-			return obj.toString()+"."+var.toString();
+			return obj.toString()+"."+this.ident;
 	}
 
 	public Var[] getAccessPath() {
@@ -457,8 +457,10 @@ public final class ThisExpr extends LvalueExpr {
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
-		if (isRewriteTarget())
-			return ((CallExpr)ctx.root).obj;
+		if (isRewriteTarget()) {
+			if (ctx.root instanceof CallExpr)
+				return ((CallExpr)ctx.root).obj;
+		}
 		return super.doRewrite(ctx);
 	}
 }

@@ -206,16 +206,13 @@ public final class UnresSeqs extends UnresExpr {
 public final class UnresCallExpr extends UnresExpr {
 
 	@nodeData public ENode			obj;
-	@nodeData public SymbolRef		func;
+	@nodeData public Symbol			func;
 	@nodeData public TypeRef∅		targs;
 	@nodeData public ENode∅			args;
 
 	public UnresCallExpr() {}
 
-	public UnresCallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos, func.symbol), targs, args, super_flag);
-	}
-	public UnresCallExpr(int pos, ENode obj, SymbolRef func, TypeRef[] targs, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, Symbol func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
 		this.obj = obj;
 		this.func = func;
@@ -245,7 +242,8 @@ public final class UnresCallExpr extends UnresExpr {
 			args[i] = args[i].closeBuild().detach();
 		if (obj instanceof TypeRef) {
 			if (func.dnode instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, (SymbolRef<Method>)~func, targs, args);
+				CallExpr ce = new CallExpr(pos, obj, func, targs, args);
+				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {
 				Field f = (Field)func.dnode;
@@ -253,7 +251,7 @@ public final class UnresCallExpr extends UnresExpr {
 			}
 		} else {
 			if (func.dnode instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, (SymbolRef<Method>)~func, targs, args);
+				CallExpr ce = new CallExpr(pos, obj, func, targs, args);
 				if (isSuperExpr())
 					ce.setSuperExpr(true);
 				ce.setCastCall(this.isCastCall());

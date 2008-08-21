@@ -22,6 +22,24 @@ public abstract class ENode extends ASTNode {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
+	final static class NameAndUUID {
+		final String name;
+		final String uuid;
+		NameAndUUID(String name, String uuid) {
+			this.name = name.intern();
+			this.uuid = uuid.intern();
+		}
+	}
+	
+	final static class TypeSignature {
+		final String name;
+		final String sign;
+		TypeSignature(String sign) {
+			this.name = AType.getNameFromSignature(sign).intern();
+			this.sign = sign;
+		}
+	}
+	
 	private Object	ident_or_symbol_or_type;
 	
 	@AttrXMLDumpInfo(attr=true)
@@ -37,6 +55,20 @@ public abstract class ENode extends ASTNode {
 	@nodeData @abstract public Type			type_lnk;
 	@nodeData @abstract public:ro DNode		dnode;
 
+	public void setNameAndUUID(String name, String uuid) {
+		this.ident_or_symbol_or_type = new NameAndUUID(name, uuid);
+		//this.qualified = true;
+	}
+
+	public void setTypeSignature(String signature) {
+		this.ident_or_symbol_or_type = new TypeSignature(signature);
+		//this.qualified = true;
+	}
+	
+	public boolean isExptTypeSignature() {
+		return this.ident_or_symbol_or_type instanceof TypeSignature;
+	}
+	
 	@getter public final String get$ident() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
@@ -53,6 +85,12 @@ public abstract class ENode extends ASTNode {
 				return ((Type)id).meta_type.qname();
 			return ((Type)id).meta_type.tdecl.sname;
 		}
+		if (id instanceof NameAndUUID) {
+			return ((NameAndUUID)id).name;
+		}
+		if (id instanceof TypeSignature) {
+			return ((TypeSignature)id).name;
+		}
 		return null;
 	}
 
@@ -64,6 +102,19 @@ public abstract class ENode extends ASTNode {
 			return (Symbol)id;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl.symbol;
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			Symbol sym = Env.getRoot().getSymbolByUUID(nid.uuid);
+			if (sym != null) {
+				this.symbol = sym;
+				return sym;
+			}
+		}
+		if (id instanceof TypeSignature) {
+			Type tp = AType.fromSignature(id.sign,true);
+			this.type_lnk = tp;
+			return tp.meta_type.tdecl.symbol;
+		}
 		return null;
 	}
 	
@@ -75,6 +126,19 @@ public abstract class ENode extends ASTNode {
 			return ((Symbol)id).dnode;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			Symbol sym = Env.getRoot().getSymbolByUUID(nid.uuid);
+			if (sym != null) {
+				this.symbol = sym;
+				return sym.dnode;
+			}
+		}
+		if (id instanceof TypeSignature) {
+			Type tp = AType.fromSignature(id.sign,true);
+			this.type_lnk = tp;
+			return tp.meta_type.tdecl;;
+		}
 		return null;
 	}
 	
@@ -87,10 +151,9 @@ public abstract class ENode extends ASTNode {
 			tp.bindings();
 			return tp;
 		}
-		if (this.is_expr_id_signature) {
-			Type tp = AType.fromSignature((String)id,true);
+		if (id instanceof TypeSignature) {
+			Type tp = AType.fromSignature(id.sign,true);
 			this.type_lnk = tp;
-			this.is_expr_id_signature = false;
 			return tp;
 		}
 		return null;
@@ -113,11 +176,6 @@ public abstract class ENode extends ASTNode {
 	@setter public final void set$type_lnk(Type val) {
 		assert (this instanceof TypeRef);
 		ident_or_symbol_or_type = val;
-	}
-	
-	public void setTypeSignature(String signature) {
-		this.ident_or_symbol_or_type = signature;
-		this.is_expr_id_signature = true;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -346,6 +404,7 @@ public abstract class ENode extends ASTNode {
 
 	public ANode doRewrite(RewriteContext ctx) {
 		ENode en = (ENode)super.doRewrite(ctx);
+		//en.ident_or_symbol_or_type = this.ident_or_symbol_or_type;
 		String id = this.ident;
 		String rw = ctx.replace(id);
 		if (id != rw)

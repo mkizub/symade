@@ -430,6 +430,22 @@ public abstract class AType extends TVSet implements StdTypes {
 		return str.toString();
 	}
 	
+	public static String getNameFromSignature(String sign) {
+		int p1 = sign.indexOf('‣');
+		if (p1 < 0)
+			p1 = sign.indexOf('@');
+		int p2 = sign.indexOf('(');
+		int p = -1;
+		if (p1 >= 0 && p2 >= 0)
+			p = Math.min(p1, p2);
+		else if (p1 >= 0)
+			p = p1;
+		else if (p2 >= 0)
+			p = p2;
+		if (p >= 0)
+			return sign.substring(0, p);
+		return sign;
+	}
 	public static Type fromSignature(String sign, boolean full) {
 		StringTokenizer st = new StringTokenizer(sign,"=,()",true);
 		String[] sep = {""};

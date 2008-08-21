@@ -62,11 +62,15 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,func.symbol), targs, args);
+		this.pos = pos;
+		this.symbol = func.symbol;
+		this.obj = obj;
+		this.targs.addAll(targs);
+		this.args.addAll(args);
 	}
 
 	public CallExpr(int pos, ENode obj, ISymbol func, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,func.symbol), null, args);
+		this(pos, obj, func.symbol, null, args);
 	}
 
 	public ENode[] getArgs() {
@@ -291,7 +295,7 @@ public class CallExpr extends ENode {
 		for (int si=0; si < res.length; si++) {
 			ENode e = res[si];
 			if (e != null) {
-				if (e instanceof UnresCallExpr && e.obj == this.obj) {
+				if (e instanceof UnresCallExpr && e.obj == this.obj /*&& !e.func.dnode.isMacro()*/) {
 					this.symbol = e.func.symbol;
 					return;
 				}
@@ -330,6 +334,8 @@ public class CallExpr extends ENode {
 		sb.append(')');
 		return sb.toString();
 	}
+
+
 	public ANode doRewrite(RewriteContext ctx) {
 		if (func == null || func.body == null || !func.isMacro())
 			return super.doRewrite(ctx);
@@ -344,7 +350,6 @@ public class CallExpr extends ENode {
 		ASTNode rewriter = func.body;
 		if (rewriter instanceof RewriteMatch)
 			rewriter = rewriter.matchCase(this);
-		//rewriter = rewriter.ncopy();
 		return rewriter.doRewrite(new RewriteContext(this, args));
 	}
 }
@@ -506,3 +511,4 @@ public class ClosureCallExpr extends ENode {
 		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
 	}
 }
+

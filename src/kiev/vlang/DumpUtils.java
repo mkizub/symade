@@ -881,8 +881,7 @@ public final class DumpUtils {
 				if (p >= 0) {
 					String name = value.substring(0,p);
 					String uuid = value.substring(p+1);
-					symref.name = name;
-					//symref.uuid = uuid;
+					symref.setNameAndUUID(name, uuid);
 				} else {
 					symref.name = value;
 				}

@@ -617,6 +617,16 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 			callbackTypeVersionChanged();
 		super.callbackChildChanged(ct, attr, data);
 	}
+	public void callbackAttached(ParentInfo pi) {
+		if (pi.isSemantic())
+			resetNames();
+		super.callbackAttached(pi);
+	}
+	public void callbackDetached(ANode parent, AttrSlot slot) {
+		if (slot.isSemantic())
+			resetNames();
+		super.callbackDetached(parent, slot);
+	}
 	
 	private void resetNames() {
 		q_name = null;

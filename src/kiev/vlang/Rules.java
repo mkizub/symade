@@ -255,12 +255,7 @@ public final class RuleBlock extends ENode {
 
 	public void testGenerate(SpacePtr space, Struct frame) {
 		try {
-			TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-			if (tdecl == null)
-				return;
-			Method m = tdecl.resolveMethod("mkRuleBlock", StdTypes.tpVoid);
-			RewriteContext rctx = new RewriteContext(m.body, new Hashtable<String,Object>());
-			Block rn = (Block)m.body.doRewrite(rctx);
+			Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleBlock");
 			SwitchStat sw = null;
 			foreach (ASTNode n; rn.stats) {
 				if (n instanceof Struct)
@@ -275,12 +270,14 @@ public final class RuleBlock extends ENode {
 			foreach(Var v; rule_method.localvars)
 				frame.members += new Field(v.sname, v.getType(), 0);
 			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
-			//if (Kiev.debug && Kiev.debugRules)
-			//	SyntaxManager.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), ((ATextSyntax)Env.getRoot().resolveGlobalDNode("stx-fmt·syntax-for-java")).getCompiled());
+			//if (Kiev.debug && Kiev.debugRules) {
+			//	java.io.File f = new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt");
+			//	kiev.fmt.Draw_ATextSyntax stx = kiev.fmt.SyntaxManager.getLanguageSyntax("stx-fmt·syntax-for-java", false);
+			//	kiev.fmt.SyntaxManager.dumpTextFile(rn, f, stx);
+			//}
 			this.replaceWithNode(rn);
 		} catch (Throwable t) {
-			System.out.println("Error: test.txt dump");
-			t.printStackTrace(System.out);
+			Kiev.reportError(this, t);
 		}
 	}
 }
@@ -471,14 +468,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-		if (tdecl == null)
-			return;
-		Method m = tdecl.resolveMethod("mkRuleIstheExpr", StdTypes.tpVoid, new ASTNodeType(RuleIstheExpr.class));
-		Hashtable<String,Object> args = new Hashtable<String,Object>();
-		args.put("node", this);
-		RewriteContext rctx = new RewriteContext(m.body, args);
-		Block rn = (Block)m.body.doRewrite(rctx);
+		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleIstheExpr", this);
 		foreach (ASTNode n; rn.stats.delToArray())
 			space += n;
 	}
@@ -566,14 +556,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-		if (tdecl == null)
-			return;
-		Method m = tdecl.resolveMethod("mkRuleIsoneofExpr", StdTypes.tpVoid, new ASTNodeType(RuleIsoneofExpr.class));
-		Hashtable<String,Object> args = new Hashtable<String,Object>();
-		args.put("node", this);
-		RewriteContext rctx = new RewriteContext(m.body, args);
-		Block rn = (Block)m.body.doRewrite(rctx);
+		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
 		foreach (ASTNode n; rn.stats.delToArray())
 			space += n;
 		frame.members += new Field("$iter$"+iter_var,itype.getType(),0);
@@ -601,14 +584,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-		if (tdecl == null)
-			return;
-		Method m = tdecl.resolveMethod("mkRuleCutExpr", StdTypes.tpVoid, new ASTNodeType(RuleCutExpr.class));
-		Hashtable<String,Object> args = new Hashtable<String,Object>();
-		args.put("node", this);
-		RewriteContext rctx = new RewriteContext(m.body, args);
-		Block rn = (Block)m.body.doRewrite(rctx);
+		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleCutExpr", this);
 		foreach (ASTNode n; rn.stats.delToArray())
 			space += n;
 	}
@@ -671,15 +647,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-		if (tdecl == null)
-			return;
-		Method m = tdecl.resolveMethod("mkRuleCallExpr", StdTypes.tpVoid, new ASTNodeType(RuleCallExpr.class), StdTypes.tpBoolean);
-		Hashtable<String,Object> args = new Hashtable<String,Object>();
-		args.put("node", this);
-		args.put("is_super", Boolean.valueOf(this.isSuperExpr()));
-		RewriteContext rctx = new RewriteContext(m.body, args);
-		Block rn = (Block)m.body.doRewrite(rctx);
+		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleCallExpr", this, this.isSuperExpr());
 		foreach (ASTNode n; rn.stats.delToArray())
 			space += n;
 		frame.members += new Field("$rc$frame$"+env_var,StdTypes.tpRule,0);
@@ -756,15 +724,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-		if (tdecl == null)
-			return;
-		Method m = tdecl.resolveMethod("mkRuleWhile", StdTypes.tpVoid, new ASTNodeType(RuleWhileExpr.class), StdTypes.tpBoolean);
-		Hashtable<String,Object> args = new Hashtable<String,Object>();
-		args.put("node", this);
-		args.put("has_bt_expr", Boolean.valueOf(bt_expr != null));
-		RewriteContext rctx = new RewriteContext(m.body, args);
-		Block rn = (Block)m.body.doRewrite(rctx);
+		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleWhile", this, bt_expr != null);
 		foreach (ASTNode n; rn.stats.delToArray())
 			space += n;
 	}
@@ -813,16 +773,7 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		TypeDecl tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode("kiev·ir·RuleTemplates");
-		if (tdecl == null)
-			return;
-		Method m = tdecl.resolveMethod("mkRuleExpr", StdTypes.tpVoid, new ASTNodeType(RuleExpr.class), StdTypes.tpBoolean, StdTypes.tpBoolean);
-		Hashtable<String,Object> args = new Hashtable<String,Object>();
-		args.put("node", this);
-		args.put("has_bt_expr", Boolean.valueOf(bt_expr != null));
-		args.put("is_boolean", Boolean.valueOf(expr.getType() ≡ StdTypes.tpBoolean));
-		RewriteContext rctx = new RewriteContext(m.body, args);
-		Block rn = (Block)m.body.doRewrite(rctx);
+		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleExpr", this, bt_expr != null, expr.getType() ≡ StdTypes.tpBoolean);
 		foreach (ASTNode n; rn.stats.delToArray())
 			space += n;
 	}

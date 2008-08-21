@@ -903,7 +903,7 @@ public abstract class ANode implements INode {
 		if !(this instanceof ASTNode)
 			return this.ncopy();
 		ANode rn = (ANode)getClass().newInstance();
-		foreach (AttrSlot attr; this.values(); attr.is_attr) {
+		foreach (AttrSlot attr; this.values(); attr.is_attr && !attr.is_not_copyable) {
 			if (attr instanceof SpaceAttrSlot) {
 				ANode[] vals = attr.getArray(this);
 				for (int i=0; i < vals.length; i++) {
@@ -1140,8 +1140,6 @@ public abstract class ASTNode extends ANode implements Constants {
 	public @packed:1,compileflags,8  boolean is_expr_gen_void;
 	public @packed:1,compileflags,9  boolean is_expr_for_wrapper;
 	public @packed:1,compileflags,10 boolean is_expr_cast_call;
-	
-	public @packed:1,compileflags,11 boolean is_expr_id_signature;
 
 	// Statement flags
 	public @packed:1,compileflags,11 boolean is_stat_abrupted;
