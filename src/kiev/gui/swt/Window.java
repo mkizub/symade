@@ -135,9 +135,12 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 		TabItem item = new TabItem (explorers, SWT.NONE);
 		item.setText(resources.getString("Explorer_title"));
-//		expl_tree   = new ANodeTree(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);					
-//		item.setControl(expl_tree.getControl());
-//		expl_tree.getControl().addFocusListener(this);
+		expl_tree = new Canvas(explorers, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);					
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		expl_tree.getControl().setLayoutData(gridData);
+		expl_tree.getControl().addFocusListener(this);
+		item.setControl(expl_tree.getControl());
+		expl_tree.getControl().addPaintListener(expl_tree.getPaintListener());
 
 		item = new TabItem (explorers, SWT.NONE);
 		item.setText(resources.getString("Project_title"));
@@ -167,32 +170,40 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 		item = new TabItem (infos, SWT.NONE);
 		item.setText(resources.getString("Inspector_title"));
-//		prop_table = new ANodeTable(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);	
-//		prop_table.getControl().addFocusListener(this);
-//		item.setControl(prop_table.getControl());
+		prop_table = new Canvas(infos, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);					
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		prop_table.getControl().setLayoutData(gridData);
+		prop_table.getControl().addFocusListener(this);
+		item.setControl(prop_table.getControl());
+		prop_table.getControl().addPaintListener(prop_table.getPaintListener());
 		
 		editor_views = new Editor[0];
 		info_view = new InfoView((IWindow)this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		clip_view = new InfoView((IWindow)this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
-//		prop_view = new TableView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+		prop_view = new InfoView((IWindow)this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 
-//		expl_view = new TreeView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));	
+		expl_view = new InfoView((IWindow)this, expl_tree, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));	
 		tree_view = new ProjectView((IWindow)this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
+		
 		addListeners();
 		initBgFormatters();
-//		expl_view.setRoot(Env.getProject());
-//		expl_tree.setInput(expl_view.view_root);
-//		expl_view.formatAndPaint(true);
+		
+		expl_view.setRoot(Env.getProject());
+		expl_view.formatAndPaint(true);
 
-//		expl_tree.requestFocus();
 		tree_view.setRoot(Env.getProject());
 		tree_view.formatAndPaint(true);
+	
+		explorers.setSelection(findTabItem(tree_canvas));
+		tree_canvas.requestFocus();
+
 		Rectangle screenSize = display.getClientArea();
 		parent.setSize(screenSize.width*4/5, screenSize.height*4/5-20);
 	}
 
 	public static Display getDisplay(){return display;}
 	public static Shell getShell(){return shell;}
+	
 	public void dispose() {
 		displayArea = null;
 	}
@@ -354,34 +365,29 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 			info_view.bg_formatter = new BgFormatter(info_view);
 			info_view.bg_formatter.start();
 		}
-//		if (prop_view != null) {
-//			prop_view.bg_formatter = new BgFormatter(prop_view);
-//			prop_view.bg_formatter.start();
-//		}
+		if (prop_view != null) {
+			prop_view.bg_formatter = new BgFormatter(prop_view);
+			prop_view.bg_formatter.start();
+		}
 	}
 
 	private void addListeners() {
 		if (info_view != null)
 			addElementChangeListener(info_view);
-//		if (prop_view != null)
-//			addElementChangeListener(prop_view);
+		if (prop_view != null)
+			addElementChangeListener(prop_view);
 	}
 
 	public void focusGained(FocusEvent e) {
 		if (e.getSource() instanceof org.eclipse.swt.widgets.Canvas){	
 			org.eclipse.swt.widgets.Canvas control = (org.eclipse.swt.widgets.Canvas)e.getSource();
-			cur_comp = Canvas.registry.get(control);
-			
-//		else if (e.getSource() instanceof ANodeTree)
-//		cur_comp = (ANodeTree)e.getSource();
+			cur_comp = Canvas.registry.get(control);			
 		}
 	}
 
 	public void focusLost(FocusEvent e) {
 		if (e.getSource() instanceof org.eclipse.swt.widgets.Canvas)
 		cur_comp = null;
-//		else if (e.getSource() instanceof ANodeTree)
-//		cur_comp = null;
 	}
 
 	public UIView getCurrentView() {
@@ -394,8 +400,8 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 			return info_view;
 		if (clip_view.getView_canvas() == cc)
 			return clip_view;
-//		if (expl_view.getView_tree() == cc)
-//			return expl_view;
+		if (expl_view.getView_canvas() == cc)
+			return expl_view;
 		if (tree_view.getView_canvas() == cc)
 			return tree_view;
 		return null;
@@ -409,8 +415,11 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		for (Editor e: editor_views) {
 			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
 				e.goToPath(path);
-//				editors.setSelection(e.getView_canvas());
-				e.getView_canvas().requestFocus();
+				Canvas can = (Canvas)e.getView_canvas();
+				TabItem ti = findTabItem(editors, can);
+				if (ti != null)
+					editors.setSelection(ti);
+				can.requestFocus();
 				return;
 			}
 		}
@@ -440,17 +449,28 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 				continue;
 			}
 			Canvas can = (Canvas)e.getView_canvas();
-			TabFolder tf = (TabFolder)can.getControl().getParent();
-			for (TabItem ti: tf.getItems()){
-				if (ti.getControl() == can.getControl()){
-					Canvas.unregister(can.getControl());
-					ti.dispose();
-					break;
-				}
+			TabItem ti = findTabItem(can);
+			if (ti != null){
+				Canvas.unregister(can.getControl());
+				ti.dispose();
 			}
 			
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
+	}
+
+	private TabItem findTabItem(Canvas can){
+		TabFolder tf = (TabFolder)can.getControl().getParent();
+		return findTabItem(tf, can);
+	}
+	
+	private TabItem findTabItem(TabFolder tf, Canvas can){
+		for (TabItem ti: tf.getItems()){
+			if (ti.getControl() == can.getControl()){
+				return ti;
+			}
+		}
+		return null;
 	}
 
 	/**

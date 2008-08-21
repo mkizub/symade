@@ -72,10 +72,12 @@ public class UIManager {
 	}
 	
 	public static Object getClipboardContent() {
+		if (SWT) return kiev.gui.swt.Clipboard.getClipboardContent();
 		return kiev.gui.swing.Clipboard.getClipboardContent();
 	}
 
 	public static void setClipboardContent(Object obj) {
+		if (SWT) kiev.gui.swt.Clipboard.setClipboardContent(obj);
 		kiev.gui.swing.Clipboard.setClipboardContent(obj);
 	}
 
