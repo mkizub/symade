@@ -317,6 +317,7 @@ public final class MacroLang extends LangBase {
 		IfElseRewr.class,
 		SwitchRewr.class,
 		ForEachRewr.class,
+		MacroListIntExpr.class,
 		MacroAccessExpr.class,
 		MacroSubstExpr.class,
 		MacroSubstTypeRef.class,

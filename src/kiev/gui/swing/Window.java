@@ -122,6 +122,14 @@ public class Window extends JFrame
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
 			menu.add(mi);
 
+			mi = new UIActionMenuItem((IWindow)this, "Paste here", KeyEvent.VK_V,  new kiev.gui.Clipboard.PasteHereFactory());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+			menu.add(mi);
+
+			mi = new UIActionMenuItem((IWindow)this, "Paste next", KeyEvent.VK_B,  new kiev.gui.Clipboard.PasteNextFactory());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
+			menu.add(mi);
+
 			menu.add(new JSeparator());
 
 			mi = new UIActionMenuItem((IWindow)this, "New Element Here", KeyEvent.VK_H, new NewElemHere.Factory());

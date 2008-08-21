@@ -287,6 +287,10 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		//Del
 		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Del_menuitem"), SWT.DEL, EditActions.newCut());
 
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Paste_here_menuitem"), SWT.CTRL + 'V',  new kiev.gui.Clipboard.PasteHereFactory());
+
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Paste_next_menuitem"), SWT.CTRL + 'B',  new kiev.gui.Clipboard.PasteHereFactory());
+
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		//New Element Here

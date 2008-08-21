@@ -202,6 +202,7 @@ public final class ASTNodeMetaType extends MetaType {
 		allNodes = new Hashtable<String,Class>(256);
 		allNodes.put("Any",					Object.class);
 		allNodes.put("Node",				ANode.class);
+		allNodes.put("Var",					Var.class);
 		allNodes.put("Field",				Field.class);
 		allNodes.put("StrConcat",			StringConcatExpr.class);
 		allNodes.put("Set",					AssignExpr.class);

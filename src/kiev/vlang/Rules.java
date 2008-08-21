@@ -255,7 +255,8 @@ public final class RuleBlock extends ENode {
 
 	public void testGenerate(SpacePtr space, Struct frame) {
 		try {
-			Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleBlock");
+			RuleMethod rule_method = (RuleMethod)ctx_method;
+			Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleBlock", rule_method.max_depth-1, rule_method.localvars);
 			SwitchStat sw = null;
 			foreach (ASTNode n; rn.stats) {
 				if (n instanceof Struct)
@@ -263,12 +264,6 @@ public final class RuleBlock extends ENode {
 				else if (n instanceof SwitchStat)
 					sw = (SwitchStat)n;
 			}
-			RuleMethod rule_method = (RuleMethod)ctx_method;
-			for (int i=0; i < rule_method.max_depth; i++)
-				frame.members += new Field("bt$"+i, StdTypes.tpInt, 0);
-			// Local variables
-			foreach(Var v; rule_method.localvars)
-				frame.members += new Field(v.sname, v.getType(), 0);
 			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
 			//if (Kiev.debug && Kiev.debugRules) {
 			//	java.io.File f = new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt");
@@ -468,9 +463,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleIstheExpr", this);
-		foreach (ASTNode n; rn.stats.delToArray())
-			space += n;
+		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleIstheExpr", this);
 	}
 }
 
@@ -556,9 +549,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
-		foreach (ASTNode n; rn.stats.delToArray())
-			space += n;
+		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
 		frame.members += new Field("$iter$"+iter_var,itype.getType(),0);
 	}
 }
@@ -584,9 +575,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleCutExpr", this);
-		foreach (ASTNode n; rn.stats.delToArray())
-			space += n;
+		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleCutExpr", this);
 	}
 }
 
@@ -647,9 +636,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleCallExpr", this, this.isSuperExpr());
-		foreach (ASTNode n; rn.stats.delToArray())
-			space += n;
+		Block rn = (Block)RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleCallExpr", this, this.isSuperExpr());
 		frame.members += new Field("$rc$frame$"+env_var,StdTypes.tpRule,0);
 	}
 }
@@ -724,9 +711,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleWhile", this, bt_expr != null);
-		foreach (ASTNode n; rn.stats.delToArray())
-			space += n;
+		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleWhile", this, bt_expr != null);
 	}
 }
 
@@ -773,9 +758,7 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleExpr", this, bt_expr != null, expr.getType() ≡ StdTypes.tpBoolean);
-		foreach (ASTNode n; rn.stats.delToArray())
-			space += n;
+		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleExpr", this, bt_expr != null, expr.getType() ≡ StdTypes.tpBoolean);
 	}
 }
 

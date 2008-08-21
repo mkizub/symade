@@ -36,29 +36,51 @@
     </name>
     <mode>IMPORT_CLASS</mode>
    </core:Import>
-   <core:MetaTypeDecl name='RuleTemplates' uuid='cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' >
+   <core:MetaTypeDecl name='RuleTemplates' uuid='cf8c91c2-5e14-4df4-abe3-ee93f6b040fc'>
     <members>
      <core:Method name='mkRuleBlock'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
+      <params>
+       <core:LVar name='bt_states' uuid='0fcae501-f0f5-4ad3-8eb1-0c12d4e15972'>
+        <vtype>
+         <core:TypeNameRef ident='int' />
+        </vtype>
+       </core:LVar>
+       <core:LVar name='localvars' uuid='f9384871-b54b-4e2e-a83f-870e34ad56a2'>
+        <vtype>
+         <core:TypeExpr ident='_array_'>
+          <arg>
+           <core:TypeExpr ident='_astnode_'>
+            <arg>
+             <core:TypeNameRef ident='Var' />
+            </arg>
+            <op_name>T #</op_name>
+           </core:TypeExpr>
+          </arg>
+          <op_name>T []</op_name>
+         </core:TypeExpr>
+        </vtype>
+       </core:LVar>
+      </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='$env$'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:Label name='enter$1'>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:Label>
-         <core:JavaClass name='frame$$' uuid='26b91940-3042-45ee-ad0d-e28779b8c6ce'>
+         <core:JavaClass name='frame$$'>
           <members>
            <core:Ctor>
             <type_ret>
@@ -73,6 +95,64 @@
              <core:TypeNameRef ident='int' />
             </vtype>
            </core:Field>
+           <macro:ForEachRewr>
+            <var>
+             <core:LVar name='var' uuid='afa555f9-6734-406e-9366-d0ecd4cb17bc'>
+              <vtype>
+               <core:TypeNameRef ident='int' />
+              </vtype>
+             </core:LVar>
+            </var>
+            <container>
+             <macro:MacroListIntExpr>
+              <start>
+               <core:ConstIntExpr value='0' />
+              </start>
+              <end>
+               <core:LVarExpr ident='bt_states' />
+              </end>
+             </macro:MacroListIntExpr>
+            </container>
+            <body>
+             <core:Field name='bt${var}' uuid='f1d59745-7a64-4d03-9ab4-c626f407fb51'>
+              <vtype>
+               <core:TypeNameRef ident='int' />
+              </vtype>
+             </core:Field>
+            </body>
+           </macro:ForEachRewr>
+           <macro:ForEachRewr>
+            <var>
+             <core:LVar name='lvar'>
+              <vtype>
+               <core:TypeExpr ident='_astnode_'>
+                <arg>
+                 <core:TypeNameRef ident='Var' />
+                </arg>
+                <op_name>T #</op_name>
+               </core:TypeExpr>
+              </vtype>
+             </core:LVar>
+            </var>
+            <container>
+             <core:LVarExpr ident='localvars' />
+            </container>
+            <body>
+             <core:Field name='{lvar>sname}'>
+              <vtype>
+               <macro:MacroSubstTypeRef>
+                <mtype>
+                 <macro:MacroAccess ident='vtype'>
+                  <obj>
+                   <core:LVarExpr ident='lvar' />
+                  </obj>
+                 </macro:MacroAccess>
+                </mtype>
+               </macro:MacroSubstTypeRef>
+              </vtype>
+             </core:Field>
+            </body>
+           </macro:ForEachRewr>
           </members>
           <super_types>
            <core:TypeNameRef ident='rule' />
@@ -83,7 +163,7 @@
          </core:JavaClass>
          <core:LVar name='$env'>
           <vtype>
-           <core:TypeNameRef type='frame$$‣26b91940-3042-45ee-ad0d-e28779b8c6ce' />
+           <core:TypeNameRef ident='frame$$' />
           </vtype>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -114,7 +194,7 @@
                 <value>
                  <core:New>
                   <ntype>
-                   <core:TypeNameRef type='frame$$‣26b91940-3042-45ee-ad0d-e28779b8c6ce' />
+                   <core:TypeNameRef ident='frame$$' />
                   </ntype>
                  </core:New>
                 </value>
@@ -149,7 +229,7 @@
                 <value>
                  <core:Cast>
                   <ctype>
-                   <core:TypeNameRef type='frame$$‣26b91940-3042-45ee-ad0d-e28779b8c6ce' />
+                   <core:TypeNameRef ident='frame$$' />
                   </ctype>
                   <expr>
                    <core:LVarExpr ident='$env$' />
@@ -208,7 +288,7 @@
           </expr>
          </core:Return>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />
@@ -243,7 +323,7 @@
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -251,12 +331,12 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:Label name='enter${node>next_back>idx}'>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:Label>
          <macro:IfElseRewr>
@@ -401,7 +481,7 @@
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -409,12 +489,12 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:Label name='enter${node>next_check>idx}'>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:Label>
          <macro:IfElseRewr>
@@ -528,14 +608,14 @@
        </core:LVar>
       </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='$env'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -543,7 +623,7 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LblSt>
@@ -607,7 +687,7 @@
           <thenSt>
            <core:Call ident='createCodeBacktrack'>
             <obj>
-             <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+             <core:TypeNameRef ident='RuleTemplates' />
             </obj>
             <args>
              <core:LVarExpr ident='node' />
@@ -650,7 +730,7 @@
          </core:ExprSt>
          <core:Call ident='createCodeMoreCheck'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -685,7 +765,7 @@
          </core:ExprSt>
          <core:Call ident='createCodeBacktrack'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -731,7 +811,7 @@
             <thenSt>
              <core:Call ident='createCodeBacktrack'>
               <obj>
-               <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+               <core:TypeNameRef ident='RuleTemplates' />
               </obj>
               <args>
                <core:LVarExpr ident='node' />
@@ -744,7 +824,7 @@
          </core:LblSt>
          <core:Call ident='createCodeMoreCheck'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -752,7 +832,7 @@
           </args>
          </core:Call>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />
@@ -965,14 +1045,14 @@
        </core:LVar>
       </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='$env'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -980,7 +1060,7 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LblSt>
@@ -1265,7 +1345,7 @@
              </core:If>
              <core:Call ident='createCodeMoreCheck'>
               <obj>
-               <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+               <core:TypeNameRef ident='RuleTemplates' />
               </obj>
               <args>
                <core:LVarExpr ident='node' />
@@ -1317,7 +1397,7 @@
          </core:ExprSt>
          <core:Call ident='createCodeBacktrack'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -1374,7 +1454,7 @@
           <cond>
            <core:Call ident='createCodeContains'>
             <obj>
-             <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+             <core:TypeNameRef ident='RuleTemplates' />
             </obj>
             <args>
              <core:LVarExpr ident='node' />
@@ -1384,7 +1464,7 @@
           <thenSt>
            <core:Call ident='createCodeMoreCheck'>
             <obj>
-             <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+             <core:TypeNameRef ident='RuleTemplates' />
             </obj>
             <args>
              <core:LVarExpr ident='node' />
@@ -1411,7 +1491,7 @@
          </core:Case>
          <core:Call ident='createCodeBacktrack'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -1419,7 +1499,7 @@
           </args>
          </core:Call>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />
@@ -1443,14 +1523,14 @@
        </core:LVar>
       </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='bt$'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LblSt>
@@ -1474,7 +1554,7 @@
          </core:LblSt>
          <core:Call ident='createCodeMoreCheck'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -1482,7 +1562,7 @@
           </args>
          </core:Call>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />
@@ -1511,14 +1591,14 @@
        </core:LVar>
       </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='$env'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -1526,7 +1606,7 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LblSt>
@@ -1654,7 +1734,7 @@
           <thenSt>
            <core:Call ident='createCodeBacktrack'>
             <obj>
-             <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+             <core:TypeNameRef ident='RuleTemplates' />
             </obj>
             <args>
              <core:LVarExpr ident='node' />
@@ -1665,7 +1745,7 @@
          </core:If>
          <core:Call ident='createCodeMoreCheck'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -1673,7 +1753,7 @@
           </args>
          </core:Call>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />
@@ -1707,14 +1787,14 @@
        </core:LVar>
       </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='$env'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -1722,7 +1802,7 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LblSt>
@@ -1752,7 +1832,7 @@
                 <thenSt>
                  <core:Call ident='createCodeBacktrack'>
                   <obj>
-                   <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+                   <core:TypeNameRef ident='RuleTemplates' />
                   </obj>
                   <args>
                    <core:LVarExpr ident='node' />
@@ -1763,7 +1843,7 @@
                </core:If>
                <core:Call ident='createCodeMoreCheck'>
                 <obj>
-                 <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+                 <core:TypeNameRef ident='RuleTemplates' />
                 </obj>
                 <args>
                  <core:LVarExpr ident='node' />
@@ -1800,7 +1880,7 @@
                  </core:ExprSt>
                  <core:Call ident='createCodeMoreCheck'>
                   <obj>
-                   <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+                   <core:TypeNameRef ident='RuleTemplates' />
                   </obj>
                   <args>
                    <core:LVarExpr ident='node' />
@@ -1860,7 +1940,7 @@
                  </core:ExprSt>
                  <core:Call ident='createCodeMoreCheck'>
                   <obj>
-                   <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+                   <core:TypeNameRef ident='RuleTemplates' />
                   </obj>
                   <args>
                    <core:LVarExpr ident='node' />
@@ -1916,7 +1996,7 @@
              </core:ExprSt>
              <core:Call ident='createCodeBacktrack'>
               <obj>
-               <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+               <core:TypeNameRef ident='RuleTemplates' />
               </obj>
               <args>
                <core:LVarExpr ident='node' />
@@ -1931,7 +2011,7 @@
           </elseSt>
          </macro:IfElseRewr>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />
@@ -1960,14 +2040,14 @@
        </core:LVar>
       </params>
       <body>
-       <core:Block>
+       <macro:BlockRewr>
         <stats>
          <core:LVar name='$env'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LVar name='bt$'>
@@ -1975,7 +2055,7 @@
            <core:TypeNameRef ident='int' />
           </vtype>
           <metas>
-           <core:UserMeta name='kiev·stdlib·meta·extern‣2f974941-0c02-4635-9228-9333cc02da75' />
+           <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
          <core:LblSt>
@@ -2068,7 +2148,7 @@
           <thenSt>
            <core:Call ident='createCodeBacktrack'>
             <obj>
-             <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+             <core:TypeNameRef ident='RuleTemplates' />
             </obj>
             <args>
              <core:LVarExpr ident='node' />
@@ -2079,7 +2159,7 @@
          </core:If>
          <core:Call ident='createCodeMoreCheck'>
           <obj>
-           <core:TypeNameRef type='kiev.ir.RuleTemplates‣cf8c91c2-5e14-4df4-abe3-ee93f6b040fc' />
+           <core:TypeNameRef ident='RuleTemplates' />
           </obj>
           <args>
            <core:LVarExpr ident='node' />
@@ -2087,7 +2167,7 @@
           </args>
          </core:Call>
         </stats>
-       </core:Block>
+       </macro:BlockRewr>
       </body>
       <metas>
        <core:MetaMacro />

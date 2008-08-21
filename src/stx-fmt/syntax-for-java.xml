@@ -1860,6 +1860,7 @@
       <title>Declarations</title>
       <expected_types>
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVar' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='Field' />
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='JavaClass' />
       </expected_types>
      </syntax:SyntaxExpectedTemplate>
@@ -1869,6 +1870,7 @@
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroAccessExpr' />
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroSubstExpr' />
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroSubstTypeRef' />
+       <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroListIntExpr' />
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='MacroHasMetaExpr' />
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='IfElseRewr' />
        <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='SwitchRewr' />
@@ -3506,6 +3508,14 @@
       <rnode>
        <core:SymbolRef name='Field' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>vtype</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -3605,6 +3615,14 @@
         <rnode>
          <core:SymbolRef name='LVar' />
         </rnode>
+        <attr_types>
+         <syntax:SyntaxExpectedAttr>
+          <attr_name>vtype</attr_name>
+          <expected_types>
+           <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+          </expected_types>
+         </syntax:SyntaxExpectedAttr>
+        </attr_types>
         <elem>
          <syntax:SyntaxSet>
           <elements>
@@ -3676,6 +3694,14 @@
       <rnode>
        <core:SymbolRef name='MethodImpl' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>params</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVar' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -5480,6 +5506,14 @@
       <rnode>
        <core:SymbolRef name='TypeExpr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>arg</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxExpr>
         <attrs>
@@ -7456,6 +7490,14 @@
       <rnode>
        <core:SymbolRef name='LVar' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>vtype</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -7594,6 +7636,14 @@
         <rnode>
          <core:SymbolRef name='LVar' />
         </rnode>
+        <attr_types>
+         <syntax:SyntaxExpectedAttr>
+          <attr_name>vtype</attr_name>
+          <expected_types>
+           <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+          </expected_types>
+         </syntax:SyntaxExpectedAttr>
+        </attr_types>
         <elem>
          <syntax:SyntaxSet>
           <elements>
@@ -7674,6 +7724,14 @@
         <rnode>
          <core:SymbolRef name='Field' />
         </rnode>
+        <attr_types>
+         <syntax:SyntaxExpectedAttr>
+          <attr_name>vtype</attr_name>
+          <expected_types>
+           <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+          </expected_types>
+         </syntax:SyntaxExpectedAttr>
+        </attr_types>
         <elem>
          <syntax:SyntaxSet>
           <elements>
@@ -7756,6 +7814,14 @@
           <rnode>
            <core:SymbolRef name='LVar' />
           </rnode>
+          <attr_types>
+           <syntax:SyntaxExpectedAttr>
+            <attr_name>vtype</attr_name>
+            <expected_types>
+             <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+            </expected_types>
+           </syntax:SyntaxExpectedAttr>
+          </attr_types>
           <elem>
            <syntax:SyntaxSet>
             <elements>
@@ -7836,6 +7902,14 @@
           <rnode>
            <core:SymbolRef name='Field' />
           </rnode>
+          <attr_types>
+           <syntax:SyntaxExpectedAttr>
+            <attr_name>vtype</attr_name>
+            <expected_types>
+             <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-TypeRef' />
+            </expected_types>
+           </syntax:SyntaxExpectedAttr>
+          </attr_types>
           <elem>
            <syntax:SyntaxSet>
             <elements>
@@ -8665,6 +8739,35 @@
       <rnode>
        <core:SymbolRef name='ForEachRewr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>var</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVar' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>container</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Expr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>cond</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Expr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>body</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Macro' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Stat' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Expr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Decl' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -8707,13 +8810,8 @@
          <syntax:SyntaxSubAttr>
           <name>container</name>
          </syntax:SyntaxSubAttr>
-         <syntax:SyntaxOptional>
-          <calculator>
-           <syntax:CalcOptionNotNull>
-            <name>cond</name>
-           </syntax:CalcOptionNotNull>
-          </calculator>
-          <opt_true>
+         <syntax:SyntaxElemWrapper>
+          <prefix>
            <syntax:SyntaxToken>
             <text>where</text>
             <kind>KEYWORD</kind>
@@ -8721,14 +8819,22 @@
              <core:SymbolRef name='fmt-keyword' />
             </fmt>
            </syntax:SyntaxToken>
-          </opt_true>
-         </syntax:SyntaxOptional>
-         <syntax:SyntaxSubAttr>
-          <name>cond</name>
+          </prefix>
           <empty>
-           <syntax:SyntaxSpace />
+           <syntax:SyntaxPlaceHolder>
+            <text>&lt;where></text>
+            <attr_name>cond</attr_name>
+            <fmt>
+             <core:SymbolRef name='fmt-placeholder' />
+            </fmt>
+           </syntax:SyntaxPlaceHolder>
           </empty>
-         </syntax:SyntaxSubAttr>
+          <element>
+           <syntax:SyntaxSubAttr>
+            <name>cond</name>
+           </syntax:SyntaxSubAttr>
+          </element>
+         </syntax:SyntaxElemWrapper>
          <syntax:SyntaxToken>
           <text>)</text>
           <fmt>
@@ -9743,10 +9849,61 @@
        </syntax:SyntaxSubAttr>
       </elem>
      </syntax:SyntaxElemDecl>
+     <syntax:SyntaxElemDecl name='stx-macro-list-int-expr' uuid='9e5c9275-4a6d-4e16-85df-19e8245c0293'>
+      <rnode>
+       <core:SymbolRef name='MacroListIntExpr' />
+      </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>start</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstIntExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVarExpr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>end</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='ConstIntExpr' />
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='LVarExpr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
+      <elem>
+       <syntax:SyntaxSet>
+        <elements>
+         <syntax:SyntaxToken>
+          <text>#[</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>start</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>..</text>
+         </syntax:SyntaxToken>
+         <syntax:SyntaxSubAttr>
+          <name>end</name>
+         </syntax:SyntaxSubAttr>
+         <syntax:SyntaxToken>
+          <text>]</text>
+         </syntax:SyntaxToken>
+        </elements>
+        <nested_function_lookup>false</nested_function_lookup>
+       </syntax:SyntaxSet>
+      </elem>
+     </syntax:SyntaxElemDecl>
      <syntax:SyntaxElemDecl name='stx-macro-access'>
       <rnode>
        <core:SymbolRef name='MacroAccessExpr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>obj</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Expr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -9778,6 +9935,14 @@
       <rnode>
        <core:SymbolRef name='MacroSubstExpr' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>expr</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Expr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>
@@ -9807,6 +9972,14 @@
       <rnode>
        <core:SymbolRef name='MacroSubstTypeRef' />
       </rnode>
+      <attr_types>
+       <syntax:SyntaxExpectedAttr>
+        <attr_name>mtype</attr_name>
+        <expected_types>
+         <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='stx-types-Expr' />
+        </expected_types>
+       </syntax:SyntaxExpectedAttr>
+      </attr_types>
       <elem>
        <syntax:SyntaxSet>
         <elements>

@@ -1098,6 +1098,8 @@ public class SyntaxElemWrapper extends SyntaxElem {
 			dr_elem.prefix = this.prefix.getCompiled(dr_elem.elem_decl);
 		if (this.sufix != null)
 			dr_elem.sufix = this.sufix.getCompiled(dr_elem.elem_decl);
+		if (this.empty != null)
+			dr_elem.empty = this.empty.getCompiled(dr_elem.elem_decl);
 		if (this.element != null)
 			dr_elem.element = this.element.getCompiled(dr_elem.elem_decl);
 	}

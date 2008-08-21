@@ -23,24 +23,42 @@ public final class RewriteContext {
 	public final ASTNode root;
 	public final Hashtable<String,Object> args;
 
+	private static Type getMacroParamType(Class arg) {
+		if      (((Class)ASTNode.class).isAssignableFrom(arg))
+			return new ASTNodeType(arg);
+		else if (arg.isArray())
+			return new ArrayType(getMacroParamType(arg.getComponentType()));
+		else if (arg == Boolean.class)			return StdTypes.tpBoolean;
+		else if (arg == Character.class)		return StdTypes.tpChar;
+		else if (arg == Byte.class)				return StdTypes.tpByte;
+		else if (arg == Short.class)			return StdTypes.tpShort;
+		else if (arg == Integer.class)			return StdTypes.tpInt;
+		else if (arg == Long.class)				return StdTypes.tpLong;
+		else if (arg == Float.class)			return StdTypes.tpFloat;
+		else if (arg == Double.class)			return StdTypes.tpDouble;
+		return new ASTNodeType(arg);
+	}
+	
+	public static ANode rewriteByMacro(SpacePtr space, String tdecl_name, String macro_name, Object... args) {
+		ANode res = rewriteByMacro(tdecl_name, macro_name, args);
+		if (res instanceof BlockRewr) {
+			BlockRewr bl = (BlockRewr)res;
+			foreach (ASTNode n; bl.stats.delToArray())
+				space += n;
+		}
+		else if (res instanceof ASTNode) {
+			space += (ASTNode)res;
+		}
+		return res;
+	}
+	
 	public static ANode rewriteByMacro(String tdecl_name, String macro_name, Object... args) {
 		TypeDecl tdecl = (TypeDecl)Env.getRoot().loadAnyDecl(tdecl_name);
 		if (tdecl == null)
 			return null;
 		Type[] types = new Type[args.length];
-		for (int i=0; i < args.length; i++) {
-			Object arg = args[i];
-			if      (arg instanceof ASTNode)			types[i] = new ASTNodeType(arg.getClass());
-			else if (arg instanceof Boolean)			types[i] = StdTypes.tpBoolean;
-			else if (arg instanceof Character)			types[i] = StdTypes.tpChar;
-			else if (arg instanceof Byte)				types[i] = StdTypes.tpByte;
-			else if (arg instanceof Short)				types[i] = StdTypes.tpShort;
-			else if (arg instanceof Integer)			types[i] = StdTypes.tpInt;
-			else if (arg instanceof Long)				types[i] = StdTypes.tpLong;
-			else if (arg instanceof Float)				types[i] = StdTypes.tpFloat;
-			else if (arg instanceof Double)				types[i] = StdTypes.tpDouble;
-			else										types[i] = new ASTNodeType(arg.getClass());
-		}
+		for (int i=0; i < args.length; i++)
+			types[i] = getMacroParamType(args[i].getClass());
 		Method m = tdecl.resolveMethod(macro_name, StdTypes.tpVoid, types);
 		if (m == null || m.body == null)
 			return null;
@@ -551,6 +569,48 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 	public rule resolveNameR(ResInfo path)
 	{
 		path ?= var
+	}
+
+}
+
+@ThisIsANode(lang=MacroLang)
+public class MacroListIntExpr extends ENode {
+	
+	@DataFlowDefinition(out="end") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode	start;
+	@DataFlowDefinition(in="start")		ENode	end;
+	}
+
+	@nodeAttr public ENode			start;
+	@nodeAttr public ENode			end;
+
+	public MacroListIntExpr() {}
+	
+	public ANode doRewrite(RewriteContext ctx) {
+		int si = 0;
+		if (start != null) {
+			Object s = ctx.fixup(this.pslot(),start.doRewrite(ctx));
+			if (s instanceof Number)
+				si = s.intValue();
+			else if (s instanceof ENode && s.isConstantExpr())
+				si = ((Number)s.getConstValue()).intValue();
+			else
+				return null;
+		}
+		int ei = 1;
+		if (end != null) {
+			Object e = ctx.fixup(this.pslot(),end.doRewrite(ctx));
+			if (e instanceof Number)
+				ei = e.intValue();
+			else if (e instanceof ENode && e.isConstantExpr())
+				ei = ((Number)e.getConstValue()).intValue();
+			else
+				return null;
+		}
+		BlockRewr b = new BlockRewr();
+		for (int i=si; i <= ei; i++)
+			b.stats += new ConstIntExpr(i);
+		return b;
 	}
 
 }

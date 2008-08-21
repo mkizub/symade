@@ -311,6 +311,10 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 				return '‣' + sym.getUUID();
 			return sym.qname() + '‣' + sym.getUUID();
 		}
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			return nid.name + '‣' + nid.uuid;
+		}
 		return (String)id;
 	}
 

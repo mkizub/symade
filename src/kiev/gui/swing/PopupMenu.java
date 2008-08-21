@@ -46,10 +46,13 @@ public class PopupMenu extends JPopupMenu implements IPopupMenuPeer, PopupMenuLi
 	public PopupMenu(IUIViewPeer peer, IPopupMenuListener listener) {
 		this.component = (JComponent)peer;
 		this.listener = listener;
+		this.addPopupMenuListener(this);
 	}
 	
 	public ISubMenuPeer newSubMenu(String text) {
-		return new SubMenu(text);
+		SubMenu sub = new SubMenu(text);
+		this.add(sub);
+		return sub;
 	}
 
 	public void addItem(IMenuItem item) {
