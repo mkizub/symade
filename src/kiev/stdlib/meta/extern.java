@@ -13,5 +13,6 @@ import syntax kiev.stdlib.Syntax;
 
 import java.lang.annotation.*;
 
+@uuid("4c904721-e48a-48fb-bd88-394a06c80000")
 @Retention(RetentionPolicy.SOURCE)
 public @interface #id"extern"# {}

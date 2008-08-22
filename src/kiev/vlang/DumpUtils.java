@@ -396,6 +396,7 @@ public final class DumpUtils {
 		XMLDeSerializer deserializer = new XMLDeSerializer();
 		deserializer.tdname = tdname;
 		deserializer.pkg = pkg;
+		deserializer.is_interface_only = true;
 		if (XPP_PARSER) {
 			//XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
 			//factory.setNamespaceAware(false);//factory.setNamespaceAware(true);
@@ -495,6 +496,7 @@ public final class DumpUtils {
 		File file;
 		DNode pkg;
 		String tdname;
+		boolean is_interface_only;
 		boolean expect_attr;
 		int ignore_count;
 		Stack<ANode> nodes = new Stack<ANode>();
@@ -605,7 +607,8 @@ public final class DumpUtils {
 						}
 						if (dn instanceof Struct)
 							dn.initStruct(tdname, 0);
-						dn.is_interface_only = true;
+						if (is_interface_only)
+							dn.is_interface_only = true;
 						nodes.push(dn);
 					}
 					else {
@@ -616,7 +619,7 @@ public final class DumpUtils {
 						else
 							root = (ASTNode)Class.forName(cl_name).newInstance();
 						addAttributes(root, attributes);
-						if (root instanceof DNode)
+						if (root instanceof DNode && is_interface_only)
 							((DNode)root).is_interface_only = true;
 						if (root instanceof Struct)
 							((Struct)root).initStruct(((Struct)root).sname, 0);
@@ -679,7 +682,8 @@ public final class DumpUtils {
 						}
 					}
 					if (n instanceof DNode) {
-						n.is_interface_only = true;
+						if (is_interface_only)
+							n.is_interface_only = true;
 						if (nodes.isEmpty() && pkg instanceof KievPackage)
 							((KievPackage)pkg).pkg_members += (DNode)n;
 						else if (nodes.isEmpty() && pkg instanceof ComplexTypeDecl)

@@ -38,7 +38,7 @@
    </core:Import>
    <core:MetaTypeDecl name='RuleTemplates' uuid='cf8c91c2-5e14-4df4-abe3-ee93f6b040fc'>
     <members>
-     <core:Method name='mkRuleBlock'>
+     <core:Method name='mkRuleBlock' uuid='77f251ff-b064-4652-b6b0-fa8bba7caf4e'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
@@ -67,7 +67,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env$'>
+         <core:LVar name='$env$' uuid='319a51ab-8fa0-4d64-b4db-cf2ee96462ec'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -75,14 +75,14 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:Label name='enter$1'>
+         <core:Label name='enter$1' uuid='94b9683b-a287-4f81-8823-a75cfc598639'>
           <metas>
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:Label>
-         <core:JavaClass name='frame$$'>
+         <core:JavaClass name='frame$$' uuid='d75d5f59-d2ee-4315-a089-f298a224094a'>
           <members>
-           <core:Ctor>
+           <core:Ctor uuid='d88c6333-cb3f-42e2-9173-0ae18c5bba3e'>
             <type_ret>
              <core:TypeNameRef ident='void' />
             </type_ret>
@@ -90,7 +90,7 @@
              <core:Block />
             </body>
            </core:Ctor>
-           <core:Field name='bt$'>
+           <core:Field name='bt$' uuid='530ebddf-2f91-4179-b227-aae5ec5e6c60'>
             <vtype>
              <core:TypeNameRef ident='int' />
             </vtype>
@@ -123,7 +123,7 @@
            </macro:ForEachRewr>
            <macro:ForEachRewr>
             <var>
-             <core:LVar name='lvar'>
+             <core:LVar name='lvar' uuid='d70c5837-33e0-463a-861b-aaa5cfbda41c'>
               <vtype>
                <core:TypeExpr ident='_astnode_'>
                 <arg>
@@ -138,7 +138,7 @@
              <core:LVarExpr ident='localvars' />
             </container>
             <body>
-             <core:Field name='{lvar>sname}'>
+             <core:Field name='{lvar>sname}' uuid='00b83064-0271-492b-ab84-f0b0678b9152'>
               <vtype>
                <macro:MacroSubstTypeRef>
                 <mtype>
@@ -161,12 +161,12 @@
            <core:MetaStatic />
           </metas>
          </core:JavaClass>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='af8eb65c-d3e0-432b-a5cc-ec572f1e39d1'>
           <vtype>
            <core:TypeNameRef ident='frame$$' />
           </vtype>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='4970b6e1-d12e-4d42-a998-bcd2edff6b7c'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -264,7 +264,7 @@
            <core:LVarExpr ident='bt$' />
           </sel>
           <lblcnt>
-           <core:Label />
+           <core:Label uuid='d183afcc-1d32-45d8-a865-f42017d74767' />
           </lblcnt>
           <stats>
            <core:Case>
@@ -279,7 +279,7 @@
            </core:Return>
           </stats>
           <lblbrk>
-           <core:Label />
+           <core:Label uuid='5b45df2c-7952-4eee-9c17-1deb57e6ab92' />
           </lblbrk>
          </core:Switch>
          <core:Return>
@@ -294,12 +294,12 @@
        <core:MetaMacro />
       </metas>
      </core:Method>
-     <core:Method name='createCodeBacktrack'>
+     <core:Method name='createCodeBacktrack' uuid='c44a65c7-0eeb-4d2d-b91d-d19970f24ba5'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='c16a2581-e88c-4768-9a01-eaa0e87d0581'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -309,7 +309,7 @@
          </core:TypeExpr>
         </vtype>
        </core:LVar>
-       <core:LVar name='load'>
+       <core:LVar name='load' uuid='fc90b4ed-ce9d-4803-8685-8217404ac407'>
         <vtype>
          <core:TypeNameRef ident='boolean' />
         </vtype>
@@ -318,7 +318,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='ccbcbce3-97f3-433d-ba21-025f19de8ad6'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -326,7 +326,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='3daea147-300c-4670-8795-6991aa49be68'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -334,7 +334,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:Label name='enter${node>next_back>idx}'>
+         <core:Label name='enter${node>next_back>idx}' uuid='fcc93345-57f8-4768-8b2d-9a18e0945cd9'>
           <metas>
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
@@ -452,12 +452,12 @@
        <core:MetaMacro />
       </metas>
      </core:Method>
-     <core:Method name='createCodeMoreCheck'>
+     <core:Method name='createCodeMoreCheck' uuid='4876cf9f-f3b0-41dd-a10e-23bcfa9655ce'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='ce0012ff-c5a6-46d8-808c-8fed02babf90'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -467,7 +467,7 @@
          </core:TypeExpr>
         </vtype>
        </core:LVar>
-       <core:LVar name='force'>
+       <core:LVar name='force' uuid='60c8efcd-72f0-46e3-948e-8e18e2184329'>
         <vtype>
          <core:TypeNameRef ident='boolean' />
         </vtype>
@@ -476,7 +476,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='834fac1a-b4db-4d2f-870e-de08436d6a1d'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -484,7 +484,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='5a49fcf2-51ec-470a-ba03-98eec43c11ad'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -492,7 +492,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:Label name='enter${node>next_check>idx}'>
+         <core:Label name='enter${node>next_check>idx}' uuid='f41b8d59-4da1-4814-8704-799738eabc4b'>
           <metas>
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
@@ -591,12 +591,12 @@
        <core:MetaMacro />
       </metas>
      </core:Method>
-     <core:Method name='mkRuleIstheExpr'>
+     <core:Method name='mkRuleIstheExpr' uuid='9395d76c-d858-4732-8327-0cbcbb13028f'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='4eef9b5a-fa01-4b8c-b007-66379ec5fa94'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -610,7 +610,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='de53e9c6-0c04-49f4-9f17-c3b69b3f017a'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -618,7 +618,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='6f391b73-685c-469b-ae50-e92010b48acf'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -628,7 +628,7 @@
          </core:LVar>
          <core:LblSt>
           <lbl>
-           <core:Label name='enter${node>idx}' />
+           <core:Label name='enter${node>idx}' uuid='99fb9eb5-46f8-43b1-a014-d1fe5c9769c0' />
           </lbl>
           <stat>
            <core:If>
@@ -774,7 +774,7 @@
          </core:Call>
          <core:LblSt>
           <lbl>
-           <core:Label name='bound${node>idx}' />
+           <core:Label name='bound${node>idx}' uuid='c5f9b8e8-dc81-4ef0-bc03-684b63408559' />
           </lbl>
           <stat>
            <core:If>
@@ -839,12 +839,12 @@
        <core:MetaStatic />
       </metas>
      </core:Method>
-     <core:Method name='createCodeContains'>
+     <core:Method name='createCodeContains' uuid='ed704240-71ad-4e79-9a6d-a2fd6219e58f'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='605f38d5-1c45-486a-a82b-00d330701528'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -1028,12 +1028,12 @@
        <core:MetaStatic />
       </metas>
      </core:Method>
-     <core:Method name='mkRuleIsoneofExpr'>
+     <core:Method name='mkRuleIsoneofExpr' uuid='1e8aae91-ec65-403c-8487-67d40056de37'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='884eea0e-f5bd-40e9-a1bd-b120b57f0fa8'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -1047,7 +1047,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='7a536d95-9213-45ee-8b56-cc0b77752e9b'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -1055,7 +1055,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='8b65a94a-58e3-4e84-b261-16d5a45cbab6'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -1065,7 +1065,7 @@
          </core:LVar>
          <core:LblSt>
           <lbl>
-           <core:Label name='enter${node>idx}' />
+           <core:Label name='enter${node>idx}' uuid='9893686f-028f-41d2-9ab6-2e8920c18275' />
           </lbl>
           <stat>
            <core:If>
@@ -1356,10 +1356,10 @@
            </core:Block>
           </body>
           <lblcnt>
-           <core:Label />
+           <core:Label uuid='258ab9fb-75bd-4aa4-8d69-15592bf68b30' />
           </lblcnt>
           <lblbrk>
-           <core:Label />
+           <core:Label uuid='0f411f9a-3363-4f7c-82b6-aa5565cd3eaf' />
           </lblbrk>
          </core:While>
          <core:ExprSt>
@@ -1406,7 +1406,7 @@
          </core:Call>
          <core:LblSt>
           <lbl>
-           <core:Label name='bound${node>idx}' />
+           <core:Label name='bound${node>idx}' uuid='82480cdd-fdd1-4cae-8f2e-5f0b4ec1b780' />
           </lbl>
           <stat>
            <core:ExprSt>
@@ -1506,12 +1506,12 @@
        <core:MetaStatic />
       </metas>
      </core:Method>
-     <core:Method name='mkRuleCutExpr'>
+     <core:Method name='mkRuleCutExpr' uuid='bbed036d-bfd1-4664-b849-0f767c1d7546'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='99bea2ea-ba71-4bf3-a90e-b6f3a27e3ce6'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -1525,7 +1525,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='d9abcb88-5bf1-45e5-b694-c31335c677cf'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -1535,7 +1535,7 @@
          </core:LVar>
          <core:LblSt>
           <lbl>
-           <core:Label name='enter${node>idx}' />
+           <core:Label name='enter${node>idx}' uuid='cd8a37f0-1c0d-4e62-afea-09e21b849158' />
           </lbl>
           <stat>
            <core:ExprSt>
@@ -1569,12 +1569,12 @@
        <core:MetaStatic />
       </metas>
      </core:Method>
-     <core:Method name='mkRuleCallExpr'>
+     <core:Method name='mkRuleCallExpr' uuid='3f85d183-7818-4e23-8450-0dc95cbc7eed'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='b329072c-1236-4258-9881-69668b8d3151'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -1584,7 +1584,7 @@
          </core:TypeExpr>
         </vtype>
        </core:LVar>
-       <core:LVar name='is_super'>
+       <core:LVar name='is_super' uuid='1bf2aaea-344a-46f9-8d2d-1ccb220479f6'>
         <vtype>
          <core:TypeNameRef ident='boolean' />
         </vtype>
@@ -1593,7 +1593,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='45f29b6e-8eed-450e-ab88-54e8dfaf896a'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -1601,7 +1601,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='a6153b44-bab3-480e-9307-388578cf1d87'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -1611,7 +1611,7 @@
          </core:LVar>
          <core:LblSt>
           <lbl>
-           <core:Label name='enter${node>idx}' />
+           <core:Label name='enter${node>idx}' uuid='3b197b3b-cb07-49f6-a08a-af3060753f0e' />
           </lbl>
           <stat>
            <core:ExprSt>
@@ -1760,12 +1760,12 @@
        <core:MetaStatic />
       </metas>
      </core:Method>
-     <core:Method name='mkRuleExpr'>
+     <core:Method name='mkRuleExpr' uuid='dc136168-e99b-49ff-ad92-df0c2e4971e9'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='389ff1f6-8b2f-4225-864c-c5a7155369bf'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -1775,12 +1775,12 @@
          </core:TypeExpr>
         </vtype>
        </core:LVar>
-       <core:LVar name='has_bt_expr'>
+       <core:LVar name='has_bt_expr' uuid='49537996-8c98-4c4f-b2e6-f771ee1e813f'>
         <vtype>
          <core:TypeNameRef ident='boolean' />
         </vtype>
        </core:LVar>
-       <core:LVar name='is_boolean'>
+       <core:LVar name='is_boolean' uuid='01b732c3-2c05-4610-b5e6-bf79488f29ac'>
         <vtype>
          <core:TypeNameRef ident='boolean' />
         </vtype>
@@ -1789,7 +1789,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='9ace1aa6-3ca0-4d99-8a83-85d3cd7525dc'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -1797,7 +1797,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='6a9d20d6-6dbd-4525-bb88-2220c0a85bcd'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -1807,7 +1807,7 @@
          </core:LVar>
          <core:LblSt>
           <lbl>
-           <core:Label name='enter${node>idx}' />
+           <core:Label name='enter${node>idx}' uuid='905ef4bb-6cda-4d3e-8e11-9dd5ccde79a1' />
           </lbl>
           <stat>
            <macro:IfElseRewr>
@@ -2018,12 +2018,12 @@
        <core:MetaStatic />
       </metas>
      </core:Method>
-     <core:Method name='mkRuleWhile'>
+     <core:Method name='mkRuleWhile' uuid='ec34fb50-083c-4357-94cb-b868a94ecf22'>
       <type_ret>
        <core:TypeRef ident='void' />
       </type_ret>
       <params>
-       <core:LVar name='node'>
+       <core:LVar name='node' uuid='e0a24a68-f4c8-43d1-a7dd-dd9712d5e6cc'>
         <vtype>
          <core:TypeExpr ident='_astnode_'>
           <arg>
@@ -2033,7 +2033,7 @@
          </core:TypeExpr>
         </vtype>
        </core:LVar>
-       <core:LVar name='has_bt_expr'>
+       <core:LVar name='has_bt_expr' uuid='0875ee59-1267-4780-8cc5-4f395fd4695c'>
         <vtype>
          <core:TypeNameRef ident='boolean' />
         </vtype>
@@ -2042,7 +2042,7 @@
       <body>
        <macro:BlockRewr>
         <stats>
-         <core:LVar name='$env'>
+         <core:LVar name='$env' uuid='8e3bca96-c0e0-4fbd-806e-20fb5fee2ae3'>
           <vtype>
            <core:TypeNameRef ident='rule' />
           </vtype>
@@ -2050,7 +2050,7 @@
            <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
           </metas>
          </core:LVar>
-         <core:LVar name='bt$'>
+         <core:LVar name='bt$' uuid='c077f6f6-9f28-45fa-ac55-ae15ddad7854'>
           <vtype>
            <core:TypeNameRef ident='int' />
           </vtype>
@@ -2060,7 +2060,7 @@
          </core:LVar>
          <core:LblSt>
           <lbl>
-           <core:Label name='enter${node>idx}' />
+           <core:Label name='enter${node>idx}' uuid='85715fac-bc41-4108-922e-525241e54517' />
           </lbl>
           <stat>
            <core:ExprSt>
