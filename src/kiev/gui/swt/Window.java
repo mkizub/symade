@@ -417,7 +417,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 
 	public void openEditor(FileUnit fu, ANode[] path) {
 		for (Editor e: editor_views) {
-			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
+			if (e.the_root == fu || e.the_root.getCtx_file_unit() == fu) {
 				e.goToPath(path);
 				Canvas can = (Canvas)e.getView_canvas();
 				TabItem ti = findTabItem(editors, can);
@@ -428,7 +428,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 			}
 		}
 		TabItem item = new TabItem (editors, SWT.NONE);
-		item.setText(fu.get$fname());
+		item.setText(fu.getFname());
 
 		Canvas edit_canvas = new Canvas(editors, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);		
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		

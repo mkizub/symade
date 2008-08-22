@@ -12,5 +12,6 @@ package kiev.gui.event;
 
 import java.io.Serializable;
 
+@SuppressWarnings({"serial"})
 public abstract class Item implements Serializable {
 }

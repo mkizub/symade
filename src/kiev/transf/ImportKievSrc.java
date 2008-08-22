@@ -148,7 +148,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	
 	public void processSyntax(Opdef:ASTNode astn) {
 		int prior = astn.prior;
-		int opmode = astn.opmode;
+		OpdefMode opmode = astn.opmode;
 		String image = astn.image;
 		String decl = astn.sname;
 		if (decl != null) {
@@ -174,21 +174,21 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			return;
 		}
 		switch(opmode) {
-		case Opdef.LFY:	decl = "X "+image+" Y";	break;
-		case Opdef.XFX:
+		case OpdefMode.LFY:	decl = "X "+image+" Y";	break;
+		case OpdefMode.XFX:
 			if (image == "instanceof")
 				decl = "X "+image+" T";
 			else
 				decl = "X "+image+" X";
 			break;
-		case Opdef.YFX:	decl = "Y "+image+" X";	break;
-		case Opdef.XFY:	decl = "X "+image+" Y";	break;
-		case Opdef.YFY: decl = "Y "+image+" Y"; break;
-		case Opdef.FX:	decl = image+" X";	break;
-		case Opdef.FY:	decl = image+" Y";	break;
-		case Opdef.XF:	decl = "X "+image;	break;
-		case Opdef.YF:	decl = "Y "+image;	break;
-		case Opdef.XFXFY:
+		case OpdefMode.YFX:	decl = "Y "+image+" X";	break;
+		case OpdefMode.XFY:	decl = "X "+image+" Y";	break;
+		case OpdefMode.YFY: decl = "Y "+image+" Y"; break;
+		case OpdefMode.FX:	decl = image+" X";	break;
+		case OpdefMode.FY:	decl = image+" Y";	break;
+		case OpdefMode.XF:	decl = "X "+image;	break;
+		case OpdefMode.YF:	decl = "Y "+image;	break;
+		case OpdefMode.XFXFY:
 			throw new CompilerException(astn,"Multioperators are not supported yet");
 		default:
 			throw new CompilerException(astn,"Unknown operator mode "+opmode);

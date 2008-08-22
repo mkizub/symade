@@ -19,7 +19,7 @@ public class XmlDumpSyntax extends ATextSyntax {
 	@nodeAttr public String dump;
 
 	@setter
-	public void set$dump(String value) {
+	public final void set$dump(String value) {
 		this.dump = (value != null) ? value.intern() : null;
 	}
 	

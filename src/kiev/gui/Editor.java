@@ -360,7 +360,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 				set(root.getFirstLeaf());
 				return;
 			}
-			if (dr.get$ctx_root() == root)
+			if (dr.getCtx_root() == root)
 				return;
 			if (path.length == 0) {
 				set(root.getFirstLeaf());
@@ -369,7 +369,7 @@ public class Editor extends InfoView implements ElementChangeListener {
 			Drawable last = path[path.length-1];
 			Drawable bad = null;
 			for (int i=path.length-1; i >= 0 && bad == null; i--) {
-				if (path[i].get$ctx_root() == root && path[i].getFirstLeaf() != null)
+				if (path[i].getCtx_root() == root && path[i].getFirstLeaf() != null)
 					last = path[i];
 				else
 					bad = path[i];

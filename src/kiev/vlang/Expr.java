@@ -58,7 +58,7 @@ public class TypeClassExpr extends ENode {
 		this.ttype = ttype;
 	}
 
-	public Operator getOp() { return Operator.Access; }
+	public Operator getOper() { return Operator.Access; }
 
 	public Type getType() {
 		if (this.ttype == null || StdTypes.tpClass.getArgsLength() == 0)
@@ -87,7 +87,7 @@ public class TypeInfoExpr extends ENode {
 		this.ttype = ttype;
 	}
 
-	public Operator getOp() { return Operator.Access; }
+	public Operator getOper() { return Operator.Access; }
 
 	public Type getType() {
 		Type t = ttype.getType().getErasedType();
@@ -150,13 +150,13 @@ public class AssignExpr extends ENode {
 		this.value = args[1];
 	}
 	
-	public Operator getOp() { return op; }
+	public Operator getOper() { return op; }
 
-	public ENode[] getArgs() { return new ENode[]{lval,value}; }
+	public ENode[] getEArgs() { return new ENode[]{lval,value}; }
 
 	public Type getType() { return lval.getType(); }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public void mainResolveOut() {
 		Type et1 = lval.getType();
@@ -206,7 +206,7 @@ public class AssignExpr extends ENode {
 		Var[] path = null;
 		switch(lval) {
 		case LVarExpr:
-			path = new Var[]{((LVarExpr)lval).getVar()};
+			path = new Var[]{((LVarExpr)lval).getVarSafe()};
 			break;
 		case IFldExpr:
 			path = ((IFldExpr)lval).getAccessPath();
@@ -253,15 +253,15 @@ public class BinaryExpr extends ENode {
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return op; }
-	public void setOp(Operator op) {
+	public Operator getOper() { return op; }
+	public void setOper(Operator op) {
 		this.symbol = null;
 		this.op = op;
 	}
 
-	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public Type getType() {
 		Method m;
@@ -276,7 +276,7 @@ public class BinaryExpr extends ENode {
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return m.makeType(null,getArgs()).ret();
+		return m.makeType(null,getEArgs()).ret();
 	}
 
 	public void mainResolveOut() {
@@ -290,7 +290,7 @@ public class BinaryExpr extends ENode {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			Symbol sym = getOp().resolveMethod(this);
+			Symbol sym = getOper().resolveMethod(this);
 			if (sym != null)
 				m = sym.dnode;
 		}
@@ -301,7 +301,7 @@ public class BinaryExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = (Method)getOp().resolveMethod(this).dnode;
+			m = (Method)getOper().resolveMethod(this).dnode;
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}
@@ -333,15 +333,15 @@ public class UnaryExpr extends ENode {
 		this.expr = args[0];
 	}
 	
-	public Operator getOp() { return op; }
-	public void setOp(Operator op) {
+	public Operator getOper() { return op; }
+	public void setOper(Operator op) {
 		this.symbol = null;
 		this.op = op;
 	}
 
-	public ENode[] getArgs() { return new ENode[]{expr}; }
+	public ENode[] getEArgs() { return new ENode[]{expr}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public Type getType() {
 		Method m;
@@ -356,7 +356,7 @@ public class UnaryExpr extends ENode {
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return m.makeType(null,getArgs()).ret();
+		return m.makeType(null,getEArgs()).ret();
 	}
 
 	public void mainResolveOut() {
@@ -375,7 +375,7 @@ public class UnaryExpr extends ENode {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			Symbol sym = getOp().resolveMethod(this);
+			Symbol sym = getOper().resolveMethod(this);
 			if (sym != null)
 				m = sym.dnode;
 		}
@@ -386,7 +386,7 @@ public class UnaryExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = (Method)getOp().resolveMethod(this).dnode;
+			m = (Method)getOper().resolveMethod(this).dnode;
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}
@@ -423,7 +423,7 @@ public class StringConcatExpr extends ENode {
 			this.args.add(arg2);
 	}
 	
-	public Operator getOp() { return Operator.Add; }
+	public Operator getOper() { return Operator.Add; }
 
 	public Type getType() { return Type.tpString; }
 
@@ -615,15 +615,15 @@ public class IncrementExpr extends ENode {
 		this.lval = args[0];
 	}
 	
-	public Operator getOp() { return op; }
+	public Operator getOper() { return op; }
 
-	public ENode[] getArgs() { return new ENode[]{lval}; }
+	public ENode[] getEArgs() { return new ENode[]{lval}; }
 
 	public Type getType() {
 		return lval.getType();
 	}
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public void mainResolveOut() {
 		Symbol m = op.resolveMethod(this);
@@ -657,11 +657,11 @@ public class ConditionalExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
-	public Operator getOp() { return Operator.Conditional; }
+	public Operator getOper() { return Operator.Conditional; }
 
-	public ENode[] getArgs() { return new ENode[]{cond, expr1, expr2}; }
+	public ENode[] getEArgs() { return new ENode[]{cond, expr1, expr2}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public Type getType() {
 		Type t1 = expr1.getType();
@@ -709,13 +709,13 @@ public class CastExpr extends ENode {
 		this.expr = expr;
 	}
 
-	public Operator getOp() { return Operator.CastForce; }
+	public Operator getOper() { return Operator.CastForce; }
 
 	public int getPriority() { return opCastPriority; }
 
-	public ENode[] getArgs() { return new ENode[]{ctype, expr}; }
+	public ENode[] getEArgs() { return new ENode[]{ctype, expr}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public Type getType() {
 		return ctype.getType();

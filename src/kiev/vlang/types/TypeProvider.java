@@ -28,6 +28,7 @@ public abstract class MetaType implements Constants {
 	public static final int flWrapper			= 1 <<  8;
 	public static final int flCallable			= 1 <<  9;
 
+	@virtual
 	public TDecl				tdecl;
 	public int					flags;
 
@@ -95,7 +96,7 @@ public abstract class MetaType implements Constants {
 	private rule resolveNameR_1(ResInfo info)
 		ASTNode@ n;
 	{
-		n @= tdecl.getMembers(),
+		n @= tdecl.getContainerMembers(),
 		n instanceof Field,
 		info ?= n
 	}
@@ -111,13 +112,13 @@ public abstract class MetaType implements Constants {
 		ASTNode@ forw;
 		TypeRef@ sup;
 	{
-		forw @= tdecl.getMembers(),
+		forw @= tdecl.getContainerMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).getType().applay(tp).resolveNameAccessR(info)
 	;	info.isSuperAllowed(),
 		sup @= tdecl.super_types,
-		forw @= sup.getTypeDecl().getMembers(),
+		forw @= sup.getTypeDecl().getContainerMembers(),
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).getType().applay(tp).resolveNameAccessR(info)
@@ -131,7 +132,7 @@ public abstract class MetaType implements Constants {
 		tp.checkResolved(),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving method "+info.getName()+" in "+this),
 		{
-			member @= tdecl.getMembers(),
+			member @= tdecl.getContainerMembers(),
 			member instanceof Method,
 			info ?= ((Method)member).equalsByCast(info.getName(),mt,tp,info)
 		;
@@ -141,14 +142,14 @@ public abstract class MetaType implements Constants {
 			sup.getTypeDecl().xmeta_type.resolveCallAccessR(tp,info,mt)
 		;
 			info.isForwardsAllowed(),
-			member @= tdecl.getMembers(),
+			member @= tdecl.getContainerMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			((Field)member).getType().applay(tp).resolveCallAccessR(info,mt)
 		;
 			info.isForwardsAllowed(),
 			sup @= tdecl.super_types,
-			member @= sup.getTypeDecl().getMembers(),
+			member @= sup.getTypeDecl().getContainerMembers(),
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			((Field)member).getType().applay(tp).resolveCallAccessR(info,mt)
@@ -374,7 +375,7 @@ public final class XMetaType extends MetaType {
 		TVarBld vs = new TVarBld();
 		foreach (TypeDef ad; tdecl.args)
 			vs.append(ad.getAType(), null);
-		foreach (TypeDef td; tdecl.getMembers()) {
+		foreach (TypeDef td; tdecl.getContainerMembers()) {
 			if (td instanceof TypeAssign && td.sname != "This")
 				vs.append(td.getAType(), td.type_ref.getType());
 			else
@@ -406,15 +407,16 @@ public final class CompaundMetaType extends MetaType {
 	
 	@getter
 	public final TDecl get$tdecl() {
-		if (this.tdecl == null) {
-			TDecl td = (TDecl)Env.getRoot().loadTypeDecl(descr, true);
+		TDecl td = (TDecl)super.get$tdecl();
+		if (td == null) {
+			td = (TDecl)Env.getRoot().loadTypeDecl(descr, true);
 			if (td != null) {
 				descr = null;
-				this.tdecl = td;
+				super.set$tdecl(td);
 				assert (td.xmeta_type == this);
 			}
 		}
-		return this.tdecl;
+		return td;
 	}
 	
 	public static void checkNotDeferred(Struct clazz) {
@@ -498,7 +500,7 @@ public final class CompaundMetaType extends MetaType {
 		TVarBld vs = new TVarBld();
 		foreach (TypeDef ad; tdecl.args)
 			vs.append(ad.getAType(), null);
-		foreach (TypeDef td; tdecl.getMembers()) {
+		foreach (TypeDef td; tdecl.getContainerMembers()) {
 			if (td instanceof TypeAssign && td.sname != "This")
 				vs.append(td.getAType(), td.type_ref.getType());
 			else
@@ -770,7 +772,7 @@ public class WrapperMetaType extends MetaType {
 				return wf;
 		}
 		Field wf = null;
-		foreach(Field n; td.getMembers(); n.isForward()) {
+		foreach(Field n; td.getContainerMembers(); n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else

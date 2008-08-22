@@ -35,7 +35,20 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final int PARAM_VARARGS      = 11;
 	public static final int PARAM_LVAR_PROXY   = 12;
 	public static final int PARAM_TYPEINFO_N   = 16;
-
+/*
+	@nodeAttr(ext_data=true)
+	static final class NodeAttr_getter extends ExtAttAttrSlot {
+		NodeAttr_getter() {
+			super("getter", ANode.nodeattr$syntax_parent, TypeInfo.newTypeInfo(MethodGetter.class, null));
+		}
+	}
+	@nodeAttr(ext_data=true)
+	static final class NodeAttr_setter extends ExtAttAttrSlot {
+		NodeAttr_setter() {
+			super("setter", ANode.nodeattr$syntax_parent, TypeInfo.newTypeInfo(MethodSetter.class, null));
+		}
+	}
+*/
 	@nodeAttr
 	public TypeRef					vtype;
 	@nodeAttr(ext_data=true)

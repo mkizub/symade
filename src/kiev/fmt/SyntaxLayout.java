@@ -33,7 +33,7 @@ public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer,
 
 	public ATextSyntax() {}
 	
-	public final ASTNode[] getMembers() { this.members }
+	public final ASTNode[] getContainerMembers() { this.members }
 	
 	public Object getDataToSerialize() {
 		return this.getCompiled().init();
@@ -954,7 +954,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	public AttrSlot							attr_slot;
 
 	@setter
-	public void set$name(String value) {
+	public final void set$name(String value) {
 		this.name = (value != null) ? value.intern() : null;
 	}
 	
@@ -1276,7 +1276,7 @@ public abstract class CalcOption extends ASTNode {
 	@nodeAttr public String name;
 
 	@setter
-	public void set$name(String value) {
+	public final void set$name(String value) {
 		this.name = (value != null) ? value.intern() : null;
 	}
 	
@@ -1403,13 +1403,6 @@ public class CalcOptionHasMeta implements CalcOption {
 	public CalcOptionHasMeta() {}
 	public CalcOptionHasMeta(String name) {
 		super(name);
-	}
-
-	@setter
-	public void set$name(String value) {
-		if (value != null && value.indexOf('.') >= 0)
-			value = value.replace('.','·');
-		this.name = (value != null) ? value.intern() : null;
 	}
 
 	public Draw_CalcOption getCompiled() {

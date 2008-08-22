@@ -22,53 +22,14 @@ import syntax kiev.Syntax;
 public final class ASTOperatorAlias extends Symbol {
 
 	@nodeAttr public int					prior;
-	@nodeAttr public int					opmode;
-	@nodeAttr public String				image;
+	@nodeAttr public OpdefMode				opmode;
+	@nodeAttr public String					image;
 
 	public ASTOperatorAlias() {
 		super("operator ???");
 	}
 	public ASTOperatorAlias(String opname) {
 		super(opname);
-	}
-	
-	public void setImage(ASTNode n) {
-		this.pos = n.pos;
-		if( n instanceof EToken ) {
-			image = ((EToken)n).ident;
-			return;
-		}
-		else if( n instanceof SymbolRef ) {
-			image = ((SymbolRef)n).name;
-			return;
-		}
-		throw new CompilerException(n,"Bad operator definition");
-	}
-	
-	public void setMode(String optype) {
-		opmode = -1;
-		for(int i=0; i < Opdef.orderAndArityNames.length; i++) {
-			if( Opdef.orderAndArityNames[i].equals(optype) ) {
-				opmode = i;
-				break;
-			}
-		}
-		if( opmode < 0 )
-			throw new CompilerException(this,"Operator mode must be one of "+Arrays.toString(Opdef.orderAndArityNames));
-		return;
-	}
-	
-	public void setPriority(ConstIntExpr n) {
-		prior = n.value;
-		if( prior < 0 || prior > 255 )
-			throw new CompilerException(n,"Operator priority must have value from 0 to 255");
-		pos = n.pos;
-		return;
-	}
-
-	public void setName(ConstStringExpr n) {
-		this.pos = n.pos;
-		this.sname = n.value;
 	}
 	
 	private void setAliasName(String s) {
@@ -94,7 +55,7 @@ public final class ASTOperatorAlias extends Symbol {
 		}
 		
 		switch(opmode) {
-		case Opdef.LFY:
+		case OpdefMode.LFY:
 			{
 				// Special case fo "[]" and "new" operators
 				if( image.equals("[]") ) {
@@ -131,10 +92,10 @@ public final class ASTOperatorAlias extends Symbol {
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
 			break;
-		case Opdef.XFX:
-		case Opdef.YFX:
-		case Opdef.XFY:
-		case Opdef.YFY:
+		case OpdefMode.XFX:
+		case OpdefMode.YFX:
+		case OpdefMode.XFY:
+		case OpdefMode.YFY:
 			{
 				// Special case fo "[]" and "new" operators
 				if( image.equals("[]") ) {
@@ -160,8 +121,8 @@ public final class ASTOperatorAlias extends Symbol {
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
 			}
 			break;
-		case Opdef.FX:
-		case Opdef.FY:
+		case OpdefMode.FX:
+		case OpdefMode.FY:
 			{
 				// Special case fo "$cast" operator
 				if( image.equals("$cast") ) {
@@ -184,8 +145,8 @@ public final class ASTOperatorAlias extends Symbol {
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
 			}
 			break;
-		case Opdef.XF:
-		case Opdef.YF:
+		case OpdefMode.XF:
+		case OpdefMode.YF:
 			{
 				Type opret = m.mtype.ret();
 				Operator op = Operator.getOperatorByName("V "+image);
@@ -196,7 +157,7 @@ public final class ASTOperatorAlias extends Symbol {
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);
 			}
 			break;
-		case Opdef.XFXFY:
+		case OpdefMode.XFXFY:
 			throw new CompilerException(this,"Multioperators are not supported yet");
 		default:
 			throw new CompilerException(this,"Unknown operator mode "+opmode);

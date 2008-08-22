@@ -828,13 +828,15 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = new MethodImpl(m.sname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.getFlags());
-			for (int i=0; i < vte.etype.arity; i++)
-				bridge.params.append(new LVar(mo.pos,m.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
-			bridge.pos = mo.pos;
+			Method bridge = mo.ncopy();
+			bridge.type_ret = new TypeRef(vte.etype.ret());
+			if (!bridge.isMethodBridge())
+				bridge.setMeta(new MetaBridge());
+			if (!bridge.isSynthetic())
+				bridge.setMeta(new MetaSynthetic());
+			bridge.body = new Block();
 			((Struct)self).members.append(bridge);
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
-			bridge.body = new Block();
 			if (bridge.mtype.ret() ≢ Type.tpVoid)
 				bridge.block.stats.append(new ReturnStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			else

@@ -45,14 +45,14 @@ public class MouseButtonEditor implements ItemEditor, MouseListener, KeyListener
 		this.editor = editor;
 		this.cur_elem = cur_elem;
 		this.node = node;
-		this.mouseButton   = node.get$button();
-		this.mouseCount    = node.get$count();
-		if (node.get$withCtrl())
-			this.mouseModifiers |= KeyEvent.CTRL_DOWN_MASK;
-		if (node.get$withAlt())
-			this.mouseModifiers |= KeyEvent.ALT_DOWN_MASK;
-		if (node.get$withShift())
-			this.mouseModifiers |= KeyEvent.SHIFT_DOWN_MASK;
+		this.mouseButton   = node.getButton();
+		this.mouseCount    = node.getCount();
+		if (node.isWithCtrl())
+			this.mouseModifiers |= InputEvent.CTRL_DOWN_MASK;
+		if (node.isWithAlt())
+			this.mouseModifiers |= InputEvent.ALT_DOWN_MASK;
+		if (node.isWithShift())
+			this.mouseModifiers |= InputEvent.SHIFT_DOWN_MASK;
 		this.dialog    = new JDialog();
 		dialog.setLayout(new BorderLayout());
 		labelMessage = new JLabel();
@@ -66,7 +66,7 @@ public class MouseButtonEditor implements ItemEditor, MouseListener, KeyListener
 	}
 	
 	String getMouseText() {
-		String text = MouseEvent.getModifiersExText(mouseModifiers);
+		String text = InputEvent.getModifiersExText(mouseModifiers);
 		text += " # "+mouseCount;
 		return text;
 	}
@@ -126,12 +126,12 @@ public class MouseButtonEditor implements ItemEditor, MouseListener, KeyListener
 		case KeyEvent.VK_ENTER:
 			dialog.setVisible(false);
 			if (mouseButton != 0 && mouseButton != MouseEvent.NOBUTTON) {
-				node.set$button(mouseButton);
-				node.set$count(mouseCount);
-				node.set$withCtrl((mouseModifiers & KeyEvent.CTRL_DOWN_MASK) != 0);
-				node.set$withAlt((mouseModifiers & KeyEvent.ALT_DOWN_MASK) != 0);
-				node.set$withShift((mouseModifiers & KeyEvent.SHIFT_DOWN_MASK) != 0);
-				node.set$text(getMouseText());
+				node.setButton(mouseButton);
+				node.setCount(mouseCount);
+				node.setWithCtrl((mouseModifiers & InputEvent.CTRL_DOWN_MASK) != 0);
+				node.setWithAlt((mouseModifiers & InputEvent.ALT_DOWN_MASK) != 0);
+				node.setWithShift((mouseModifiers & InputEvent.SHIFT_DOWN_MASK) != 0);
+				node.setText(getMouseText());
 				editor.stopItemEditor(false);
 			} else {
 				editor.stopItemEditor(true);

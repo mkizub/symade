@@ -38,7 +38,7 @@ public class VarianceCheckError {
 	}
 	
 	public String toString() {
-		return varianceName(at.definer.getVariance())+" type variable "+at
+		return varianceName(at.definer.getVarianceSafe())+" type variable "+at
 				+" found at "+varianceName(variance)+" position in type "+base;
 	}
 	private static String varianceName(TypeVariance variance) {
@@ -66,7 +66,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeRef[] getUpperBounds() { return super_types; }
 	public TypeRef[] getLowerBounds() { return TypeRef.emptyArray; }
-	public TypeVariance getVariance() { return TypeVariance.IN_VARIANT; }
+	public TypeVariance getVarianceSafe() { return TypeVariance.IN_VARIANT; }
 
 	public TypeDef(String name) {
 		super(name);
@@ -185,7 +185,7 @@ public final class TypeConstr extends TypeDef {
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }
 	
-	public TypeVariance getVariance() {
+	public TypeVariance getVarianceSafe() {
 		TypeVariance tv = this.variance;
 		if (tv == null)
 			return TypeVariance.IN_VARIANT;
@@ -218,7 +218,7 @@ public final class TypeConstr extends TypeDef {
 	
 	public void postVerify() {
 		if !(parent() instanceof Method) {
-			TypeVariance variance = getVariance();
+			TypeVariance variance = getVarianceSafe();
 			
 			// check upper bounds
 			foreach (TypeRef tr; getUpperBounds()) {

@@ -67,7 +67,7 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 		if (m == null)
 			return; // error already reported
 		if (m.isStatic()) {
-			m.makeArgs(getArgs(),reqType);
+			m.makeArgs(getEArgs(),reqType);
 			expr1.resolve(m.params[0].getType());
 			expr2.resolve(m.params[1].getType());
 		} else {
@@ -155,7 +155,7 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 		if (m == null)
 			return; // error already reported
 		if (m.isStatic()) {
-			m.makeArgs(getArgs(),reqType);
+			m.makeArgs(getEArgs(),reqType);
 			expr.resolve(m.params[0].getType());
 		} else {
 			m.makeArgs(ENode.emptyArray,reqType);

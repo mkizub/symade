@@ -410,7 +410,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			String head = tail.substring(0,dot).intern();
 			tail = tail.substring(dot+1);
 			DNode dn = null;
-			foreach (DNode n; scope.getMembers(); n.sname == head) {
+			foreach (DNode n; scope.getContainerMembers(); n.sname == head) {
 				dn = n;
 				break;
 			}
@@ -501,7 +501,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			String head = tail.substring(0,dot).intern();
 			tail = tail.substring(dot+1);
 			DNode dn = null;
-			foreach (DNode n; scope.getMembers(); n.sname == head) {
+			foreach (DNode n; scope.getContainerMembers(); n.sname == head) {
 				dn = n;
 				break;
 			}

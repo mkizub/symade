@@ -615,6 +615,8 @@ public abstract class kiev050 implements kiev050Constants {
       case META_VOLATILE:
       case META_THROWS:
       case META_UUID:
+      case META_GETTER:
+      case META_SETTER:
         SpecialAnnotation(n);
         break;
       case META_ACCESS1:
@@ -712,6 +714,12 @@ public abstract class kiev050 implements kiev050Constants {
       break;
     case META_UUID:
       jj_consume_token(META_UUID);
+      break;
+    case META_GETTER:
+      jj_consume_token(META_GETTER);
+      break;
+    case META_SETTER:
+      jj_consume_token(META_SETTER);
       break;
     default:
       jj_consume_token(-1);
@@ -910,7 +918,7 @@ public abstract class kiev050 implements kiev050Constants {
   final public Opdef Opdef(ASTModifiers modifiers) throws ParseException {
   SymbolRef id; EToken op; ConstIntExpr ce; ConstStringExpr cs; Opdef opd = new Opdef();
     jj_consume_token(OPERATOR_ID);
-                                                                          opd.pos = getToken(0).getPos();
+                                                                                  opd.pos = getToken(0).getPos();
     switch (jj_nt.kind) {
     case OPERATOR_ID:
     case IDENTIFIER:
@@ -941,11 +949,11 @@ public abstract class kiev050 implements kiev050Constants {
       case OPERATOR_LOWER_BOUND:
       case OPERATOR:
         op = Operator();
-                                                     opd.setImage(op);
+                                                                          opd.image = op.ident;
         break;
       case IDENTIFIER:
         id = NameRef();
-                                                     opd.setImage(id);
+                                                                          opd.image = id.name;
         break;
       default:
         jj_consume_token(-1);
@@ -954,14 +962,14 @@ public abstract class kiev050 implements kiev050Constants {
       jj_consume_token(COMMA);
       // FX,FY,XF,YF,XFX,YFX,XFY,YFY
                       id = NameRef();
-                                                 opd.setMode(id);
+                                                                          opd.opmode = OpdefMode.fromString(id.name.toUpperCase());
       jj_consume_token(COMMA);
       ce = IntConstExpression();
-                                                          opd.setPriority(ce);
+                                                                  opd.prior = ce.value;
       break;
     case STRING_LITERAL:
       cs = StringConstExpression();
-                                                  opd.sname = cs.value;
+                                                          opd.sname = cs.value;
       switch (jj_nt.kind) {
       case COMMA:
         jj_consume_token(COMMA);
@@ -976,7 +984,7 @@ public abstract class kiev050 implements kiev050Constants {
         break;
       case INTEGER_LITERAL:
         ce = IntConstExpression();
-                                                                  opd.setPriority(ce);
+                                                                  opd.prior = ce.value;
         break;
       default:
         jj_consume_token(-1);
@@ -1770,7 +1778,7 @@ public abstract class kiev050 implements kiev050Constants {
         default:
           ;
         }
-                  ma.setFlags(accflags);
+                  ma.flags = accflags;
         break;
       case OPEN_ACCESS:
         jj_consume_token(OPEN_ACCESS);
@@ -1805,7 +1813,7 @@ public abstract class kiev050 implements kiev050Constants {
           ;
         }
         jj_consume_token(CLOSE_ACCESS);
-                  ma.setFlags(accflags);
+                  ma.flags = accflags;
         break;
       default:
         jj_consume_token(-1);
@@ -2042,6 +2050,14 @@ public abstract class kiev050 implements kiev050Constants {
       cs = StringConstExpression();
       jj_consume_token(RPAREN);
                   muuid.value = cs.value; modifiers += muuid;
+      break;
+    case META_GETTER:
+      jj_consume_token(META_GETTER);
+                                  modifiers += new UserMeta(VirtFldFE_GenMembers.nameMetaGetter);
+      break;
+    case META_SETTER:
+      jj_consume_token(META_SETTER);
+                                  modifiers += new UserMeta(VirtFldFE_GenMembers.nameMetaSetter);
       break;
     default:
       jj_consume_token(-1);
@@ -2466,7 +2482,7 @@ public abstract class kiev050 implements kiev050Constants {
         switch (jj_nt.kind) {
         case OPERATOR_ID:
           jj_consume_token(OPERATOR_ID);
-                                  String opmode = a.sname; a = new ASTOperatorAlias(); a.setMode(opmode);
+                                  String opmode = a.sname; a = new ASTOperatorAlias(); a.pos = getToken(0).getPos(); a.opmode = OpdefMode.fromString(opmode.toUpperCase());
           switch (jj_nt.kind) {
           case OPERATOR_ID:
           case LT:
@@ -2482,11 +2498,11 @@ public abstract class kiev050 implements kiev050Constants {
           case OPERATOR_LOWER_BOUND:
           case OPERATOR:
             op = Operator();
-                                                                                  a.setImage(op);
+                                                                                  a.image = op.ident;
             break;
           case IDENTIFIER:
             id = NameRef();
-                                                                                  a.setImage(id);
+                                                                                  a.image = id.name;
             break;
           case OPERATOR_LRBRACKETS:
             jj_consume_token(OPERATOR_LRBRACKETS);
@@ -2508,7 +2524,7 @@ public abstract class kiev050 implements kiev050Constants {
       case OPERATOR_ID:
         jj_consume_token(OPERATOR_ID);
         cs = StringConstExpression();
-                          a = new ASTOperatorAlias(); a.setName(cs);
+                          a = new ASTOperatorAlias(); a.sname = cs.value; a.pos = cs.pos;
         break;
       default:
         jj_consume_token(-1);
@@ -2518,7 +2534,7 @@ public abstract class kiev050 implements kiev050Constants {
     case OPERATOR_ID:
       jj_consume_token(OPERATOR_ID);
       cs = StringConstExpression();
-                  a = new ASTOperatorAlias(); a.setName(cs);
+                  a = new ASTOperatorAlias(); a.sname = cs.value; a.pos = cs.pos;
       break;
     default:
       jj_consume_token(-1);
@@ -5405,27 +5421,22 @@ ENode MaybeSkipBlock(ASTNode target) :
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3R_263() {
-    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_195() {
+  final private boolean jj_3R_197() {
     if (jj_scan_token(META_INTERFACE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_189() {
+  final private boolean jj_3R_191() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_262() {
+  final private boolean jj_3R_264() {
     if (jj_scan_token(INTEGER_LITERAL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_238() {
+  final private boolean jj_3R_240() {
     if (jj_scan_token(WHILE)) return true;
     return false;
   }
@@ -5441,18 +5452,28 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_194() {
+  final private boolean jj_3R_263() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(105)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(102)) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_229() {
+    if (jj_3R_270()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_196() {
     if (jj_scan_token(INTERFACE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_261() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(103)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(100)) return true;
-    }
+  final private boolean jj_3R_228() {
+    if (jj_3R_269()) return true;
     return false;
   }
 
@@ -5472,16 +5493,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_225() {
-    if (jj_3R_266()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_224() {
-    if (jj_3R_265()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_110() {
     if (jj_3R_95()) return true;
     Token xsp;
@@ -5489,6 +5500,16 @@ ENode MaybeSkipBlock(ASTNode target) :
       xsp = jj_scanpos;
       if (jj_3_28()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_225() {
+    if (jj_3R_266()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_224() {
+    if (jj_3R_265()) return true;
     return false;
   }
 
@@ -5502,17 +5523,17 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_221() {
-    if (jj_3R_262()) return true;
+  final private boolean jj_3R_161() {
+    if (jj_scan_token(META_SETTER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_220() {
-    if (jj_3R_261()) return true;
+  final private boolean jj_3R_160() {
+    if (jj_scan_token(META_GETTER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_237() {
+  final private boolean jj_3R_239() {
     if (jj_scan_token(IF)) return true;
     return false;
   }
@@ -5522,28 +5543,14 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_159() {
-    if (jj_scan_token(META_UUID)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_95() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_193() {
-    if (jj_scan_token(CLASS)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_188() {
+  final private boolean jj_3R_190() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_220()) {
-    jj_scanpos = xsp;
-    if (jj_3R_221()) {
-    jj_scanpos = xsp;
     if (jj_3R_222()) {
     jj_scanpos = xsp;
     if (jj_3R_223()) {
@@ -5554,7 +5561,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_3R_226()) {
     jj_scanpos = xsp;
-    if (jj_3R_227()) return true;
+    if (jj_3R_227()) {
+    jj_scanpos = xsp;
+    if (jj_3R_228()) {
+    jj_scanpos = xsp;
+    if (jj_3R_229()) return true;
     }
     }
     }
@@ -5565,27 +5576,37 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_181() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_193()) {
-    jj_scanpos = xsp;
-    if (jj_3R_194()) {
-    jj_scanpos = xsp;
-    if (jj_3R_195()) {
-    jj_scanpos = xsp;
-    if (jj_3R_196()) {
-    jj_scanpos = xsp;
-    if (jj_3R_197()) return true;
-    }
-    }
-    }
-    }
+  final private boolean jj_3R_159() {
+    if (jj_scan_token(META_UUID)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_195() {
+    if (jj_scan_token(CLASS)) return true;
     return false;
   }
 
   final private boolean jj_3R_109() {
     if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_183() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_195()) {
+    jj_scanpos = xsp;
+    if (jj_3R_196()) {
+    jj_scanpos = xsp;
+    if (jj_3R_197()) {
+    jj_scanpos = xsp;
+    if (jj_3R_198()) {
+    jj_scanpos = xsp;
+    if (jj_3R_199()) return true;
+    }
+    }
+    }
+    }
     return false;
   }
 
@@ -5599,18 +5620,18 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_255() {
+  final private boolean jj_3R_257() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_108()) return true;
     return false;
   }
 
-  final private boolean jj_3R_219() {
+  final private boolean jj_3R_221() {
     if (jj_3R_108()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_255()) { jj_scanpos = xsp; break; }
+      if (jj_3R_257()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -5633,7 +5654,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_190() {
+  final private boolean jj_3R_192() {
     if (jj_scan_token(FUNCTION)) return true;
     if (jj_scan_token(LPAREN)) return true;
     return false;
@@ -5644,25 +5665,25 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_275() {
+  final private boolean jj_3R_277() {
     if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_108()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_187() {
+    if (jj_scan_token(LPAREN)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_221()) jj_scanpos = xsp;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_scan_token(ARROW)) return true;
     if (jj_3R_108()) return true;
     return false;
   }
 
   final private boolean jj_3R_157() {
     if (jj_scan_token(META_PACKED)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_185() {
-    if (jj_scan_token(LPAREN)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_219()) jj_scanpos = xsp;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_scan_token(ARROW)) return true;
-    if (jj_3R_108()) return true;
     return false;
   }
 
@@ -5681,11 +5702,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_153() {
-    if (jj_scan_token(TRANSIENT)) return true;
-    return false;
-  }
-
   final private boolean jj_3_27() {
     Token xsp;
     xsp = jj_scanpos;
@@ -5696,6 +5712,16 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_153() {
+    if (jj_scan_token(TRANSIENT)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_276() {
+    if (jj_3R_279()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_152() {
     if (jj_scan_token(META_SYNCHRONIZED)) return true;
     return false;
@@ -5703,16 +5729,6 @@ ENode MaybeSkipBlock(ASTNode target) :
 
   final private boolean jj_3R_151() {
     if (jj_scan_token(SYNCHRONIZED)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_274() {
-    if (jj_3R_277()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_150() {
-    if (jj_scan_token(META_NATIVE)) return true;
     return false;
   }
 
@@ -5728,8 +5744,18 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_273() {
-    if (jj_3R_276()) return true;
+  final private boolean jj_3R_275() {
+    if (jj_3R_278()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_150() {
+    if (jj_scan_token(META_NATIVE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_252() {
+    if (jj_scan_token(IF_REWR)) return true;
     return false;
   }
 
@@ -5738,8 +5764,12 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_250() {
-    if (jj_scan_token(IF_REWR)) return true;
+  final private boolean jj_3R_279() {
+    if (jj_3R_219()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_255() {
     return false;
   }
 
@@ -5753,12 +5783,9 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_277() {
-    if (jj_3R_217()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_253() {
+  final private boolean jj_3R_273() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_108()) return true;
     return false;
   }
 
@@ -5767,50 +5794,34 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_271() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_108()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_145() {
     if (jj_scan_token(ABSTRACT)) return true;
     return false;
   }
 
-  final private boolean jj_3R_144() {
-    if (jj_scan_token(META_STATIC)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_272() {
+  final private boolean jj_3R_274() {
     if (jj_scan_token(DOT)) return true;
     if (jj_3R_110()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(129)) {
+    if (jj_scan_token(131)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(131)) return true;
+    if (jj_scan_token(133)) return true;
     }
     if (jj_3R_108()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_275()) { jj_scanpos = xsp; break; }
+      if (jj_3R_277()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(130)) {
+    if (jj_scan_token(132)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(132)) return true;
+    if (jj_scan_token(134)) return true;
     }
     return false;
   }
 
-  final private boolean jj_3R_260() {
-    return false;
-  }
-
-  final private boolean jj_3R_143() {
-    if (jj_scan_token(STATIC)) return true;
+  final private boolean jj_3R_262() {
     return false;
   }
 
@@ -5822,23 +5833,38 @@ ENode MaybeSkipBlock(ASTNode target) :
       if (jj_3_60()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(128)) jj_scanpos = xsp;
+    if (jj_scan_token(130)) jj_scanpos = xsp;
     return false;
   }
 
-  final private boolean jj_3R_178() {
-    if (jj_3R_192()) return true;
+  final private boolean jj_3R_180() {
+    if (jj_3R_194()) return true;
     return false;
   }
 
-  final private boolean jj_3R_191() {
+  final private boolean jj_3R_144() {
+    if (jj_scan_token(META_STATIC)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_193() {
     if (jj_scan_token(NEW)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_273()) {
+    if (jj_3R_275()) {
     jj_scanpos = xsp;
-    if (jj_3R_274()) return true;
+    if (jj_3R_276()) return true;
     }
+    return false;
+  }
+
+  final private boolean jj_3R_143() {
+    if (jj_scan_token(STATIC)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_179() {
+    if (jj_3R_193()) return true;
     return false;
   }
 
@@ -5847,8 +5873,8 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_177() {
-    if (jj_3R_191()) return true;
+  final private boolean jj_3R_178() {
+    if (jj_3R_192()) return true;
     return false;
   }
 
@@ -5862,13 +5888,18 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_176() {
-    if (jj_3R_190()) return true;
+  final private boolean jj_3R_139() {
+    if (jj_scan_token(META_FORWARD)) return true;
     return false;
   }
 
-  final private boolean jj_3R_139() {
-    if (jj_scan_token(META_FORWARD)) return true;
+  final private boolean jj_3R_261() {
+    if (jj_scan_token(LANGLE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_238() {
+    if (jj_scan_token(SWITCH)) return true;
     return false;
   }
 
@@ -5877,8 +5908,8 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_259() {
-    if (jj_scan_token(LANGLE)) return true;
+  final private boolean jj_3_59() {
+    if (jj_3R_104()) return true;
     return false;
   }
 
@@ -5929,7 +5960,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_3R_158()) {
     jj_scanpos = xsp;
-    if (jj_3R_159()) return true;
+    if (jj_3R_159()) {
+    jj_scanpos = xsp;
+    if (jj_3R_160()) {
+    jj_scanpos = xsp;
+    if (jj_3R_161()) return true;
+    }
+    }
     }
     }
     }
@@ -5960,57 +5997,52 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_236() {
-    if (jj_scan_token(SWITCH)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_59() {
-    if (jj_3R_104()) return true;
-    return false;
-  }
-
   final private boolean jj_3_42() {
     if (jj_3R_103()) return true;
     return false;
   }
 
-  final private boolean jj_3R_270() {
+  final private boolean jj_3R_272() {
     if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }
 
-  final private boolean jj_3R_258() {
+  final private boolean jj_3R_260() {
     if (jj_scan_token(LT)) return true;
     return false;
   }
 
-  final private boolean jj_3R_252() {
+  final private boolean jj_3R_254() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(129)) {
+    if (jj_scan_token(131)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(131)) return true;
+    if (jj_scan_token(133)) return true;
     }
     if (jj_3R_108()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_271()) { jj_scanpos = xsp; break; }
+      if (jj_3R_273()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(130)) {
+    if (jj_scan_token(132)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(132)) return true;
+    if (jj_scan_token(134)) return true;
     }
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_272()) { jj_scanpos = xsp; break; }
+      if (jj_3R_274()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  final private boolean jj_3R_257() {
+  final private boolean jj_3R_259() {
     if (jj_scan_token(NEW)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_258() {
+    if (jj_scan_token(CLASS)) return true;
     return false;
   }
 
@@ -6019,48 +6051,43 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_256() {
-    if (jj_scan_token(CLASS)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_251() {
+  final private boolean jj_3R_253() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_270()) {
+    if (jj_3R_272()) {
     jj_scanpos = xsp;
     if (jj_3_42()) return true;
     }
     return false;
   }
 
-  final private boolean jj_3R_217() {
+  final private boolean jj_3R_219() {
     if (jj_3R_110()) return true;
     Token xsp;
     xsp = jj_scanpos;
     lookingAhead = true;
     jj_semLA = getToken(1).kind == LT || getToken(1).kind == LANGLE;
     lookingAhead = false;
-    if (!jj_semLA || jj_3R_252()) {
+    if (!jj_semLA || jj_3R_254()) {
     jj_scanpos = xsp;
-    if (jj_3R_253()) return true;
+    if (jj_3R_255()) return true;
     }
     return false;
   }
 
-  final private boolean jj_3R_175() {
+  final private boolean jj_3R_177() {
     if (jj_scan_token(DOT)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_256()) {
-    jj_scanpos = xsp;
-    if (jj_3R_257()) {
-    jj_scanpos = xsp;
     if (jj_3R_258()) {
     jj_scanpos = xsp;
     if (jj_3R_259()) {
     jj_scanpos = xsp;
-    if (jj_3R_260()) return true;
+    if (jj_3R_260()) {
+    jj_scanpos = xsp;
+    if (jj_3R_261()) {
+    jj_scanpos = xsp;
+    if (jj_3R_262()) return true;
     }
     }
     }
@@ -6068,7 +6095,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_174() {
+  final private boolean jj_3R_176() {
     if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
     return false;
   }
@@ -6079,7 +6106,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     xsp = jj_scanpos;
     if (jj_3R_88()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(140)) {
+    if (jj_scan_token(142)) {
     jj_scanpos = xsp;
     if (jj_scan_token(50)) return true;
     }
@@ -6088,22 +6115,28 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_166() {
+  final private boolean jj_3R_168() {
     if (jj_scan_token(PRIVATE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_165() {
+  final private boolean jj_3R_167() {
     if (jj_scan_token(META_PRIVATE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_164() {
+  final private boolean jj_3R_166() {
     if (jj_scan_token(PROTECTED)) return true;
     return false;
   }
 
-  final private boolean jj_3R_163() {
+  final private boolean jj_3R_175() {
+    if (jj_scan_token(LANGLE)) return true;
+    if (jj_3R_108()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_165() {
     if (jj_scan_token(META_PROTECTED)) return true;
     return false;
   }
@@ -6120,29 +6153,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_162() {
-    if (jj_scan_token(PUBLIC)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_173() {
-    if (jj_scan_token(LANGLE)) return true;
-    if (jj_3R_108()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_161() {
-    if (jj_scan_token(META_PUBLIC)) return true;
-    return false;
-  }
-
   final private boolean jj_3_32() {
     if (jj_3R_103()) return true;
     return false;
   }
 
-  final private boolean jj_3R_160() {
-    if (jj_scan_token(META_ACCESS1)) return true;
+  final private boolean jj_3R_164() {
+    if (jj_scan_token(PUBLIC)) return true;
     return false;
   }
 
@@ -6152,8 +6169,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_276() {
+  final private boolean jj_3R_278() {
     if (jj_scan_token(OPERATOR_SHARP)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_163() {
+    if (jj_scan_token(META_PUBLIC)) return true;
     return false;
   }
 
@@ -6163,7 +6185,12 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_172() {
+  final private boolean jj_3R_162() {
+    if (jj_scan_token(META_ACCESS1)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_174() {
     if (jj_scan_token(LBRACKET)) return true;
     if (jj_3R_103()) return true;
     return false;
@@ -6174,13 +6201,8 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_180() {
+  final private boolean jj_3R_182() {
     if (jj_3R_135()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_9() {
-    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
@@ -6190,16 +6212,21 @@ ENode MaybeSkipBlock(ASTNode target) :
   }
 
   final private boolean jj_3R_131() {
-    if (jj_3R_182()) return true;
+    if (jj_3R_184()) return true;
     return false;
   }
 
-  final private boolean jj_3R_179() {
-    if (jj_3R_181()) return true;
+  final private boolean jj_3_9() {
+    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
-  final private boolean jj_3R_171() {
+  final private boolean jj_3R_181() {
+    if (jj_3R_183()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_173() {
     if (jj_scan_token(LPAREN)) return true;
     Token xsp;
     xsp = jj_scanpos;
@@ -6208,13 +6235,14 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_172() {
+    if (jj_3R_191()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_121() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_160()) {
-    jj_scanpos = xsp;
-    if (jj_3R_161()) {
-    jj_scanpos = xsp;
     if (jj_3R_162()) {
     jj_scanpos = xsp;
     if (jj_3R_163()) {
@@ -6223,18 +6251,17 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_3R_165()) {
     jj_scanpos = xsp;
-    if (jj_3R_166()) return true;
+    if (jj_3R_166()) {
+    jj_scanpos = xsp;
+    if (jj_3R_167()) {
+    jj_scanpos = xsp;
+    if (jj_3R_168()) return true;
     }
     }
     }
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_170() {
-    if (jj_3R_189()) return true;
     return false;
   }
 
@@ -6243,18 +6270,24 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_169() {
-    if (jj_3R_188()) return true;
+  final private boolean jj_3R_171() {
+    if (jj_3R_190()) return true;
     return false;
   }
 
   final private boolean jj_3R_129() {
-    if (jj_3R_181()) return true;
+    if (jj_3R_183()) return true;
     return false;
   }
 
   final private boolean jj_3_40() {
     if (jj_3R_107()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_218() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(DOT)) return true;
     return false;
   }
 
@@ -6264,19 +6297,9 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_216() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(DOT)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_126() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_169()) {
-    jj_scanpos = xsp;
-    if (jj_3R_170()) {
-    jj_scanpos = xsp;
     if (jj_3R_171()) {
     jj_scanpos = xsp;
     if (jj_3R_172()) {
@@ -6291,7 +6314,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_3R_177()) {
     jj_scanpos = xsp;
-    if (jj_3R_178()) return true;
+    if (jj_3R_178()) {
+    jj_scanpos = xsp;
+    if (jj_3R_179()) {
+    jj_scanpos = xsp;
+    if (jj_3R_180()) return true;
     }
     }
     }
@@ -6325,8 +6352,19 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_254() {
+  final private boolean jj_3R_256() {
     if (jj_3R_123()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_128() {
+    if (jj_3R_90()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_181()) {
+    jj_scanpos = xsp;
+    if (jj_3R_182()) return true;
+    }
     return false;
   }
 
@@ -6335,14 +6373,15 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_128() {
-    if (jj_3R_90()) return true;
+  final private boolean jj_3R_185() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(DOT)) return true;
     Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_179()) {
-    jj_scanpos = xsp;
-    if (jj_3R_180()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_218()) { jj_scanpos = xsp; break; }
     }
+    if (jj_scan_token(TYPE)) return true;
     return false;
   }
 
@@ -6364,36 +6403,19 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_183() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(DOT)) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_216()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(TYPE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_187() {
+  final private boolean jj_3R_189() {
     if (jj_3R_108()) return true;
     if (jj_3R_109()) return true;
     return false;
   }
 
-  final private boolean jj_3R_218() {
+  final private boolean jj_3R_220() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_254()) {
+    if (jj_3R_256()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(140)) return true;
+    if (jj_scan_token(142)) return true;
     }
-    return false;
-  }
-
-  final private boolean jj_3_8() {
-    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
@@ -6407,8 +6429,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_186() {
+  final private boolean jj_3R_188() {
     if (jj_3R_109()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_8() {
+    if (jj_scan_token(OPERATOR)) return true;
     return false;
   }
 
@@ -6473,12 +6500,12 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_184() {
-    if (jj_3R_217()) return true;
+  final private boolean jj_3R_186() {
+    if (jj_3R_219()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_218()) { jj_scanpos = xsp; break; }
+      if (jj_3R_220()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -6489,25 +6516,25 @@ ENode MaybeSkipBlock(ASTNode target) :
     lookingAhead = true;
     jj_semLA = getToken(1).image.equals("_");
     lookingAhead = false;
-    if (!jj_semLA || jj_3R_186()) {
+    if (!jj_semLA || jj_3R_188()) {
     jj_scanpos = xsp;
-    if (jj_3R_187()) return true;
+    if (jj_3R_189()) return true;
     }
     return false;
   }
 
   final private boolean jj_3R_134() {
-    if (jj_3R_185()) return true;
+    if (jj_3R_187()) return true;
     return false;
   }
 
   final private boolean jj_3R_133() {
-    if (jj_3R_184()) return true;
+    if (jj_3R_186()) return true;
     return false;
   }
 
   final private boolean jj_3R_132() {
-    if (jj_3R_183()) return true;
+    if (jj_3R_185()) return true;
     return false;
   }
 
@@ -6566,11 +6593,11 @@ ENode MaybeSkipBlock(ASTNode target) :
       if (jj_3_15()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_scan_token(128)) jj_scanpos = xsp;
+    if (jj_scan_token(130)) jj_scanpos = xsp;
     return false;
   }
 
-  final private boolean jj_3R_168() {
+  final private boolean jj_3R_170() {
     Token xsp;
     if (jj_3_30()) return true;
     while (true) {
@@ -6585,13 +6612,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_37() {
-    if (jj_3R_105()) return true;
+  final private boolean jj_3R_97() {
+    if (jj_scan_token(COMMA)) return true;
     return false;
   }
 
-  final private boolean jj_3R_97() {
-    if (jj_scan_token(COMMA)) return true;
+  final private boolean jj_3_37() {
+    if (jj_3R_105()) return true;
     return false;
   }
 
@@ -6616,7 +6643,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_167() {
+  final private boolean jj_3R_169() {
     if (jj_scan_token(LBRACE)) return true;
     Token xsp;
     xsp = jj_scanpos;
@@ -6625,18 +6652,18 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_125() {
+    if (jj_3R_170()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_117() {
     if (jj_scan_token(PRAGMA)) return true;
     return false;
   }
 
-  final private boolean jj_3R_125() {
-    if (jj_3R_168()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_124() {
-    if (jj_3R_167()) return true;
+    if (jj_3R_169()) return true;
     return false;
   }
 
@@ -6650,11 +6677,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_119() {
-    if (jj_scan_token(PACKAGE)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_89() {
     Token xsp;
     xsp = jj_scanpos;
@@ -6665,43 +6687,48 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_233() {
+  final private boolean jj_3R_119() {
+    if (jj_scan_token(PACKAGE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_235() {
     if (jj_scan_token(OPERATOR_ID)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_248() {
+  final private boolean jj_3R_250() {
     if (jj_scan_token(TRY)) return true;
     return false;
   }
 
-  final private boolean jj_3R_232() {
+  final private boolean jj_3R_234() {
     if (jj_scan_token(IS_ONE_OF)) return true;
     return false;
   }
 
-  final private boolean jj_3R_231() {
+  final private boolean jj_3R_233() {
     if (jj_scan_token(IS_THE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_278() {
-    if (jj_3R_269()) return true;
+  final private boolean jj_3R_280() {
+    if (jj_3R_271()) return true;
     return false;
   }
 
-  final private boolean jj_3R_230() {
+  final private boolean jj_3R_232() {
     if (jj_scan_token(ARROW)) return true;
     return false;
   }
 
-  final private boolean jj_3R_235() {
+  final private boolean jj_3R_237() {
     if (jj_scan_token(LBRACE)) return true;
     return false;
   }
 
-  final private boolean jj_3R_229() {
+  final private boolean jj_3R_231() {
     if (jj_scan_token(ASSIGN2)) return true;
     return false;
   }
@@ -6712,38 +6739,53 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_247() {
+  final private boolean jj_3R_249() {
     if (jj_scan_token(WITH)) return true;
     return false;
   }
 
-  final private boolean jj_3R_234() {
+  final private boolean jj_3R_236() {
     if (jj_3R_109()) return true;
     return false;
   }
 
-  final private boolean jj_3R_228() {
-    if (jj_3R_269()) return true;
+  final private boolean jj_3R_230() {
+    if (jj_3R_271()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_278()) { jj_scanpos = xsp; break; }
+      if (jj_3R_280()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_248() {
+    if (jj_scan_token(SYNCHRONIZED)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_217() {
+    if (jj_3R_253()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_216() {
+    if (jj_3R_252()) return true;
     return false;
   }
 
   final private boolean jj_3R_107() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(138)) {
+    if (jj_scan_token(140)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(76)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(77)) {
+    if (jj_scan_token(78)) {
     jj_scanpos = xsp;
     if (jj_scan_token(79)) {
     jj_scanpos = xsp;
     if (jj_scan_token(81)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(83)) {
     jj_scanpos = xsp;
     if (jj_scan_token(60)) {
     jj_scanpos = xsp;
@@ -6781,7 +6823,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_scan_token(74)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(75)) return true;
+    if (jj_scan_token(75)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(76)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(77)) return true;
     }
     }
     }
@@ -6805,16 +6851,35 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_246() {
-    if (jj_scan_token(SYNCHRONIZED)) return true;
+    }
+    }
     return false;
   }
 
   final private boolean jj_3R_215() {
     if (jj_3R_251()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_194() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_230()) {
+    jj_scanpos = xsp;
+    if (jj_3R_231()) {
+    jj_scanpos = xsp;
+    if (jj_3R_232()) {
+    jj_scanpos = xsp;
+    if (jj_3R_233()) {
+    jj_scanpos = xsp;
+    if (jj_3R_234()) {
+    jj_scanpos = xsp;
+    if (jj_3R_235()) return true;
+    }
+    }
+    }
+    }
+    }
     return false;
   }
 
@@ -6828,40 +6893,8 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_192() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_228()) {
-    jj_scanpos = xsp;
-    if (jj_3R_229()) {
-    jj_scanpos = xsp;
-    if (jj_3R_230()) {
-    jj_scanpos = xsp;
-    if (jj_3R_231()) {
-    jj_scanpos = xsp;
-    if (jj_3R_232()) {
-    jj_scanpos = xsp;
-    if (jj_3R_233()) return true;
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
   final private boolean jj_3R_212() {
     if (jj_3R_248()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_211() {
-    if (jj_3R_247()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_210() {
-    if (jj_3R_246()) return true;
     return false;
   }
 
@@ -6871,18 +6904,34 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_211() {
+    if (jj_3R_247()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_247() {
+    if (jj_scan_token(THROW)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_210() {
+    if (jj_3R_246()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_209() {
     if (jj_3R_245()) return true;
     return false;
   }
 
-  final private boolean jj_3R_85() {
-    if (jj_3R_122()) return true;
+  final private boolean jj_3R_135() {
+    if (jj_3R_108()) return true;
     return false;
   }
 
-  final private boolean jj_3R_245() {
-    if (jj_scan_token(THROW)) return true;
+  final private boolean jj_3_22() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(LBRACE)) return true;
     return false;
   }
 
@@ -6891,13 +6940,35 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3R_207() {
+    if (jj_3R_243()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_85() {
+    if (jj_3R_122()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_206() {
+    if (jj_3R_242()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_84() {
     if (jj_3R_121()) return true;
     return false;
   }
 
-  final private boolean jj_3R_207() {
-    if (jj_3R_243()) return true;
+  final private boolean jj_3_21() {
+    if (jj_scan_token(LBRACKET)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(RBRACKET)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_205() {
+    if (jj_3R_241()) return true;
     return false;
   }
 
@@ -6922,36 +6993,8 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_135() {
-    if (jj_3R_108()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_22() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(LBRACE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_206() {
-    if (jj_3R_242()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_205() {
-    if (jj_3R_241()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_204() {
     if (jj_3R_240()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_21() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(RBRACKET)) return true;
     return false;
   }
 
@@ -6965,23 +7008,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_201() {
-    if (jj_3R_237()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_200() {
-    if (jj_3R_236()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_244() {
+  final private boolean jj_3R_246() {
     if (jj_scan_token(RETURN)) return true;
     return false;
   }
 
-  final private boolean jj_3R_199() {
-    if (jj_3R_235()) return true;
+  final private boolean jj_3R_201() {
+    if (jj_3R_237()) return true;
     return false;
   }
 
@@ -6990,24 +7023,24 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_269() {
+  final private boolean jj_3R_271() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(133)) {
+    if (jj_scan_token(135)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(129)) {
+    if (jj_scan_token(131)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(130)) {
+    if (jj_scan_token(132)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(138)) {
+    if (jj_scan_token(140)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(139)) {
+    if (jj_scan_token(141)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(143)) {
+    if (jj_scan_token(145)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(144)) {
+    if (jj_scan_token(146)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(145)) return true;
+    if (jj_scan_token(147)) return true;
     }
     }
     }
@@ -7018,27 +7051,14 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_198() {
-    if (jj_3R_234()) return true;
+  final private boolean jj_3R_200() {
+    if (jj_3R_236()) return true;
     return false;
   }
 
-  final private boolean jj_3R_90() {
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_2()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_182() {
+  final private boolean jj_3R_184() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_198()) {
-    jj_scanpos = xsp;
-    if (jj_3R_199()) {
-    jj_scanpos = xsp;
     if (jj_3R_200()) {
     jj_scanpos = xsp;
     if (jj_3R_201()) {
@@ -7069,7 +7089,11 @@ ENode MaybeSkipBlock(ASTNode target) :
     jj_scanpos = xsp;
     if (jj_3R_214()) {
     jj_scanpos = xsp;
-    if (jj_3R_215()) return true;
+    if (jj_3R_215()) {
+    jj_scanpos = xsp;
+    if (jj_3R_216()) {
+    jj_scanpos = xsp;
+    if (jj_3R_217()) return true;
     }
     }
     }
@@ -7086,6 +7110,15 @@ ENode MaybeSkipBlock(ASTNode target) :
     }
     }
     }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_90() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_2()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -7096,7 +7129,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_243() {
+  final private boolean jj_3R_245() {
     if (jj_scan_token(CONTINUE)) return true;
     return false;
   }
@@ -7115,15 +7148,15 @@ ENode MaybeSkipBlock(ASTNode target) :
   final private boolean jj_3R_123() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(138)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(139)) {
+    if (jj_scan_token(140)) {
     jj_scanpos = xsp;
     if (jj_scan_token(141)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(142)) {
+    if (jj_scan_token(143)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(145)) return true;
+    if (jj_scan_token(144)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(147)) return true;
     }
     }
     }
@@ -7141,7 +7174,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_242() {
+  final private boolean jj_3R_244() {
     if (jj_scan_token(BREAK)) return true;
     return false;
   }
@@ -7200,7 +7233,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_249() {
+  final private boolean jj_3R_251() {
     if (jj_scan_token(GOTO)) return true;
     return false;
   }
@@ -7210,8 +7243,19 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
+  final private boolean jj_3_13() {
+    if (jj_scan_token(OPERATOR_AT)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_81() {
     if (jj_3R_118()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_54() {
+    if (jj_3R_113()) return true;
     return false;
   }
 
@@ -7236,17 +7280,6 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3_13() {
-    if (jj_scan_token(OPERATOR_AT)) return true;
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_54() {
-    if (jj_3R_113()) return true;
-    return false;
-  }
-
   final private boolean jj_3_53() {
     if (jj_3R_104()) return true;
     return false;
@@ -7258,7 +7291,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_241() {
+  final private boolean jj_3R_243() {
     if (jj_scan_token(FOREACH)) return true;
     return false;
   }
@@ -7303,7 +7336,7 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_268() {
+  final private boolean jj_3R_270() {
     if (jj_scan_token(STRING_LITERAL)) return true;
     return false;
   }
@@ -7313,22 +7346,22 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_267() {
+  final private boolean jj_3R_269() {
     if (jj_scan_token(NULL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_240() {
+  final private boolean jj_3R_242() {
     if (jj_scan_token(FOR)) return true;
     return false;
   }
 
-  final private boolean jj_3R_266() {
+  final private boolean jj_3R_268() {
     if (jj_scan_token(CHARACTER_LITERAL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_265() {
+  final private boolean jj_3R_267() {
     if (jj_scan_token(DOUBLE_POINT_LITERAL)) return true;
     return false;
   }
@@ -7338,13 +7371,8 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_239() {
+  final private boolean jj_3R_241() {
     if (jj_scan_token(DO)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_197() {
-    if (jj_scan_token(VIEW)) return true;
     return false;
   }
 
@@ -7353,7 +7381,12 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_264() {
+  final private boolean jj_3R_199() {
+    if (jj_scan_token(VIEW)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_266() {
     if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
     return false;
   }
@@ -7363,8 +7396,13 @@ ENode MaybeSkipBlock(ASTNode target) :
     return false;
   }
 
-  final private boolean jj_3R_196() {
+  final private boolean jj_3R_198() {
     if (jj_scan_token(ENUM)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_265() {
+    if (jj_scan_token(LONG_INTEGER_LITERAL)) return true;
     return false;
   }
 

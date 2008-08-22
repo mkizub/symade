@@ -262,6 +262,9 @@ public abstract class ExtAttAttrSlot extends ScalarAttrSlot {
 		super(name, ANode.nodeattr$parent, typeinfo);
 		assert (this.is_attr);
 	}
+	public ExtAttAttrSlot(String name, ParentAttrSlot p_attr, TypeInfo typeinfo) {
+		super(name, p_attr, typeinfo);
+	}
 	public final void set(ANode parent, Object value) {
 		parent.setExtData(value, this);
 	}

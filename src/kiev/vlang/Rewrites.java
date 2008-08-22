@@ -351,7 +351,7 @@ public final class RewriteNodeArg extends ENode {
 	@nodeAttr public String		attr;
 
 	@setter
-	public void set$attr(String value) {
+	public final void set$attr(String value) {
 		this.attr = (value != null) ? value.intern() : null;
 	}
 	
@@ -626,7 +626,7 @@ public final class MacroAccessExpr extends ENode {
 
 	public MacroAccessExpr() {}
 
-	public Operator getOp() { return Operator.MacroAccess; }
+	public Operator getOper() { return Operator.MacroAccess; }
 
 	public Type getType() {
 		Type ot = obj.getType().getErasedType();
@@ -773,11 +773,11 @@ public class MacroBinaryBoolExpr extends ENode {
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return op; }
+	public Operator getOper() { return op; }
 
-	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public Type getType() { return Type.tpBoolean; }
 
@@ -810,7 +810,7 @@ public class MacroBinaryBoolExpr extends ENode {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			Symbol sym = getOp().resolveMethod(this);
+			Symbol sym = getOper().resolveMethod(this);
 			if (sym != null)
 				m = sym.dnode;
 		}
@@ -821,7 +821,7 @@ public class MacroBinaryBoolExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = (Method)getOp().resolveMethod(this).dnode;
+			m = (Method)getOper().resolveMethod(this).dnode;
 		ConstExpr ce = ((CoreExpr)m.body).calc(this);
 		return ce.getConstValue();
 	}

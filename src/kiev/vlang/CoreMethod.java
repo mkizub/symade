@@ -230,7 +230,7 @@ abstract class BinaryFunc extends CoreFunc {
 			expr.symbol = core_method.symbol;
 			return;
 		}
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 2) {
 			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
 			return;
@@ -242,7 +242,7 @@ abstract class BinaryFunc extends CoreFunc {
 		expr.replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		return doCalc(args[0].getConstValue(), args[1].getConstValue());
 	}
 	protected ConstExpr doCalc(Object:Object arg1, Object:Object arg2) {
@@ -256,7 +256,7 @@ abstract class UnaryFunc extends CoreFunc {
 			expr.symbol = core_method.symbol;
 			return;
 		}
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 1) {
 			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
 			return;
@@ -268,7 +268,7 @@ abstract class UnaryFunc extends CoreFunc {
 		expr.replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		return doCalc(args[0].getConstValue());
 	}
 	protected ConstExpr doCalc(Object:Object arg) {
@@ -1145,7 +1145,7 @@ class StringConcatSA extends StringConcat {}
 class StringAssignADD extends BinaryFunc {
 	public void normilizeExpr(Method core_method, ENode expr) {
 		super.normilizeExpr(core_method, expr, AssignExpr.class, Operator.AssignAdd);
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 2) {
 			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass());
 			return;

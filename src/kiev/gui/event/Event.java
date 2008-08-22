@@ -12,6 +12,7 @@ package kiev.gui.event;
 
 import java.io.Serializable;
 
+@SuppressWarnings({"serial"})
 public abstract class Event implements Serializable {
 	public static final Event[] emptyArray = new Event[0];
 }

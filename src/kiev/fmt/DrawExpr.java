@@ -53,7 +53,7 @@ public class DrawLispExpr extends DrawNonTerm {
 		Draw_SyntaxExpr se = (Draw_SyntaxExpr)this.syntax;
 		Draw_SyntaxExprTemplate st = (Draw_SyntaxExprTemplate)se.template;
 		ENode node = (ENode)this.drnode;
-		ENode[] eargs = node.getArgs();
+		ENode[] eargs = node.getEArgs();
 		if (args.length != eargs.length + 3) {
 			args.delAll();
 			args.append(st.l_paren.makeDrawable(cont.fmt, node, text_syntax));

@@ -208,7 +208,7 @@ public final class IFldExpr extends LvalueExpr {
 		this.ident = ident;
 	}
 
-	public Operator getOp() { return Operator.Access; }
+	public Operator getOper() { return Operator.Access; }
 
 	public Type getType() {
 		Type ot = obj.getType();
@@ -262,8 +262,8 @@ public final class IFldExpr extends LvalueExpr {
 	public Var[] getAccessPath() {
 		if (obj instanceof LVarExpr) {
 			LVarExpr va = (LVarExpr)obj;
-			if (va.getVar().isFinal() && va.getVar().isForward())
-				return new Var[]{va.getVar(), this.var};
+			if (va.getVarSafe().isFinal() && va.getVarSafe().isForward())
+				return new Var[]{va.getVarSafe(), this.var};
 			return null;
 		}
 		if (obj instanceof IFldExpr) {
@@ -383,7 +383,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 	public int getPriority() { return opContainerElementPriority; }
 
-	public ENode[] getArgs() { return new ENode[]{obj,index}; }
+	public ENode[] getEArgs() { return new ENode[]{obj,index}; }
 
 	public Type getType() {
 		try {
@@ -529,7 +529,7 @@ public final class LVarExpr extends LvalueExpr {
 		}
 	}
 
-	public Var getVar() {
+	public Var getVarSafe() {
 		if (var != null)
 			return var;
 		ResInfo<Var> info = new ResInfo<Var>(this,this.ident);
@@ -548,19 +548,19 @@ public final class LVarExpr extends LvalueExpr {
 	}
 	
 	public boolean preResolveIn() {
-		Var v = getVar(); // calls resolving
+		Var v = getVarSafe(); // calls resolving
 		if (v.ctx_root != this.ctx_root) {
 			this.ident = v.sname;
-			getVar();
+			getVarSafe();
 		}
 		return false;
 	}
 
 	public boolean mainResolveIn() {
-		Var v = getVar(); // calls resolving
+		Var v = getVarSafe(); // calls resolving
 		if (v.ctx_root != this.ctx_root) {
 			this.ident = v.sname;
-			getVar();
+			getVarSafe();
 		}
 		return false;
 	}
@@ -570,7 +570,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{getVar()});
+		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{getVarSafe()});
 		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.getType()};
 		return (Type[])sni.getTypes().clone();
@@ -629,7 +629,7 @@ public final class SFldExpr extends LvalueExpr {
 		this.symbol = var.symbol;
 	}
 
-	public Operator getOp() { return Operator.Access; }
+	public Operator getOper() { return Operator.Access; }
 
 	public Type getType() {
 		try {
@@ -753,7 +753,7 @@ public final class OuterThisAccessExpr extends ENode {
 		this.ident = nameThis;
 	}
 
-	public Operator getOp() { return Operator.Access; }
+	public Operator getOper() { return Operator.Access; }
 
 	public Type getType() {
 		try {
@@ -822,11 +822,11 @@ public final class ReinterpExpr extends LvalueExpr {
 		this.expr = expr;
 	}
 
-	public Operator getOp() { return Operator.Reinterp; }
+	public Operator getOper() { return Operator.Reinterp; }
 
-	public ENode[] getArgs() { return new ENode[]{ctype, expr}; }
+	public ENode[] getEArgs() { return new ENode[]{ctype, expr}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public int getPriority() { return opCastPriority; }
 

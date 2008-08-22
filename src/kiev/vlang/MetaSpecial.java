@@ -236,27 +236,11 @@ public final class MetaAccess extends MetaFlag {
 		dn.mflags_access = DNode.MASK_ACC_DEFAULT;
 	}
 	
-	public final void setSimple(String val) {
-		this.simple = val;
-	}
-	public final String getSimple() {
-		this.simple
-	}
 	@setter public final void set$simple(String val) {
 		this.simple = val.intern();
 		ANode p = parent();
 		if (p instanceof DNode)
 			setFlag((DNode)p, true);
-	}
-
-	public final void setFlags(int val) {
-		this.flags = val;
-	}
-	public int getFlags() {
-		this.flags
-	}
-	@setter public void set$flags(int val) {
-		this.flags = val;
 	}
 
 	public static boolean readable(DNode dn) {

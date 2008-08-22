@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public final class LayoutSpace implements Cloneable, Serializable {
+	private static final long serialVersionUID = 5736472699626215338L;
+
 	public static final LayoutSpace[] emptyArray = new LayoutSpace[0];
 	
 	public String		name;
@@ -42,6 +44,8 @@ public final class LayoutSpace implements Cloneable, Serializable {
 }
 
 public final class Draw_Font implements Serializable {
+	private static final long serialVersionUID = -8603205874484295675L;
+
 	public String			font_name;
 	transient
 	public Object			font_object;
@@ -58,6 +62,8 @@ public final class Draw_Font implements Serializable {
 }
 
 public final class Draw_Icon implements Serializable {
+	private static final long serialVersionUID = -970225328131025562L;
+
 	public String			icon_name;
 	transient
 	public Object			icon_object;
@@ -74,6 +80,7 @@ public final class Draw_Icon implements Serializable {
 }
 
 public final class Draw_Layout implements Serializable {
+	private static final long serialVersionUID = -3604642508144925024L;
 
 	public int				count;
 	public int				rgb_color;
@@ -91,6 +98,8 @@ public final class Draw_Layout implements Serializable {
 }
 
 public class Draw_IndentInfo implements Serializable {
+	private static final long serialVersionUID = 6606269674143602841L;
+
 	public String name;
 	public int text_size;
 	public int pixel_size;
@@ -105,6 +114,8 @@ public class Draw_IndentInfo implements Serializable {
 }
 
 public class Draw_Paragraph implements Serializable {
+	private static final long serialVersionUID = 4457405626413042874L;
+
 	public String name;
 	public Draw_IndentInfo indent;
 	public String[] no_indent_if_prev;
@@ -137,6 +148,7 @@ public class Draw_Paragraph implements Serializable {
 }
 
 public final class Draw_SyntaxFunction implements Serializable {
+	private static final long serialVersionUID = 420690446481034625L;
 	public static final Draw_SyntaxFunction[] emptyArray = new Draw_SyntaxFunction[0];
 
 	public String				title;
@@ -156,6 +168,7 @@ public final class Draw_SyntaxFunction implements Serializable {
 }
 
 public final class ExpectedAttrTypeInfo implements Serializable {
+	private static final long serialVersionUID = -8467316892653250791L;
 	public static final ExpectedAttrTypeInfo[] emptyArray = new ExpectedAttrTypeInfo[0];
 
 	public String				title;
@@ -170,6 +183,7 @@ public final class ExpectedAttrTypeInfo implements Serializable {
 }
 
 public final class ExpectedTypeInfo implements Serializable {
+	private static final long serialVersionUID = -3603386177345584762L;
 	public static final ExpectedTypeInfo[] emptyArray = new ExpectedTypeInfo[0];
 
 	public String				title;
@@ -187,6 +201,7 @@ public abstract class Draw_CalcOption implements Serializable {
 	public abstract boolean calc(ANode node);
 }
 public final class Draw_CalcOptionAnd extends Draw_CalcOption {
+	private static final long serialVersionUID = -6723637813837648633L;
 	public Draw_CalcOption[]				opts = Draw_CalcOption.emptyArray;
 
 	public boolean calc(ANode node) {
@@ -196,6 +211,7 @@ public final class Draw_CalcOptionAnd extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionOr extends Draw_CalcOption {
+	private static final long serialVersionUID = -2122008566893546739L;
 	public Draw_CalcOption[]				opts = Draw_CalcOption.emptyArray;
 
 	public boolean calc(ANode node) {
@@ -205,6 +221,7 @@ public final class Draw_CalcOptionOr extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionNot extends Draw_CalcOption {
+	private static final long serialVersionUID = 2907619420920739136L;
 	public Draw_CalcOption					opt;
 
 	public boolean calc(ANode node) {
@@ -214,6 +231,7 @@ public final class Draw_CalcOptionNot extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionNotNull extends Draw_CalcOption {
+	private static final long serialVersionUID = 9111122713846315273L;
 	public String							name;
 
 	public boolean calc(ANode node) {
@@ -233,6 +251,7 @@ public final class Draw_CalcOptionNotNull extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionNotEmpty extends Draw_CalcOption {
+	private static final long serialVersionUID = 5228077155972939972L;
 	public String							name;
 
 	public boolean calc(ANode node) {
@@ -249,6 +268,7 @@ public final class Draw_CalcOptionNotEmpty extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionTrue extends Draw_CalcOption {
+	private static final long serialVersionUID = 4681718280186599247L;
 	public String							name;
 
 	public boolean calc(ANode node) {
@@ -263,6 +283,7 @@ public final class Draw_CalcOptionTrue extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionClass extends Draw_CalcOption {
+	private static final long serialVersionUID = -6991565039282353962L;
 	public Class							clazz;
 
 	public boolean calc(ANode node) {
@@ -271,6 +292,7 @@ public final class Draw_CalcOptionClass extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionHasMeta extends Draw_CalcOption {
+	private static final long serialVersionUID = -36079655332483986L;
 	public String							name;
 	
 	public boolean calc(ANode node) {
@@ -286,6 +308,7 @@ public final class Draw_CalcOptionHasMeta extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionIsHidden extends Draw_CalcOption {
+	private static final long serialVersionUID = -314159579454447033L;
 	public String							name;
 
 	public boolean calc(ANode node) {
@@ -304,6 +327,7 @@ public final class Draw_CalcOptionIsHidden extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionHasNoSyntaxParent extends Draw_CalcOption {
+	private static final long serialVersionUID = 8575247249606829946L;
 	public String							name;
 
 	public boolean calc(ANode node) {
@@ -323,6 +347,7 @@ public final class Draw_CalcOptionHasNoSyntaxParent extends Draw_CalcOption {
 	}
 }
 public final class Draw_CalcOptionIncludeInDump extends Draw_CalcOption {
+	private static final long serialVersionUID = -7950116970219984395L;
 	public String							name;
 	public String							dump;
 
@@ -375,6 +400,7 @@ public final class Draw_CalcOptionIncludeInDump extends Draw_CalcOption {
 
 
 public class Draw_SyntaxElem implements Serializable {
+	private static final long serialVersionUID = -3384347945904357661L;
 	public static final Draw_SyntaxElem[] emptyArray = new Draw_SyntaxElem[0];
 	
 	final
@@ -400,6 +426,7 @@ public class Draw_SyntaxElem implements Serializable {
 }
 
 public class Draw_SyntaxToken extends Draw_SyntaxElem implements Cloneable {
+	private static final long serialVersionUID = 8757692557080305967L;
 	public String							text;
 	public SyntaxTokenKind					kind;
 
@@ -432,6 +459,7 @@ public class Draw_SyntaxToken extends Draw_SyntaxElem implements Cloneable {
 }
 
 public class Draw_SyntaxIcon extends Draw_SyntaxElem implements Cloneable {
+	private static final long serialVersionUID = 1040843537786842347L;
 	public Draw_Icon					icon;
 
 	public Draw_SyntaxIcon(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
@@ -447,6 +475,7 @@ public class Draw_SyntaxIcon extends Draw_SyntaxElem implements Cloneable {
 }
 
 public class Draw_SyntaxPlaceHolder extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 571440015215472617L;
 	public String							text;
 	public String							attr_name;
 
@@ -470,6 +499,7 @@ public class Draw_SyntaxPlaceHolder extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxSpace extends Draw_SyntaxElem {
+	private static final long serialVersionUID = -5927945464857237540L;
 	public Draw_SyntaxSpace(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -479,6 +509,7 @@ public class Draw_SyntaxSpace extends Draw_SyntaxElem {
 }
 
 public abstract class Draw_SyntaxAttr extends Draw_SyntaxElem {
+	private static final long serialVersionUID = -2302590344239937477L;
 	public static final Draw_SyntaxAttr[] emptyArray = new Draw_SyntaxAttr[0];
 
 	public String							name;
@@ -506,6 +537,7 @@ public abstract class Draw_SyntaxAttr extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxSubAttr extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = -5596546913410820085L;
 	public Draw_SyntaxSubAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -514,6 +546,7 @@ public class Draw_SyntaxSubAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxNode extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = -9075422413292203835L;
 	public Draw_SyntaxNode(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -522,6 +555,7 @@ public class Draw_SyntaxNode extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxIdentAttr extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = 340634908478187473L;
 	public Draw_SyntaxIdentTemplate		template;
 
 	public Draw_SyntaxIdentAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
@@ -555,6 +589,7 @@ public class Draw_SyntaxIdentAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxCharAttr extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = 3628954390935803144L;
 	public Draw_SyntaxCharAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -564,6 +599,7 @@ public class Draw_SyntaxCharAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxStrAttr extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = -1689259369964188143L;
 	public Draw_SyntaxStrAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -573,6 +609,7 @@ public class Draw_SyntaxStrAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxXmlStrAttr extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = -8338284770464125423L;
 	
 	public Draw_SyntaxXmlStrAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
@@ -594,6 +631,7 @@ public class Draw_SyntaxXmlStrAttr extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxXmlTypeAttr extends Draw_SyntaxXmlStrAttr {
+	private static final long serialVersionUID = -6224362452826913238L;
 	public Draw_SyntaxXmlTypeAttr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Draw_SyntaxXmlTypeAttr(Draw_SyntaxElemDecl elem_decl, AttrSlot attr_slot) {
@@ -606,6 +644,7 @@ public class Draw_SyntaxXmlTypeAttr extends Draw_SyntaxXmlStrAttr {
 }
 
 public class Draw_SyntaxList extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = -5099833920999174978L;
 	public Draw_SyntaxElem					element;
 	public Draw_SyntaxElem					separator;
 	public Draw_SyntaxElem					prefix;
@@ -623,6 +662,7 @@ public class Draw_SyntaxList extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxElemWrapper extends Draw_SyntaxElem {
+	private static final long serialVersionUID = -7622927917061590545L;
 	public Draw_SyntaxElem					prefix;
 	public Draw_SyntaxElem					sufix;
 	public Draw_SyntaxElem					empty;
@@ -637,6 +677,7 @@ public class Draw_SyntaxElemWrapper extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxTreeBranch extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = 1993172189372203968L;
 	public Draw_SyntaxElem					folded;
 	public Draw_SyntaxElem					element;
 	public Draw_CalcOption					filter;
@@ -653,6 +694,7 @@ public class Draw_SyntaxTreeBranch extends Draw_SyntaxAttr {
 
 
 public class Draw_SyntaxSet extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 4173580350421641113L;
 	public Draw_SyntaxElem[]				elements = Draw_SyntaxElem.emptyArray;
 	public boolean							nested_function_lookup;
 
@@ -665,6 +707,7 @@ public class Draw_SyntaxSet extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxSwitch extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 6271831434121100981L;
 	public Draw_SyntaxToken					prefix;
 	public Draw_ATextSyntax					target_syntax;
 	public Draw_SyntaxToken					suffix;
@@ -708,6 +751,7 @@ public class Draw_SyntaxSwitch extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxOptional extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 7584341725551810893L;
 	public Draw_CalcOption					calculator;
 	public Draw_SyntaxElem					opt_true;
 	public Draw_SyntaxElem					opt_false;
@@ -721,6 +765,7 @@ public class Draw_SyntaxOptional extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxEnumChoice extends Draw_SyntaxAttr {
+	private static final long serialVersionUID = -6110636984918109945L;
 	public Draw_SyntaxElem[]				elements = Draw_SyntaxElem.emptyArray;
 
 	public Draw_SyntaxEnumChoice(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
@@ -732,6 +777,7 @@ public class Draw_SyntaxEnumChoice extends Draw_SyntaxAttr {
 }
 
 public class Draw_SyntaxFolder extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 7621558209145701674L;
 	public boolean							folded_by_default;
 	public Draw_SyntaxElem					folded;
 	public Draw_SyntaxElem					unfolded;
@@ -745,13 +791,14 @@ public class Draw_SyntaxFolder extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxExpr extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 4816928333044654372L;
 	public Draw_SyntaxExprTemplate			template;
 	public Draw_SyntaxAttr[]				attrs = Draw_SyntaxAttr.emptyArray;
 
 	public Draw_SyntaxExpr(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
-		if (node instanceof ENode && node.getOp() != null)
+		if (node instanceof ENode && node.getOper() != null)
 			return fmt.getDrawable(node, null, text_syntax);
 		return new DrawLispExpr(node, this, text_syntax);
 	}
@@ -759,13 +806,14 @@ public class Draw_SyntaxExpr extends Draw_SyntaxElem {
 	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
 		if (expected_node != curr_dr.drnode)
 			return false;
-		if (expected_node instanceof ENode && expected_node.getOp() == null)
+		if (expected_node instanceof ENode && expected_node.getOper() == null)
 			return true;
 		return false;
 	}
 }
 
 public class Draw_SyntaxAutoParenth extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 7990778417174522581L;
 	public Draw_SyntaxExprTemplate			template;
 	public Draw_SyntaxAttr					attr;
 	public int								priority;
@@ -813,6 +861,7 @@ public class Draw_SyntaxAutoParenth extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxJavaAccessExpr extends Draw_SyntaxElem {
+	private static final long serialVersionUID = -1201266671618368161L;
 	public Draw_SyntaxElem					obj_elem;
 	public Draw_SyntaxToken					separator;
 	public Draw_SyntaxElem					fld_elem;
@@ -826,6 +875,7 @@ public class Draw_SyntaxJavaAccessExpr extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxJavaAccess extends Draw_SyntaxElem {
+	private static final long serialVersionUID = -1658011156725604975L;
 	public Draw_SyntaxJavaAccess(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -835,6 +885,7 @@ public class Draw_SyntaxJavaAccess extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxJavaPackedField extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 6639152413918604918L;
 	public Draw_SyntaxJavaPackedField(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 
 	public Drawable makeDrawable(Formatter fmt, ANode node, Draw_ATextSyntax text_syntax) {
@@ -844,6 +895,7 @@ public class Draw_SyntaxJavaPackedField extends Draw_SyntaxElem {
 }
 
 public class Draw_SyntaxJavaComment extends Draw_SyntaxElem {
+	private static final long serialVersionUID = 3837036873085719206L;
 	public Draw_SyntaxJavaCommentTemplate	template;
 
 	public Draw_SyntaxJavaComment(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
@@ -857,6 +909,7 @@ public class Draw_SyntaxJavaComment extends Draw_SyntaxElem {
 
 
 public class Draw_SyntaxNodeTemplate implements Serializable {
+	private static final long serialVersionUID = -2306890714699138747L;
 	public String name;
 	public byte[] dump;
 	public transient ASTNode template_node;
@@ -881,6 +934,7 @@ public class Draw_SyntaxNodeTemplate implements Serializable {
 }
 
 public class Draw_SyntaxElemDecl implements Serializable {
+	private static final long serialVersionUID = 8641818815069286842L;
 	public Draw_SyntaxElem					elem;
 	public String 							clazz_name;
 	public ExpectedAttrTypeInfo[]			attr_types;
@@ -900,6 +954,8 @@ public class Draw_SyntaxElemDecl implements Serializable {
 }
 
 public class Draw_SyntaxIdentTemplate implements Serializable {
+	private static final long serialVersionUID = 917619957681340035L;
+
 	transient Pattern	pattern;
 
 	public String 							regexp_ok;
@@ -932,6 +988,7 @@ public class Draw_SyntaxIdentTemplate implements Serializable {
 }
 
 public class Draw_SyntaxExprTemplate implements Serializable {
+	private static final long serialVersionUID = 61758365571538980L;
 	public Draw_SyntaxElem					elem;
 	public Draw_SyntaxToken					l_paren;
 	public Draw_SyntaxToken					bad_op;
@@ -940,6 +997,7 @@ public class Draw_SyntaxExprTemplate implements Serializable {
 }
 
 public class Draw_SyntaxJavaCommentTemplate implements Serializable {
+	private static final long serialVersionUID = 8076798699937975244L;
 	public Draw_SyntaxElem					elem;
 	public Draw_SyntaxElem					newline;
 	public Draw_SyntaxElem					lin_beg;
@@ -950,6 +1008,7 @@ public class Draw_SyntaxJavaCommentTemplate implements Serializable {
 
 
 public class Draw_ATextSyntax implements Serializable {
+	private static final long serialVersionUID = 4993170764930753026L;
 	protected transient Hashtable<String,Draw_SyntaxElem>					badSyntax;
 	protected transient Hashtable<String,Draw_SyntaxElem>					allSyntax;
 	protected transient Hashtable<Pair<Operator,Class>, Draw_SyntaxElem> 	allSyntaxExprs;
@@ -1025,7 +1084,7 @@ public class Draw_ATextSyntax implements Serializable {
 				Draw_SyntaxElem se = elem;
 				if (for_node instanceof ENode && se instanceof Draw_SyntaxExpr) {
 					ENode e = (ENode)for_node;
-					Operator op = e.getOp();
+					Operator op = e.getOper();
 					if (op == null)
 						return se;
 					se = allSyntaxExprs.get(new Pair<Operator,Class>(op,for_node.getClass()));
@@ -1081,9 +1140,12 @@ public class Draw_ATextSyntax implements Serializable {
 }
 
 public class Draw_TextSyntax extends Draw_ATextSyntax {
+	private static final long serialVersionUID = -1299998982275479835L;
 }
 
 public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
+	private static final long serialVersionUID = 5804331246249196699L;
+
 	public String dump = "full";
 	protected Draw_Layout loutSpNo;
 	protected Draw_Layout loutNoNo;
@@ -1255,6 +1317,8 @@ public class Draw_XmlDumpSyntax extends Draw_ATextSyntax {
 }
 
 public class Draw_TreeSyntax extends Draw_ATextSyntax {
+	private static final long serialVersionUID = -6892135597834558696L;
+
 	protected Draw_Layout loutSpNo;
 	protected Draw_Layout loutNoNo;
 	protected Draw_Layout loutNlNl;
@@ -1293,7 +1357,7 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 			Draw_SyntaxElem se = sed;
 			if (node instanceof ENode && se instanceof Draw_SyntaxExpr) {
 				ENode e = (ENode)node;
-				Operator op = e.getOp();
+				Operator op = e.getOper();
 				if (op == null)
 					return se;
 				se = allSyntaxExprs.get(new Pair<Operator,Class>(op,node.getClass()));

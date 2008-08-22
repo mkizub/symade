@@ -89,7 +89,7 @@ public class AccessEditor implements ItemEditor {
 		try {
 			if (e.getSource() instanceof SetSimpleMenuItem) {
 				SetSimpleMenuItem mi = (SetSimpleMenuItem)e.getSource();
-				((MetaAccess)cur_elem.drnode).setSimple(mi.val);
+				((MetaAccess)cur_elem.drnode).simple = mi.val;
 				setMenuVisible();
 			}
 			else if (e.getSource() instanceof SetFlagsMenuItem) {
@@ -134,7 +134,7 @@ public class AccessEditor implements ItemEditor {
 			super(text);
 			this.val = val;
 			MetaAccess ma = (MetaAccess)cur_elem.drnode;
-			setSelected((ma.getSimple() == val));
+			setSelected((ma.simple == val));
 		}
 	}
 	class SetFlagsMenuItem extends JCheckBoxMenuItem {

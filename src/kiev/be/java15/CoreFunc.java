@@ -167,7 +167,7 @@ public abstract class BEndFunc {
 	public abstract void generate(Code code, Type reqType, JENode expr);
 	
 	final JENode[] getJArgs(JENode expr) {
-		ENode[] args = ((ENode)expr).getArgs();
+		ENode[] args = ((ENode)expr).getEArgs();
 		JENode[] jargs = new JENode[args.length];
 		for (int i=0; i < args.length; i++)
 			jargs[i] = (JENode)args[i];

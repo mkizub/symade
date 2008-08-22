@@ -89,10 +89,10 @@ public final class ExprEditActions implements ItemEditor {
 			menu = null;
 			if (kind == ETokenKind.UNKNOWN) {
 				et.setKind(ETokenKind.UNKNOWN);
-				et.set$explicit(false);
+				et.setExplicit(false);
 			} else {
 				et.setKind(kind);
-				et.set$explicit(true);
+				et.setExplicit(true);
 			}
 			et.guessKind();
 			editor.formatAndPaint(true);

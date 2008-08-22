@@ -14,22 +14,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 
-import kiev.fmt.DrawNodeTerm;
-import kiev.fmt.DrawPlaceHolder;
-import kiev.fmt.Draw_SyntaxPlaceHolder;
-import kiev.fmt.Drawable;
-import kiev.gui.ActionPoint;
-import kiev.gui.Editor;
-import kiev.gui.UIActionFactory;
-import kiev.gui.UIActionViewContext;
 import kiev.vtree.ANode;
-import kiev.vtree.AttrSlot;
-import kiev.vtree.ExtSpaceAttrSlot;
-import kiev.vtree.ScalarAttrSlot;
-import kiev.vtree.ScalarPtr;
-import kiev.vtree.SpaceAttrSlot;
-import kiev.vtree.ExtChildrenIterator;
-import kiev.vtree.Transaction;
 
 public class Clipboard {
 

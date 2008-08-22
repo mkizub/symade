@@ -315,7 +315,7 @@ public class Window extends JFrame
 	
 	public void openEditor(FileUnit fu, ANode[] path) {
 		for (Editor e: editor_views) {
-			if (e.the_root == fu || e.the_root.get$ctx_file_unit() == fu) {
+			if (e.the_root == fu || e.the_root.getCtx_file_unit() == fu) {
 				e.goToPath(path);
 				editors.setSelectedComponent((Component)e.getView_canvas());
 				e.getView_canvas().requestFocus();

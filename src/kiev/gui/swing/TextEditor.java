@@ -300,7 +300,7 @@ public class TextEditor implements ItemEditor, KeyListener, ComboBoxEditor {
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		for (Symbol sym: decls) {
-			combo.addItem(qualified ? sym.qname() : sym.get$sname());
+			combo.addItem(qualified ? sym.qname() : sym.getSname());
 			popup = true;
 		}
 		if (popup) {

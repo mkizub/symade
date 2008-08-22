@@ -14,6 +14,8 @@ import java.io.ObjectStreamException;
 
 
 public class BindingSet extends Item {
+	private static final long serialVersionUID = -6693666203094437784L;
+
 	public BindingSet				parent_set;
 	public Item[]					items;
 	public String					qname;	// qualified name

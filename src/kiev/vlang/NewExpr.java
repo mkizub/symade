@@ -247,7 +247,7 @@ public final class NewEnumExpr extends ENode {
 		// try to bind to a class with no constructors
 		if (args.length == 0) {
 			boolean ok = true;
-			foreach(Constructor n; ntype.meta_type.tdecl.getMembers(); !n.isStatic())
+			foreach(Constructor n; ntype.meta_type.tdecl.getContainerMembers(); !n.isStatic())
 				ok = false;
 			if (ok)
 				return;

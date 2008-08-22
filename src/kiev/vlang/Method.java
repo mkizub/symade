@@ -417,7 +417,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			return;
 		}
 		if (expr.ident == null) {
-			Operator op = expr.getOp();
+			Operator op = expr.getOper();
 			if (op != null)
 				expr.ident = op.name;
 			else
@@ -437,7 +437,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		if (expr.getClass() == cls)
 			return;
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		if (args == null) {
 			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
 			return;
@@ -445,7 +445,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		ENode en = (ENode)cls.newInstance();
 		foreach (ENode e; args)
 			e.detach();
-		Operator op = expr.getOp();
+		Operator op = expr.getOper();
 		if (op == null && this.isOperatorMethod())
 			op = Operator.lookupOperatorForMethod(this);
 		en.initFrom(expr, op, this, args);

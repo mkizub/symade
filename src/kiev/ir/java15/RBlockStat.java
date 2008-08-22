@@ -47,7 +47,7 @@ public final view RWithStat of WithStat extends RENode {
 			expr.resolve(null);
 			ENode e = expr;
 			switch (e) {
-			case LVarExpr:		var_or_field = ((LVarExpr)e).getVar();	break;
+			case LVarExpr:		var_or_field = ((LVarExpr)e).getVarSafe();	break;
 			case IFldExpr:		var_or_field = ((IFldExpr)e).var;		break;
 			case SFldExpr:		var_or_field = ((SFldExpr)e).var;		break;
 			case AssignExpr:	e = ((AssignExpr)e).lval;				goto case e;

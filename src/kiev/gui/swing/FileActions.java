@@ -89,7 +89,7 @@ public final class FileActions implements Runnable {
 			if (uiv.the_root instanceof FileUnit)
 				fu = (FileUnit)uiv.the_root;
 			else
-				fu = (FileUnit)this.uiv.the_root.get$ctx_file_unit();
+				fu = (FileUnit)this.uiv.the_root.getCtx_file_unit();
 			JFileChooser jfc = new JFileChooser(".");
 			jfc.setDialogType(JFileChooser.SAVE_DIALOG);
 			File f = new File(fu.pname());
@@ -136,7 +136,7 @@ public final class FileActions implements Runnable {
 			if (uiv.the_root instanceof FileUnit)
 				fu = (FileUnit)uiv.the_root;
 			else
-				fu = (FileUnit)uiv.the_root.get$ctx_file_unit();
+				fu = (FileUnit)uiv.the_root.getCtx_file_unit();
 			String stx_name = fu.getCurrentSyntax();
 			Draw_ATextSyntax stx = null;
 			if (stx_name != null && !"<xml-dump>".equals(stx_name)) {

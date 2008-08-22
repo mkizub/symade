@@ -242,7 +242,7 @@ public abstract class Type extends AType {
 				return null;
 			return new VarianceCheckError(base, at, variance);
 		}
-		assert ("Unexpected variance "+at.definer.getVariance()+" of "+at);
+		assert ("Unexpected variance "+at.definer.getVarianceSafe()+" of "+at);
 		return null;
 	}
 	
@@ -565,9 +565,9 @@ public final class ArgType extends Type {
 		return String.valueOf(definer.sname);
 	}
 	
-	public boolean isCoVariant() { return definer.getVariance() == TypeVariance.CO_VARIANT; }
-	public boolean isContraVariant() { return definer.getVariance() == TypeVariance.CONTRA_VARIANT; }
-	public boolean isInVariant() { return definer.getVariance() == TypeVariance.IN_VARIANT; }
+	public boolean isCoVariant() { return definer.getVarianceSafe() == TypeVariance.CO_VARIANT; }
+	public boolean isContraVariant() { return definer.getVarianceSafe() == TypeVariance.CONTRA_VARIANT; }
+	public boolean isInVariant() { return definer.getVarianceSafe() == TypeVariance.IN_VARIANT; }
 
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t || t ≡ Type.tpAny ) return true;

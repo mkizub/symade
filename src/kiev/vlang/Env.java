@@ -38,12 +38,12 @@ public final class Env extends KievPackage {
 	/** Backend environment */
 	private JEnv									jenv;
 
-	@nodeAttr public Project						project;
+	@nodeAttr public Project						proj;
 	
 	private java.util.WeakHashMap<String,Symbol>	uuidToSymbolMap	= new java.util.WeakHashMap<String,Symbol>();
 	
 	public static Env getRoot() { return root; }
-	public static Project getProject() { return root.project; }
+	public static Project getProject() { return root.proj; }
 	
 	/** Private class constructor -
 		really there may be no instances of this class
@@ -252,9 +252,9 @@ public final class Env extends KievPackage {
 		this.classpath = new kiev.bytecode.Classpath(path);
 		this.jenv = new JEnv(this);
 		if (Kiev.project_file != null && Kiev.project_file.exists())
-			this.project = DumpUtils.loadProject(Kiev.project_file);
-		if (this.project == null)
-			this.project = new Project();
+			this.proj = DumpUtils.loadProject(Kiev.project_file);
+		if (this.proj == null)
+			this.proj = new Project();
 
 		//root.setPackage();
 		root.addSpecialField("$GenAsserts", Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));

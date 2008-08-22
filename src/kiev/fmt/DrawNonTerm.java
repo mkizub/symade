@@ -408,8 +408,6 @@ public final class DrawTreeBranch extends Drawable {
 	}
 
 	// for GUI
-	public Drawable getFolded() { this.folded }
-	// for GUI
 	public Drawable[] getSubNodes() { this.args }
 	// for GUI
 	public boolean getDrawFolded() { this.draw_folded }

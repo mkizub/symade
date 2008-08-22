@@ -121,7 +121,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 					acc = ~fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
-					acc = ((LVarExpr)fa.obj).getVar();
+					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
 					Var var = new LVar(0,"tmp$access",fa.obj.getType(),Var.VAR_LOCAL,0);
@@ -215,7 +215,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 					acc = fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
-					acc = ((LVarExpr)fa.obj).getVar();
+					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
 					Var var = new LVar(0,"tmp$access",fa.obj.getType(),Var.VAR_LOCAL,0);
@@ -296,7 +296,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 	
 	private ENode mkAccess(Object o) {
 		if (o instanceof Var) return new LVarExpr(0,(Var)o);
-		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVar());
+		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVarSafe());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		if (o instanceof SuperExpr) return new SuperExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);

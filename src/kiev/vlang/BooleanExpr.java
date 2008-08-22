@@ -77,11 +77,11 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return Operator.BooleanOr; }
+	public Operator getOper() { return Operator.BooleanOr; }
 
-	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public boolean	isConstantExpr() {
 		if (expr1.isConstantExpr()) {
@@ -147,11 +147,11 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return Operator.BooleanAnd; }
+	public Operator getOper() { return Operator.BooleanAnd; }
 
-	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public boolean	isConstantExpr() {
 		if (expr1.isConstantExpr()) {
@@ -219,11 +219,11 @@ public class BinaryBoolExpr extends BoolExpr {
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return op; }
+	public Operator getOper() { return op; }
 
-	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public void mainResolveOut() {
 		resolveMethodAndNormalize();
@@ -236,7 +236,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			return false;
 		DNode m = this.dnode;
 		if (m == null) {
-			Symbol sym = getOp().resolveMethod(this);
+			Symbol sym = getOper().resolveMethod(this);
 			if (sym != null)
 				m = sym.dnode;
 		}
@@ -247,7 +247,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null) {
-			Symbol sym = getOp().resolveMethod(this);
+			Symbol sym = getOper().resolveMethod(this);
 			if (sym != null)
 				m = (Method)sym.dnode;
 		}
@@ -288,11 +288,11 @@ public class InstanceofExpr extends BoolExpr {
 		this.itype = (TypeRef)args[1];
 	}
 	
-	public Operator getOp() { return Operator.InstanceOf; }
+	public Operator getOper() { return Operator.InstanceOf; }
 
-	public ENode[] getArgs() { return new ENode[]{expr,itype}; }
+	public ENode[] getEArgs() { return new ENode[]{expr,itype}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	static class InstanceofExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -317,7 +317,7 @@ public class InstanceofExpr extends BoolExpr {
 		Var[] path = null;
 		switch(expr) {
 		case LVarExpr:
-			path = new Var[]{((LVarExpr)expr).getVar()};
+			path = new Var[]{((LVarExpr)expr).getVarSafe()};
 			break;
 		case IFldExpr:
 			path = ((IFldExpr)expr).getAccessPath();
@@ -361,11 +361,11 @@ public class BooleanNotExpr extends BoolExpr {
 		this.expr = args[0];
 	}
 	
-	public Operator getOp() { return Operator.BooleanNot; }
+	public Operator getOper() { return Operator.BooleanNot; }
 
-	public ENode[] getArgs() { return new ENode[]{expr}; }
+	public ENode[] getEArgs() { return new ENode[]{expr}; }
 
-	public String toString() { return getOp().toString(this); }
+	public String toString() { return getOper().toString(this); }
 
 	public boolean	isConstantExpr() {
 		if (expr.isConstantExpr()) {

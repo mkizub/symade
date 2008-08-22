@@ -647,10 +647,10 @@ public class Bytecoder implements JConstants {
 		Attr[] jattrs = ((JStruct)cl).getJAttrs();
 		if (jattrs != null) {
 			int len = 0;
-			foreach(Attr a; jattrs; !a.isKiev) len++;
+			foreach(Attr a; jattrs; !a.isKievAttr()) len++;
 			bcclazz.attrs = new kiev.bytecode.Attribute[len];
 			for(int i=0, j=0; i < jattrs.length; i++) {
-				if( jattrs[i].isKiev ) continue;
+				if( jattrs[i].isKievAttr() ) continue;
 				bcclazz.attrs[j++] = writeAttr(jattrs[i]);
 			}
 		}

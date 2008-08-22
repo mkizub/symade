@@ -27,7 +27,7 @@ public abstract class UnresExpr extends ENode {
 
 	public UnresExpr() {}
 	
-	public Operator getOp() { return op; }
+	public Operator getOper() { return op; }
 	
 	public final void callbackAttached(ParentInfo pi) {
 		throw new Error("Internal error: "+this.getClass()+" attached to "+parent().getClass()+" to slot "+pslot().name);
@@ -59,7 +59,7 @@ public final class UnresOpExpr extends UnresExpr {
 			this.exprs.add(e);
 	}
 	
-	public ENode[] getArgs() { return exprs; }
+	public ENode[] getEArgs() { return exprs; }
 
 	public String toString() {
 		return op.toString(this);
@@ -174,7 +174,7 @@ public final class UnresSeqs extends UnresExpr {
 			this.exprs.add(e);
 	}
 	
-	public ENode[] getArgs() { return exprs; }
+	public ENode[] getEArgs() { return exprs; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

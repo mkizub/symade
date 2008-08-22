@@ -142,7 +142,7 @@ public final class RenderActions implements IPopupMenuListener, Runnable {
 					return;
 				}
 				if (stx instanceof XmlDumpSyntax)
-					((XmlDumpSyntax)stx).set$dump(qname);
+					((XmlDumpSyntax)stx).setDump(qname);
 				this.uiv.setSyntax(stx.getCompiled().init());
 				return;
 			}

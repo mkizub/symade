@@ -374,7 +374,7 @@ public final class Operator implements Constants {
 	public String toString() { return name; }
 
 	public String toString(ENode e) {
-		ENode[] exprs = e.getArgs();
+		ENode[] exprs = e.getEArgs();
 		StringBuffer sb = new StringBuffer();
 		int eidx = 0;
 		foreach (OpArg arg; this.args) {
@@ -437,7 +437,7 @@ public final class Operator implements Constants {
 	}
 
 	public Symbol resolveMethod(ENode expr) {
-		ENode[] args = expr.getArgs();
+		ENode[] args = expr.getEArgs();
 		ResInfo<Method> info = new ResInfo<Method>(expr, this.name, ResInfo.noStatic);
 		Type[] tps = new Type[args.length-1];
 		for (int i=0; i < tps.length; i++) {

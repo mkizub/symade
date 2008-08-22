@@ -436,9 +436,9 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		this.expr = expr;
 	}
 	
-	public Operator getOp() { return Operator.RuleIsThe; }
+	public Operator getOper() { return Operator.RuleIsThe; }
 
-	public ENode[] getArgs() { return new ENode[]{var,expr}; }
+	public ENode[] getEArgs() { return new ENode[]{var,expr}; }
 
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
@@ -490,9 +490,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		this.expr = expr;
 	}
 
-	public Operator getOp() { return Operator.RuleIsOneOf; }
+	public Operator getOper() { return Operator.RuleIsOneOf; }
 
-	public ENode[] getArgs() { return new ENode[]{var,expr}; }
+	public ENode[] getEArgs() { return new ENode[]{var,expr}; }
 
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;

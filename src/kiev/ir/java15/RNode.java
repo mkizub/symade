@@ -167,8 +167,8 @@ public static view RENode of ENode extends RNode {
 	public final void replaceWithNodeResolve(ENode node);
 	public final void replaceWithResolve(()->ENode fnode);
 
-	public final Operator getOp();
-	public final ENode[] getArgs();
+	public final Operator getOper();
+	public final ENode[] getEArgs();
 	public final int getPriority();
 	public final boolean valueEquals(Object o);
 	public final boolean isConstantExpr();

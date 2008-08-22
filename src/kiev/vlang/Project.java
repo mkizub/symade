@@ -86,7 +86,7 @@ public final class DirUnit extends SNode {
 	@nodeAttr public String			name;
 	@nodeAttr public ASTNode∅		members;
 	
-	@setter public void set$name(String value) {
+	@setter public final void set$name(String value) {
 		this.name = (value == null) ? null : value.intern();
 	}
 

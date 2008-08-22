@@ -65,7 +65,7 @@ public class OperatorEditor implements ItemEditor, IPopupMenuListener {
 					menu.addItem(new SetSyntaxAction(op));
 			}
 		}
-		else if (expr.getArgs().length == 2) {
+		else if (expr.getEArgs().length == 2) {
 			ISubMenuPeer m_assign = menu.newSubMenu("Assign");
 			for (Operator op: Operator.allAssignOperators) 
 				if (op.arity == 2)
@@ -96,7 +96,7 @@ public class OperatorEditor implements ItemEditor, IPopupMenuListener {
 			}
 		}
 		else {
-			int arity = expr.getArgs().length;
+			int arity = expr.getEArgs().length;
 			for(kiev.stdlib.Enumeration op$iter = Operator.allOperatorNamesHash.elements(); op$iter.hasMoreElements();) {
 				Operator op = (Operator)op$iter.nextElement();
 				if( op.arity == arity && !op.name.startsWith("T "))
@@ -120,7 +120,7 @@ public class OperatorEditor implements ItemEditor, IPopupMenuListener {
 		menu.remove();
 		try {
 			ENode expr = OperatorEditor.this.expr;
-			expr.setOp(sa.op);
+			expr.setOper(sa.op);
 			sa = null;
 		} catch (Throwable t) {
 			t.printStackTrace();

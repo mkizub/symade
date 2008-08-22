@@ -181,10 +181,10 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 	public:ro	Var			var;
 
-	public Var getVar();
+	public Var getVarSafe();
 
 	public boolean preGenerate() {
-		if (getVar().kind == Var.VAR_RULE) {
+		if (getVarSafe().kind == Var.VAR_RULE) {
 			RuleMethod rm = (RuleMethod)ctx_method;
 			assert(rm.params[0].getType() ≡ Type.tpRule);
 			Var pEnv = null;
@@ -214,7 +214,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 		// Check if we try to access this var from local inner/anonymouse class
 		ComplexTypeDecl ctx_tdecl = this.ctx_tdecl;
 		if !(ctx_tdecl.parent() instanceof KievPackage || ctx_tdecl.parent() instanceof ComplexTypeDecl) {
-			if (getVar().ctx_tdecl != ctx_tdecl) {
+			if (getVarSafe().ctx_tdecl != ctx_tdecl) {
 				var.setNeedProxy(true);
 				setAsField(true);
 				// Now we need to add this var as a fields to

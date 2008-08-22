@@ -13,6 +13,8 @@ package kiev.gui.event;
 import java.io.ObjectStreamException;
 
 public final class Binding extends Item {
+	private static final long serialVersionUID = -2474249288446471032L;
+
 	public Event[] events;
 	public Action action;
 

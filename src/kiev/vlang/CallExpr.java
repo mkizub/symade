@@ -73,7 +73,7 @@ public class CallExpr extends ENode {
 		this(pos, obj, func.symbol, null, args);
 	}
 
-	public ENode[] getArgs() {
+	public ENode[] getEArgs() {
 		if (func == null || func.isStatic())
 			return this.args;
 		ENode[] args = new ENode[this.args.length+1];
@@ -98,7 +98,7 @@ public class CallExpr extends ENode {
 		Method m = this.func;
 		if (m == null)
 			return new CallType(null,null,null,Type.tpVoid,false);
-		return this.func.makeType(this.targs, this.getArgs());
+		return this.func.makeType(this.targs, this.getEArgs());
 	}
 
 	public void mainResolveOut() {
@@ -388,7 +388,7 @@ public class CtorCallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public ENode[] getArgs() {
+	public ENode[] getEArgs() {
 		return this.args;
 	}
 

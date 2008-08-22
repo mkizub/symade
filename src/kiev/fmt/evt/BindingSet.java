@@ -35,7 +35,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 
 	public BindingSet() {}
 
-	public final ASTNode[] getMembers() { this.members }
+	public final ASTNode[] getContainerMembers() { this.members }
 
 	public Object getDataToSerialize() {
 		return this.getCompiled().init();

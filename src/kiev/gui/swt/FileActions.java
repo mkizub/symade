@@ -99,7 +99,7 @@ public final class FileActions implements Runnable {
 			if (uiv.the_root instanceof FileUnit)
 				fu = (FileUnit)uiv.the_root;
 			else
-				fu = (FileUnit)this.uiv.the_root.get$ctx_file_unit();
+				fu = (FileUnit)this.uiv.the_root.getCtx_file_unit();
 			FileDialog dialog = new FileDialog(shell, SWT.SAVE);
 	    
 			File f = new File(fu.pname());
@@ -152,7 +152,7 @@ public final class FileActions implements Runnable {
 			if (uiv.the_root instanceof FileUnit)
 				fu = (FileUnit)uiv.the_root;
 			else
-				fu = (FileUnit)uiv.the_root.get$ctx_file_unit();
+				fu = (FileUnit)uiv.the_root.getCtx_file_unit();
 			String stx_name = fu.getCurrentSyntax();
 			Draw_ATextSyntax stx = null;
 			if (stx_name != null && !"<xml-dump>".equals(stx_name)) {
@@ -200,7 +200,7 @@ public final class FileActions implements Runnable {
 			DumpFileFilter dff = new DumpFileFilter("<xml-dump>","XML file for node tree import", "xml"); 
 			dialog.setFilterNames(new String[]{dff.description});
 			dialog.setFilterExtensions(new String[]{"*."+dff.extension});
-			dialog.setFilterPath(Env.getProject().get$root_dir().get$name());
+			dialog.setFilterPath(Env.getProject().getRoot_dir().getName());
 			String name = dialog.open();
 			if (name == null)
 				return;

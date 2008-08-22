@@ -21,9 +21,6 @@ public abstract class DrawCtrl extends Drawable {
 		super(node, syntax, text_syntax);
 	}
 
-	// for GUI
-	public Drawable getArg() { this.arg }
-
 	public Drawable getNextChild(Drawable dr) {
 		assert (dr == arg);
 		return null;

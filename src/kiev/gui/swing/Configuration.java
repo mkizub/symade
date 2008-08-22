@@ -26,17 +26,10 @@ import kiev.gui.event.MouseEvent;
 
 import kiev.fmt.DrawFolded;
 import kiev.fmt.Drawable;
-import kiev.gui.EditActions;
 import kiev.gui.Editor;
-import kiev.gui.ExprEditActions;
 import kiev.gui.MouseActions;
-import kiev.gui.NavigateEditor;
-import kiev.gui.NavigateView;
-import kiev.gui.NewElemHere;
-import kiev.gui.NewElemNext;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.gui.ChooseItemEditor;
 
 public class Configuration {
 
@@ -122,8 +115,8 @@ public class Configuration {
 		EventActionMap naviMap = new EventActionMap();
 		editorNaviMap = naviMap;
 
-//		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
-//		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.PopupContextMenu());
+		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
+		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.PopupContextMenu());
 //
 //		naviMap.add(new InputEventInfo(ALT,		KeyEvent.VK_X),				new ExprEditActions.Flatten());
 //

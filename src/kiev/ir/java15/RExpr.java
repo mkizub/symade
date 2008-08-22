@@ -155,19 +155,19 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 		Method m = resolveMethodAndNormalize();
 		if (m == null)
 			return; // error already reported
-		CallType ct = m.makeType(null,getArgs());
+		CallType ct = m.makeType(null,getEArgs());
 		if (m.isStatic()) {
-			m.makeArgs(getArgs(),reqType);
-			ENode[] args = getArgs();
+			m.makeArgs(getEArgs(),reqType);
+			ENode[] args = getEArgs();
 			for (int i=0; i < args.length; i++)
 				args[i].resolve(ct.arg(i));
 		} else {
-			ENode[] args = getArgs();
+			ENode[] args = getEArgs();
 			ENode[] tmp = new ENode[args.length-1];
 			for (int i=0; i < tmp.length; i++)
 				tmp[i] = args[i+1];
 			m.makeArgs(tmp,reqType);
-			args = getArgs();
+			args = getEArgs();
 			args[0].resolve(((TypeDecl)m.parent()).xtype);
 			for (int i=1; i < args.length; i++)
 				args[i].resolve(ct.arg(i-1));
@@ -242,9 +242,9 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 		Method m = resolveMethodAndNormalize();
 		if (m == null)
 			return; // error already reported
-		CallType ct = m.makeType(null,getArgs());
+		CallType ct = m.makeType(null,getEArgs());
 		if (m.isStatic()) {
-			m.makeArgs(getArgs(),reqType);
+			m.makeArgs(getEArgs(),reqType);
 			expr1.resolve(ct.arg(0));
 			expr2.resolve(ct.arg(1));
 		} else {
@@ -289,9 +289,9 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 		Method m = resolveMethodAndNormalize();
 		if (m == null)
 			return; // error already reported
-		CallType ct = m.makeType(null,getArgs());
+		CallType ct = m.makeType(null,getEArgs());
 		if (m.isStatic()) {
-			m.makeArgs(getArgs(),reqType);
+			m.makeArgs(getEArgs(),reqType);
 			expr.resolve(ct.arg(0));
 		} else {
 			m.makeArgs(ENode.emptyArray,reqType);
@@ -420,7 +420,7 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 		if (m == null)
 			return; // error already reported
 		if (m.isStatic()) {
-			m.makeArgs(getArgs(),reqType);
+			m.makeArgs(getEArgs(),reqType);
 			lval.resolve(m.params[0].getType());
 		} else {
 			m.makeArgs(ENode.emptyArray,reqType);

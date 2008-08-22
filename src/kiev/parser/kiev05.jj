@@ -550,6 +550,8 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < META_VOLATILE:     "@volatile"     >
 | < META_THROWS:       "@throws"       >
 | < META_UUID:         "@uuid"         >
+| < META_GETTER:       "@getter"       >
+| < META_SETTER:       "@setter"       >
 
 }
 
@@ -918,6 +920,8 @@ void InBlockModifiersLA() :
 	| "@packed"
 	| "@throws"
 	| "@uuid"
+	| "@getter"
+	| "@setter"
 }
 
 SymbolRef Package() :
@@ -1014,24 +1018,24 @@ DNode Typedef(ASTModifiers modifiers) :
 Opdef Opdef(ASTModifiers modifiers) :
 { SymbolRef id; EToken op; ConstIntExpr ce; ConstStringExpr cs; Opdef opd = new Opdef(); }
 {
-	"operator"							{ opd.pos = getToken(0).getPos(); }
+	"operator"								{ opd.pos = getToken(0).getPos(); }
 	(
 		(
-			op = Operator()            { opd.setImage(op); }
-		|	id = NameRef()             { opd.setImage(id); }
+			op = Operator()					{ opd.image = op.ident; }
+		|	id = NameRef()					{ opd.image = id.name; }
 		)
 		","
 		// FX,FY,XF,YF,XFX,YFX,XFY,YFY
-		id = NameRef()                 { opd.setMode(id); }
+		id = NameRef()						{ opd.opmode = OpdefMode.fromString(id.name.toUpperCase()); }
 		","
-		ce = IntConstExpression()		{ opd.setPriority(ce); }
+		ce = IntConstExpression()			{ opd.prior = ce.value; }
 	|
-		cs = StringConstExpression()	{ opd.sname = cs.value; }
+		cs = StringConstExpression()		{ opd.sname = cs.value; }
 		[ "," ]
 		(
 			"type"							{ opd.prior = 255; opd.type_operator = true; }
 		|
-			ce = IntConstExpression()		{ opd.setPriority(ce); }
+			ce = IntConstExpression()		{ opd.prior = ce.value; }
 		)
 	)
 	";"
@@ -1398,7 +1402,7 @@ void Access(ASTModifiers modifiers) :
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		]]]
-		{ ma.setFlags(accflags); }
+		{ ma.flags = accflags; }
 	|	<OPEN_ACCESS> // "("
 		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
@@ -1406,7 +1410,7 @@ void Access(ASTModifiers modifiers) :
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		]]]
 		<CLOSE_ACCESS> // ")"
-		{ ma.setFlags(accflags); }
+		{ ma.flags = accflags; }
 	)?
 }
 
@@ -1490,6 +1494,8 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 		cs = StringConstExpression()
 		")"
 		{ muuid.value = cs.value; modifiers += muuid; }
+	| "@getter"		{ modifiers += new UserMeta(VirtFldFE_GenMembers.nameMetaGetter); }
+	| "@setter"		{ modifiers += new UserMeta(VirtFldFE_GenMembers.nameMetaSetter); }
 }
 
 SymbolRef KeywordAsNameRef() :
@@ -1795,10 +1801,10 @@ Symbol Alias() :
 			a = Name()
 			[
 				"operator"
-				{ String opmode = a.sname; a = new ASTOperatorAlias(); a.setMode(opmode); }
+				{ String opmode = a.sname; a = new ASTOperatorAlias(); a.pos = getToken(0).getPos(); a.opmode = OpdefMode.fromString(opmode.toUpperCase()); }
 				(
-					op = Operator()				{ a.setImage(op); }
-				|	id = NameRef()				{ a.setImage(id); }
+					op = Operator()				{ a.image = op.ident; }
+				|	id = NameRef()				{ a.image = id.name; }
 				|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
 				|	"new"						{ a.image = "new"; }
 				//|	"$cast"						{ a.image = "$cast"; }
@@ -1806,11 +1812,11 @@ Symbol Alias() :
 			]
 		|	"operator"
 			cs = StringConstExpression()
-			{ a = new ASTOperatorAlias(); a.setName(cs); }
+			{ a = new ASTOperatorAlias(); a.sname = cs.value; a.pos = cs.pos;}
 		)
 	|	"operator"
 		cs = StringConstExpression()
-		{ a = new ASTOperatorAlias(); a.setName(cs); }
+		{ a = new ASTOperatorAlias(); a.sname = cs.value; a.pos = cs.pos; }
 	)
 	{ return a; }
 }

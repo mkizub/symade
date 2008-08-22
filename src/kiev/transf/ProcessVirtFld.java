@@ -70,7 +70,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 				return;
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
-			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
+			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
 			Kiev.reportWarning(m, "Creating @virtuial @abstract field "+name);
 			f = new Field(name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
@@ -78,7 +78,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
-			acc.setFlags(0);
+			acc.flags = 0;
 		}
 		f.setVirtual(true);
 		f.setter = new SymbolRef<Method>(m);
@@ -132,7 +132,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 				return;
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
-			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
+			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
 			Kiev.reportWarning(m, "Creating @virtuial @abstract field "+name);
 			f = new Field(name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
@@ -140,7 +140,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
-			acc.setFlags(0);
+			acc.flags = 0;
 		}
 		f.setVirtual(true);
 		f.getter = new SymbolRef<Method>(m);
@@ -211,27 +211,38 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 	private void doProcess(ComplexTypeDecl s) {
 		foreach(Field f; s.members)
 			addMethodsForVirtualField(s, f);
-		//foreach(Field f; s.members; f.isVirtual()) {
-		//	if (s.isInterface() && !f.isAbstract())
-		//		f.setAbstract(true);
-		//	// change the name of the getter to backend-specific value
-		//	Method getter = f.getter == null ? null : f.getter.dnode;
-		//	if (getter != null && getter.sname.equals(nameGet+f.sname)) {
-		//		String name = Character.toUpperCase(f.sname.charAt(0))+f.sname.substring(1);
-		//		if (f.getType() ≡ StdTypes.tpBoolean)
-		//			name = "is"+name;
-		//		else
-		//			name = "get"+name;
-		//		getter.sname = name;
-		//	}
-		//	// change the name of the setter to backend-specific value
-		//	Method setter = f.setter == null ? null : f.setter.dnode;
-		//	if (setter != null && setter.sname.equals(nameSet+f.sname)) {
-		//		String name = Character.toUpperCase(f.sname.charAt(0))+f.sname.substring(1);
-		//		name = "set"+name;
-		//		setter.sname = name;
-		//	}
-		//}
+		foreach(Field f; s.members; f.isVirtual()) {
+			if (s.isInterface() && !f.isAbstract())
+				f.setAbstract(true);
+		}
+		foreach(MethodGetter getter; s.members) {
+			// change the name of the getter to backend-specific value
+			if (getter.sname.startsWith(nameGet)) {
+				String name = getter.sname.substring(4);
+				name = Character.toUpperCase(name.charAt(0))+name.substring(1);
+				if (getter.mtype.ret() ≡ StdTypes.tpBoolean)
+					name = ("is"+name).intern();
+				else
+					name = ("get"+name).intern();
+				if (!getter.isMethodBridge()) {
+					foreach (Method m; s.members; m.sname == name && m.params.length == 0)
+						Kiev.reportError(getter, "Getter method name conflicts with method "+m);
+				}
+				getter.sname = name;
+			}
+		}
+		foreach(MethodSetter setter; s.members) {
+			if (setter.sname.startsWith(nameSet)) {
+				String name = setter.sname.substring(4);
+				name = Character.toUpperCase(name.charAt(0))+name.substring(1);
+				name = ("set"+name).intern();
+				if (!setter.isMethodBridge()) {
+					foreach (Method m; s.members; m.sname == name && m.params.length == 1)
+						Kiev.reportError(setter, "Setter method name conflicts with method "+m);
+				}
+				setter.sname = name;
+			}
+		}
 	}
 	
 	private static void addMethodsForVirtualField(ComplexTypeDecl s, Field f) {
@@ -250,15 +261,18 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		String set_name = (nameSet+f.sname).intern();
 		String get_name = (nameGet+f.sname).intern();
 
+		if (f.getSetterMethod() != null)
+			set_found = true;
+		if (f.getGetterMethod() != null)
+			get_found = true;
+		
 		foreach(Method m; s.members) {
-			if( m.hasName(set_name) ) {
+			if (set_found && get_found)
+				break;
+			if (!set_found && m.hasName(set_name))
 				set_found = true;
-				if( get_found ) break;
-			}
-			else if( m.hasName(get_name) ) {
+			if (!get_found && m.hasName(get_name))
 				get_found = true;
-				if( set_found ) break;
-			}
 		}
 		if( !set_found && !f.isFinal() && MetaAccess.writeable(f) ) {
 			Method set_var = new MethodSetter(f);
@@ -353,16 +367,16 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 		Field f = fa.var;
 		if( !f.isVirtual() || fa.isAsField() )
 			return true;
-		String get_name = (nameGet+f.sname).intern();
 
-		if (fa.ctx_method != null && fa.ctx_method.hasName(get_name) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
+		Method getter = f.getGetterMethod();
+		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
+		if (getter == null) {
+			Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 			fa.setAsField(true);
 			return true;
 		}
-		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
-		Method getter = f.getGetterMethod();
-		if (getter == null) {
-			Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
+		Method ctx_method = fa.ctx_method;
+		if (getter == fa.ctx_method) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -378,15 +392,15 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-			String set_name = (nameSet+f.sname).intern();
 	
-			if (ae.ctx_method != null && ae.ctx_method.hasName(set_name) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
-				fa.setAsField(true);
-				return true;
-			}
 			// Rewrite by set$ method
 			Method getter = f.getGetterMethod();
 			Method setter = f.getSetterMethod();
+			Method ctx_method = fa.ctx_method;
+			if (ctx_method != null && ctx_method == setter) {
+				fa.setAsField(true);
+				return true;
+			}
 			if (setter == null) {
 				if (!f.isFinal() && MetaAccess.writeable(f))
 					Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
@@ -422,7 +436,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					acc = ~fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
-					acc = ((LVarExpr)fa.obj).getVar();
+					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
 					Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
@@ -458,19 +472,16 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-			String set_name = (nameSet+f.sname).intern();
-			String get_name = (nameGet+f.sname).intern();
 	
-			if (ie.ctx_method != null
-			&& (ie.ctx_method.hasName(set_name) || ie.ctx_method.hasName(get_name))
-			&& ie.ctx_tdecl.instanceOf(f.ctx_tdecl) )
+			// Rewrite by set$ method
+			Method getter = f.getGetterMethod();
+			Method setter = f.getSetterMethod();
+			Method ctx_method = ie.ctx_method;
+			if (ctx_method != null && ctx_method == getter)
 			{
 				fa.setAsField(true);
 				return true;
 			}
-			// Rewrite by set$ method
-			Method getter = f.getGetterMethod();
-			Method setter = f.getSetterMethod();
 			if (setter == null) {
 				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
@@ -497,7 +508,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					acc = fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
-					acc = ((LVarExpr)fa.obj).getVar();
+					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
 					Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
@@ -536,7 +547,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 	
 	private ENode mkAccess(Object o) {
 		if (o instanceof Var) return new LVarExpr(0,(Var)o);
-		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVar());
+		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVarSafe());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		if (o instanceof SuperExpr) return new SuperExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);

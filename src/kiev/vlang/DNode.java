@@ -61,6 +61,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return this.symbol.sname;
 	}
 	@setter final public void set$sname(String value) {
+		//if (this instanceof MethodImpl && value != null && (value.startsWith(nameGet) || value.startsWith(nameSet)))
+		//	Kiev.reportWarning(this, "Setting name "+value+" on MethodImpl");
 		this.symbol.sname = value;
 	}
 	@getter final public String get$uuid() {
@@ -102,27 +104,27 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		if (m == null)
 			this.setMeta(new MetaAccess("public"));
 		else if (m.simple != "public")
-			m.setSimple("public");
+			m.simple = "public";
 	}
 	public void setPrivate() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
 			this.setMeta(new MetaAccess("private"));
 		else if (m.simple != "private")
-			m.setSimple("private");
+			m.simple = "private";
 	}
 	public void setProtected() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
 			this.setMeta(new MetaAccess("protected"));
 		else if (m.simple != "protected")
-			m.setSimple("protected");
+			m.simple = "protected";
 	}
 	public void setPkgPrivate() {
 		MetaAccess m = getMetaAccess();
 		if (m != null) {
 			if (m.flags != -1 || m.flags != 0xF)
-				m.setSimple("");
+				m.simple = "";
 			else
 				m.detach();
 		}
@@ -131,8 +133,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		int flags = MetaAccess.getFlags(this);
 		MetaAccess m = getMetaAccess();
 		if (m != null) {
-			m.setSimple("");
-			m.setFlags(flags);
+			m.simple = "";
+			m.flags = flags;
 		} else {
 			this.setMeta(new MetaAccess("", flags));
 		}
@@ -141,8 +143,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		int flags = MetaAccess.getFlags(this);
 		MetaAccess m = getMetaAccess();
 		if (m != null) {
-			m.setSimple("private");
-			m.setFlags(flags);
+			m.simple = "private";
+			m.flags = flags;
 		} else {
 			this.setMeta(new MetaAccess("private", flags));
 		}
@@ -359,7 +361,7 @@ public interface GlobalDNode {
 }
 
 public interface GlobalDNodeContainer extends GlobalDNode, ScopeOfNames {
-	public ASTNode[] getMembers();
+	public ASTNode[] getContainerMembers();
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -380,7 +382,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public ComplexTypeDecl get_child_ctx_tdecl()	{ null }
 
-	public ASTNode[] getMembers() { ASTNode.emptyArray }
+	public ASTNode[] getContainerMembers() { ASTNode.emptyArray }
 
 	@setter public final void set$xmeta_type(MetaType mt) {
 		assert (this.xmeta_type == null || this.xmeta_type == mt);
@@ -599,7 +601,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 
 	public ComplexTypeDecl get_child_ctx_tdecl()	{ return this; }
 
-	public final ASTNode[] getMembers() { this.members }
+	public final ASTNode[] getContainerMembers() { this.members }
 	
 	public ComplexTypeDecl(String name) {
 		super(name);
@@ -777,7 +779,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 
 	public KievSyntax() {}
 	
-	public final ASTNode[] getMembers() { this.members }
+	public final ASTNode[] getContainerMembers() { this.members }
 	
 	public String qname() {
 		if (sname == null || sname == "")
@@ -861,7 +863,7 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 
 	@nodeAttr public DNode∅						pkg_members;
 	
-	public final ASTNode[] getMembers() { this.pkg_members }
+	public final ASTNode[] getContainerMembers() { this.pkg_members }
 
 	public String qname() {
 		ANode p = parent();

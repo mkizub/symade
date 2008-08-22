@@ -41,9 +41,9 @@ public class PathTypeRef extends TypeRef {
 		super.callbackChildChanged(ct, attr, data);
 	}
 	
-	public Operator getOp() { return Operator.PathTypeAccess; }
+	public Operator getOper() { return Operator.PathTypeAccess; }
 
-	public ENode[] getArgs() { return new ENode[]{path}; }
+	public ENode[] getEArgs() { return new ENode[]{path}; }
 
 	public boolean preResolveIn() {
 		if (path instanceof EToken && path.ident == nameThis)

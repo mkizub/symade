@@ -130,8 +130,6 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 				}
 			}
 			f.setVirtual(true);
-			String set_name = (nameSet+f.sname).intern();
-			String get_name = (nameGet+f.sname).intern();
 			// setter
 			if (!f.isFinal() && MetaAccess.writeable(f)) {
 				Method set_var = new MethodSetter(f);

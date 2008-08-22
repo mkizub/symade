@@ -46,15 +46,14 @@ public final class InputEventInfo implements kiev.gui.event.InputEvent {
 		if (evt instanceof KeyEvent) {
 			KeyEvent k = (KeyEvent)evt;
 			this.kind = KEYBOARD_EVENT;
-			this.mask = k.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+			this.mask = k.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK);
 			this.code = k.getKeyCode();
 		}
 		else if (evt instanceof MouseEvent) {
 			MouseEvent m = (MouseEvent)evt;
 			this.kind = MOUSE_EVENT;
-			this.mask = m.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-			int buttons = m.getModifiers() & (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK);
-			this.code = (m.getClickCount() << 30) | buttons;
+			this.mask = m.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK);
+			this.code = (m.getClickCount() << 30) | m.getButton();
 		}
 		else {
 			this.kind = UNKNOWN_EVENT;

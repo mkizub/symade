@@ -11,6 +11,7 @@
 package kiev.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -43,13 +44,13 @@ public class KeyCodeEditor implements ItemEditor, KeyListener {
 		this.editor    = editor;
 		this.cur_elem  = cur_elem;
 		this.node      = node;
-		this.keyCode   = node.get$keyCode();
-		if (node.get$withCtrl())
-			this.keyModifiers |= KeyEvent.CTRL_DOWN_MASK;
-		if (node.get$withAlt())
-			this.keyModifiers |= KeyEvent.ALT_DOWN_MASK;
-		if (node.get$withShift())
-			this.keyModifiers |= KeyEvent.SHIFT_DOWN_MASK;
+		this.keyCode   = node.getKeyCode();
+		if (node.isWithCtrl())
+			this.keyModifiers |= InputEvent.CTRL_DOWN_MASK;
+		if (node.isWithAlt())
+			this.keyModifiers |= InputEvent.ALT_DOWN_MASK;
+		if (node.isWithShift())
+			this.keyModifiers |= InputEvent.SHIFT_DOWN_MASK;
 		this.dialog    = new JDialog();
 		dialog.setLayout(new BorderLayout());
 		labelMessage = new JLabel();
@@ -64,7 +65,7 @@ public class KeyCodeEditor implements ItemEditor, KeyListener {
 	
 	String getKeyText() {
 		String text = "";
-		String mods = KeyEvent.getModifiersExText(keyModifiers);
+		String mods = InputEvent.getModifiersExText(keyModifiers);
 		if (mods != null && mods.length() > 0)
 			text += mods + "+";
 		if (keyCode == KeyEvent.VK_UNDEFINED)
@@ -113,7 +114,7 @@ public class KeyCodeEditor implements ItemEditor, KeyListener {
 	private void setKeysFromEvent(KeyEvent evt, boolean released) {
 		if (released && keyPressed == 0)
 			return;
-		keyModifiers = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		keyModifiers = evt.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK);
 		keyCode = KeyEvent.VK_UNDEFINED;
 		if (released) {
 			if (keyPressed == evt.getKeyCode())
@@ -144,11 +145,11 @@ public class KeyCodeEditor implements ItemEditor, KeyListener {
 		if (done) {
 			int code = evt.getKeyCode();
 			if (code == KeyEvent.VK_ENTER && keyCode != KeyEvent.VK_UNDEFINED) {
-				node.set$keyCode(keyCode);
-				node.set$withCtrl((keyModifiers & KeyEvent.CTRL_DOWN_MASK) != 0);
-				node.set$withAlt((keyModifiers & KeyEvent.ALT_DOWN_MASK) != 0);
-				node.set$withShift((keyModifiers & KeyEvent.SHIFT_DOWN_MASK) != 0);
-				node.set$text(getKeyText());
+				node.setKeyCode(keyCode);
+				node.setWithCtrl((keyModifiers & InputEvent.CTRL_DOWN_MASK) != 0);
+				node.setWithAlt((keyModifiers & InputEvent.ALT_DOWN_MASK) != 0);
+				node.setWithShift((keyModifiers & InputEvent.SHIFT_DOWN_MASK) != 0);
+				node.setText(getKeyText());
 				dialog.setVisible(false);
 				editor.stopItemEditor(false);
 			}

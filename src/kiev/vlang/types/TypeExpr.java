@@ -93,8 +93,8 @@ public class TypeExpr extends TypeRef {
 		super.callbackChildChanged(ct, attr, data);
 	}
 	
-	public Operator getOp() { return op; }
-	public void setOp(Operator op) {
+	public Operator getOper() { return op; }
+	public void setOper(Operator op) {
 		if (!op.name.startsWith("T "))
 			throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass());
 		if (!this.isExptTypeSignature())
@@ -102,7 +102,7 @@ public class TypeExpr extends TypeRef {
 		this.op = op;
 	}
 
-	public ENode[] getArgs() { return new ENode[]{arg}; }
+	public ENode[] getEArgs() { return new ENode[]{arg}; }
 
 	public Type getType() {
 		if (this.type_lnk != null)

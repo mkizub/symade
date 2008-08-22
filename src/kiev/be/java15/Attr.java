@@ -24,11 +24,8 @@ public class Attr implements JConstants {
 
 	/** Name of the attribute */
 	public KString		name;
-	@virtual
-	public abstract boolean isKiev;
 
-	@getter public boolean get$isKiev() { return false; }
-	@setter public void set$isKiev(boolean b) { return; }
+	public boolean isKievAttr() { return false; }
 
 	protected Attr(KString name) {
 		this.name = name;
@@ -377,7 +374,7 @@ public class ContractAttr extends CodeAttr {
 
 	public int			cond;
 
-	public boolean get$isKiev() { return true; }
+	public boolean isKievAttr() { return true; }
 
 	// Constructor for bytecode reader and raw field creation
 	public ContractAttr(int cond, int max_st,int max_locs, byte[] code, Attr[] code_attrs) {

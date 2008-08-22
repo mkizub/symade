@@ -358,16 +358,16 @@ public abstract class ENode extends ASTNode {
 		return new Type[]{getType()};
 	}
 
-	public Operator getOp() { return null; }
-	public void setOp(Operator op) { throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass()); }
+	public Operator getOper() { return null; }
+	public void setOper(Operator op) { throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass()); }
 
 	public final Method resolveMethodAndNormalize() {	
 		Method m;
 		if (this.dnode == null) {
-			Symbol sym = getOp().resolveMethod(this);
+			Symbol sym = getOper().resolveMethod(this);
 			if (sym == null) {
 				if (ctx_method == null || !ctx_method.isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+					Kiev.reportError(this, "Unresolved method for operator "+getOper());
 				return null;
 			}
 			m = (Method)sym.dnode;
@@ -379,12 +379,12 @@ public abstract class ENode extends ASTNode {
 		return m;
 	}
 
-	public ENode[] getArgs() { return null; }
+	public ENode[] getEArgs() { return null; }
 
 	public int getPriority() {
 		if (isPrimaryExpr())
 			return 255;
-		Operator op = getOp();
+		Operator op = getOper();
 		if (op == null)
 			return 255;
 		return op.priority;

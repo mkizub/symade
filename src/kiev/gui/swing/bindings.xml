@@ -13,7 +13,7 @@
   xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
  <core:FileUnit>
   <srpkg>
-   <core:SymbolRef name='kiev·gui·swt' full='true' />
+   <core:SymbolRef name='kiev·gui·swing' full='true' />
   </srpkg>
   <members>
    <sop:kiev.fmt.evt.BindingSet name='bindings-base'>
