@@ -10,32 +10,64 @@
  *******************************************************************************/
 package kiev.gui.swt;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
+import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.widgets.MessageBox;
 
 import kiev.vtree.ANode;
 
 public class Clipboard {
-
-	/** The object in clipboard */
-	public static final org.eclipse.swt.dnd.Clipboard clipboard
-			= new org.eclipse.swt.dnd.Clipboard(Window.display);;
 	
 	public static void setClipboardContent(Object obj) {
+		org.eclipse.swt.dnd.Clipboard clipboard
+		= new org.eclipse.swt.dnd.Clipboard(Window.display);
 		Transfer tr = null;
-		if (obj instanceof ANode) 
-			tr = LocalObjectTransfer.getTransfer();
-		else 
+		if (obj instanceof ANode){ 
+			LocalObjectTransfer lot = LocalObjectTransfer.getTransfer();
+			lot.setObject(obj);
+			lot.setObjectSetTime(System.currentTimeMillis());
+			tr = lot;
+		} else {
 			tr = TextTransfer.getInstance();
+		}
 		Object[] data = new Object[] {obj};
 		Transfer[] transfers = new Transfer[] {tr};
-		clipboard.setContents(data, transfers);
-		
+		try {
+			clipboard.setContents(data, transfers);
+		} catch (SWTError e){
+			if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) {
+				throw e;
+			}
+			MessageBox mb = new MessageBox(Window.shell, SWT.ICON_QUESTION | SWT.RETRY | SWT.CANCEL);
+			mb.setMessage("There was a problem when accessing the system clipboard. Retry?");
+			if (SWT.OK == mb.open())
+				setClipboardContent(obj);
+		}
+		finally {
+			clipboard.dispose();
+		}
+			
 	}
 	
 	public static Object getClipboardContent() {
-		Transfer tr = LocalObjectTransfer.getTransfer();
-		Object content = clipboard.getContents(tr);
+		org.eclipse.swt.dnd.Clipboard clipboard
+		= new org.eclipse.swt.dnd.Clipboard(Window.display);
+		LocalObjectTransfer lot = LocalObjectTransfer.getTransfer();
+		Transfer tr = lot;
+		Object content = null;
+		try {
+			content = clipboard.getContents(tr);
+		}
+		finally {
+			clipboard.dispose();
+		}
+		if (content == null){
+			System.out.println("Clipboard is empty");
+			content = lot.getObject();
+		}
 		return content;
 	}
 

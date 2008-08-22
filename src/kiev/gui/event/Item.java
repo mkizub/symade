@@ -13,8 +13,4 @@ package kiev.gui.event;
 import java.io.Serializable;
 
 public abstract class Item implements Serializable {
-  /**
-	 * Serial Version UID.
-	 */
-	private static final long serialVersionUID = 673819155366712634L;
 }

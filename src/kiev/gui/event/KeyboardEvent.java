@@ -13,10 +13,6 @@ package kiev.gui.event;
 import java.io.ObjectStreamException;
 
 public final class KeyboardEvent extends Event {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -2314950913928631315L;
 	public int keyCode;
 	public boolean withCtrl;
 	public boolean withAlt;

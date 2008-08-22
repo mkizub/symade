@@ -122,47 +122,47 @@ public class Configuration {
 		EventActionMap naviMap = new EventActionMap();
 		editorNaviMap = naviMap;
 
-		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
-		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.PopupContextMenu());
-
-		naviMap.add(new InputEventInfo(ALT,		KeyEvent.VK_X),				new ExprEditActions.Flatten());
-
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_UP),			NavigateView.newLineUp());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_DOWN),			NavigateView.newLineDn());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_UP),		NavigateView.newPageUp());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_DOWN),		NavigateView.newPageDn());
-
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_LEFT),			NavigateEditor.newGoPrev());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_RIGHT),			NavigateEditor.newGoNext());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			NavigateEditor.newGoLineUp());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			NavigateEditor.newGoLineDn());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_HOME),			NavigateEditor.newGoLineHome());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_END),			NavigateEditor.newGoLineEnd());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		NavigateEditor.newGoPageUp());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		NavigateEditor.newGoPageDn());
-
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_Z),				EditActions.newUndo());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_C),				EditActions.newCopy());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_X),				EditActions.newCut());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DELETE),		EditActions.newDel());
-
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_F),				new kiev.gui.FunctionExecutor.Factory());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_F),				new kiev.gui.FunctionExecutor.Factory());
+//		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
+//		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.PopupContextMenu());
+//
+//		naviMap.add(new InputEventInfo(ALT,		KeyEvent.VK_X),				new ExprEditActions.Flatten());
+//
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_UP),			NavigateView.newLineUp());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_DOWN),			NavigateView.newLineDn());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_UP),		NavigateView.newPageUp());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_PAGE_DOWN),		NavigateView.newPageDn());
+//
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_LEFT),			NavigateEditor.newGoPrev());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_RIGHT),			NavigateEditor.newGoNext());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			NavigateEditor.newGoLineUp());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			NavigateEditor.newGoLineDn());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_HOME),			NavigateEditor.newGoLineHome());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_END),			NavigateEditor.newGoLineEnd());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		NavigateEditor.newGoPageUp());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		NavigateEditor.newGoPageDn());
+//
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_Z),				EditActions.newUndo());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_C),				EditActions.newCopy());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_X),				EditActions.newCut());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DELETE),		EditActions.newDel());
+//
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_F),				new kiev.gui.FunctionExecutor.Factory());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_F),				new kiev.gui.FunctionExecutor.Factory());
 		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_O),				FolderTrigger.newFactory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_N),				new NewElemHere.Factory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_A),				new NewElemNext.Factory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_V),				new kiev.gui.Clipboard.PasteHereFactory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_B),				new kiev.gui.Clipboard.PasteNextFactory());
-		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new ChooseItemEditor());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_N),				new NewElemHere.Factory());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_A),				new NewElemNext.Factory());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_V),				new kiev.gui.Clipboard.PasteHereFactory());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_B),				new kiev.gui.Clipboard.PasteNextFactory());
+//		naviMap.add(new InputEventInfo(CTRL,	KeyEvent.VK_E),				new ChooseItemEditor());
 		
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.TextEditor.Factory());
 		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.swing.IntEditor.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.EnumEditor.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.AccessEditor.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.ChooseItemEditor());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_O), new kiev.gui.swing.FolderTrigger.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_N), new kiev.gui.NewElemHere.Factory());
-		naviMap.add(new InputEventInfo(0,KeyEvent.VK_A), new kiev.gui.NewElemNext.Factory());
+//		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.EnumEditor.Factory());
+//		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.AccessEditor.Factory());
+//		naviMap.add(new InputEventInfo(0,KeyEvent.VK_E), new kiev.gui.ChooseItemEditor());
+//		naviMap.add(new InputEventInfo(0,KeyEvent.VK_O), new kiev.gui.swing.FolderTrigger.Factory());
+//		naviMap.add(new InputEventInfo(0,KeyEvent.VK_N), new kiev.gui.NewElemHere.Factory());
+//		naviMap.add(new InputEventInfo(0,KeyEvent.VK_A), new kiev.gui.NewElemNext.Factory());
 
 		addBindings(naviMap, editorBindings);
 	
@@ -176,13 +176,13 @@ public class Configuration {
 		EventActionMap naviMap = new EventActionMap();
 		projectNaviMap = naviMap;
 
-		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
-		naviMap.add(new InputEventInfo(0,2,		MOUSE1),	new MouseActions.TreeToggle());
-
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			new NavigateView.LineUp());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new NavigateView.LineDn());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
+//		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.Select());
+//		naviMap.add(new InputEventInfo(0,2,		MOUSE1),	new MouseActions.TreeToggle());
+//
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			new NavigateView.LineUp());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new NavigateView.LineDn());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
 
 		addBindings(naviMap, projectBindings);
 		return naviMap;
@@ -195,13 +195,13 @@ public class Configuration {
 		EventActionMap naviMap = new EventActionMap();
 		infoNaviMap = naviMap;
 
-		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.RequestFocus());
-		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.RequestFocus());
-
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			new NavigateView.LineUp());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new NavigateView.LineDn());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
-		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
+//		naviMap.add(new InputEventInfo(0,1,		MOUSE1),	new MouseActions.RequestFocus());
+//		naviMap.add(new InputEventInfo(0,1,		MOUSE3),	new MouseActions.RequestFocus());
+//
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_UP),			new NavigateView.LineUp());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_DOWN),			new NavigateView.LineDn());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
+//		naviMap.add(new InputEventInfo(0,		KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
 
 		addBindings(naviMap, infoBindings);
 		return naviMap;
@@ -247,7 +247,7 @@ public class Configuration {
 	}
 }
 
-final class FolderTrigger implements Runnable {
+class FolderTrigger implements Runnable {
 	private final Editor editor;
 	private final DrawFolded df;
 	FolderTrigger(Editor editor, DrawFolded df) {

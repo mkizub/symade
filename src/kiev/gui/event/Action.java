@@ -13,10 +13,6 @@ package kiev.gui.event;
 import java.io.ObjectStreamException;
 
 public final class Action extends Item {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -2635635325040804726L;
 	public String description;
 	public boolean isForPopupMenu;
 	public String actionClass;

@@ -63,7 +63,7 @@ public class TextEditor implements ItemEditor, KeyListener, ComboBoxEditor {
 		editor.startItemEditor(this);
 		editor.getView_canvas().setCursor_offset(edit_offset);
 		String text = this.getText();
-		edit_offset = text.length();
+		edit_offset = text== null?0:text.length();
 		editor.getView_canvas().setCursor_offset(edit_offset);
 		showAutoComplete(false);
 	}
@@ -86,11 +86,11 @@ public class TextEditor implements ItemEditor, KeyListener, ComboBoxEditor {
 	}
 	void checkEditOffset() {
 		String text = this.getText();
-		if (edit_offset < 0) {
+		if (edit_offset < 0 || text == null) {
 			edit_offset = 0;
 			editor.getView_canvas().setCursor_offset(edit_offset);
-		}
-		if (edit_offset > text.length()) {
+		} 
+		else if (edit_offset > text.length()) {
 			edit_offset = text.length();
 			editor.getView_canvas().setCursor_offset(edit_offset);
 		}
@@ -110,6 +110,7 @@ public class TextEditor implements ItemEditor, KeyListener, ComboBoxEditor {
 	}
 	private void typeChar(char ch) {
 		String text = this.getText();
+		if (text == null) return;
 		text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
 		edit_offset++;
 		this.setText(text);

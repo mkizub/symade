@@ -35,11 +35,13 @@ public class LocalObjectTransfer extends ByteArrayTransfer {
 		return new String[] { TYPE_NAME };
 	}
 
+	@Override
 	public void javaToNative(Object object, TransferData transferData) {
 		byte[] check = TYPE_NAME.getBytes();
 		super.javaToNative(check, transferData);
 	}
 
+	@Override
 	public Object nativeToJava(TransferData transferData) {
 		Object result = super.nativeToJava(transferData);
 		if (isInvalidNativeType(result)) {
