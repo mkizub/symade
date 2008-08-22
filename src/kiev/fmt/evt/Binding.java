@@ -12,6 +12,8 @@ public class Binding extends ENode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	public final Action⇑ action;
 
+	public String toString() { return "bind action: "+action+" to {"+Arrays.toString(events)+")"; }
+
 	public kiev.gui.event.Binding getCompiled() throws Exception {
 		kiev.gui.event.Binding bnd = new kiev.gui.event.Binding();
 		Event[] evt = new Event[events.length];

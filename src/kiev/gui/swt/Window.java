@@ -252,7 +252,7 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		//Close
-		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Close_menuitem"), SWT.CTRL + 'W',  EditActions.newCloseWindow());
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Close_menuitem"), SWT.CTRL + 'W', new EditActions.CloseWindow());
 
 		// Exit
 		item = new MenuItem(menu, SWT.PUSH);
@@ -276,16 +276,16 @@ public class Window implements IWindow, SelectionListener, FocusListener {
 		UIActionMenuItem mi;
 
 		//Undo 
-		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Undo_menuitem"), SWT.CTRL + 'Z', EditActions.newUndo());
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Undo_menuitem"), SWT.CTRL + 'Z', new EditActions.Undo());
 
 		//Copy
-		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Copy_menuitem"), SWT.CTRL + 'C', EditActions.newCopy());
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Copy_menuitem"), SWT.CTRL + 'C', new EditActions.Copy());
 
 		//Cut
-		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Cut_menuitem"), SWT.CTRL + 'X', EditActions.newCut());
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Cut_menuitem"), SWT.CTRL + 'X', new EditActions.Cut());
 
 		//Del
-		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Del_menuitem"), SWT.DEL, EditActions.newCut());
+		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Del_menuitem"), SWT.DEL, new EditActions.Del());
 
 		mi = new UIActionMenuItem(menu, SWT.PUSH, (IWindow)this, resources.getString("Paste_here_menuitem"), SWT.CTRL + 'V',  new kiev.gui.Clipboard.PasteHereFactory());
 

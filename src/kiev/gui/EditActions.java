@@ -25,26 +25,6 @@ public final class EditActions implements Runnable {
 		this.action = action;
 	}
 	
-	public static Undo newUndo(){
-		return new Undo();
-	}
-	
-	public static Copy newCopy(){
-		return new Copy();
-	}
-
-	public static Cut newCut(){
-		return new Cut();
-	}
-
-	public static Del newDel(){
-		return new Del();
-	}
-
-	public static CloseWindow newCloseWindow(){
-		return new CloseWindow();
-	}
-
 	public void run() {
 		if (action == "close") {
 			if (editor.getItem_editor() != null)
@@ -80,7 +60,7 @@ public final class EditActions implements Runnable {
 	}
 
 
-	final static class Undo implements UIActionFactory {
+	public final static class Undo implements UIActionFactory {
 		public String getDescr() { return "Undo last change"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -90,7 +70,7 @@ public final class EditActions implements Runnable {
 		}
 	}
 	
-	final static class Cut implements UIActionFactory {
+	public final static class Cut implements UIActionFactory {
 		public String getDescr() { return "Cut current node"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -100,7 +80,7 @@ public final class EditActions implements Runnable {
 		}
 	}
 	
-	final static class Del implements UIActionFactory {
+	public final static class Del implements UIActionFactory {
 		public String getDescr() { return "Delete current node"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -110,7 +90,7 @@ public final class EditActions implements Runnable {
 		}
 	}
 	
-	final static class Copy implements UIActionFactory {
+	public final static class Copy implements UIActionFactory {
 		public String getDescr() { return "Copy current node"; }
 		public boolean isForPopupMenu() { return true; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -120,7 +100,7 @@ public final class EditActions implements Runnable {
 		}
 	}
 	
-	final static class CloseWindow implements UIActionFactory {
+	public final static class CloseWindow implements UIActionFactory {
 		public String getDescr() { return "Close the editor window"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {

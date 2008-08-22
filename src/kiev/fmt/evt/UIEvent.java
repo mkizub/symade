@@ -11,4 +11,7 @@ public abstract class UIEvent extends ENode {
 	@nodeAttr public boolean withShift;
 
 	@nodeAttr public String text;
+
+	public String toString() { return text; }
+
 }

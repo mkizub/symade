@@ -96,7 +96,7 @@ public class Window extends JFrame
 
 			menu.add(new JSeparator());
 
-			mi = new UIActionMenuItem((IWindow)this, "Close", KeyEvent.VK_C,  EditActions.newCloseWindow());
+			mi = new UIActionMenuItem((IWindow)this, "Close", KeyEvent.VK_C,  new EditActions.CloseWindow());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
@@ -106,19 +106,19 @@ public class Window extends JFrame
 			menu = new JMenu("Edit");
 			menu.setMnemonic(KeyEvent.VK_E);
 
-			mi = new UIActionMenuItem((IWindow)this, "Undo", KeyEvent.VK_U, EditActions.newUndo());
+			mi = new UIActionMenuItem((IWindow)this, "Undo", KeyEvent.VK_U, new EditActions.Undo());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem((IWindow)this, "Copy", KeyEvent.VK_C,  EditActions.newCopy());
+			mi = new UIActionMenuItem((IWindow)this, "Copy", KeyEvent.VK_C,  new EditActions.Copy());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem((IWindow)this, "Cut", KeyEvent.VK_U,  EditActions.newCut());
+			mi = new UIActionMenuItem((IWindow)this, "Cut", KeyEvent.VK_U,  new EditActions.Cut());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
-			mi = new UIActionMenuItem((IWindow)this, "Del", KeyEvent.VK_D,  EditActions.newCut());
+			mi = new UIActionMenuItem((IWindow)this, "Del", KeyEvent.VK_D,  new EditActions.Del());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
 			menu.add(mi);
 

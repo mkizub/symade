@@ -36,11 +36,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 
-	public static GoPrev newGoPrev(){
-		return new GoPrev();
-	}
-	
-	final static class GoPrev implements UIActionFactory {
+	public final static class GoPrev implements UIActionFactory {
 		public String getDescr() { return "Go to the previous element"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -50,11 +46,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 
-	public static GoNext newGoNext(){
-		return new GoNext();
-	}
-
-	final static class GoNext implements UIActionFactory {
+	public final static class GoNext implements UIActionFactory {
 		public String getDescr() { return "Go to the next element"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -64,11 +56,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	
-	public static GoLineUp newGoLineUp(){
-		return new GoLineUp();
-	}
-
-	final static class GoLineUp implements UIActionFactory {
+	public final static class GoLineUp implements UIActionFactory {
 		public String getDescr() { return "Go to an element above"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -78,11 +66,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	
-	public static GoLineDn newGoLineDn(){
-		return new GoLineDn();
-	}
-
-	final static class GoLineDn implements UIActionFactory {
+	public final static class GoLineDn implements UIActionFactory {
 		public String getDescr() { return "Go to an element below"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -92,11 +76,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	
-	public static GoLineHome newGoLineHome(){
-		return new GoLineHome();
-	}
-	
-	final static class GoLineHome implements UIActionFactory {
+	public final static class GoLineHome implements UIActionFactory {
 		public String getDescr() { return "Go to the first element on the line"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -106,11 +86,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	
-	public static GoLineEnd newGoLineEnd(){
-		return new GoLineEnd();
-	}
-
-	final static class GoLineEnd implements UIActionFactory {
+	public final static class GoLineEnd implements UIActionFactory {
 		public String getDescr() { return "Go to the last element on the line"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -120,11 +96,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	
-	public static GoPageUp newGoPageUp(){
-		return new GoPageUp();
-	}
-
-	final static class GoPageUp implements UIActionFactory {
+	public final static class GoPageUp implements UIActionFactory {
 		public String getDescr() { return "Go to an element one screen above"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {
@@ -134,11 +106,7 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	
-	public static GoPageDn newGoPageDn(){
-		return new GoPageDn();
-	}
-
-	final static class GoPageDn implements UIActionFactory {
+	public final static class GoPageDn implements UIActionFactory {
 		public String getDescr() { return "Go to an element one screen below"; }
 		public boolean isForPopupMenu() { return false; }
 		public Runnable getAction(UIActionViewContext context) {

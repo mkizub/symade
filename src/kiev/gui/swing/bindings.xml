@@ -126,7 +126,7 @@
      <sop:kiev.fmt.evt.Action name='NewElemHere'>
       <description>Create new element at this position</description>
       <isForPopupMenu>true</isForPopupMenu>
-      <actionClass>kiev.gui.NewElemHeree$Factory</actionClass>
+      <actionClass>kiev.gui.NewElemHere$Factory</actionClass>
      </sop:kiev.fmt.evt.Action>
      <sop:kiev.fmt.evt.Action name='NewElemNext'>
       <description>Create new element at the next position</description>
@@ -143,22 +143,22 @@
       <isForPopupMenu>true</isForPopupMenu>
       <actionClass>kiev.gui.Clipboard$PasteNextFactory</actionClass>
      </sop:kiev.fmt.evt.Action>
-     <sop:kiev.fmt.evt.Action name='TextEditor'>
+     <sop:kiev.fmt.evt.Action name='EditText'>
       <description>Edit attribute as text</description>
       <isForPopupMenu>true</isForPopupMenu>
       <actionClass>kiev.gui.TextEditor$Factory</actionClass>
      </sop:kiev.fmt.evt.Action>
-     <sop:kiev.fmt.evt.Action name='IntEditor'>
+     <sop:kiev.fmt.evt.Action name='EditInt'>
       <description>Edit the attribute as Integer</description>
       <isForPopupMenu>true</isForPopupMenu>
       <actionClass>kiev.gui.IntEditor$Factory</actionClass>
      </sop:kiev.fmt.evt.Action>
-     <sop:kiev.fmt.evt.Action name='EnumEditor'>
+     <sop:kiev.fmt.evt.Action name='EditEnum'>
       <description>Edit the attribute as enumerated value</description>
       <isForPopupMenu>true</isForPopupMenu>
       <actionClass>kiev.gui.EnumEditor$Factory</actionClass>
      </sop:kiev.fmt.evt.Action>
-     <sop:kiev.fmt.evt.Action name='AccessEditor'>
+     <sop:kiev.fmt.evt.Action name='EditAccess'>
       <description>Edit access attribute</description>
       <isForPopupMenu>true</isForPopupMenu>
       <actionClass>kiev.gui.AccessEditor$Factory</actionClass>
@@ -547,7 +547,7 @@
        </sop:kiev.fmt.evt.KeyboardEvent>
       </events>
       <action>
-       <core:SymbolRef name='TextEditor' />
+       <core:SymbolRef name='EditText' />
       </action>
      </sop:kiev.fmt.evt.Binding>
      <sop:kiev.fmt.evt.Binding>
@@ -561,7 +561,7 @@
        </sop:kiev.fmt.evt.KeyboardEvent>
       </events>
       <action>
-       <core:SymbolRef name='IntEditor' />
+       <core:SymbolRef name='EditInt' />
       </action>
      </sop:kiev.fmt.evt.Binding>
      <sop:kiev.fmt.evt.Binding>
@@ -575,7 +575,7 @@
        </sop:kiev.fmt.evt.KeyboardEvent>
       </events>
       <action>
-       <core:SymbolRef name='EnumEditor' />
+       <core:SymbolRef name='EditEnum' />
       </action>
      </sop:kiev.fmt.evt.Binding>
      <sop:kiev.fmt.evt.Binding>
@@ -589,7 +589,7 @@
        </sop:kiev.fmt.evt.KeyboardEvent>
       </events>
       <action>
-       <core:SymbolRef name='AccessEditor' />
+       <core:SymbolRef name='EditAccess' />
       </action>
      </sop:kiev.fmt.evt.Binding>
      <sop:kiev.fmt.evt.Binding>

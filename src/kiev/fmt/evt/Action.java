@@ -11,12 +11,13 @@ public class Action extends DNode {
 	@UnVersioned
 	kiev.gui.event.Action compiled;
 
+	public String toString() { return "action: "+sname+" call "+actionClass; }
+
 	public boolean preResolveIn() {
 		this.compiled = null;
 		return super.preResolveIn();
 	}
 		
-
 	public kiev.gui.event.Action getCompiled() {
 		if (compiled != null)
 			return compiled;
