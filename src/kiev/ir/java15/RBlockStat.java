@@ -17,34 +17,34 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RSynchronizedStat of SynchronizedStat extends RENode {
 	public ENode			expr;
 	public Var				expr_var;
 	public ENode			body;
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		try {
-			expr.resolve(null);
-			expr_var = new LVar(pos,"",Type.tpObject,Var.VAR_LOCAL,0);
+			resolveENode(expr,null,env);
+			expr_var = new LVar(pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 		try {
-			body.resolve(Type.tpVoid);
+			resolveENode(body,env.tenv.tpVoid,env);
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 		setAbrupted(body.isAbrupted());
 		setMethodAbrupted(body.isMethodAbrupted());
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RWithStat of WithStat extends RENode {
 	public ENode		expr;
 	public ENode		body;
 	public Var			var_or_field;
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		try {
-			expr.resolve(null);
+			resolveENode(expr,null,env);
 			ENode e = expr;
 			switch (e) {
 			case LVarExpr:		var_or_field = ((LVarExpr)e).getVarSafe();	break;
@@ -54,7 +54,7 @@ public final view RWithStat of WithStat extends RENode {
 			}
 			if (var_or_field == null) {
 				Kiev.reportError(this,"With statement needs variable or field argument");
-				this.replaceWithNodeResolve(reqType,body);
+				this.replaceWithNodeResolve(env, reqType,body);
 				return;
 			}
 		} catch(Exception e ) {
@@ -65,7 +65,7 @@ public final view RWithStat of WithStat extends RENode {
 		boolean is_forward = var_or_field.isForward();
 		if (!is_forward) var_or_field.setForward(true);
 		try {
-			body.resolve(Type.tpVoid);
+			resolveENode(body,env.tenv.tpVoid,env);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		} finally {

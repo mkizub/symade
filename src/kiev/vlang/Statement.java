@@ -11,11 +11,9 @@
 package kiev.vlang;
 import syntax kiev.Syntax;
 
-import kiev.ir.java15.RENode;
-
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
@@ -71,7 +69,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < node.new_vars.length; i++) {
 				in = in.declNode((Var)node.new_vars[i].dnode);
-				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].getType());
+				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].getType(Env.getEnv()));
 			}
 			res = in;
 			dfi.setResult(res_idx, res);
@@ -148,20 +146,6 @@ public class ReturnStat extends ENode {
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
-
-	public static void autoReturn(Type reqType, RENode expr) {
-		if (expr.parent() instanceof ReturnStat)
-			return;
-		expr.setAutoReturnable(false);
-		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ((ENode)expr).detach()); });
-	}
-
-	public static void autoReturn(Type reqType, ENode expr) {
-		if (expr.parent() instanceof ReturnStat)
-			return;
-		expr.setAutoReturnable(false);
-		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
-	}
 }
 
 @ThisIsANode(name="Throw", lang=CoreLang)
@@ -204,17 +188,17 @@ public class IfElseStat extends ENode {
 		this.elseSt = elseSt;
 	}
 	
-	public Type getType() {
+	public Type getType(Env env) {
 		if (thenSt == null || elseSt == null)
-			return StdTypes.tpVoid;
-		Type t1 = thenSt.getType();
-		Type t2 = elseSt.getType();
-		if (t1 ≡ StdTypes.tpVoid || t2 ≡ StdTypes.tpVoid)
-			return StdTypes.tpVoid;
+			return env.tenv.tpVoid;
+		Type t1 = thenSt.getType(env);
+		Type t2 = elseSt.getType(env);
+		if (t1 ≡ env.tenv.tpVoid || t2 ≡ env.tenv.tpVoid)
+			return env.tenv.tpVoid;
 		if( t1.isReference() && t2.isReference() ) {
 			if( t1 ≡ t2 ) return t1;
-			if( t1 ≡ Type.tpNull ) return t2;
-			if( t2 ≡ Type.tpNull ) return t1;
+			if( t1 ≡ env.tenv.tpNull ) return t2;
+			if( t2 ≡ env.tenv.tpNull ) return t1;
 			return Type.leastCommonType(t1,t2);
 		}
 		if( t1.isNumber() && t2.isNumber() ) {
@@ -269,21 +253,22 @@ public class BreakStat extends ENode {
 	
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false) public Label		dest;
 
-	public boolean preVerify() {
-		if (dest != null && dest.ctx_root != this.ctx_root) {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		if (dest != null && !Env.hasSameRoot(dest, this)) {
 			dest.delLink(this);
 			dest = null;
 		}
-		return super.preVerify();
+		return super.preVerify(env, parent, slot);
 	}
 
 	public BreakStat() {
 		this.ident = "";
 	}
 
-	public boolean mainResolveIn() {
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		ASTNode p;
 		if (dest != null) {
 			dest.delLink((BreakStat)this);
@@ -338,21 +323,22 @@ public class ContinueStat extends ENode {
 	
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false) public Label		dest;
 
-	public boolean preVerify() {
-		if (dest != null && dest.ctx_root != this.ctx_root) {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		if (dest != null && !Env.hasSameRoot(dest, this)) {
 			dest.delLink(this);
 			dest = null;
 		}
-		return super.preVerify();
+		return super.preVerify(env, parent, slot);
 	}
 
 	public ContinueStat() {
 		this.ident = "";
 	}
 
-	public boolean mainResolveIn() {
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		ASTNode p;
 		if (dest != null) {
 			dest.delLink((ContinueStat)this);
@@ -407,26 +393,27 @@ public class GotoStat extends ENode {
 	
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false) public Label		dest;
 
-	public boolean preVerify() {
-		if (dest != null && dest.ctx_root != this.ctx_root) {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		if (dest != null && !Env.hasSameRoot(dest, this)) {
 			dest.delLink(this);
 			dest = null;
 		}
-		return super.preVerify();
+		return super.preVerify(env, parent, slot);
 	}
 
 	public GotoStat() {
 		this.ident = "";
 	}
 	
-	public boolean mainResolveIn() {
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		if (dest != null) {
 			dest.delLink((GotoStat)this);
 			dest = null;
 		}
-		Label[] labels = resolveStat(this.ident,ctx_method.body);
+		Label[] labels = resolveStat(this.ident,Env.ctxMethod(this).body);
 		if( labels.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return false;
@@ -467,6 +454,7 @@ public class GotoCaseStat extends ENode {
 	}
 
 	@nodeAttr public ENode		expr;
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public SwitchStat	sw;
 
 	public GotoCaseStat() {}

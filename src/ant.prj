@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+
+<sop:kiev.vlang.Project xmlns:sop="sop://sop/" xmlns:core="sop://languages/core?class=kiev.vlang.CoreLang" xmlns:logic="sop://languages/logic?class=kiev.vlang.LogicLang" xmlns:macro="sop://languages/macro?class=kiev.vlang.MacroLang" name="AntIDE">
+ <root_dir>
+  <sop:kiev.vlang.DirUnit name=".">
+   <members>
+    <sop:kiev.vlang.DirUnit name="org">
+     <members>
+      <sop:kiev.vlang.DirUnit name="apache">
+       <members>
+        <sop:kiev.vlang.DirUnit name="tools">
+         <members>
+          <sop:kiev.vlang.DirUnit name="ant">
+           <members>
+            <sop:kiev.vlang.DirUnit name="lang">
+             <members>
+              <core:FileUnit name="AntAttribute.java"/>
+              <core:FileUnit name="AntLib.java"/>
+              <core:FileUnit name="AntMeta.java"/>
+              <core:FileUnit name="AntNode.java"/>
+              <core:FileUnit name="AntProject.java"/>
+              <core:FileUnit name="AntProperty.java"/>
+              <core:FileUnit name="AntTarget.java"/>
+              <core:FileUnit name="AntTextProcessor.java"/>
+              <core:FileUnit name="AntType.java"/>
+              <core:FileUnit name="AntTypeDef.java"/>
+              <core:FileUnit name="DataType.java"/>
+              <core:FileUnit name="TestDataType.java"/>
+             </members>
+            </sop:kiev.vlang.DirUnit>
+           </members>
+          </sop:kiev.vlang.DirUnit>
+         </members>
+        </sop:kiev.vlang.DirUnit>
+       </members>
+      </sop:kiev.vlang.DirUnit>
+     </members>
+    </sop:kiev.vlang.DirUnit>
+   </members>
+  </sop:kiev.vlang.DirUnit>
+ </root_dir>
+ <syntax_infos>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext="xml" name="Syntax for XML">
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory="kiev·fmt·common·DefaultTextProcessor">
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name="class" value="stx-fmt·syntax-for-xml"/>
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo type="text/xml/ant" ext="xml" name="Ant build file" qname="org·apache·tools·ant·lang·syntax-for-ant">
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory="org·apache·tools·ant·lang·AntTextProcessor"/>
+   </syntax>
+   <printer>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory="org·apache·tools·ant·lang·AntTextProcessor"/>
+   </printer>
+   <parser>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory="org·apache·tools·ant·lang·AntTextProcessor"/>
+   </parser>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+ </syntax_infos>
+</sop:kiev.vlang.Project>

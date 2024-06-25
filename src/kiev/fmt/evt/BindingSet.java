@@ -11,42 +11,30 @@
 package kiev.fmt.evt;
 import syntax kiev.Syntax;
 
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import java.awt.event.KeyEvent;
-
-import kiev.vtree.ASTNode;
-import kiev.vtree.DumpSerialized;
-import kiev.vlang.GlobalDNodeContainer;
-
-import kiev.gui.event.Item;
-
+import kiev.dump.*;
 
 @ThisIsANode
-public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSerialized  {
+public class BindingSet extends DNode implements GlobalDNodeContainer, ExportXMLDump {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve 
 	final
 	public BindingSet⇑			parent_set;
 	@nodeAttr
 	public ASTNode∅				members;
 	
-	@UnVersioned
-	protected kiev.gui.event.BindingSet compiled;
-
 	public BindingSet() {}
 
 	public final ASTNode[] getContainerMembers() { this.members }
 	
 	public String toString() { return "bindings: "+qname(); }
 
-	public Object getDataToSerialize() {
-		return this.getCompiled().init();
+	public String exportFactory() {
+		return "kiev.dump.xml.GUIBindingsExportFactory";
 	}
 
 	public String qname() {
 		String q_name = this.sname;
-		ANode p = parent();
-		if (p instanceof GlobalDNode && p != Env.getRoot())
+		INode p = parent();
+		if (p instanceof GlobalDNode && !(p instanceof KievRoot))
 			q_name = (((GlobalDNode)p).qname()+"·"+sname).intern();
 		return q_name;
 	}
@@ -64,34 +52,6 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, DumpSeria
 		parent_set.dnode.resolveNameR(path)
 	}
 	
-	public boolean preResolveIn() {
-		this.compiled = null;
-		return super.preResolveIn();
-	}
-	
-	public kiev.gui.event.BindingSet getCompiled() {
-		if (compiled != null)
-			return compiled;
-		compiled = new kiev.gui.event.BindingSet();
-		fillCompiled(compiled);
-		return compiled;
-	}
-	
-	public void fillCompiled(kiev.gui.event.BindingSet bs) {
-		bs.qname = qname().replace('·', '.');
-		if (this.parent_set.dnode != null)
-			bs.parent_set = parent_set.dnode.getCompiled();
-		else if (parent() instanceof BindingSet)
-			bs.parent_set = ((BindingSet)parent()).getCompiled();
-		Vector<Item> items = new Vector<Item>();
-		foreach(BindingSet set; this.members)
-			items.append(set.getCompiled());
-		foreach(Action act; this.members)
-			items.append(act.getCompiled());
-		foreach(Binding bnd; this.members)
-			items.append(bnd.getCompiled());
-		bs.items = items.toArray();
-	}
 }
 
 

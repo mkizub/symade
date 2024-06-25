@@ -13,23 +13,47 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 232 $
  *
  */
 
-@ViewOf(vcast=true, iface=true)
-public view JVar of Var extends JDNode {
-	
-	public:ro	Type			vtype;
-	public:ro	JENode			init;
-	public:ro	int				kind;
+public class JVar extends JDNode {
 
-	public final boolean isForward();
-	public final boolean isInitWrapper();
-	public final boolean isNeedProxy();
+	@virtual typedef VT  ≤ Var;
+
+	@abstract
+	public			Type			vtype;
+	@abstract
+	public			JENode			init;
+	public final	int				kind;
+
+	public static JVar attachJVar(Var impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JVar)jn;
+		if (impl instanceof Field)
+			return new JField((Field)impl);
+		return new JVar(impl);
+	}
+	
+	protected JVar(Var impl) {
+		super(impl);
+		this.kind = vn().kind;
+	}
+	
+	public final boolean isNeedProxy() { vn().isNeedProxy() }
 
 	@getter public final Type get$vtype() {
-		return ((Var)this).vtype.getType();
+		return vn().vtype.getType(Env.getEnv());
+	}
+
+	@getter public final JENode get$init() {
+		return (JENode)vn().init;
 	}
 
 	public void generate(Code code, Type reqType) {
@@ -44,7 +68,7 @@ public view JVar of Var extends JDNode {
 				code.addVar(this);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn(),e);
 		}
 	}
 
@@ -52,4 +76,5 @@ public view JVar of Var extends JDNode {
 		code.removeVar(this);
 	}
 }
+
 

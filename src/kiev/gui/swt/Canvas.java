@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Common Public License Version 1.0
  * which accompanies this distribution, and is available at
@@ -7,27 +7,29 @@
  *
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
  *******************************************************************************/
 package kiev.gui.swt;
 
-
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.event.MouseWheelEvent;
-import java.util.HashMap;
-
-import kiev.fmt.DrawLayoutInfo;
 import kiev.fmt.DrawTerm;
-import kiev.fmt.Draw_Icon;
 import kiev.fmt.Drawable;
-import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.fmt.IFmtGfx;
+import kiev.fmt.common.DrawLayoutInfo;
+import kiev.fmt.common.Draw_Icon;
+import kiev.fmt.common.Draw_Style;
+import kiev.fmt.common.IFmtGfx;
 import kiev.gui.ICanvas;
+import kiev.gui.IEditor;
+import kiev.gui.IMenu;
+import kiev.gui.IPopupMenuListener;
+import kiev.gui.IPopupMenuPeer;
 import kiev.gui.IUIView;
+import kiev.gui.NodeUtil;
 import kiev.gui.UIView;
-import kiev.gui.swing.AWTGraphics2D;
-import kiev.vtree.ANode;
+import kiev.vtree.AutoCompleteOption;
+import kiev.vtree.AutoCompleteResult;
+import kiev.vtree.INode;
 import kiev.vtree.ASTNode;
+import kiev.vtree.Symbol;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -36,414 +38,646 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.graphics.TextStyle;
+import org.eclipse.swt.graphics.Transform;
+import org.eclipse.swt.widgets.Caret;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ScrollBar;
 
-public class Canvas implements ICanvas, 
-KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListener
+/**
+ * The canvas widget is the place where we draw.
+ */
+public class Canvas extends org.eclipse.swt.widgets.Canvas 
+implements ICanvas, KeyListener, MouseListener, SelectionListener, ControlListener
 {
-	static Color defaultTextColor;
-	static java.awt.Color autoGenTextColor;
-	static Color selectedNodeColor;
-	static Font defaultTextFont;
+	/**
+	 * Default text color.
+	 */
+	private static  Color defaultTextColor;
+	
+	/**
+	 * Auto-generated text color.
+	 */
+	private static Color autoGenTextColor;
+	
+	/**
+	 * Selected node color.
+	 */
+	private static Color selectedNodeColor;
+	
+	/**
+	 * Default text font.
+	 */
+	private static Font defaultTextFont;
 
-	private UIView            ui_view;
+	/**
+	 * The view.
+	 */
+	private UIView ui_view;
 
-	private ScrollBar        verticalScrollBar;
-	private int               imgWidth;
-	private int               imgHeight;
+	/**
+	 * The vertical scroll bar.
+	 */
+	private ScrollBar verticalScrollBar;
 
-	private DrawLayoutInfo    dlb_root;
-	private DrawTerm          current;
-	private ANode             current_node;
-	private int               first_line;
-	private int               num_lines;
-	private int               cursor_offset = -1;
+	/**
+	 *  Draw layout info.
+	 */
+	private DrawLayoutInfo dlb_root;
+	
+	/**
+	 * Current drawable.
+	 */
+	private DrawTerm current;
+	
+	/**
+	 * Current AST node.
+	 */
+	private INode current_node;
+	
+	/**
+	 * Vertical offset (scroll down) in pixels.
+	 */
+	private int vert_offset;
 
-	transient Image   vImg;
+	/**
+	 * Horizontal offset (scroll right) in pixels.
+	 */
+	private int horiz_offset;
 
-	int                       lineno;
-	boolean                   translated;
-	private GfxDrawTermLayoutInfo	first_visible;
-	private GfxDrawTermLayoutInfo	last_visible;
-	private int               translated_y;
-	private int               drawed_x;
-	private int               drawed_y;
-	private int               bg_drawed_x;
-	private int               bg_drawed_y;
-	private boolean           selected;
-	private org.eclipse.swt.widgets.Canvas control;
-	final Renderer renderer = new Renderer();
+	/**
+	 * The combo-box.
+	 */
+	PopupList combo;
+	boolean in_combo;
+	
+	/**
+	 *  Cursor offset.
+	 */
+	private int cursor_offset = -1;
 
-	static HashMap<Control, Canvas> registry = new HashMap<Control, Canvas>();
-	private PaintListener paintListener = new PaintListener() {
-		public void paintControl(PaintEvent e) {
-			if (e.gc == null) return;
-			GC gc = e.gc;
-//			Rectangle bounds = control.getClientArea();
-//			if (bounds.width != imgWidth || bounds.height != imgHeight){
-//				Rectangle imgBounds = new Rectangle(bounds.x, bounds.y, imgWidth, imgHeight);				
-//				gc.setClipping(imgBounds);
-//			}
-			renderer.prepareRendering(gc);
-			paint(renderer.getGraphics2D());
-			renderer.render(gc);
+	/**
+	 * Visible lines of text graphic coordinates.
+	 */
+	private DrawLayoutInfo	first_visible, last_visible, prev_visible;
+	
+	/**
+	 * Black color.
+	 */
+	private Color swtColorBlack; 
+	
+	/**
+	 * White color.
+	 */
+	private Color swtColorWhite; 
+	
+	/**
+	 * Grey color. 
+	 */
+	@SuppressWarnings("unused")
+	private Color swtColorGray;
+	
+	/**
+	 * Grey color. 
+	 */
+	private Color swtColorYellow;
+	
+	/**
+	 * Default font.
+	 */
+	@SuppressWarnings("unused")
+	private Font swtDefaultFont; 
+	
+	/**
+	 * The graphics context.
+	 */
+	private GC gc;
+	
+	/**
+	 * The formatter graphics.
+	 */
+	private SWTGraphics2D gfx;
+	
+	/**
+	 * The transform engine.
+	 */
+	private Transform tr;
+	
+	/**
+	 * The layout of text.
+	 */
+	private TextLayout tl;
+	
+	/**
+	 * The caret.
+	 */
+	private Caret caret;
+		
+	/**
+	 * Off-screen image.
+	 */
+	@SuppressWarnings("unused")
+	private Image vImg;
+
+	/**
+	 * Scroll bar increment supposed moving down.
+	 */
+	private int downIncrement;
+
+	/**
+	 * Scroll bar increment supposed moving up.
+	 */
+	private int upIncrement;
+
+	private DrawLayoutInfo penultimate_visible;
+
+	/**
+	 * Converts int to RGB.
+	 */
+	private final class ColorDecoder {
+		
+		/**
+		 * The value contains a color representation.
+		 */
+		private final int value;
+		
+		/**
+		 * RGB.
+		 */
+		private final RGB rgb;
+		
+		/**
+		 * The constructor. 
+		 * @param value the color
+		 */
+		ColorDecoder(int value) {
+			this.value = 0xff000000 | value;
+			rgb = new RGB(getRed(),getGreen(),getBlue());
 		}
-	};
+		
+		/**
+		 * Returns the blue component of a color.
+		 * @return int
+		 */
+		int getBlue() {
+			return (value >> 0) & 0xFF;
+		}
+		
+		/**
+		 * Returns the green component of a color.
+		 * @return int
+		 */
+		int getGreen() {
+			return (value >> 8) & 0xFF;
+		}
+		
+		/**
+		 * Returns the red component of a color.
+		 * @return int
+		 */
+		int getRed() {
+			return (value >> 16) & 0xFF;
+		}
+		
+		/**
+		 * Returns the RGB object.
+		 * @return <code>RGB</code>
+		 */
+		RGB getRGB(){
+			return rgb;
+		}
+	}
+		
 
+	/**
+	 * The constructor. 
+	 * @param parent the parent <code>Composite</code>
+	 * @param style the SWT style
+	 */
 	public Canvas(Composite parent, int style) {
-//		this.setFocusable(true);
-		control = new org.eclipse.swt.widgets.Canvas(parent, style);
-		registry.put(control, this);
-		defaultTextColor = control.getDisplay().getSystemColor(SWT.COLOR_BLACK);
-		autoGenTextColor = java.awt.Color.GRAY;
-		selectedNodeColor = new Color(control.getDisplay(), 224,224,224);
-		defaultTextFont = new Font(control.getDisplay(), "Dialog", 12, SWT.NONE);
-		verticalScrollBar = control.getVerticalBar();
+		super(parent, style);
+		defaultTextColor = getDisplay().getSystemColor(SWT.COLOR_BLACK);
+		autoGenTextColor = getDisplay().getSystemColor(SWT.COLOR_GRAY);
+		selectedNodeColor = new Color(getDisplay(), 224,224,224);
+		defaultTextFont = new Font(getDisplay(), "Dialog", 12, SWT.NORMAL);
+		verticalScrollBar = getVerticalBar();
 		verticalScrollBar.addSelectionListener(this);
-//		this.add(this.verticalScrollBar);
-		control.addMouseListener(this);
-		control.addMouseWheelListener(this);
-		control.addKeyListener(this);
-		imgWidth = 100;
-		imgHeight = 100;
+		verticalScrollBar.setMinimum(0);				
+		addMouseListener(this);
+		addKeyListener(this);
+		addControlListener(this);
+		swtColorWhite = getDisplay().getSystemColor(SWT.COLOR_WHITE); 
+		swtColorBlack = getDisplay().getSystemColor(SWT.COLOR_BLACK);	
+		swtColorGray = getDisplay().getSystemColor(SWT.COLOR_GRAY);
+		swtColorYellow = getDisplay().getSystemColor(SWT.COLOR_YELLOW);
+		swtDefaultFont = getDisplay().getSystemFont();
+		gc = new GC(this);
+		tl = new TextLayout(gc.getDevice());
+			addPaintListener(new PaintListener() {
+			/* (non-Javadoc)
+			 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
+			 */
+			public void paintControl(PaintEvent e) {
+				if (e.gc == null) return;
+//				if (vImg == null || vImg.getBounds().width != getClientArea().width || vImg.getBounds().height != getClientArea().height){
+//					vImg = new Image(e.gc.getDevice(), getClientArea().width, getClientArea().height);				  
+//				}
+//				GC gc = new GC(vImg);
+				if (tr != null){
+					tr.dispose();
+				}
+				tr  = new Transform(e.gc.getDevice());					
+				paint(e.gc);
+//				e.gc.drawImage(vImg, 0, 0);
+			}
+		});
 	}
 
-	public static void register(Control control,  Canvas canvas){
-		registry.put(control, canvas);
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getUIView()
+	 */
+	public IUIView getUIView() {
+		return ui_view;
 	}
-	
-	public static void unregister(Control control){
-		registry.remove(control);
-	}
-	
+
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#setUIView(kiev.gui.IUIView)
+	 */
 	public void setUIView(IUIView uiv) {
 		if (uiv instanceof UIView){
-			this.ui_view = (UIView)uiv;
+			ui_view = (UIView)uiv;
 		} else {
-			throw new RuntimeException("Wrong instance of UIView"); 
+			throw new RuntimeException(Window.resources.getString("Canvas_Exception_wrong_instance")); 
 		}
 	}
 
-//	public IFmtGfx getFmtGraphics() {
-//	return new Graphics2D((Graphics2D)this.getGraphics());
-//	}
+	public IPopupMenuPeer getPopupMenu(IPopupMenuListener listener, IMenu menu) {
+		return new PopupMenu(this, listener, menu);
+}
 
-	public int getImgWidth() { return imgWidth; }
-	public int getImgHeight() { return imgHeight; }
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getImgWidth()
+	 */
+	public int getImgWidth() { return getClientArea().width; }
+	
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getImgHeight()
+	 */
+	public int getImgHeight() { return getClientArea().height; }
 
-	public void setBounds(int x, int y, int width, int height) {
-		int pw = verticalScrollBar.getSize().x;
-		int oldWidth = imgWidth;
-		imgWidth = width - pw;
-		imgHeight = height;
-//		verticalScrollBar.setBounds(imgWidth,0,pw,height);
-//		super.setBounds(x, y, width, height);
-		if (oldWidth != imgWidth && this.ui_view != null)
-			this.ui_view.formatAndPaint(true);
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#setVertOffset(int)
+	 */
+	public void setVertOffset(int val) {
+		if (val < 0)
+			val = 0;
+		verticalScrollBar.setSelection(val);
+		this.vert_offset = val;
 	}
 
-	public void setFirstLine(int val) {
-//		verticalScrollBar.setValue(val);
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getVertOffset()
+	 */
+	public int getVertOffset() {
+		return vert_offset;
 	}
 
-	public void incrFirstLine(int val) {
-//		verticalScrollBar.setValue(first_line+val);
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#setHorizOffset(int)
+	 */
+	public void setHorizOffset(int val) {
+		if (val < 0)
+			val = 0;
+		//horizontalScrollBar.setSelection(val);
+		this.horiz_offset = val;
 	}
 
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getHorizOffset()
+	 */
+	public int getHorizOffset() {
+		return horiz_offset;
+	}
+
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#incrFirstLine(int)
+	 */
+	public void incrVertOffset(int val) {
+		verticalScrollBar.setSelection(vert_offset+val);
+	}
+
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getDrawableAt(int, int)
+	 */
 	public Drawable getDrawableAt(int x, int y) {
-		y += translated_y;
-		GfxDrawTermLayoutInfo dr = first_visible;
-		GfxDrawTermLayoutInfo last = last_visible;
-		for (; dr != null; dr = dr.getNext()) {
+		y += vert_offset;
+		x += horiz_offset;
+		DrawLayoutInfo dr = first_visible;
+		DrawLayoutInfo last = last_visible;
+		for (; dr != null; dr = dr.getNextLeaf()) {
 			int w = dr.width;
-			int h = dr.height;
-			if (dr.x < x && dr.y < y && dr.x+w >= x && dr.y+h >= y)
-				return dr.dterm;
+			int h = dr.height;			
+			if (dr.getX() < x && dr.getY() < y && dr.getX()+w >= x && dr.getY()+h >= y)
+				return dr.getDrawable();
 			if (dr == last)
 				return null;
 		}
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.KeyListener#keyReleased(org.eclipse.swt.events.KeyEvent)
+	 */
 	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.KeyListener#keyPressed(org.eclipse.swt.events.KeyEvent)
+	 */
 	public void keyPressed(KeyEvent evt) {
-		KeyListener item_editor = (KeyListener)ui_view.getItem_editor();
-		if (item_editor != null) {
-			item_editor.keyPressed(evt);
+		if (ui_view instanceof IEditor && ((IEditor)ui_view).isInTextEditMode()) {
+			keyPressedForEditor(evt);
 			return;
 		}
 		boolean consume = ui_view.inputEvent(new InputEventInfo(evt));
 		if (consume) {
-//			evt.consume();
 			return;
 		}
 		int code = evt.keyCode;
 		int mask = evt.stateMask & (SWT.CTRL +SWT.DOWN|SWT.SHIFT +SWT.DOWN|SWT.ALT +SWT.DOWN);
 		if (mask == 0) {
 			if (!(code==SWT.SHIFT || code==SWT.ALT || code==SWT.ALT + SWT.PRINT_SCREEN || code==SWT.CONTROL || code==SWT.CAPS_LOCK))
-				control.getDisplay().beep();
+				getDisplay().beep();
 			return;
 		}
 	}
 
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
-	public void mousePressed(MouseEvent e) {}
-	public void mouseReleased(MouseEvent e) {}
-	public void mouseClicked(MouseEvent evt) {
-		final MouseEvent me = evt;
-		control.getDisplay().syncExec(
-				new Runnable() {
-					public void run(){
-						ui_view.inputEvent(new InputEventInfo(me));
-					}
-				});
-
-	}
-	
-
-	public void controlResized(ControlEvent e) {
-		this.ui_view.formatAndPaint(true);
-	}
-
-//	public void adjustmentValueChanged(AdjustmentEvent e) {
-//	if (e.getAdjustable() == verticalScrollBar) {
-//	first_line = e.getValue();
-//	if (first_line >= num_lines)
-//	first_line = num_lines-1;
-//	if (first_line < 0)
-//	first_line = 0;
-//	this.repaint();
-//	}
-//	}
-
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		if (e.getScrollAmount() != 0) {
-			ScrollBar toScroll = getVerticalScrollBar();
-			int direction = 0;
-			// find which scrollbar to scroll, or return if none
-			if (toScroll == null || !toScroll.isVisible()) { 
-				//toScroll = scrollpane.getHorizontalScrollBar();
-				//if (toScroll == null || !toScroll.isVisible()) { 
-				//	return;
-				//}
+	private void keyPressedForEditor(KeyEvent evt) {
+		IEditor editor = (IEditor)ui_view;
+		int code = evt.keyCode;
+		if ((evt.stateMask & SWT.CTRL) != 0) {
+			if (code == ' ') {
+				//showAutoComplete(true);
 				return;
 			}
-			direction = e.getWheelRotation() < 0 ? -1 : 1;
-			if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)
-				scrollByUnits(toScroll, direction, e.getScrollAmount());
-			else if (e.getScrollType() == MouseWheelEvent.WHEEL_BLOCK_SCROLL)
-				scrollByBlock(toScroll, direction);
+			if (code == '.') {
+				editor.editTypeChar('·');
+				return;
+			}
 		}
-	}
-	private static void scrollByBlock(ScrollBar scrollbar, int direction) {
-		// This method is called from BasicScrollPaneUI to implement wheel
-		// scrolling, and also from scrollByBlock().
-		int oldValue = scrollbar.getSelection();
-		int blockIncrement = scrollbar.getPageIncrement();
-		int delta = blockIncrement * ((direction > 0) ? +1 : -1);
-		int newValue = oldValue + delta;
-
-		// Check for overflow.
-		if (delta > 0 && newValue < oldValue) {
-			newValue = scrollbar.getMaximum();
-		}
-		else if (delta < 0 && newValue > oldValue) {
-			newValue = scrollbar.getMinimum();
-		}
-
-		scrollbar.setSelection(newValue);			
-	}
-	private static void scrollByUnits(ScrollBar scrollbar, int direction,
-			int units) {
-		// This method is called from BasicScrollPaneUI to implement wheel
-		// scrolling, as well as from scrollByUnit().
-		int delta;
-
-		for (int i=0; i<units; i++) {
-			if (direction > 0) {
-				delta = scrollbar.getIncrement();
-			}
-			else {
-				delta = -scrollbar.getIncrement();
-			}
-
-			int oldValue = scrollbar.getSelection();
-			int newValue = oldValue + delta;
-
-			// Check for overflow.
-			if (delta > 0 && newValue < oldValue) {
-				newValue = scrollbar.getMaximum();
-			}
-			else if (delta < 0 && newValue > oldValue) {
-				newValue = scrollbar.getMinimum();
-			}
-			if (oldValue == newValue) {
+		if ((evt.keyCode & (SWT.CTRL | SWT.SHIFT | SWT.ALT)) != 0)
+			return;
+		switch (code) {
+		case SWT.ARROW_DOWN:
+			if (in_combo) {
+				int count = combo.list.getItemCount();
+				if (count == 0) {
+					in_combo = false;
+					break;
+				}
+				int idx = combo.list.getSelectionIndex();
+				idx++;
+				if (idx >= count)
+					idx = 0;
+				combo.list.select(idx);
 				break;
 			}
-			scrollbar.setSelection(newValue);
+			else if (combo != null && combo.list.getItemCount() > 0) {
+				in_combo = true;
+				if (combo.list.getSelectionIndex() < 0)
+					combo.list.select(0);
+			}
+			break;
+		case SWT.ARROW_UP:
+			if (in_combo) {
+				int count = combo.list.getItemCount();
+				if (count == 0) {
+					in_combo = false;
+					break;
+				}
+				int idx = combo.list.getSelectionIndex();
+				idx--;
+				if (idx < 0)
+					idx = count-1;
+				combo.list.select(idx);
+				break;
+			}
+			else if (combo != null && combo.list.getItemCount() > 0) {
+				in_combo = true;
+				if (combo.list.getSelectionIndex() < 0)
+					combo.list.select(combo.list.getItemCount()-1);
+			}
+			break;
+		case SWT.DEL:
+			editor.editTypeChar((char)127);
+			return;
+		case SWT.BS:
+			editor.editTypeChar((char)8);
+			return;
+		default:
+			if ((evt.stateMask & ~SWT.SHIFT) != 0) return;
+			if (code == SWT.NONE) return;
+			if (code < 32 || code == 127) return;
+			editor.editTypeChar((char)code);
+			return;
+		case SWT.CR:
+			if (in_combo) {
+				in_combo = false;
+				int idx = combo.list.getSelectionIndex();
+				if (idx >= 0) {
+					editor.editSetItem(combo.list.getItem(idx));
+				}
+				combo.shell.setVisible(false);
+				break;
+			} else {
+				editor.stopTextEditMode();
+				if (combo != null && Helper.okToUse(combo.shell))
+					combo.shell.setVisible(false);
+				caret.setVisible(false);
+				return;
+			}
+		case SWT.ESC:
+			if (in_combo) {
+				in_combo = false;
+				if (Helper.okToUse(combo.shell)){
+					combo.list.select(-1);
+					combo.shell.setVisible(false);
+				}				
+				break;
+			} else {
+				editor.stopTextEditMode();
+				if (combo != null && Helper.okToUse(combo.shell))
+					combo.shell.setVisible(false);
+				caret.setVisible(false);
+				return;
+			}
 		}
 	}
-
-	public Image createImage(Device device, int width, int height) {
-		System.out.println("create image "+width+" : "+height);
-		Image image = new Image(device, width, height);
-		GC gc = new GC(image);
-		Rectangle rect = image.getBounds();
-		gc.fillRectangle(rect);
-		gc.drawRectangle(rect.x, rect.y, rect.width - 1, rect.height - 1);
-		gc.dispose();
-		return image;
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.ControlListener#controlResized(org.eclipse.swt.events.ControlEvent)
+	 */
+	public void controlResized(ControlEvent e) {
+		verticalScrollBar.setPageIncrement(getClientArea().height-gfx.textHeight());
+//		this.ui_view.formatAndPaint(true);
 	}
 
-	void paint(Graphics2D g) {
-		g.setClip(0, 0, control.getBounds().width, control.getBounds().height);
-		g.setColor(java.awt.Color.WHITE);
-		g.fillRect(0, 0, control.getBounds().width, control.getBounds().height);
-		//g.clearRect(0, 0, getWidth(), getHeight());
+		
+	/**
+	 * Paint in the given graphics context.
+	 * @param gc the graphical context
+	 */
+	private void paint(GC gc) {
+		gc.setClipping(new Rectangle(0, 0, getClientArea().width, getClientArea().height));
+		gc.setBackground(swtColorWhite);
+		gc.fillRectangle(0, 0, getClientArea().width, getClientArea().height);
 		if (dlb_root != null) {
-			lineno = 1;
-			translated = false;
 			first_visible = null;
 			last_visible = null;
-			translated_y = 0;
-			drawed_x = -1;
-			drawed_y = -1;
-			bg_drawed_x = -1;
-			bg_drawed_y = -1;
-			selected = false;
-			//is_editable = true;
-			paint(g, dlb_root);
-			num_lines = lineno;
-			int visa = 0;
-			if (first_visible != null && last_visible != null) {
-				visa = last_visible.getLineNo()-first_visible.getLineNo();
-				if (verticalScrollBar.getSelection() != visa)
-					verticalScrollBar.setSelection(visa);
-			}
-			if (verticalScrollBar.getMaximum() != num_lines) {
-				verticalScrollBar.setMaximum(num_lines);
-				verticalScrollBar.setSelection(visa);
+			downIncrement = 0;
+			upIncrement = 0;
+			tr.translate(-horiz_offset, -vert_offset);
+			gc.setTransform(tr);
+			paint(gc, dlb_root);
+			tr.translate(horiz_offset, vert_offset);
+			gc.setTransform(tr);
+			int total_height = 0;
+			total_height = dlb_root.getBounds().height;
+			if (verticalScrollBar.getMaximum() != total_height+gfx.textHeight()) {
+				verticalScrollBar.setMaximum(total_height+gfx.textHeight());
+				verticalScrollBar.setPageIncrement(getClientArea().height-gfx.textHeight());
+				verticalScrollBar.setIncrement(downIncrement);
+				verticalScrollBar.setThumb(getClientArea().height);
 			}
 		}
-		g.dispose();
 	}	
 
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#isDoubleBuffered()
+	 */
 	public boolean isDoubleBuffered() {
-		return true;
+		return false;
 	}
 
-	private Rectangle calcBounds(DrawLayoutInfo n) {
-		if (n instanceof GfxDrawTermLayoutInfo) {
-			GfxDrawTermLayoutInfo dtli = (GfxDrawTermLayoutInfo)n;
-			if (dtli.getLineNo() < first_line)
-				return null;
-			int w = dtli.getWidth();
-			int h = dtli.getHeight();
-			return new Rectangle(dtli.getX(), dtli.getY(), w, h);
-		} else {
-			Rectangle res = null;
-			for (DrawLayoutInfo dlb: n.getBlocks()) {
-				Rectangle r = calcBounds(dlb);
-				if (res == null)
-					res = r;
-				else if (r != null)
-					res = res.union(r);
-			}
-			return res;
-		}
-	}
-
-	private void paint(Graphics2D g, DrawLayoutInfo n) {
+	/**
+	 * Paint in the given graphics context the <code>DrawLayoutInfo</code>
+	 * @param gc the graphics context
+	 * @param n the drawable
+	 */
+	private void paint(GC gc, DrawLayoutInfo n) {
 		if (n == null)
 			return;
-		if (n instanceof GfxDrawTermLayoutInfo) {
-			paintLeaf(g, (GfxDrawTermLayoutInfo)n);
+		if (n.getDrawable() instanceof DrawTerm) {
+			paintLeaf(gc, n);
 		} else {
 			for (DrawLayoutInfo dlb: n.getBlocks()) {
-				paint(g, dlb);
-			}
+				paint(gc, dlb);
+			}			
 			if (false) {
-				Rectangle r = calcBounds(n);
-				if (r != null) {
-					g.setColor(java.awt.Color.BLACK);
-					g.drawRect(r.x, r.y, r.width, r.height);
+				java.awt.Rectangle r = n.getBounds();
+				if (r != null && new java.awt.Rectangle(horiz_offset, vert_offset, getImgWidth(), getImgHeight()).contains(r)) {
+					gc.setForeground(swtColorBlack);
+					gc.drawRectangle(r.x, r.y, r.width, r.height);
 				}
 			}
+
 		}
 	}
 
-
-	private void paintLeaf(Graphics2D g, GfxDrawTermLayoutInfo dtli) {
-		DrawTerm leaf = dtli.getDrawable();
+	/**
+	 * Paint in the given graphics context the <code>DrawTermLayoutInfo</code>.
+	 * @param gc the graphics context.
+	 * @param dtli the drawable leaf.
+	 */
+	private void paintLeaf(GC gc, DrawLayoutInfo dtli) {
+		DrawTerm leaf = (DrawTerm)dtli.getDrawable();
 		if (leaf == null || leaf.isUnvisible())
 			return;
-		if (lineno < first_line) {
-			if (dtli.isDoNewline())
-				lineno++;
-			return;
-		}
-		if (dtli.isDoNewline())
-			lineno++;
-		if (first_visible == null)
-			first_visible = dtli;
 
 		int x = dtli.getX();
 		int y = dtli.getY();
-		int w = dtli.getWidth();
-		int h = dtli.getHeight();
-		int b = dtli.getBaseline();
-
-		if (!translated) {
-			translated_y = y;
-			g.translate(0, -y);
-			translated = true;
-		}
-		if (y + h - translated_y >= control.getBounds().height)
+		int w = dtli.width;
+		int h = dtli.height;
+		int b = dtli.baseline;
+		if (y + h - vert_offset < 0)
+			return;
+		
+		if (first_visible == null) 
+			first_visible = dtli;
+		
+		if (y + h - vert_offset >= getImgHeight())
 			return;
 
+		if (last_visible != null && downIncrement == 0 && dtli.getY() > last_visible.getY())
+			downIncrement = dtli.getY() - last_visible.getY();
+					
+		if (last_visible != null && penultimate_visible != null && last_visible.getY() > penultimate_visible.getY())
+			upIncrement = last_visible.getY() - penultimate_visible.getY();
+			
+		// remember last visible 
+		penultimate_visible = last_visible;
 		last_visible = dtli;
-
+		
 		boolean set_white = false;
-		if (leaf == current && cursor_offset < 0) {
-			g.setColor(java.awt.Color.BLACK);
-			if (w > 0)
-				g.fillRect(x, y, w, h);
-			else
-				g.fillRect(x-1, y, 2, h);
-			set_white = true;
+		if (cursor_offset < 0) {
+			if (NodeUtil.isA(leaf.drnode, current_node)) {
+				gc.setBackground(swtColorYellow);
+				if (prev_visible != null && prev_visible.getY() == y)
+					gc.fillRectangle(prev_visible.getX()+prev_visible.width, prev_visible.getY(), x-(prev_visible.getX()+prev_visible.width), h);
+				if (w > 0)
+					gc.fillRectangle(x, y, w, h);
+				prev_visible = dtli;
+			} else {
+				prev_visible = null;
+			}
+			if (leaf == current) {
+				gc.setBackground(swtColorBlack);
+				set_white = true;
+				if (w > 0)
+					gc.fillRectangle(x, y, w, h);
+				else
+					gc.fillRectangle(x-1, y, 2, h);
+			}
 		}
 
-		drawed_x = x + w;
-		drawed_y = y;
-
+		Draw_Style style = dtli.style;
 		if (set_white)
-			g.setColor(java.awt.Color.WHITE);
+			gc.setForeground(swtColorWhite);
 		else if (leaf.drnode instanceof ASTNode && ((ASTNode)leaf.drnode).isAutoGenerated())
-			g.setColor(autoGenTextColor);
+			gc.setForeground(autoGenTextColor);
+		else if (style != null && style.color != null) {
+			ColorDecoder cd = new ColorDecoder(style.color.rgb_color);
+			RGB rgb = cd.getRGB();
+			Color c = new Color(gc.getDevice(), rgb);
+			gc.setForeground(c);
+			c.dispose();
+		}
 		else
-			g.setColor(new java.awt.Color(leaf.syntax.lout.rgb_color));
-		java.awt.Font font  = AWTGraphics2D.decodeFont(leaf.syntax.lout.font);
-		g.setFont(font);
+			gc.setForeground(defaultTextColor);
+
+		Font font;
+		if (style != null)
+			font = SWTGraphics2D.decodeFont(gc.getDevice(), style.font);
+		else
+			font = SWTGraphics2D.decodeFont(gc.getDevice(), null);
+		gc.setFont(font);
+		TextStyle tstyle = new TextStyle(font, null, null);		
 		Object term_obj = leaf.getTermObj();
 		if (term_obj instanceof Draw_Icon) {
 			Draw_Icon di = (Draw_Icon)term_obj;
-			java.awt.Image img = AWTGraphics2D.decodeImage(di);
-			g.drawImage(img, x, y, null);
+			Image img = SWTGraphics2D.decodeImage(gc.getDevice(), di);
+			gc.drawImage(img, x, y);
 		} else if (leaf == current && cursor_offset >= 0) {
 			String s;
 			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
@@ -453,19 +687,15 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 			}
 			if (s == null || s.length() == 0)
 				s = " ";
-			java.awt.font.TextLayout tl = new java.awt.font.TextLayout(s, font, g.getFontRenderContext());
-			tl.draw(g, x, y+b);
-			g.translate(x, y+b);
-			try {
-				Shape[] carets = tl.getCaretShapes(cursor_offset);
-				g.setColor(java.awt.Color.RED);
-				g.draw(carets[0]);
-				if (carets[1] != null) {
-					g.setColor(java.awt.Color.BLACK);
-					g.draw(carets[1]);
-				}
-			} catch (java.lang.IllegalArgumentException e) {} 
-			g.translate(-x, -(y+b));
+			// draw text here
+			tl.setText(s);
+			tl.setStyle(tstyle, 0, s.length());
+			tl.setAscent(b);
+			tl.draw(gc, x, y);
+			// set caret position 
+			caret = getCaret();
+			if (caret != null)
+				caret.setBounds (x+w-horiz_offset, y-vert_offset, 2, h);		
 		} else {
 			String s;
 			if (term_obj == null || term_obj == DrawTerm.NULL_VALUE)
@@ -478,166 +708,215 @@ KeyListener, MouseListener, MouseWheelListener, SelectionListener, ControlListen
 				s = "\u25d8"; // ◘
 			if (s.length() == 0)
 				return;
-			java.awt.font.TextLayout tl = new java.awt.font.TextLayout(s, font, g.getFontRenderContext());
-			tl.draw(g, x, y+b);
+			// draw text here
+			tl.setText(s);
+			tl.setStyle(tstyle, 0, s.length());
+			tl.setAscent(b);
+			tl.draw(gc, x, y);
 		}
 	}
-
+	
 	/**
-	 * @return the verticalScrollBar
+	 * Returns the vertical scroll bar.
+	 * @return the <code>verticalScrollBar</code>
 	 */
 	public ScrollBar getVerticalScrollBar() {
 		return verticalScrollBar;
 	}
 
-	/**
-	 * @param dlb_root the dlb_root to set
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#setDlb_root(kiev.fmt.DrawLayoutInfo)
 	 */
 	public void setDlb_root(DrawLayoutInfo dlb_root) {
 		this.dlb_root = dlb_root;
 	}
 
-	/**
-	 * @return the current
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getCurrent()
 	 */
 	public DrawTerm getCurrent() {
 		return current;
 	}
 
-	/**
-	 * @param current the current to set
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#setCurrent(kiev.fmt.DrawTerm, kiev.vtree.ANode)
 	 */
-	public void setCurrent(DrawTerm current, ANode current_node) {
+	public void setCurrent(DrawTerm current, INode current_node) {
 		this.current = current;
 		this.current_node = current_node;
 	}
 
-	/**
-	 * @return the translated_y
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getLast_visible()
 	 */
-	public int getTranslated_y() {
-		return translated_y;
-	}
-
-	/**
-	 * @return the last_visible
-	 */
-	public GfxDrawTermLayoutInfo getLast_visible() {
+	public DrawLayoutInfo getLast_visible() {
 		return last_visible;
 	}
 
-	/**
-	 * @return the first_visible
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getFirst_visible()
 	 */
-	public GfxDrawTermLayoutInfo getFirst_visible() {
+	public DrawLayoutInfo getFirst_visible() {
 		return first_visible;
 	}
 
-	/**
-	 * @return the cursor_offset
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getCursor_offset()
 	 */
 	public int getCursor_offset() {
 		return cursor_offset;
 	}
 
-	/**
-	 * @param cursor_offset the cursor_offset to set
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#setCursor_offset(int)
 	 */
 	public void setCursor_offset(int cursor_offset) {
 		this.cursor_offset = cursor_offset;
 	}
 
-	/**
-	 * @return the first_line
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#repaint()
 	 */
-	public int getFirst_line() {
-		return first_line;
-	}
-
-	/**
-	 * @param first_line the first_line to set
-	 */
-	public void setFirst_line(int first_line) {
-		this.first_line = first_line;
-	}
-
-	/**
-	 * @return the num_lines
-	 */
-	public int getNum_lines() {
-		return num_lines;
-	}
-
 	public void repaint() {
-		control.redraw();
-
+		redraw();
 	}
 
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#requestFocus()
+	 */
 	public void requestFocus() {
-		control.setFocus();
+		setFocus();
 	}
 
-	public void mouseDoubleClick(MouseEvent e) {
-	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
+	 */
+	public void mouseDoubleClick(MouseEvent e) {}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events.MouseEvent)
+	 */
 	public void mouseDown(MouseEvent e) {
 		ui_view.inputEvent(new InputEventInfo(e));
 	}
 
-	public void mouseUp(MouseEvent e) {
-	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
+	 */
+	public void mouseUp(MouseEvent e) {}
 
-	public void mouseScrolled(MouseEvent e) {
-		// TODO Auto-generated method stub
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+	 */
+	public void widgetDefaultSelected(SelectionEvent e) {}
 
-	}
-
-
-	public void widgetDefaultSelected(SelectionEvent e) {
-	}
-
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+	 */
 	public void widgetSelected(SelectionEvent e) {
-		// TODO Auto-generated method stub
-
+		ScrollBar sb = (ScrollBar)e.getSource();
+		if (sb == verticalScrollBar) {
+			vert_offset = sb.getSelection();
+			repaint();				
+			switch (e.detail){
+			case SWT.ARROW_DOWN:
+				sb.setIncrement(downIncrement);
+				break;
+			case SWT.ARROW_UP:
+				sb.setIncrement(upIncrement);
+				break;
+			case SWT.PAGE_DOWN:
+				sb.setIncrement(downIncrement);
+					break;
+			case SWT.PAGE_UP:
+				sb.setIncrement(upIncrement);
+				break;
+			case SWT.END:
+				sb.setIncrement(upIncrement);
+				break;
+			case SWT.HOME:
+				sb.setIncrement(downIncrement);
+				break;
+			case SWT.DRAG:
+				break;
+			}		
+		}
 	}
 
-	public IFmtGfx getFmtGraphics() {
-		return new AWTGraphics2D(renderer.getGraphics2D());
-	}
-
-	public void controlMoved(ControlEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * @return the control
+	/* (non-Javadoc)
+	 * @see kiev.gui.ICanvas#getFmtGraphics()
 	 */
-	public org.eclipse.swt.widgets.Canvas getControl() {
-		return control;
+	public IFmtGfx getFmtGraphics() { 
+		if (gfx == null) gfx = new SWTGraphics2D(gc);
+		return gfx;
 	}
 
-	/**
-	 * @param control the control to set
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.ControlListener#controlMoved(org.eclipse.swt.events.ControlEvent)
 	 */
-	public void setControl(org.eclipse.swt.widgets.Canvas control) {
-		this.control = control;
-	}
+	public void controlMoved(ControlEvent e) {}
 
-	/**
-	 * @return the paintListener
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.widgets.Widget#dispose()
 	 */
-	public PaintListener getPaintListener() {
-		return paintListener;
+	public void dispose(){
+		tr.dispose();
+		tl.dispose();
+		gc.dispose();
+		selectedNodeColor.dispose();
+		defaultTextFont.dispose();
+		super.dispose();
 	}
 
-	/**
-	 * @param paintListener the paintListener to set
-	 */
-	public void setPaintListener(PaintListener paintListener) {
-		this.paintListener = paintListener;
+	public void setPopupComboContent(AutoCompleteResult autocomplete_result, boolean qualified) {
+		DrawLayoutInfo info = current.getGfxFmtInfo();
+		final int x = info.getX();
+		final int y = info.getY() - vert_offset;
+		final int w = info.width;
+		final int h = info.height;
+		if (combo == null || ! Helper.okToUse(combo.shell)) {			
+			combo = new PopupList(this.getShell());
+			combo.list.addKeyListener(this);
+			combo.list.addMouseListener(this);
+			this.addMouseListener(new MouseListener() {
+				public void mouseDoubleClick(MouseEvent e) {}
+				public void mouseDown(MouseEvent e) {}
+				public void mouseUp(MouseEvent e){
+					if (! Helper.okToUse(combo.shell)) return;
+					Rectangle shellSize = combo.shell.getClientArea();
+					if ((e.x < shellSize.x || e.x > shellSize.x + shellSize.width) &&
+							(e.y < shellSize.y || e.y > shellSize.y + shellSize.height)){
+						in_combo = false;
+						combo.shell.setVisible (false);
+					}						
+				}
+			});
+		} else {
+			if (! Helper.okToUse(combo.shell)) return;
+			combo.list.removeAll();
+		}
+		boolean popup = false;
+		for (AutoCompleteOption opt: autocomplete_result.getOptions()) {
+			if (qualified && opt.data instanceof Symbol)
+				combo.list.add(((Symbol)opt.data).qname());
+			else
+				combo.list.add(opt.text);
+			popup = true;
+		}
+		if (popup) {
+			if (! in_combo)
+				combo.list.select(-1);
+			this.getDisplay().asyncExec(new Runnable(){
+				public void run() {
+					if (! Helper.okToUse(combo.shell)) return;
+					Point loc = Canvas.this.getDisplay().map(Canvas.this, null, new Point(x, y));
+					Point listSize = combo.list.computeSize (SWT.DEFAULT, SWT.DEFAULT, false);
+					combo.open(new Rectangle(loc.x+w, loc.y, listSize.x+4, h));					
+				}				
+			});			
+		} else {
+			in_combo = false;
+		}
 	}
-
 
 }
-

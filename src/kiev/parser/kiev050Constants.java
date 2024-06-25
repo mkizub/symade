@@ -37,114 +37,109 @@ public interface kiev050Constants {
   int IMPLEMENTS = 32;
   int IMPORT = 33;
   int INTERFACE = 34;
-  int METATYPE = 35;
-  int NATIVE = 36;
-  int PACKAGE = 37;
-  int RETURN = 38;
-  int STATIC = 39;
-  int SWITCH = 40;
-  int SYNCHRONIZED = 41;
-  int WITH = 42;
-  int THROW = 43;
-  int THROWS = 44;
-  int TRANSIENT = 45;
-  int TRY = 46;
-  int VOLATILE = 47;
-  int VIEW = 48;
-  int WHILE = 49;
-  int VARARGS = 50;
-  int PCUT = 51;
-  int ALIAS = 52;
-  int TYPE = 53;
-  int TYPEDEF = 54;
-  int ENUM = 55;
-  int REQUIRE = 56;
-  int ENSURE = 57;
-  int INVARIANT = 58;
-  int META_INTERFACE = 59;
-  int META_SINGLETON = 60;
-  int META_MIXIN = 61;
-  int META_FORWARD = 62;
-  int META_UNERASABLE = 63;
-  int META_VIRTUAL = 64;
-  int META_PACKED = 65;
-  int META_MACRO = 66;
-  int META_STATIC = 67;
-  int META_ABSTRACT = 68;
-  int META_FINAL = 69;
-  int META_NATIVE = 70;
-  int META_SYNCHRONIZED = 71;
-  int META_TRANSIENT = 72;
-  int META_VOLATILE = 73;
-  int META_THROWS = 74;
-  int META_UUID = 75;
-  int META_GETTER = 76;
-  int META_SETTER = 77;
-  int META_ACCESS1 = 78;
-  int META_PUBLIC = 79;
-  int PUBLIC = 80;
-  int META_PROTECTED = 81;
-  int PROTECTED = 82;
-  int META_PRIVATE = 83;
-  int PRIVATE = 84;
-  int READ_ONLY = 85;
-  int WRITE_ONLY = 86;
-  int READ_WRITE = 87;
-  int NO_READ_WRITE = 88;
-  int COMMA1 = 89;
-  int COLON1 = 90;
-  int OPEN_ACCESS = 91;
-  int CLOSE_ACCESS = 92;
-  int PRAGMA = 98;
-  int PRAGMA_ENABLE = 99;
-  int PRAGMA_DISABLE = 100;
-  int FUNCTION = 101;
-  int FALSE = 102;
-  int NEW = 103;
-  int NULL = 104;
-  int TRUE = 105;
-  int OPERATOR_ID = 106;
-  int INTEGER_LITERAL = 107;
-  int LONG_INTEGER_LITERAL = 108;
-  int DECIMAL_LITERAL = 109;
-  int HEX_LITERAL = 110;
-  int OCTAL_LITERAL = 111;
-  int FLOATING_POINT_LITERAL = 112;
-  int DOUBLE_POINT_LITERAL = 113;
-  int EXPONENT = 114;
-  int CHARACTER_LITERAL = 115;
-  int STRING_LITERAL = 116;
-  int IDENTIFIER = 117;
-  int LETTER = 118;
-  int DIGIT = 119;
-  int ID_STRING_LITERAL = 120;
-  int LPAREN = 121;
-  int RPAREN = 122;
-  int LBRACE = 123;
-  int RBRACE = 124;
-  int LBRACKET = 125;
-  int RBRACKET = 126;
-  int SEMICOLON = 127;
-  int COLON = 128;
-  int DOT = 129;
-  int COMMA = 130;
-  int LT = 131;
-  int GT = 132;
-  int LANGLE = 133;
-  int RANGLE = 134;
-  int ASSIGN = 135;
-  int ASSIGN2 = 136;
-  int IS_THE = 137;
-  int IS_ONE_OF = 138;
-  int ARROW = 139;
-  int OPERATOR_AT = 140;
-  int OPERATOR_SHARP = 141;
-  int OPERATOR_LRBRACKETS = 142;
-  int OPERATOR_SUPERSCRIPT_PLUS = 143;
-  int OPERATOR_SUPERSCRIPT_MINUS = 144;
-  int OPERATOR_UPPER_BOUND = 145;
-  int OPERATOR_LOWER_BOUND = 146;
-  int OPERATOR = 147;
+  int NATIVE = 35;
+  int PACKAGE = 36;
+  int RETURN = 37;
+  int STATIC = 38;
+  int SWITCH = 39;
+  int SYNCHRONIZED = 40;
+  int WITH = 41;
+  int THROW = 42;
+  int THROWS = 43;
+  int TRANSIENT = 44;
+  int TRY = 45;
+  int VOLATILE = 46;
+  int VIEW = 47;
+  int WHILE = 48;
+  int VARARGS = 49;
+  int PCUT = 50;
+  int ALIAS = 51;
+  int TYPE = 52;
+  int TYPEDEF = 53;
+  int ENUM = 54;
+  int REQUIRE = 55;
+  int ENSURE = 56;
+  int INVARIANT = 57;
+  int META_INTERFACE = 58;
+  int META_SINGLETON = 59;
+  int META_MIXIN = 60;
+  int META_FORWARD = 61;
+  int META_UNERASABLE = 62;
+  int META_VIRTUAL = 63;
+  int META_PACKED = 64;
+  int META_MACRO = 65;
+  int META_STATIC = 66;
+  int META_ABSTRACT = 67;
+  int META_FINAL = 68;
+  int META_NATIVE = 69;
+  int META_SYNCHRONIZED = 70;
+  int META_TRANSIENT = 71;
+  int META_VOLATILE = 72;
+  int META_THROWS = 73;
+  int META_UUID = 74;
+  int META_GETTER = 75;
+  int META_SETTER = 76;
+  int META_ACCESS1 = 77;
+  int META_PUBLIC = 78;
+  int PUBLIC = 79;
+  int META_PROTECTED = 80;
+  int PROTECTED = 81;
+  int META_PRIVATE = 82;
+  int PRIVATE = 83;
+  int READ_ONLY = 84;
+  int WRITE_ONLY = 85;
+  int READ_WRITE = 86;
+  int NO_READ_WRITE = 87;
+  int COMMA1 = 88;
+  int COLON1 = 89;
+  int OPEN_ACCESS = 90;
+  int CLOSE_ACCESS = 91;
+  int PRAGMA = 97;
+  int PRAGMA_ENABLE = 98;
+  int PRAGMA_DISABLE = 99;
+  int FUNCTION = 100;
+  int NEW = 101;
+  int OPERATOR_ID = 102;
+  int INTEGER_LITERAL = 103;
+  int LONG_INTEGER_LITERAL = 104;
+  int DECIMAL_LITERAL = 105;
+  int HEX_LITERAL = 106;
+  int OCTAL_LITERAL = 107;
+  int FLOATING_POINT_LITERAL = 108;
+  int DOUBLE_POINT_LITERAL = 109;
+  int EXPONENT = 110;
+  int CHARACTER_LITERAL = 111;
+  int STRING_LITERAL = 112;
+  int IDENTIFIER = 113;
+  int LETTER = 114;
+  int DIGIT = 115;
+  int ID_STRING_LITERAL = 116;
+  int LPAREN = 117;
+  int RPAREN = 118;
+  int LBRACE = 119;
+  int RBRACE = 120;
+  int LBRACKET = 121;
+  int RBRACKET = 122;
+  int SEMICOLON = 123;
+  int COLON = 124;
+  int DOT = 125;
+  int COMMA = 126;
+  int LT = 127;
+  int GT = 128;
+  int LANGLE = 129;
+  int RANGLE = 130;
+  int ASSIGN = 131;
+  int IS_THE = 132;
+  int IS_ONE_OF = 133;
+  int ARROW = 134;
+  int OPERATOR_AT = 135;
+  int OPERATOR_SHARP = 136;
+  int OPERATOR_LRBRACKETS = 137;
+  int OPERATOR_SUPERSCRIPT_PLUS = 138;
+  int OPERATOR_SUPERSCRIPT_MINUS = 139;
+  int OPERATOR_UPPER_BOUND = 140;
+  int OPERATOR_LOWER_BOUND = 141;
+  int OPERATOR = 142;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -189,7 +184,6 @@ public interface kiev050Constants {
     "\"implements\"",
     "\"import\"",
     "\"interface\"",
-    "\"metatype\"",
     "\"native\"",
     "\"package\"",
     "\"return\"",
@@ -256,10 +250,7 @@ public interface kiev050Constants {
     "\"enable\"",
     "\"disable\"",
     "\"fun\"",
-    "\"false\"",
     "\"new\"",
-    "\"null\"",
-    "\"true\"",
     "\"operator\"",
     "<INTEGER_LITERAL>",
     "<LONG_INTEGER_LITERAL>",
@@ -290,7 +281,6 @@ public interface kiev050Constants {
     "\"<\\u0335\"",
     "\">\\u0335\"",
     "\"=\"",
-    "\":=\"",
     "\"?=\"",
     "\"@=\"",
     "\"->\"",

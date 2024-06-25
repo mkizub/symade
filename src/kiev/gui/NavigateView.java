@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Common Public License Version 1.0
  * which accompanies this distribution, and is available at
@@ -7,74 +7,134 @@
  *
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
  *******************************************************************************/
 package kiev.gui;
 
-public final class NavigateView implements Runnable {
+/**
+ * Navigate View UI Action.
+ */
+public final class NavigateView implements UIAction {
 	
-	final InfoView uiv;
-	final int incr;
+	/**
+	 * The view.
+	 */
+	private final IUIView uiv;
 	
-	public NavigateView(InfoView uiv, int incr) {
+	/**
+	 * The increment.
+	 */
+	private final int incr;
+	
+	/**
+	 * The constructor.
+	 * @param uiv the view
+	 * @param incr the increment
+	 */
+	public NavigateView(IUIView uiv, int incr) {
 		this.uiv = uiv;
 		this.incr = incr;
 	}
 	
-	public void run() {
-		this.uiv.getView_canvas().incrFirstLine(this.incr);
+	/* (non-Javadoc)
+	 * @see kiev.gui.UIAction#run()
+	 */
+	public void exec() {
+		((UIView)this.uiv).getViewPeer().incrVertOffset(this.incr);
 	}
 
-	public static LineUp newLineUp(){
-		return new LineUp();
-	}
 	
+	/**
+	 * Line Up UI Action Factory.
+	 */
 	public final static class LineUp implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Scroll the view one line up"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			return new NavigateView(context.uiv, -1);
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			return new NavigateView(context.ui, -20);
 		}
 	}
 	
-	public static LineDn newLineDn(){
-		return new LineDn();
-	}
-
+	/**
+	 * Line Down UI Action Factory.
+	 */
 	public final static class LineDn implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Scroll the view one line down"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			return new NavigateView(context.uiv, +1);
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			return new NavigateView(context.ui, +20);
 		}
 	}
 	
-	public static PageUp newPageUp(){
-		return new PageUp();
-	}
-
+	/**
+	 * Page Up UI Action Factory.
+	 */
 	public final static class PageUp implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Scroll the view one page up"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			InfoView uiv = context.uiv;
-			int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
-			int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
-			return new NavigateView(uiv, lnfst - lnlst + 1);
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			UIView uiv = (UIView)context.ui;
+			return new NavigateView(uiv, -uiv.getViewPeer().getImgHeight());
 		}
 	}
-
-	public static PageDn newPageDn(){
-		return new PageDn();
-	}
 	
+	/**
+	 * Page Down UI Action Factory.
+	 */
 	public final static class PageDn implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Scroll the view one page down"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			InfoView uiv = context.uiv;
-			int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
-			int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
-			return new NavigateView(uiv, lnlst - lnfst - 1);
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			UIView uiv = (UIView)context.ui;
+			return new NavigateView(uiv, uiv.getViewPeer().getImgHeight());
 		}
 	}
 }

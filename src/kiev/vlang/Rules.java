@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
@@ -34,21 +34,10 @@ public class RuleMethod extends Method {
 	          public int				max_vars;
 	          public int				index;		// index counter for RuleNode.idx
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "localvars") {
-			Var p = (Var)data;
-			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
-				p.mflags_var_kind = Var.VAR_RULE;
-			else if (ct == ChildChangeType.DETACHED && p.kind == Var.VAR_RULE)
-				p.mflags_var_kind = Var.VAR_LOCAL;
-		}
-		super.callbackChildChanged(ct, attr, data);
-	}
-
 	public RuleMethod() {}
 
 	public RuleMethod(String name, int fl) {
-		super(name, new TypeRef(Type.tpRule), fl);
+		super(name, new TypeRef(Env.getEnv().tenv.tpRule), fl);
 	}
 
 	public int allocNewBase(int n) {
@@ -91,17 +80,17 @@ public class RuleMethod extends Method {
 		path @= params
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
-		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveNameAccessR(path)
+		path.enterForward(path.env.proj.thisPar) : path.leaveForward(path.env.proj.thisPar),
+		Env.ctxTDecl(this).getType(path.env).resolveNameAccessR(path)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.getType().resolveNameAccessR(path)
+		var.getType(path.env).resolveNameAccessR(path)
 	}
 
-    public void pass3() {
+    public void pass3(Env env) {
 		if !(parent() instanceof Struct)
 			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = (Struct)this.parent();
@@ -112,17 +101,14 @@ public class RuleMethod extends Method {
 			setPublic();
 			if( body == null ) setAbstract(true);
 		}
-		if (params.length == 0 || params[0].kind != Var.PARAM_RULE_ENV)
-			params.insert(0, new LVar(pos,namePEnv,Type.tpRule,Var.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 		// push the method, because formal parameters may refer method's type args
 		foreach (Var fp; params) {
-			fp.vtype.getType(); // resolve
+			fp.vtype.getType(env); // resolve
 			if (fp.stype != null)
-				fp.stype.getType(); // resolve
+				fp.stype.getType(env); // resolve
 			fp.verifyMetas();
 		}
 		trace(Kiev.debug && Kiev.debugMultiMethod,"Rule "+this+" has erased type "+this.etype);
-		foreach(ASTOperatorAlias al; aliases) al.pass3();
 
 		foreach(WBCCondition cond; conditions)
 			cond.definer = this;
@@ -196,23 +182,25 @@ object, if fails - returns null.
 public abstract class ASTRuleNode extends ENode {
 	public static final ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
+	@AttrBinDumpInfo(ignore=true)
 	@virtual @final @abstract
 	@nodeData public:ro	boolean			more_check;
-	@UnVersioned
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public		ASTRuleNode		next_check;
+	@AttrBinDumpInfo(ignore=true)
 	@virtual @final @abstract
 	@nodeData public:ro	boolean			more_back;
-	@UnVersioned
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public		ASTRuleNode		next_back;
 
-	@UnVersioned
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public		boolean			jump_to_back;
-	@UnVersioned
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public		int				depth;
-	@UnVersioned
+	@AttrBinDumpInfo(ignore=true)
 	@virtual
 	@nodeData public		int				base;
-	@UnVersioned
+	@AttrBinDumpInfo(ignore=true)
 	@virtual
 	@nodeData public		int				idx;
 
@@ -225,10 +213,10 @@ public abstract class ASTRuleNode extends ENode {
 		depth = -1;
 	}
 
-	public abstract void rnResolve();
-	public abstract void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back);
+	public abstract void rnResolve(Env env, INode parent, AttrSlot pslot);
+	public abstract void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back);
 
-	public abstract void testGenerate(SpacePtr space, Struct frame);
+	public abstract void testGenerate(Env env, SpacePtr space, Struct frame);
 }
 
 
@@ -248,29 +236,29 @@ public final class RuleBlock extends ENode {
 		rnode = n;
 	}
 
-    public void rnResolve() {
+    public void rnResolve(Env env, INode parent, AttrSlot pslot) {
 		if (rnode != null)
-			rnode.rnResolve();
+			rnode.rnResolve(env,this,nodeattr$rnode);
     }
 
-	public void testGenerate(SpacePtr space, Struct frame) {
+	public void generateRuleBlock(Env env, RuleMethod rule_method) {
 		try {
-			RuleMethod rule_method = (RuleMethod)ctx_method;
-			Block rn = (Block)RewriteContext.rewriteByMacro("kiev·ir·RuleTemplates", "mkRuleBlock", rule_method.max_depth-1, rule_method.localvars);
+			Block rn = (Block)RewriteContext.rewriteByMacro(env, "kiev·ir·RuleTemplates", "mkRuleBlock", rule_method.max_depth-1, rule_method.localvars);
 			SwitchStat sw = null;
+			Struct frame = null;
 			foreach (ASTNode n; rn.stats) {
 				if (n instanceof Struct)
 					frame = (Struct)n;
 				else if (n instanceof SwitchStat)
 					sw = (SwitchStat)n;
 			}
-			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
+			rnode.testGenerate(env, Env.getSpacePtr(sw, "stats"), frame);
 			//if (Kiev.debug && Kiev.debugRules) {
 			//	java.io.File f = new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt");
-			//	kiev.fmt.Draw_ATextSyntax stx = kiev.fmt.SyntaxManager.getLanguageSyntax("stx-fmt·syntax-for-java", false);
+			//	kiev.fmt.Draw_ATextSyntax stx = kiev.fmt.SyntaxManager.getLanguageSyntax("stx-fmt·syntax-for-java", null);
 			//	kiev.fmt.SyntaxManager.dumpTextFile(rn, f, stx);
 			//}
-			this.replaceWithNode(rn);
+			this.replaceWithNode(rn,rule_method,RuleMethod.nodeattr$body);
 		} catch (Throwable t) {
 			Kiev.reportError(this, t);
 		}
@@ -301,23 +289,24 @@ public final class RuleOrExpr extends ASTRuleNode {
 		this.rules.addAll(rules);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i].testGenerate(space, frame);
+    		rules[i].testGenerate(env, space, frame);
     	}
 	}
 
-    public void rnResolve() {
+    public void rnResolve(Env env, INode parent, AttrSlot pslot) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i].rnResolve();
+    		rules[i].rnResolve(env,this,nodeattr$rules);
     	}
     }
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		int depth = ((RuleMethod)ctx_method).state_depth;
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		int depth = rmeth.state_depth;
 		int max_depth = depth;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
@@ -329,11 +318,11 @@ public final class RuleOrExpr extends ASTRuleNode {
 				next_back = this.next_back;
 				jump_to_back = this.jump_to_back;
 			}
-			((RuleMethod)ctx_method).set_depth(depth);
-			rules[i].resolve1(next_check, next_back, jump_to_back);
-			max_depth = Math.max(max_depth,((RuleMethod)ctx_method).state_depth);
+			rmeth.set_depth(depth);
+			rules[i].resolve1(env, next_check, next_back, jump_to_back);
+			max_depth = Math.max(max_depth,rmeth.state_depth);
 		}
-		((RuleMethod)ctx_method).set_depth(max_depth);
+		rmeth.set_depth(max_depth);
 	}
 }
 
@@ -360,15 +349,15 @@ public final class RuleAndExpr extends ASTRuleNode {
 		this.rules.addAll(rules);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i].testGenerate(space, frame);
+    		rules[i].testGenerate(env, space, frame);
     	}
 	}
 
-    public void rnResolve() {
+    public void rnResolve(Env env, INode parent, AttrSlot pslot) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i].rnResolve();
+    		rules[i].rnResolve(env,this,nodeattr$rules);
     	}
     	// combine simple boolean expressions
     	for(int i=0; i < (rules.length-1); i++) {
@@ -378,8 +367,8 @@ public final class RuleAndExpr extends ASTRuleNode {
     		if (!(r2 instanceof RuleExpr)) continue;
     		RuleExpr e1 = (RuleExpr)r1;
     		RuleExpr e2 = (RuleExpr)r2;
-    		if (!e1.expr.getType().equals(Type.tpBoolean)) continue;
-    		if (!e2.expr.getType().equals(Type.tpBoolean)) continue;
+    		if (!e1.expr.getType(env).equals(env.tenv.tpBoolean)) continue;
+    		if (!e2.expr.getType(env).equals(env.tenv.tpBoolean)) continue;
     		if (e1.bt_expr != null) continue;
     		if (e2.bt_expr != null) continue;
     		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,~e1.expr,~e2.expr));
@@ -388,15 +377,15 @@ public final class RuleAndExpr extends ASTRuleNode {
     		i--;
     	}
     	if (rules.length == 1)
-    		replaceWithNode(~rules[0]);
+    		replaceWithNode(~rules[0],parent,pslot);
     }
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
 		for(int i=0; i < rules.length-1; i++ ) {
-			rules[i].resolve1(rules[i+1], next_back, jump_to_back);
+			rules[i].resolve1(env, rules[i+1], next_back, jump_to_back);
 			if (rules[i] instanceof RuleExpr) {
 				RuleExpr re = (RuleExpr)rules[i];
 				if (re.bt_expr != null) {
@@ -414,7 +403,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 			}
 		}
 		if (rules.length > 0)
-			rules[rules.length-1].resolve1(this.next_check, next_back, jump_to_back);
+			rules[rules.length-1].resolve1(env, this.next_check, next_back, jump_to_back);
 	}
 }
 
@@ -436,34 +425,31 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		this.expr = expr;
 	}
 	
-	public Operator getOper() { return Operator.RuleIsThe; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fRuleIsThe.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{var,expr}; }
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.RuleIsThe);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.var = (LVarExpr)args[0];
 		this.expr = args[1];
 	}
 	
-    public void rnResolve() {
-		//var.resolve(null);
-		//expr.resolve(((CTimeType)var.var.getType()).getUnboxedType());
-    }
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {}
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		idx = ++((RuleMethod)ctx_method).index;
-		base = ((RuleMethod)ctx_method).allocNewBase(1);
-		depth = ((RuleMethod)ctx_method).push();
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		idx = ++rmeth.index;
+		base = rmeth.allocNewBase(1);
+		depth = rmeth.push();
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleIstheExpr", this);
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
+		RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleIstheExpr", this);
 	}
 }
 
@@ -474,7 +460,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
 
-	public enum IsoneofMode { ARRAY, KENUM, JENUM, ELEMS };
+	public enum IsoneofMode { ARRAY, JENUM, JITERATOR, JITERABLE, ELEMS };
 
 	@nodeAttr public LVarExpr		var;		// variable of type PVar<...>
 	@nodeAttr public ENode			expr;		// expression to check/unify
@@ -490,67 +476,70 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		this.expr = expr;
 	}
 
-	public Operator getOper() { return Operator.RuleIsOneOf; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fRuleIsOneOf.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{var,expr}; }
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.RuleIsOneOf);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.var = (LVarExpr)args[0];
 		this.expr = args[1];
 	}
 	
-    public void rnResolve() {
-		//var.resolve(null);
-		//expr.resolve(null);
-    }
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {}
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		idx = ++((RuleMethod)ctx_method).index;
-		base = ((RuleMethod)ctx_method).allocNewBase(2);
-		depth = ((RuleMethod)ctx_method).push();
-		expr.resolve(null);
-		Type xtype = expr.getType();
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		idx = ++rmeth.index;
+		base = rmeth.allocNewBase(2);
+		depth = rmeth.push();
+		//expr.resolve(null);
+		Type xtype = expr.getType(env);
 		ResInfo<Method> elems;
-		if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
-			itype = new TypeRef(xtype);
-			mode = IsoneofMode.KENUM;
-		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
+		if( xtype.isInstanceOf( env.tenv.tpJavaEnumeration) ) {
 			itype = new TypeRef(xtype);
 			mode = IsoneofMode.JENUM;
+		} else if( xtype.isInstanceOf( env.tenv.tpJavaIterator) ) {
+			itype = new TypeRef(xtype);
+			mode = IsoneofMode.JITERATOR;
+		} else if( xtype.isInstanceOf( env.tenv.tpJavaIterable) ) {
+			PassInfo.resolveBestMethodR(xtype,
+				elems=new ResInfo<Method>(Env.getEnv(),this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext),
+				new CallType(xtype,null,null,env.tenv.tpAny,false));
+			itype = new TypeRef(Type.getRealType(xtype,elems.resolvedDNode().mtype.ret()));
+			mode = IsoneofMode.JITERABLE;
 		} else if( PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo<Method>(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
-				new CallType(xtype,null,null,Type.tpAny,false))
+				elems=new ResInfo<Method>(Env.getEnv(),this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+				new CallType(xtype,null,null,env.tenv.tpAny,false))
 		) {
 			itype = new TypeRef(Type.getRealType(xtype,elems.resolvedDNode().mtype.ret()));
 			mode = IsoneofMode.ELEMS;
-		} else if( xtype.isInstanceOf(Type.tpArray) ) {
+		} else if( xtype.isInstanceOf(env.tenv.tpArrayOfAny) ) {
 			TVarBld set = new TVarBld();
-			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(((ComplexTypeDecl)Type.tpArray.meta_type.tdecl).args[0].getAType()));
-			itype = new TypeRef(Type.tpArrayEnumerator.meta_type.make(set));
+			set.append(env.tenv.tpArrayEnumerator.tdecl.args[0].getAType(env), xtype.resolve(((ComplexTypeDecl)env.tenv.tpArrayOfAny.meta_type.tdecl).args[0].getAType(env)));
+			itype = new TypeRef(env.tenv.tpArrayEnumerator.meta_type.make(set));
 			mode = IsoneofMode.ARRAY;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
-		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
+		iter_var = rmeth.add_iterator_var();
 		ANode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
-			Debug.assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
+			assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
 			rb = rb.parent();
 		}
-		Debug.assert(rb != null);
-		Debug.assert(rb instanceof RuleBlock);
+		assert(rb != null);
+		assert(rb instanceof RuleBlock);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
-		frame.members += new Field("$iter$"+iter_var,itype.getType(),0);
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
+		RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
+		frame.members += new Field("$iter$"+iter_var,itype.getType(env),0);
 	}
 }
 
@@ -565,17 +554,18 @@ public final class RuleCutExpr extends ASTRuleNode {
 		this.pos = pos;
 	}
 
-	public void rnResolve() {}
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {}
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		idx = ++((RuleMethod)ctx_method).index;
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		idx = ++rmeth.index;
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleCutExpr", this);
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
+		RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleCutExpr", this);
 	}
 }
 
@@ -598,7 +588,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = ~expr.obj;
 		this.ident = expr.ident;
 		this.args.addAll(expr.args.delToArray());
-		this.setSuperExpr(expr.isSuperExpr());
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
@@ -616,28 +605,30 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.args.insert(0,new ConstNullExpr()/*expr.env_access*/);
 	}
 
-	public void rnResolve() {}
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {}
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		idx = ++((RuleMethod)ctx_method).index;
-		base = ((RuleMethod)ctx_method).allocNewBase(1);
-		depth = ((RuleMethod)ctx_method).push();
-		env_var = ((RuleMethod)ctx_method).add_iterator_var();
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		idx = ++rmeth.index;
+		base = rmeth.allocNewBase(1);
+		depth = rmeth.push();
+		env_var = rmeth.add_iterator_var();
 		ANode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
-			Debug.assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
+			assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
 			rb = rb.parent();
 		}
-		Debug.assert(rb != null);
-		Debug.assert(rb instanceof RuleBlock);
+		assert(rb != null);
+		assert(rb instanceof RuleBlock);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		Block rn = (Block)RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleCallExpr", this, this.isSuperExpr());
-		frame.members += new Field("$rc$frame$"+env_var,StdTypes.tpRule,0);
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
+		boolean is_super = (this.obj instanceof SuperExpr);
+		Block rn = (Block)RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleCallExpr", this, is_super);
+		frame.members += new Field("$rc$frame$"+env_var,env.tenv.tpRule,0);
 	}
 }
 
@@ -653,21 +644,19 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		this.bt_expr = bt_expr;
 	}
 
-	public void rnResolve() {
-		//expr.resolve(null);
-
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
-			if( e.func.mtype.ret() ≡ Type.tpRule ) {
-				replaceWithNode(new RuleCallExpr(~e));
+			if( e.func.mtype.ret() ≡ env.tenv.tpRule ) {
+				replaceWithNode(new RuleCallExpr(~e),parent,pslot);
 				return;
 			}
 		}
 		else if( expr instanceof ClosureCallExpr ) {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
-			Type tp = e.getType();
-			if( tp ≡ Type.tpRule || (tp instanceof CallType && ((CallType)tp).ret() ≡ Type.tpRule && tp.arity == 0) ) {
-				replaceWithNode(new RuleCallExpr(~e));
+			Type tp = e.getType(env);
+			if( tp ≡ env.tenv.tpRule || (tp instanceof CallType && ((CallType)tp).ret() ≡ env.tenv.tpRule && tp.arity == 0) ) {
+				replaceWithNode(new RuleCallExpr(~e),parent,pslot);
 				return;
 			}
 		}
@@ -692,26 +681,25 @@ public final class RuleWhileExpr extends RuleExprBase {
 		super(expr, bt_expr);
 	}
 
-	public void rnResolve() {
-		super.rnResolve();
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {
+		super.rnResolve(env,parent,pslot);
 		if (!isAttached()) return; // check we were replaced
-		if (!expr.getType().equals(Type.tpBoolean))
+		if (!expr.getType(env).equals(env.tenv.tpBoolean))
 			throw new CompilerException(expr,"Boolean expression is requared");
-		//if (bt_expr != null)
-		//	bt_expr.resolve(null);
 	}
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		idx = ++((RuleMethod)ctx_method).index;
-		base = ((RuleMethod)ctx_method).allocNewBase(1);
-		depth = ((RuleMethod)ctx_method).push();
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		idx = ++rmeth.index;
+		base = rmeth.allocNewBase(1);
+		depth = rmeth.push();
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleWhile", this, bt_expr != null);
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
+		RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleWhile", this, bt_expr != null);
 	}
 }
 
@@ -733,32 +721,31 @@ public final class RuleExpr extends RuleExprBase {
 		super(expr, bt_expr);
 	}
 
-	public void rnResolve() {
-		super.rnResolve();
+	public void rnResolve(Env env, INode parent, AttrSlot pslot) {
+		super.rnResolve(env,parent,pslot);
 		if (!isAttached()) {
 			if (bt_expr != null)
 				throw new CompilerException(bt_expr,"Backtrace expression ignored for rule-call");
 			return;
 		}
-		if (bt_expr != null && expr.getType().equals(Type.tpBoolean))
+		if (bt_expr != null && expr.getType(env).equals(env.tenv.tpBoolean))
 			throw new CompilerException(bt_expr,"Backtrace expression in boolean rule");
-		//if (bt_expr != null)
-		//	bt_expr.resolve(null);
 	}
 
-	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
+	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
-		idx = ++((RuleMethod)ctx_method).index;
+		RuleMethod rmeth = (RuleMethod)Env.ctxMethod(this);
+		idx = ++rmeth.index;
 		if (bt_expr != null) {
-			base = ((RuleMethod)ctx_method).allocNewBase(1);
-			depth = ((RuleMethod)ctx_method).push();
+			base = rmeth.allocNewBase(1);
+			depth = rmeth.push();
 		}
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(space, "kiev·ir·RuleTemplates", "mkRuleExpr", this, bt_expr != null, expr.getType() ≡ StdTypes.tpBoolean);
+	public void testGenerate(Env env, SpacePtr space, Struct frame) {
+		RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleExpr", this, bt_expr != null, expr.getType(env) ≡ env.tenv.tpBoolean);
 	}
 }
 

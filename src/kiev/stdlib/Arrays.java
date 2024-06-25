@@ -14,7 +14,7 @@ import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -85,6 +85,19 @@ public final class Arrays {
 		java.lang.reflect.Array.set(tmp,pos,val);
 		if( pos < len )
 			System.arraycopy(arr,pos,tmp,pos+1,len-pos);
+		return tmp;
+	}
+	
+	public static Object remove(Object arr, int pos) {
+		int len = java.lang.reflect.Array.getLength(arr);
+		if( pos >= len )
+			throw new ArrayIndexOutOfBoundsException(String.valueOf(pos));
+		Object tmp = java.lang.reflect.Array.newInstance(
+			arr.getClass().getComponentType(),len-1);
+		if( pos > 0 )
+			System.arraycopy(arr,0,tmp,0,pos);
+		if( pos < len-1 )
+			System.arraycopy(arr,pos+1,tmp,pos,len-pos-1);
 		return tmp;
 	}
 	

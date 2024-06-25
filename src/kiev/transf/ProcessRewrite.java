@@ -17,9 +17,19 @@ import syntax kiev.Syntax;
  *
  */
 
-@singleton
-public class RewriteME_PreGenerate extends BackendProcessor {
-	private RewriteME_PreGenerate() { super(KievBackend.Generic); }
+public final class MacroPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("macro")) {
+			pd = new PluginDescr("macro").depends("kiev");
+			pd.proc(new ProcessorDescr("rewrite", "be", 100, RewriteME_Rewrite.class).before("kiev:be:resolve"));
+		}
+		return pd;
+	}
+}
+
+public final class RewriteME_Rewrite extends BackendProcessor {
+	public RewriteME_Rewrite(Env env, int id) { super(env,id,KievBackend.Generic); }
 	public String getDescr() { "Rewrite rules" }
 
 	public boolean isEnabled() {
@@ -29,76 +39,100 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof FileUnit && node.scanned_for_interface_only)
 			return;
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { return rewrite(n); }
+		node.walkTree(node.parent(), node.pslot(), new ITreeWalker() {
+			public boolean pre_exec(INode n, INode parent, AttrSlot slot) { return rewrite(n,parent,slot); }
 		});
 	}
 
-	boolean rewrite(ANode:ANode node) {
+	boolean rewrite(INode:INode node, INode parent, AttrSlot slot) {
 		return true;
 	}
 	
-	boolean rewrite(DNode:ANode dn) {
+	boolean rewrite(DNode:INode dn, INode parent, AttrSlot slot) {
 		if (dn.isMacro())
 			return false;
 		return true;
 	}	
 
-	boolean rewrite(AssignExpr:ANode ae) {
-		Method m = (Method)ae.dnode;
-		if (m != null && m.isMacro() && !m.isNative()) {
+	boolean rewrite(AssignExpr:INode ae, INode parent, AttrSlot slot) {
+		DNode m = ae.dnode;
+		if (m instanceof Method && m.isMacro() && !m.isNative()) {
 			if (m.body != null)
-				doRewrite(m.body, ae, new Hashtable<String,Object>());
+				doRewrite(m.body, ae, new Hashtable<String,Object>(), parent, slot);
 		}
 		return true;
 	}
 
-	boolean rewrite(IFldExpr:ANode fa) {
+	boolean rewrite(ModifyExpr:INode ae, INode parent, AttrSlot slot) {
+		DNode m = ae.dnode;
+		if (m instanceof Method && m.isMacro() && !m.isNative()) {
+			if (m.body != null)
+				doRewrite(m.body, ae, new Hashtable<String,Object>(), parent, slot);
+		}
+		return true;
+	}
+
+	boolean rewrite(BinaryExpr:INode ae, INode parent, AttrSlot slot) {
+		DNode m = ae.dnode;
+		if (m instanceof Method && m.isMacro() && !m.isNative()) {
+			if (m.body != null)
+				doRewrite(m.body, ae, new Hashtable<String,Object>(), parent, slot);
+		}
+		return true;
+	}
+
+	boolean rewrite(UnaryExpr:INode ae, INode parent, AttrSlot slot) {
+		DNode m = ae.dnode;
+		if (m instanceof Method && m.isMacro() && !m.isNative()) {
+			if (m.body != null)
+				doRewrite(m.body, ae, new Hashtable<String,Object>(), parent, slot);
+		}
+		return true;
+	}
+
+	boolean rewrite(IFldExpr:INode fa, INode parent, AttrSlot slot) {
 		Field f = fa.var;
 		if (f != null && f.isMacro() && !f.isNative()) {
 			if (f.init != null)
-				doRewrite(f.init, fa, new Hashtable<String,Object>());
+				doRewrite(f.init, fa, new Hashtable<String,Object>(), parent, slot);
 		}
 		return true;
 	}
 
-	boolean rewrite(CastExpr:ANode ce) {
-		Method m = (Method)ce.dnode;
-		if (m != null && m.isMacro() && !m.isNative()) {
+	boolean rewrite(CastExpr:INode ce, INode parent, AttrSlot slot) {
+		DNode m = ce.dnode;
+		if (m instanceof Method && m.isMacro() && !m.isNative()) {
 			if (m.body != null) {
 				int idx = 0;
 				Hashtable<String,Object> args = new Hashtable<String,Object>();
-				//foreach (Var fp; m.params; fp.kind == Var.PARAM_NORMAL)
-				//	args.put(fp.sname, ce.args[idx++]);
-				doRewrite(m.body, ce, args);
+				doRewrite(m.body, ce, args, parent, slot);
 			}
 		}
 		return true;
 	}
 
-	boolean rewrite(CallExpr:ANode ce) {
+	boolean rewrite(CallExpr:INode ce, INode parent, AttrSlot slot) {
 		Method m = ce.func;
 		if (m != null && m.isMacro() && !m.isNative()) {
 			if (m.body != null) {
 				int idx = 0;
 				Hashtable<String,Object> args = new Hashtable<String,Object>();
-				foreach (Var fp; m.params; fp.kind == Var.PARAM_NORMAL)
+				foreach (Var fp; m.params; fp.kind == Var.VAR_LOCAL)
 					args.put(fp.sname, ce.args[idx++]);
-				doRewrite(ce, ce, args);
+				doRewrite(ce, ce, args, parent, slot);
 			}
 		}
 		return true;
 	}
 
-	private void doRewrite(ENode rewriter, ASTNode self, Hashtable<String,Object> args) {
-		Transaction tr = Transaction.enter(Transaction.get(),"RewriteME_PreGenerate");
+	private void doRewrite(ENode rewriter, ASTNode self, Hashtable<String,Object> args, INode parent, AttrSlot slot) {
+		Transaction tr = Transaction.enter(Transaction.get(),"RewriteME_Rewrite");
 		try {
 			if (rewriter instanceof RewriteMatch)
 				rewriter = rewriter.matchCase(self);
-			//rewriter = rewriter.ncopy();
-			RewriteContext rctx = new RewriteContext(self, args);
+			RewriteContext rctx = new RewriteContext(env, self, args);
 			ASTNode rn = (ASTNode)rewriter.doRewrite(rctx);
-			rn = self.replaceWithNode(~rn);
+			rn = self.replaceWithNode(~rn, parent, slot);
 			Kiev.runProcessorsOn(rn);
 			throw new ReWalkNodeException(rn);
 		} finally { tr.leave(); }

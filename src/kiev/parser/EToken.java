@@ -34,42 +34,54 @@ import java.util.regex.Pattern;
  *
  */
 
-public static enum ETokenKind { UNKNOWN, IDENTIFIER, TYPE_DECL, SCOPE_DECL, OPERATOR, EXPR_IDENT, EXPR_NUMBER, EXPR_STRING, EXPR_CHAR };
+public static enum ETokenKind {
+	UNKNOWN,
+	MAYBE_IDENTIFIER,
+	MAYBE_OPERATOR,
+	EXPL_IDENTIFIER,
+	EXPL_OPERATOR,
+	TYPE_DECL,
+	SCOPE_DECL,
+	EXPR_IDENT,
+	EXPR_NUMBER,
+	EXPR_STRING,
+	EXPR_CHAR;
+	
+	public boolean isExplicit() { return ordinal() >= 3; }
+};
 	
 @ThisIsANode(name="EToken", lang=CoreLang)
-public final class EToken extends ENode {
+public final class EToken extends ENode implements ASTToken {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final Pattern patternIdent = Pattern.compile("[\\p{Alpha}_$][\\p{Alnum}_$]*");
 	public static final Pattern patternOper = Pattern.compile("[\\!\\#\\%-\\/\\:\\;\\<\\=\\>\\?\\[\\\\\\]\\^\\{\\|\\}\\~\\u2190-\\u22F1]+");
-	public static final Pattern patternIntConst = Pattern.compile("\\p{Digit}+");
-	public static final Pattern patternFloatConst = Pattern.compile("\\p{Digit}+\\.\\p{Digit}*(?:[Ee][\\+\\-]?\\p{Digit}+)?");
-
-	@nodeAttr public ETokenKind base_kind;
-	@nodeData public ANode      value;
-	@abstract
-	@nodeAttr public boolean		explicit;		// if the base type if explicitly set
 	
-	@getter public final boolean get$explicit() { is_explicit }
-	@setter public final void set$explicit(boolean val) { is_explicit = val; }
+	@nodeAttr public ETokenKind base_kind;
+	@AttrBinDumpInfo(ignore=true)
+	@nodeData public ANode      value;
 
+	public String getTokenText() {
+		return this.ident;
+	}
 	// for GUI
 	public final ETokenKind getKind() { base_kind }
 	// for GUI
 	public final void setKind(ETokenKind val) { base_kind = val; }
 	
 	
-	public EToken() {}
-	public EToken(Token t, ETokenKind kind) {
-		set(t);
-		this.base_kind = kind;
+	public EToken() {
+		this.base_kind = ETokenKind.UNKNOWN;
 	}
-	public EToken(int pos, String ident, ETokenKind kind, boolean explicit) {
+	public EToken(Token t, ETokenKind kind) {
+		this.base_kind = kind;
+		set(t);
+	}
+	public EToken(int pos, String ident, ETokenKind kind) {
+		this.base_kind = kind;
 		this.pos = pos;
 		this.ident = ident;
-		this.base_kind = kind;
-		this.explicit = explicit;
 	}
 	public EToken(ConstExpr ce) {
 		this.pos = ce.pos;
@@ -93,20 +105,20 @@ public final class EToken extends ENode {
 			this.base_kind = ETokenKind.EXPR_IDENT;
 			this.ident = String.valueOf(ce);
 		}
-		this.explicit = true;
+		this.value = ce;
 	}
 	
 	public String toString() {
 		return this.ident;
 	}
 
-	public int getPriority() { return 256; }
+	public int getPriority(Env env) { return 256; }
 
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\"")) {
 			this.ident = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
-			this.explicit = true;
+			this.base_kind = ETokenKind.EXPL_IDENTIFIER;
 		} else {
 			this.ident = t.image;
 		}
@@ -121,113 +133,69 @@ public final class EToken extends ENode {
 	public boolean isIdentifier() {
 		if (base_kind == ETokenKind.UNKNOWN)
 			guessKind();
-		return base_kind == ETokenKind.IDENTIFIER || base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL;
+		return base_kind == ETokenKind.MAYBE_IDENTIFIER || base_kind == ETokenKind.EXPL_IDENTIFIER || base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL;
 	}
 
-	public boolean isOperator()   {
-		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
+	public boolean isOperator() {
+		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
-		return base_kind == ETokenKind.OPERATOR;
+		return base_kind == ETokenKind.MAYBE_OPERATOR || base_kind == ETokenKind.EXPL_OPERATOR;
 	}
 
-	public TypeRef asType() {
-		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
+	public boolean isMaybeOper() {
+		if (base_kind == ETokenKind.UNKNOWN)
+			guessKind();
+		return base_kind == ETokenKind.MAYBE_OPERATOR || base_kind == ETokenKind.EXPL_OPERATOR || base_kind == ETokenKind.MAYBE_IDENTIFIER;
+	}
+
+	public TypeRef asType(Env env) {
+		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
 		if (base_kind == ETokenKind.TYPE_DECL && value instanceof TypeDecl)
-			return new TypeNameRef(pos, ident, ((TypeDecl)value).xtype);
+			return new TypeNameRef(pos, ident, ((TypeDecl)value).getType(env));
 		return null;
 	}
 	
-	public DNode asScope() {
-		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
+	public DNode asScope(Env env) {
+		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
 		if ((base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL) && value instanceof DNode)
 			return (DNode)value;
 		return null;
 	}
 	
-	public EToken asOperator() {
-		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
-			guessKind();
-		if (base_kind == ETokenKind.OPERATOR && value instanceof Opdef)
-			return this;
-		return null;
+	public ENode asExpr(Env env) {
+		return this;
 	}
-	
+
 	public void guessKind() {
-		if (explicit)
-			return;
-		if (base_kind == ETokenKind.EXPR_STRING || base_kind == ETokenKind.EXPR_CHAR)
+		if (base_kind.isExplicit() || value != null)
 			return;
 		if (value == null)
 			value = NopExpr.dummyNode;
 		String ident = this.ident;
+
+		SyntaxScope ss = Env.ctxSyntaxScope(this);
+		if (ss != null && ss.isOperator(ident)) {
+			this.base_kind = ETokenKind.MAYBE_OPERATOR;
+			return;
+		}
+
 		if (ident == null || ident == "") {
 			if (base_kind != ETokenKind.UNKNOWN)
 				this.base_kind = ETokenKind.UNKNOWN;
 			return;
 		}
-		if (ident == "\"" || ident == "\"\"") {
-			if (base_kind != ETokenKind.EXPR_STRING)
-				this.base_kind = ETokenKind.EXPR_STRING;
-			this.ident = "";
-			return;
-		}
-		if (ident == "\'" || ident == "\'\'") {
-			if (base_kind != ETokenKind.EXPR_CHAR)
-				this.base_kind = ETokenKind.EXPR_CHAR;
-			this.ident = "";
-			return;
-		}
-		if (ident == Constants.nameThis) {
-			if (this.base_kind != ETokenKind.IDENTIFIER)
-				this.base_kind = ETokenKind.IDENTIFIER; // used for ThisExpr/SuperExpr and CtorCallExpr
-			if!(this.value instanceof ThisExpr)
-				this.value = new ThisExpr();
-			return;
-		}
-		if (ident == Constants.nameSuper) {
-			if (this.base_kind != ETokenKind.IDENTIFIER)
-				this.base_kind = ETokenKind.IDENTIFIER; // used for ThisExpr/SuperExpr and CtorCallExpr
-			if!(this.value instanceof SuperExpr)
-				this.value = new SuperExpr();
-			return;
-		}
-		if (ident == Constants.nameNull) {
-			if (this.base_kind != ETokenKind.EXPR_IDENT)
-				this.base_kind = ETokenKind.EXPR_IDENT;
-			return;
-		}
-		if (ident == "true") {
-			if (this.base_kind != ETokenKind.EXPR_IDENT)
-				this.base_kind = ETokenKind.EXPR_IDENT;
-			return;
-		}
-		if (ident == "false") {
-			if (this.base_kind != ETokenKind.EXPR_IDENT)
-				this.base_kind = ETokenKind.EXPR_IDENT;
-			return;
-		}
-		if (patternIntConst.matcher(ident).matches()) {
-			if (this.base_kind != ETokenKind.EXPR_NUMBER)
-				this.base_kind = ETokenKind.EXPR_NUMBER;
-			return;
-		}
-		if (patternFloatConst.matcher(ident).matches()) {
-			if (this.base_kind != ETokenKind.EXPR_NUMBER)
-				this.base_kind = ETokenKind.EXPR_NUMBER;
-			return;
-		}
 		if (patternIdent.matcher(ident).matches())
-			this.base_kind = ETokenKind.IDENTIFIER; // used for ThisExpr/SuperExpr and CtorCallExpr
+			this.base_kind = ETokenKind.MAYBE_IDENTIFIER;
 		else if (patternOper.matcher(ident).matches())
-			this.base_kind = ETokenKind.OPERATOR;
+			this.base_kind = ETokenKind.MAYBE_OPERATOR;
+		
 		// resolve in the path of scopes
-		ResInfo info = new ResInfo(this,ident);
+		ResInfo info = new ResInfo(Env.getEnv(),this,ident);
 		if (PassInfo.resolveNameR(this,info)) {
-			if (info.resolvedSymbol() instanceof OpdefSymbol) {
-				this.base_kind = ETokenKind.OPERATOR;
-				value = info.resolvedSymbol();
+			if (info.resolvedSymbol().parent() instanceof OpArgOPER) {
+				this.base_kind = ETokenKind.MAYBE_OPERATOR;
 			}
 			DNode dn = info.resolvedDNode();
 			if (dn instanceof KievPackage) {
@@ -241,103 +209,44 @@ public final class EToken extends ENode {
 		}
 	}
 	
-	public boolean preResolveIn() {
-		if (base_kind == ETokenKind.UNKNOWN)
-			guessKind();
-		if (base_kind == ETokenKind.EXPR_STRING)
-			replaceWithNodeReWalk(new ConstStringExpr(ConstExpr.source2ascii(ident)));
-		if (base_kind == ETokenKind.EXPR_CHAR) {
-			if (ident.length() == 1)
-				replaceWithNodeReWalk(new ConstCharExpr(ident.charAt(0)));
-			replaceWithNodeReWalk(new ConstCharExpr(ConstExpr.source2ascii(ident).charAt(0)));
-		}
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		String ident = this.ident;
 		if (ident == null || ident == "")
 			throw new CompilerException(this,"Empty token");
-//		if (ident == Constants.nameThis)
-//			replaceWithNodeReWalk(new ThisExpr(pos));
-//		if (ident == Constants.nameSuper)
-//			replaceWithNodeReWalk(new SuperExpr(pos));
-		if (ident == Constants.nameNull)
-			replaceWithNodeReWalk(new ConstNullExpr());
-		if (ident == "true")
-			replaceWithNodeReWalk(new ConstBoolExpr(true));
-		if (ident == "false")
-			replaceWithNodeReWalk(new ConstBoolExpr(false));
-		char first_ch = ident.charAt(0);
-		int last_ch = ident.charAt(ident.length()-1);
-		if (Character.isDigit(first_ch)) {
-			int tokenKind = ParserConstants.INTEGER_LITERAL;
-			if (last_ch == 'D' || last_ch == 'd')
-				tokenKind = ParserConstants.DOUBLE_POINT_LITERAL;
-			else if (last_ch == 'F' || last_ch == 'f')
-				tokenKind = ParserConstants.FLOATING_POINT_LITERAL;
-			else if (last_ch == 'L' || last_ch == 'l')
-				tokenKind = ParserConstants.LONG_INTEGER_LITERAL;
-			else if (patternFloatConst.matcher(ident).matches())
-				tokenKind = ParserConstants.DOUBLE_POINT_LITERAL;
-			Token t = Token.newToken(tokenKind);
-			t.kind = tokenKind;
-			t.image = ident;
-			replaceWithNodeReWalk(ConstExpr.fromSource(t));
-		}
+		guessKind();
 		return true;
 	}
-	public boolean mainResolveIn() {
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		String ident = this.ident;
 		if (ident == null || ident == "")
 			throw new CompilerException(this,"Empty token");
-		if (ident == Constants.nameThis)
-			replaceWithNodeReWalk(new ThisExpr(pos));
-		if (ident == Constants.nameSuper)
-			replaceWithNodeReWalk(new SuperExpr(pos));
-//		else if( name == Constants.nameFILE ) {
-//			FileUnit fu = ctx_file_unit;
-//			if (fu != null && fu.fname != null)
-//				replaceWithNode(new ConstStringExpr(fu.fname));
-//			else
-//				replaceWithNode(new ConstStringExpr("<no-file>"));
-//			return false;
-//		}
-//		else if( name == Constants.nameLINENO ) {
-//			replaceWithNode(new ConstIntExpr(pos>>>11));
-//			return false;
-//		}
-//		else if( name == Constants.nameMETHOD ) {
-//			Method m = ctx_method;
-//			if( m instanceof Constructor )
-//				replaceWithNode(new ConstStringExpr("<constructor>"));
-//			else if (m != null && m.sname != null)
-//				replaceWithNode(new ConstStringExpr(m.sname));
-//			else
-//				replaceWithNode(new ConstStringExpr("<no-method>"));
-//			return false;
-//		}
-//		else if( name == Constants.nameDEBUG ) {
-//			replaceWithNode(new ConstBoolExpr(Kiev.debugOutputA));
-//			return false;
-//		}
+
+		if (!base_kind.isExplicit()) {
+			SyntaxScope ss = Env.ctxSyntaxScope(this);
+			if (ss != null && ss.isOperator(ident)) {
+				this.base_kind = ETokenKind.MAYBE_OPERATOR;
+				throw new CompilerException(this,"Operator as expression");
+				//return false;
+			}
+		}
 
 		// resolve in the path of scopes
-		ResInfo info = new ResInfo(this,ident);
+		ResInfo info = new ResInfo(env,this,ident);
 		if (!PassInfo.resolveNameR((ASTNode)this,info))
 			throw new CompilerException(this,"Unresolved token "+ident);
-		if (info.resolvedSymbol() instanceof OpdefSymbol) {
-			this.is_token_operator = true;
-			value = info.resolvedSymbol();
-			//replaceWithNodeReWalk(op);
-			return false;
+		if (info.resolvedSymbol().parent() instanceof OpArgOPER) {
+			this.base_kind = ETokenKind.MAYBE_OPERATOR;
+			throw new CompilerException(this,"Operator as expression");
+			//return false;
 		}
 		DNode dn = info.resolvedDNode();
 		if (dn instanceof TypeDecl) {
-			this.is_token_type_decl = true;
 			value = dn;
 			TypeDecl td = (TypeDecl)dn;
-			//td.checkResolved();
-			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.xtype));
+			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.getType(env)),parent,slot);
 		}
 		else {
-			replaceWithNodeReWalk(info.buildAccess((ASTNode)this, null, info.resolvedSymbol()).closeBuild());
+			replaceWithNodeReWalk(info.buildAccess(this, null, info.resolvedSymbol()).closeBuild(),parent,slot);
 		}
 		return false;
 	}

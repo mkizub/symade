@@ -16,14 +16,27 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@singleton
+
+public final class VirtFldPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("virt-fld")) {
+			pd = new PluginDescr("virt-fld").depends("kiev");
+			pd.proc(new ProcessorDescr("gen-members", "fe", 0, VirtFldFE_GenMembers.class).after("kiev:fe:pass3").before("kiev:fe:pre-resolve"));
+			pd.proc(new ProcessorDescr("pre-generate", "me", 0, VirtFldME_PreGenerate.class));
+			pd.proc(new ProcessorDescr("rewrite", "be", 0, VirtFldBE_Rewrite.class).before("kiev:be:generate"));
+		}
+		return pd;
+	}
+}
+
 public final class VirtFldFE_GenMembers extends TransfProcessor {
 
-	private static final String PROP_BASE		= "symade.transf.virtfld";
-	public static final String nameMetaGetter	= getPropS(PROP_BASE,"nameMetaGetter","kiev·stdlib·meta·getter"); 
-	public static final String nameMetaSetter	= getPropS(PROP_BASE,"nameMetaSetter","kiev·stdlib·meta·setter"); 
+	private static final String PROP_BASE	= "symade.transf.virtfld";
+	public final String nameMetaGetter		= getPropS(PROP_BASE,"nameMetaGetter","kiev·stdlib·meta·getter"); 
+	public final String nameMetaSetter		= getPropS(PROP_BASE,"nameMetaSetter","kiev·stdlib·meta·setter"); 
 	
-	private VirtFldFE_GenMembers() { super(KievExt.VirtualFields); }
+	public VirtFldFE_GenMembers(Env env, int id) { super(env,id,KievExt.VirtualFields); }
 	public String getDescr() { "Virtual fields members generation" }
 
 	////////////////////////////////////////////////////
@@ -31,36 +44,42 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	////////////////////////////////////////////////////
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr,"VirtFldFE_GenMembers");
-		try {
-			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) {
-					if !(n instanceof ASTNode)
-						return false;
-					if (n instanceof ComplexTypeDecl)
-						addAbstractFields((ComplexTypeDecl)n);
-					return true;
-				}
-			});
-		} finally { tr.leave(); }
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"VirtFldFE_GenMembers");
+			try {
+				node.walkTree(new TreeWalker() {
+					public boolean pre_exec(ANode n) {
+						if !(n instanceof ASTNode)
+							return false;
+						if (n instanceof ComplexTypeDecl)
+							addAbstractFields((ComplexTypeDecl)n);
+						return true;
+					}
+				});
+			} finally { tr.leave(); }
+		}
 	}
 	
 	public void addAbstractFields(ComplexTypeDecl s) {
 		foreach(Method m; s.members; m.sname != null) {
 			if (m.sname.startsWith(nameSet))
 				addSetterForAbstractField(s, m.sname.substring(nameSet.length()), m);
-			foreach (Symbol a; m.aliases; a.sname.startsWith(nameSet))
-				addSetterForAbstractField(s, a.sname.substring(nameSet.length()), m);
+			foreach (Alias a; m.aliases; a.symbol.sname.startsWith(nameSet))
+				addSetterForAbstractField(s, a.symbol.sname.substring(nameSet.length()), m);
 			if (m.sname.startsWith(nameGet))
 				addGetterForAbstractField(s, m.sname.substring(nameGet.length()), m);
-			foreach (Symbol a; m.aliases; a.sname.startsWith(nameGet))
-				addGetterForAbstractField(s, a.sname.substring(nameGet.length()), m);
+			foreach (Alias a; m.aliases; a.symbol.sname.startsWith(nameGet))
+				addGetterForAbstractField(s, a.symbol.sname.substring(nameGet.length()), m);
 		}
 	}
 	
 	private void addSetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
-		Field f = s.resolveField( name, false );
+		Field f = s.resolveField(env, name, false );
 		MetaAccess acc;
 		if( f != null ) {
 			if (f.parent() != m.parent())
@@ -69,7 +88,13 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (setter != null && setter != m)
 				return;
 			acc = f.getMetaAccess();
-			if (acc == null) f.setMeta(acc = new MetaAccess());
+			if (acc == null) {
+				acc = new MetaAccess();
+				if      (f.isPublic())		acc.simple = "public";
+				else if (f.isProtected())	acc.simple = "protected";
+				else if (f.isPrivate())		acc.simple = "private";
+				f.setMeta(acc);
+			}
 			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
 			Kiev.reportWarning(m, "Creating @virtuial @abstract field "+name);
@@ -77,7 +102,13 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
-			if (acc == null) f.setMeta(acc = new MetaAccess());
+			if (acc == null) {
+				acc = new MetaAccess();
+				if      (f.isPublic())		acc.simple = "public";
+				else if (f.isProtected())	acc.simple = "protected";
+				else if (f.isPrivate())		acc.simple = "private";
+				f.setMeta(acc);
+			}
 			acc.flags = 0;
 		}
 		f.setVirtual(true);
@@ -122,7 +153,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	
 	private void addGetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
-		Field f = s.resolveField( name, false );
+		Field f = s.resolveField(env, name, false );
 		MetaAccess acc;
 		if( f != null ) {
 			if (f.parent() != m.parent())
@@ -131,7 +162,13 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (getter != null && getter != m)
 				return;
 			acc = f.getMetaAccess();
-			if (acc == null) f.setMeta(acc = new MetaAccess());
+			if (acc == null) {
+				acc = new MetaAccess();
+				if      (f.isPublic())		acc.simple = "public";
+				else if (f.isProtected())	acc.simple = "protected";
+				else if (f.isPrivate())		acc.simple = "private";
+				f.setMeta(acc);
+			}
 			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
 			Kiev.reportWarning(m, "Creating @virtuial @abstract field "+name);
@@ -139,7 +176,13 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
-			if (acc == null) f.setMeta(acc = new MetaAccess());
+			if (acc == null) {
+				acc = new MetaAccess();
+				if      (f.isPublic())		acc.simple = "public";
+				else if (f.isProtected())	acc.simple = "protected";
+				else if (f.isPrivate())		acc.simple = "private";
+				f.setMeta(acc);
+			}
 			acc.flags = 0;
 		}
 		f.setVirtual(true);
@@ -187,25 +230,30 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 //	   PASS - preGenerate                         //
 ////////////////////////////////////////////////////
 
-@singleton
-public class VirtFldME_PreGenerate extends BackendProcessor implements Constants {
+public final class VirtFldME_PreGenerate extends BackendProcessor implements Constants {
 
-	private VirtFldME_PreGenerate() { super(KievBackend.Java15); }
+	public VirtFldME_PreGenerate(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Virtual fields pre-generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr,"VirtFldME_PreGenerate");
-		try {
-			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) {
-					if !(n instanceof ASTNode)
-						return false;
-					if (n instanceof ComplexTypeDecl)
-						doProcess((ComplexTypeDecl)n);
-					return true;
-				}
-			});
-		} finally { tr.leave(); }
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"VirtFldME_PreGenerate");
+			try {
+				node.walkTree(new TreeWalker() {
+					public boolean pre_exec(ANode n) {
+						if !(n instanceof ASTNode)
+							return false;
+						if (n instanceof ComplexTypeDecl)
+							doProcess((ComplexTypeDecl)n);
+						return true;
+					}
+				});
+			} finally { tr.leave(); }
+		}
 	}
 	
 	private void doProcess(ComplexTypeDecl s) {
@@ -220,7 +268,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			if (getter.sname.startsWith(nameGet)) {
 				String name = getter.sname.substring(4);
 				name = Character.toUpperCase(name.charAt(0))+name.substring(1);
-				if (getter.mtype.ret() ≡ StdTypes.tpBoolean)
+				if (getter.mtype.ret() ≡ this.env.getTypeEnv().tpBoolean)
 					name = ("is"+name).intern();
 				else
 					name = ("get"+name).intern();
@@ -245,7 +293,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		}
 	}
 	
-	private static void addMethodsForVirtualField(ComplexTypeDecl s, Field f) {
+	private void addMethodsForVirtualField(ComplexTypeDecl s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
 			Kiev.reportError(f,"Static fields can't be virtual");
 			f.setVirtual(false);
@@ -278,7 +326,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			Method set_var = new MethodSetter(f);
 			if (s.isInterface())
 				set_var.setFinal(false);
-			else if (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)
+			else if (f.getMeta(VNodeUtils.mnAtt) != null || f.getMeta(VNodeUtils.mnRef) != null)
 				set_var.setFinal(true);
 			s.members += set_var;
 			Var value = set_var.params[0];
@@ -293,7 +341,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 					fa = new IFldExpr(f.pos,new ThisExpr(0),f);
 				fa.setAsField(true);
 				ENode ass_st = new ExprStat(f.pos,
-					new AssignExpr(f.pos,Operator.Assign,fa,new LVarExpr(f.pos,value))
+					new AssignExpr(f.pos,fa,new LVarExpr(f.pos,value))
 				);
 
 				body.stats.append(ass_st);
@@ -308,7 +356,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			Method get_var = new MethodGetter(f);
 			if (s.isInterface())
 				get_var.setFinal(false);
-			if (f.getMeta(VNode_Base.mnAtt) != null || f.getMeta(VNode_Base.mnRef) != null)
+			if (f.getMeta(VNodeUtils.mnAtt) != null || f.getMeta(VNodeUtils.mnRef) != null)
 				get_var.setFinal(true);
 			s.members += get_var;
 			if( !f.isAbstract() ) {
@@ -332,41 +380,51 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 //	   PASS - rewrite code                        //
 ////////////////////////////////////////////////////
 
-@singleton
-public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
+public final class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 
-	private VirtFldBE_Rewrite() { super(KievBackend.Java15); }
+	public VirtFldBE_Rewrite(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Virtual fields rewrite" }
 
 	public void process(ASTNode node, Transaction tr) {
+		boolean need_run = false;
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			need_run = !wthg.setProcessorRun(cu,this);
+		}
+		if (!need_run)
+			return;
+		String debug_msg = need_run ? "" : "Unexpected virtual field rewrite";
 		tr = Transaction.enter(tr,"VirtFldBE_Rewrite");
 		try {
-			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) {
+			node.walkTree(node.parent(), node.pslot(), new ITreeWalker() {
+				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 					if (n instanceof ASTNode)
-						return VirtFldBE_Rewrite.this.rewrite((ASTNode)n);
+						return VirtFldBE_Rewrite.this.rewrite((ASTNode)n, debug_msg, parent, slot);
 					return false;
 				}
 			});
 		} finally { tr.leave(); }
 	}
 	
-	boolean rewrite(ASTNode:ASTNode o) {
+	boolean rewrite(ASTNode:ASTNode o, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
 		return true;
 	}
 
-	boolean rewrite(DNode:ASTNode dn) {
+	boolean rewrite(DNode:ASTNode dn, String debug_msg, INode parent, AttrSlot slot) {
 		if (dn.isMacro())
 			return false;
 		return true;
 	}
 
-	boolean rewrite(IFldExpr:ASTNode fa) {
+	boolean rewrite(IFldExpr:ASTNode fa, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		Field f = fa.var;
 		if( !f.isVirtual() || fa.isAsField() )
 			return true;
+		if (debug_msg != "")
+			System.out.println("Unexpected virtual field rewrite");
 
 		Method getter = f.getGetterMethod();
 		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
@@ -375,28 +433,30 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			fa.setAsField(true);
 			return true;
 		}
-		Method ctx_method = fa.ctx_method;
-		if (getter == fa.ctx_method) {
+		Method ctx_method = Env.ctxMethod(fa);
+		if (getter == ctx_method) {
 			fa.setAsField(true);
 			return true;
 		}
 		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
-		fa.replaceWithNodeReWalk(ce);
+		fa.replaceWithNodeReWalk(ce,parent,slot);
 		throw new Error();
 	}
 	
-	boolean rewrite(AssignExpr:ASTNode ae) {
+	boolean rewrite(AssignExpr:ASTNode ae, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
 		if (ae.lval instanceof IFldExpr) {
 			IFldExpr fa = (IFldExpr)ae.lval;
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-	
+			if (debug_msg != "")
+				System.out.println("Unexpected virtual field rewrite");
+
 			// Rewrite by set$ method
 			Method getter = f.getGetterMethod();
 			Method setter = f.getSetterMethod();
-			Method ctx_method = fa.ctx_method;
+			Method ctx_method = Env.ctxMethod(fa);
 			if (ctx_method != null && ctx_method == setter) {
 				fa.setAsField(true);
 				return true;
@@ -407,26 +467,15 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				fa.setAsField(true);
 				return true;
 			}
-			if (getter == null && (!ae.isGenVoidExpr() || !(ae.op == Operator.Assign || ae.op == Operator.Assign2))) {
+			if (getter == null && !ae.isGenVoidExpr()) {
 				Kiev.reportWarning(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
-			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
-			Operator op = null;
-			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
-			else if (ae.op == Operator.AssignSub)                  op = Operator.Sub;
-			else if (ae.op == Operator.AssignMul)                  op = Operator.Mul;
-			else if (ae.op == Operator.AssignDiv)                  op = Operator.Div;
-			else if (ae.op == Operator.AssignMod)                  op = Operator.Mod;
-			else if (ae.op == Operator.AssignLeftShift)            op = Operator.LeftShift;
-			else if (ae.op == Operator.AssignRightShift)           op = Operator.RightShift;
-			else if (ae.op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
-			else if (ae.op == Operator.AssignBitOr)                op = Operator.BitOr;
-			else if (ae.op == Operator.AssignBitXor)               op = Operator.BitXor;
-			else if (ae.op == Operator.AssignBitAnd)               op = Operator.BitAnd;
+			Type ae_tp = ae.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ae.getType(env);
+			Operator op = ae.getOper();
 			ENode expr;
-			if (ae.isGenVoidExpr() && (ae.op == Operator.Assign || ae.op == Operator.Assign2)) {
+			if (ae.isGenVoidExpr()) {
 				expr = new CallExpr(ae.pos, ~fa.obj, setter, new ENode[]{~ae.value});
 			}
 			else {
@@ -439,18 +488,12 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
+					Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}
-				ENode g;
-				if !(ae.op == Operator.Assign || ae.op == Operator.Assign2) {
-					g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
-					g = new BinaryExpr(ae.pos, op, g, ~ae.value);
-				} else {
-					g = ~ae.value;
-				}
+				ENode g = ~ae.value;
 				g = new CallExpr(ae.pos, mkAccess(acc), setter, new ENode[]{g});
 				be.stats.add(new ExprStat(0, g));
 				if (!ae.isGenVoidExpr()) {
@@ -460,23 +503,98 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				expr = be;
 			}
 			expr.setGenVoidExpr(ae.isGenVoidExpr());
-			ae.replaceWithNodeReWalk(expr);
+			ae.replaceWithNodeReWalk(expr,parent,slot);
 		}
 		return true;
 	}
 	
-	boolean rewrite(IncrementExpr:ASTNode ie) {
+	boolean rewrite(ModifyExpr:ASTNode ae, String debug_msg, INode parent, AttrSlot slot) {
+		//System.out.println("ProcessVirtFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
+		if (ae.lval instanceof IFldExpr) {
+			IFldExpr fa = (IFldExpr)ae.lval;
+			Field f = fa.var;
+			if( !f.isVirtual() || fa.isAsField() )
+				return true;
+			if (debug_msg != "")
+				System.out.println("Unexpected virtual field rewrite");
+	
+			// Rewrite by set$ method
+			Method getter = f.getGetterMethod();
+			Method setter = f.getSetterMethod();
+			Method ctx_method = Env.ctxMethod(fa);
+			if (ctx_method != null && ctx_method == setter) {
+				fa.setAsField(true);
+				return true;
+			}
+			if (setter == null) {
+				if (!f.isFinal() && MetaAccess.writeable(f))
+					Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
+				fa.setAsField(true);
+				return true;
+			}
+			if (getter == null && !ae.isGenVoidExpr()) {
+				Kiev.reportWarning(fa, "Getter method for virtual field "+f+" not found");
+				fa.setAsField(true);
+				return true;
+			}
+			Type ae_tp = ae.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ae.getType(env);
+			Operator op = ae.getOper();
+			if      (op == Operator.AssignAdd)                  op = Operator.Add;
+			else if (op == Operator.AssignSub)                  op = Operator.Sub;
+			else if (op == Operator.AssignMul)                  op = Operator.Mul;
+			else if (op == Operator.AssignDiv)                  op = Operator.Div;
+			else if (op == Operator.AssignMod)                  op = Operator.Mod;
+			else if (op == Operator.AssignLeftShift)            op = Operator.LeftShift;
+			else if (op == Operator.AssignRightShift)           op = Operator.RightShift;
+			else if (op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
+			else if (op == Operator.AssignBitOr)                op = Operator.BitOr;
+			else if (op == Operator.AssignBitXor)               op = Operator.BitXor;
+			else if (op == Operator.AssignBitAnd)               op = Operator.BitAnd;
+			ENode expr;
+			Block be = new Block(ae.pos);
+			Object acc;
+			if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
+				acc = ~fa.obj;
+			}
+			else if (fa.obj instanceof LVarExpr) {
+				acc = ((LVarExpr)fa.obj).getVarSafe();
+			}
+			else {
+				Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+				var.init = ~fa.obj;
+				be.addSymbol(var);
+				acc = var;
+			}
+			ENode g;
+			g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
+			g = new BinaryExpr(ae.pos, op, g, ~ae.value);
+			g = new CallExpr(ae.pos, mkAccess(acc), setter, new ENode[]{g});
+			be.stats.add(new ExprStat(0, g));
+			if (!ae.isGenVoidExpr()) {
+				g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
+				be.stats.add(g);
+			}
+			expr = be;
+			expr.setGenVoidExpr(ae.isGenVoidExpr());
+			ae.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		return true;
+	}
+	
+	boolean rewrite(IncrementExpr:ASTNode ie, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
 		if (ie.lval instanceof IFldExpr) {
 			IFldExpr fa = (IFldExpr)ie.lval;
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-	
+			if (debug_msg != "")
+				System.out.println("Unexpected virtual field rewrite");
+
 			// Rewrite by set$ method
 			Method getter = f.getGetterMethod();
 			Method setter = f.getSetterMethod();
-			Method ctx_method = ie.ctx_method;
+			Method ctx_method = Env.ctxMethod(ie);
 			if (ctx_method != null && ctx_method == getter)
 			{
 				fa.setAsField(true);
@@ -493,12 +611,13 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			}
 			ENode expr;
-			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
+			Type ie_tp = ie.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ie.getType(env);
+			Operator ieop = ie.getOper();
 			if (ie.isGenVoidExpr()) {
-				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
-					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
+				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr) {
+					expr = new ModifyExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
 				} else {
-					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
+					expr = new ModifyExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
 				}
 			}
 			else {
@@ -511,36 +630,36 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
+					Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}
 				Var res = null;
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(),Var.VAR_LOCAL,0);
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
+					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
 					be.addSymbol(res);
 				}
 				ConstExpr ce;
-				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr)
+				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr)
 					ce = new ConstIntExpr(1);
 				else
 					ce = new ConstIntExpr(-1);
 				ENode g;
 				g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
-					g = new AssignExpr(ie.pos, Operator.Assign, mkAccess(res), g);
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr)
+					g = new AssignExpr(ie.pos, mkAccess(res), g);
 				g = new BinaryExpr(ie.pos, Operator.Add, ce, g);
 				g = new CallExpr(ie.pos, mkAccess(acc), setter, new ENode[]{g});
 				be.stats.add(new ExprStat(0, g));
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr)
 					be.stats.add(mkAccess(res));
 				else
 					be.stats.add(new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray));
 				expr = be;
 			}
 			expr.setGenVoidExpr(ie.isGenVoidExpr());
-			ie.replaceWithNodeReWalk(expr);
+			ie.replaceWithNodeReWalk(expr,parent,slot);
 		}
 		return true;
 	}

@@ -19,9 +19,66 @@ import syntax kiev.Syntax;
 
 
 @ThisIsANode(lang=CoreLang)
+public final class SymadeNode extends Struct {
+	@DataFlowDefinition(in="root()") private static class DFI {
+	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
+	}
+
+	@nodeAttr public NodeDecl		node_decl;
+	
+	public SymadeNode() {}
+	
+	@getter public JavaClassMode get$class_mode() {
+		if (this.mflags_is_struct_interface)
+			return JavaClassMode.INTERFACE;
+		return JavaClassMode.CLASS;
+	}
+	@setter public void set$class_mode(JavaClassMode mode) {
+		if (mode == JavaClassMode.INTERFACE) {
+			this.mflags_is_struct_interface = true;
+			return;
+		}
+		else if (mode == JavaClassMode.CLASS) {
+			this.mflags_is_struct_interface = false;
+			return;
+		}
+		throw new RuntimeException("Cannot set mode "+mode);
+	}
+
+	protected rule resolveNameR_1(ResInfo info)
+	{
+			info ?= this
+		;	info ?= node_decl
+		;	super.resolveNameR_1(info)
+	}
+	
+	public NodeTypeInfo makeNodeTypeInfo() {
+		return node_decl.makeNodeTypeInfo();
+	}
+
+}
+
+@ThisIsANode(lang=CoreLang)
 public class JavaClass extends Struct {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
+	}
+	
+	@getter public JavaClassMode get$class_mode() {
+		if (this.mflags_is_struct_interface)
+			return JavaClassMode.INTERFACE;
+		return JavaClassMode.CLASS;
+	}
+	@setter public void set$class_mode(JavaClassMode mode) {
+		if (mode == JavaClassMode.INTERFACE) {
+			this.mflags_is_struct_interface = true;
+			return;
+		}
+		else if (mode == JavaClassMode.CLASS) {
+			this.mflags_is_struct_interface = false;
+			return;
+		}
+		throw new RuntimeException("Cannot set mode "+mode);
 	}
 }
 
@@ -30,19 +87,13 @@ public final class JavaAnonymouseClass extends JavaClass {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
-}
-
-@ThisIsANode(lang=CoreLang)
-public class JavaInterface extends Struct {
-	@DataFlowDefinition(in="root()") private static class DFI {
-	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
+	@getter public JavaClassMode get$class_mode() {
+		return JavaClassMode.ANONYMOUSE;
 	}
-	public JavaInterface() {
-		this.mflags_is_struct_interface = true;
-	}
-	public void cleanupOnReload() {
-		super.cleanupOnReload();
-		this.mflags_is_struct_interface = true;
+	@setter public void set$class_mode(JavaClassMode mode) {
+		if (mode == JavaClassMode.ANONYMOUSE)
+			return;
+		throw new RuntimeException("Cannot set mode "+mode);
 	}
 }
 
@@ -71,19 +122,29 @@ public final class KievView extends Struct {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class JavaAnnotation extends JavaInterface {
+public final class JavaAnnotation extends JavaClass {
 	public JavaAnnotation() {
+		this.mflags_is_struct_interface = true;
 		this.mflags_is_struct_annotation = true;
+	}
+	@getter public JavaClassMode get$class_mode() {
+		return JavaClassMode.ANNOTATION;
+	}
+	@setter public void set$class_mode(JavaClassMode mode) {
+		if (mode == JavaClassMode.ANNOTATION)
+			return;
+		throw new RuntimeException("Cannot set mode "+mode);
 	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
+		this.mflags_is_struct_interface = true;
 		this.mflags_is_struct_annotation = true;
 	}
 
-	public void resolveMetaDefaults() {
+	public void resolveMetaDefaults(Env env) {
 		foreach(Method m; members) {
 			try {
-				m.resolveMetaDefaults();
+				m.resolveMetaDefaults(env);
 			} catch(Exception e) {
 				Kiev.reportError(m,e);
 			}
@@ -98,15 +159,6 @@ public final class PizzaCase extends Struct {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	// declare NodeAttr_case_fields to be an attribute for ANode.nodeattr$syntax_parent
-	static final class NodeAttr_case_fields extends SpaceAttAttrSlot<Field> {
-		public final ANode[] get(ANode parent) { return ((PizzaCase)parent).case_fields; }
-		public final void set(ANode parent, Object narr) { ((PizzaCase)parent).case_fields = (Field∅)narr; }
-		NodeAttr_case_fields(String name, TypeInfo typeinfo) {
-			super(name, ANode.nodeattr$syntax_parent, typeinfo);
-		}
-	}
-
 	@nodeAttr public Field∅	case_fields;
 
 	public int tag;
@@ -117,30 +169,30 @@ public final class PizzaCase extends Struct {
 		return this.case_fields;
 	}
 
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "members" && val instanceof Field && case_fields.indexOf((Field)val) >= 0)
-			return false;
-		return super.includeInDump(dump,attr,val);
+	public ASTNode[] getContainerMembers() {
+		ASTNode[] members = this.members;
+		ASTNode[] case_fields = this.case_fields;
+		ASTNode[] arr = new ASTNode[members.length + case_fields.length];
+		int i = 0;
+		for (; i < case_fields.length; i++)
+			arr[i] = case_fields[i];
+		for (int j=0; j < members.length; j++)
+			arr[i+j] = members[j];
+		return arr;
 	}
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (ct == ChildChangeType.ATTACHED) {
-			if (attr.name == "case_fields") {
-				Field f = (Field)data;
-				if (f.parent() == null)
-					this.members += f;
-				assert (f.parent() == this);
-			}
-		}
-		else if (ct == ChildChangeType.DETACHED) {
-			if (attr.name == "case_fields") {
-				Field f = (Field)data;
-				if (f.parent() == this)
-					~f;
-				assert (f.parent() == null);
-			}
-		}
-		super.callbackChildChanged(ct, attr, data);
+	protected rule resolveNameR_1(ResInfo info)
+	{
+			info ?= this
+		;	info @= case_fields
+		;	super.resolveNameR_1(info)
+	}
+
+	public Field resolveField(Env env, String name, boolean fatal) {
+		this = checkResolved(env);
+		foreach (Field f; this.case_fields; f.sname == name)
+			return f;
+		return super.resolveField(env, name, fatal);
 	}
 
 }
@@ -151,27 +203,53 @@ public final class JavaEnum extends JavaClass {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	// declare NodeAttr_enum_fields to be an attribute for ANode.nodeattr$syntax_parent
-	static final class NodeAttr_enum_fields extends SpaceAttAttrSlot<Field> {
-		public final ANode[] get(ANode parent) { return ((JavaEnum)parent).enum_fields; }
-		public final void set(ANode parent, Object narr) { ((JavaEnum)parent).enum_fields = (Field∅)narr; }
-		NodeAttr_enum_fields(String name, TypeInfo typeinfo) {
-			super(name, ANode.nodeattr$syntax_parent, typeinfo);
-		}
-	}
-
-	// is a syntax_parent
 	@nodeAttr public		Field∅			enum_fields;
 
 	public JavaEnum() {
 		this.mflags_is_enum = true;
 	}
+
+	@getter public JavaClassMode get$class_mode() {
+		return JavaClassMode.ENUM;
+	}
+	@setter public void set$class_mode(JavaClassMode mode) {
+		if (mode == JavaClassMode.ENUM)
+			return;
+		throw new RuntimeException("Cannot set mode "+mode);
+	}
+	public Field[] getEnumFields() {
+		return enum_fields;
+	}
+
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
 		this.mflags_is_enum = true;
 	}
-	public Field[] getEnumFields() {
-		return enum_fields;
+
+	public ASTNode[] getContainerMembers() {
+		ASTNode[] members = this.members;
+		ASTNode[] enum_fields = this.enum_fields;
+		ASTNode[] arr = new ASTNode[members.length + enum_fields.length];
+		int i = 0;
+		for (; i < enum_fields.length; i++)
+			arr[i] = enum_fields[i];
+		for (int j=0; j < members.length; j++)
+			arr[i+j] = members[j];
+		return arr;
+	}
+
+	protected rule resolveNameR_1(ResInfo info)
+	{
+			info ?= this
+		;	info @= enum_fields
+		;	super.resolveNameR_1(info)
+	}
+
+	public Field resolveField(Env env, String name, boolean fatal) {
+		this = checkResolved(env);
+		foreach (Field f; this.enum_fields; f.sname == name)
+			return f;
+		return super.resolveField(env, name, fatal);
 	}
 
 	public int getIndexOfEnumField(Field f) {
@@ -183,37 +261,23 @@ public final class JavaEnum extends JavaClass {
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
 	}
 
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "members" && val instanceof Field && val.isEnumField())
-			return false;
-		return super.includeInDump(dump,attr,val);
-	}
-
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (ct == ChildChangeType.ATTACHED) {
-			if (attr.name == "enum_fields" && data instanceof Field) {
-				Field f = (Field)data;
-				if (f.parent() == null)
-					this.members += f;
-				assert (f.parent() == this);
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.content_change && info.slot.name == "enum_fields") {
+			if (info.ct == ChangeType.ATTR_MODIFIED && info.old_value instanceof Var) {
+				Field f = (Field)info.old_value;
+				f.mflags_is_enum = false;
+			}
+			if (info.ct == ChangeType.ATTR_MODIFIED && info.new_value instanceof Var) {
+				Field f = (Field)info.new_value;
 				f.mflags_is_enum = true;
 				f.setPublic();
 				f.setStatic(true);
 				f.setFinal(true);
-				f.vtype = new TypeRef(this.xtype);
+				f.vtype = new TypeRef(this.getType(Env.getEnv()));
 				f.vtype.setAutoGenerated(true);
 			}
 		}
-		else if (ct == ChildChangeType.DETACHED) {
-			if (attr.name == "enum_fields" && data instanceof Field) {
-				Field f = (Field)data;
-				if (f.parent() == this)
-					~f;
-				assert (f.parent() == null);
-				f.mflags_is_enum = false;
-			}
-		}
-		super.callbackChildChanged(ct, attr, data);
+		super.callbackChanged(info);
 	}
 }
 
@@ -226,20 +290,30 @@ public final class InnerStructInfo extends ASTNode {
 @ThisIsANode(lang=CoreLang)
 public abstract class Struct extends ComplexTypeDecl {
 	
+	public static enum JavaClassMode {
+		UNKNOWN, CLASS, INTERFACE, ENUM, ANONYMOUSE, ANNOTATION 
+	};
+	
+	@AttrXMLDumpInfo(attr=true, name="mode")
+	@nodeAttr public abstract JavaClassMode class_mode;
+	
 	@nodeData(ext_data=true)		public InnerStructInfo		inner_info;
 	@nodeData(ext_data=true)		public Struct				typeinfo_clazz;
 	@nodeData(ext_data=true)		public Struct				iface_impl;
 
-	public Object copy(CopyContext cc) {
-		Struct obj = (Struct)super.copy(cc);
-		if (this == obj)
-			return this;
-		obj.xmeta_type = new CompaundMetaType(obj);
-		obj.xtype = new CompaundType((CompaundMetaType)obj.xmeta_type, null, null);
-		obj.callbackTypeVersionChanged();
-		return obj;
+	@getter public JavaClassMode get$class_mode() {
+		return JavaClassMode.UNKNOWN;
+	}
+	@setter public void set$class_mode(JavaClassMode mode) {
+		return;
 	}
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "class_mode" && class_mode == JavaClassMode.UNKNOWN)
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+	
 	public boolean isClazz() {
 		return !isInterface();
 	}
@@ -319,35 +393,22 @@ public abstract class Struct extends ComplexTypeDecl {
 	}
 
 	public Struct() {
-		super(null);
+		super(new AHandle(), new Symbol());
+	}
+	public Struct(Symbol symbol, int flags) {
+		super(new AHandle(), symbol);
+		this.nodeflags |= flags;
 	}
 
-	public void initStruct(String name, int flags) {
-		this.sname = name;
-		if (flags != 0) {
-			if!(this instanceof KievPackage) {
-				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
-				if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
-				if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
-			}
-			if ((flags & ACC_STATIC) == ACC_STATIC) setMeta(new MetaStatic());
-			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) setMeta(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
-			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
-			this.nodeflags |= flags;
+	public CompaundMetaType getMetaType(Env env) {
+		synchronized (env.tenv) { 
+			MetaType mt = env.tenv.getExistingMetaType(this.symbol);
+			if (mt != null)
+				return (CompaundMetaType)mt;
+			return new CompaundMetaType(env.tenv,this);
 		}
-		if (this.xmeta_type == null) {
-			CompaundMetaType cmt = new CompaundMetaType(this);
-			this.xmeta_type = cmt;
-			this.xtype = new CompaundType(cmt, null, null);
-		} else {
-			CompaundMetaType.checkNotDeferred(this);
-		}
-		callbackTypeVersionChanged();
 	}
-
+	
 	public Struct getStruct() { return this; }
 
 	public void cleanupOnReload() {
@@ -357,17 +418,17 @@ public abstract class Struct extends ComplexTypeDecl {
 		super.cleanupOnReload();
 	}
 
-	public boolean preResolveIn() {
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		if (this.isInterfaceOnly())
 			return false;
 		return true;
 	}
 
 	// verify resolved tree
-	public boolean preVerify() {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
 		setFrontEndPassed();
 		foreach (TypeRef tr; super_types; !(tr instanceof MacroSubstTypeRef)) {
-			TypeDecl td = tr.getTypeDecl();
+			TypeDecl td = tr.getTypeDecl(env);
 			if (td == null)
 				Kiev.reportError(this, "Struct "+this+" extends unresolved type "+tr);
 			else if (td.isFinal())
@@ -403,6 +464,17 @@ public abstract class Struct extends ComplexTypeDecl {
 		}
 	}
 
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
+		this.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) {
+				foreach (DataFlowInfo nh; n.handle().getHandleData(); nh.node_impl == n)
+					n.handle().delData(nh);
+				return true;
+			}
+			public void post_exec(ANode n) {}
+		});
+	}
+	
 	static class StructDFFunc extends DFFunc {
 		final int res_idx;
 		StructDFFunc(DataFlowInfo dfi) {

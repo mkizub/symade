@@ -25,7 +25,6 @@ public final class TemplateTVarSet extends TVSet {
 	public static final TemplateTVarSet emptySet = new TemplateTVarSet(-1, TVarBld.emptySet);
 
 	@access:no,no,ro,rw		TVar[]		tvars;
-	private					ArgType[]	appls;
 	private					int			flags;
 	public final			int			n_free;
 
@@ -51,86 +50,6 @@ public final class TemplateTVarSet extends TVSet {
 		}
 	}
 	
-	private ArgType[] getTArgs() {
-		if (this.appls == null)
-			buildApplayables();
-		return this.appls;
-	}
-	
-	private void buildApplayables() {
-		appls = ArgType.emptyArray;
-		foreach (TVar tv; tvars; !tv.isAlias())
-			addApplayables(tv.result());
-	}
-	
-	private void addApplayables(Type t) {
-		if (t instanceof ArgType) {
-			addApplayable((ArgType)t);
-		} else {
-			ArgType[] tappls = t.getTArgs();
-			for (int i=0; i < tappls.length; i++)
-				addApplayable(tappls[i]);
-		}
-	}
-	private void addApplayable(ArgType at) {
-		int sz = this.appls.length;
-		for (int i=0; i < sz; i++) {
-			if (this.appls[i] ≡ at)
-				return;
-		}
-		ArgType[] tmp = new ArgType[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = this.appls[i];
-		tmp[sz] = at;
-		this.appls = tmp;
-	}
-
-	// Bind free (unbound) variables of current type to values
-	// from a set of var=value pairs, returning a new set.
-	//
-	// having a bind pair A -> V, will bind
-	// A:?      -> A:V			; bind
-	// B:A      -> B:A			; alias remains
-	// C:X<A:?> -> C X<A:?>		; non-recursive
-	//
-	// This operation is used in type extension/specification:
-	//
-	// class Bar<B> :- defines a free variable B
-	// class Foo<F> extends Bar<F> :- binds Bar.B to Foo.F
-	// new Foo<String> :- binds Foo.F to String
-	// new Foo<Bar<Foo<F>>> :- binds Foo.F with Bar<Foo<F>>
-	//
-	// my.var ≡ vs.var -> (my.var, vs.result())
-
-	public TVarBld bind_bld(TVSet vs) {
-		TVar[] my_vars = this.tvars;
-		final int my_size = my_vars.length;
-		final int vs_size = vs.getArgsLength();
-		TVarBld sr = new TVarBld(this);
-
-	next_my:
-		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i];
-			
-			// bind TVar
-			if (x.isFree()) {
-				// try known bind
-				for (int j=0; j < vs_size; j++) {
-					ArgType vs_arg = vs.getArg(j);
-					if (x.var ≡ vs_arg) {
-						sr.set(i, vs.resolveArg(j));
-						continue next_my;
-					}
-				}
-				// bind to itself
-				sr.set(i, sr.resolveArg(i));
-				continue next_my;
-			}
-		}
-		return sr;
-	}
-
-
 	// TVSet interface methods
 	
 	public TVar[] getTVars() { this.tvars }
@@ -158,16 +77,23 @@ public final class TemplateTVarSet extends TVSet {
 	}
 	public final boolean isAliasArg(int i) { return this.tvars[i].isAlias(); }
 
+	public String toDump() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("template free "+n_free+" {\n");
+		for (int i=0; i < tvars.length; i++)
+			sb.append(i).append(": ").append(tvars[i]).append('\n');
+		sb.append("}");
+		return sb.toString();
+	}
 }
 
 public final class TVarBld extends TVSet {
 
-	private static final boolean ASSERT_MORE = false;
+	private static final boolean ASSERT_MORE = Kiev.debug;
 
 	public static final TVarBld emptySet = new TVarBld().close(-1);
 
 	@access:no,no,ro,rw		TVar[]		tvars;
-	private					ArgType[]	appls;
 							boolean		closed;
 
 	public TVarBld() {
@@ -179,7 +105,7 @@ public final class TVarBld extends TVSet {
 			this.tvars = new TVar[]{ new TVar(var, bnd, TVar.MODE_FREE) };
 		else
 			this.tvars = new TVar[]{ new TVar(var, bnd, TVar.MODE_BOUND) };
-		if (ASSERT_MORE) checkIntegrity(false);
+		if (ASSERT_MORE) checkIntegrity();
 	}
 	
 	public TVarBld(AType vset) {
@@ -201,8 +127,6 @@ public final class TVarBld extends TVSet {
 			return this;
 		}
 		assert (!closed);
-		//this.buildApplayables();
-		//if (ASSERT_MORE) this.checkIntegrity(true);
 		closed = true;
 		if (n_free >= 0) {
 			TVar[] tvars = this.tvars;
@@ -284,10 +208,10 @@ public final class TVarBld extends TVSet {
 		}
 		this.tvars = tmp;
 		
-		if (ASSERT_MORE) checkIntegrity(false);
+		if (ASSERT_MORE) checkIntegrity();
 		if (var ≢ value && value ≢ null)
 			set(n, value);
-		if (ASSERT_MORE) checkIntegrity(false);
+		if (ASSERT_MORE) checkIntegrity();
 	}
 	
 	void set(int v_idx, Type bnd)
@@ -320,52 +244,18 @@ public final class TVarBld extends TVSet {
 						break; // don't alias a var to itself 
 					assert (i < n && av_idx < n);
 					tvars[v_idx] = new TVar(v.var, av.var, av_idx);
-					if (ASSERT_MORE) checkIntegrity(false);
+					if (ASSERT_MORE) checkIntegrity();
 					return;
 				}
 			}
 		}
 		// not an alias, just bind
 		tvars[v_idx] = new TVar(v.var,bnd,TVar.MODE_BOUND);
-		if (ASSERT_MORE) checkIntegrity(false);
+		if (ASSERT_MORE) checkIntegrity();
 		return;
 	}
 	
-	private ArgType[] getTArgs() {
-		if (this.appls == null)
-			buildApplayables();
-		return this.appls;
-	}
-	
-	private void buildApplayables() {
-		appls = ArgType.emptyArray;
-		foreach (TVar tv; tvars; !tv.isAlias())
-			addApplayables(tv.result());
-	}
-	
-	private void addApplayables(Type t) {
-		if (t instanceof ArgType) {
-			addApplayable((ArgType)t);
-		} else {
-			ArgType[] tappls = t.getTArgs();
-			for (int i=0; i < tappls.length; i++)
-				addApplayable(tappls[i]);
-		}
-	}
-	private void addApplayable(ArgType at) {
-		int sz = this.appls.length;
-		for (int i=0; i < sz; i++) {
-			if (this.appls[i] ≡ at)
-				return;
-		}
-		ArgType[] tmp = new ArgType[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = this.appls[i];
-		tmp[sz] = at;
-		this.appls = tmp;
-	}
-
-	private void checkIntegrity(boolean check_appls) {
+	private void checkIntegrity() {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for (int i=0; i < n; i++) {
@@ -379,64 +269,6 @@ public final class TVarBld extends TVSet {
 				assert(v.ref != i);
 				for (TVar x=tvars[v.ref]; x.isAlias(); x=tvars[x.ref])
 					assert(v != x);
-			} else {
-				if (check_appls) {
-					if (v.val == null) {
-						int j=0;
-						for (; j < this.appls.length; j++) {
-							if (this.appls[j] ≡ v.var)
-								break;
-						}
-						assert (j < this.appls.length);
-					}
-					else if (v.val instanceof ArgType) {
-						int j=0;
-						for (; j < this.appls.length; j++) {
-							if (this.appls[j] ≡ v.val)
-								break;
-						}
-						assert (j < this.appls.length);
-					}
-					else {
-						foreach (ArgType at; v.val.getTArgs()) {
-							int j=0;
-							for (; j < this.appls.length; j++) {
-								if (this.appls[j] ≡ at)
-									break;
-							}
-							assert (j < this.appls.length);
-						}
-					}
-				}
-			}
-		}
-		if (check_appls) {
-			final int m = this.appls.length;
-			for (int i=0; i < m; i++) {
-				ArgType at = this.appls[i];
-				int j = 0;
-			next_tvar:
-				for (; j < n; j++) {
-					if (!tvars[j].isAlias()) {
-						TVar tv = tvars[j];
-						if (tv.val == null) {
-							if (tv.var ≡ at)
-								break next_tvar;
-						}
-						else if (tv.val instanceof ArgType) {
-							if (tv.val ≡ at)
-								break next_tvar;
-						}
-						else {
-							ArgType[] tappls = tv.val.getTArgs();
-							for (int k=0; k < tappls.length; k++) {
-								if (at ≡ tappls[k])
-									break next_tvar;
-							}
-						}
-					}
-				}
-				assert (j < n);
 			}
 		}
 	}

@@ -44,56 +44,58 @@ operator "T ⁻", type;
 //typedef wctp⁻ kiev.stdlib._wildcard_contra_variant_<wctp>;
 
 // assign operators
-operator  =    , lfy,   5;
-operator  :=   , lfy,   5;
-operator  |=   , lfy,   5;
-operator  &=   , lfy,   5;
-operator  ^=   , lfy,   5;
-operator  <<=  , lfy,   5;
-operator  >>=  , lfy,   5;
-operator  >>>= , lfy,   5;
-operator  +=   , lfy,   5;
-operator  -=   , lfy,   5;
-operator  *=   , lfy,   5;
-operator  /=   , lfy,   5;
-operator  %=   , lfy,   5;
+operator  "X = Y"   ,   5;
+operator  "X |= Y"  ,   5;
+operator  "X &= Y"  ,   5;
+operator  "X ^= Y"  ,   5;
+operator  "X <<= Y" ,   5;
+operator  "X >>= Y" ,   5;
+operator  "X >>>= Y",   5;
+operator  "X += Y"  ,   5;
+operator  "X -= Y"  ,   5;
+operator  "X *= Y"  ,   5;
+operator  "X /= Y"  ,   5;
+operator  "X %= Y"  ,   5;
 
 // bind/iterate rule operators
-operator "X ?= X" , 5;
-operator "X @= X" , 5;
+operator "X ?= X"   ,   5;
+operator "X @= X"   ,   5;
 
 // infix operators
-operator  ||         , yfx,  10;
-operator  &&         , yfx,  20;
-operator  |          , yfx,  30;
-operator  ^          , yfx,  40;
-operator  &          , yfx,  50;
-operator  ==         , xfx,  60;
-operator  !=         , xfx,  60;
-operator  >=         , xfx,  80;
-operator  <=         , xfx,  80;
-operator  >          , xfx,  80;
-operator  <          , xfx,  80;
-operator  <<         , xfx,  90;
-operator  >>         , xfx,  90;
-operator  >>>        , xfx,  90;
-operator  +          , yfx, 100;
-operator  -          , yfx, 100;
-operator  *          , yfx, 150;
-operator  /          , yfx, 150;
-operator  %          , yfx, 150;
+operator  "Y || X"  ,  10;
+operator  "Y && X"  ,  20;
+operator  "Y | X"   ,  30;
+operator  "Y ^ X"   ,  40;
+operator  "Y & X"   ,  50;
+operator  "X == X"  ,  60;
+operator  "X != X"  ,  60;
+operator  "X >= X"  ,  80;
+operator  "X <= X"  ,  80;
+operator  "X > X"   ,  80;
+operator  "X < X"   ,  80;
+operator  "X << X"  ,  90;
+operator  "X >> X"  ,  90;
+operator  "X >>> X" ,  90;
+operator  "Y + X"   , 100;
+operator  "Y - X"   , 100;
+operator  "Y * X"   , 150;
+operator  "Y / X"   , 150;
+operator  "Y % X"   , 150;
 
 // prefix operators
-operator  +  ,  fy, 200;
-operator  -  ,  fy, 200;
-operator  ++ ,  fx, 210; // fl
-operator  -- ,  fx, 210; // fl
-operator  ~  ,  fy, 210;
-operator  !  ,  fy, 210;
+operator  "+ Y"     , 200;
+operator  "- Y"     , 200;
+operator  "++ X"    , 210;
+operator  "-- X"    , 210;
+operator  "~ Y"     , 210;
+operator  "! Y"     , 210;
 
 // postfix operators
-operator  ++ ,  xf, 210; // lf
-operator  -- ,  xf, 210; // lf
+operator  "X ++"    , 210;
+operator  "X --"    , 210;
+
+// parenthethis operators
+operator  "( Z )"   , 255;
 
 // type operators
 operator  "X instanceof T",    70;

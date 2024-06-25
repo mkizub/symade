@@ -14,21 +14,72 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
 public interface INode {
-	public ANode parent();
-	public AttrSlot pslot();
-	public AttrSlot[] values();
+	public static final INode[] emptyArray = new INode[0];
+
+	public AHandle		handle();
+	public long			getUID();
+	public ANode		asANode();
+
+	public INode        parent();
+	public AttrSlot     pslot();
+	public AttrSlot[]   values();
+	public NodeTypeInfo getNodeTypeInfo();
+
+	public AttrSlot getAttrSlot(String name);
+	
+	public Object getVal(AttrSlot attr);
+	public void   setVal(AttrSlot attr, Object data);
+	public Object getVal(AttrSlot attr, int idx);
+	public void   setVal(AttrSlot attr, int idx, Object data);
+	public void   addVal(AttrSlot attr, Object data);
+	public void   delVal(AttrSlot attr, int idx);
+	public void   insVal(AttrSlot attr, int idx, Object data);
+
+	public Object copy(CopyContext cc);
+	public this.type detach();
+
+	public boolean isAttached();
+	public boolean isAttachedBy(AttrSlot attr_slot);
+	
+	public void walkTree(INode parent, AttrSlot slot, ITreeWalker walker);
 }
 
-public enum ChildChangeType {
-	UNKNOWN,
-	ATTACHED,
-	DETACHED,
-	MODIFIED
+public enum ChangeType {
+	THIS_ATTACHED,		// this node was attached, tree_change=true
+	THIS_DETACHED,		// this node was detached, tree_change=true
+	ATTR_MODIFIED,		// a child node attached/detached or raw data was changed (to scalar attribute if idx < 0), content_change=true
+	ATTR_UPDATED		// a child notification about it's essential state change
+}
+
+public final class NodeChangeInfo {
+	public final ChangeType  ct;
+	public final INode       parent;
+	public final AttrSlot    slot;
+	public final Object      old_value;
+	public final Object      new_value;
+	public final int         idx;
+	public final boolean     tree_change;
+	public final boolean     content_change;
+	public NodeChangeInfo(ChangeType ct, INode parent, AttrSlot slot, Object old_value, Object new_value, int idx) {
+		this.ct = ct;
+		this.parent = parent;
+		this.slot = slot;
+		this.old_value = old_value;
+		this.new_value = new_value;
+		this.idx = idx;
+		this.tree_change = (ct == ChangeType.THIS_ATTACHED || ct == ChangeType.THIS_DETACHED);
+		this.content_change = !tree_change;
+	}
+}
+
+
+public interface ChangeListener {
+	public void callbackNodeChanged(NodeChangeInfo info);
 }
 
 public final class DataAttachInfo {
@@ -52,409 +103,551 @@ public final class ParentInfo {
 	}
 }
 
-public final class ExtChildrenIterator implements Enumeration<ANode> {
-	public  final ANode    parent;
-	public  final AttrSlot attr;
-	private final Object[] ext_data;
-	private       int      next_pos;
+public class AutoCompleteOption {
+	public static interface Maker {
+		public Object make(Object data);
+	}
+	public final String text;
+	public final String descr;
+	public final Maker  maker;
+	public final Object data;
+	public AutoCompleteOption(String text, String descr, Maker maker, Object data) {
+		this.text = text;
+		this.descr = descr;
+		this.maker = maker;
+		this.data = data;
+	}
+	public String toString() {
+		if (descr == null)
+			return text;
+		return text + " (" + descr + ")";
+	}
+}
+public final class AutoCompleteResult {
 	
-	ExtChildrenIterator(ANode parent, AttrSlot attr) {
-		this.parent = parent;
-		this.attr = attr;
-		this.ext_data = parent.ext_data;
-		this.next_pos = -1;
-		if (ext_data != null)
-			setNextPos();
+	public final boolean strict;
+	private Vector<AutoCompleteOption> options;
+	public AutoCompleteResult(boolean strict) {
+		this.strict = strict;
+		this.options = new Vector<AutoCompleteOption>();
 	}
-	public boolean hasMoreElements() {
-		if (ext_data == null)
-			return false;
-		return next_pos < ext_data.length;
+	public void append(String text, String descr, AutoCompleteOption.Maker maker, Object data) {
+		this.options.append(new AutoCompleteOption(text,descr,maker,data));
 	}
-	public ANode nextElement() {
-		ANode n = (ANode)ext_data[next_pos];
-		setNextPos();
-		return n;
+	public void append(Symbol sym) {
+		this.options.append(new AutoCompleteOption(sym.sname,null,null,sym));
 	}
-	private void setNextPos() {
-		for (next_pos++; next_pos < ext_data.length; next_pos++) {
-			Object dat = ext_data[next_pos];
-			if (dat instanceof ANode && (attr == null || dat.pslot() == attr))
-				return;
-		}
+	public AutoCompleteOption[] getOptions() {
+		return this.options.toArray();
+	}
+	public boolean containsData(Object data) {
+		foreach (AutoCompleteOption o; options; data.equals(o.data))
+			return true;
+		return false;
 	}
 }
 
-public abstract class ANode implements INode {
-
-	public static final ANode[] emptyArray = new ANode[0];
+public final class SpaceIterator<+N extends INode> implements Enumeration<N> {
+	public  final INode            parent;
+	public  final ASpaceAttrSlot   attr; 
+	public  final N[]              array;
+	private       int              next_pos;
 	
-	static final class RefAttrSlot_this extends RefAttrSlot {
-		RefAttrSlot_this(String name, TypeInfo typeinfo) { super(name, typeinfo); }
-		public final void set(ANode parent, Object value) { throw new RuntimeException("@nodeData 'this' is not writeable"); }
-		public final Object get(ANode parent) { return parent; }
+	SpaceIterator(INode parent, ASpaceAttrSlot attr, N[] array) {
+		this.parent = parent;
+		this.attr = attr;
+		this.array = array;
 	}
-	public static final RefAttrSlot_this nodeattr$this = new RefAttrSlot_this("this", TypeInfo.newTypeInfo(ANode.class,null));
-
-	public static final ParentAttrSlot nodeattr$parent =
-			new ParentAttrSlot("parent", false, true, TypeInfo.newTypeInfo(ANode.class,null));
-
-	public static final ParentAttrSlot nodeattr$syntax_parent =
-			new ParentAttrSlot("syntax_parent", true, true, TypeInfo.newTypeInfo(ANode.class,null));
-
-	private static final AttrSlot[] $values = {}; // {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
-
-	
-	public:ro @virtual @abstract ANode				ctx_root;
-	public:ro @virtual @abstract FileUnit			ctx_file_unit;
-	public:ro @virtual @abstract NameSpace			ctx_name_space;
-	public:ro @virtual @abstract ComplexTypeDecl	ctx_tdecl;
-	public:ro @virtual @abstract Method				ctx_method;
-
-	@access:no,no,ro,rw AttrSlot				p_slot;
-	@access:no,no,ro,rw ANode					p_parent;
-	@access:no,no,ro,rw Object[]				ext_data;
-
-	@abstract
-	public:ro ANode			parent;
-
-	@getter public final ANode get$parent() { return parent(); }
-
-	public Language getCompilerLang() { return CoreLang; }
-	public String getCompilerNodeName() { return "Node"; }
-	
-	public static class VVV implements Cloneable {
-		public static final int IS_LOCKED    = 1;
-		public static final int FOR_COMPILER = 2;
-		public static final int FOR_EDITOR   = 4;
-		int						vvv_flags;
-		ASTNode.VVV				vvv_prev;
-		ASTNode.VVV				vvv_next;
-		AttrSlot				p_slot;
-		ANode					p_parent;
-		Object[]				ext_data;
-		
-		public VVV(ANode node) {
-			this.p_slot = node.p_slot;
-			this.p_parent = node.p_parent;
-			this.ext_data = node.ext_data;
-		}
-		public Object clone() { super.clone() }
+	public boolean hasMoreElements() {
+		if (array == null)
+			return false;
+		return next_pos < array.length;
 	}
+	public N nextElement() {
+		INode n = (INode)array[next_pos];
+		next_pos += 1;
+		return n;
+	}
+	public boolean contains(INode val) {
+		if (val == null || array == null)
+			return false;
+		foreach (INode n; array; n == val)
+			return true;
+		return false;
+	}
+}
+
+public final class ExtSpaceIterator<+N extends INode> implements Enumeration<N> {
+	public  final ANode            parent;
+	public  final ExtSpaceAttrSlot attr;
+	private final Object[]         ext_data;
+	private       int              ext_pos;
+	private       int              next_pos;
+	private       boolean          scan_flags;
 	
-	public static final class CopyContext {
-		public static final class SymbolInfo {
-			Symbol sold; // old symbol
-			Symbol snew; // new symbol, copied from sold
-			List<ASTNode> srefs; // new symbol ref, to be changed to point from sold to snew
-			SymbolInfo(Symbol sold, Symbol snew) {
-				this.sold = sold;
-				this.snew = snew;
-				this.srefs = List.newList<ASTNode>();
-			}
-			SymbolInfo(Symbol sold, ASTNode sref) {
-				this.sold = sold;
-				this.snew = null;
-				this.srefs = List.newList(sref);
-			}
-		};
-		private Vector<SymbolInfo> infos;
-		void addSymbol(Symbol sold, Symbol snew) {
-			if (infos == null)
-				infos = new Vector<SymbolInfo>();
-			foreach (SymbolInfo si; infos; si.sold == sold) {
-				assert(si.snew == null);
-				si.snew = snew;
-				return;
-			}
-			infos.append(new SymbolInfo(sold, snew));
+	ExtSpaceIterator(ANode parent, ExtSpaceAttrSlot attr, Object[] ext_data) {
+		this.parent = parent;
+		this.attr = attr;
+		this.ext_data = ext_data;
+		this.ext_pos = -1;
+		this.next_pos = -1;
+		setNextPos();
+	}
+	public boolean hasMoreElements() {
+		if (!scan_flags) {
+			if (ext_data == null)
+				return false;
+			return ext_pos < ext_data.length;
+		} else {
+			return (next_pos < 32);
 		}
-		void addSymbolRef(ASTNode sref, Symbol sold) {
-			if (sold == null)
-				return;
-			if (infos == null)
-				infos = new Vector<SymbolInfo>();
-			foreach (SymbolInfo si; infos; si.sold == sold) {
-				si.srefs = new List.Cons<ASTNode>(sref, si.srefs);
-				return;
+	}
+	public AttrSlot nextAttrSlot() {
+		if (!scan_flags)
+			return ((DataAttachInfo)ext_data[ext_pos]).p_slot;
+		else
+			return DNode.nodeattr$metas;
+	}
+	public N nextElement() {
+		if (!scan_flags) {
+			Object obj = ((DataAttachInfo)ext_data[ext_pos]).p_data;
+			INode n = null;
+			if (obj instanceof INode[]) {
+				INode[] arr = (INode[])obj;
+				n = arr[next_pos];
+				next_pos += 1;
+				if (next_pos >= arr.length) {
+					next_pos = -1;
+					setNextPos();
+				}
+			} else {
+				n = (INode)obj;
+				setNextPos();
 			}
-			infos.append(new SymbolInfo(sold, sref));
+			return n;
+		} else {
+			Class[] flags = ((DNode)parent).getMetaFlags();
+			MetaFlag flag = (MetaFlag)flags[next_pos].newInstance();
+			parent.callbackMetaSet(attr,flag);
+			setNextPos();
+			return flag;
 		}
-		public ANode hasCopyOf(ANode node) {
-			if (infos == null)
-				return null;
-			foreach (SymbolInfo si; infos; si.sold == node)
-				return (ANode)si.snew;
+	}
+	public N[] getArray() {
+		if (scan_flags)
 			return null;
-		}
-		public void updateLinks() {
-			if (infos == null)
-				return;
-			foreach (SymbolInfo si; infos; si.snew != null) {
-				foreach (ASTNode n; si.srefs) {
-					if (n instanceof SymbolRef) {
-						SymbolRef sr = (SymbolRef)n;
-						if (sr.symbol == si.sold)
-							sr.symbol = si.snew.symbol;
-					}
-					else if (n instanceof TypeArgRef) {
-						TypeArgRef en = (TypeArgRef)n;
-						if (en.symbol == si.sold)
-							en.type_lnk = ((TypeDef)si.snew.dnode).getAType();
-					}
-					else if (n instanceof ENode) {
-						ENode en = (ENode)n;
-						if (en.symbol == si.sold)
-							en.symbol = si.snew.symbol;
-					}
+		return (INode[])((DataAttachInfo)ext_data[ext_pos]).p_data;
+	}
+	
+	private void setNextPos() {
+		if (!scan_flags && ext_data != null) {
+			for (ext_pos++; ext_pos < ext_data.length; ext_pos++) {
+				Object dat = ext_data[ext_pos];
+				if (dat instanceof DataAttachInfo && ((attr == null && dat.p_slot.isChild())|| dat.p_slot == attr)) {
+					if (dat.p_data instanceof INode[])
+						next_pos = 0;
+					return;
 				}
 			}
 		}
+		if (!scan_flags && attr == DNode.nodeattr$metas) {
+			scan_flags = true;
+			next_pos = -1;
+		}
+		if (scan_flags) {
+			int nodeflags = ((DNode)parent).nodeflags;
+			Class[] flags = ((DNode)parent).getMetaFlags();
+			for (next_pos++; next_pos < 32; next_pos++) {
+				if (flags[next_pos] != null && (nodeflags & (1<<next_pos)) != 0)
+					return;
+			}
+		}
+	}
+	public boolean contains(INode val) {
+		if (val == null || ext_data == null)
+			return false;
+		foreach (DataAttachInfo dat; ext_data) {
+			if (val == dat.p_data)
+				return true;
+			if (dat.p_data instanceof INode[]) {
+				foreach (INode n; (INode[])dat.p_data; val == n)
+					return true;
+			}
+		}
+		return false;
+	}
+}
+
+public abstract class ANode extends AHandleData implements INode {
+	public static final ANode[] emptyArray = new ANode[0];
+	public static final Object[] emptyExtData = new Object[0];
+	
+	public static abstract class UnVersionedData {}
+	
+	static final class ChangeListenerEntry extends UnVersionedData {
+		final ChangeListener listener;
+		ChangeListenerEntry(ChangeListener listener) {
+			this.listener = listener;
+		}
+	}
+	static final class TextSourcePosition extends UnVersionedData {
+		int						pos;
+		TextSourcePosition(int pos) { this.pos = pos; }
+	}
+
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(ignore=true)
+	static final class NodeAttr_this extends ScalarAttrSlot {
+		NodeAttr_this() { super("this", null, TypeInfo.newTypeInfo(ANode.class,null)); }
+		public final void set(INode parent, Object value) { throw new RuntimeException("@nodeData 'this' is not writeable"); }
+		public final Object get(INode parent) { return parent; }
+	}
+	public static final NodeAttr_this nodeattr$this = new NodeAttr_this();
+
+	public static final ParentAttrSlot nodeattr$parent =
+			new ParentAttrSlot("parent", true, TypeInfo.newTypeInfo(ANode.class,null));
+
+	public static final ParentAttrSlot nodeattr$syntax_parent =
+			new ParentAttrSlot("syntax_parent", true, TypeInfo.newTypeInfo(ANode.class,null));
+
+	private static final AttrSlot[] $values = {};
+	
+	private static final NodeTypeInfo $node_type_info = new NodeTypeInfo("kiev·vtree·ANode", CoreLang, "Node", new NodeTypeInfo[0], ANode.$values);
+	
+	final
+	public  AHandle					p_handle_;
+	private ANode					p_parent_;
+	private Object					p_ext_data_;
+	
+	@virtual @abstract
+	public:ro ANode					parent;
+
+	@UnVersioned
+	@abstract @virtual
+	public int						pos;
+	
+	public ANode(AHandle handle, Context context) {
+		super(context);
+		p_handle_ = handle;
+		handle.addData(this);
+	}
+
+	final
+	public AHandle handle() { return p_handle_; }
+
+	final
+	public long getUID() { return p_handle_.h_uid; }
+
+	final
+	public ANode asANode() { return this; }
+
+	static
+	public ANode[] asANodes(INode[] arr) {
+		if (arr instanceof ANode[])
+			return (ANode[])arr;
+		ANode[] tmp = new ANode[arr.length];
+		for (int i=0; i < arr.length; i++)
+			tmp[i] = arr[i].asANode();
+		return tmp;
+	}
+
+	public Language getCompilerLang() { return null; }
+	public String getCompilerNodeName() { return null; }
+
+	public NodeTypeInfo getNodeTypeInfo() {
+		return ANode.$node_type_info;
 	}
 	
-	@getter @nodeData final AttrSlot get$p_slot() {
-		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			return this.p_slot;
-		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
-			return ((ASTNode)this).v_editor.p_slot;
-		return this.p_slot;
+	@getter @nodeData final public ANode get$parent() {
+		return parent();
+	}
+
+	synchronized Object[] getExtData() {
+		Object p_ext_data = this.p_ext_data_;
+		if (p_ext_data == null)
+			return emptyExtData;
+		if (p_ext_data instanceof Object[])
+			return (Object[])p_ext_data;
+		return new Object[]{p_ext_data};
 	}
 	
-	@setter @nodeData final void set$p_slot(AttrSlot value) {
-		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
-			this.p_slot = value;
-		else if (Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			ASTNode.openCmp((ASTNode)this).p_slot = value;
-		else
-			ASTNode.openEdt((ASTNode)this).p_slot = value;
+	private void delExtElem(Object[] arr, int idx, Object value) {
+		assert (idx >= 0 && idx < arr.length);
+		if (arr.length == 1) {
+			assert (this.p_ext_data_ == value);
+			this.p_ext_data_ = null;
+			return;
+		}
+		assert (this.p_ext_data_ == arr);
+		if (arr.length == 2) {
+			if (idx == 0) {
+				assert (arr[0] == value);
+				this.p_ext_data_ = arr[1];
+			} else {
+				assert (arr[1] == value);
+				this.p_ext_data_ = arr[0];
+			}
+			return;
+		}
+		assert (arr[idx] == value);
+		int i = 0;
+		Object[] tmp = new Object[arr.length - 1];
+		for (; i < idx; i++)
+			tmp[i] = arr[i];
+		for (; i < tmp.length; i++)
+			tmp[i] = arr[i+1];
+		this.p_ext_data_ = tmp;
 	}
 	
-	@getter @nodeData final ANode get$p_parent() {
-		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			return this.p_parent;
-		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
-			return ((ASTNode)this).v_editor.p_parent;
-		return this.p_parent;
+	private void insExtElem(Object[] arr, int idx, Object value) {
+		assert (idx >= 0 && idx <= arr.length);
+		if (arr.length == 0) {
+			this.p_ext_data_ = value;
+			return;
+		}
+		int i = 0;
+		Object[] tmp = new Object[arr.length + 1];
+		for (; i < idx; i++)
+			tmp[i] = arr[i];
+		tmp[i] = value;
+		for (; i < arr.length; i++)
+			tmp[i+1] = arr[i];
+		this.p_ext_data_ = tmp;
 	}
 	
-	@setter @nodeData final void set$p_parent(ANode value) {
-		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
-			this.p_parent = value;
-		else if (Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			ASTNode.openCmp((ASTNode)this).p_parent = value;
-		else
-			ASTNode.openEdt((ASTNode)this).p_parent = value;
+	private void setExtElem(Object[] arr, int idx, Object value) {
+		assert (arr.length > 0 && idx >= 0 && idx < arr.length);
+		if (arr.length == 1) {
+			this.p_ext_data_ = value;
+			return;
+		}
+		Object[] tmp = (Object[])arr.clone();
+		tmp[idx] = value;
+		this.p_ext_data_ = tmp;
 	}
 	
-	@getter @nodeData final Object[] get$ext_data() {
-		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			return this.ext_data;
-		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
-			return ((ASTNode)this).v_editor.ext_data;
-		return this.ext_data;
+	public final UnVersionedData getUnVersionedData(Class clazz) {
+		foreach (UnVersionedData uvd; getExtData(); uvd.getClass() == clazz)
+			return uvd;
+		return null;
+	}
+
+	public final synchronized void delUnVersionedData(Class clazz) {
+		Object[] arr = getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object ext = arr[i];
+			if (ext instanceof UnVersionedData && ext.getClass() == clazz) {
+				delExtElem(arr,i,ext);
+				return;
+			}
+		}
+	}
+
+	public final synchronized void setUnVersionedData(UnVersionedData value) {
+		Object[] arr = getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object ext = arr[i];
+			if (ext instanceof UnVersionedData && ext.getClass() == value.getClass()) {
+				if (ext != value)
+					setExtElem(arr,i,value);
+				return;
+			}
+		}
+		insExtElem(arr,arr.length,value);
+	}
+
+	public final synchronized void delListener(ChangeListener listener) {
+		Object[] arr = getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object ext = arr[i];
+			if (ext instanceof ChangeListenerEntry && ext.listener == listener) {
+				delExtElem(arr,i,ext);
+				return;
+			}
+		}
+	}
+
+	public final synchronized void addListener(ChangeListener listener) {
+		Object[] arr = getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object ext = arr[i];
+			if (ext instanceof ChangeListenerEntry && ext.listener == listener)
+				return;
+		}
+		insExtElem(arr,arr.length,new ChangeListenerEntry(listener));
+	}
+
+	public final int getPosLine() { return pos >>> 11; }
+	public final void setPosLine(int lineno) { pos = lineno << 11; }
+	
+	@getter public final int get$pos() {
+		TextSourcePosition tsp = (TextSourcePosition)getUnVersionedData(TextSourcePosition.class);
+		if (tsp == null)
+			return 0;
+		return tsp.pos;
+	}
+
+	@setter public final synchronized void set$pos(int value) {
+		Object[] arr = getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object ext = arr[i];
+			if (ext instanceof TextSourcePosition) {
+				if (value == 0)
+					delExtElem(arr,i,ext);
+				else
+					ext.pos = value;
+				return;
+			}
+		}
+		if (value != 0)
+			insExtElem(arr,arr.length,new TextSourcePosition(value));
+	}
+
+	public final boolean isAttached() {
+		return p_parent_ != null;
+	}
+	public final boolean isAttachedBy(AttrSlot attr_slot) {
+		if (!attr_slot.isAttr())
+			return false;
+		ParentAttrSlot p_attr = attr_slot.parent_attr_slot;
+		if (p_attr == ANode.nodeattr$parent)
+			return p_parent_ != null;
+		foreach (ParentInfo pi; getExtData(); pi.p_slot.parent_attr_slot == p_attr)
+			return true;
+		return false;
 	}
 	
-	@setter @nodeData final void set$ext_data(Object[] value) {
-		if (ASTNode.EXECUTE_UNVERSIONED || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
-			this.ext_data = value;
-		else if (Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			ASTNode.openCmp((ASTNode)this).ext_data = value;
-		else
-			ASTNode.openEdt((ASTNode)this).ext_data = value;
+	public void callbackChanged(NodeChangeInfo info) {
+		if (ASTNode.EXECUTE_UNVERSIONED)
+			return;
+		callbackChangedNotify(info);
 	}
-	
-	public final boolean    isAttached()    { return parent() != null; }
+	private void callbackChangedNotify(NodeChangeInfo info) {
+		// notify listeners
+		//if (!ASTNode.EXECUTE_UNVERSIONED && Thread.currentThread().getThreadGroup() != CompilerThreadGroup) {
+		//	Object p_data = this.p_handle_.h_data;
+		//	if (p_data == null)
+		//		return;
+		//	if (p_data instanceof Object[]) {
+		//		foreach (ChangeListenerEntry uvd; (Object[])p_data)
+		//			uvd.listener.callbackNodeChanged(info);
+		//	}
+		//	else if (p_data instanceof ChangeListenerEntry)
+		//		p_data.listener.callbackNodeChanged(info);
+		//}
+	}
+
+	// idx >= 0 && old_value == null => insert into space
+	// idx >= 0 && new_value == null => delete from space
+	// idx >= 0 && new_value != null && old_value != null => replace in space
+	// idx < 0 && old_value == null => attach scalar
+	// idx < 0 && new_value == null => detach scalar
+	// idx >= 0 && new_value != null && old_value != null => replace scalar value
+	public final void callbackDataSet(AttrSlot slot, Object old_value, Object new_value, int idx) {
+		if (slot.isChild() && old_value != null) {
+			((ANode)old_value).callbackDetached(this, slot, idx);
+			((ANode)old_value).callbackChanged(new NodeChangeInfo(ChangeType.THIS_DETACHED, this, slot, old_value, new_value, idx));
+		}
+		if (slot.isChild() && new_value != null) {
+			((ANode)new_value).callbackAttached(this, slot, idx);
+			((ANode)new_value).callbackChanged(new NodeChangeInfo(ChangeType.THIS_ATTACHED, this, slot, old_value, new_value, idx));
+		}
+		this.callbackChanged(new NodeChangeInfo(ChangeType.ATTR_MODIFIED, this, slot, old_value, new_value, idx));
+	}
+	public final void callbackDataSet(AttrSlot slot, int old_value, int new_value, int idx) {
+		if (old_value != new_value)
+			this.callbackDataSet(slot,Integer.valueOf(old_value),Integer.valueOf(new_value),idx);
+	}
+	public final void callbackDataSet(AttrSlot slot, long old_value, long new_value, int idx) {
+		if (old_value != new_value)
+			this.callbackDataSet(slot,Long.valueOf(old_value),Long.valueOf(new_value),idx);
+	}
+	public final void callbackDataSet(AttrSlot slot, double old_value, double new_value, int idx) {
+		if (old_value != new_value)
+			this.callbackDataSet(slot,Double.valueOf(old_value),Double.valueOf(new_value),idx);
+	}
+	public final void callbackDataSet(AttrSlot slot, boolean old_value, boolean new_value, int idx) {
+		if (old_value != new_value)
+			this.callbackDataSet(slot,Boolean.valueOf(old_value),Boolean.valueOf(new_value),idx);
+	}
+	public final void callbackMetaSet(AttrSlot slot, MNode flag) {
+		assert(!flag.isAttached());
+		flag.p_parent_ = this;
+	}
+	public final void callbackMetaDel(AttrSlot slot, MNode flag) {
+		assert(flag.isAttached());
+		flag.p_parent_ = null;
+	}
 
 	// attach to parent node 'parent' to parent's slot 'slot'
-	public final void callbackAttached(ANode parent, AttrSlot slot) {
-		assert (slot.is_attr);
+	private void callbackAttached(ANode parent, AttrSlot slot, int idx) {
+		assert (slot.isAttr());
+		assert ((slot instanceof ScalarAttrSlot && idx < 0) || idx >= 0);
 		if (slot.parent_attr_slot == ANode.nodeattr$parent) {
 			assert(!isAttached());
 			assert(parent != null && parent != this);
-			this.p_slot = slot;
-			this.p_parent = parent;
-			this.callbackAttached(new ParentInfo(parent,slot));
+			this.p_parent_ = parent;
+			assert (parent() == parent);
 		} else {
-			Object[] ext_data = this.ext_data;
-			if (ext_data != null) {
-				int sz = ext_data.length;
-				for (int i=0; i < sz; i++) {
-					Object dat = ext_data[i];
-					if (dat instanceof ParentInfo) {
-						ParentInfo pi = (ParentInfo)dat;
-						if (pi.p_parent == parent && pi.p_slot == slot)
-							return;
-						assert (!pi.p_slot.parent_attr_slot.is_unique || pi.p_slot.parent_attr_slot != slot.parent_attr_slot);
-					}
-				}
-				Object[] tmp = new Object[sz+1];
-				for (int i=0; i < sz; i++)
-					tmp[i] = ext_data[i];
-				ParentInfo pi = new ParentInfo(parent,slot);
-				tmp[sz] = pi;
-				this.ext_data = tmp;
-				this.callbackAttached(pi);
-			} else {
-				ParentInfo pi = new ParentInfo(parent,slot);
-				this.ext_data = new Object[]{pi};
-				this.callbackAttached(pi);
-			}
+			Object[] arr = getExtData();
+			insExtElem(arr,arr.length,new ParentInfo(parent,slot));
 		}
 	}
-	public void callbackAttached(ParentInfo pi) {
-		// notify parent about the changed slot
-		pi.p_parent.callbackChildChanged(ChildChangeType.ATTACHED,pi.p_slot,this);
-	}
 	
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		assert (slot.is_attr);
+	private void callbackDetached(ANode parent, AttrSlot slot, int idx) {
+		assert (slot.isAttr());
+		assert ((slot instanceof ScalarAttrSlot && idx < 0) || idx >= 0);
 		if (slot.parent_attr_slot == ANode.nodeattr$parent) {
-			assert(isAttached());
-			assert(p_parent == parent);
-			assert(p_slot == slot);
-			this.p_slot = null;
-			this.p_parent = null;
-			// notify parent about the changed slot
-			parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
+			assert(p_parent_ == parent);
+			this.p_parent_ = null;
 		} else {
-			Object[] ext_data = this.ext_data;
-			if (ext_data == null)
-				return;
-			int sz = ext_data.length-1;
-			int idx = 0;
-			for (; idx <= sz; idx++) {
-				Object dat = ext_data[idx];
-				if (dat instanceof ParentInfo) {
-					ParentInfo pi = (ParentInfo)dat;
-					if (pi.p_parent == parent && pi.p_slot == slot)
-						break;
-				}
-			}
-			ParentInfo pi = (ParentInfo)ext_data[idx];
-			if (sz == 0) {
-				this.ext_data = null;
-			} else {
-				Object[] tmp = new Object[sz];
-				int i;
-				for (i=0; i < idx; i++) tmp[i] = ext_data[i];
-				for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
-				this.ext_data = tmp;
-			}
-			pi.p_parent.callbackChildChanged(ChildChangeType.DETACHED,slot,this);
-		}
-	}
-
-
-	@getter public final ANode get$ctx_root() {
-		ANode n = this;
-		while (n.isAttached())
-			n = n.parent();
-		return n;
-	}
-	public final void callbackChildChanged(AttrSlot attr) { callbackChildChanged(ChildChangeType.UNKNOWN, attr, null); }
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) { /* do nothing */ }
-
-	public final ANode parent() { return this.p_parent; }
-	public final AttrSlot pslot() { return this.p_slot; }
-
-	public static ANode getPrevNode(ANode node) {
-		AttrSlot slot = node.p_slot;
-		if (slot instanceof SpaceAttrSlot) {
-			ANode[] arr = slot.getArray(node.parent());
-			for (int i=arr.length-1; i >= 0; i--) {
-				ANode n = arr[i];
-				if (n == node) {
-					if (i == 0)
-						return null;
-					return arr[i-1];
+			Object[] arr = getExtData();
+			for (int i=0; i < arr.length; i++) {
+				Object dat = arr[i];
+				if (dat instanceof ParentInfo && dat.p_parent == parent && dat.p_slot == slot) {
+					delExtElem(arr,i,dat);
+					return;
 				}
 			}
 		}
-		return null;
 	}
-	public static ANode getNextNode(ANode node) {
-		AttrSlot slot = node.p_slot;
-		if (slot instanceof SpaceAttrSlot) {
-			ANode[] arr = slot.getArray(node.parent());
-			for (int i=arr.length-1; i >= 0; i--) {
-				ANode n = arr[i];
-				if (n == node) {
-					if (i >= arr.length-1)
-						return null;
-					return arr[i+1];
-				}
-			}
-		}
-		return null;
+
+	public final void notifyParentThatIHaveChanged() {
+		ANode parent = parent();
+		if (parent != null)
+			parent.callbackChanged(new NodeChangeInfo(ChangeType.ATTR_UPDATED, parent, pslot(), this, this, -1));
+	}
+
+	public ANode parent() {
+		return p_parent_;
 	}
 	
-	@getter public final FileUnit get$ctx_file_unit() {
-		ANode self = this;
-		if (self instanceof FileUnit)
-			return (FileUnit)self;
-		for (;;) {
-			ANode p = nodeattr$syntax_parent.get(self);
-			if (p != null) {
-				if (p instanceof FileUnit)
-					return (FileUnit)p;
-				self = p;
-				continue;
-			}
-			p = self.parent();
-			if (p != null) {
-				if (p instanceof FileUnit)
-					return (FileUnit)p;
-				self = p;
-				continue;
-			}
+	public final AttrSlot pslot() {
+		ANode parent = this.parent();
+		if (parent == null)
 			return null;
+		foreach (AttrSlot attr; parent.values(); attr.isChild() && !attr.isExtData()) {
+			if (attr instanceof ASpaceAttrSlot) {
+				foreach (INode n; attr.getArray(parent); n == this) {
+					return attr;
+				}
+			} else {
+				if (((ScalarAttrSlot)attr).get(parent) == this) {
+					return attr;
+				}
+			}
 		}
-	}
-	@getter public NameSpace get$ctx_name_space() {
-		ANode self = this;
-		if (self instanceof NameSpace)
-			return (NameSpace)self;
-		for (;;) {
-			ANode p = nodeattr$syntax_parent.get(self);
-			if (p != null) {
-				if (p instanceof NameSpace)
-					return (NameSpace)p;
-				self = p;
-				continue;
+		foreach (DataAttachInfo dat; parent.getExtData(); dat.p_slot.isChild()) {
+			if (dat.p_data == this) {
+				return dat.p_slot;
 			}
-			p = self.parent();
-			if (p != null) {
-				if (p instanceof NameSpace)
-					return (NameSpace)p;
-				self = p;
-				continue;
+			if (dat.p_data instanceof INode[]) {
+				foreach (INode n; (INode[])dat.p_data; n == this) {
+					return dat.p_slot;
+				}
 			}
-			return null;
 		}
-	}
-	@getter public ComplexTypeDecl get$ctx_tdecl() {
-		ANode p = this.parent();
-		if (p == null)
-			return null;
-		return p.get_child_ctx_tdecl();
-	}
-	public ComplexTypeDecl get_child_ctx_tdecl() {
-		ANode p = this.parent();
-		if (p == null)
-			return null;
-		return p.get_child_ctx_tdecl();
-	}
-	@getter public Method get$ctx_method() {
-		ANode p = this.parent();
-		if (p == null)
-			return null;
-		return p.get_child_ctx_method();
-	}
-	public Method get_child_ctx_method() {
-		ANode p = this.parent();
-		if (p == null)
-			return null;
-		return p.get_child_ctx_method();
+		return null;
 	}
 
 	public AttrSlot[] values() {
@@ -464,474 +657,389 @@ public abstract class ANode implements INode {
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (val instanceof SymbolRef && val.name == null)
 			return false;
-		if (attr.is_attr)
+		if (attr.isAttr())
 			return true;
-		if (attr.name == "this") {
-			AttrSlot slot = pslot();
-			return slot == null || slot.is_attr;
-		}
+		if (attr.name == "this")
+			return true;
 		return false;
 	}
 
-	public Object getVal(String name) {
+	public final <N extends INode> ExtSpaceIterator<N> getExtSpaceIterator(ExtSpaceAttrSlot attr) {
+		return new ExtSpaceIterator<N>(this, attr, getExtData());
+	}
+	
+	public AttrSlot getAttrSlot(String name) {
 		if (name == "this")
-			return this;
+			return nodeattr$this;
 		if (name == "parent")
-			return this.parent();
-		foreach (AttrSlot a; this.values(); a.name == name) {
-			if (a instanceof ScalarAttrSlot)
-				return a.get(this);
-			else if (a instanceof SpaceAttrSlot)
-				return a.getArray(this);
-			else if (a instanceof ExtSpaceAttrSlot)
-				return a.iterate(this);
-		}
-		if (ext_data != null) {
-			foreach (Object dat; ext_data) {
-				if (dat instanceof DataAttachInfo && dat.p_slot.name == name)
-					return dat.p_data;
-				else if (dat instanceof ANode && dat.pslot().name == name)
-					return dat;
-			}
-		}
+			return nodeattr$parent;
+		foreach (AttrSlot a; this.values(); a.name == name)
+			return a;
+		foreach (DataAttachInfo dat; getExtData(); dat.p_slot.name == name)
+			return dat.p_slot;
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
-
-	public final ExtChildrenIterator getExtChildIterator(AttrSlot attr) {
-		return new ExtChildrenIterator(this, attr);
-	}
 	
-	public final Object getExtData(AttrSlot attr) {
-		if (ext_data != null) {
-			foreach (Object dat; ext_data) {
-				if (dat instanceof DataAttachInfo && dat.p_slot == attr)
-					return dat.p_data;
-				else if (dat instanceof ANode && dat.pslot() == attr)
-					return dat;
-			}
+	public final Object getVal(AttrSlot attr) {
+		if (attr instanceof ParentAttrSlot) {
+			if (attr == ANode.nodeattr$parent)
+				return parent();
+			return getExtParent(attr);
 		}
+		if (attr.isExtData() || attr instanceof ExtSpaceAttrSlot)
+			return getExtData(attr);
+		if (attr instanceof ScalarAttrSlot)
+			return attr.get(this);
+		if (attr instanceof ASpaceAttrSlot)
+			return attr.getArray(this);
 		return null;
 	}
 	
-	public final ANode getExtParent(ParentAttrSlot attr) {
-		assert (attr.is_unique);
-		if (ext_data != null) {
-			foreach (ParentInfo pi; ext_data; pi.p_slot.parent_attr_slot == attr)
-				return pi.p_parent;
+	public final void setVal(AttrSlot attr, Object data) {
+		if (attr instanceof ParentAttrSlot) {
+			if (data == null)
+				delExtParent((ParentAttrSlot)attr);
 		}
+		else if (attr.isExtData()) {
+			if (attr instanceof ScalarAttrSlot)
+				setExtData(attr, data);
+			else
+				setExtArray(attr, (INode[])data);
+		}
+		else if (attr instanceof ScalarAttrSlot)
+			attr.set(this, data);
+		else if (attr instanceof SpaceAttrSlot)
+			attr.setArray(this, (INode[])data);
+		else if (attr instanceof ExtSpaceAttrSlot) {
+			if (data instanceof INode[])
+				setExtArray((ExtSpaceAttrSlot)attr, (INode[])data);
+			else
+				attr.add(this, (INode)data);
+		}
+	}
+	
+	public final Object getVal(AttrSlot attr, int idx) {
+		Object val = getVal(attr);
+		if (val instanceof INode[])
+			return ((INode[])val)[idx];
+		if (idx == 0)
+			return val;
+		throw new ArrayIndexOutOfBoundsException(idx);
+	}
+	
+	public final void setVal(AttrSlot attr, int idx, Object data) {
+		if (attr instanceof ASpaceAttrSlot)
+			spaceSlotSet((ASpaceAttrSlot)attr, idx, (INode)data);
+		else if (idx == 0)
+			setVal(attr, data);
+		else
+			throw new ArrayIndexOutOfBoundsException(idx);
+	}
+	
+	public final void addVal(AttrSlot attr, Object data) {
+		if (attr instanceof ASpaceAttrSlot)
+			spaceSlotAppend((ASpaceAttrSlot)attr, (INode)data);
+		else
+			throw new ArrayIndexOutOfBoundsException(0);
+	}
+	
+	public final void delVal(AttrSlot attr, int idx) {
+		if (attr instanceof ASpaceAttrSlot)
+			spaceSlotDelete((ASpaceAttrSlot)attr, idx);
+		else
+			throw new ArrayIndexOutOfBoundsException(0);
+	}
+	
+	public final void insVal(AttrSlot attr, int idx, Object data) {
+		if (attr instanceof ASpaceAttrSlot)
+			spaceSlotInsert((ASpaceAttrSlot)attr, idx, (INode)data);
+		else
+			throw new ArrayIndexOutOfBoundsException(0);
+	}
+	
+	private Object getExtData(AttrSlot attr) {
+		foreach (DataAttachInfo dat; getExtData(); dat.p_slot == attr)
+			return dat.p_data;
 		return null;
 	}
 	
-	public final void setExtData(Object d, AttrSlot attr) {
-		assert (!(attr instanceof ExtSpaceAttrSlot));
+	private INode getExtParent(AttrSlot attr) {
+		assert (((ParentAttrSlot)attr).is_unique);
+		foreach (ParentInfo pi; getExtData(); pi.p_slot.parent_attr_slot == attr)
+			return pi.p_parent;
+		return null;
+	}
+	
+	private void setExtData(AttrSlot attr, Object d) {
+		assert (attr instanceof ScalarAttrSlot);
 		if (d == null) {
 			delExtData(attr);
 			return;
 		}
 
-		Object[] ext_data = this.ext_data;
-		if (attr.is_child && attr instanceof ScalarAttrSlot) {
-			ANode n = (ANode)d;
-			assert(!n.isAttached());
-			if (ext_data == null) {
-				this.ext_data = new Object[]{n};
-				n.callbackAttached(this, attr);
-				return;
-			}
-			int sz = ext_data.length;
-			for (int i=0; i < sz; i++) {
-				Object dat = ext_data[i];
-				if !(dat instanceof ANode)
-					continue;
-				if (dat.p_slot == attr) {
-					if (dat == n)
-						return;
-					ext_data = (Object[])ext_data.clone();
-					ext_data[i] = n;
-					this.ext_data = ext_data;
-					n.callbackAttached(this, attr);
-					return;
-				}
-			}
-			Object[] tmp = new Object[sz+1];
-			for (int i=0; i < sz; i++)
-				tmp[i] = ext_data[i];
-			tmp[sz] = n;
-			this.ext_data = tmp;
-			n.callbackAttached(this, attr);
-			return;
-		}
-		
-		if (attr instanceof SpaceAttrSlot && ((ANode[])d).length == 0) {
-			delExtData(attr);
-			return;
-		}
-		
-		if (ext_data == null) {
-			this.ext_data = new Object[]{new DataAttachInfo(d,attr)};
-			return;
-		}
-		int sz = ext_data.length;
-		for (int i=0; i < sz; i++) {
-			Object dat = ext_data[i];
+		Object[] arr = this.getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object dat = arr[i];
 			if !(dat instanceof DataAttachInfo)
 				continue;
 			DataAttachInfo ai = (DataAttachInfo)dat;
 			if (ai.p_slot == attr) {
 				if (ai.p_data == d)
 					return;
-				ext_data = (Object[])ext_data.clone();
-				ext_data[i] = new DataAttachInfo(d,attr);
-				this.ext_data = ext_data;
+				setExtElem(arr,i,new DataAttachInfo(d,attr));
+				callbackDataSet(attr, dat.p_data, d, -1);
 				return;
 			}
 		}
-		Object[] tmp = new Object[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = ext_data[i];
-		tmp[sz] = new DataAttachInfo(d,attr);
-		this.ext_data = tmp;
+		insExtElem(arr,arr.length,new DataAttachInfo(d,attr));
+		callbackDataSet(attr, null, d, -1);
 		return;
 	}
 
-	public final void addExtData(ANode n, AttrSlot attr) {
-		assert (!n.isAttached());
-		assert (attr.is_child && attr instanceof ExtSpaceAttrSlot);
-		Object[] ext_data = this.ext_data;
-		if (ext_data == null) {
-			this.ext_data = new Object[]{n};
-			n.callbackAttached(this, attr);
+	private void setExtArray(AttrSlot attr, INode[] arr) {
+		assert (attr instanceof ASpaceAttrSlot);
+		if (arr.length == 0) {
+			delExtData(attr);
 			return;
 		}
-		int sz = ext_data.length;
-		Object[] tmp = new Object[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = ext_data[i];
-		tmp[sz] = n;
-		this.ext_data = tmp;
-		n.callbackAttached(this, attr);
-		return;
-	}
-
-	public final void replaceExtData(ANode nold, ANode nnew, AttrSlot attr) {
-		assert (nold.isAttached());
-		assert (!nnew.isAttached());
-		assert (attr.is_child && attr instanceof ExtSpaceAttrSlot);
-		assert (ext_data != null);
-		Object[] ext_data = this.ext_data;
-		int sz = ext_data.length;
-		for (int i=0; i < sz; i++) {
-			if (ext_data[i] == nold) {
-				this.ext_data = (Object[])ext_data.clone();
-				this.ext_data[i] = nnew;
-				nold.callbackDetached(this, attr);
-				nnew.callbackAttached(this, attr);
-				return;
-			}
-		}
-		assert ("Node is not ext_data child");
-		return;
-	}
-
-	public final void delExtData(AttrSlot attr) {
-		Object[] ext_data = this.ext_data;
-		if (ext_data == null)
-			return;
-		int sz = ext_data.length-1;
-		if (attr.is_child && !(attr instanceof SpaceAttrSlot)) {
-			for (int idx=0; idx <= sz; idx++) {
-				Object dat = ext_data[idx];
-				if (dat instanceof ANode) {
-					ANode n = (ANode)dat;
-					if (n.p_slot == attr) {
-						if (sz == 0) {
-							this.ext_data = null;
-						} else {
-							Object[] tmp = new Object[sz];
-							int i;
-							for (i=0; i < idx; i++) tmp[i] = ext_data[i];
-							for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
-							this.ext_data = tmp;
-						}
-						n.callbackDetached(this, attr);
-						return;
-					}
-				}
-			}
-		}
-		for (int idx=0; idx <= sz; idx++) {
-			Object dat = ext_data[idx];
-			if (dat instanceof DataAttachInfo) {
-				DataAttachInfo ai = (DataAttachInfo)dat;
-				if (ai.p_slot == attr) {
-					if (sz == 0) {
-						this.ext_data = null;
-					} else {
-						Object[] tmp = new Object[sz];
-						int i;
-						for (i=0; i < idx; i++) tmp[i] = ext_data[i];
-						for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
-						this.ext_data = tmp;
-					}
+		Object[] ext_data = getExtData();
+		for (int i=0; i < ext_data.length; i++) {
+			Object dat = ext_data[i];
+			if !(dat instanceof DataAttachInfo)
+				continue;
+			DataAttachInfo ai = (DataAttachInfo)dat;
+			if (ai.p_slot == attr) {
+				if (ai.p_data == arr)
 					return;
-				}
-			}
-		}
-	}
-
-	public final void delExtData(ANode n) {
-		assert (n.isAttached());
-		assert (n.parent() == this);
-		assert (n.pslot().is_child && !(n.pslot() instanceof SpaceAttrSlot));
-		Object[] ext_data = this.ext_data;
-		assert(ext_data != null);
-		int sz = ext_data.length-1;
-		for (int idx=0; idx <= sz; idx++) {
-			if (n == ext_data[idx]) {
-				if (sz == 0) {
-					this.ext_data = null;
-				} else {
-					Object[] tmp = new Object[sz];
-					int i;
-					for (i=0; i < idx; i++) tmp[i] = ext_data[i];
-					for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
-					this.ext_data = tmp;
-				}
-				n.callbackDetached(this, n.pslot());
+				setExtElem(ext_data,i,new DataAttachInfo(arr,attr));
 				return;
 			}
 		}
-		assert ("Child node not found in ext_data");
+		insExtElem(ext_data,ext_data.length,new DataAttachInfo(arr,attr));
 	}
 
-	public final void delExtParent(ParentAttrSlot attr) {
+	private void delExtData(AttrSlot attr) {
+		Object[] arr = getExtData();
+		for (int i=0; i < arr.length; i++) {
+			Object dat = arr[i];
+			if (dat instanceof DataAttachInfo && dat.p_slot == attr) {
+				delExtElem(arr,i,dat);
+				return;
+			}
+		}
+	}
+
+	private void delExtParent(ParentAttrSlot attr) {
 		assert (attr.is_unique);
-		Object[] ext_data = this.ext_data;
-		if (ext_data == null)
-			return;
-		int sz = ext_data.length-1;
-		for (int idx=0; idx <= sz; idx++) {
-			Object dat = ext_data[idx];
-			if (dat instanceof ParentInfo) {
-				ParentInfo pi = (ParentInfo)dat;
-				if (pi.p_slot.parent_attr_slot == attr) {
-					if (sz == 0) {
-						this.ext_data = null;
-					} else {
-						Object[] tmp = new Object[sz];
-						int i;
-						for (i=0; i < idx; i++) tmp[i] = ext_data[i];
-						for (   ; i <  sz; i++) tmp[i] = ext_data[i+1];
-						this.ext_data = tmp;
-					}
-					pi.p_parent.callbackDetached(this, pi.p_slot);
-					return;
-				}
+		Object[] ext_data = getExtData();
+		for (int i=0; i <= ext_data.length; i++) {
+			Object dat = ext_data[i];
+			if (dat instanceof ParentInfo && dat.p_slot.parent_attr_slot == attr) {
+				delExtElem(ext_data,i,dat);
+				dat.p_parent.callbackDataSet(dat.p_slot, this, null, -1);
+				return;
 			}
 		}
+	}
+	
+	private void spaceSlotSet(ASpaceAttrSlot slot, int idx, INode node) {
+		INode[] narr = (INode[])slot.getArray(this).clone();
+		INode old = narr[idx];
+		narr[idx] = node;
+		slot.setArray(this,narr);
+		if (slot.isAttr())
+			this.callbackDataSet(slot, old, node, idx);
+	}
+
+	private void spaceSlotAppend(ASpaceAttrSlot slot, INode node) {
+		INode[] narr = slot.getArray(this);
+		int sz = narr.length;
+		INode[] tmp = (INode[])java.lang.reflect.Array.newInstance(slot.typeinfo.clazz,sz+1); //new N[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = narr[i];
+		tmp[sz] = node;
+		slot.setArray(this,tmp);
+		if (slot.isAttr())
+			this.callbackDataSet(slot, null, node, sz);
+	}
+
+	private void spaceSlotDelete(ASpaceAttrSlot slot, int idx) {
+		INode[] narr = slot.getArray(this);
+		INode node = narr[idx];
+		int sz = narr.length-1;
+		INode[] tmp = (INode[])java.lang.reflect.Array.newInstance(slot.typeinfo.clazz,sz); //new N[sz];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = narr[i];
+		for (; i < sz; i++)
+			tmp[i] = narr[i+1];
+		slot.setArray(this,tmp);
+		if (slot.isAttr())
+			this.callbackDataSet(slot, node, null, idx);
+	}
+
+	private void spaceSlotInsert(ASpaceAttrSlot slot, int idx, INode node) {
+		INode[] narr = slot.getArray(this);
+		int sz = narr.length;
+		if (idx > sz) idx = sz;
+		INode[] tmp = (INode[])java.lang.reflect.Array.newInstance(slot.typeinfo.clazz,sz+1); //new N[sz+1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = narr[i];
+		tmp[idx] = node;
+		for (; i < sz; i++)
+			tmp[i+1] = narr[i];
+		slot.setArray(this,tmp);
+		if (slot.isAttr())
+			this.callbackDataSet(slot, null, node, idx);
+	}
+
+	public final void walkTree(INode parent, AttrSlot slot, ITreeWalker walker) {
+		if (walker.pre_exec(this, parent, slot)) {
+			foreach (AttrSlot attr; this.values(); attr.isChild()) {
+				if (attr instanceof ASpaceAttrSlot)
+					walker.visitINodeSpace(attr.getArray(this), this, attr);
+				else if (attr instanceof ScalarAttrSlot)
+					walker.visitINode((INode)attr.get(this), this, attr);
+			}
+			//foreach (DataAttachInfo dat; getExtData()) {
+			//	AttrSlot attr = dat.p_slot;
+			//	if (attr.isChild() && (attr.isExternal() || attr instanceof ExtSpaceAttrSlot)) {
+			//		if (dat.p_data instanceof INode[])
+			//			walker.visitINodeSpace((INode[])dat.p_data, this, attr);
+			//		else
+			//			walker.visitINode((INode)dat.p_data, this, attr);
+			//	}
+			//}
+		}
+		walker.post_exec(this, parent, slot);
 	}
 
 	public final void walkTree(TreeWalker walker) {
-//#ifndef OLD_WALKER
-//#		this.walkTreeFast(walker);
-//#else OLD_WALKER
 		if (walker.pre_exec(this)) {
-			foreach (AttrSlot attr; this.values(); attr.is_child) {
-				if (attr instanceof SpaceAttrSlot)
+			foreach (AttrSlot attr; this.values(); attr.isChild()) {
+				if (attr instanceof ASpaceAttrSlot)
 					walker.visitANodeSpace(attr.getArray(this));
 				else if (attr instanceof ScalarAttrSlot)
 					walker.visitANode((ANode)attr.get(this));
 			}
-			Object[] ext_data = this.ext_data;
-			if (ext_data != null) {
-				foreach (ANode n; ext_data; n.p_slot.is_external || n.p_slot instanceof ExtSpaceAttrSlot)
-					walker.visitANode(n);
-			}
+			//foreach (DataAttachInfo dat; getExtData(); dat.p_slot.isChild() && (dat.p_slot.isExternal() || dat.p_slot instanceof ExtSpaceAttrSlot)) {
+			//	if (dat.p_data instanceof INode[])
+			//		walker.visitANodeSpace((INode[])dat.p_data);
+			//	else
+			//		walker.visitANode((ANode)dat.p_data);
+			//}
 		}
 		walker.post_exec(this);
-//#endif OLD_WALKER
-	}
-
-	public final void walkTreeFast(TreeWalker walker) {
-		if (walker.pre_exec(this))
-			this.walkTreeFastVisit(walker);
-		walker.post_exec(this);
-	}
-	protected void walkTreeFastVisit(TreeWalker $walker) {
-		Object[] ext_data = this.ext_data;
-		if (ext_data == null)
-			return;
-		foreach (Object dat; ext_data) {
-			if (dat instanceof ANode)
-				$walker.visitANode((ANode)dat);
-			else if (dat instanceof DataAttachInfo && dat.p_slot.is_attr && (dat.p_slot instanceof SpaceAttrSlot))
-				$walker.visitANodeSpace((ANode[])dat.p_data);
-		}
-	}
-
-	public void setFrom(Object from) {
-		throw new Error(); // redundant code, method shell be removed
-	}
-	public ASTNode.VVV nodeBackup() {
-		throw new Error();
-	}
-	public void nodeRestore(ASTNode.VVV from) {
-		this.p_slot = from.p_slot;
-		this.p_parent = from.p_parent;
-		this.ext_data = from.ext_data;
-	}
-	
-
-	public final this.type ncopy() {
-		CopyContext cc = new CopyContext();
-		ANode t = (ANode)this.copy(cc);
-		cc.updateLinks();
-		return t;
-	}
-	public final this.type ncopy(CopyContext cc) {
-		return (ANode)this.copy(cc);
 	}
 
 	public Object copy(CopyContext cc) {
+		INode obj = cc.getCopyOf(this.getUID());
+		if (obj != null)
+			return obj;
 		if (this instanceof TypeInfoInterface)
-			return this.copyTo(((TypeInfoInterface)this).getTypeInfoField().newInstance(), cc);
+			obj = (INode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
 		else
-			return this.copyTo(this.getClass().newInstance(), cc);
+			obj = (INode)this.getClass().newInstance();
+		cc.addCopyInfo(this,obj);
+		return this.copyTo(obj, cc);
 	}
 
 	public Object copyTo(Object to$node, CopyContext in$context) {
 		ANode node = (ANode)to$node;
-		Object[] this_ext_data = this.ext_data;
-		if (this_ext_data != null) {
-			int sz = this_ext_data.length;
-			node.ext_data = new Object[sz];
-			int j=0;
-			for (int i=0; i < sz; i++) {
-				Object dat = this_ext_data[i];
-				if (dat instanceof ANode) {
-					ANode n = (ANode)dat;
-					ANode nd = n.ncopy(in$context);
-					node.ext_data[j++] = nd;
-					nd.callbackAttached(node, n.p_slot);
-				}
-				else if (dat instanceof DataAttachInfo) {
-					DataAttachInfo ai = (DataAttachInfo)dat;
-					if (ai.p_slot.is_attr && (ai.p_slot instanceof SpaceAttrSlot)) {
-						ANode[] sarr = (ANode[])ai.p_data;
-						ANode[] narr = (ANode[])sarr.clone();
-						for (int x=0; x < narr.length; x++) {
-							ANode n = sarr[x].ncopy(in$context);
-							narr[x] = n;
-							n.callbackAttached(node, ai.p_slot);
-						}
-						node.ext_data[j++] = new DataAttachInfo(narr,ai.p_slot);
-					} else {
-						node.ext_data[j++] = ai;
+		Object[] this_ext_data = this.getExtData();
+		for (int i=0; i < this_ext_data.length; i++) {
+			Object dat = this_ext_data[i];
+			if (dat instanceof DataAttachInfo) {
+				DataAttachInfo ai = (DataAttachInfo)dat;
+				if (ai.p_slot.isAttr()) {
+					if (ai.p_data instanceof ANode) {
+						INode n = (INode)dat.p_data;
+						INode nd = (INode)n.copy(in$context);
+						AttrSlot slot = ai.p_slot;
+						node.setVal(slot,nd);
+						continue;
 					}
+					else if (ai.p_slot instanceof ASpaceAttrSlot) {
+						INode[] narr = (INode[])((INode[])ai.p_data).clone();
+						for (int x=0; x < narr.length; x++)
+							narr[x] = (INode)narr[x].copy(in$context);
+						node.setVal(ai.p_slot,narr);
+						for (int x=0; x < narr.length; x++)
+							node.callbackDataSet(ai.p_slot, null, narr[x], x);
+					}
+				} else {
+					node.setVal(ai.p_slot,ai.p_data);
 				}
-			}
-			if (j < sz) {
-				if (j == 0)
-					node.ext_data = null;
-				else
-					node.ext_data = (Object[])Arrays.cloneToSize(node.ext_data,j);
 			}
 		}
-		if (this instanceof Symbol)
-			in$context.addSymbol((Symbol)this,(Symbol)node);
-		else if (this instanceof SymbolRef)
-			in$context.addSymbolRef((SymbolRef)node, ((SymbolRef)this).symbol);
-		else if (this instanceof ENode)
-			in$context.addSymbolRef((ENode)node, ((ENode)this).symbol);
 		return node;
 	}
 	
-	public final this.type detach()
-		alias fy operator ~
+	public final this.type detach(INode parent, AttrSlot slot)
 	{
+		//assert (parent == parent());
+		//assert (slot == pslot());
 		if (isAttached()) {
-			this.pslot().detach(this.parent(), this);
-			assert(!isAttached());
+			slot.detach(parent, this);
+			//assert(!isAttached());
 		}
-		Object[] ext_data = this.ext_data;
-		if (ext_data != null) {
-			foreach (ParentInfo pi; ext_data)
-				pi.p_slot.detach(pi.p_parent, this);
-		}
+		foreach (ParentInfo pi; getExtData())
+			pi.p_slot.detach(pi.p_parent, this);
 		return this;
 	}
 	
-	public final ScalarPtr getScalarPtr(String name) {
-		foreach (ScalarAttrSlot attr; this.values(); attr.name == name)
-			return new ScalarPtr(this, attr);
-		throw new RuntimeException("No @nodeAttr/@nodeData attribute '"+name+"' in "+getClass());
+	public final this.type detach()
+		operator "~ V"
+	{
+		return detach(parent(), pslot());
 	}
 	
-	public final SpacePtr getSpacePtr(String name) {
-		foreach (SpaceAttrSlot attr; this.values(); attr.name == name)
-			return new SpacePtr(this, attr);
-		throw new RuntimeException("No @nodeAttr/@nodeData space '"+name+"' in "+getClass());
-	}
-
-	public final <N extends ANode> N replaceWithNode(N node) {
-		assert(isAttached());
+	public final <N extends INode> N replaceWithNode(N node, INode parent, AttrSlot pslot) {
+		//assert(isAttached());
 		if (node == null) {
-			this.detach();
+			this.detach(parent, pslot);
 			return null;
 		}
-		ANode parent = parent();
-		AttrSlot pslot = pslot();
-		if (pslot instanceof SpaceAttrSlot) {
+		//assert (parent == parent());
+		//assert (pslot == pslot());
+		if (pslot instanceof ASpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
 			assert(idx >= 0);
 			pslot.set(parent, idx, node);
 		}
-		else if (pslot instanceof ExtSpaceAttrSlot) {
-			parent.replaceExtData(this,node,pslot);
-		}
 		else if (pslot instanceof ScalarAttrSlot) {
-			assert(pslot.get(parent) == this);
+			//assert(pslot.get(parent) == this);
 			pslot.set(parent, node);
 		}
-		assert(node == null || node.isAttached());
+		//assert(node == null || node.isAttached());
 		if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
 			((ASTNode)node).pos = ((ASTNode)this).pos;
 		return node;
 	}
 	
-	public ANode doRewrite(RewriteContext ctx) {
+	public INode doRewrite(RewriteContext ctx) {
 		if !(this instanceof ASTNode)
-			return this.ncopy();
-		ANode rn = (ANode)getClass().newInstance();
-		foreach (AttrSlot attr; this.values(); attr.is_attr && !attr.is_not_copyable) {
-			if (attr instanceof SpaceAttrSlot) {
-				ANode[] vals = attr.getArray(this);
-				for (int i=0; i < vals.length; i++) {
-					ANode n = vals[i].doRewrite(ctx);
-					if (n instanceof BlockRewr) {
-						foreach (ASTNode st; n.stats) {
-							n = (ANode)ctx.fixup(attr,st);
-							if (n != null)
-								((SpaceAttrSlot)attr).add(rn,n);
-						}
-					} else {
-						n = (ANode)ctx.fixup(attr,n);
-						if (n != null)
-							((SpaceAttrSlot)attr).add(rn,n);
-					}
-				}
-			}
-			else if (attr instanceof ExtSpaceAttrSlot) {
-				foreach (ANode n; attr.iterate(this)) {
-					Object obj = n.doRewrite(ctx);
+			return new Copier().copyFull(this);
+		ANode rn;
+		if (this instanceof TypeInfoInterface)
+			rn = (ANode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
+		else
+			rn = (ANode)this.getClass().newInstance();
+		if (this instanceof DNode)
+			((DNode)rn).nodeflags = ((DNode)this).nodeflags;
+		foreach (AttrSlot attr; this.values(); attr.isAttr() && !attr.isNotCopyable()) {
+			if (attr instanceof ASpaceAttrSlot) {
+				foreach (INode n; attr.iterate(this)) {
+					Object obj = n.asANode().doRewrite(ctx);
 					if (obj instanceof BlockRewr) {
 						foreach (ASTNode st; obj.stats) {
-							n = (ANode)ctx.fixup(attr,st);
+							n = (INode)ctx.fixup(attr,st);
 							if (n != null)
 								attr.add(rn,n);
 						}
 					} else {
-						n = (ANode)ctx.fixup(attr,obj);
+						n = (INode)ctx.fixup(attr,obj);
 						if (n != null)
 							attr.add(rn,n);
 					}
@@ -942,7 +1050,7 @@ public abstract class ANode implements INode {
 				if (val == null)
 					continue;
 				else if (val instanceof ANode) {
-					ANode rw = val.doRewrite(ctx);
+					INode rw = val.doRewrite(ctx);
 					while (rw instanceof BlockRewr && rw.stats.length == 1)
 						rw = rw.stats[0];
 					attr.set(rn,ctx.fixup(attr,rw));
@@ -951,21 +1059,68 @@ public abstract class ANode implements INode {
 					attr.set(rn,ctx.fixup(attr,val));
 			}
 		}
-		if (this.ext_data != null) {
-			foreach (ANode n; this.ext_data) {
-				AttrSlot attr = n.p_slot;
-				if (attr instanceof ScalarAttrSlot && attr.is_external)
-					this.setExtData(ctx.fixup(attr,n.doRewrite(ctx)),attr);
-			}
-		}
+		//foreach (DataAttachInfo dat; this.getExtData()) {
+		//	AttrSlot attr = dat.p_slot;
+		//	if (attr instanceof ScalarAttrSlot && attr.isExternal())
+		//		this.setExtData(attr, ctx.fixup(attr,((INode)dat.p_data).asANode().doRewrite(ctx)));
+		//}
 		return rn;
 	}
 	
+	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.isAutoComplete()) {
+			foreach (AttrSlot attr; values(); attr == slot) {
+				if (attr instanceof ScalarAttrSlot) {
+					Object val = attr.get(this);
+					if (val instanceof SymbolRef)
+						return val.autoCompleteSymbol(str);
+				}
+				TypeInfo ti = attr.typeinfo;
+				if (SymbolRef.class == ti.clazz) {
+					ti = ti.getTopArgs()[0];
+					return SymbolRef.autoCompleteSymbol(this, str, slot, fun (DNode dn)->boolean {
+						return ti.$instanceof(dn);
+					});
+				}
+				return null;
+			}
+		}
+		if (!slot.isChild()) {
+			if (slot.typeinfo.clazz == Boolean.TYPE) {
+				AutoCompleteResult result = new AutoCompleteResult(true);
+				result.append("false", "boolean", null, Boolean.FALSE); 
+				result.append("true", "boolean", null, Boolean.TRUE);
+				return result;
+			}
+			if (slot.typeinfo.clazz == Boolean.class) {
+				AutoCompleteResult result = new AutoCompleteResult(true);
+				result.append("false", "Boolean", null, Boolean.FALSE); 
+				result.append("true", "Boolean", null, Boolean.TRUE);
+				result.append("null", "null", null, null);
+				return result;
+			}
+			if (Enum.class.isAssignableFrom(slot.typeinfo.clazz) && Enum.class != slot.typeinfo.clazz) {
+				AutoCompleteResult result = new AutoCompleteResult(true);
+				foreach (Enum e; (Enum[])slot.typeinfo.clazz.getDeclaredMethod(Constants.nameEnumValues).invoke(null)) {
+					result.append(e.toString(), e.getClass().getName(), null, e); 
+				}
+				result.append("null", "null", null, null);
+				return result;
+			}
+		}
+		return null;
+	}
+
 }
 
 public class TreeWalker {
 	public boolean pre_exec(ANode n) { return true; }
 	public void post_exec(ANode n) {}
+
+	public final void visitANodeSpace(INode[] vals) {
+		for (int i=0; i < vals.length; i++)
+			this.visitANode(vals[i].asANode());
+	}
 
 	public final void visitANodeSpace(ANode[] vals) {
 		for (int i=0; i < vals.length; i++)
@@ -976,6 +1131,27 @@ public class TreeWalker {
 		while (val != null) {
 			try {
 				val.walkTree(this);
+				return;
+			} catch (ReWalkNodeException e) {
+				val = e.replacer;
+			}
+		}
+	}
+}
+
+public class ITreeWalker {
+	public boolean pre_exec(INode n, INode parent, AttrSlot slot) { return true; }
+	public void post_exec(INode n, INode parent, AttrSlot slot) {}
+
+	public final void visitINodeSpace(INode[] vals, INode parent, AttrSlot slot) {
+		for (int i=0; i < vals.length; i++)
+			this.visitINode(vals[i], parent, slot);
+	}
+
+	public final void visitINode(INode val, INode parent, AttrSlot slot) {
+		while (val != null) {
+			try {
+				val.walkTree(parent, slot, this);
 				return;
 			} catch (ReWalkNodeException e) {
 				val = e.replacer;
@@ -1010,6 +1186,22 @@ class CurrentVersionInfo extends VersionInfo {
 	}
 }
 
+public final class SemContext extends Context {
+	public final SemContext prev;
+	public SemContext(SemContext prev) {
+		this.prev = prev;
+	}
+	public final boolean inherits(Context ctx) {
+		for (SemContext self = this; self != null; self = self.prev) {
+			if (self == ctx)
+				return true;
+		}
+		if (ctx == Context.DEFAULT)
+			return true;
+		return false;
+	}
+}
+
 @ThisIsANode(lang=CoreLang)
 public abstract class ASTNode extends ANode implements Constants {
 
@@ -1019,127 +1211,29 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	private static final AttrSlot[] $values = {}; // {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
 
-//#ifndef UNVERSIONED
 	@UnVersioned
-	public VVV						v_editor;
-//#else UNVERSIONED
-//#	@UnVersioned @abstract
-//#	public:ro VVV						v_editor;
-//#	@getter public VVV get$v_editor() { return null;}
-//#endif UNVERSIONED
+	private int compileflags;	// temporal flags for compilation process
 
-	@UnVersioned
-	public int						pos;
-	@UnVersioned
-	public int						compileflags;	// temporal flags for compilation process
+	public Language getCompilerLang() { return null; }
+	public String getCompilerNodeName() { return null; }
 	
-	public int						nodeflags;		// presistent flags of the node
-	
-	// Uncomment to compile with symade-04g.jar
-	//@nodeData @abstract
-	//public:ro ANode					parent;
-	
-	public Language getCompilerLang() { return CoreLang; }
-	public String getCompilerNodeName() { return "ASTNode"; }
-	
-	public static class VVV extends ANode.VVV {
-		int						transaction_id;
-		int						compileflags;
-		int						nodeflags;
-
-		public VVV(ASTNode node) {
-			super(node);
-			this.compileflags = node.compileflags;
-			this.nodeflags = node.nodeflags;
-		}
-	}
-	
-	@setter public final void set$nodeflags(int value) {
-		if (ASTNode.EXECUTE_UNVERSIONED || !this.versioned)
-			this.nodeflags = value;
-		else if (Thread.currentThread().getThreadGroup() == CompilerThreadGroup)
-			ASTNode.openCmp(this).nodeflags = value;
-		else
-			ASTNode.openEdt(this).nodeflags = value;
-	}
-	
-	@getter public final int get$nodeflags() {
-		if (ASTNode.EXECUTE_UNVERSIONED || Thread.currentThread().getThreadGroup() == CompilerThreadGroup || this.v_editor == null)
-			return this.nodeflags;
-		return this.v_editor.nodeflags;
-	}
-	
-	@setter public final void set$pos(int value) { this.pos = value; }
-	@getter public final int get$pos() { return this.pos; }
-	
-
-	public @packed:3,nodeflags, 0 int     mflags_access;
-
-	public @packed:1,nodeflags, 3 boolean mflags_is_static;
-	public @packed:1,nodeflags, 4 boolean mflags_is_final;
-	public @packed:1,nodeflags, 5 boolean mflags_is_mth_synchronized;	// method
-	public @packed:1,nodeflags, 5 boolean mflags_is_struct_super;		// struct
-	public @packed:1,nodeflags, 6 boolean mflags_is_fld_volatile;		// field
-	public @packed:1,nodeflags, 6 boolean mflags_is_mth_bridge;			// method
-	public @packed:1,nodeflags, 7 boolean mflags_is_fld_transient;		// field
-	public @packed:1,nodeflags, 7 boolean mflags_is_mth_varargs;			// method
-	public @packed:1,nodeflags, 8 boolean mflags_is_native;				// native method, backend operation/field/struct
-	public @packed:1,nodeflags, 9 boolean mflags_is_struct_interface;
-	public @packed:1,nodeflags,10 boolean mflags_is_abstract;
-	public @packed:1,nodeflags,11 boolean mflags_is_math_strict;			// strict math
-	public @packed:1,nodeflags,12 boolean mflags_is_synthetic;			// any decl that was generated (not in sources)
-	public @packed:1,nodeflags,13 boolean mflags_is_struct_annotation;
-	public @packed:1,nodeflags,14 boolean mflags_is_enum;				// struct/decl group/fields
-		
-	// Flags temporary used with java flags
-	public @packed:1,nodeflags,16 boolean mflags_is_forward;				// var/field/method, type is wrapper
-	public @packed:1,nodeflags,17 boolean mflags_is_virtual;				// var/field, method is 'static virtual', struct is 'view'
-	public @packed:1,nodeflags,18 boolean mflags_is_type_unerasable;		// typedecl, method/struct as parent of typedef
-	public @packed:1,nodeflags,19 boolean mflags_is_macro;				// macro-declarations for fields, methods, etc
-
-	// General flags
-	public @packed:1,nodeflags,21 boolean is_rewrite_target;
-	public @packed:1,nodeflags,22 boolean is_auto_generated;
-	public @packed:1,nodeflags,23 boolean is_interface_only;		// only node's interface was scanned/loded; no implementation
+	public final void compflagsLock() { compileflags |= 3; }
+	public final void compflagsClear() { compileflags &= 0xFFF0003; }
+	public final void compflagsClearUnLock() { compileflags &= 0xFFF0000; }
+	public final void compflagsClearAndLock() { compileflags = (compileflags & 0xFFF0000) | 3; }
 
 	// Structures
-	public @packed:1,nodeflags,24 boolean is_struct_fe_passed;
-	public @packed:1,nodeflags,25 boolean is_struct_has_pizza_cases;
-	public @packed:1,nodeflags,26 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
-	// Method flags
-	public @packed:1,nodeflags,24 boolean is_mth_virtual_static;
-	public @packed:1,nodeflags,25 boolean is_mth_operator;
-	public @packed:1,nodeflags,26 boolean is_mth_invariant;
-	// SymbolRef/ENode/ISymRef
-	public @packed:1,nodeflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
-	// Expression/statement flags
-	public @packed:1,nodeflags,25 boolean is_expr_as_field;
-	public @packed:1,nodeflags,26 boolean is_expr_primary;
-	public @packed:1,nodeflags,27 boolean is_expr_super;
-	// EToken
-	public @packed:1,nodeflags,27 boolean is_explicit; // explicit or implicit kind of EToken
-	// Var/Field
-	public @packed:7,nodeflags,24 int     mflags_var_kind;				// var/field kind
-	
-
-
-	// Structures
-	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2
-	public @packed:1,compileflags,9  boolean is_struct_args_resolved; // KievFE_Pass2
-	public @packed:1,compileflags,10 boolean is_struct_members_generated; // KievFE_Pass2
-	public @packed:1,compileflags,11 boolean is_struct_pre_generated; // KievME_PreGenartion
-
-	// EToken (unresolved e-node tokens) flags
-	public @packed:1,compileflags,8  boolean is_token_ident;
-	public @packed:1,compileflags,9  boolean is_token_operator;
-	public @packed:1,compileflags,10 boolean is_token_keyword;
-	public @packed:1,compileflags,11 boolean is_token_constant;
-	public @packed:1,compileflags,12 boolean is_token_type_decl;
+	public @packed:1,compileflags,6  boolean is_struct_type_resolved; // KievFE_Pass2
+	public @packed:1,compileflags,7  boolean is_struct_args_resolved; // KievFE_Pass2
+	public @packed:1,compileflags,8  boolean is_struct_members_generated; // KievFE_Pass2
+	public @packed:1,compileflags,9  boolean is_struct_pre_generated; // KievME_PreGenartion
 
 	// Expression/statement flags
-	public @packed:1,compileflags,8  boolean is_expr_gen_void;
-	public @packed:1,compileflags,9  boolean is_expr_for_wrapper;
-	public @packed:1,compileflags,10 boolean is_expr_cast_call;
+	public @packed:1,compileflags,6  boolean is_expr_gen_void;
+	public @packed:1,compileflags,7  boolean is_expr_for_wrapper;
+	public @packed:1,compileflags,8  boolean is_expr_cast_call;
+	public @packed:1,compileflags,9  boolean is_expr_as_field;
+	public @packed:1,compileflags,10 boolean is_expr_primary;
 
 	// Statement flags
 	public @packed:1,compileflags,11 boolean is_stat_abrupted;
@@ -1149,15 +1243,16 @@ public abstract class ASTNode extends ANode implements Constants {
 	public @packed:1,compileflags,15 boolean is_direct_flow_reachable; // reachable by direct control flow (with no jumps)
 
 	// Method flags
-	public @packed:1,compileflags,8  boolean is_mth_need_fields_init;
-	public @packed:1,compileflags,9  boolean is_mth_dispatcher;
+	public @packed:1,compileflags,6  boolean is_mth_need_fields_init;
+	public @packed:1,compileflags,7  boolean is_mth_dispatcher;
 
 	// Var/field
-	public @packed:1,compileflags,8  boolean is_need_proxy;
-	public @packed:1,compileflags,9  boolean is_init_wrapper;
-	public @packed:1,compileflags,10 boolean is_fld_added_to_init;
+	public @packed:1,compileflags,6  boolean is_need_proxy;
+	public @packed:1,compileflags,7  boolean is_init_wrapper;
+	public @packed:1,compileflags,8  boolean is_fld_added_to_init;
 
 	// General flags
+	public @packed:1,compileflags,4 boolean is_auto_generated;
 	public @packed:1,compileflags,3 boolean is_resolved;
 	public @packed:1,compileflags,2 boolean is_bad;
 	public @packed:1,compileflags,1 boolean versioned;
@@ -1167,43 +1262,23 @@ public abstract class ASTNode extends ANode implements Constants {
 		return ASTNode.$values;
 	}
 
-	public ASTNode.VVV nodeBackup() {
-		return new ASTNode.VVV(this);
-	}
-
-	public void nodeRestore(ASTNode.VVV from) {
-//#ifndef UNVERSIONED
-		this.compileflags = from.compileflags & ~3;
-		this.nodeflags = from.nodeflags;
-		super.nodeRestore(from);
-//#endif UNVERSIONED
-	}
-
 	public Object copyTo(Object to$node, CopyContext in$context) {
 		ASTNode node = (ASTNode)super.copyTo(to$node, in$context);
 		node.pos			= this.pos;
-		node.compileflags	= 0;
-		node.nodeflags		= this.nodeflags;
+		node.compflagsClearUnLock();
 		return node;
 	}
 
-	public final int getPosLine() { return pos >>> 11; }
-	
-	public final void replaceWithNodeReWalk(ASTNode node) {
-		node = replaceWithNode(node);
+	public final void replaceWithNodeReWalk(ASTNode node, INode parent, AttrSlot slot) {
+		node = replaceWithNode(node,parent,slot);
 		Kiev.runProcessorsOn(node);
 		throw new ReWalkNodeException(node);
 	}
-	public final void replaceWithReWalk(()->ASTNode fnode) {
-		ASTNode node = replaceWith(fnode);
-		Kiev.runProcessorsOn(node);
-		throw new ReWalkNodeException(node);
-	}
-	public final ASTNode replaceWith(()->ASTNode fnode) {
-		assert(isAttached());
-		ANode parent = parent();
-		AttrSlot pslot = pslot();
-		if (pslot instanceof SpaceAttrSlot) {
+	public final ASTNode replaceWith(()->ASTNode fnode, INode parent, AttrSlot pslot) {
+		//assert(isAttached());
+		//assert(parent == parent());
+		//assert(pslot == pslot());
+		if (pslot instanceof ASpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
 			assert(idx >= 0);
 			ASTNode n = fnode();
@@ -1213,28 +1288,18 @@ public abstract class ASTNode extends ANode implements Constants {
 			assert(n.isAttached());
 			return n;
 		}
-		else if (pslot instanceof ExtSpaceAttrSlot) {
-			throw new RuntimeException("replace external node");
-		}
 		else if (pslot instanceof ScalarAttrSlot) {
-			assert(pslot.get(parent) == this);
+			//assert(pslot.get(parent) == this);
 			pslot.set(parent, null);
 			ASTNode n = fnode();
 			if (n != null && n.pos == 0) n.pos = this.pos;
 			pslot.set(parent, n);
-			assert(n == null || n.isAttached());
+			//assert(n == null || n.isAttached());
 			return n;
 		}
 		throw new RuntimeException("replace unknown kind of AttrSlot");
 	}
 
-	// rewrite target (ENodes)
-	public final boolean isRewriteTarget() {
-		return this.is_rewrite_target;
-	}
-	public final void setRewriteTarget(boolean on) {
-		this.is_rewrite_target = on;
-	}
 	// resolved
 	public final boolean isResolved() {
 		return this.is_resolved;
@@ -1262,14 +1327,35 @@ public abstract class ASTNode extends ANode implements Constants {
 		return false;
 	}
 
-	public Type getType() { return Type.tpVoid; }
+	public Type getType(Env env) { return env.tenv.tpVoid; }
 
 	public ASTNode() {
-//#ifndef UNVERSIONED
-		Transaction tr = Transaction.get();
-		if (tr != null)
-			tr.add(this);
-//#endif UNVERSIONED
+		this(new AHandle(),((WorkerThread)Thread.currentThread()).semantic_context);
+	}
+	public ASTNode(AHandle handle) {
+		super(handle, ((WorkerThread)Thread.currentThread()).semantic_context);
+	}
+	public ASTNode(AHandle handle, SemContext context) {
+		super(handle, context);
+	}
+	
+	public static ASTNode getActual(ASTNode node) {
+		if (node == null)
+			return null;
+		SemContext semantic_context = ((WorkerThread)Thread.currentThread()).semantic_context;
+		foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
+			return nh;
+		return null;
+	}
+
+	public ANode parent() {
+		ANode parent = super.parent();
+		if (parent == null)
+			return null;
+		SemContext semantic_context = ((WorkerThread)Thread.currentThread()).semantic_context;
+		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
+			return nh;
+		return null;
 	}
 
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }
@@ -1277,220 +1363,49 @@ public abstract class ASTNode extends ANode implements Constants {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public boolean preResolveIn() {
-		foreach (AttrSlot attr; values(); attr.is_auto_resolve && SymbolRef.class.isAssignableFrom(attr.clazz)) {
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		foreach (AttrSlot attr; values(); attr.isAutoResolve() && attr.typeinfo.clazz == SymbolRef.class) {
+			String resolve_in = attr.auto_resolve_in;
+			ScopeOfNames scope = null;
+			if (resolve_in != null && resolve_in.length() > 0) {
+				Object sc = getVal(getAttrSlot(resolve_in.intern()));
+				if (sc instanceof SymbolRef)
+					sc = sc.dnode;
+				if (sc instanceof ScopeOfNames)
+					scope = (ScopeOfNames)sc;
+			}
 			if (attr instanceof ScalarAttrSlot) {
-				Object val = attr.get(this);
-				if (val instanceof SymbolRef)
-					val.resolveSymbol(attr.auto_resolve_severity);
+				SymbolRef sr = (SymbolRef)attr.get(this);
+				if (Env.needResolving(sr));
+					sr.resolveSymbol(attr.auto_resolve_severity, scope);
 			}
-			else if (attr instanceof SpaceAttrSlot) {
-				foreach (SymbolRef sr; attr.getArray(this))
-					sr.resolveSymbol(attr.auto_resolve_severity);
-			}
-			else if (attr instanceof ExtSpaceAttrSlot) {
-				foreach (SymbolRef sr; attr.iterate(this))
-					sr.resolveSymbol(attr.auto_resolve_severity);
+			else if (attr instanceof ASpaceAttrSlot) {
+				foreach (SymbolRef sr; attr.getArray(this); Env.needResolving(sr))
+					sr.resolveSymbol(attr.auto_resolve_severity, scope);
 			}
 		}
 		return true;
 	}
-	public void preResolveOut() {}
-	public boolean mainResolveIn() { return true; }
-	public void mainResolveOut() {}
-	public boolean preVerify() { return true; }
-	public void postVerify() {}
+	public void preResolveOut(Env env, INode parent, AttrSlot slot) {}
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return true; }
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {}
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) { return true; }
+	public void postVerify(Env env, INode parent, AttrSlot slot) {}
 
-	public Symbol[] resolveAutoComplete(String str, AttrSlot slot) {
-		if (slot.is_auto_complete) {
-			foreach (AttrSlot attr; values(); attr == slot) {
-				if (attr instanceof ScalarAttrSlot) {
-					Object val = attr.get(this);
-					if (val instanceof SymbolRef)
-						return val.autoCompleteSymbol(str);
-				}
-				TypeInfo ti = attr.typeinfo;
-				if (SymbolRef.class == ti.clazz) {
-					ti = ti.getTopArgs()[0];
-					return SymbolRef.autoCompleteSymbol(this, str, slot, fun (DNode dn)->boolean {
-						return ti.$instanceof(dn);
-					});
-				}
-				return null;
-			}
-		}
-		return null;
-	}
-
-	public static <A extends ASTNode> A openCmp(A self) {
-//#ifndef UNVERSIONED
-		if (!self.locked)
-			return self;
-		ASTNode.openCmp2(self);
-//#endif UNVERSIONED
-		return self;
-	}
-//#ifndef UNVERSIONED
-	private static synchronized void openCmp2(ASTNode self) {
-		ASTNode.VVV v = self.nodeBackup();
-		v.vvv_flags = VVV.IS_LOCKED|VVV.FOR_COMPILER;
-		if (self.v_editor == null) {
-			self.v_editor = v;
-		} else {
-			ASTNode.VVV n;
-			for (n = self.v_editor; n.vvv_next != null; n = n.vvv_next);
-			n.vvv_next = v;
-			v.vvv_prev = n;
-		}
-		self.locked = false;
-		Transaction tr = Transaction.get();
-		assert (tr != null);
-		tr.add(self);
-	}
-//#endif UNVERSIONED
-	public static ASTNode.VVV openEdt(ASTNode self) {
-//#ifndef UNVERSIONED
-		ASTNode.VVV ve = self.v_editor;
-		if (ve != null && (ve.vvv_flags & VVV.IS_LOCKED) == 0)
-			return ve;
-		openEdt2(self);
-//#endif UNVERSIONED
-		return self.v_editor;
-	}
-//#ifndef UNVERSIONED
-	private static synchronized void openEdt2(ASTNode self) {
-		ASTNode.VVV ve = self.v_editor;
-		if (ve != null) {
-			ve.vvv_flags |= VVV.FOR_EDITOR;
-			ASTNode.VVV v = (ASTNode.VVV)ve.clone();
-			ve.vvv_flags &= ~VVV.IS_LOCKED;
-			v.vvv_prev = ve;
-			v.vvv_next = ve.vvv_next;
-			ve.vvv_next = v;
-			if (v.vvv_next != null)
-				v.vvv_next.vvv_prev = v;
-			self.v_editor = ve = v;
-		} else {
-			ve = self.nodeBackup();
-			ve.vvv_flags = VVV.FOR_EDITOR;
-			self.v_editor = ve;
-		}
-		Transaction tr = Transaction.get();
-		if (tr != null) {
-			ve.transaction_id = tr.version;
-			tr.add(self);
-		}
-	}
-//#end UNVERSIONED
-
-	public final void rollback(Transaction tr, boolean save_next) {
-//#ifndef UNVERSIONED
-		if (this.v_editor == null)
-			return;
-		if (Thread.currentThread().getThreadGroup() == CompilerThreadGroup) {
-			// scan back from the end of the list, find the latest saved
-			VVV v = this.v_editor;
-			while (v.vvv_next != null)
-				v = v.vvv_next;
-			while (v != null && (v.vvv_flags & VVV.FOR_COMPILER) == 0)
-				v = v.vvv_prev;
-			assert (v != null && (v.compileflags & 3) == 3); // backup is locked & versioned
-			this.versioned = false;
-			this.nodeRestore(v);
-			this.compileflags |= 3; // locked & versioned
-			v.vvv_flags &= ~VVV.FOR_COMPILER;
-			if ((v.vvv_flags & VVV.FOR_EDITOR) == 0) {
-				// delete unused VVV
-				if (v.vvv_prev != null)
-					v.vvv_prev.vvv_next = v.vvv_next;
-				if (v.vvv_next != null)
-					v.vvv_next.vvv_prev = v.vvv_prev;
-				// v_editor may point v, iff it's the last backup
-				if (this.v_editor == v) {
-					assert (v.vvv_prev == null && v.vvv_next == null);
-					this.v_editor = null;
-				}
-			}
-		} else {
-			// scan back from the current and find previous saved
-			VVV v = this.v_editor;
-			while (v != null) {
-				if ((v.vvv_flags & VVV.FOR_EDITOR) != 0 && v.transaction_id == tr.version)
-					break;
-				if ((v.vvv_flags & VVV.FOR_EDITOR) != 0)
-					System.out.println("Error: rolling back transaction "+tr.version+", but found backup of transaction "+v.transaction_id);
-				v = v.vvv_prev;
-			}
-			assert (v != null);
-			// delete unused VVV
-			if (v.vvv_prev != null)
-				v.vvv_prev.vvv_next = v.vvv_next;
-			if (v.vvv_next != null)
-				v.vvv_next.vvv_prev = v.vvv_prev;
-			if (this.v_editor == v) {
-				if (v.vvv_prev != null)
-					this.v_editor = v.vvv_prev;
-				else
-					this.v_editor = v.vvv_next;
-			}
-		}
-//#endif UNVERSIONED
-	}
-
-	public void mergeTree() {
-//#ifndef UNVERSIONED
-		// notify nodes about new root
-		this.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) n.merge(); return true; }
-		});
-//#endif UNVERSIONED
-	}
-
-//#ifndef UNVERSIONED
-	final void merge() {
-		VVV v = this.v_editor;
-		if (v == null)
-			return;
-		assert (this.versioned);
-		this.versioned = false;
-		this.nodeRestore(v);
-		this.compileflags |= 3; // locked & versioned
-		// remove all compiler's nodes
-		while (v.vvv_next != null)
-			v = v.vvv_next;
-		while (v != null) {
-			VVV prev = v.vvv_prev;
-			v.vvv_flags &= ~VVV.FOR_COMPILER;
-			if ((v.vvv_flags & VVV.FOR_EDITOR) == 0) {
-				// delete unused VVV
-				if (v.vvv_prev != null)
-					v.vvv_prev.vvv_next = v.vvv_next;
-				if (v.vvv_next != null)
-					v.vvv_next.vvv_prev = v.vvv_prev;
-				// v_editor may point v, iff it's the last backup
-				if (this.v_editor == v) {
-					assert (v.vvv_prev == null && v.vvv_next == null);
-					this.v_editor = null;
-				}
-			}
-			v = prev;
-		}
-	}
-//#endif UNVERSIONED
 }
 
 
 public class CompilerException extends RuntimeException {
-	public ASTNode	from;
+	public ANode	from;
 	public CError	err_id;
 	public CompilerException(String msg) {
 		super(msg);
 	}
-	public CompilerException(ASTNode from, String msg) {
+	public CompilerException(ANode from, String msg) {
 		super(msg);
 		this.from = from;
 	}
-	public CompilerException(ASTNode from, CError err_id, String msg) {
+	public CompilerException(ANode from, CError err_id, String msg) {
 		super(msg);
 		this.from = from;
 		this.err_id = err_id;
@@ -1504,8 +1419,12 @@ public class ReWalkNodeException extends RuntimeException {
 	}
 }
 
-public interface DumpSerialized {
+public interface ExportSerialized {
 	public String qname();
 	public Object getDataToSerialize();
 }
 
+public interface ExportXMLDump {
+	public String qname();
+	public String exportFactory();
+}

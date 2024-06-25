@@ -13,62 +13,79 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 236 $
  *
  */
 
-@ViewOf(vcast=true, iface=true)
-public final view JFileUnit of FileUnit extends JNameSpace {
-	public:ro	String					fname;
-	public:ro	boolean[]				disabled_extensions;
-	public		boolean					scanned_for_interface_only;
 
-	public String pname();
+public class JFileUnit extends JSNode {
 
-	public void generate(JEnv jenv) {
-		if (scanned_for_interface_only)
-			return;
-		long curr_time = 0L, diff_time = 0L;
-		String cur_file = Kiev.getCurFile();
-		Kiev.setCurFile(pname());
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			foreach (JNode n; members) {
-				if (n instanceof JNameSpace) {
-					n.generate(jenv);
-				}
-				else if (n instanceof JStruct) {
-					diff_time = curr_time = System.currentTimeMillis();
-					n.generate(jenv);
-					diff_time = System.currentTimeMillis() - curr_time;
-					if( Kiev.verbose )
-						Kiev.reportInfo("Generated clas "+n,diff_time);
-				}
-			}
-		} finally { Kiev.setCurFile(cur_file); Kiev.setExtSet(exts); }
+	@virtual typedef VT  ≤ FileUnit;
+
+	public static JFileUnit attachJFileUnit(FileUnit impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JFileUnit)jn;
+		if (impl.scanned_for_interface_only)
+			return new JFileUnit(impl);
+		return new JFileUnitToCompile(impl);
 	}
+	
+	public JFileUnit(FileUnit impl) {
+		super(impl);
+	}
+
+	public void backendCleanup() {}
+
+	public void generate(JEnv jenv) {}
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JNameSpace of NameSpace extends JSNode {
-	public:ro	SymbolRef<KievPackage>	srpkg;
-	public:ro	JNode[]					members;
+public class JFileUnitToCompile extends JFileUnit {
+	public final String		pname;
+	public final String		fname;
+	public final long		timestamp;
 
+	public JStruct[]		structs;
+
+	public JFileUnitToCompile(FileUnit impl) {
+		super(impl);
+		timestamp = Long.MAX_VALUE;
+		if (Kiev.fast_gen)
+			timestamp = impl.source_timestamp;
+		pname = impl.pname();
+		fname = impl.fname;
+		Vector<JStruct> structs = new Vector<JStruct>();
+		collectStructs(impl, structs);
+		this.structs = structs.toArray();
+	}
+	
+	private static void collectStructs(SyntaxScope ss, Vector<JStruct> structs) {
+		foreach (ASTNode n; ss.members) {
+			if (n instanceof Struct)
+				structs.append((JStruct)(Struct)n);
+			else if (n instanceof SyntaxScope)
+				collectStructs((SyntaxScope)n, structs);
+		}
+	}
+	
 	public void generate(JEnv jenv) {
-		long curr_time = 0L, diff_time = 0L;
-		foreach (JNode n; members) {
-			if (n instanceof JNameSpace) {
-				n.generate(jenv);
-			}
-			else if (n instanceof JStruct) {
+		String cur_file = Kiev.getCurFile();
+		Kiev.setCurFile(pname);
+        try {
+			long curr_time = 0L, diff_time = 0L;
+			foreach (JStruct n; structs) {
 				diff_time = curr_time = System.currentTimeMillis();
-				n.generate(jenv);
+				boolean gen = n.generate(jenv, timestamp);
 				diff_time = System.currentTimeMillis() - curr_time;
-				if( Kiev.verbose )
+				if( Kiev.verbose && gen )
 					Kiev.reportInfo("Generated clas "+n,diff_time);
 			}
-		}
+		} finally { Kiev.setCurFile(cur_file); }
 	}
 }
 

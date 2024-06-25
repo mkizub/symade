@@ -14,7 +14,7 @@ import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -190,7 +190,9 @@ public class Hash<A extends Object> implements Cloneable {
     /**
      * Puts the specified element into the set
      */
-    public void put(A elem) {
+    public void put(A elem)
+		alias add
+	{
 	// Makes sure the elem is not already in the set.
 	HashEntry<A>[] tab = table;
 	int hash = ((Object)elem).hashCode();
@@ -205,6 +207,7 @@ public class Hash<A extends Object> implements Cloneable {
 	    // Rehash the table if the threshold is exceeded
 	    rehash();
 	    put(elem);
+		return;
 	}
 
 	// Creates the new entry.

@@ -17,13 +17,14 @@ import syntax kiev.Syntax;
  *
  */
 
+@ThisIsALanguage(name="syntax")
 @singleton
 public final class SyntaxLang extends LangBase {
-	static {
-		defaultEditorSyntaxName = "stx-fmt·syntax-for-syntax";
-		defaultInfoSyntaxName = "stx-fmt·syntax-for-syntax";
+	{
+		this.defaultEditorSyntaxName = "stx-fmt·syntax-for-syntax";
+		this.defaultInfoSyntaxName = "stx-fmt·syntax-for-syntax";
 	}
-	public String getName() { "syntax" }
+	public String getName() { return "syntax"; }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 
@@ -31,15 +32,23 @@ public final class SyntaxLang extends LangBase {
 	private static Class[] nodeClasses = {
 		ATextSyntax.class,
 			TextSyntax.class,
-			XmlDumpSyntax.class,
+			TopLevelTextSyntax.class,
 			TreeSyntax.class,
+		StyleSheet.class,
 		SpaceInfo.class,
 		SpaceCmd.class,
-		IndentInfo.class,
 		ParagraphLayout.class,
+		SyntaxSize.class,
+		ParagraphOption.class,
+			ParagraphLines.class,
+			ParagraphAlignBlock.class,
+			ParagraphAlignContent.class,
+			ParagraphSize.class,
+			ParagraphInset.class,
+			ParagraphNoIndent.class,
+			ParagraphIndent.class,
 		DrawColor.class,
 		DrawFont.class,
-		SyntaxExpectedAttr.class,
 		SyntaxNodeTemplate.class,
 		SyntaxTypeRef.class,
 		SyntaxExpectedType.class,
@@ -48,25 +57,28 @@ public final class SyntaxLang extends LangBase {
 			PartialSyntaxElemDecl.class,
 			SyntaxElemDecl.class,
 			SyntaxIdentTemplate.class,
+		SyntaxStyleDecl.class,
 		SyntaxElemFormatDecl.class,
-		SyntaxFunction.class,
-		SyntaxFunctions.class,
+		SyntaxFunc.class,
+			SyntaxFuncEval.class,
+			SyntaxFuncSetEnum.class,
+			SyntaxFuncNewByTemplate.class,
+			SyntaxFuncNewByFactory.class,
 		SyntaxElem.class,
 			SyntaxElemRef.class,
 			SyntaxToken.class,
 			SyntaxIcon.class,
 			SyntaxPlaceHolder.class,
 			SyntaxAttr.class,
+			SyntaxAttrFormat.class,
 				SyntaxSubAttr.class,
 				SyntaxList.class,
-				SyntaxElemWrapper.class,
 				SyntaxTreeBranch.class,
+				SyntaxTokenAttr.class,
 				SyntaxIdentAttr.class,
 				SyntaxCharAttr.class,
 				SyntaxStrAttr.class,
-				SyntaxXmlStrAttr.class,
-				SyntaxNode.class,
-			SyntaxSwitch.class,
+			SyntaxNode.class,
 			SyntaxSet.class,
 			SyntaxSpace.class,
 			CalcOption.class,
@@ -89,11 +101,8 @@ public final class SyntaxLang extends LangBase {
 		SyntaxExpr.class,
 		SyntaxAutoParenth.class,
 		// java syntax
-		SyntaxJavaCommentTemplate.class,
-		SyntaxJavaAccessExpr.class,
 		SyntaxJavaAccess.class,
-		SyntaxJavaPackedField.class,
-		SyntaxJavaComment.class
+		SyntaxJavaPackedField.class
 	};
 }
 

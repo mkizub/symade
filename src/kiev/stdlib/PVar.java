@@ -19,14 +19,20 @@ import syntax kiev.stdlib.Syntax;
 */
 
 public abstract class #id"rule"# extends Object {
-	public static <V> boolean contains(Enumeration<V> e, Object value) {
-		foreach(Object val; e; val!=null && (val==value || val.equals(value)) )
+	public static boolean jcontains(Enumeration enumeration, Object value) {
+		foreach(Object val; enumeration; val!=null && (val==value || val.equals(value)) )
 			return true;
 		return false;
 	}
 
-	public static boolean jcontains(java.util.Enumeration e, Object value) {
-		foreach(Object val; e; val!=null && (val==value || val.equals(value)) )
+	public static boolean jcontains(java.util.Iterator iterator, Object value) {
+		foreach(Object val; iterator; val!=null && (val==value || val.equals(value)) )
+			return true;
+		return false;
+	}
+
+	public static boolean jcontains(java.lang.Iterable iterable, Object value) {
+		foreach(Object val; iterable; val!=null && (val==value || val.equals(value)) )
 			return true;
 		return false;
 	}
@@ -60,7 +66,8 @@ public final class PVar<A> implements TypeInfoInterface
 	@getter
 	public A get$$var()
 		alias $get_var
-		alias fy operator $cast
+		alias $cast
+		alias operator "( T ) V"
 	{
 		return $_var_;
 	}

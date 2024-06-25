@@ -1,0 +1,726 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.vtree;
+
+import syntax kiev.Syntax;
+
+/**
+ * @author Maxim Kizub
+ * @version $Revision: 271 $
+ *
+ */
+
+@ThisIsANode(lang=void)
+public interface ISymbol extends ASTNode {
+	@virtual @abstract
+	public:ro String		sname;
+	@virtual @abstract
+	public:ro DNode			dnode;
+	@virtual @abstract
+	public:ro Symbol		symbol;
+
+	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
+	@getter public DNode	get$dnode();
+	@getter public Symbol	get$symbol();
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class Symbol extends ASTNode implements ISymbol {
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
+
+	public static final Symbol[] emptyArray = new Symbol[0];
+	
+	public static final ParentAttrSlot nodeattr$namespace_parent =
+			new ParentAttrSlot("namespace_parent", true, TypeInfo.newTypeInfo(Symbol.class,null));
+
+	// source code name, may be null for anonymouse symbols
+	@AttrXMLDumpInfo(attr=true, name="name")
+	@nodeAttr
+	public String					sname;
+
+	// Sub-symbols of this namespace
+	@nodeAttr(parent="nodeattr$namespace_parent", copyable=false)
+	public Symbol∅				sub_symbols;
+
+	public DNode getTargetDNode() { return dnode; }
+	
+	public Symbol getNameSpaceSymbol() {
+		return (Symbol)Symbol.nodeattr$namespace_parent.get(this);
+	}
+	
+	public boolean isGlobalSymbol() {
+		if (parent() instanceof KievRoot)
+			return true;
+		Symbol ns = getNameSpaceSymbol();
+		return ns != null && ns.isGlobalSymbol();
+	}
+	
+	public Symbol makeGlobalSubSymbol(String name) {
+		assert (this.isGlobalSymbol());
+		return makeSubSymbol(name);
+	}
+	
+	public Symbol makeSubSymbol(String name) {
+		if (name != null) {
+			name = name.intern();
+			foreach (Symbol sub; this.sub_symbols; sub.sname == name)
+				return sub;
+		}
+		Symbol sym = new Symbol(name);
+		this.sub_symbols += sym;
+		return sym;
+	}
+	
+	@getter public DNode get$dnode() {
+		ANode p = parent();
+		if (p instanceof DNode)
+			return (DNode)p;
+		if (p instanceof Alias)
+			return ((Alias)p).symref.dnode;
+		return null;
+	}
+	
+	@getter public Symbol get$symbol() {
+		return this;
+	}
+	
+	public SymUUID suuid() {
+		return (SymUUID)getUnVersionedData(SymUUID.class);
+	}
+	
+	final public SymUUID getUUID(Env env) {
+		if (this.suuid() != null)
+			return this.suuid();
+		java.util.UUID uuid = java.util.UUID.randomUUID();
+		this.setUUID(env, uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+		return this.suuid();
+	}
+	final public void setUUID(Env env, long high, long low) {
+		SymUUID suuid = this.suuid();
+		if (suuid != null && suuid.high == high && suuid.low == low)
+			return;
+		assert (suuid == null);
+		suuid = new SymUUID(high, low, this);
+		env.registerSymbol(suuid);
+		setUnVersionedData(suuid)
+	}
+	final public void setUUID(Env env, String value) {
+		SymUUID suuid = this.suuid();
+		if (suuid != null && suuid.toString().equals(value))
+			return;
+		assert (suuid == null || (suuid == SymUUID.Empty && this.parent() == env.root));
+		if (value.length() == 0) {
+			setUnVersionedData(SymUUID.Empty);
+		} else {
+			suuid = new SymUUID(value, this);
+			env.registerSymbol(suuid);
+			setUnVersionedData(suuid);
+		}
+	}
+	
+	public String qname() {
+		if (sname == null)
+			return null;
+		Symbol parent = getNameSpaceSymbol();
+		if (parent != null) {
+			String pqname = parent.qname();
+			if (pqname != null && pqname != "")
+				return (pqname + '·' + sname).intern();
+		}
+		return sname;
+	}
+
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.ct == ChangeType.THIS_DETACHED) {
+			Symbol ns = getNameSpaceSymbol();
+			if (ns != null)
+				ns.sub_symbols.detach(this);
+		}
+		else if (info.ct == ChangeType.THIS_ATTACHED) {
+			if (info.parent instanceof DNode) {
+				DNode dn = (DNode)info.parent;
+				ANode p = dn.parent();
+				if (p instanceof GlobalDNode) {
+					dn = (DNode)p;
+					dn.symbol.sub_symbols += this;
+				}
+			}
+		}
+		super.callbackChanged(info);
+	}
+
+	public Symbol() {}
+	public Symbol(String sname) {
+		this.sname = sname;
+	}
+	public Symbol(int pos, String sname) {
+		this.pos = pos;
+		this.sname = sname;
+	}
+	
+	@getter public final String get$sname() {
+		return sname;
+	}
+	@setter public final void set$sname(String value) {
+		this.sname = (value == null) ? null : value.intern();
+	}
+	
+	public boolean equals(Object:Object nm) {
+		return false;
+	}
+
+	public boolean equals(Symbol:Object nm) {
+		if (this.equals(nm.sname)) return true;
+		return false;
+	}
+
+	public boolean equals(DNode:Object nm) {
+		if (this.equals(nm.sname)) return true;
+		return false;
+	}
+
+	public boolean equals(String:Object nm) {
+		if (sname == nm) return true;
+		return false;
+	}
+
+	public String toString() {
+		return sname;
+	}
+	
+	public String makeSignature(Env env) {
+		if (sname == null)
+			return "‣" + getUUID(env); // UUID separator is \u2023
+		SymUUID suuid = this.suuid();
+		if (suuid == SymUUID.Empty)
+			return sname;
+		return sname + "‣" + getUUID(env); // UUID separator is \u2023
+	}
+}
+
+@ThisIsANode(lang=CoreLang)
+public class Alias extends ASTNode {
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
+
+	public static final Alias[] emptyArray = new Alias[0];
+	
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeAttr
+	public Symbol				symbol;
+
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(attr=true)
+	@nodeAttr @abstract
+	public	String				name;
+
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeAttr
+	public final SymbolRef		symref;
+
+	public Alias() {
+		this.symbol = new Symbol();
+		this.symref = new SymbolRef();
+	}
+	public Alias(String sname, Method m) {
+		this.symbol = new Symbol(sname);
+		this.symref = new SymbolRef();
+		if (m != null)
+			this.symref.symbol = m.symbol;
+	}
+	
+	@getter public String get$name() { return symbol.sname; }
+	@setter public void   set$name(String value) { symbol.sname = value; }
+
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.ct == ChangeType.THIS_ATTACHED) {
+			if (info.parent instanceof Method)
+				this.symref.symbol = ((Method)info.parent).symbol;
+		}
+		super.callbackChanged(info);
+	}
+
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class OperatorAlias extends Alias {
+	
+	public OperatorAlias() {
+		super("operator ???", null);
+	}
+	public OperatorAlias(String opname, Method m) {
+		super(opname, m);
+	}
+	
+	public void pass2(KievSyntax stx) {
+		Method m = (Method)parent();
+		// resolve in the path of scopes
+		ResInfo<Opdef> info = new ResInfo<Opdef>(Env.getEnv(),this,symbol.sname);
+		if (!stx.resolveNameR(info)) {
+			Kiev.reportWarning(this,"Unresolved operator "+symbol.sname);
+			return;
+		}
+		Opdef opdef = info.resolvedDNode();
+		if (opdef != null)
+			opdef.addMethod(m);
+	}
+	
+	public String toString() {
+		return "operator \""+symbol.sname+'"';
+	}
+}
+
+public final class NameAndUUID {
+	public final String name;
+	public final long uuid_high;
+	public final long uuid_low;
+	public final Env    env;
+	public NameAndUUID(String name, String uuid, Env env) {
+		this.name = name.intern();
+		this.env = env;
+		SymUUID suuid = new SymUUID(uuid, null);
+		this.uuid_high = suuid.high;
+		this.uuid_low = suuid.low;
+	}
+}
+	
+@unerasable
+@ThisIsANode(lang=CoreLang)
+public final class SymbolRef<D extends DNode> extends ASTNode {
+
+	@DataFlowDefinition(out="this:in") private static class DFI {}
+
+	public static final SymbolRef[] emptyArray = new SymbolRef[0];
+
+	@AttrXMLDumpInfo(attr=true, name="full")
+	@nodeAttr
+	public					boolean		qualified; // stored name may be qualified name
+
+	@AttrXMLDumpInfo(attr=true, name="name")
+	@nodeSRef
+	@nodeAttr
+	public					Object		ident_or_symbol_or_type;
+	
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData
+	@abstract public		String		name; // unresolved name
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData
+	@abstract public		Symbol		symbol; // resolved symbol
+	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
+		 
+	public SymbolRef() {}
+
+	public SymbolRef(String name) {
+		this.name = name;
+	}
+
+	public SymbolRef(int pos, String name) {
+		this.pos = pos;
+		this.name = name;
+	}
+
+	public SymbolRef(int pos, Symbol symbol) {
+		this.pos = pos;
+		this.symbol = symbol.symbol;
+	}
+
+	public SymbolRef(int pos, D symbol) {
+		this.pos = pos;
+		this.symbol = symbol.symbol;
+	}
+
+	public SymbolRef(Symbol symbol) {
+		this.symbol = symbol;
+	}
+
+	public SymbolRef(D symbol) {
+		this.symbol = symbol.symbol;
+	}
+
+	public boolean equals(Object nm) {
+		if (nm instanceof DNode) return nm.sname == this.name;
+		if (nm instanceof Symbol) return nm.equals(this.name);
+		if (nm instanceof SymbolRef) return nm.name == this.name;
+		if (nm instanceof String) return nm == this.name;
+		return false;
+	}
+
+	public void setNameAndUUID(NameAndUUID nid) {
+		this.ident_or_symbol_or_type = nid;
+	}
+
+	@getter public final String get$name() {
+		Object id = ident_or_symbol_or_type;
+		if (id instanceof String)
+			return (String)id;
+		if (id instanceof Symbol) {
+			if (qualified)
+				return ((Symbol)id).qname();
+			return ((Symbol)id).sname;
+		}
+		if (id instanceof Type) {
+			if (qualified)
+				return ((Type)id).meta_type.qname();
+			return ((Type)id).meta_type.tdecl.sname;
+		}
+		if (id instanceof NameAndUUID) {
+			return ((NameAndUUID)id).name;
+		}
+		return null;
+	}
+
+	@getter public final Symbol get$symbol() {
+		Object id = ident_or_symbol_or_type;
+		if (id instanceof Symbol)
+			return (Symbol)id;
+		if (id instanceof Type)
+			return ((Type)id).meta_type.tdecl.symbol;
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			Symbol sym = nid.env.getSymbolByUUID(nid.uuid_high, nid.uuid_low);
+			if (sym != null) {
+				this.symbol = sym;
+				return sym;
+			}
+		}
+		return null;
+	}
+	
+	@getter public final D get$dnode() {
+		Object id = ident_or_symbol_or_type;
+		if (id instanceof Symbol)
+			return ((Symbol)id).dnode;
+		if (id instanceof Type)
+			return ((Type)id).meta_type.tdecl;
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			Symbol sym = nid.env.getSymbolByUUID(nid.uuid_high, nid.uuid_low);
+			if (sym != null) {
+				this.symbol = sym;
+				return sym.dnode;
+			}
+		}
+		return null;
+	}
+	
+	@setter public final void set$ident_or_symbol_or_type(Object val) {
+		if (val instanceof String)
+			val = ((String)val).intern();
+		ident_or_symbol_or_type = val;
+	}
+	
+	@setter public final void set$name(String val) {
+		ident_or_symbol_or_type = val;
+	}
+	
+	@setter public final void set$symbol(Symbol val) {
+		ident_or_symbol_or_type = val;
+	}
+	
+	public String toString() { return name; }
+
+	public Symbol getTargetSymbol() { return symbol; }
+	
+	public String makeSignature(Env env) {
+		return this.makeSignature(env, true);
+	}
+	public String makeSignature(Env env, boolean force_qualified) {
+		Object id = this.ident_or_symbol_or_type;
+		if (id instanceof Type)
+			return ((Type)id).makeSignature(env);
+		if (id instanceof Symbol) {
+			Symbol sym = (Symbol)id;
+			SymUUID suuid = sym.getUUID(env);
+			if (sym.sname == null)
+				return "‣" + suuid;
+			if (suuid != SymUUID.Empty) {
+				if (force_qualified || qualified)
+					return sym.qname() + "‣" + suuid;
+				else
+					return sym.sname + "‣" + sym.getUUID(env);
+			} else {
+				if (force_qualified || qualified)
+					return sym.qname();
+				else
+					return sym.sname;
+			}
+		}
+		if (id instanceof NameAndUUID) {
+			NameAndUUID nid = (NameAndUUID)id;
+			return nid.name + '‣' + new SymUUID(nid.uuid_high,nid.uuid_low,null);
+		}
+		return (String)id;
+	}
+
+	//public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+	//	if (attr.name == "qualified")
+	//		return this.qualified; // do not dump <qualified>false</qualified>
+	//	return super.includeInDump(dump, attr, val);
+	//}
+
+	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot.name == "name" || slot.name == "ident_or_symbol_or_type") {
+			AttrSlot pslot = pslot();
+			if (pslot != null && pslot.isAutoComplete())
+				return this.autoCompleteSymbol(str);
+			ANode parent = parent();
+			if (pslot != null && parent instanceof ASTNode)
+				return parent.resolveAutoComplete(str, pslot);
+			return null;
+		}
+		return super.resolveAutoComplete(str,slot);
+	}
+	
+	public final boolean checkSymbolMatch(DNode dn) {
+		return dn instanceof D;
+	}
+	
+	public AutoCompleteResult autoCompleteSymbol(String str) {
+		return autoCompleteSymbol(this, str, this.pslot(), fun (DNode dn)->boolean {
+			return checkSymbolMatch(dn);
+		});
+	}
+
+	public static AutoCompleteResult autoCompleteSymbol(ANode resolve_in, String str, AttrSlot for_slot, (DNode)->boolean check) {
+		if (str == null)
+			str = "";
+		int dot = str.indexOf('·');
+		if (dot > 0) {
+			// check we start with a root package
+			String head = str.substring(0,dot).intern();
+			String tail = str.substring(dot+1);
+			foreach (KievPackage pkg; Env.getEnv().root.pkg_members; pkg.sname == head) {
+				// process as fully-qualified name
+				return autoCompleteSymbolFromRoot(resolve_in, pkg, tail, for_slot, check);
+			}
+			// otherwice resolve the head and then it's sub-bodes
+			ResInfo info = new ResInfo(Env.getEnv(),resolve_in,head);
+			if (!PassInfo.resolveNameR(resolve_in,info))
+				return null;
+			if !(info.resolvedDNode() instanceof GlobalDNodeContainer)
+				return null;
+			return autoCompleteSymbolFromRoot(resolve_in, (GlobalDNodeContainer)info.resolvedDNode(), tail, for_slot, check);
+		}
+		String auto_resolve_in = for_slot.auto_resolve_in;
+		ScopeOfNames scope = null;
+		if (auto_resolve_in != null && auto_resolve_in.length() > 0) {
+			Object sc;
+			if (resolve_in instanceof SymbolRef)
+				sc = resolve_in.parent().getVal(resolve_in.parent().getAttrSlot(auto_resolve_in.intern()));
+			else
+				sc = resolve_in.getVal(resolve_in.getAttrSlot(auto_resolve_in.intern()));
+			if (sc instanceof SymbolRef)
+				sc = sc.dnode;
+			if (sc instanceof ScopeOfNames)
+				scope = (ScopeOfNames)sc;
+		}
+		AutoCompleteResult result = new AutoCompleteResult(false);
+		ResInfo info = new ResInfo(Env.getEnv(),resolve_in, str, ResInfo.noEquals);
+		if (scope != null) {
+			foreach (scope.resolveNameR(info)) {
+				Symbol sym = info.resolvedSymbol();
+				if (result.containsData(sym))
+					continue;
+				// check if this node match
+				if (check(sym.dnode)) {
+					result.append(sym);
+					continue;
+				}
+			}
+		} else {
+			foreach (PassInfo.resolveNameR(resolve_in,info)) {
+				Symbol sym = info.resolvedSymbol();
+				if (result.containsData(sym))
+					continue;
+				// check if this node match
+				if (check(sym.dnode)) {
+					result.append(sym);
+					continue;
+				}
+				// check if it's a node from path prefix
+				DNode dn = sym.dnode;
+				foreach (Class c; scopesForAutoResolve(for_slot); dn != null && c.isAssignableFrom(dn.getClass())) {
+					result.append(sym);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	
+	private static final Class[] defaultScopesForAutoResolve = { GlobalDNodeContainer.class };
+	private static Class[] scopesForAutoResolve(AttrSlot for_slot) {
+		if (for_slot == null || for_slot.auto_complete_scopes == null)
+			return defaultScopesForAutoResolve;
+		return for_slot.auto_complete_scopes;
+	}
+	
+	private static AutoCompleteResult autoCompleteSymbolFromRoot(ANode resolve_in, GlobalDNodeContainer scope, String tail, AttrSlot for_slot, (DNode)->boolean check) {
+		// check if the scope is a valid node path prefix
+		boolean valid_scope = false;
+		foreach (Class c; scopesForAutoResolve(for_slot); c.isAssignableFrom(scope.getClass())) {
+			valid_scope = true;
+			break;
+		}
+		if (!valid_scope)
+			return null;
+		int dot = tail.indexOf('·');
+	next_scope:
+		while (dot > 0) {
+			String head = tail.substring(0,dot).intern();
+			tail = tail.substring(dot+1);
+			DNode dn = null;
+			foreach (DNode n; scope.getContainerMembers(); n.sname == head) {
+				dn = n;
+				break;
+			}
+			dot = tail.indexOf('·');
+			if (dn instanceof GlobalDNodeContainer) {
+				scope = (GlobalDNodeContainer)dn;
+				valid_scope = false;
+				foreach (Class c; scopesForAutoResolve(for_slot); c.isAssignableFrom(scope.getClass()))
+					continue next_scope;
+				return null;
+			}
+			return null;
+		}
+		String head = tail.intern();
+		AutoCompleteResult result = new AutoCompleteResult(false);
+		int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
+		ResInfo info = new ResInfo(Env.getEnv(),resolve_in,head,flags);
+		foreach (scope.resolveNameR(info)) {
+			Symbol sym = info.resolvedSymbol();
+			if (result.containsData(sym))
+				continue;
+			// check if this node match
+			if (check(sym.dnode)) {
+				result.append(sym);
+				continue;
+			}
+			// check if it's a node from path prefix
+			DNode dn = sym.dnode;
+			foreach (Class c; scopesForAutoResolve(for_slot); dn != null && c.isAssignableFrom(dn.getClass())) {
+				result.append(sym);
+				break;
+			}
+		}
+		return result;
+	}
+
+	public void resolveSymbol(SeverError sever) {
+		return resolveSymbol(sever, null);
+	}
+
+	public void resolveSymbol(SeverError sever, ScopeOfNames scope) {
+		return resolveSymbol(sever, scope, fun (DNode dn)->boolean {
+			return checkSymbolMatch(dn);
+		});
+	}
+
+	public void resolveSymbol(SeverError sever, (DNode)->boolean check) {
+		return resolveSymbol(sever, null, check);
+	}
+
+	public void resolveSymbol(SeverError sever, ScopeOfNames scope, (DNode)->boolean check) {
+		String name = this.name;
+		if (name == null || name == "") {
+			//Kiev.reportAs(sever, this, "Empty reference name");
+			return;
+		}
+		int dot = name.indexOf('·');
+		if (dot > 0) {
+			if (scope instanceof GlobalDNodeContainer) {
+				// process as fully-qualified name
+				resolveSymbolFromRoot(sever, (GlobalDNodeContainer)scope, name, check);
+				return;
+			}
+			if (scope != null) {
+				Kiev.reportAs(sever, this, "Scope "+scope+" is not a global node container to resolve qualified name "+name);
+				return;
+			}
+			String head = name.substring(0,dot).intern();
+			String tail = name.substring(dot+1);
+			// check we start with a root package
+			foreach (KievPackage pkg; Env.getEnv().root.pkg_members; pkg.sname == head) {
+				// process as fully-qualified name
+				resolveSymbolFromRoot(sever, pkg, tail, check);
+				return;
+			}
+			ResInfo info = new ResInfo(Env.getEnv(),this,head);
+			if (!PassInfo.resolveNameR(this,info)) {
+				Kiev.reportAs(sever, this, "Unresolved identifier "+head);
+				return;
+			}
+			if !(info.resolvedDNode() instanceof GlobalDNodeContainer) {
+				Kiev.reportAs(sever, this, "Resolved identifier "+head+" is not a global node container");
+				return;
+			}
+			resolveSymbolFromRoot(sever, (GlobalDNodeContainer)info.resolvedDNode(), tail, check);
+			return;
+		}
+		ResInfo<D> info = new ResInfo(Env.getEnv(),this,name,ResInfo.noForwards);
+		if (scope == null) {
+			if (!PassInfo.resolveNameR(this, info)) {
+				Kiev.reportAs(sever, this, "Unresolved "+this);
+				return;
+			}
+		} else {
+			if (!scope.resolveNameR(info)) {
+				Kiev.reportAs(sever, this, "Unresolved "+this+" in "+scope);
+				return;
+			}
+		}
+		if (!check(info.resolvedDNode())) {
+			Kiev.reportAs(sever, this, "Resolved "+this+" does not match required constraints");
+			return;
+		}
+		if (this.symbol != info.resolvedSymbol())
+			this.symbol = info.resolvedSymbol();
+	}
+
+	private void resolveSymbolFromRoot(SeverError sever, GlobalDNodeContainer scope, String tail, (DNode)->boolean check) {
+		int dot = tail.indexOf('·');
+		while (dot > 0) {
+			String head = tail.substring(0,dot).intern();
+			tail = tail.substring(dot+1);
+			DNode dn = null;
+			foreach (DNode n; scope.getContainerMembers(); n.sname == head) {
+				dn = n;
+				break;
+			}
+			dot = tail.indexOf('·');
+			if (dn instanceof GlobalDNodeContainer) {
+				scope = (GlobalDNodeContainer)dn;
+				continue;
+			}
+			Kiev.reportAs(sever, this, "Resolved identifier "+head+" in "+scope+" is not a global node container");
+			return;
+		}
+		String head = tail.intern();
+		ResInfo<D> info = new ResInfo<D>(Env.getEnv(),this,head,ResInfo.noForwards);
+		if (!scope.resolveNameR(info)) {
+			Kiev.reportAs(sever, this, "Unresolved "+this+" in "+scope);
+			return;
+		}
+		if (!check(info.resolvedDNode())) {
+			Kiev.reportAs(sever, this, "Resolved "+this+" does not match required constraints");
+			return;
+		}
+		if (this.symbol != info.resolvedSymbol())
+			this.symbol = info.resolvedSymbol();
+	}
+
+}
+
+

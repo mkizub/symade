@@ -12,95 +12,52 @@ package kiev;
 import syntax kiev.Syntax;
 
 import kiev.stdlib.Arrays;
+import kiev.fmt.common.TextParser;
+import kiev.dump.DumpFactory;
 
 import java.util.IdentityHashMap;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.lang.management.*;
+
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 299 $
  *
  */
 
-@singleton
-public class CompilerThreadGroup extends WorkerThreadGroup {
-	private CompilerThreadGroup() { super("compiler"); }
-	public static CompilerThreadGroup getInst() { return CompilerThreadGroup; } 
-}
-
-@singleton
 public class EditorThreadGroup extends WorkerThreadGroup {
-	private EditorThreadGroup() { super("editor"); }
-	public static EditorThreadGroup getInst() { return EditorThreadGroup; } 
+	public EditorThreadGroup(WorkerThreadGroup bthr) {
+		super(bthr, "editor");
+		semantic_context = new SemContext(bthr.semantic_context);
+	}
 }
 
-public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFactory {
-
-	private ExecutorService executorService;
-	private int threadCounter = 0;
+public class FrontendThreadGroup extends WorkerThreadGroup {
+	public static final FrontendThreadGroup THE_GROUP = new FrontendThreadGroup();
 	
-	// Error section
-	public long		programm_start;
-	public long		programm_end;
-	public long		programm_mem;
-	public int		errCount;
-	public int		warnCount;
-	public boolean	reportTotals;
-
-	public IdentityHashMap			dataFlowInfos = new IdentityHashMap(1023);
-
-	private boolean					busy;
-	private boolean					run_fe;
-	private boolean					run_be;
 	private CompilerParseInfo[]		args;
-	private ANode					root;
+	
+	private FrontendThreadGroup() {
+		super(null, "frontend");
+		this.theEnv = Env.createEnv();
+		semantic_context = new SemContext(null);
+	}
 
-	public WorkerThreadGroup(String name) {
-		super(name+"-group");
-		try {
-			setDaemon(true);
-			setMaxPriority((Thread.NORM_PRIORITY+Thread.MIN_PRIORITY)/2);
-		} catch (Exception e) { e.printStackTrace(); }
-		executorService = Executors.newSingleThreadExecutor(this);
+	public void cleanEnv() {
+		args = null;
+		super.cleanEnv();
 	}
-	
-	public Thread newThread(Runnable r) {
-		String name = getName();
-		return new Thread(this, r, name.substring(0,name.length()-"-group".length())+"-thread-"+(++threadCounter));
-	}
-	
-	public boolean isBusy() {
-		return busy;
-	}
-	
-	public synchronized boolean runTask(boolean run_fe, boolean run_be, CompilerParseInfo[] args, ANode root) {
-		if (busy) return false;
-		//System.out.println("task set: "+run_fe+" "+run_be);
-		this.run_fe = run_fe;
-		this.run_be = run_be;
+
+	public void runTask(CompilerParseInfo[] args) {
 		this.args = args;
-		this.root = root;
-		this.busy = true;
-		//System.out.println("task run: "+run_fe+" "+run_be);
+		this.roots = null;
 		this.errCount = 0;
 		this.warnCount = 0;
-		if (this.run_fe) {
-			runFrontEndParse();
-			if (this.root != null)
-				runFrontEnd(this.root);
-		}
-		if (this.run_be)
-			runBackEnd();
-		this.run_fe = false;
-		this.run_be = false;
-		this.args = null;
-		this.root = null;
-		this.busy = false;
-		this.notifyAll();
-		return true;
+		runFrontEndParse();
 	}
 
 	private void runFrontEndParse() {
@@ -110,16 +67,22 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 //			if( Kiev.verbose ) System.out.println(Compiler.version);
 //			Runtime.getRuntime().traceMethodCalls(Compiler.methodTrace);
 
-			if( !Kiev.initialized ) {
+			if (this.getEnv().root == null) {
 				if (args == null)
 					args = new CompilerParseInfo[0];
 				executorService.submit(new Runnable() { public void run() {
-					Env.getRoot().InitializeEnv(Kiev.compiler_classpath);
-					foreach (CompilerParseInfo cpi; args; cpi.add_to_project && cpi.fname != null)
-						Env.getProject().addProjectFile(cpi.fname);
-					addRequaredToMake();
+						Transaction tr = Transaction.open("Bootstrap", WorkerThreadGroup.this);
+						try {
+							this.getEnv().InitializeEnv(Kiev.compiler_classpath);
+							foreach (CompilerParseInfo cpi; args; cpi.add_to_project && cpi.fname != null)
+								this.getProject().addProjectFile(cpi.fname);
+							addRequaredToMake();
+						} catch (Throwable t) {
+							t.printStackTrace();
+						} finally {
+							tr.close(WorkerThreadGroup.this);
+						}
 				}}).get();
-				Kiev.initialized = true;
 			}
 
 			if( args == null || args.length == 0 )
@@ -127,18 +90,81 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 
 			Kiev.resetFrontEndPass();
 			
-			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {
 				CompilerParseInfo cpi = args[i];
-				executorService.submit(new Runnable() { public void run() {
-					String curFile = cpi.fname.replace('/', File.separatorChar);
+				Callable<String> task = new Callable<String>() { public String call() {
+					String cpiFile = cpi.fname.replace('/', File.separatorChar);
+					String curFile = cpiFile;
+					if (!Compiler.prefer_source && Compiler.btd_dir != null && !cpiFile.toLowerCase().endsWith(".btd")) {
+						String btdFile = cpiFile;
+						int ext = btdFile.lastIndexOf('.');
+						if (ext > 0)
+							btdFile = Compiler.btd_dir + "/" + btdFile.substring(0,ext)+".btd";
+						else
+							btdFile = Compiler.btd_dir + "/" + btdFile+".btd";
+						long btd_time = new File(btdFile).lastModified();
+						long cpi_time = new File(cpiFile).lastModified();
+						if (btd_time > cpi_time)
+							curFile = btdFile;
+					}
+					ProjectSyntaxInfo psi = cpi.getProjectSyntaxInfo();
 					try {
 						long curr_time = 0L, diff_time = 0L;
 						diff_time = curr_time = System.currentTimeMillis();
-						Kiev.setCurFile(curFile);
-						if (curFile.toLowerCase().endsWith(".xml")) {
-							cpi.fu = DumpUtils.loadFromXmlFile(new File(curFile), cpi.fdata);
-							Kiev.runProcessorsOn(cpi.fu);
+						Kiev.setCurFile(cpiFile);
+						if (curFile.toLowerCase().endsWith(".btd")) {
+							String fdir = new File(cpiFile).getParent();
+							File f = new File(curFile);
+							INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(this.getEnv(), fdir, f, cpi.fdata);
+							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
+								ASTNode root = (ASTNode)roots[0];
+								if !(root instanceof FileUnit) {
+									FileUnit fu = FileUnit.makeFile(DumpFactory.getRelativePath(f), this.getEnv().proj, false);
+									fu.current_syntax = new ProjectSyntaxFactoryBinDump();
+									fu.members += root;
+									cpi.fu = fu;
+								} else {
+									cpi.fu = (FileUnit)root;
+								}
+								cpi.fu.source_timestamp = f.lastModified();
+								//Kiev.runProcessorsOn(cpi.fu);
+							}
+						}
+						else if (psi != null && psi.parser != null) {
+							File f = new File(curFile);
+							TextParser parser = (TextParser)psi.parser.makeTextProcessor();
+							INode[] roots = parser.parse(f,  this.getEnv());
+							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
+								ASTNode root = (ASTNode)roots[0];
+								if !(root instanceof FileUnit) {
+									FileUnit fu = FileUnit.makeFile(DumpFactory.getRelativePath(f), this.getEnv().proj, false);
+									fu.ftype = psi.file_type;
+									fu.current_syntax = psi.syntax;
+									fu.members += root;
+									cpi.fu = fu;
+								} else {
+									cpi.fu = (FileUnit)root;
+								}
+								cpi.fu.source_timestamp = f.lastModified();
+							}
+						}
+						else if (curFile.toLowerCase().endsWith(".xml")) {
+							File f = new File(curFile);
+							INode[] roots = DumpFactory.getXMLDumper().loadFromXmlFile(this.getEnv(), f, cpi.fdata);
+							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
+								ASTNode root = (ASTNode)roots[0];
+								if !(root instanceof FileUnit) {
+									FileUnit fu = FileUnit.makeFile(DumpFactory.getRelativePath(f), this.getEnv().proj, false);
+									fu.ftype = "text/xml/tree-dump";
+									fu.current_syntax = new ProjectSyntaxFactoryXmlDump();
+									fu.members += root;
+									cpi.fu = fu;
+								} else {
+									cpi.fu = (FileUnit)root;
+								}
+								cpi.fu.source_timestamp = f.lastModified();
+								//Kiev.runProcessorsOn(cpi.fu);
+							}
 						} else {
 							java.io.InputStreamReader file_reader = null;
 							char[] file_chars = new char[8196];
@@ -163,27 +189,33 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 								if (file_reader != null) file_reader.close();
 							}
 							java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
-							Compiler.runGC(WorkerThreadGroup.this);
 							diff_time = curr_time = System.currentTimeMillis();
-							Kiev.k.ReInit(bis);
-							cpi.fu = Kiev.k.FileUnit(cpi.fname);
-							cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
+							Parser p = new Parser(bis, this.getEnv());
+							cpi.fu = p.FileUnit(cpi.fname);
+							cpi.fu.source_timestamp = new File(curFile).lastModified();
+							//cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
 							bis.close();
 						}
 						diff_time = System.currentTimeMillis() - curr_time;
-						Compiler.runGC(WorkerThreadGroup.this);
 						Kiev.setCurFile(null);
 						if( Kiev.verbose )
 							Kiev.reportInfo("Parsed  file   "+cpi.fname,diff_time);
 						System.out.flush();
 					} catch (Exception e) {
-						Kiev.reportParserError(0,e);
+						Kiev.reportParserError(cpi.fu,0,e);
 					}
-				}}).get();
+					return null;
+				}};
+				this.tasks.add(task);
 			}
-			Compiler.runGC(this);
+			Transaction tr = Transaction.open("Parse", this);
+			try {
+				executeTasks(true);
+			} finally {
+				tr.close(this);
+			}
 
-			this.root = Env.getRoot();
+			this.roots = new INode[]{this.getEnv().root};
 
 		} catch( Throwable e) {
 			if (e instanceof Kiev.CompilationAbortError)
@@ -193,20 +225,328 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 		}
 
 stop:;
-		dataFlowInfos.clear();
-		Env.getRoot().dumpProjectFile();
+		executorService.submit(new Runnable() { public void run() {
+				Transaction tr = Transaction.open("Dump projectfile", WorkerThreadGroup.this);
+				try {
+					getEnv().dumpProjectFile();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				} finally {
+					tr.close(WorkerThreadGroup.this);
+				}
+		}}).get();
 		if (this.errCount > 0) {
-			run_be = false;
-			this.root = null;
+			this.roots = null;
 		}
 		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
 			reportTotals("Frontend");
 	}
 
-	private void runFrontEnd(ANode root) {
-		if (root == null)
+	private boolean containsFileName(String fname) {
+		foreach (CompilerParseInfo cpi; args; cpi.fname.equals(fname))
+			return true;
+		return false;
+	}
+	
+	private void addRequaredToMake() {
+		foreach (FileUnit fu; this.getProject().enumerateAllCompilationUnits(); !containsFileName(fu.pname())) {
+			ProjectSyntaxInfo psi = null;
+			if (fu.ftype != null) {
+				foreach (ProjectSyntaxInfo p; this.getProject().syntax_infos; fu.ftype.equals(p.file_type)) {
+					psi = p;
+					if (psi.parser != null)
+						break;
+				}
+			}
+			if( Kiev.verbose ) System.out.println("File "+fu.pname());
+			args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(new File(fu.pname()),psi,true));
+		}
+	}
+
+}
+
+public class CompilerThreadGroup extends WorkerThreadGroup {
+	public CompilerThreadGroup(WorkerThreadGroup bthr) {
+		super(bthr, "compiler");
+		semantic_context = new SemContext(bthr.semantic_context);
+		bend_context = new kiev.be.java15.JNodeContext(semantic_context);
+	}
+
+	public void runTask() {
+		this.errCount = 0;
+		this.warnCount = 0;
+		runBackEnd();
+	}
+
+	private void runBackEnd() {
+		long curr_time = 0L, diff_time = 0L;
+		Transaction tr_me = Transaction.open("Compiler.java:runBackEnd(1)", this);
+		try {
+			////////////////////////////////////////////////////
+			//	                  Midend                      //
+			////////////////////////////////////////////////////
+
+			Kiev.resetMidEndPass();
+			do {
+				String[] msg = new String[1];
+				diff_time = curr_time = System.currentTimeMillis();
+				executorService.submit(new Runnable() { public void run() {
+						String s = Kiev.runCurrentMidEndProcessor(getEnv());
+						if (s != null)
+							msg[0] = s;
+				}}).get();
+				diff_time = System.currentTimeMillis() - curr_time;
+				if( Kiev.verbose && msg[0] != null) Kiev.reportInfo(msg[0],diff_time);
+				if( this.errCount > 0 ) throw new Kiev.CompilationAbortError();
+			} while (Kiev.nextMidEndPass(getEnv()));
+			
+			tr_me.close(this);
+			getEnv().cleanupHashOfFails();
+			if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
+				reportTotals("Midend");
+
+			foreach(FileUnit fu; getProject().enumerateAllCompilationUnits()) {
+				if (fu.isInterfaceOnly() || fu.dont_run_backend)
+					continue; // don't run back-end on interface (API) files
+				final int errCount = this.errCount;
+				Callable<String> task = new Callable<String>() { public String call() {
+					WorkerThread wth = (WorkerThread)Thread.currentThread();
+					WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+					wth.be_pass_no = 0;
+					Kiev.setCurFile(fu.pname());
+					foreach (BackendProcessor bp; getEnv().getBEProcessors()) {
+						if (bp.isEnabled()) {
+							long diff_time, curr_time;
+							diff_time = curr_time = System.currentTimeMillis();
+							try {
+								bp.process(fu,Transaction.get());
+							} catch (Exception e) {
+								Kiev.reportError(e);
+							}
+							diff_time = System.currentTimeMillis() - curr_time;
+							if( Kiev.verbose && bp.getDescr() != null) Kiev.reportInfo(bp.getDescr()+" "+fu.fname,diff_time);
+						}
+						wth.be_pass_no += 1;
+						if (wthg.errCount > errCount)
+							break;
+					};
+					Kiev.setCurFile("");
+					return null;
+				}};
+				this.tasks.add(task);
+			}
+			Transaction tr = Transaction.open("Compiler.java:runBackEnd(2)", this);
+			try {
+				executeTasks(true);
+			} finally {
+				tr.close(this);
+				tr.rollback(false);
+			}
+			//Env.classHashOfFails.clear();
+		} catch( Throwable e) {
+			if (e instanceof Kiev.CompilationAbortError)
+				return;
+			Kiev.reportError(e);
+		} finally {
+			executorService.submit(new Runnable() { public void run() {
+					tr_me.rollback(false);
+			}});
+		}
+		executorService.submit(new Runnable() { public void run() {
+				try {
+					getEnv().dumpProjectFile();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+		}}).get();
+		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
+			reportTotals("Backend");
+		//this.getEnv().cleanupBackendEnv();
+		//java.lang.Runtime.getRuntime().gc();
+	}
+
+}
+
+public final class WorkerThread extends Thread {
+	
+	// The environment of this thread (and group)
+	public Env          theEnv;
+	// The current semantic context
+	public SemContext   semantic_context;
+	// The current java backend context
+	public Context      bend_context;
+
+	final int			worker_id;
+	int					be_pass_no;
+
+	public WorkerThread(WorkerThreadGroup wthg, Runnable r, String name, int id) {
+		super(wthg, r, name+"-thread-"+id);
+		this.worker_id = id;
+	}
+	
+	public void run() {
+		WorkerThreadGroup wthg = (WorkerThreadGroup)getThreadGroup();
+		if (this.theEnv != wthg.theEnv)
+			this.theEnv = wthg.theEnv;
+		if (this.semantic_context != wthg.semantic_context)
+			this.semantic_context = wthg.semantic_context;
+		if (this.bend_context != wthg.bend_context)
+			this.bend_context = wthg.bend_context;
+		Transaction tr = wthg.transaction;
+		try {
+			super.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+		assert (tr == wthg.transaction);
+	}
+}
+
+public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFactory {
+	
+	static class ProcessorRunInfo {
+		final CompilationUnit cunit;
+		long processor_run_bitmap;
+		ProcessorRunInfo(CompilationUnit cunit) {
+			this.cunit = cunit;
+		}
+	}
+	
+	private static int threadCounter;
+
+	public ExecutorService executorService;
+	
+	// The environment of this thread group
+	public Env				theEnv;
+	// The current semantic context
+	public SemContext		semantic_context;
+	// The current java backend context
+	public Context			bend_context;
+	// The current transaction of this thread group
+	public Transaction		transaction;
+	
+	// Error section
+	public long		programm_start;
+	public long		programm_end;
+	public int		errCount;
+	public int		warnCount;
+	public boolean	reportTotals;
+
+	private IdentityHashMap<CompilationUnit,ProcessorRunInfo> processorRunInfoMap = new IdentityHashMap<CompilationUnit,ProcessorRunInfo>(1023);
+
+	public INode[]						roots;
+	public ArrayList<Callable<String>>	tasks;
+	
+	public Env getEnv() {
+		return theEnv;
+	}
+
+	public Project getProject() {
+		return theEnv.proj;
+	}
+	
+	public void cleanEnv() {
+		theEnv = null;
+		roots = null;
+		processorRunInfoMap.clear();
+	}
+
+	public WorkerThreadGroup(WorkerThreadGroup parent, String name) {
+		super(parent == null ? Thread.currentThread().getThreadGroup() : parent, name+"-group");
+		if (parent != null)
+			this.theEnv = parent.theEnv;
+		try {
+			setDaemon(true);
+			setMaxPriority((Thread.NORM_PRIORITY+Thread.MIN_PRIORITY)/2);
+		} catch (Exception e) { e.printStackTrace(); }
+		if (Compiler.jobThreads <= 1)
+			executorService = Executors.newSingleThreadExecutor(this);
+		else
+			executorService = Executors.newFixedThreadPool(Compiler.jobThreads, this);
+		this.tasks = new ArrayList<Callable<String>>();
+	}
+	
+	public Thread newThread(Runnable r) {
+		String name = getName();
+		int cnt = ++threadCounter;
+		return new WorkerThread(this, r, name.substring(0,name.length()-"-group".length()), cnt);
+	}
+	
+	// set information about transfer processor run on the compilation unit,
+	// return true if it already ran
+	public boolean setProcessorRun(CompilationUnit cunit, AbstractProcessor proc) {
+		ProcessorRunInfo ri = processorRunInfoMap.get(cunit);
+		if (ri == null) {
+			ri = new ProcessorRunInfo(cunit);
+			processorRunInfoMap.put(cunit,ri);
+		}
+		if ((ri.processor_run_bitmap & (1L << proc.id)) == 0L) {
+			ri.processor_run_bitmap |= (1L << proc.id);
+			return false;
+		}
+		return true;
+	}
+	
+	public void runTask(INode[] roots) {
+		this.roots = roots;
+		this.errCount = 0;
+		this.warnCount = 0;
+		runFrontEnd();
+		this.roots = null;
+	}
+
+	public void runTask(Runnable task) {
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup)
+			task.run();
+		else
+			executorService.submit(task).get();
+	}
+	
+	public void runTaskLater(Runnable task) {
+		executorService.submit(task);
+	}
+	
+	void executeTasks(boolean pooled) {
+		if (tasks.size() == 0)
+			return;
+		if (pooled && Compiler.jobThreads > 1) {
+			Collection<Callable<String>⁺> x = tasks;
+			executorService.invokeAll<String>(x);
+		} else {
+			Callable<String>[] arr = tasks.toArray(new Callable<String>[tasks.size()]);
+			foreach (Callable<String> task; arr)
+				executorService.submit(task).get();
+		}
+		tasks.clear();
+	}
+
+	class RootsEnumerator implements Enumeration<INode> {
+		private int root_idx;
+		private int cu_idx;
+		RootsEnumerator(int cu_idx) {
+			this.cu_idx = cu_idx;
+		}
+		public boolean hasMoreElements() {
+			if (root_idx < roots.length) return true;
+			if (cu_idx < getProject().compilationUnits.length) return true;
+			return false;
+		}
+		public INode nextElement() {
+			if (root_idx < roots.length)
+				return roots[root_idx++];
+			if (cu_idx < getProject().compilationUnits.length)
+				return getProject().compilationUnits[cu_idx++];
+			throw new NoSuchElementException();
+		}
+	}
+	
+	private void runFrontEnd() {
+		if (roots == null || roots.length == 0)
 			return;
 
+		int cuLength = getProject().compilationUnits.length;
+		
 		this.programm_start = this.programm_end = System.currentTimeMillis();
 		long curr_time = 0L, diff_time = 0L;
 		try {
@@ -217,26 +557,49 @@ stop:;
 			Kiev.resetFrontEndPass();
 			
 			////////////////////////////////////////////////////
-			//	                  Frontend                    //
+			//	                  Cleanup errors    //
+			////////////////////////////////////////////////////
+			if (getEnv().proj != null && getEnv().proj.errors.length > 0) {
+				foreach (INode root; new RootsEnumerator(cuLength)) {
+					root.walkTree(null, null, new ITreeWalker() {
+						private final Env env = WorkerThreadGroup.this.getEnv();
+						private ErrorInfo[] errors = this.env.proj.errors;
+						public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
+							foreach (ErrorNodeInfo err; this.errors; err.node == n) {
+								this.env.proj.errors.detach(err);
+								this.errors = this.env.proj.errors;
+							}
+							return true;
+						}
+					});
+				}
+			}
+
+			////////////////////////////////////////////////////
+			//	                  Frontend              //
 			////////////////////////////////////////////////////
 
 			do {
+				String[] msg = new String[1];
 				diff_time = curr_time = System.currentTimeMillis();
-				String msg = executorService.submit(new Callable<String>() { public String call() {
-					String msg = Kiev.runCurrentFrontEndProcessor(root);
-					return msg;
-				}}).get();
-				Compiler.runGC(this);
+				foreach (INode root; new RootsEnumerator(cuLength)) {	
+					executorService.submit(new Runnable() { public void run() {
+						String s = Kiev.runCurrentFrontEndProcessor(getEnv(),root);
+						if (s != null)
+							msg[0] = s;
+					}}).get();
+				}
 				diff_time = System.currentTimeMillis() - curr_time;
-				if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
+				if( Kiev.verbose && msg[0] != null) Kiev.reportInfo(msg[0],diff_time);
 				if( this.errCount > 0 ) goto stop;
-			} while (Kiev.nextFrontEndPass());
+			} while (Kiev.nextFrontEndPass(getEnv()));
 
 			diff_time = curr_time = System.currentTimeMillis();
-			executorService.submit(new Runnable() { public void run() {
-				Kiev.runVerifyProcessors(root);
-			}}).get();
-			Compiler.runGC(this);
+			foreach (INode root; new RootsEnumerator(cuLength)) {	
+				executorService.submit(new Runnable() { public void run() {
+					Kiev.runVerifyProcessors(getEnv(),root);
+				}}).get();
+			}
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose) Kiev.reportInfo("Tree verification",diff_time);
 			if( this.errCount > 0 ) goto stop;
@@ -249,108 +612,21 @@ stop:;
 		}
 
 stop:;
-		dataFlowInfos.clear();
-		Kiev.lockNodeTree(root);
-		Env.classHashOfFails.clear();
-		Env.getRoot().dumpProjectFile();
-		Compiler.runGC(this);
-		if (this.errCount > 0)
-			run_be = false;
+		executorService.submit(new Runnable() { public void run() {
+				try {
+					foreach (INode root; WorkerThreadGroup.this.new RootsEnumerator(cuLength))	
+						Kiev.lockNodeTree(root);
+					getEnv().cleanupHashOfFails();
+					getEnv().dumpProjectFile();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+		}}).get();
+		if (this.errCount > 0) {
+			this.roots = null;
+		}
 		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
 			reportTotals("Frontend");
-	}
-
-	private void runBackEnd() {
-		long curr_time = 0L, diff_time = 0L;
-		Transaction tr_me = Transaction.open("Compiler.java:runBackEnd(1)");
-		try {
-			////////////////////////////////////////////////////
-			//	                  Midend                      //
-			////////////////////////////////////////////////////
-
-			if (!ASTNode.EXECUTE_UNVERSIONED) {
-				Env.getRoot().walkTree(new TreeWalker() {
-					public boolean pre_exec(ANode n) {
-						if (n instanceof ASTNode) {
-							ASTNode astn = (ASTNode)n;
-							if (!astn.locked)
-								System.out.println("Unlocked node "+n);
-							astn.compileflags = 3; // locked & versioned
-						}
-						return true;
-					}
-				});
-			}
-
-			Kiev.resetMidEndPass();
-			do {
-				diff_time = curr_time = System.currentTimeMillis();
-				String msg = executorService.submit(new Callable<String>() { public String call() {
-						String msg = Kiev.runCurrentMidEndProcessor();
-						return msg;
-				}}).get();
-				diff_time = System.currentTimeMillis() - curr_time;
-				if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
-				if( this.errCount > 0 ) throw new Kiev.CompilationAbortError();
-			} while (Kiev.nextMidEndPass());
-			
-			tr_me.close();
-			Env.classHashOfFails.clear();
-
-			foreach(FileUnit fu; Env.getProject().enumerateAllCompilationUnits()) {
-				if (fu.isInterfaceOnly())
-					continue; // don't run back-end on interface (API) files
-				final int errCount = this.errCount;
-				executorService.submit(new Runnable() { public void run() {
-					WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
-					Transaction tr = Transaction.open("Compiler.java:runBackEnd(2) on "+fu);
-					try {
-						Kiev.resetBackEndPass();
-						Kiev.openBackEndFileUnit(fu);
-						do {
-							long diff_time, curr_time;
-							diff_time = curr_time = System.currentTimeMillis();
-							String msg = Kiev.runCurrentBackEndProcessor(fu);
-							diff_time = System.currentTimeMillis() - curr_time;
-							if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
-						} while (Kiev.nextBackEndPass() && wthg.errCount == errCount);
-						Kiev.closeBackEndFileUnit();
-					} finally { tr.rollback(false); }
-					Compiler.runGC(wthg);
-				}}).get();
-			}
-			//Env.classHashOfFails.clear();
-		} catch( Throwable e) {
-			if (e instanceof Kiev.CompilationAbortError)
-				return;
-			Kiev.reportError(e);
-		} finally {
-			dataFlowInfos.clear();
-			executorService.submit(new Runnable() { public void run() {
-					tr_me.rollback(false);
-			}});
-		}
-		Env.getRoot().dumpProjectFile();
-		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
-			reportTotals("Backend");
-		//Kiev.runBackEndCleanup();
-		//Env.getRoot().cleanupBackendEnv();
-		//java.lang.Runtime.getRuntime().gc();
-	}
-
-	private boolean containsFileName(String fname) {
-		foreach (CompilerParseInfo cpi; args; cpi.fname.equals(fname))
-			return true;
-		return false;
-	}
-	
-	/** add all files from project file if need to rebuild
-	*/
-	private void addRequaredToMake() {
-		foreach (FileUnit fu; Env.getProject().enumerateAllCompilationUnits(); !containsFileName(fu.pname())) {
-			if( Kiev.verbose ) System.out.println("File "+fu.pname());
-			args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(fu.pname(),null,true));
-		}
 	}
 
 	public void reportTotals(String src) {
@@ -359,13 +635,75 @@ stop:;
 		if( warnCount > 0 )
 			System.out.println(warnCount+" warnings");
 		programm_end = System.currentTimeMillis();
-//		System.out.println(src+": total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb\007\007");
-		System.out.println(src+": total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
+		System.out.println(src+": total "+(programm_end-programm_start)+"ms, memory used "+getPeekMemoryInfo()+"Mb");
+		if (Kiev.verbose && Compiler.report_totals) {
+			dumpJITInfo();
+			dumpMemoryInfo();
+		}
 		if (Kiev.testError != null) {
 			System.out.println("FAILED: there was no expected error "+Kiev.testError+" at "+Kiev.testErrorLine+":"+Kiev.testErrorOffs);
 			System.exit(1);
 		}
 		this.reportTotals = true;
+	}
+
+	private static int getPeekMemoryInfo() {
+		try {
+			// Read MemoryMXBean
+			MemoryMXBean memorymbean = ManagementFactory.getMemoryMXBean();
+			List<MemoryPoolMXBean> mempoolsmbeans = ManagementFactory.getMemoryPoolMXBeans();
+			long total = 0L;
+			foreach (MemoryPoolMXBean mempoolmbean; mempoolsmbeans.toArray(new MemoryPoolMXBean[0]); mempoolmbean.getType() == MemoryType.HEAP ) {
+				MemoryUsage mu = mempoolmbean.getPeakUsage();
+				if (mu != null)
+					total += (int)mu.getUsed();
+			}
+			return (int)(total / 1048576);
+		}
+		catch( Exception e ) {
+			return 0;
+		}
+	}
+	
+	private static void dumpJITInfo() {
+		try {
+			System.out.println( "\nDUMPING JIT INFO\n" );
+			CompilationMXBean cmpbean = ManagementFactory.getCompilationMXBean();
+			System.out.println( "Compiler Name: " + cmpbean.getName() );
+			System.out.println( "Compilation Time: " + cmpbean.getTotalCompilationTime()+"ms" );
+		}
+		catch( Exception e ) {}
+	}
+	private static String printMemoryUsage(MemoryUsage mu) {
+		return "used="+(mu.getUsed()/1024)+"Kb, comm="+(mu.getCommitted()/1024)+"Kb";
+	}
+	private static void dumpMemoryInfo() {
+		try {
+			System.out.println( "\nDUMPING MEMORY INFO\n" );
+			// Read MemoryMXBean
+			MemoryMXBean memorymbean = ManagementFactory.getMemoryMXBean();
+			System.out.println( "Heap Memory Usage: " + printMemoryUsage(memorymbean.getHeapMemoryUsage()) );
+			System.out.println( "Non-Heap Memory Usage: " + printMemoryUsage(memorymbean.getNonHeapMemoryUsage()) );
+			
+			// Read Garbage Collection information
+			List<GarbageCollectorMXBean> gcmbeans = ManagementFactory.getGarbageCollectorMXBeans();
+			foreach (GarbageCollectorMXBean gcmbean; gcmbeans.toArray(new GarbageCollectorMXBean[0])) {
+				System.out.println( "\nGC Name: " + gcmbean.getName() );
+				System.out.println( "\tGC count: " + gcmbean.getCollectionCount() );
+				System.out.println( "\tGC time: " + gcmbean.getCollectionTime()+"ms" );
+			}
+			
+			// Read Memory Pool Information
+			System.out.println( "\nMemory Pools Info" );
+			List<MemoryPoolMXBean> mempoolsmbeans = ManagementFactory.getMemoryPoolMXBeans();
+			foreach (MemoryPoolMXBean mempoolmbean; mempoolsmbeans.toArray(new MemoryPoolMXBean[0])) {
+				System.out.println( "\nPool Name: " + mempoolmbean.getName() );
+				System.out.println( "\tUsage: " + printMemoryUsage(mempoolmbean.getUsage()) );
+				System.out.println( "\tPeak:  " + printMemoryUsage(mempoolmbean.getPeakUsage()) );
+				System.out.println( "\tType:  " + mempoolmbean.getType() );
+			}
+		}
+		catch( Exception e ) {}
 	}
 }
 
@@ -375,12 +713,15 @@ public final class CompilerParseInfo {
 	final byte[]	fdata;
 	// add or not add to the project file
 	final boolean	add_to_project;
+	// ProjectSyntaxInfo to extract parser and assign ftype
+	final ProjectSyntaxInfo fsyntax;
 	// resulting FileUnit
 	public FileUnit	fu;
 	
-	public CompilerParseInfo(File file, boolean add_to_project) {
+	public CompilerParseInfo(File file, ProjectSyntaxInfo fsyntax, boolean add_to_project) {
 		this.fname = file.getPath().replace(File.separatorChar, '/').intern();
 		this.fdata = null;
+		this.fsyntax = fsyntax;
 		this.add_to_project = add_to_project;
 	}
 	public CompilerParseInfo(String fname, byte[] fdata, boolean add_to_project) {
@@ -388,6 +729,31 @@ public final class CompilerParseInfo {
 			this.fname = fname.replace(File.separatorChar, '/').intern();
 		this.fdata = fdata;
 		this.add_to_project = add_to_project;
+	}
+	
+	public ProjectSyntaxInfo getProjectSyntaxInfo() {
+		if (fsyntax != null)
+			return fsyntax;
+		if (fname != null) {
+			if (fname.toLowerCase().endsWith(".xml")) {
+				ProjectSyntaxInfo psi = new ProjectSyntaxInfo();
+				psi.file_type = "text/xml/tree-dump";
+				psi.parser = new ProjectSyntaxFactoryXmlDump();
+				return psi;
+			}
+			if (fname.toLowerCase().endsWith(".btd")) {
+				ProjectSyntaxInfo psi = new ProjectSyntaxInfo();
+				psi.file_type = "binary/tree-dump";
+				psi.parser = new ProjectSyntaxFactoryBinDump();
+				return psi;
+			}
+			if (fname.toLowerCase().endsWith(".java")) {
+				ProjectSyntaxInfo psi = new ProjectSyntaxInfo();
+				psi.file_type = "text/java/1.6";
+				return psi;
+			}
+		}
+		return null;
 	}
 }
 
@@ -417,6 +783,7 @@ public class Compiler {
 	public static boolean verbose				= false;
 	public static boolean verify				= true;
 	public static boolean safe					= true;
+	public static boolean fast_gen			= false;
 	public static boolean debugOutputA			= false;
 	public static boolean debugOutputT			= false;
 	public static boolean debugOutputC			= false;
@@ -430,11 +797,15 @@ public class Compiler {
 	public static boolean run_gui_swing			= false;
 	public static boolean run_gui_swt			= false;
 	public static boolean interface_only		= false;
+	public static boolean prefer_source			= false;
 
 	public static String project_file			= null;
 	public static String output_dir				= "classes";
+	public static String btd_dir				= ".btd";
+	public static String dump_src_dir			= null; //".src";
 	public static String compiler_classpath	= null;
 	public static boolean javacerrors			= false;
+	public static boolean report_totals			= false;
 	public static boolean nowarn				= false;
 	public static boolean code_nowarn			= true;
 
@@ -443,6 +814,8 @@ public class Compiler {
 	public static CError testError				= null;
 	public static int    testErrorLine			= 0;
 	public static int    testErrorOffs			= 0;
+
+	public static int    jobThreads				= 0;
 
 	public static long gc_mem				= (long)(1024*1024);
 
@@ -645,6 +1018,10 @@ public class Compiler {
 						Compiler.debugBytecodeRead = onoff;
 						kiev.bytecode.Clazz.traceRead = onoff;
 					}
+					if( dbg.indexOf("bcwrite",0) >= 0 ) {
+						System.out.println("\tbytecode .class writing");
+						kiev.bytecode.Clazz.traceWrite = onoff;
+					}
 					if( dbg.indexOf("bcpatch",0) >= 0 ) {
 						System.out.println("\tbytecode .class patching and rules");
 						kiev.bytecode.Clazz.traceRules = onoff;
@@ -707,6 +1084,11 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-f") || args[a].equals("-fastgen") ) {
+					Compiler.fast_gen = onoff;
+					args[a] = null;
+					continue;
+				}
 				else if( args[a].equals("-d")) {
 					args[a] = null;
 					if( onoff ) {
@@ -714,6 +1096,27 @@ public class Compiler {
 						args[a] = null;
 					} else {
 						Compiler.output_dir = null;
+					}
+					continue;
+				}
+				else if( args[a].equals("-ds")) {
+					args[a] = null;
+					if( onoff ) {
+						Compiler.dump_src_dir = args[++a];
+						args[a] = null;
+					} else {
+						Compiler.dump_src_dir = null;
+					}
+					continue;
+				}
+				else if( args[a].equals("-btd")) {
+					args[a] = null;
+					if( onoff ) {
+						Compiler.btd_dir = args[++a];
+						args[a] = null;
+					} else {
+						Compiler.btd_dir = null;
+						Compiler.prefer_source = true;
 					}
 					continue;
 				}
@@ -735,6 +1138,22 @@ public class Compiler {
 						Compiler.compiler_classpath = null;
 					continue;
 				}
+				else if( args[a].startsWith("-prefer:")) {
+					String prefer = args[a].substring(8);
+					args[a] = null;
+					if (prefer.equals("source"))
+						Compiler.prefer_source = onoff;
+					else if (prefer.equals("newer"))
+						Compiler.prefer_source = !onoff;
+					else
+						Kiev.reportError("Must be either -prefer:source or -prefer:newer");
+					continue;
+				}
+				else if( args[a].startsWith("-ps")) {
+					args[a] = null;
+					Compiler.prefer_source = onoff;
+					continue;
+				}
 				else if( args[a].equals("-gc")) {
 					args[a] = null;
 					if( onoff ) {
@@ -742,11 +1161,6 @@ public class Compiler {
 						args[a] = null;
 					} else
 						Compiler.gc_mem = (long)(1024*1024.D);
-					continue;
-				}
-				else if( args[a].equals("-vsrc")) {
-					Compiler.useBackend = KievBackend.VSrc;
-					args[a] = null;
 					continue;
 				}
 				else if( args[a].equals("-gui")) {
@@ -788,7 +1202,7 @@ public class Compiler {
 				}
 				else if( args[a].equals("-batch") ) {
 					args[a] = null;
-					System.setProperty("symade.unversioned",String.valueOf(!onoff));
+					System.setProperty("symade.unversioned",String.valueOf(onoff));
 					if (onoff)
 						Compiler.run_gui = false;
 					continue;
@@ -796,6 +1210,22 @@ public class Compiler {
 				else if( args[a].equals("-javacerrors")) {
 					Compiler.javacerrors = onoff;
 					args[a] = null;
+					continue;
+				}
+				else if( args[a].equals("-totals")) {
+					Compiler.report_totals = onoff;
+					args[a] = null;
+					continue;
+				}
+				else if( args[a].equals("-j") || args[a].equals("-jobs") ) {
+					args[a] = null;
+					if (onoff && a+1 < args.length) {
+						Compiler.jobThreads = Integer.parseInt(args[a+1]);
+						a++;
+						args[a] = null;
+					} else {
+						Compiler.jobThreads = 0;
+					}
 					continue;
 				}
 				else if( args[a].equals("-warn")) {
@@ -880,6 +1310,8 @@ public class Compiler {
 			for(int i=0; i < args.length; i++) {
 				if( args[i] == null ) continue;
 				String fn = args[i].replace('/', File.separatorChar).replace('\\', File.separatorChar);
+				if (fn.startsWith("./"))
+					fn = fn.substring(2);
 				args1 = (String[])Arrays.appendUniq(args1,fn);
 			}
 			args = args1;
@@ -899,66 +1331,46 @@ public class Compiler {
 			return;
 		}
 		
-		CompilerThreadGroup thrg = CompilerThreadGroup;
 		Vector cargs = new Vector();
 		foreach (String arg; args)
 			cargs.add(new CompilerParseInfo(arg, null, true));
-		runFrontEnd(thrg, (CompilerParseInfo[])cargs.toArray(new CompilerParseInfo[cargs.size()]), null);
+		runFrontEnd((CompilerParseInfo[])cargs.toArray(new CompilerParseInfo[cargs.size()]));
+		if (FrontendThreadGroup.THE_GROUP.errCount > 0)
+			System.exit(1);
+
+		CompilerThreadGroup cmp_thrg = new CompilerThreadGroup(FrontendThreadGroup.THE_GROUP);
+		runFrontEnd(cmp_thrg,  FrontendThreadGroup.THE_GROUP.roots);
 
 		if (Kiev.run_gui) {
-			Object wnd = Class.forName("kiev.gui.Main").newInstance();
+			java.lang.reflect.Constructor ctor = Class.forName("kiev.gui.Main").getConstructor(WorkerThreadGroup.class);
+			ctor.newInstance(cmp_thrg);
 			for(;;) Thread.sleep(10*1000);
 		} else {
-			if (thrg.errCount == 0)
-				runBackEnd(thrg, Env.getRoot(), Compiler.useBackend);
-			System.exit(thrg.errCount > 0 ? 1 : 0);
+			if (cmp_thrg.errCount == 0)
+				runBackEnd(cmp_thrg, Compiler.useBackend);
+			//thrg.cleanEnv();
+			//java.lang.Runtime.getRuntime().gc();
+			//for(;;) Thread.sleep(10*1000);
+			System.exit(cmp_thrg.errCount > 0 ? 1 : 0);
 		}
 	}
 	
-	public static void runFrontEnd(WorkerThreadGroup thrg, CompilerParseInfo[] args, ANode root) {
-		while (!thrg.runTask(true, false, args, root)) {
-			synchronized(thrg) {
-				if (thrg.isBusy())
-					thrg.wait();
-			}
-		}
+	public static void runFrontEnd(CompilerParseInfo[] args) {
+		FrontendThreadGroup.THE_GROUP.runTask(args);
 	}
 	
-	public static void runBackEnd(WorkerThreadGroup thrg, ASTNode root, KievBackend be) {
+	public static void runFrontEnd(WorkerThreadGroup thrg, INode[] roots) {
+		thrg.runTask(roots);
+	}
+	
+	public static void runBackEnd(CompilerThreadGroup thrg, KievBackend be) {
 		if (be != null)
 			Kiev.useBackend = be;
 		else
 			be = Kiev.useBackend;
 		if( Kiev.verbose ) Kiev.reportInfo("Running back-end "+be,0);
 
-		while (!thrg.runTask(false, true, null, root)) {
-			synchronized(thrg) {
-				if (thrg.isBusy())
-					thrg.wait();
-			}
-		}
-	}
-
-	public static void runGC(WorkerThreadGroup thrg) {
-		java.lang.Runtime rt = java.lang.Runtime.getRuntime();
-		long old_free = rt.freeMemory()/1024;
-		long old_total = rt.totalMemory()/1024;
-		long old_busy = old_total - old_free;
-		if( thrg.programm_mem < old_busy ) thrg.programm_mem = old_busy;
-		if( (old_total - old_free) > Compiler.gc_mem ) {
-			if( Kiev.verbose ) {
-				rt.gc();
-				long new_free = rt.freeMemory()/1024;
-				long new_total = rt.totalMemory()/1024;
-				long new_busy = new_total - new_free;
-				System.out.println("[GC (busy/free/total):"+old_busy+"/"+old_free+"/"+old_total+" -> "+new_busy+"/"+new_free+"/"+new_total+" = +"+(new_free-old_free)+" Kb ]");
-			} else {
-				rt.gc();
-			}
-		} else {
-//			if( Kiev.debug )
-//				System.out.println("[Garbage collection skipped: "+(old_total-old_free)+"/"+gc_mem+" Kb ]");
-		}
+		thrg.runTask();
 	}
 
 	public static void printHelp() {

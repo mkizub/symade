@@ -17,12 +17,11 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RStruct of Struct extends RComplexTypeDecl {
 
-	static final ExtSpaceAttrSlot TI_ATTR = new ExtSpaceAttrSlot<TypeInfoExpr>("rstruct ti field temp expr",ANode.nodeattr$parent,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
+	//static final ExtSpaceAttrSlot TI_ATTR = new ExtSpaceAttrSlot<TypeInfoExpr>("rstruct ti field temp expr",ANode.nodeattr$parent,true,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
-	public:ro			WrapperMetaType			wmeta_type;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
 
@@ -59,148 +58,142 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	public PizzaCase addCase(PizzaCase cas);
 
 	public boolean instanceOf(TypeDecl cl);
-	public Field resolveField(String name);
-	public Field resolveField(String name, boolean fatal);
-	public Method resolveMethod(String name, Type ret, Type... va_args);
+	public Field resolveField(Env env, String name);
+	public Field resolveField(Env env, String name, boolean fatal);
+	public Method resolveMethod(Env env, String name, Type ret, Type... va_args);
 	public Constructor getClazzInitMethod();
 
-	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
-		while (t instanceof CTimeType)
-			t = t.getEnclosedType();
-		if (t.getStruct() != null && ((Struct)this) == t.getStruct().typeinfo_clazz && t.getStruct().xtype ≈ t)
-			return new ThisExpr(from.pos);
-		Method ctx_method = from.ctx_method;
-		if (t.isUnerasable()) {
-			if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
-				int i=0;
-				foreach (TypeDef td; ctx_method.targs) {
-					if (td.getAType() == t)
-						return new LVarExpr(from.pos, ctx_method.getTypeInfoParam(Var.PARAM_TYPEINFO_N+i));
-					i++;
-				}
-			}
-			if (this.instanceOf(Type.tpTypeInfo.tdecl) && ctx_method != null && ctx_method instanceof Constructor && !ctx_method.isStatic()) {
-				if (t instanceof ArgType)
-					return new EToken(from.pos,t.name.toString(),ETokenKind.IDENTIFIER,true);
-			}
-			if (this.isTypeUnerasable()) {
-				ENode ti_access;
-				if (ctx_method != null && ctx_method.isStatic()) {
-					// check we have $typeinfo as first argument
-					if (ctx_method.getTypeInfoParam(Var.PARAM_TYPEINFO) == null)
-						goto make_typeinfo; //throw new CompilerException(from,"$typeinfo cannot be accessed from "+ctx_method);
-					else
-						ti_access = new LVarExpr(from.pos,ctx_method.getTypeInfoParam(Var.PARAM_TYPEINFO));
-				}
-				else {
-					ti_access = new CastExpr(from.pos, typeinfo_clazz.xtype,
-						new CallExpr(pos,
-							new ThisExpr(from.pos),
-							resolveMethod(nameGetTypeInfo,Type.tpTypeInfo),
-							ENode.emptyArray
-						)
-					);
-				}
-				// Check that we need our $typeinfo
-				if (this.xtype ≈ t)
-					return ti_access;
-	
-				if (t instanceof ArgType) {
-					// Get corresponded type argument
-					ArgType at = (ArgType)t;
-					String fnm = (nameTypeInfo+'$'+at.name).intern();
-					Field ti_arg = typeinfo_clazz.resolveField(fnm);
-					if (ti_arg == null)
-						throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
-					ti_access = new IFldExpr(from.pos,ti_access,ti_arg);
-					return ti_access;
-				}
-			}
-		}
+	//public ENode accessTypeInfoField(Env env, ASTNode from, Type t, boolean from_gen) {
+	//	while (t instanceof CTimeType)
+	//		t = t.getEnclosedType();
+	//	if (t.getStruct() != null && ((Struct)this) == t.getStruct().typeinfo_clazz && t.getStruct().getType(env) ≈ t)
+	//		return new ThisExpr(from.pos);
+	//	Method ctx_method = Env.ctxMethod(from);
+	//	if (t.isUnerasable()) {
+	//		if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
+	//			foreach (TypeDef td; ctx_method.targs; td.getAType(env) == t)
+	//				return new LVarExpr(from.pos, ctx_method.getMethodTypeInfoParam(td.sname));
+	//		}
+	//		if (this.instanceOf(env.tenv.tpTypeInfo.tdecl) && ctx_method != null && ctx_method instanceof Constructor && !ctx_method.isStatic()) {
+	//			if (t instanceof ArgType)
+	//				return new EToken(from.pos,t.name.toString(),ETokenKind.EXPL_IDENTIFIER);
+	//		}
+	//		if (this.isTypeUnerasable()) {
+	//			ENode ti_access;
+	//			if (ctx_method != null && ctx_method.isStatic()) {
+	//				// check we have $typeinfo as first argument
+	//				if (ctx_method.getClassTypeInfoParam() == null)
+	//					goto make_typeinfo; //throw new CompilerException(from,"$typeinfo cannot be accessed from "+ctx_method);
+	//				else
+	//					ti_access = new LVarExpr(from.pos,ctx_method.getClassTypeInfoParam());
+	//			}
+	//			else {
+	//				ti_access = new CastExpr(from.pos, typeinfo_clazz.getType(env),
+	//					new CallExpr(pos,
+	//						new ThisExpr(from.pos),
+	//						resolveMethod(env,nameGetTypeInfo,env.tenv.tpTypeInfo),
+	//						ENode.emptyArray
+	//					)
+	//				);
+	//			}
+	//			// Check that we need our $typeinfo
+	//			if (this.getType(env) ≈ t)
+	//				return ti_access;
+	//
+	//			if (t instanceof ArgType) {
+	//				// Get corresponded type argument
+	//				ArgType at = (ArgType)t;
+	//				String fnm = (nameTypeInfo+'$'+at.name).intern();
+	//				Field ti_arg = typeinfo_clazz.resolveField(env,fnm);
+	//				if (ti_arg == null)
+	//					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+Env.ctxMethod(from));
+	//				ti_access = new IFldExpr(from.pos,ti_access,ti_arg);
+	//				return ti_access;
+	//			}
+	//		}
+	//	}
+	//
+	//	make_typeinfo:;
+	//
+	//	// Special case for interfaces, that cannot have private fields,
+	//	// but need typeinfo in <clinit>
+	//	if ((Env.ctxMethod(from) == null || Env.ctxMethod(from) instanceof Constructor && Env.ctxMethod(from).isStatic()) && Env.ctxTDecl(from).isInterface()) {
+	//		return new TypeInfoExpr(from.pos, new TypeRef(t));
+	//	}
+	//	
+	//	// Lookup and create if need as $typeinfo$N
+	//	foreach(Field f; this.members; f.isStatic()) {
+	//		if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
+	//			continue;
+	//		if (((TypeInfoExpr)f.init).ttype.getType(env) ≈ t)
+	//			return new SFldExpr(from.pos,f);
+	//	}
+	//	TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
+	//	// check we can use a static field
+	//	TI_ATTR.add(from, ti_expr);
+	//	try {
+	//		resolveENode(ti_expr,null,env);
+	//	} finally { ~ti_expr; }
+	//	foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
+	//		// oops, cannot make it a static field
+	//		return ti_expr;
+	//	}
+	//	if (from_gen)
+	//		throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
+	//	int i = 0;
+	//	foreach(Field f; this.members; f.isStatic()) {
+	//		if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
+	//			continue;
+	//		i++;
+	//	}
+	//	Field f = new Field(nameTypeInfo+"$"+i,ti_expr.getType(env),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
+	//	f.init = ti_expr;
+	//	getStruct().addField(f);
+	//	resolveDNode(f,env);
+	//	// Add initialization in <clinit>
+	//	Constructor class_init = getStruct().getClazzInitMethod();
+	//	if( ctx_method != null && ctx_method instanceof Constructor && ctx_method.isStatic() ) {
+	//		class_init.addstats.append(
+	//			new ExprStat(f.init.pos,
+	//				new AssignExpr(f.init.pos,new SFldExpr(f.pos,f),new Copier().copyFull(f.init))
+	//			)
+	//		);
+	//		Kiev.runProcessorsOn(class_init.addstats[class_init.addstats.length-1]);
+	//	} else {
+	//		class_init.addstats.append(
+	//			new ExprStat(f.init.pos,
+	//				new AssignExpr(f.init.pos,new SFldExpr(f.pos,f),new Copier().copyFull(f.init))
+	//			)
+	//		);
+	//		Kiev.runProcessorsOn(class_init.addstats[class_init.addstats.length-1]);
+	//	}
+	//	f.setAddedToInit(true);
+	//	ENode e = new SFldExpr(from.pos,f);
+	//	return e;
+	//	//System.out.println("Field "+f+" of type "+f.init+" added");
+	//}
 
-		make_typeinfo:;
-
-		// Special case for interfaces, that cannot have private fields,
-		// but need typeinfo in <clinit>
-		if ((from.ctx_method == null || from.ctx_method instanceof Constructor && from.ctx_method.isStatic()) && from.ctx_tdecl.isInterface()) {
-			return new TypeInfoExpr(from.pos, new TypeRef(t));
-		}
-		
-		// Lookup and create if need as $typeinfo$N
-		foreach(Field f; this.members; f.isStatic()) {
-			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
-				continue;
-			if (((TypeInfoExpr)f.init).ttype.getType() ≈ t)
-				return new SFldExpr(from.pos,f);
-		}
-		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
-		// check we can use a static field
-		TI_ATTR.add(from, ti_expr);
-		try {
-			ti_expr.resolve(null);
-		} finally { ~ti_expr; }
-		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
-			// oops, cannot make it a static field
-			return ti_expr;
-		}
-		if (from_gen)
-			throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
-		int i = 0;
-		foreach(Field f; this.members; f.isStatic()) {
-			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
-				continue;
-			i++;
-		}
-		Field f = new Field(nameTypeInfo+"$"+i,ti_expr.getType(),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
-		f.init = ti_expr;
-		getStruct().addField(f);
-		f.resolveDecl();
-		// Add initialization in <clinit>
-		Constructor class_init = getStruct().getClazzInitMethod();
-		if( ctx_method != null && ctx_method instanceof Constructor && ctx_method.isStatic() ) {
-			class_init.addstats.append(
-				new ExprStat(f.init.pos,
-					new AssignExpr(f.init.pos,Operator.Assign
-						,new SFldExpr(f.pos,f),f.init.ncopy())
-				)
-			);
-			Kiev.runProcessorsOn(class_init.addstats[class_init.addstats.length-1]);
-		} else {
-			class_init.addstats.append(
-				new ExprStat(f.init.pos,
-					new AssignExpr(f.init.pos,Operator.Assign
-						,new SFldExpr(f.pos,f),f.init.ncopy())
-				)
-			);
-			Kiev.runProcessorsOn(class_init.addstats[class_init.addstats.length-1]);
-		}
-		f.setAddedToInit(true);
-		ENode e = new SFldExpr(from.pos,f);
-		return e;
-//		System.out.println("Field "+f+" of type "+f.init+" added");
-	}
-
-	public ArgType[] getTypeInfoArgs() {
+	public ArgType[] getTypeInfoArgs(Env env) {
 		Vector<ArgType> lb = new Vector<ArgType>();
-		TVar[] templ = this.xmeta_type.getTemplBindings().getTVars();
+		TVar[] templ = getStruct().getMetaType(env).getTemplBindings().getTVars();
 		foreach (TVar tv; templ; tv.isFree() && tv.var.isUnerasable())
 			lb.append(tv.var);
 		return lb.toArray();
 	}
 	
-	public boolean extendsTypeInfoClass() {
+	public boolean extendsTypeInfoClass(Env env) {
 		foreach (TypeRef sup; super_types) {
-			TypeDecl td = sup.getTypeDecl();
+			TypeDecl td = sup.getTypeDecl(env);
 			if (!td.isClazz())
 				continue;
-			Type s = sup.getType();
-			if (s.isInstanceOf(StdTypes.tpTypeInfoInterface))
+			Type s = sup.getType(env);
+			if (s.isInstanceOf(env.tenv.tpTypeInfoInterface))
 				return true;
 		}
 		return false;
 	}
 
-	public void autoGenerateTypeinfoClazz() {
+	public void autoGenerateTypeinfoClazz(Env env) {
 		if (typeinfo_clazz != null)
 			return;
 		if (isInterface() || !isTypeUnerasable())
@@ -209,12 +202,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		int flags = this.getFlags() & JAVA_ACC_MASK;
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
-		typeinfo_clazz = Env.getRoot().newStruct(nameClTypeInfo,true,this.getStruct(),flags,new JavaClass(),true,null);
+		typeinfo_clazz = env.newStruct(nameClTypeInfo,this.getStruct(),flags,new JavaClass(),null);
 		typeinfo_clazz.setPublic();
-		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
-			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.xtype));
+		if (super_types.length > 0 && super_types[0].getStruct(env).typeinfo_clazz != null)
+			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct(env).typeinfo_clazz.getType(env)));
 		else
-			typeinfo_clazz.super_types.insert(0, new TypeRef(Type.tpTypeInfo));
+			typeinfo_clazz.super_types.insert(0, new TypeRef(env.tenv.tpTypeInfo));
 		if (this.isInterfaceOnly())
 			typeinfo_clazz.is_interface_only = true;
 		if (!typeinfo_clazz.isAttached())
@@ -226,17 +219,17 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		{
 			Constructor init = new Constructor(ACC_PROTECTED);
 			init.body = new Block(pos);
-			init.params.add(new LVar(pos,"hash",Type.tpInt,Var.PARAM_NORMAL,ACC_FINAL));
-			init.params.add(new LVar(pos,"clazz",Type.tpClass,Var.PARAM_NORMAL,ACC_FINAL));
+			init.params.add(new LVar(pos,"hash",env.tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL));
+			init.params.add(new LVar(pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
 			// add in it arguments fields, and prepare for constructor
-			foreach (ArgType at; this.getTypeInfoArgs()) {
+			foreach (ArgType at; this.getTypeInfoArgs(env)) {
 				String fname = nameTypeInfo+"$"+at.name;
-				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
+				Field f = new Field(fname,env.tenv.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
-				LVar v = new LVar(pos,at.name.toString(),Type.tpTypeInfo,Var.PARAM_NORMAL,ACC_FINAL);
+				LVar v = new LVar(pos,at.name.toString(),env.tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL);
 				init.params.append(v);
 				init.block.stats.append(new ExprStat(pos,
-					new AssignExpr(pos,Operator.Assign,
+					new AssignExpr(pos,
 						new IFldExpr(pos,new ThisExpr(pos),f),
 						new LVarExpr(pos,v)
 					)
@@ -252,35 +245,33 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
-			foreach (ArgType at; ((RStruct)super_types[0].getStruct()).getTypeInfoArgs()) {
-				Type t = at.applay(this.xtype);
+			foreach (ArgType at; ((RStruct)super_types[0].getStruct(env)).getTypeInfoArgs(env)) {
+				Type t = at.applay(this.getType(env));
 				ENode expr;
 				if (t instanceof ArgType)
-					expr = new EToken(pos,t.name.toString(),ETokenKind.IDENTIFIER,true);
-				else if (t.isUnerasable())
-					expr = new TypeInfoExpr(pos,new TypeRef(t));
+					expr = new EToken(pos,t.name.toString(),ETokenKind.EXPL_IDENTIFIER);
 				else
-					expr = accessTypeInfoField(call_super, t, false);
+					expr = new TypeInfoExpr(pos,new TypeRef(t));
 				call_super.args.append(expr);
 			}
 
 			// create method to get typeinfo field
-			if (getTypeInfoArgs().length == 0) {
-				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
+			if (getTypeInfoArgs(env).length == 0) {
+				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,env.tenv.tpTypeInfo,ACC_PUBLIC));
 				// add a static field and return it
-				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.xtype,ACC_PUBLIC|ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC));
-				tif.init = new TypeInfoExpr(0, new TypeRef(getStruct().getType()));
+				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.getType(env),ACC_PUBLIC|ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC));
+				tif.init = new TypeInfoExpr(0, new TypeRef(getStruct().getType(env)));
 				tim.body = new Block(pos,new ENode[]{
-					new ReturnStat(pos,new SFldExpr(pos,new TypeRef(getStruct().xtype),tif))
+					new ReturnStat(pos,new SFldExpr(pos,new TypeRef(getStruct().getType(env)),tif))
 				});
 			}
-			else if (getStruct().super_types.length > 0 && extendsTypeInfoClass()) {
+			else if (getStruct().super_types.length > 0 && extendsTypeInfoClass(env)) {
 				// already have a super-type which has getTypeInfo()
 			}
 			else {
-				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
+				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,env.tenv.tpTypeInfo,ACC_PUBLIC));
 				// add a members field and return it
-				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.xtype,ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.getType(env),ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 				tim.body = new Block(pos,new ENode[]{
 					new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
 				});
@@ -297,37 +288,37 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// }
 		Method mNewTypeInfo = null;
 		{
-			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.xtype, ACC_STATIC|ACC_PUBLIC);
-			init.params.add(new LVar(pos,"clazz",Type.tpClass,Var.PARAM_NORMAL,ACC_FINAL));
-			init.params.add(new LVar(pos,"args",new ArrayType(Type.tpTypeInfo),Var.PARAM_NORMAL,ACC_FINAL));
+			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.getType(env), ACC_STATIC|ACC_PUBLIC);
+			init.params.add(new LVar(pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
+			init.params.add(new LVar(pos,"args",new ArrayType(env.tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
 			init.body = new Block(pos);
-			Var h = new LVar(pos,"hash",Type.tpInt,Var.VAR_LOCAL,ACC_FINAL);
-			Var v = new LVar(pos,"ti",typeinfo_clazz.xtype,Var.VAR_LOCAL,0);
-			Method mhash = Type.tpTypeInfo.tdecl.resolveMethod("hashCode",Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			Var h = new LVar(pos,"hash",env.tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL);
+			Var v = new LVar(pos,"ti",typeinfo_clazz.getType(env),Var.VAR_LOCAL,0);
+			Method mhash = env.tenv.tpTypeInfo.tdecl.resolveMethod(env,"hashCode",env.tenv.tpInt,env.tenv.tpClass,new ArrayType(env.tenv.tpTypeInfo));
 			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
 				new LVarExpr(pos,init.params[1])
 			});
 			init.block.addSymbol(h);
-			Method mget = Type.tpTypeInfo.tdecl.resolveMethod("get",Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
-			v.init = new CastExpr(pos, typeinfo_clazz.xtype, 
+			Method mget = env.tenv.tpTypeInfo.tdecl.resolveMethod(env,"get",env.tenv.tpTypeInfo,env.tenv.tpInt,env.tenv.tpClass,new ArrayType(env.tenv.tpTypeInfo));
+			v.init = new CastExpr(pos, typeinfo_clazz.getType(env), 
 				new CallExpr(pos,null,mget,new ENode[]{
 					new LVarExpr(pos,h),
 					new LVarExpr(pos,init.params[0]),
 					new LVarExpr(pos,init.params[1])
 				}));
 			init.block.addSymbol(v);
-			NewExpr ne = new NewExpr(pos,typeinfo_clazz.xtype,
+			NewExpr ne = new NewExpr(pos,typeinfo_clazz.getType(env),
 				new ENode[]{
 					new LVarExpr(pos,h),
 					new LVarExpr(pos,init.params[0])
 				});
 			int i = 0;
-			foreach (ArgType at; this.getTypeInfoArgs())
+			foreach (ArgType at; this.getTypeInfoArgs(env))
 				ne.args.add(new ContainerAccessExpr(pos, new LVarExpr(pos,init.params[1]), new ConstIntExpr(i++)));
 			init.block.stats.add(new IfElseStat(pos,
-				new BinaryBoolExpr(pos,Operator.Equals,new LVarExpr(pos,v),new ConstNullExpr()),
-				new ExprStat(pos,new AssignExpr(pos, Operator.Assign,new LVarExpr(pos,v),ne)),
+				new BinaryBoolExpr(pos,env.coreFuncs.fObjectBoolEQ,new LVarExpr(pos,v),new ConstNullExpr()),
+				new ExprStat(pos,new AssignExpr(pos, new LVarExpr(pos,v),ne)),
 				null
 			));
 			init.block.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
@@ -340,12 +331,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return newTypeInfo(<clazz>, <args>);
 		// }
 		{
-			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.xtype, ACC_STATIC|ACC_PUBLIC);
+			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.getType(env), ACC_STATIC|ACC_PUBLIC);
 			init.body = new Block(pos);
 			CallExpr ce = new CallExpr(pos, null, mNewTypeInfo, ENode.emptyArray);
-			ce.args += new TypeClassExpr(pos, new TypeRef(getStruct().xtype));
-			NewInitializedArrayExpr narr = new NewInitializedArrayExpr(pos, new TypeExpr(StdTypes.tpTypeInfo,Operator.PostTypeArray), ENode.emptyArray);
-			foreach (ArgType at; this.getTypeInfoArgs()) {
+			ce.args += new TypeClassExpr(pos, new TypeRef(getStruct().getType(env)));
+			NewInitializedArrayExpr narr = new NewInitializedArrayExpr(pos, new TypeExpr(env.tenv.tpTypeInfo,Operator.PostTypeArray,new ArrayType(env.tenv.tpTypeInfo)), ENode.emptyArray);
+			foreach (ArgType at; this.getTypeInfoArgs(env)) {
 				narr.args.append(new TypeInfoExpr(pos, new TypeRef(at)));
 			}
 			ce.args += narr;
@@ -359,16 +350,16 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		//  return new TypeInfo[]{typeinfo$A,typeinfo$B,...);
 		// }
 		{
-			Method mrr = new MethodImpl("getTopArgs", new ArrayType(Type.tpTypeInfo), ACC_PUBLIC);
+			Method mrr = new MethodImpl("getTopArgs", new ArrayType(env.tenv.tpTypeInfo), ACC_PUBLIC);
 			typeinfo_clazz.addMethod(mrr);
 			mrr.body = new Block(pos);
 			Vector<ENode> targs = new Vector<ENode>();
-			foreach (ArgType at; this.getTypeInfoArgs()) {
-				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
+			foreach (ArgType at; this.getTypeInfoArgs(env)) {
+				Field f = typeinfo_clazz.resolveField(env,(nameTypeInfo+"$"+at.name).intern());
 				targs.append(new IFldExpr(pos,new ThisExpr(pos), f));
 			}
 			mrr.block.stats.add(new ReturnStat(pos,
-				new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpTypeInfo,Operator.PostTypeArray),targs.toArray())
+				new NewInitializedArrayExpr(pos,new TypeExpr(env.tenv.tpTypeInfo,Operator.PostTypeArray,new ArrayType(env.tenv.tpTypeInfo)),targs.toArray())
 				));
 		}
 		
@@ -380,24 +371,24 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method meq = new MethodImpl("eq", Type.tpBoolean, ACC_PUBLIC);
-			meq.params.add(new LVar(pos,"clazz",Type.tpClass,Var.PARAM_NORMAL,ACC_FINAL));
-			meq.params.add(new LVar(pos,"args",new ArrayType(Type.tpTypeInfo),Var.PARAM_VARARGS,ACC_FINAL));
+			Method meq = new MethodImpl("eq", env.tenv.tpBoolean, ACC_PUBLIC);
+			meq.params.add(new LVar(pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
+			meq.params.add(new LVar(pos,"args",new VarargType(env.tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(meq);
 			meq.body = new Block(pos);
 			meq.block.stats.add(new IfElseStat(pos,
-				new BinaryBoolExpr(pos,Operator.NotEquals,
-					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
+				new BinaryBoolExpr(pos,env.coreFuncs.fObjectBoolNE,
+					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(env,"clazz")),
 					new LVarExpr(pos,meq.params[0])
 					),
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
 			int idx = 0;
-			foreach (ArgType at; this.getTypeInfoArgs()) {
-				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
+			foreach (ArgType at; this.getTypeInfoArgs(env)) {
+				Field f = typeinfo_clazz.resolveField(env,(nameTypeInfo+"$"+at.name).intern());
 				meq.block.stats.add(new IfElseStat(pos,
-					new BinaryBoolExpr(pos,Operator.NotEquals,
+					new BinaryBoolExpr(pos,env.coreFuncs.fObjectBoolNE,
 						new IFldExpr(pos,new ThisExpr(pos), f),
 						new ContainerAccessExpr(pos, new LVarExpr(pos,meq.params[1]), new ConstIntExpr(idx))
 						),
@@ -418,17 +409,17 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method misa = new MethodImpl("$assignableFrom", Type.tpBoolean, ACC_PUBLIC);
-			misa.params.add(new LVar(pos,"ti",Type.tpTypeInfo,Var.PARAM_NORMAL,ACC_FINAL));
+			Method misa = new MethodImpl("$assignableFrom", env.tenv.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new LVar(pos,"ti",env.tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.block.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
-						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField("clazz")),
-						Type.tpClass.tdecl.resolveMethod("isAssignableFrom",Type.tpBoolean,Type.tpClass),
+						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField(env,"clazz")),
+						env.tenv.tpClass.tdecl.resolveMethod(env,"isAssignableFrom",env.tenv.tpBoolean,env.tenv.tpClass),
 						new ENode[]{
-							new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), typeinfo_clazz.resolveField("clazz"))
+							new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), typeinfo_clazz.resolveField(env,"clazz"))
 						}
 					)
 				),
@@ -436,18 +427,18 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				null
 			));
 			misa.block.stats.add(new ExprStat(pos,
-				new AssignExpr(pos,Operator.Assign,
+				new AssignExpr(pos,
 					new LVarExpr(pos,misa.params[0]),
-					new CastExpr(pos,typeinfo_clazz.xtype,new LVarExpr(pos,misa.params[0]))
+					new CastExpr(pos,typeinfo_clazz.getType(env),new LVarExpr(pos,misa.params[0]))
 				)
 			));
-			foreach (ArgType at; this.getTypeInfoArgs()) {
-				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
+			foreach (ArgType at; this.getTypeInfoArgs(env)) {
+				Field f = typeinfo_clazz.resolveField(env,(nameTypeInfo+"$"+at.name).intern());
 				misa.block.stats.add(new IfElseStat(pos,
 					new BooleanNotExpr(pos,
 						new CallExpr(pos,
 							new IFldExpr(pos,new ThisExpr(), f),
-							Type.tpTypeInfo.tdecl.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
+							env.tenv.tpTypeInfo.tdecl.resolveMethod(env,"$assignableFrom",env.tenv.tpBoolean,env.tenv.tpTypeInfo),
 							new ENode[]{
 								new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), f)
 							}
@@ -466,12 +457,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return this.$assignableFrom(((Outer)obj).$typeinfo));
 		// }
 		{
-			Method misa = new MethodImpl("$instanceof", Type.tpBoolean, ACC_PUBLIC);
-			misa.params.add(new LVar(pos,"obj",Type.tpObject,Var.PARAM_NORMAL,ACC_FINAL));
+			Method misa = new MethodImpl("$instanceof", env.tenv.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new LVar(pos,"obj",env.tenv.tpObject,Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.block.stats.add(new IfElseStat(pos,
-				new BinaryBoolExpr(pos,Operator.Equals,
+				new BinaryBoolExpr(pos,env.coreFuncs.fObjectBoolEQ,
 					new LVarExpr(pos,misa.params[0]),
 					new ConstNullExpr()
 					),
@@ -481,8 +472,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			misa.block.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
-						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
-						Type.tpClass.tdecl.resolveMethod("isInstance",Type.tpBoolean,Type.tpObject),
+						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(env,"clazz")),
+						env.tenv.tpClass.tdecl.resolveMethod(env,"isInstance",env.tenv.tpBoolean,env.tenv.tpObject),
 						new ENode[]{new LVarExpr(pos,misa.params[0])}
 						)
 					),
@@ -492,11 +483,11 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			misa.block.stats.add(new ReturnStat(pos,
 				new CallExpr(pos,
 					new ThisExpr(),
-					typeinfo_clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
+					typeinfo_clazz.resolveMethod(env,"$assignableFrom",env.tenv.tpBoolean,env.tenv.tpTypeInfo),
 					new ENode[]{
 						new CallExpr(pos,
-							new CastExpr(pos,this.xtype,new LVarExpr(pos,misa.params[0])),
-							this.resolveMethod(nameGetTypeInfo,Type.tpTypeInfo),
+							new CastExpr(pos,this.getType(env),new LVarExpr(pos,misa.params[0])),
+							this.resolveMethod(env,nameGetTypeInfo,env.tenv.tpTypeInfo),
 							ENode.emptyArray
 						)
 					}
@@ -514,56 +505,56 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				break;
 			}
 			if (ctor_exists) {
-				Method mni = new MethodImpl("newInstance", Type.tpObject, ACC_PUBLIC);
+				Method mni = new MethodImpl("newInstance", env.tenv.tpObject, ACC_PUBLIC);
 				typeinfo_clazz.addMethod(mni);
 				mni.body = new Block(pos);
-				mni.block.stats.add(new ReturnStat(pos,
-					new NewExpr(pos,new TypeRef(this.xtype),ENode.emptyArray)
-				));
+				NewExpr ne = new NewExpr(pos,new TypeRef(this.getType(env)),ENode.emptyArray);
+				ne.tpinfo = new ThisExpr(pos);
+				mni.block.stats.add(new ReturnStat(pos,ne));
 			}
 		}
 		Kiev.runProcessorsOn(typeinfo_clazz)
 	}
 	
-	public void autoGenerateConstructor() {
+	public void autoGenerateConstructor(Env env) {
 		if (!isInterface()) {
 			// Default <init> method, if no one is declared
 			boolean init_found = false;
 			// Add outer hidden parameter to constructors for inner and non-static classes
 			foreach (Constructor m; members; !m.isStatic()) {
 				init_found = true;
-				if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs().length > 0 && m.getTypeInfoParam(Var.PARAM_TYPEINFO) == null)
-					m.params.insert(0,new LVar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+				if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs(env).length > 0 && m.getClassTypeInfoParam() == null)
+					m.params.insert(0,new LVar(m.pos,nameTypeInfo,typeinfo_clazz.getType(env),Var.PARAM_CLASS_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 				if (isStructInner() && !isStatic() && m.getOuterThisParam() == null)
-					m.params.insert(0,new LVar(m.pos,nameThisDollar,ctx_tdecl.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+					m.params.insert(0,new LVar(m.pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 				if (isEnum()) {
 					if (m.params.length < 1 || m.params[0].kind != Var.PARAM_ENUM_NAME)
-						m.params.insert(0,new LVar(pos,"enum$name",Type.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
+						m.params.insert(0,new LVar(pos,"enum$name",env.tenv.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
 					if (m.params.length < 2 || m.params[1].kind != Var.PARAM_ENUM_ORD)
-						m.params.insert(1,new LVar(pos,"enum$ordinal",Type.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
+						m.params.insert(1,new LVar(pos,"enum$ordinal",env.tenv.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
 				}
 			}
 			if( !init_found ) {
 				trace(Kiev.debug && Kiev.debugResolve,"Constructor not found in class "+this);
 				Constructor init = new Constructor(ACC_PUBLIC);
 				init.setAutoGenerated(true);
-				if (this != Type.tpClosureClazz && this.instanceOf(Type.tpClosureClazz)) {
+				if (this.getStruct() != env.tenv.tpClosure.getStruct() && this.instanceOf(env.tenv.tpClosure.getStruct())) {
 					if (isStructInner() && !isStatic()) {
-						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
-						init.params.append(new LVar(pos,"max$args",Type.tpInt,Var.PARAM_NORMAL,ACC_SYNTHETIC));
+						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+						init.params.append(new LVar(pos,"max$args",env.tenv.tpInt,Var.VAR_LOCAL,ACC_SYNTHETIC));
 					} else {
-						init.params.append(new LVar(pos,"max$args",Type.tpInt,Var.PARAM_NORMAL,ACC_SYNTHETIC));
+						init.params.append(new LVar(pos,"max$args",env.tenv.tpInt,Var.VAR_LOCAL,ACC_SYNTHETIC));
 					}
 				} else {
 					if (isStructInner() && !isStatic()) {
-						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 					}
-					if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs().length > 0) {
-						init.params.append(new LVar(pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+					if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs(env).length > 0) {
+						init.params.append(new LVar(pos,nameTypeInfo,typeinfo_clazz.getType(env),Var.PARAM_CLASS_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 					}
 					if (isEnum()) {
-						init.params.insert(0,new LVar(pos,"enum$name",Type.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
-						init.params.insert(1,new LVar(pos,"enum$ordinal",Type.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
+						init.params.insert(0,new LVar(pos,"enum$name",env.tenv.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
+						init.params.insert(1,new LVar(pos,"enum$ordinal",env.tenv.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
 					}
 				}
 				init.pos = pos;
@@ -577,26 +568,26 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 	}
 
-	public boolean preGenerate() {
-		getStruct().checkResolved();
-		getStruct().xtype.checkResolved();
+	public boolean preGenerate(Env env) {
+		getStruct().checkResolved(env);
+		getStruct().getType(env).checkResolved();
 		if (isMembersPreGenerated()) return true;
 		setMembersPreGenerated(true);
 		
 		// first, pre-generate super-types
 		foreach (TypeRef sup; this.super_types)
-			((RTypeDecl)sup.getTypeDecl()).preGenerate();
+			((RTypeDecl)sup.getTypeDecl(env)).preGenerate(env);
 
 		if (isMixin())
 			((Struct)this).mflags_is_struct_interface = true;
 		// generate typeinfo class, if needed
-		autoGenerateTypeinfoClazz();
+		autoGenerateTypeinfoClazz(env);
 		// generate a class for interface non-abstract members
-		autoGenerateIdefault(this);
+		autoGenerateIdefault(this,env);
 		// fix super-types for java
-		autoFixSuperTypes(this);
+		autoFixSuperTypes(this, env);
 		// generate default constrctor if needed
-		autoGenerateConstructor();
+		autoGenerateConstructor(env);
 		
 		if (this.isInterfaceOnly())
 			return true;
@@ -604,7 +595,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// build vtable
 		List<Struct> processed = List.Nil;
 		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
-		buildVTable(vtable, processed);
+		buildVTable(vtable, processed, env);
 		if (Kiev.debug && Kiev.debugMultiMethod) {
 			trace("vtable for "+this+":");
 			foreach (VTableEntry vte; vtable) {
@@ -612,16 +603,16 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (vte.overloader != null)
 				trace("            overloaded by "+vte.overloader.name+vte.overloader.etype);
 				foreach (Method m; vte.methods)
-					trace("        "+m.ctx_tdecl+"."+m.sname+m.mtype);
+					trace("        "+Env.ctxTDecl(m)+"."+m.sname+m.mtype);
 			}
 		}
 		
 		if (isClazz()) {
 			// forward default implementation to interfaces
-			autoCopyMixinMembers(this,vtable);
+			autoCopyMixinMembers(this,vtable,env);
 			// generate bridge methods
 			foreach (VTableEntry vte; vtable)
-				autoBridgeMethods(this,vte);
+				autoBridgeMethods(this,vte,env);
 //			// generate method dispatchers for multimethods
 //			foreach (VTableEntry vte; vtable; vte.overloader == null)
 //				createMethodDispatchers(vte);
@@ -630,7 +621,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				checkUnimplementedMethod(this,vte);
 		}
 		
-		combineMethods(this);
+		combineMethods(this, env);
 
 		return true;
 	}
@@ -651,13 +642,13 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 	}
 	
-	public final void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
+	public final void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed, Env env) {
 		if (processed.contains(this.getStruct()))
 			return;
 		processed = new List.Cons<Struct>(this.getStruct(), processed);
 		// take vtable from super-types
 		foreach (TypeRef sup; super_types)
-			((RStruct)sup.getType().getStruct()).buildVTable(vtable, processed);
+			((RStruct)sup.getType(env).getStruct()).buildVTable(vtable, processed, env);
 		
 		// process override
 		foreach (Method m; members; !(m instanceof Constructor)) {
@@ -696,7 +687,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						CallType mt = (CallType)m.dtype.toCallTypeRetAny().applay(this.xtype);
+						CallType mt = (CallType)m.dtype.toCallTypeRetAny().applay(this.getType(env));
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -731,26 +722,26 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 	}
 
-	private static void autoCopyMixinMembers(@forward RStruct self, Vector<VTableEntry> vtable) {
+	private static void autoCopyMixinMembers(@forward RStruct self, Vector<VTableEntry> vtable, Env env) {
 		// make master-copy context
-		ASTNode.CopyContext cc = new ASTNode.CopyContext();
+		CopyContext cc = new Copier();
 		Struct me = (Struct)self;
 		Vector<DNode> to_copy = new Vector<DNode>();
 		// copy non-abstract fields
 		foreach (TypeRef tr; self.super_types) {
-			Struct ss = tr.getStruct();
+			Struct ss = tr.getStruct(env);
 			if (ss == null || !ss.isInterface() || !ss.isMixin() || ss.iface_impl == me)
 				continue;
 			foreach (Field f; ss.members) {
 				if !(f.isFinal() && f.isStatic())
-					to_copy.append(f.ncopy(cc));
+					to_copy.append(cc.copyRoot(f));
 			}
 		}
 	next_entry:
 	foreach (VTableEntry vte; vtable; vte.overloader == null) {
 			// check we have a virtual method for this entry
 			foreach (Method m; vte.methods) {
-				if (m.ctx_tdecl.isInterface())
+				if (Env.ctxTDecl(m).isInterface())
 					continue;
 				// found a virtual method, nothing to proxy here
 				continue next_entry;
@@ -760,9 +751,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			Struct def_iface = null;
 			foreach (Method m; vte.methods; m.body != null) {
 				// find default implementation class
-				if !(m.ctx_tdecl instanceof Struct)
+				if !(Env.ctxTDecl(m) instanceof Struct)
 					continue;
-				Struct mtd = (Struct)m.ctx_tdecl;
+				Struct mtd = (Struct)Env.ctxTDecl(m);
 				if (!mtd.isInterface() || mtd.isAnnotation())
 					continue;
 				if (def == null) {
@@ -787,12 +778,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				Method def = vte.methods.head();
 				if (!me.isAbstract())
 					Kiev.reportWarning(me,"Method "+vte.name+vte.etype+" is not implemented in "+me);
-				//m = new MethodImpl(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
-				//for (int i=0; i < vte.etype.arity; i++)
-				//	m.params.append(new LVar(0,def.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
 			} else {
 				// create a proxy call
-				m = def.ncopy(cc);
+				m = cc.copyRoot(def);
 			}
 			if (m != null) {
 				to_copy.append(m);
@@ -806,7 +794,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			Kiev.runProcessorsOn(dn);
 	}
 
-	private static void autoBridgeMethods(@forward RStruct self, VTableEntry vte) {
+	private static void autoBridgeMethods(@forward RStruct self, VTableEntry vte, Env env) {
 		// get overloader vtable entry
 		VTableEntry ovr = vte;
 		while (ovr.overloader != null)
@@ -814,7 +802,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// find overloader method
 		Method mo = null;
 		foreach (Method m; vte.methods) {
-			if (m.ctx_tdecl == self.getStruct() && m.etype ≈ ovr.etype) {
+			if (Env.ctxTDecl(m) == self.getStruct() && m.etype ≈ ovr.etype) {
 				mo = m;
 				break;
 			}
@@ -822,13 +810,13 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		if (mo == null)
 			return; // not overloaded in this class
 	next_m:
-		foreach (Method m; vte.methods; m.ctx_tdecl != self.getStruct()) {
+		foreach (Method m; vte.methods; Env.ctxTDecl(m) != self.getStruct()) {
 			// check this class have no such a method
 			foreach (Method x; self.members; x.sname == m.sname) {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = mo.ncopy();
+			Method bridge = new Copier().copyFull(mo);
 			bridge.type_ret = new TypeRef(vte.etype.ret());
 			if (!bridge.isMethodBridge())
 				bridge.setMeta(new MetaBridge());
@@ -837,7 +825,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			bridge.body = new Block();
 			((Struct)self).members.append(bridge);
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
-			if (bridge.mtype.ret() ≢ Type.tpVoid)
+			if (bridge.mtype.ret() ≢ env.tenv.tpVoid)
 				bridge.block.stats.append(new ReturnStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			else
 				bridge.block.stats.append(new ExprStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
@@ -848,7 +836,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	private static void checkUnimplementedMethod(@forward RStruct self, VTableEntry vte) {
 		if (self.isAbstract())
 			return;
-		foreach (Method m; vte.methods; !m.ctx_tdecl.isInterface()) {
+		foreach (Method m; vte.methods; !Env.ctxTDecl(m).isInterface()) {
 			if (!m.isAbstract())
 				return;
 			break;
@@ -856,10 +844,10 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		Kiev.reportWarning(self,"Method "+vte.name+vte.etype+" is not implemented in "+self);
 	}
 
-	private static Struct makeImpl(@forward RStruct self) {
-		Struct defaults = Env.getRoot().newStruct(nameIFaceImpl,true,
+	private static Struct makeImpl(@forward RStruct self, Env env) {
+		Struct defaults = env.newStruct(nameIFaceImpl,
 			self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC | ACC_ABSTRACT | ACC_FORWARD,
-			new JavaClass(), true, null
+			new JavaClass(), null
 		);
 		if (!defaults.isAttached())
 			((Struct)self).members.add(defaults);
@@ -867,8 +855,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			defaults.is_interface_only = true;
 		iface_impl = defaults;
 		// add the super-type
-		defaults.super_types += new TypeRef(self.xtype);
-		TypeRef tro = new TypeRef(StdTypes.tpObject);
+		defaults.super_types += new TypeRef(self.getType(env));
+		TypeRef tro = new TypeRef(env.tenv.tpObject);
 		tro.setAutoGenerated(true);
 		// add super-type for mixin
 		if (self.super_types.length == 0) {
@@ -881,15 +869,15 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				sup_tr = self.super_types[i];
 				break;
 			}
-			Type st = sup_tr.getType();
+			Type st = sup_tr.getType(env);
 			if (st.getStruct() == null) {
 				defaults.super_types.insert(0, tro);
 			}
 			else if (st.getStruct().isClazz()) {
-				defaults.super_types.insert(0, new TypeRef(st.getStruct().xtype));
+				defaults.super_types.insert(0, new TypeRef(st.getStruct().getType(env)));
 			}
 			else if (st.getStruct().isInterface() && st.getStruct().iface_impl != null) {
-				defaults.super_types.insert(0, new TypeRef(st.getStruct().iface_impl.xtype));
+				defaults.super_types.insert(0, new TypeRef(st.getStruct().iface_impl.getType(env)));
 			}
 			else {
 				defaults.super_types.insert(0, tro);
@@ -899,10 +887,10 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		return defaults;
 	}
 
-	private static void autoFixSuperTypes(RStruct rself) {
+	private static void autoFixSuperTypes(RStruct rself, Env env) {
 		@forward Struct self = (Struct)rself;
-		if (self.xtype ≈ StdTypes.tpObject) {
-			if (self.super_types.length > 1 || self.super_types.length == 1 && self.super_types[0].getType() ≢ StdTypes.tpAny)
+		if (self.getType(env) ≈ env.tenv.tpObject) {
+			if (self.super_types.length > 1 || self.super_types.length == 1 && self.super_types[0].getType(env) ≢ env.tenv.tpAny)
 				Kiev.reportError(self,"Object must have no super-types");
 			return;
 		}
@@ -911,20 +899,20 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// first super-type must be java class
 		if (self.super_types.length == 0) {
 			if (self.isAnnotation()) {
-				TypeRef tr = new TypeRef(Type.tpObject);
+				TypeRef tr = new TypeRef(env.tenv.tpObject);
 				tr.setAutoGenerated(true);
 				self.super_types.add(tr);
-				tr = new TypeRef(Type.tpAnnotation);
+				tr = new TypeRef(env.tenv.tpAnnotation);
 				tr.setAutoGenerated(true);
 				self.super_types.add(tr);
 			}
 			else if (self.isEnum()) {
-				TypeRef tr = new TypeRef(Type.tpEnum);
+				TypeRef tr = new TypeRef(env.tenv.tpEnum);
 				tr.setAutoGenerated(true);
 				self.super_types.insert(0, tr);
 			}
 			else {
-				TypeRef tr = new TypeRef(Type.tpObject);
+				TypeRef tr = new TypeRef(env.tenv.tpObject);
 				tr.setAutoGenerated(true);
 				self.super_types.insert(0, tr);
 			}
@@ -933,38 +921,38 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			TypeRef st = self.super_types[0];
 
 			if (self.isAnnotation()) {
-				assert (st.getType() ≈ StdTypes.tpObject);
+				assert (st.getType(env) ≈ env.tenv.tpObject);
 				if (self.super_types.length == 1) {
-					TypeRef tr = new TypeRef(Type.tpAnnotation);
+					TypeRef tr = new TypeRef(env.tenv.tpAnnotation);
 					tr.setAutoGenerated(true);
 					self.super_types.add(tr);
 				}
-				else if (self.super_types[1].getType() ≉ StdTypes.tpAnnotation) {
-					Kiev.reportWarning(self,"Annotation must extend "+StdTypes.tpAnnotation);
-					TypeRef tr = new TypeRef(Type.tpAnnotation);
+				else if (self.super_types[1].getType(env) ≉ env.tenv.tpAnnotation) {
+					Kiev.reportWarning(self,"Annotation must extend "+env.tenv.tpAnnotation);
+					TypeRef tr = new TypeRef(env.tenv.tpAnnotation);
 					tr.setAutoGenerated(true);
 					self.super_types.insert(1, tr);
 				}
 			}
 			else if (self.isEnum()) {
-				//assert (st.getTypeDecl() == StdTypes.tpEnum.meta_type.tdecl);
+				//assert (st.getTypeDecl(env) == env.tenv.tpEnum.meta_type.tdecl);
 			}
 
-			Struct s = st.getStruct();
+			Struct s = st.getStruct(env);
 			if (s != null && self.isClazz()) {
 				if (s.isInterface() && s.iface_impl != null && s.iface_impl != (Struct)self) {
-					TypeRef tr = new TypeRef(s.iface_impl.xtype);
+					TypeRef tr = new TypeRef(s.iface_impl.getType(env));
 					tr.setAutoGenerated(true);
 					self.super_types.insert(0, tr);
 				}
 				else if (!s.isClazz()) {
-					TypeRef tr = new TypeRef(Type.tpObject);
+					TypeRef tr = new TypeRef(env.tenv.tpObject);
 					tr.setAutoGenerated(true);
 					self.super_types.insert(0, tr);
 				}
 			} else {
 				if (s == null || !s.isClazz()) {
-					TypeRef tr = new TypeRef(Type.tpObject);
+					TypeRef tr = new TypeRef(env.tenv.tpObject);
 					tr.setAutoGenerated(true);
 					self.super_types.insert(0, tr);
 				}
@@ -974,19 +962,19 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			Kiev.reportError(self, "The class must extend another class");
 			return;
 		}
-		if (self.super_types[0].getStruct() == null || !self.super_types[0].getStruct().isClazz()) {
+		if (self.super_types[0].getStruct(env) == null || !self.super_types[0].getStruct(env).isClazz()) {
 			Kiev.reportError(self, "The first super-class of "+self+" must be a java class, but found "+self.super_types[0]);
 			return;
 		}
 		for (int i=1; i < self.super_types.length; i++) {
-			if (self.super_types[i].getStruct() == null || !self.super_types[i].getStruct().isInterface()) {
+			if (self.super_types[i].getStruct(env) == null || !self.super_types[i].getStruct(env).isInterface()) {
 				Kiev.reportError(self, "The non-first super-class of "+self+" must be a java interface, but found "+self.super_types[i]);
 				return;
 			}
 		}
 	}
 
-	private static void autoGenerateIdefault(@forward RStruct self) {
+	private static void autoGenerateIdefault(@forward RStruct self, Env env) {
 		if (!isInterface() || isStructView() || isAnnotation())
 			return;
 		Struct defaults = iface_impl;
@@ -1012,26 +1000,26 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 		// Make inner class name$_Impl_
 		if (defaults == null && (isInterface() && isMixin() || to_copy.length > 0))
-			defaults = makeImpl(self);
+			defaults = makeImpl(self, env);
 		if (defaults == null)
 			return;
-		ASTNode.CopyContext cc = new ASTNode.CopyContext();
+		CopyContext cc = new Copier();
 		foreach (DNode dn; to_copy) {
 			if (dn instanceof Constructor) {
 				if (dn.isStatic())
 					continue;
-				defaults.members += dn.ncopy(cc);
+				defaults.members += cc.copyRoot(dn);
 			}
 			else if (dn instanceof Method) {
-				defaults.members += dn.ncopy(cc);
+				defaults.members += cc.copyRoot(dn);
 			}
 			else if (dn instanceof Field) {
-				defaults.members += dn.ncopy(cc);
+				defaults.members += cc.copyRoot(dn);
 			}
 		}
 		cc.updateLinks();
 		Kiev.runProcessorsOn(defaults);
-		((RStruct)defaults).preGenerate();
+		((RStruct)defaults).preGenerate(env);
 		boolean has_abstract_methods = false;
 		foreach (Method m; defaults.members; m.isAbstract()) {
 			has_abstract_methods = true;
@@ -1041,7 +1029,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			defaults.setAbstract(false);
 	}
 
-	private static void combineMethods(@forward RStruct self) {
+	private static void combineMethods(@forward RStruct self, Env env) {
 		List<Method> multimethods = List.Nil;
 		for (int cur_m=0; cur_m < members.length; cur_m++) {
 			if !(members[cur_m] instanceof Method)
@@ -1064,16 +1052,16 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.getFlags() | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				{
-					ANode.CopyContext cc = new ANode.CopyContext();
+					CopyContext cc = new Copier();
 					mmm.targs.copyFrom(m.targs, cc);
 					cc.updateLinks();
 				}
 				foreach (Var fp; m.params) {
 					TypeRef stype = fp.stype;
 					if (stype != null)
-						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.getFlags()));
+						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(env),fp.kind,fp.getFlags()));
 					else
-						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(),fp.kind,fp.getFlags()));
+						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(env),fp.kind,fp.getFlags()));
 				}
 				((Struct)self).members.add(mmm);
 			}
@@ -1108,7 +1096,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			Method overwr = null;
 
 			if (super_types.length > 0)
-				overwr = getOverwrittenMethod(super_types[0].getStruct(),self.xtype,m);
+				overwr = getOverwrittenMethod(super_types[0].getStruct(env),self.getType(env),m,env);
 
 			// nothing to do, if no methods to combine
 			if (marr.length == 1 && mm != null) {
@@ -1137,7 +1125,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
 			IfElseStat st = null;
-			st = makeDispatchStat(self,mm,mmt);
+			st = makeDispatchStat(self,mm,mmt,env);
 
 			if (overwr != null) {
 				IfElseStat last_st = st;
@@ -1149,16 +1137,16 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					vae[k] = new CastExpr(0,mm.mtype.arg(k), new LVarExpr(0,mm.params[k]));
 				}
 				CallExpr ce = new CallExpr(0,new SuperExpr(),overwr,null,vae);
-				ce.setSuperExpr(true);
-				if( m.mtype.ret() ≢ Type.tpVoid ) {
-					if( overwr.mtype.ret() ≡ Type.tpVoid )
+				//ce.setSuperExpr(true);
+				if( m.mtype.ret() ≢ env.tenv.tpVoid ) {
+					if( overwr.mtype.ret() ≡ env.tenv.tpVoid )
 						br = new Block(0,new ENode[]{
 							new ExprStat(0,ce),
 							new ReturnStat(0,new ConstNullExpr())
 						});
 					else if( !overwr.mtype.ret().isReference() && mm.mtype.ret().isReference() ) {
 						br = new ReturnStat(0,ce);
-						CastExpr.autoCastToReference(ce);
+						CastExpr.autoCastToReference(env, ce, br, ReturnStat.nodeattr$expr);
 					}
 					else {
 						br = new ReturnStat(0,ce);
@@ -1184,11 +1172,11 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 	}
 
-	private static Method getOverwrittenMethod(Struct clazz, Type base, Method m) {
+	private static Method getOverwrittenMethod(Struct clazz, Type base, Method m, Env env) {
 		Method mm = null, mmret = null;
 		if (!clazz.isInterface()) {
-			foreach (TypeRef st; clazz.super_types; st.getStruct() != null) {
-				mm = getOverwrittenMethod(st.getStruct(),base,m);
+			foreach (TypeRef st; clazz.super_types; st.getStruct(env) != null) {
+				mm = getOverwrittenMethod(st.getStruct(env),base,m,env);
 				if (mm != null)
 					break;
 			}
@@ -1217,7 +1205,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		return mmret;
 	}
 
-	private static IfElseStat makeDispatchStat(@forward RStruct self, Method mm, MMTree mmt) {
+	private static IfElseStat makeDispatchStat(@forward RStruct self, Method mm, MMTree mmt, Env env) {
 		IfElseStat dsp = null;
 		ENode cond = null;
 		for(int i=0; i < mmt.uppers.length; i++) {
@@ -1237,10 +1225,10 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					t = t.getEnclosedType();
 				if (t instanceof CompaundType && ((CompaundType)t).tdecl.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
-						((RStruct)t.getStruct()).autoGenerateTypeinfoClazz();
+						((RStruct)t.getStruct()).autoGenerateTypeinfoClazz(env);
 					ENode tibe = new CallExpr(pos,
-						accessTypeInfoField(mmt.m,t,false),
-						Type.tpTypeInfo.tdecl.resolveMethod("$instanceof",Type.tpBoolean,Type.tpObject),
+						new TypeInfoExpr(t),
+						env.tenv.tpTypeInfo.tdecl.resolveMethod(env,"$instanceof",env.tenv.tpBoolean,env.tenv.tpObject),
 						new ENode[]{ new LVarExpr(pos,mm.params[j]) }
 						);
 					if( be == null )
@@ -1259,7 +1247,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				ENode st = makeMMDispatchCall(self,mmt.uppers[i].m.pos,mm,mmt.uppers[i].m);
 				br = new IfElseStat(0,cond,st,null);
 			} else {
-				br = new IfElseStat(0,cond,makeDispatchStat(self,mm,mmt.uppers[i]),null);
+				br = new IfElseStat(0,cond,makeDispatchStat(self,mm,mmt.uppers[i],env),null);
 			}
 			cond = null;
 			if( dsp == null ) dsp = br;
@@ -1282,7 +1270,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	private static ENode makeMMDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
-		if (dispatched.ctx_tdecl == self.getStruct()) {
+		if (Env.ctxTDecl(dispatched) == self.getStruct()) {
 			assert (dispatched.parent() == self.getStruct());
 			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
@@ -1294,14 +1282,14 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		//return new InlineMethodStat(pos,dispatched,dispatcher)
 		ENode obj = null;
 		if (!dispatched.isStatic() && !dispatcher.isStatic()) {
-			if (self.getStruct() != dispatched.ctx_tdecl)
+			if (self.getStruct() != Env.ctxTDecl(dispatched))
 				obj = new SuperExpr(pos);
 			else
 				obj = new ThisExpr(pos);
 		}
 		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray);
-		if (self.getStruct() != dispatched.ctx_tdecl)
-			ce.setSuperExpr(true);
+		//if (self.getStruct() != Env.ctxTDecl(dispatched))
+		//	ce.setSuperExpr(true);
 		if (dispatched.isVirtualStatic() && !dispatcher.isStatic())
 			ce.args.append(new ThisExpr(pos));
 		foreach (Var fp; dispatcher.params)
@@ -1381,18 +1369,18 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		Initializer instance_init;
 		int static_pos = -1;
 	}
-	public void autoGenerateStatementsForDecl(DNode n, AutoGenInfo agi) {
+	public void autoGenerateStatementsForDecl(DNode n, AutoGenInfo agi, Env env) {
 		Initializer instance_init = null;
 		if( n instanceof Field ) {
 			Field f = (Field)n;
 			if (f.init == null)
 				return;
-			if (f.isConstantExpr()) {
-				ConstExpr ce = ConstExpr.fromConst(f.getConstValue());
+			if (f.isConstantExpr(env)) {
+				ConstExpr ce = ConstExpr.fromConst(f.getConstValue(env));
 				if (!ce.valueEquals(f.const_value))
 					f.const_value = ce;
 			}
-			if (f.init.isConstantExpr() && f.isStatic())
+			if (f.init.isConstantExpr(env) && f.isStatic())
 				return;
 			if (f.isAddedToInit())
 				return;
@@ -1407,14 +1395,11 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					}
 				}
 				ENode init_stat = new ExprStat(f.init.pos,
-						new AssignExpr(f.init.pos,
-							f.isInitWrapper() ? Operator.Assign2 : Operator.Assign,
-							new SFldExpr(f.pos,f),f.init.ncopy()
-						)
+						new AssignExpr(f.init.pos, new SFldExpr(f.pos,f),new Copier().copyFull(f.init))
 					);
 				agi.class_init.block.stats.insert(agi.static_pos++,init_stat);
 				Kiev.runProcessorsOn(init_stat);
-				RStruct.runResolveOn(init_stat);
+				RStruct.runResolveOn(init_stat,env);
 			} else {
 				if( agi.instance_init == null ) {
 					agi.instance_init = new Initializer();
@@ -1424,16 +1409,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 				ENode init_stat;
 				init_stat = new ExprStat(f.init.pos,
-						new AssignExpr(f.init.pos,
-							f.isInitWrapper() ? Operator.Assign2 : Operator.Assign,
-							new IFldExpr(f.pos,new ThisExpr(0),f),
-							f.init.ncopy()
-						)
+						new AssignExpr(f.init.pos, new IFldExpr(f.pos,new ThisExpr(0),f), new Copier().copyFull(f.init))
 					);
 				agi.instance_init.block.stats.add(init_stat);
 				init_stat.setAutoGenerated(true);
 				Kiev.runProcessorsOn(init_stat);
-				RStruct.runResolveOn(init_stat);
+				RStruct.runResolveOn(init_stat,env);
 			}
 			f.setAddedToInit(true);
 		} else {
@@ -1460,31 +1441,35 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 				agi.instance_init.block.stats.add(init_stat);
 				Kiev.runProcessorsOn(init_stat);
-				RStruct.runResolveOn(init_stat);
+				RStruct.runResolveOn(init_stat,env);
 			}
 		}
 	}
 
-	public void autoGenerateStatements() {
+	public void autoGenerateStatements(Env env) {
 
 		if( Kiev.debug ) System.out.println("AutoGenerating statements for "+this);
 		// <clinit> & common$init, if need
 		AutoGenInfo agi = new AutoGenInfo();
 
+		if (isEnum()) {
+			foreach (Field n; ((JavaEnum)((Struct)this)).enum_fields)
+				autoGenerateStatementsForDecl(n, agi, env);
+		}
 		foreach (ASTNode n; members) {
 			if (n == agi.instance_init)
 				continue;
 			if (n instanceof Field) {
-				autoGenerateStatementsForDecl((Field)n, agi);
+				autoGenerateStatementsForDecl((Field)n, agi, env);
 			}
 			else if (n instanceof Initializer) {
-				autoGenerateStatementsForDecl((Initializer)n, agi);
+				autoGenerateStatementsForDecl((Initializer)n, agi, env);
 			}
 		}
 
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
-		if (((Struct)this) != Type.tpObject.tdecl) {
+		if (((Struct)this) != env.tenv.tpObject.tdecl) {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 
@@ -1518,71 +1503,61 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (ctor_call == null) {
 					m.setNeedFieldInits(true);
 					ctor_call = new CtorCallExpr(pos, new SuperExpr(), ENode.emptyArray);
-					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
-						EToken max_args = new EToken(pos,nameClosureMaxArgs,ETokenKind.IDENTIFIER,true);
+					if( super_types.length > 0 && super_types[0].getStruct(env) == env.tenv.tpClosure.getStruct() ) {
+						LVarExpr max_args = new LVarExpr(pos,nameClosureMaxArgs);
 						ctor_call.args.add(max_args);
 					}
 					else if (this.parent() instanceof NewExpr && ((NewExpr)this.parent()).clazz == this) {
 						int skip_args = 0;
 						if( isStructInner() && !isStatic() ) skip_args++;
-						if( this.isTypeUnerasable() && super_types[0].getStruct().isTypeUnerasable() ) skip_args++;
+						if( this.isTypeUnerasable() && super_types[0].getStruct(env).isTypeUnerasable() ) skip_args++;
 						for(int i=skip_args; i < m.params.length; i++) {
 							ctor_call.args.append( new LVarExpr(m.pos,m.params[i]));
 						}
 					}
 					else if (isEnum()) {
-						if (ctor_call.obj instanceof ThisExpr) {
-							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
-							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
-						} else {
-							ctor_call.args.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
-							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
-						}
+						ctor_call.setHiddenArg(new ArgExpr(m.getHiddenParam(Var.PARAM_ENUM_NAME),new LVarExpr(pos, "enum$name")));
+						ctor_call.setHiddenArg(new ArgExpr(m.getHiddenParam(Var.PARAM_ENUM_ORD), new LVarExpr(pos, "enum$ordinal")));
 					}
 					initbody.stats.insert(0,new ExprStat(ctor_call));
 					Kiev.runProcessorsOn(initbody.stats[0]);
-					RStruct.runResolveOn(initbody.stats[0]);
+					RStruct.runResolveOn(initbody.stats[0],env);
 				} else {
 					if (isEnum()) {
-						if (ctor_call.obj instanceof ThisExpr) {
-							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
-							CtorCallExpr.ENUM_EXT_ARG.add(ctor_call, new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
-						} else {
-							ctor_call.args.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
-							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
-						}
+						ctor_call.setHiddenArg(new ArgExpr(m.getHiddenParam(Var.PARAM_ENUM_NAME),new LVarExpr(pos, "enum$name")));
+						ctor_call.setHiddenArg(new ArgExpr(m.getHiddenParam(Var.PARAM_ENUM_ORD), new LVarExpr(pos, "enum$ordinal")));
 						Kiev.runProcessorsOn(ctor_call);
-						RStruct.runResolveOn(ctor_call);
+						RStruct.runResolveOn(ctor_call,env);
 					}
 				}
 				int p = 1;
 				if (isStructInner() && !isStatic()) {
 					initbody.stats.insert(p,
 						new ExprStat(pos,
-							new AssignExpr(pos,Operator.Assign,
+							new AssignExpr(pos,
 								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf((Struct)this)),
 								new LVarExpr(pos,m.params[0])
 							)
 						)
 					);
 					Kiev.runProcessorsOn(initbody.stats[p]);
-					RStruct.runResolveOn(initbody.stats[p]);
+					RStruct.runResolveOn(initbody.stats[p],env);
 					p++;
 				}
 				if (isTypeUnerasable() && m.isNeedFieldInits()) {
-					Field tif = resolveField(nameTypeInfo);
+					Field tif = resolveField(env,nameTypeInfo);
 					if (!tif.isStatic() && tif.parent() == getStruct()) {
-						Var v = m.getTypeInfoParam(Var.PARAM_TYPEINFO);
+						Var v = m.getClassTypeInfoParam();
 						assert(v != null);
 						initbody.stats.insert(p,
 							new ExprStat(pos,
-								new AssignExpr(m.pos,Operator.Assign,
+								new AssignExpr(m.pos,
 									new IFldExpr(m.pos,new ThisExpr(0),tif),
 									new LVarExpr(m.pos,v)
 								))
 							);
 						Kiev.runProcessorsOn(initbody.stats[p]);
-						RStruct.runResolveOn(initbody.stats[p]);
+						RStruct.runResolveOn(initbody.stats[p],env);
 						p++;
 					}
 				}
@@ -1603,30 +1578,30 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					break;
 				}
 				if( agi.instance_init != null && m.isNeedFieldInits() ) {
-					initbody.stats.insert(p,agi.instance_init.body.ncopy());
+					initbody.stats.insert(p,new Copier().copyFull(agi.instance_init.body));
 					Kiev.runProcessorsOn(initbody.stats[p]);
-					RStruct.runResolveOn(initbody.stats[p]);
+					RStruct.runResolveOn(initbody.stats[p],env);
 					p++;
 				}
 			}
 		}
 	}
 
-	private static void runResolveOn(ASTNode node) {
+	private static void runResolveOn(ASTNode node, Env env) {
 		if (node instanceof ENode)
-			node.resolve(null);
+			resolveENode(node,null,env);
 		else if (node instanceof DNode)
-			node.resolveDecl();
+			resolveDNode(node,env);
 		else if (node instanceof SNode)
-			node.resolveDecl();
+			resolveDNode(node,env);
 	}
 	
-	public void resolveDecl() {
+	public void resolveDecl(Env env) {
 		if( isResolved() ) return;
 		long curr_time;
 		foreach (Struct ss; members) {
 			try {
-				ss.resolveDecl();
+				resolveDNode(ss,env);
 			} catch(Exception e ) {
 				Kiev.reportError(ss,e);
 			}
@@ -1637,9 +1612,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			// Verify access
 			foreach(Field f; this.members) {
 				try {
-					f.getType().checkResolved();
-					if (f.getType().getStruct()!=null)
-						MetaAccess.verifyReadWrite((Struct)this,f.getType().getStruct());
+					f.getType(env).checkResolved();
+					if (f.getType(env).getStruct()!=null)
+						MetaAccess.verifyReadWrite((Struct)this,f.getType(env).getStruct());
 				} catch(Exception e ) { Kiev.reportError(f,e); }
 			}
 			foreach(Method m; members) {
@@ -1659,18 +1634,18 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			for(int i=0; i < members.length; i++) {
 				ASTNode n = members[i];
 				if (n instanceof Field)
-					n.resolveDecl();
+					resolveDNode(n,env);
 			}
 			for(int i=0; i < members.length; i++) {
 				ASTNode n = members[i];
 				if (n instanceof Method)
-					n.resolveDecl();
+					resolveDNode(n,env);
 				else if (n instanceof Initializer)
-					n.resolveDecl();
+					resolveDNode(n,env);
 			}
-			autoGenerateStatements();
+			autoGenerateStatements(env);
 			foreach (Constructor c; members; !c.isResolved())
-				c.resolveDecl();
+				resolveDNode(c,env);
 			
 			// Autogenerate hidden args for initializers of local class
 			{
@@ -1684,17 +1659,17 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
 							String nm = proxy_fields[j].sname;
-							m.params.append(new LVar(m.pos,nm,proxy_fields[j].getType(),Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
+							m.params.append(new LVar(m.pos,nm,proxy_fields[j].getType(env),Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.block.stats.insert(
 								1,
 								new ExprStat(m.pos,
-									new AssignExpr(m.pos,Operator.Assign,
+									new AssignExpr(m.pos,
 										new IFldExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
 										new LVarExpr(m.pos,m.params[par])
 									)
 								)
 							);
-							((ENode)m.block.stats[1]).resolve(Type.tpVoid);
+							resolveENode((ENode)m.block.stats[1],env.tenv.tpVoid,env);
 						}
 					}
 				}

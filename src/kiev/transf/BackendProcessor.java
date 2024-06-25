@@ -17,26 +17,20 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class BackendProcessor implements Constants {
+public abstract class BackendProcessor extends AbstractProcessor implements Constants {
+	
 	private KievBackend backend;
 	
-	BackendProcessor(KievBackend backend) {
+	BackendProcessor(Env env, int id, KievBackend backend) {
+		super(env, id);
 		this.backend = backend;
 	}
 	public boolean isEnabled() {
 		return this.backend == KievBackend.Generic || this.backend == Kiev.useBackend;
 	}
-
-	public abstract String getDescr();
-	public abstract void process(ASTNode node, Transaction tr);
-
-	public static String getPropS(String base, String name, String dflt) {
-		String fname = base+"."+name;
-		String val = System.getProperty(fname,dflt);
-		if (val != null)
-			val = val.trim().intern();
-		trace(Kiev.debug, "Loaded "+fname+" as \""+val+"\"");
-		return val;
+	public boolean isDisabled() {
+		return !isEnabled();
 	}
+
 }
 

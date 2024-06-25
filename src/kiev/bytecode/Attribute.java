@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 247 $
  *
  */
 
@@ -22,9 +22,9 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 
 	public static final Attribute[]	emptyArray = new Attribute[0];
 
-	public static Hashtable<KString,Class>	attrMap;
+	public static Hashtable<String,Class>	attrMap;
 	static {
-		attrMap = new Hashtable<KString,Class>();
+		attrMap = new Hashtable<String,Class>();
 		attrMap.put(attrCode,			Class.forName("kiev.bytecode.CodeAttribute"));
 		attrMap.put(attrSourceFile,		Class.forName("kiev.bytecode.SourceFileAttribute"));
 		attrMap.put(attrSourceDebugExtension, Class.forName("kiev.bytecode.SourceDebugExtensionAttribute"));
@@ -60,7 +60,7 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 	public Utf8PoolConstant		cp_name;
 	public byte[]				data;
 
-	public KString getName(Clazz clazz) {
+	public String getName(Clazz clazz) {
 		return cp_name.value;
 	}
 	public int size() {
@@ -148,7 +148,7 @@ public class SourceFileAttribute extends Attribute {
 		cont.writeInt(2);
 		cont.writeShort(cp_filename.idx);
 	}
-	public KString getFileName(Clazz clazz) {
+	public String getFileName(Clazz clazz) {
 		return cp_filename.value;
 	}
 }
@@ -195,7 +195,7 @@ public class GenericsSignatureAttribute extends Attribute {
 		cont.writeInt(2);
 		cont.writeShort(cp_signature.idx);
 	}
-	public KString getSignature(Clazz clazz) {
+	public String getSignature(Clazz clazz) {
 		return cp_signature.value;
 	}
 }
@@ -255,7 +255,7 @@ public class ExceptionsAttribute extends Attribute {
 			cont.writeShort(cp_exceptions[i].idx);
 		}
 	}
-	public KString getException(int i, Clazz clazz) {
+	public String getException(int i, Clazz clazz) {
 		return cp_exceptions[i].ref.value;
 	}
 }
@@ -570,10 +570,10 @@ public class InnerClassesAttribute extends Attribute {
 			cont.writeShort(cp_inner_flags[i]);
 		}
 	}
-	public KString getInnerName(int i, Clazz clazz) {
+	public String getInnerName(int i, Clazz clazz) {
 		return cp_inners[i].ref.value;
 	}
-	public KString getOuterName(int i, Clazz clazz) {
+	public String getOuterName(int i, Clazz clazz) {
 		return cp_outers[i].ref.value;
 	}
 }
@@ -694,17 +694,17 @@ public class KievImportAttribute extends Attribute {
 		cont.writeInt(2);
 		cont.writeShort(cp_ref);
 	}
-	public KString getClazzName(Clazz clazz) {
+	public String getClazzName(Clazz clazz) {
 		ClazzNameTypePoolConstant cpc = (ClazzNameTypePoolConstant)clazz.pool[cp_ref];
 		ClazzPoolConstant clpc = cpc.ref_clazz;
 		return clpc.ref.value;
 	}
-	public KString getNodeName(Clazz clazz) {
+	public String getNodeName(Clazz clazz) {
 		ClazzNameTypePoolConstant cpc = (ClazzNameTypePoolConstant)clazz.pool[cp_ref];
 		NameAndTypePoolConstant ntpc = (NameAndTypePoolConstant)cpc.ref_nametype;
 		return ntpc.ref_name.value;
 	}
-	public KString getSignature(Clazz clazz) {
+	public String getSignature(Clazz clazz) {
 		ClazzNameTypePoolConstant cpc = (ClazzNameTypePoolConstant)clazz.pool[cp_ref];
 		NameAndTypePoolConstant ntpc = (NameAndTypePoolConstant)cpc.ref_nametype;
 		return ntpc.ref_type.value;
@@ -736,7 +736,7 @@ public class KievAliasAttribute extends Attribute {
 			cont.writeShort(cp_alias[i]);
 		}
 	}
-	public KString getAlias(int i, Clazz clazz) {
+	public String getAlias(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[cp_alias[i]]).value;
 	}
 }
@@ -762,10 +762,10 @@ public class KievTypedefAttribute extends Attribute {
 		cont.writeShort(cp_type);
 		cont.writeShort(cp_tpnm);
 	}
-	public KString getType(Clazz clazz) {
+	public String getType(Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[cp_type]).value;
 	}
-	public KString getTypeName(Clazz clazz) {
+	public String getTypeName(Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[cp_tpnm]).value;
 	}
 }
@@ -797,10 +797,10 @@ public class KievOperatorAttribute extends Attribute {
 		cont.writeShort(cp_optype);
 		cont.writeShort(cp_image);
 	}
-	public KString getOpType(Clazz clazz) {
+	public String getOpType(Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[cp_optype]).value;
 	}
-	public KString getImage(Clazz clazz) {
+	public String getImage(Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[cp_image]).value;
 	}
 }
@@ -869,7 +869,7 @@ public class KievEnumAttribute extends Attribute {
 			cont.writeInt(values[i]);
 		}
 	}
-	public KString getFieldName(int i, Clazz clazz) {
+	public String getFieldName(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[fields[i]]).value;
 	}
 }
@@ -948,12 +948,12 @@ public class KievCheckFieldsAttribute extends Attribute {
 			cont.writeShort(fields[i]);
 		}
 	}
-	public KString getFieldName(int i, Clazz clazz) {
+	public String getFieldName(int i, Clazz clazz) {
 		FieldPoolConstant fpc = (FieldPoolConstant)clazz.pool[fields[i]];
 		NameAndTypePoolConstant ntpc = fpc.ref_nametype;
 		return ntpc.ref_name.value;
 	}
-	public KString getFieldClass(int i, Clazz clazz) {
+	public String getFieldClass(int i, Clazz clazz) {
 		FieldPoolConstant fpc = (FieldPoolConstant)clazz.pool[fields[i]];
 		ClazzPoolConstant cpc = fpc.ref_clazz;
 		return cpc.ref.value;
@@ -990,7 +990,7 @@ public class KievGenerationsAttribute extends Attribute {
 			cont.writeShort(gens[i]);
 		}
 	}
-	public KString getGenName(int i, Clazz clazz) {
+	public String getGenName(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[gens[i]]).value;
 	}
 }
@@ -1045,13 +1045,13 @@ public class KievPackedFieldsAttribute extends Attribute {
 			cont.writeByte(offsets[i]);
 		}
 	}
-	public KString getFieldName(int i, Clazz clazz) {
+	public String getFieldName(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[fields[i]]).value;
 	}
-	public KString getSignature(int i, Clazz clazz) {
+	public String getSignature(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[signatures[i]]).value;
 	}
-	public KString getPackerName(int i, Clazz clazz) {
+	public String getPackerName(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[packers[i]]).value;
 	}
 }
@@ -1118,6 +1118,7 @@ public abstract class Annotation extends Attribute {
 			const_value_index = cont.readShort();
 		}
 		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": value idx "+const_value_index);
 			cont.writeShort(const_value_index);
 		}
 		public Object getValue(Clazz clazz) {
@@ -1141,13 +1142,15 @@ public abstract class Annotation extends Attribute {
 			const_name_index = cont.readShort();
 		}
 		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": type idx "+type_name_index);
+			trace(Clazz.traceWrite,cont.offset+": name idx "+const_name_index);
 			cont.writeShort(type_name_index);
 			cont.writeShort(const_name_index);
 		}
-		public KString getSignature(Clazz clazz) {
+		public String getSignature(Clazz clazz) {
 			return ((Utf8PoolConstant)clazz.pool[type_name_index]).value;
 		}
-		public KString getFieldName(Clazz clazz) {
+		public String getFieldName(Clazz clazz) {
 			return ((Utf8PoolConstant)clazz.pool[const_name_index]).value;
 		}
 	}
@@ -1158,9 +1161,10 @@ public abstract class Annotation extends Attribute {
 			class_info_index = cont.readShort();
 		}
 		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": class idx "+class_info_index);
 			cont.writeShort(class_info_index);
 		}
-		public KString getSignature(Clazz clazz) {
+		public String getSignature(Clazz clazz) {
 			PoolConstant cp_value = clazz.pool[class_info_index];
 			if (cp_value instanceof ClazzPoolConstant)
 				return ((ClazzPoolConstant)cp_value).ref.value;
@@ -1196,8 +1200,10 @@ public abstract class Annotation extends Attribute {
 				values[i] = element_value.Read(cont);
 		}
 		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": count "+values.length);
 			cont.writeShort(values.length);
 			for(int i=0; i < values.length; i++) {
+				trace(Clazz.traceWrite,cont.offset+": "+i+": tag "+values[i].tag);
 				cont.writeByte(values[i].tag);
 				values[i].write(cont);
 			}
@@ -1224,18 +1230,22 @@ public abstract class Annotation extends Attribute {
 			}
 		}
 		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": type idx "+type_index);
+			trace(Clazz.traceWrite,cont.offset+": names count "+names.length);
 			cont.writeShort(type_index);
 			cont.writeShort(names.length);
 			for(int i=0; i < names.length; i++) {
+				trace(Clazz.traceWrite,cont.offset+": "+i+": name idx "+names[i]);
+				trace(Clazz.traceWrite,cont.offset+": "+i+": tag "+((char)values[i].tag));
 				cont.writeShort(names[i]);
 				cont.writeByte(values[i].tag);
 				values[i].write(cont);
 			}
 		}
-		public KString getSignature(Clazz clazz) {
+		public String getSignature(Clazz clazz) {
 			return ((Utf8PoolConstant)clazz.pool[type_index]).value;
 		}
-		public KString getName(int i, Clazz clazz) {
+		public String getName(int i, Clazz clazz) {
 			return ((Utf8PoolConstant)clazz.pool[names[i]]).value;
 		}
 	}
@@ -1263,6 +1273,8 @@ public abstract class Annotations extends Annotation {
 		}
 	}
 	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": count "+annotations.length);
 		int start = cont.offset;
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size()-6);
@@ -1307,11 +1319,14 @@ public abstract class ParAnnotations extends Annotation {
 		}
 	}
 	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": par count "+annotations.length);
 		int start = cont.offset;
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size()-6);
 		cont.writeByte(annotations.length);
 		for(int p=0; p < annotations.length; p++) {
+			trace(Clazz.traceWrite,cont.offset+": par "+p+" annotations count "+annotations[p].length);
 			for(int i=0; i < annotations[p].length; i++) {
 				cont.writeShort(annotations[p].length);
 				annotations[p][i].write(cont);
@@ -1340,6 +1355,8 @@ public class AnnotationDefault extends Annotation {
 		value = element_value.Read(cont);
 	}
 	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": tag is "+((char)value.tag));
 		int start = cont.offset;
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size()-6);

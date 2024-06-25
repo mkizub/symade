@@ -13,11 +13,28 @@ import syntax kiev.Syntax;
 
 import static kiev.be.java15.Instr.*;
 
-@ViewOf(vcast=true, iface=true)
-public final view JShadow of Shadow extends JENode {
-	public:ro	JNode		rnode;
+public final class JShadow extends JENode {
 
+	@virtual typedef VT  ≤ Shadow;
+
+	public static JShadow attach(Shadow impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JShadow)jn;
+		return new JShadow(impl);
+	}
+	
+	protected JShadow(Shadow impl) {
+		super(impl);
+	}
+	
 	public void generate(Code code, Type reqType) {
+		JNode rnode = JNode.attachJNode(vn().rnode);
 		if (rnode instanceof JENode) {
 			((JENode)rnode).generate(code,reqType);
 		} else {
@@ -27,33 +44,66 @@ public final view JShadow of Shadow extends JENode {
 	
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JTypeClassExpr of TypeClassExpr extends JENode {
-	public:ro	Type			ttype;
+public final class JTypeClassExpr extends JENode {
+
+	@virtual typedef VT  ≤ TypeClassExpr;
+
+	public static JTypeClassExpr attach(TypeClassExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JTypeClassExpr)jn;
+		return new JTypeClassExpr(impl);
+	}
+	
+	protected JTypeClassExpr(TypeClassExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
+		Type ttype = vn().ttype.getType(code.env);
 		code.addConst(code.jtenv.getJType(ttype.getErasedType()));
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
-	public:ro	Type				ttype;
-	public:ro	JENode				cl_expr;
-	public:ro	JENode[]			cl_args;
+public final class JTypeInfoExpr extends JENode {
+
+	@virtual typedef VT  ≤ TypeInfoExpr;
+
+	public static JTypeInfoExpr attach(TypeInfoExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JTypeInfoExpr)jn;
+		return new JTypeInfoExpr(impl);
+	}
+	
+	protected JTypeInfoExpr(TypeInfoExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
+		TypeInfoExpr vn = vn();
+		JENode cl_expr = (JENode)vn.cl_expr;
+		JENode[] cl_args = JNode.toJArray<JENode>(vn.cl_args);
 		code.setLinePos(this);
 		cl_expr.generate(code,null);
-		JENode[] cl_args = this.cl_args;
 		if (cl_args.length > 0) { 
 			code.addConst(cl_args.length);
-			code.addInstr(Instr.op_newarray,Type.tpTypeInfo);
+			code.addInstr(Instr.op_newarray,code.tenv.tpTypeInfo);
 			int i=0;
 			foreach (JENode arg; cl_args) {
 				code.addInstr(Instr.op_dup);
@@ -64,92 +114,180 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 		} else {
 			code.addNullConst();
 		}
+		Type ttype = vn.ttype.getType(code.env);
 		Struct ti_clazz = ttype.getStruct();
 		if (ti_clazz == null || ti_clazz.typeinfo_clazz == null)
-			ti_clazz = (Struct)Type.tpTypeInfo.tdecl;
+			ti_clazz = (Struct)code.tenv.tpTypeInfo.tdecl;
 		else
 			ti_clazz = ti_clazz.typeinfo_clazz;
-		Method func = ti_clazz.resolveMethod("newTypeInfo", ti_clazz.xtype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
-		code.addInstr(op_call,(JMethod)func,false,ti_clazz.xtype);
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		Method func = ti_clazz.resolveMethod(code.env, "newTypeInfo", ti_clazz.getType(code.env), code.tenv.tpClass, new ArrayType(code.tenv.tpTypeInfo));
+		code.addInstr(op_call,(JMethod)func,false,ti_clazz.getType(code.env));
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JAssignExpr of AssignExpr extends JENode {
-	public:ro	Operator		op;
-	public:ro	JENode			lval;
-	public:ro	JENode			value;
+public final class JAssignExpr extends JENode {
+
+	@virtual typedef VT  ≤ AssignExpr;
+
+	public static JAssignExpr attach(AssignExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JAssignExpr)jn;
+		return new JAssignExpr(impl);
+	}
+	
+	protected JAssignExpr(AssignExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
-		DNode d = this.dnode;
-		if !(d instanceof Method && d.body instanceof CoreExpr) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
 		code.setLinePos(this);
-		CoreExpr m = (CoreExpr)((Method)d).body;
-		m.bend_func.generate(code,reqType,this);
+		DNode d = vn().dnode;
+		if (d instanceof CoreOperation) {
+			((BEndFunc)d.bend_func).generate(code,reqType,this);
+		} else {
+			Kiev.reportError(vn(), "Unresolved core operation "+d+" at generatioin phase");
+		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JBinaryExpr of BinaryExpr extends JENode {
-	public:ro	Operator	op;
-	public:ro	JENode		expr1;
-	public:ro	JENode		expr2;
+public final class JModifyExpr extends JENode {
+
+	@virtual typedef VT  ≤ ModifyExpr;
+
+	public static JModifyExpr attach(ModifyExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JModifyExpr)jn;
+		return new JModifyExpr(impl);
+	}
+	
+	protected JModifyExpr(ModifyExpr impl) {
+		super(impl);
+	}
+
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ModifyExpr: "+this);
+		code.setLinePos(this);
+		DNode d = vn().dnode;
+		if (d instanceof CoreOperation) {
+			((BEndFunc)d.bend_func).generate(code,reqType,this);
+		} else {
+			Kiev.reportError(vn(), "Unresolved core operation "+d+" at generatioin phase");
+		}
+	}
+}
+
+public final class JBinaryExpr extends JENode {
+
+	@virtual typedef VT  ≤ BinaryExpr;
+
+	public static JBinaryExpr attach(BinaryExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JBinaryExpr)jn;
+		return new JBinaryExpr(impl);
+	}
+	
+	protected JBinaryExpr(BinaryExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
-		DNode d = this.dnode;
-		if !(d instanceof Method && d.body instanceof CoreExpr) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
 		code.setLinePos(this);
-		CoreExpr m = (CoreExpr)((Method)d).body;
-		m.bend_func.generate(code,reqType,this);
+		DNode d = vn().dnode;
+		if (d instanceof CoreOperation) {
+			((BEndFunc)d.bend_func).generate(code,reqType,this);
+		} else {
+			Kiev.reportError(vn(), "Unresolved core operation "+d+" at generatioin phase");
+		}
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JUnaryExpr of UnaryExpr extends JENode {
-	public:ro	Operator			op;
-	public:ro	JENode			expr;
+public final class JUnaryExpr extends JENode {
+
+	@virtual typedef VT  ≤ UnaryExpr;
+
+	public static JUnaryExpr attach(UnaryExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JUnaryExpr)jn;
+		return new JUnaryExpr(impl);
+	}
+	
+	protected JUnaryExpr(UnaryExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
-		DNode d = this.dnode;
-		if !(d instanceof Method && d.body instanceof CoreExpr) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
 		code.setLinePos(this);
-		CoreExpr m = (CoreExpr)((Method)d).body;
-		m.bend_func.generate(code,reqType,this);
+		DNode d = vn().dnode;
+		if (d instanceof CoreOperation) {
+			((BEndFunc)d.bend_func).generate(code,reqType,this);
+		} else {
+			Kiev.reportError(vn(), "Unresolved core operation "+d+" at generatioin phase");
+		}
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JStringConcatExpr of StringConcatExpr extends JENode {
-	public:ro	JENode[]			args;
+public final class JStringConcatExpr extends JENode {
 
+	@virtual typedef VT  ≤ StringConcatExpr;
 
-	public JMethod getMethodFor(JEnv jenv, JENode expr) {
-		Method m = jenv.getClsStringBuffer().resolveMethod("append",jenv.getClsStringBuffer().xtype,expr.getType());
-		return (JMethod)m;
+	public static JStringConcatExpr attach(StringConcatExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JStringConcatExpr)jn;
+		return new JStringConcatExpr(impl);
+	}
+	
+	protected JStringConcatExpr(StringConcatExpr impl) {
+		super(impl);
 	}
 
+	private JMethod getMethodFor(JEnv jenv, JENode expr) {
+		Method m = jenv.getClsStringBuffer().resolveMethod(jenv.env,"append",jenv.getClsStringBuffer().getType(jenv.env),expr.getType());
+		return (JMethod)m;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
-		JENode[] args = this.args;
-		code.addInstr(op_new,code.jenv.getClsStringBuffer().xtype);
+		StringConcatExpr vn = vn();
+		JENode[] args = JNode.toJArray<JENode>(vn.args);
+		code.addInstr(op_new,code.jenv.getClsStringBuffer().getType(code.env));
 		code.addInstr(op_dup);
 		code.addInstr(op_call,(JMethod)code.jenv.getMthStringBufferInit(),true);
 		for(int i=0; i < args.length; i++) {
@@ -157,31 +295,64 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 			code.addInstr(op_call,getMethodFor(code.jenv,args[i]),false);
 		}
 		code.addInstr(op_call,(JMethod)code.jenv.getMthStringBufferToString(),false);
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JCommaExpr of CommaExpr extends JENode {
-	public:ro	JENode[]			exprs;
+public final class JCommaExpr extends JENode {
+
+	@virtual typedef VT  ≤ CommaExpr;
+
+	public static JCommaExpr attach(CommaExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JCommaExpr)jn;
+		return new JCommaExpr(impl);
+	}
+	
+	protected JCommaExpr(CommaExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
-		JENode[] exprs = this.exprs;
+		JENode[] exprs = JNode.toJArray<JENode>(vn().exprs);
 		for(int i=0; i < exprs.length; i++) {
 			if( i < exprs.length-1 )
-				exprs[i].generate(code,Type.tpVoid);
+				exprs[i].generate(code,code.tenv.tpVoid);
 			else
 				exprs[i].generate(code,reqType);
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JBlock of Block extends JENode {
-	public:ro	JNode[]			stats;
-	public:ro	JLabel			lblbrk;
+public class JBlock extends JENode {
+
+	@virtual typedef VT  ≤ Block;
+
+	public static JBlock attach(Block impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JBlock)jn;
+		if (impl instanceof SwitchStat)
+			return JSwitchStat.attach((SwitchStat)impl);
+		return new JBlock(impl);
+	}
+	
+	protected JBlock(Block impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating Block");
@@ -189,7 +360,8 @@ public view JBlock of Block extends JENode {
 		generateStats(code, reqType);
 	}
 	public void generateStats(Code code, Type reqType) {
-		JNode[] stats = this.stats;
+		Block vn = vn();
+		JNode[] stats = JNode.toJArray<JNode>(vn.stats);
 		JCaseLabel jcase = null;
 		for(int i=0; i < stats.length; i++) {
 			try {
@@ -198,19 +370,19 @@ public view JBlock of Block extends JENode {
 					if (jcase != null)
 						jcase.removeVars(code);
 					jcase = (JCaseLabel)st;
-					jcase.generate(code,Type.tpVoid);
+					jcase.generate(code,code.tenv.tpVoid);
 				}
 				else if (st instanceof JENode) {
 					if (i < stats.length-1 || isGenVoidExpr())
-						st.generate(code,Type.tpVoid);
+						st.generate(code,code.tenv.tpVoid);
 					else
 						st.generate(code,reqType);
 				}
 				else if (st instanceof JVar) {
-					st.generate(code,Type.tpVoid);
+					st.generate(code,code.tenv.tpVoid);
 				}
 			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
+				Kiev.reportError(stats[i].vn(),e);
 			}
 		}
 		if (jcase != null)
@@ -221,46 +393,79 @@ public view JBlock of Block extends JENode {
 				((JVar)n).removeVar(code);
 		}
 		JNode p = this.jparent;
-		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.mtype.ret() ≢ Type.tpVoid)
+		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.mtype.ret() ≢ code.tenv.tpVoid)
 			code.stack_push(code.jtenv.getJType(p.etype.ret()));
+		JLabel lblbrk = (JLabel)vn.lblbrk;
 		if (lblbrk != null)
 			lblbrk.generate(code,null);
 	}
 
 	public JLabel getBrkLabel() {
-		return lblbrk;
+		return (JLabel)vn().lblbrk;
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JIncrementExpr of IncrementExpr extends JENode {
-	public:ro	Operator			op;
-	public:ro	JENode			lval;
+public final class JIncrementExpr extends JENode {
+
+	@virtual typedef VT  ≤ IncrementExpr;
+
+	public static JIncrementExpr attach(IncrementExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JIncrementExpr)jn;
+		return new JIncrementExpr(impl);
+	}
+	
+	protected JIncrementExpr(IncrementExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
-		DNode d = this.dnode;
-		if !(d instanceof Method && d.body instanceof CoreExpr) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
 		code.setLinePos(this);
-		CoreExpr m = (CoreExpr)((Method)d).body;
-		m.bend_func.generate(code,reqType,this);
+		DNode d = vn().dnode;
+		if (d instanceof CoreOperation) {
+			((BEndFunc)d.bend_func).generate(code,reqType,this);
+		} else {
+			Kiev.reportError(vn(), "Unresolved core operation "+d+" at generatioin phase");
+		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JConditionalExpr of ConditionalExpr extends JENode {
-	public:ro	JENode		cond;
-	public:ro	JENode		expr1;
-	public:ro	JENode		expr2;
+public final class JConditionalExpr extends JENode {
+
+	@virtual typedef VT  ≤ ConditionalExpr;
+
+	public static JConditionalExpr attach(ConditionalExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JConditionalExpr)jn;
+		return new JConditionalExpr(impl);
+	}
+	
+	protected JConditionalExpr(ConditionalExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
-		if( cond.isConstantExpr() ) {
-			if( ((Boolean)cond.getConstValue()).booleanValue() ) {
+		ConditionalExpr vn = vn();
+		JENode cond = (JENode)vn.cond;
+		JENode expr1 = (JENode)vn.expr1;
+		JENode expr2 = (JENode)vn.expr2;
+		if( cond.isConstantExpr(code.env) ) {
+			if( ((Boolean)cond.getConstValue(code.env)).booleanValue() ) {
 				expr1.generate(code,null);
 			} else {
 				expr2.generate(code,null);
@@ -274,30 +479,47 @@ public view JConditionalExpr of ConditionalExpr extends JENode {
 			code.addInstr(Instr.set_label,elseLabel);
 			expr2.generate(code,null);
 			code.addInstr(Instr.set_label,endLabel);
-			if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+			if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public view JCastExpr of CastExpr extends JENode {
-	public:ro	JENode			expr;
-	public:ro	Type			ctype;
+public final class JCastExpr extends JENode {
+
+	@virtual typedef VT  ≤ CastExpr;
+
+	public static JCastExpr attach(CastExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JCastExpr)jn;
+		return new JCastExpr(impl);
+	}
+	
+	protected JCastExpr(CastExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating CastExpr: "+this);
 		code.setLinePos(this);
-		expr.generate(code,null);
-		Type t = expr.getType();
+		CastExpr vn = vn();
+		ENode expr = vn.expr;
+		((JENode)expr).generate(code,null);
+		Type ctype = vn.ctype.getType(code.env);
+		Type t = expr.getType(code.env);
 		if( t.isReference() ) {
-			if( t.isReference() != ctype.isReference() )
-				throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be casted to type "+ctype);
-			if( ctype.isReference() )
-				code.addInstr(Instr.op_checkcast,ctype);
+			if( !ctype.isReference() )
+				Kiev.reportError(vn,"Expression "+expr+" of type "+t+" cannot be casted to type "+ctype);
+			code.addInstr(Instr.op_checkcast,ctype);
 		} else {
 			code.addInstr(Instr.op_x2y,ctype);
 		}
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 
 }

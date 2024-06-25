@@ -14,7 +14,7 @@ import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 244 $
  *
  */
 
@@ -55,7 +55,8 @@ public class Vector<A> implements Cloneable
 
 	public synchronized A[] copyIntoArray()
 		alias toArray
-		alias fy operator $cast
+		alias $cast
+		alias operator "( T ) V"
 	{
 		A[] anArray = new A[count];
 		System.arraycopy(data,0,anArray,0,count);
@@ -150,9 +151,9 @@ public class Vector<A> implements Cloneable
 	}
 
 	public A elementAt(int index)
+		operator "V [ V ]"
 		alias at
 		alias get
-		alias xfy operator []
 	{
 		if( index >= count )
 			throw new ArrayIndexOutOfBoundsException(index+" >= "+count);
@@ -174,8 +175,8 @@ public class Vector<A> implements Cloneable
 	}
 
 	public A setElementAt(int index, A obj)
+		operator "V [ V ] = V"
 		alias set
-		alias lfy operator []
 	{
 		if (index >= count)
 			throw new ArrayIndexOutOfBoundsException(index+" >= "+count);
@@ -211,6 +212,7 @@ public class Vector<A> implements Cloneable
 
 	public synchronized Vector<A> addElement(A obj)
 		alias append
+		alias add
 	{
 		ensureCapacity(count + 1);
 		data[count++] = obj;

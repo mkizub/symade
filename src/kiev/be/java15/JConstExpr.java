@@ -13,14 +13,33 @@ import syntax kiev.Syntax;
 
 import static kiev.be.java15.Instr.*;
 
-@ViewOf(vcast=true, iface=true)
-public final view JConstBoolExpr of ConstBoolExpr extends JConstExpr implements IBoolExpr {
-	public:ro boolean	value;
+public final class JConstBoolExpr extends JConstExpr implements IBoolExpr {
 
+	@virtual typedef VT  ≤ ConstBoolExpr;
+
+	public final boolean value;
+
+	public static JConstBoolExpr attach(ConstBoolExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JConstBoolExpr)jn;
+		return new JConstBoolExpr(impl);
+	}
+	
+	protected JConstBoolExpr(ConstBoolExpr impl) {
+		super(impl);
+		this.value = impl.value;
+	}
+	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
 		code.setLinePos(this);
-		if( reqType ≢ Type.tpVoid ) {
+		if( reqType ≢ code.tenv.tpVoid ) {
 			if( value )
 				code.addConst(1);
 			else
@@ -42,58 +61,28 @@ public final view JConstBoolExpr of ConstBoolExpr extends JConstExpr implements 
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JConstNullExpr of ConstNullExpr extends JConstExpr {
-}
+public class JConstExpr extends JENode {
 
-@ViewOf(vcast=true, iface=true)
-public final view JConstByteExpr of ConstByteExpr extends JConstExpr {
-	public:ro byte		value;
-}
+	@virtual typedef VT  ≤ ConstExpr;
 
-@ViewOf(vcast=true, iface=true)
-public final view JConstShortExpr of ConstShortExpr extends JConstExpr {
-	public:ro short		value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public final view JConstIntExpr of ConstIntExpr extends JConstExpr {
-	public:ro int		value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public final view JConstLongExpr of ConstLongExpr extends JConstExpr {
-	public:ro long		value;
-}
+	public static JConstExpr attach(ConstExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JConstExpr)jn;
+		if (impl instanceof ConstBoolExpr)
+			return JConstBoolExpr.attach((ConstBoolExpr)impl);
+		return new JConstExpr(impl);
+	}
 	
-@ViewOf(vcast=true, iface=true)
-public final view JConstCharExpr of ConstCharExpr extends JConstExpr {
-	public:ro char		value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public final view JConstFloatExpr of ConstFloatExpr extends JConstExpr {
-	public:ro float		value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public final view JConstDoubleExpr of ConstDoubleExpr extends JConstExpr {
-	public:ro double	value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public final view JConstStringExpr of ConstStringExpr extends JConstExpr {
-	public:ro String	value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public final view JConstEnumExpr of ConstEnumExpr extends JConstExpr {
-	public:ro Enum		value;
-}
-
-@ViewOf(vcast=true, iface=true)
-public abstract view JConstExpr of ConstExpr extends JENode {
-
+	protected JConstExpr(ConstExpr impl) {
+		super(impl);
+	}
+	
 	public void generate(Code code, Type reqType) {
 		JConstExpr.generateConst(this, code, reqType);
 	}
@@ -104,7 +93,7 @@ public abstract view JConstExpr of ConstExpr extends JENode {
 			trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating dummy value");
 			value = null;
 		} else {
-			value = self.getConstValue();
+			value = self.vn().getConstValue(code.env);
 			trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
 			code.setLinePos(self);
 		}
@@ -112,7 +101,7 @@ public abstract view JConstExpr of ConstExpr extends JENode {
 			// Special case for generation of parametriezed
 			// with primitive types classes
 			if( reqType != null && !reqType.isReference() ) {
-				switch(code.jtenv.getJType(reqType).java_signature.byteAt(0)) {
+				switch(code.jtenv.getJType(reqType).java_signature.charAt(0)) {
 				case 'Z': case 'B': case 'S': case 'I': case 'C':
 					code.addConst(0);
 					break;
@@ -155,10 +144,10 @@ public abstract view JConstExpr of ConstExpr extends JENode {
 			code.addConst(((Double)value).doubleValue());
 		}
 		else if( value instanceof String ) {
-			code.addConst(KString.from((String)value));
+			code.addConst((String)value);
 		}
 		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 
 }

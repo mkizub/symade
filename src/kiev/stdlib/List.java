@@ -16,7 +16,7 @@ import syntax kiev.stdlib.Syntax;
  * @see		ListBuffer
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  */
 
 public class List<A>
@@ -153,7 +153,8 @@ public class List<A>
 	}
     
 //	public A[] toArray()
-////		alias fy operator $cast
+////		alias operator "( T ) V"
+////		alias $cast
 //	{
 //		A[] arr = new A[length()];
 //		for(int i=0; this != List.Nil; i++) {
@@ -413,7 +414,7 @@ public class List<A>
 /** the elements of array `elems' as a list
  */
 	public static List<A> fromArray(A[] elems)
-		alias lfy operator new
+		operator "new T"
 	{
 		List<A> l = Nil;
 		int i = elems.length;
@@ -447,17 +448,17 @@ public class List<A>
 
 /** list's consisting of given (0-10) elements
  */
-	public static <A> List<A> newList()
+	public static <A> List<A> newList() operator "new T"
 	{
 		return Nil;
 	}
 
-	public static <A> List<A> newList(A hd)
+	public static <A> List<A> newList(A hd) operator "new T"
 	{
 		return new Cons<A>(hd,Nil);
 	}
 
-	public static <A> List<A> newList(A hd, A ... va_args)
+	public static <A> List<A> newList(A hd, A ... va_args) operator "new T"
 	{
 		List<A> nl = Nil;
 		for(int i=va_args.length-1; i >= 0; i--) {
@@ -465,6 +466,11 @@ public class List<A>
 			nl = new Cons<A>(h,nl);
 		}
 		return new Cons<A>(hd,nl);
+	}
+
+	public static <A> List<A> newList(A hd, List<A> tl) operator "new T"
+	{
+		return new Cons<A>(hd,tl);
 	}
 
 static class ListEnumerator<A> implements Enumeration<A>, Cloneable {

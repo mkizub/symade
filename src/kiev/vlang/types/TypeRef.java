@@ -27,16 +27,15 @@ public class TypeRef extends ENode {
 	public TypeRef() {}
 	
 	public static TypeRef newTypeRef(Type tp)
-		alias lfy operator new
+		operator "new T"
 	{
 		if (tp instanceof CoreType)
 			return new TypeNameRef(tp.name, tp);
 		if (tp instanceof ASTNodeType) {
 			String name = ((ASTNodeMetaType)tp.meta_type).name;
 			if (name != null)
-				return new TypeExpr(new TypeNameRef(name),Operator.PostTypeAST,tp);
+				return new TypeASTNodeRef(name, (ASTNodeType)tp);
 			return new TypeASTNodeRef((ASTNodeType)tp);
-			//return new TypeExpr(newTypeRef(tp.getStruct().xtype),Operator.PostTypeAST);
 		}
 		if (tp instanceof ArgType)
 			return new TypeArgRef((ArgType)tp);
@@ -52,14 +51,12 @@ public class TypeRef extends ENode {
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && (attr.name == "type_lnk" || attr.name == "ident")) {
+		if (/* dump == "api" && */ (attr.name == "type_lnk" || attr.name == "ident")) {
 			boolean use_type = true;
 			Type t = type_lnk;
 			if (t == null)
 				use_type = false;
 			else if (t instanceof ArgType)
-				use_type = false;
-			else if (t instanceof ASTNodeType)
 				use_type = false;
 			if (attr.name == "type_lnk")
 				return use_type;
@@ -68,34 +65,34 @@ public class TypeRef extends ENode {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public Type getType()
-		alias fy operator $cast
+	public Type castToType()
+		alias $cast
+		alias operator "( T ) V"
 	{
 		return type_lnk;
 	}
-	
-	public boolean isArray() { return getType().isArray(); }
-	public void checkResolved() { getType().checkResolved(); } 
-	public Struct getStruct() { if (type_lnk == null) return null; return type_lnk.getStruct(); }
-	public TypeDecl getTypeDecl() { if (type_lnk == null) return null; return type_lnk.meta_type.tdecl; }
 
-	public boolean preResolveIn() {
-		((TypeRef)this).getType(); // calls resolving
+	public Type getType(Env env) {
+		return type_lnk;
+	}
+	
+	public TypeRef closeBuild() { return this; }
+
+	public boolean isArray() { return getType(Env.getEnv()).isArray(); }
+	public void checkResolved(Env env) { getType(env).checkResolved(); } 
+	public Struct getStruct(Env env) { if (type_lnk == null) return null; return type_lnk.getStruct(); }
+	public TypeDecl getTypeDecl(Env env) { if (type_lnk == null) return null; return type_lnk.meta_type.tdecl; }
+
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		((TypeRef)this).getType(env); // calls resolving
 		return false;
 	}
 
-	public boolean mainResolveIn() {
-		((TypeRef)this).getType(); // calls resolving
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+		((TypeRef)this).getType(env); // calls resolving
 		return false;
 	}
 
-	public void resolve(Type reqType) {
-		if (reqType ≢ null && reqType ≉ Type.tpClass)
-			toExpr(reqType);
-		else
-			getType(); // calls resolving
-	}
-	
 	public boolean equals(Object o) {
 		if (o instanceof Type) return this.type_lnk ≡ (Type)o;
 		return this == o;
@@ -105,37 +102,6 @@ public class TypeRef extends ENode {
 		return String.valueOf(type_lnk);
 	}
 	
-	public void toExpr(Type reqType) {
-		Type st = getType();
-		TypeDecl s = st.meta_type.tdecl;
-		if (s.isPizzaCase()) {
-			// Pizza case may be casted to int or to itself or super-class
-			PizzaCase pcase = (PizzaCase)s;
-			Type tp = Type.getRealType(reqType,st);
-			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
-				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
-			if (pcase.case_fields.length != 0)
-				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
-			if (reqType.isInteger()) {
-				ENode expr = new ConstIntExpr(pcase.tag);
-				if( reqType ≢ Type.tpInt )
-					expr = new CastExpr(pos,reqType,expr);
-				replaceWithNodeResolve(reqType, expr);
-			}
-			else if (s.isSingleton()) {
-				replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
-			}
-			else {
-				replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,ENode.emptyArray);});
-			}
-			return;
-		}
-		if (s.isSingleton()) {
-			replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
-			return;
-		}
-		throw new CompilerException(this,"Type "+this+" is not a singleton");
-	}
 }
 
 /*
@@ -154,31 +120,89 @@ public class TypeArgRef extends TypeRef {
 		this.type_lnk = tp;
 	}
 }
-@ThisIsANode(lang=CoreLang)
-public class TypeASTNodeRef extends TypeRef {
-	public TypeASTNodeRef() {}
-	public TypeASTNodeRef(ASTNodeType tp) {
-		this.type_lnk = tp;
-	}
-}
 
 @ThisIsANode(lang=CoreLang)
 public class TypeDeclRef extends TypeRef {
 	public TypeDeclRef() {}
 
-	public Type getType()
-		alias fy operator $cast
+	public Type castToType()
+		alias $cast
+		alias operator "( T ) V"
 	{
 		if (this.type_lnk != null)
 			return this.type_lnk;
 		ANode p = parent();
 		while (p != null && !(p instanceof Var))
 			p = p.parent();
-		return Type.tpVoid;
+		return Env.getEnv().tenv.tpVoid;
+	}
+
+	public Type getType(Env env)
+	{
+		if (this.type_lnk != null)
+			return this.type_lnk;
+		ANode p = parent();
+		while (p != null && !(p instanceof Var))
+			p = p.parent();
+		return env.tenv.tpVoid;
 	}
 
 	public String toString() {
-		return String.valueOf(getType());
+		return String.valueOf(getType(Env.getEnv()));
+	}
+}
+
+@ThisIsANode(lang=CoreLang)
+public class TypeASTNodeRef extends TypeRef {
+
+	@nodeAttr public final TypeDecl⇑	arg;
+
+	public TypeASTNodeRef() {
+		this.arg.qualified = true;
+	}
+
+	public TypeASTNodeRef(String arg, Type tp) {
+		this.arg.name = arg;
+		this.type_lnk = tp;
+	}
+
+	public TypeASTNodeRef(ASTNodeType tp) {
+		this.arg.name = tp.meta_type.clazz.getName().replace('·','.');
+		this.arg.qualified = true;
+		this.type_lnk = tp;
+	}
+
+	public Type getType(Env env) {
+		if (this.type_lnk != null)
+			return this.type_lnk;
+		Class cls = ASTNodeMetaType.allNodes.get(arg.name);
+		if (cls == null) {
+			try {
+				cls = Class.forName(arg.name.replace('·','.'));
+			} catch (Exception e) {}
+		}
+		if (cls != null) {
+			this.type_lnk = new ASTNodeType(cls);
+			return this.type_lnk;
+		}
+		throw new CompilerException(this, "Cannot find ASTNodeType for name: "+arg.name);
+	}
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "type_lnk" || attr.name == "ident")
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
+	public Struct getStruct(Env env) {
+		return null;
+	}
+	public TypeDecl getTypeDecl(Env env) {
+		return (TypeDecl)env.tenv.symbolTDeclASTNodeType.dnode;
+	}
+
+	public String toString() {
+		return arg.name+"#";
 	}
 }
 

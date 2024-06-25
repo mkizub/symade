@@ -14,15 +14,15 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
-public final class ParentEnumerator implements Enumeration<ASTNode> {
-	ASTNode n;
-	ASTNode r;
+public final class ParentEnumerator implements Enumeration<ANode> {
+	ANode n;
+	ANode r;
 	final boolean in_syntax;
-	public ParentEnumerator(ASTNode n, boolean in_syntax) {
+	public ParentEnumerator(ANode n, boolean in_syntax) {
 		this.n = n;
 		this.in_syntax = in_syntax;
 	}
@@ -31,40 +31,49 @@ public final class ParentEnumerator implements Enumeration<ASTNode> {
 			return true;
 		return n.isAttached();
 	}
-	public ASTNode nextElement() {
+	public ANode nextElement() {
 		if (r != null)
 			n = r;
 		if (in_syntax) {
-			r = (ASTNode)ANode.nodeattr$syntax_parent.get(n);
+			r = (ANode)ANode.nodeattr$syntax_parent.get(n);
 			if (r == null)
-				r = (ASTNode)n.parent();
+				r = n.parent();
 		} else {
-			r = (ASTNode)n.parent();
+			r = n.parent();
 		}
 		return r;
 	}
 }
 
-public class SymbolIterator implements Enumeration<ASTNode> {
-	ASTNode[] stats;
-	ASTNode last_stat;
-	public SymbolIterator(ASTNode[] stats, ASTNode element) {
+public class SymbolIterator implements Enumeration<ANode> {
+	INode[] stats;
+	INode last_stat;
+	int   last_pos;
+	public SymbolIterator(INode[] stats, INode element) {
 		this.stats = stats;
-		if (element != null && Arrays.indexOf(stats,element) >= 0) {
-			last_stat = (ASTNode)ANode.getPrevNode(element);
-		} else {
-			if (stats.length > 0)
-				last_stat = stats[stats.length-1];
+		if (element == null) {
+			if (stats.length > 0) {
+				last_pos = stats.length-1;
+				last_stat = stats[last_pos];
+			}
+			return;
 		}
+		last_pos = Arrays.indexOf(stats,element) - 1;
+		if (last_pos >= 0)
+			last_stat = stats[last_pos];
 	}
 	public boolean hasMoreElements() {
 		return last_stat != null;
 	}
-	public ASTNode nextElement() {
+	public ANode nextElement() {
 		if ( last_stat != null ) {
-			ASTNode r = last_stat;
-			last_stat = (ASTNode)ANode.getPrevNode(last_stat);
-			return r;
+			INode r = last_stat;
+			last_pos -= 1;
+			if (last_pos >= 0)
+				last_stat = stats[last_pos];
+			else
+				last_stat = null;
+			return r.asANode();
 		}
 		throw new NoSuchElementException();
 	}
@@ -75,7 +84,7 @@ public class PassInfo {
 	// No instances
 	private PassInfo() {}
 
-	public static rule resolveNameR(ASTNode from, ResInfo path)
+	public static rule resolveNameR(ANode from, ResInfo path)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
@@ -90,7 +99,7 @@ public class PassInfo {
 		p @= pe,
 		p instanceof ScopeOfNames,
 		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name '"+path.getName()+"' in scope '"+p+"'"),
-		path.space_prev = pe.n,
+		path.setPrev(pe.n),
 		((ScopeOfNames)p).resolveNameR(path)
 	}
 
@@ -133,9 +142,9 @@ public class PassInfo {
 			foreach( tp.resolveCallAccessR(info,mt) )
 				addResolvedMethod(info,paths);
 		}
-		else if (sc instanceof Operator) {
-			Operator op = (Operator)sc;
-			foreach( op.resolveOperatorMethodR(info,mt) )
+		else if (sc instanceof Opdef) {
+			Opdef opd = (Opdef)sc;
+			foreach( opd.resolveOperatorMethodR(info,mt) )
 				addResolvedMethod(info,paths);
 		}
 		else
@@ -200,11 +209,11 @@ public class PassInfo {
 					Type t2;
 					for (int k=0; k < mt.arity; k++) {
 						if (m1_is_va && k >= mt1.arity && !(mt1.arity == mt.arity && k == mt.arity && mt1.arg(k) instanceof ArrayType))
-							t1 = ((ArrayType)m1.getVarArgParam().getType()).arg;
+							t1 = ((ArrayType)m1.getVarArgParam().getType(info.env)).arg;
 						else
 							t1 = mt1.arg(k);
 						if (m2_is_va && k >= mt2.arity && !(mt2.arity == mt.arity && k == mt.arity && mt2.arg(k) instanceof ArrayType))
-							t2 = ((ArrayType)m2.getVarArgParam().getType()).arg;
+							t2 = ((ArrayType)m2.getVarArgParam().getType(info.env)).arg;
 						else
 							t2 = mt2.arg(k);
 						if (t1 ≉ t2) {
@@ -256,27 +265,27 @@ public class PassInfo {
 		throw new CompilerException(info.getFrom(), msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, ResInfo path, CallType mt)
+	public static rule resolveMethodR(ANode from, ResInfo path, CallType mt)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
 		pe = new ParentEnumerator(from, path.inSyntaxContext()),
 		p @= pe,
 		p instanceof ScopeOfMethods,
-		path.space_prev = pe.n,
+		path.setPrev(pe.n),
 		resolveBestMethodR((ScopeOfMethods)p,path,mt),
 		trace(Kiev.debug && Kiev.debugResolve,"Best method is "+path.resolvedSymbol()+" with path/transform "+path+" found...")
 	}
 
-	public static boolean checkException(ASTNode from, Type exc) throws RuntimeException {
-		if( !exc.isInstanceOf(Type.tpThrowable) )
-			throw new CompilerException(from,"A class of object for throw statement must be a subclass of "+Type.tpThrowable+" but type "+exc+" found");
-		if( exc.isInstanceOf(Type.tpError) || exc.isInstanceOf(Type.tpRuntimeException) ) return true;
+	public static boolean checkException(ASTNode from, Type exc, Env env) throws RuntimeException {
+		if( !exc.isInstanceOf(env.tenv.tpThrowable) )
+			throw new CompilerException(from,"A class of object for throw statement must be a subclass of "+env.tenv.tpThrowable+" but type "+exc+" found");
+		if( exc.isInstanceOf(env.tenv.tpError) || exc.isInstanceOf(env.tenv.tpRuntimeException) ) return true;
 		for (; from != null; from = (ASTNode)from.parent()) {
 			if( from instanceof TryStat ) {
 				TryStat trySt = (TryStat)from;
 				for(int j=0; j < trySt.catchers.length; j++)
-					if( exc.isInstanceOf(trySt.catchers[j].arg.getType()) ) return true;
+					if( exc.isInstanceOf(trySt.catchers[j].arg.getType(env)) ) return true;
 			}
 			else if( from instanceof Method ) {
 				MetaThrows throwns = from.getMetaThrows();
@@ -284,7 +293,7 @@ public class PassInfo {
 					return false;
 				ASTNode[] mthrs = throwns.getThrowns();
 				for (int i=0; i < mthrs.length; i++)
-					if (exc.isInstanceOf(mthrs[i].getType())) return true;
+					if (exc.isInstanceOf(mthrs[i].getType(env))) return true;
 				return false;
 			}
 		}

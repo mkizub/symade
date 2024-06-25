@@ -17,47 +17,47 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
-public static final view RFileUnit of FileUnit extends RNameSpace {
+@ViewOf(vcast=true)
+public static view RSyntaxScope of SyntaxScope extends RSNode {
+	public:ro	SymbolRef<KievPackage>	srpkg;
+	public:ro	ASTNode[]				members;
+}
+
+@ViewOf(vcast=true)
+public static final view RFileUnit of FileUnit extends RSyntaxScope {
 	public:ro	String					fname;
-	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
 	public String pname();
 
-	public void resolveDecl() {
+	public void resolveDecl(Env env) {
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving file "+fname);
 		String curr_file = Kiev.getCurFile();
 		Kiev.setCurFile(pname());
-		boolean[] exts = Kiev.getExtSet();
         try {
-        	Kiev.setExtSet(disabled_extensions);
 			foreach (ASTNode n; members) {
 				try {
 					if (n instanceof DNode && !n.isMacro())
-						n.resolveDecl();
+						resolveDNode(n,env);
 					else if (n instanceof SNode)
-						n.resolveDecl();
+						resolveSNode(n,env);
 				} catch(Exception e) {
 					Kiev.reportError(n,e);
 				}
 			}
-		} finally { Kiev.setCurFile(curr_file); Kiev.setExtSet(exts); }
+		} finally { Kiev.setCurFile(curr_file); }
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public static view RNameSpace of NameSpace extends RSNode {
-	public:ro	SymbolRef<KievPackage>	srpkg;
-	public:ro	ASTNode[]				members;
-
-	public void resolveDecl() {
+@ViewOf(vcast=true)
+public static view RNameSpace of NameSpace extends RSyntaxScope {
+	public void resolveDecl(Env env) {
 		foreach (ASTNode n; members) {
 			try {
 				if (n instanceof DNode && !n.isMacro())
-					n.resolveDecl();
+					resolveDNode(n,env);
 				else if (n instanceof SNode)
-					n.resolveDecl();
+					resolveSNode(n,env);
 			} catch(Exception e) {
 				Kiev.reportError(n,e);
 			}

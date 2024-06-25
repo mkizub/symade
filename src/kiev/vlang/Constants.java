@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -45,7 +45,8 @@ public interface Constants extends AccessFlags {
 	public final static String nameSet				= "set$";
 	public final static String nameGet				= "get$";
 	public final static String nameVarArgs			= "va_args";
-	public final static String namePEnv			= "$env$";
+	public final static String namePEnvParam	= "$env$";
+	public static final String namePEnvLVar		= "$env";
 	public final static String namePlvBase			= "lvar$base";
 	public final static String nameCellVal			= "$val";
 	public final static String nameEnumValuesFld	= "$values";
@@ -66,9 +67,6 @@ public interface Constants extends AccessFlags {
 	public final static String nameAssertInvariantMethod		= "assertInvariant";
 	public final static String nameAssertRequireMethod			= "assertRequire";
 	public final static String nameAssertEnsureMethod			= "assertEnsure";
-	public final static KString nameAssertSignature			= KString.from("(Ljava/lang/String;)V");
-	public final static KString nameAssertNameSignature		= KString.from("(Ljava/lang/String;Ljava/lang/String;)V");
-	public final static KString nameKStringSignature			= KString.from("Lkiev/stdlib/KString;");
 	public final static String nameFILE		= "$FILE";
 	public final static String nameMETHOD		= "$METHOD";
 	public final static String nameLINENO		= "$LINENO";
@@ -78,29 +76,17 @@ public interface Constants extends AccessFlags {
 	public final static String nameStrBuffAppend	= "append";
 
 	public final static String nameAny			= "any";
-	public final static KString sigAny			= KString.from("?");
 	public final static String nameVoid		= "void";
-	public final static KString sigVoid		= KString.from("V");
 	public final static String nameBoolean		= "boolean";
-	public final static KString sigBoolean		= KString.from("Z");
 	public final static String nameByte		= "byte";
-	public final static KString sigByte		= KString.from("B");
 	public final static String nameChar		= "char";
-	public final static KString sigChar		= KString.from("C");
 	public final static String nameShort		= "short";
-	public final static KString sigShort		= KString.from("S");
 	public final static String nameInt			= "int";
-	public final static KString sigInt			= KString.from("I");
 	public final static String nameLong		= "long";
-	public final static KString sigLong		= KString.from("J");
 	public final static String nameFloat		= "float";
-	public final static KString sigFloat		= KString.from("F");
 	public final static String nameDouble		= "double";
-	public final static KString sigDouble		= KString.from("D");
 	public final static String nameNull		= "null";
-	public final static KString sigNull		= KString.from("0");
 	public final static String nameRule		= "rule";
-	public final static KString sigRule		= KString.from("R");
 
 
     /** Binary operators priority, image and name */

@@ -17,11 +17,12 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class TransfProcessor implements Constants {
+public abstract class TransfProcessor extends AbstractProcessor implements Constants {
 	
 	private final KievExt extension;
 	
-	public TransfProcessor(KievExt ext) {
+	public TransfProcessor(Env env, int id, KievExt ext) {
+		super(env, id);
 		this.extension = ext;
 	}
 	public boolean isEnabled() {
@@ -29,18 +30,6 @@ public abstract class TransfProcessor implements Constants {
 	}
 	public boolean isDisabled() {
 		return Kiev.disabled(extension);
-	}
-	
-	public abstract String getDescr();
-	public abstract void process(ASTNode node, Transaction tr);
-	
-	public static String getPropS(String base, String name, String dflt) {
-		String fname = base+"."+name;
-		String val = System.getProperty(fname,dflt);
-		if (val != null)
-			val = val.trim().intern();
-		trace(Kiev.debug, "Loaded "+fname+" as \""+val+"\"");
-		return val;
 	}
 }
 

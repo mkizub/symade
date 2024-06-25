@@ -23,7 +23,7 @@ import java.io.ObjectInput;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 227 $
  *
  */
 

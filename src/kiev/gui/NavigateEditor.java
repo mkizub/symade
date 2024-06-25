@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Common Public License Version 1.0
  * which accompanies this distribution, and is available at
@@ -7,146 +7,321 @@
  *
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
  *******************************************************************************/
 package kiev.gui;
 
 import kiev.fmt.DrawTerm;
-import kiev.fmt.GfxDrawTermLayoutInfo;
+import kiev.fmt.DrawValueTerm;
+import kiev.fmt.common.DrawLayoutInfo;
 
-public class NavigateEditor implements Runnable {
+/**
+ * Navigate Editor UI Action.
+ */
+public final class NavigateEditor implements UIAction {
 
-	final Editor uiv;
-	final int incr;
+	/**
+	 * The editor.
+	 */
+	private final Editor uiv;
 	
+	/**
+	 * The increment.
+	 */
+	private final int incr;
+	
+	/**
+	 * The constructor.
+	 * @param uiv the view
+	 * @param incr the increment
+	 */
 	public NavigateEditor(Editor uiv, int incr) {
 		this.uiv = uiv;
 		this.incr = incr;
 	}
 	
-	public void run() {
+	/* (non-Javadoc)
+	 * @see kiev.gui.UIAction#run()
+	 */
+	public void exec() {
 		switch (incr) {
-		case -1: navigatePrev(uiv,true); break;
-		case +1: navigateNext(uiv,true); break;
-		case -2: navigateUp(uiv,true); break;
-		case +2: navigateDn(uiv,true); break;
-		case -3: navigateLineHome(uiv,true); break;
-		case +3: navigateLineEnd(uiv,true); break;
-		case -4: navigatePageUp(uiv); break;
-		case +4: navigatePageDn(uiv); break;
+		case -1: navigatePrev(true); break;
+		case +1: navigateNext(true); break;
+		case -2: navigateUp(true); break;
+		case +2: navigateDn(true); break;
+		case -3: navigateWordHome(true); break;
+		case +3: navigateWordEnd(true); break;
+		case -4: navigateLineHome(true); break;
+		case +4: navigateLineEnd(true); break;
+		case -5: navigatePageUp(); break;
+		case +5: navigatePageDn(); break;
 		}
 	}
 
+	/**
+	 * GoPrev Action Factory.
+	 */
 	public final static class GoPrev implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Go to the previous element"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-1);
 			return null;
 		}
 	}
 
+	/**
+	 * GoNext Action Factory.
+	 */
 	public final static class GoNext implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Go to the next element"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+1);
 			return null;
 		}
 	}
 	
+	/**
+	 * Go Line Up UI Action Factory.
+	 */
 	public final static class GoLineUp implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Go to an element above"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-2);
 			return null;
 		}
 	}
 	
+	/**
+	 * Go Line Dn UI Action Factory.
+	 */
 	public final static class GoLineDn implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Go to an element below"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+2);
 			return null;
 		}
 	}
 	
+	/**
+	 * Go Line Home UI Action Factory.
+	 */
 	public final static class GoLineHome implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Go to the first element on the line"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null)
-				return new NavigateEditor(context.editor,-3);
-			return null;
-		}
-	}
-	
-	public final static class GoLineEnd implements UIActionFactory {
-		public String getDescr() { return "Go to the last element on the line"; }
-		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null)
-				return new NavigateEditor(context.editor,+3);
-			return null;
-		}
-	}
-	
-	public final static class GoPageUp implements UIActionFactory {
-		public String getDescr() { return "Go to an element one screen above"; }
-		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null)
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			if (context.editor != null) {
+				Editor editor = context.editor;
+				if (editor.isInTextEditMode()) {
+					String text = editor.getEditText();
+					int offs = editor.getEditOffset();
+					if (text != null && offs > 0)
+						return new NavigateEditor(context.editor,-3);
+				}
 				return new NavigateEditor(context.editor,-4);
+			}
 			return null;
 		}
 	}
 	
-	public final static class GoPageDn implements UIActionFactory {
-		public String getDescr() { return "Go to an element one screen below"; }
+	/**
+	 * Go Line End UI Action Factory.
+	 */
+	public final static class GoLineEnd implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
+		public String getDescr() { return "Go to the last element on the line"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor != null)
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			if (context.editor != null) {
+				Editor editor = context.editor;
+				if (editor.isInTextEditMode()) {
+					String text = editor.getEditText();
+					int offs = editor.getEditOffset();
+					if (text != null && offs < text.length())
+						return new NavigateEditor(context.editor,+3);
+				}
 				return new NavigateEditor(context.editor,+4);
+			}
+			return null;
+		}
+	}
+	
+	/**
+	 * Go Page Up UI Action Factory.
+	 */
+	public final static class GoPageUp implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
+		public String getDescr() { return "Go to an element one screen above"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
+		public boolean isForPopupMenu() { return false; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			if (context.editor != null)
+				return new NavigateEditor(context.editor,-5);
+			return null;
+		}
+	}
+	
+	/**
+	 * Go Page Down UI Action Factory.
+	 */
+	public final static class GoPageDn implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
+		public String getDescr() { return "Go to an element one screen below"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
+		public boolean isForPopupMenu() { return false; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
+			if (context.editor != null)
+				return new NavigateEditor(context.editor,+5);
 			return null;
 		}
 	}
 
-	private void navigatePrev(Editor uiv, boolean repaint) {
-		if (uiv.insert_mode && uiv.getView_canvas().getCursor_offset() > 0) {
-			uiv.getView_canvas().setCursor_offset(uiv.getView_canvas().getCursor_offset()-1);
-		} else {
-			GfxDrawTermLayoutInfo prev = uiv.getCur_elem().dr.getFirstLeaf().getGfxFmtInfo().getPrev();
-			if (prev != null) {
-				uiv.getCur_elem().set(prev.getDrawable());
-				uiv.cur_x = prev.getX();
-				if (uiv.insert_mode) {
-					Object term_obj = prev.getDrawable().getTermObj();
-					if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
-						uiv.getView_canvas().setCursor_offset(0);
-					} else {
-						String text = String.valueOf(term_obj);
-						if (text == null)
-							uiv.getView_canvas().setCursor_offset(0);
-						else
-							uiv.getView_canvas().setCursor_offset(text.length());
-					}
+	private void repaintUIV() {
+		uiv.makeCurrentVisible();
+		uiv.formatAndPaint(false);
+	}
+	
+	/**
+	 * Navigate Previous.
+	 * @param repaint force repaint
+	 */
+	private void navigatePrev(boolean repaint) {
+		DrawTerm curr = uiv.getDrawTerm();
+		if ((uiv.isInInsertMode() || uiv.isInTextEditMode()) && curr instanceof DrawValueTerm) {
+			int cursor = uiv.getViewPeer().getCursor_offset();
+			if (cursor > 0) {
+				uiv.getViewPeer().setCursor_offset(cursor-1);
+				if (repaint) repaintUIV();
+				return;
+			}
+		}
+		DrawLayoutInfo prev = uiv.getDrawTerm().getFirstLeaf().getGfxFmtInfo().getPrevLeaf();
+		if (prev != null) {
+			uiv.setDrawTerm((DrawTerm)prev.getDrawable());
+			uiv.cur_x = prev.getX();
+			curr = uiv.getDrawTerm();
+			if ((uiv.isInInsertMode() || uiv.isInTextEditMode()) && curr instanceof DrawValueTerm) {
+				Object term_obj = ((DrawTerm)prev.getDrawable()).getTermObj();
+				if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE) {
+					uiv.getViewPeer().setCursor_offset(-1);
+				} else {
+					String text = String.valueOf(term_obj);
+					if (text == null)
+						uiv.getViewPeer().setCursor_offset(-1);
+					else
+						uiv.getViewPeer().setCursor_offset(text.length());
 				}
 			}
 		}
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
+		if (repaint) repaintUIV();
 	}
-	private void navigateNext(Editor uiv, boolean repaint) {
-		DrawTerm curr = uiv.getCur_elem().dr;
-		if (uiv.insert_mode || curr == null) {
-			Object term_obj = curr == null ? null : curr.getTermObj();
+	
+	/**
+	 * Navigate Next.
+	 * @param repaint force repaint
+	 */
+	private void navigateNext(boolean repaint) {
+		DrawTerm curr = uiv.getDrawTerm();
+		if ((uiv.isInInsertMode() || uiv.isInTextEditMode()) && curr  instanceof DrawValueTerm) {
+			Object term_obj = curr.getTermObj();
 			String text;
 			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE)
 				text = "";
@@ -154,74 +329,80 @@ public class NavigateEditor implements Runnable {
 				text = String.valueOf(term_obj);
 			if (text == null)
 				text = "";
-			if (uiv.getView_canvas().getCursor_offset() < text.length()) {
-				uiv.getView_canvas().setCursor_offset(uiv.getView_canvas().getCursor_offset()+1);
-				if (repaint) {
-					uiv.makeCurrentVisible();
-					uiv.formatAndPaint(false);
-				}
+			int cursor = uiv.getViewPeer().getCursor_offset();
+			if (cursor < text.length()) {
+				uiv.getViewPeer().setCursor_offset(cursor+1);
+				if (repaint) repaintUIV();
 				return;
 			}
 		}
-		GfxDrawTermLayoutInfo next = curr.getFirstLeaf().getGfxFmtInfo().getNext();
+		DrawLayoutInfo next = curr.getFirstLeaf().getGfxFmtInfo().getNextLeaf();
 		if (next != null) {
-			uiv.getCur_elem().set(next.getDrawable());
+			uiv.setDrawTerm((DrawTerm)next.getDrawable());
 			uiv.cur_x = next.getX();
-			uiv.getView_canvas().setCursor_offset(0);
+			curr = uiv.getDrawTerm();
+			if ((uiv.isInInsertMode() || uiv.isInTextEditMode()) && curr  instanceof DrawValueTerm)
+				uiv.getViewPeer().setCursor_offset(0);
+			else
+				uiv.getViewPeer().setCursor_offset(-1);
 		}
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
+		if (repaint) repaintUIV();
 	}
-	private void navigateUp(Editor uiv, boolean repaint) {
-		DrawTerm dt = uiv.getCur_elem().dr.getFirstLeaf();
+	
+	/**
+	 * Navigate Up.
+	 * @param repaint force repaint
+	 */
+	private void navigateUp(boolean repaint) {
+		DrawTerm dt = uiv.getDrawTerm().getFirstLeaf();
 		if (dt == null)
 			return;
-		GfxDrawTermLayoutInfo n = null;
-		GfxDrawTermLayoutInfo prev = dt.getGfxFmtInfo().getPrev();
+		DrawLayoutInfo n = null;
+		DrawLayoutInfo prev = dt.getGfxFmtInfo().getPrevLeaf();
 		while (prev != null) {
 			if (prev.isDoNewline()) {
 				n = prev;
 				break;
 			}
-			prev = prev.getPrev();
+			prev = prev.getPrevLeaf();
 		}
 		while (n != null) {
-			int w = n.getWidth();
+			int w = n.width;
 			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
-			prev = n.getPrev();
+			prev = n.getPrevLeaf();
 			if (prev == null || prev.isDoNewline())
 				break;
-			w = prev.getWidth();
+			w = prev.width;
 			if (prev.getX()+w < uiv.cur_x) 
 				break;
 			n = prev;
 		}
 		if (n != null)
-			uiv.getCur_elem().set(n.getDrawable());
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
+			uiv.setDrawTerm((DrawTerm)n.getDrawable());
+		if (repaint) repaintUIV();
 	}
-	private void navigateDn(Editor uiv, boolean repaint) {
-		DrawTerm dt = uiv.getCur_elem().dr.getFirstLeaf();
-		GfxDrawTermLayoutInfo n = null;
-		GfxDrawTermLayoutInfo next = dt.getGfxFmtInfo();
+	
+	/**
+	 * Navigate Down.
+	 * @param repaint force repaint
+	 */
+	private void navigateDn(boolean repaint) {
+		DrawTerm dt = uiv.getDrawTerm().getFirstLeaf();
+		DrawLayoutInfo n = null;
+		DrawLayoutInfo next = dt.getGfxFmtInfo();
 		while (next != null) {
 			if (next.isDoNewline()) {
-				n = next.getNext();
+				n = next.getNextLeaf();
 				break;
 			}
-			next = next.getNext();
+			next = next.getNextLeaf();
 		}
 		while (n != null) {
-			int w = n.getWidth();
+			int w = n.width;
 			if (n.getX() <= uiv.cur_x && n.getX()+w >= uiv.cur_x) 
 				break;
-			next = n.getNext();
+			next = n.getNextLeaf();
 			if (next == null)
 				break;
 			if (next.getX() > uiv.cur_x)
@@ -231,69 +412,132 @@ public class NavigateEditor implements Runnable {
 			n = next;
 		}
 		if (n != null)
-			uiv.getCur_elem().set(n.getDrawable());
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
+			uiv.setDrawTerm((DrawTerm)n.getDrawable());
+		if (repaint) repaintUIV();
+	}
+	
+	/**
+	 * Navigate Previous.
+	 * @param repaint force repaint
+	 */
+	private void navigateWordHome(boolean repaint) {
+		DrawTerm curr = uiv.getDrawTerm();
+		if ((uiv.isInInsertMode() || uiv.isInTextEditMode()) && curr instanceof DrawValueTerm) {
+			uiv.getViewPeer().setCursor_offset(0);
+			if (repaint) repaintUIV();
 		}
 	}
-	private void navigateLineHome(Editor uiv, boolean repaint) {
-		GfxDrawTermLayoutInfo res = uiv.getCur_elem().dr.getGfxFmtInfo();
-		int lineno = res.getLineNo();
+	
+	/**
+	 * Navigate Next.
+	 * @param repaint force repaint
+	 */
+	private void navigateWordEnd(boolean repaint) {
+		DrawTerm curr = uiv.getDrawTerm();
+		if ((uiv.isInInsertMode() || uiv.isInTextEditMode()) && curr  instanceof DrawValueTerm) {
+			Object term_obj = curr.getTermObj();
+			String text;
+			if (term_obj == null || term_obj == DrawTerm.NULL_NODE || term_obj == DrawTerm.NULL_VALUE)
+				text = "";
+			else
+				text = String.valueOf(term_obj);
+			if (text == null)
+				text = "";
+			uiv.getViewPeer().setCursor_offset(text.length());
+			if (repaint) repaintUIV();
+			return;
+		}
+	}
+	
+	/**
+	 * Navigate Line Home.
+	 * @param repaint force repaint
+	 */
+	private void navigateLineHome(boolean repaint) {
+		DrawLayoutInfo res = uiv.getDrawTerm().getGfxFmtInfo();
+		int line_y = res.getY();
 		for (;;) {
-			GfxDrawTermLayoutInfo dr = res.getPrev();
-			if (dr == null || dr.getLineNo() != lineno)
+			DrawLayoutInfo dr = res.getPrevLeaf();
+			if (dr == null || dr.getY() != line_y)
 				break;
 			res = dr;
 		}
-		if (res.getDrawable() != uiv.getCur_elem().dr) {
-			uiv.getCur_elem().set(res.getDrawable());
+		if (uiv.isInInsertMode() || uiv.isInTextEditMode())
+			uiv.getViewPeer().setCursor_offset(0);
+		if (res.getDrawable() != uiv.getDrawTerm()) {
+			uiv.setDrawTerm((DrawTerm)res.getDrawable());
 			uiv.cur_x = res.getX();
 		}
-		if (repaint)
-			uiv.formatAndPaint(false);
+		if (repaint) repaintUIV();
 	}
-	private void navigateLineEnd(Editor uiv, boolean repaint) {
-		GfxDrawTermLayoutInfo res = uiv.getCur_elem().dr.getGfxFmtInfo();
-		int lineno = res.getLineNo();
+	
+	/**
+	 * Navigate Line End.
+	 * @param repaint force repaint
+	 */
+	private void navigateLineEnd(boolean repaint) {
+		DrawLayoutInfo res = uiv.getDrawTerm().getGfxFmtInfo();
+		int line_y = res.getY();
 		for (;;) {
-			GfxDrawTermLayoutInfo dr = res.getNext();
-			if (dr == null || dr.getLineNo() != lineno)
+			DrawLayoutInfo dr = res.getNextLeaf();
+			if (dr == null || dr.getY() != line_y)
 				break;
 			res = dr;
 		}
-		if (res.getDrawable() != uiv.getCur_elem().dr) {
-			uiv.getCur_elem().set(res.getDrawable());
+		if (uiv.isInInsertMode() || uiv.isInTextEditMode()) {
+			String text = uiv.getEditText();
+			if (text != null)
+				uiv.getViewPeer().setCursor_offset(text.length());
+		}
+		if (res.getDrawable() != uiv.getDrawTerm()) {
+			uiv.setDrawTerm((DrawTerm)res.getDrawable());
 			uiv.cur_x = res.getX();
 		}
-		if (repaint)
-			uiv.formatAndPaint(false);
+		if (repaint) repaintUIV();
 	}
-	private void navigatePageUp(Editor uiv) {
-		if (uiv.getView_canvas().getFirst_visible() == null) {
-			uiv.getView_canvas().setFirstLine(0);
+	
+	/**
+	 * Navigate Page Up.
+	 */
+	private void navigatePageUp() {
+		if (uiv.getViewPeer().getFirst_visible() == null) {
+			uiv.getViewPeer().setVertOffset(0);
 			return;
 		}
-		int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
-		int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
-		int offs = lnlst - lnfst -1;
-		uiv.getView_canvas().incrFirstLine(-offs);
-		for (int i=offs; i >= 0; i--)
-			navigateUp(uiv,i==0);
-		return;
+		int pos_y = uiv.getViewPeer().getVertOffset() - uiv.getViewPeer().getImgHeight();
+		if (pos_y < 0)
+			pos_y = 0;
+		uiv.getViewPeer().setVertOffset(pos_y);
+		DrawTerm last_dt = uiv.getDrawTerm();
+		while (last_dt.getGfxFmtInfo().getY() > pos_y) {
+			navigateUp(false);
+			DrawTerm cur_dt = uiv.getDrawTerm();
+			if (last_dt == cur_dt)
+				break;
+			last_dt = cur_dt;
+		}
+		repaintUIV();
 	}
-	private void navigatePageDn(Editor uiv) {
-		if (uiv.getView_canvas().getFirst_visible() == null) {
-			uiv.getView_canvas().setFirstLine(0);
+	
+	/**
+	 * Navigate Page Down.
+	 */
+	private void navigatePageDn() {
+		if (uiv.getViewPeer().getFirst_visible() == null) {
+			uiv.getViewPeer().setVertOffset(0);
 			return;
 		}
-		int lnlst = uiv.getView_canvas().getLast_visible().getLineNo();
-		int lnfst = uiv.getView_canvas().getFirst_visible().getLineNo();
-		int offs = lnlst - lnfst -1;
-		uiv.getView_canvas().incrFirstLine(+offs);
-		for (int i=offs; i >= 0; i--)
-			navigateDn(uiv,i==0);
-		return;
+		int pos_y = uiv.getViewPeer().getVertOffset() + uiv.getViewPeer().getImgHeight();
+		uiv.getViewPeer().setVertOffset(pos_y);
+		DrawTerm last_dt = uiv.getDrawTerm();
+		while (last_dt.getGfxFmtInfo().getY() < pos_y) {
+			navigateDn(false);
+			DrawTerm cur_dt = uiv.getDrawTerm();
+			if (last_dt == cur_dt)
+				break;
+			last_dt = cur_dt;
+		}
+		repaintUIV();
 	}
 
 }

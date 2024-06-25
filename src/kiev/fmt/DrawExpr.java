@@ -12,15 +12,16 @@ package kiev.fmt;
 
 import syntax kiev.Syntax;
 
+import kiev.fmt.common.*;
 
 @ThisIsANode(copyable=false)
 public class DrawAutoParenth extends DrawNonTerm {
 	
-	public DrawAutoParenth(ANode node, Draw_SyntaxAutoParenth syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawAutoParenth(INode node, Formatter fmt, Draw_SyntaxAutoParenth syntax) {
+		super(node, fmt, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxAutoParenth sp = (Draw_SyntaxAutoParenth)this.syntax;
 		Draw_SyntaxExprTemplate template = sp.template;
@@ -28,27 +29,27 @@ public class DrawAutoParenth extends DrawNonTerm {
 		if (sp.attr instanceof Draw_SyntaxNode)
 			node = (ENode)this.drnode;
 		else
-			node = (ENode)this.drnode.getVal(sp.attr.name);
+			node = (ENode)this.drnode.getVal(this.drnode.getAttrSlot(((Draw_SyntaxAttr)sp.attr).name));
 		if (args.length == 0) {
-			args.append(template.l_paren.makeDrawable(cont.fmt, node, text_syntax));
-			args.append(sp.attr.makeDrawable(cont.fmt, this.drnode, text_syntax));
-			args.append(template.r_paren.makeDrawable(cont.fmt, node, text_syntax));
+			args.append(template.l_paren.makeDrawable(fmt, node));
+			args.append(sp.attr.makeDrawable(fmt, this.drnode));
+			args.append(template.r_paren.makeDrawable(fmt, node));
 		}
 		assert(args.length == 3);
-		args[0].preFormat(cont,template.l_paren,node);
-		args[1].preFormat(cont,sp.attr,this.drnode);
-		args[2].preFormat(cont,template.r_paren,node);
+		args[0].preFormat(fmt,template.l_paren,node);
+		args[1].preFormat(fmt,sp.attr,this.drnode);
+		args[2].preFormat(fmt,template.r_paren,node);
 	}
 }
 
 @ThisIsANode(copyable=false)
 public class DrawLispExpr extends DrawNonTerm {
 	
-	public DrawLispExpr(ANode node, Draw_SyntaxExpr syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawLispExpr(INode node, Formatter fmt, Draw_SyntaxExpr syntax) {
+		super(node, fmt, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxExpr se = (Draw_SyntaxExpr)this.syntax;
 		Draw_SyntaxExprTemplate st = (Draw_SyntaxExprTemplate)se.template;
@@ -56,17 +57,17 @@ public class DrawLispExpr extends DrawNonTerm {
 		ENode[] eargs = node.getEArgs();
 		if (args.length != eargs.length + 3) {
 			args.delAll();
-			args.append(st.l_paren.makeDrawable(cont.fmt, node, text_syntax));
-			args.append(st.bad_op.makeDrawable(cont.fmt, node, text_syntax));
+			args.append(st.l_paren.makeDrawable(fmt, node));
+			args.append(st.bad_op.makeDrawable(fmt, node));
 			foreach (ENode ea; eargs)
-				args.append(st.elem.makeDrawable(cont.fmt, ea, text_syntax));
-			args.append(st.l_paren.makeDrawable(cont.fmt, node, text_syntax));
+				args.append(st.elem.makeDrawable(fmt, ea));
+			args.append(st.l_paren.makeDrawable(fmt, node));
 		}
 		int n = 0;
-		args[n++].preFormat(cont,st.l_paren,node);
-		args[n++].preFormat(cont,st.bad_op,node);
+		args[n++].preFormat(fmt,st.l_paren,node);
+		args[n++].preFormat(fmt,st.bad_op,node);
 		foreach (ENode ea; eargs)
-			args[n++].preFormat(cont,st.elem,ea);
-		args[n++].preFormat(cont,st.r_paren,node);
+			args[n++].preFormat(fmt,st.elem,ea);
+		args[n++].preFormat(fmt,st.r_paren,node);
 	}
 }

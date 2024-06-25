@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -32,23 +32,23 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public Method[]					methods;
 	public Attribute[]				attrs;
 
-	public KString getClazzName() {
+	public String getClazzName() {
 		return cp_clazz.ref.value;
 	}
 
-	public KString getSuperClazzName() {
+	public String getSuperClazzName() {
 		if( cp_super_clazz == null ) return null;
 		return cp_super_clazz.ref.value;
 	}
 
-	public KString[] getInterfaceNames() {
-		KString[] names = new KString[cp_interfaces.length];
+	public String[] getInterfaceNames() {
+		String[] names = new String[cp_interfaces.length];
 		for(int i=0; i < names.length; i++)
 			names[i] = cp_interfaces[i].ref.value;
 		return names;
 	}
 
-	public KString getClazzSignature() {
+	public String getClazzSignature() {
 		foreach (GenericsSignatureAttribute a; attrs)
 			return a.getSignature(this);
 		return null;
@@ -262,6 +262,18 @@ public class ReadContext {
 	public byte[]			data;
 	public int				offset;
 
+	public static int utf8Length(String str) {
+		int len = 0;
+		for (int i=str.length()-1; i >= 0; i--) {
+			char ch = str.charAt(i);
+			if (ch == 0) len += 2;
+			else if (ch <= 0x7F) len += 1;
+			else if (ch <= 0x3FF) len += 2;
+			else len += 3;
+		}
+		return len;
+	}
+	
 	public void read(byte[] b) {
 		System.arraycopy(data,offset,b,0,b.length);
 		offset += b.length;
@@ -305,6 +317,28 @@ public class ReadContext {
 		return Double.longBitsToDouble(readLong());
 	}
 
+	public String readUtf8(int len) {
+		len += offset;
+		StringBuffer sb = new StringBuffer();
+		while (offset < len) {
+			int ch = data[offset++] & 0xFF;
+			if (ch >= 0xE0) {
+                ch = (ch & 0x0F) << 12;
+                ch = ch | (data[offset++] & 0x3F) << 6;
+                ch = ch | (data[offset++] & 0x3F);
+			}
+			else if (ch >= 0xC0) {
+                ch = (ch & 0x1F) << 6;
+                ch = ch | (data[offset++] & 0x3F);
+			}
+			if (ch == 0xC080)
+				ch = 0;
+			sb.append((char)ch);
+		}
+		assert (offset == len, "UTF-8 string encoding error ");
+		offset = len;
+		return sb.toString();
+	}
 
 	public void write(byte[] b, int start, int end) {
 		System.arraycopy(b,start,data,offset,end-start);
@@ -343,6 +377,29 @@ public class ReadContext {
 
 	public void writeDouble(double d) {
 		writeLong(Double.doubleToLongBits(d));
+	}
+
+	public void writeUtf8(String str) {
+		int len = str.length();
+		for (int i=0; i < len; i++) {
+			int ch = str.charAt(i) & 0xFFFF;
+			if (ch == 0) {
+				data[offset++] = (byte)(0xC0);
+				data[offset++] = (byte)(0x80);
+			}
+			else if (ch < 0x7F) {
+				data[offset++] = (byte)ch;
+			}
+			else if (ch < 0x3FF) {
+				data[offset++] = (byte)(0xC0 | (ch >> 6));
+				data[offset++] = (byte)(0x80 | (ch & 0x3F));
+			}
+			else {
+				data[offset++] = (byte)(0xE0 | (ch >>> 12));
+				data[offset++] = (byte)(0x80 | ((ch>>6) & 0x3F));
+				data[offset++] = (byte)(0x80 | (ch & 0x3F));
+			}
+		}
 	}
 
 }

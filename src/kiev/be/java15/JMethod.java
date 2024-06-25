@@ -16,59 +16,106 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
-public final view JMethod of Method extends JDNode {
+public class JMethod extends JDNode {
 
+	@virtual typedef VT  ≤ Method;
+
+	public final JWBCCondition[] conditions;
+	
+	@abstract
 	public:ro	JVar[]					params;
+	@abstract
 	public:ro	JENode					body;
 
+	@abstract
 	public:ro	CallType				mtype;
+	@abstract
 	public:ro	CallType				dtype;
+	@abstract
 	public:ro	CallType				etype;
 
+	@abstract
 	public:ro	JBlock					block;
 
-	public MetaThrows getMetaThrows();
+	public static JMethod attachJMethod(Method impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JMethod)jn;
+		return new JMethod(impl);
+	}
 	
-	public JVar	getRetVar() { return (JVar)((Method)this).getRetVar(); }
-	
-	public Enumeration<WBCCondition> conditions() {
-		return (Enumeration<WBCCondition>)((Method)this).conditions.elements();
+	JMethod(Method impl) {
+		super(impl);
+		Vector<JWBCCondition> conds = new Vector<JWBCCondition>();
+		foreach (WBCCondition wbc; impl.conditions)
+			conds.append((JWBCCondition)wbc);
+		if (conds.isEmpty())
+			this.conditions = JWBCCondition.emptyArray;
+		else
+			this.conditions = conds.toArray();
 	}
 
-	public final boolean hasName(String nm);
+	public void backendCleanup() {
+		jattrs = Attr.emptyArray;
+	}
 
-	public final boolean isVirtualStatic();
-	public final boolean isVarArgs();
-	public final boolean isRuleMethod();
-	public final boolean isOperatorMethod();
-	public final boolean isNeedFieldInits();
-	public final boolean isInvariantMethod();
-	public final boolean isInlinedByDispatcherMethod();
+	public MetaThrows getMetaThrows() { vn().getMetaThrows() }
+	
+	public JVar	getRetVar() { return (JVar)this.vn().getRetVar(); }
+	
+	@getter public final JVar[] get$params() {
+		return JNode.toJArray<JVar>(vn().params);
+	}
+
+	@getter public final JENode get$body() {
+		return (JENode)vn().body;
+	}
+
+	@getter public final JBlock get$block() {
+		return (JBlock)vn().block;
+	}
+
+	@getter public final CallType get$mtype() { vn().mtype }
+	@getter public final CallType get$dtype() { vn().dtype }
+	@getter public final CallType get$etype() { vn().etype }
+
+	public final boolean hasName(String nm) { vn().hasName(nm) }
+
+	public final boolean isVirtualStatic() { vn().isVirtualStatic() }
+	public final boolean isVarArgs() { vn().isVarArgs() }
+	public final boolean isRuleMethod() { vn().isRuleMethod() }
+	public final boolean isNeedFieldInits() { vn().isNeedFieldInits() }
+	public final boolean isInvariantMethod() { vn().isInvariantMethod() }
+	public final boolean isInlinedByDispatcherMethod() { vn().isInlinedByDispatcherMethod() }
 
 	public boolean isConstructor() {
-		return ((Method)this) instanceof Constructor;
+		return this.vn() instanceof Constructor;
 	}
 
-	public JVar getOuterThisParam() { return (JVar) ((Method)this).getOuterThisParam(); }
-	public JVar getTypeInfoParam(int kind) { return (JVar) ((Method)this).getTypeInfoParam(kind); }
-	public JVar getVarArgParam() { return (JVar) ((Method)this).getVarArgParam(); }
+	public JVar getOuterThisParam() { return (JVar) this.vn().getOuterThisParam(); }
+	public JVar getClassTypeInfoParam() { return (JVar) this.vn().getClassTypeInfoParam(); }
+	public JVar getVarArgParam() { return (JVar) this.vn().getVarArgParam(); }
 	
 	public JLabel getBrkLabel() {
 		return block.getBrkLabel();
 	}
 
 	public void generate(JEnv jenv, ConstPool constPool) {
-		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		foreach(WBCCondition cond; conditions(); cond.cond != WBCType.CondInvariant )
-			((JWBCCondition)cond).generate(jenv,constPool,Type.tpVoid);
-		if( !isAbstract() && body != null && !(((ENode)body) instanceof MetaValue)) {
+		if (Kiev.debug && (Kiev.debugStatGen || Kiev.debugInstrGen)) System.out.println("\tgenerating Method "+this);
+		foreach(JWBCCondition cond; this.conditions; cond.cond != WBCType.CondInvariant)
+			cond.generate(jenv,constPool,jenv.vtypes.tpVoid);
+		if( !isAbstract() && body != null && !(body.vn() instanceof MetaValue)) {
 			Code code = new Code(jenv,(JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {
 				JVar thisPar = null;
 				if (!isStatic()) {
-					thisPar = (JVar)new LVar(pos,Constants.nameThis,jctx_tdecl.xtype,Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					thisPar = (JVar)new LVar(vn().pos,Constants.nameThis,jctx_tdecl.getType(),Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
 				code.addVars(params);
@@ -76,39 +123,18 @@ public final view JMethod of Method extends JDNode {
 					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
-						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondRequire )
-							code.importCode(((JWBCCondition)cond).getCodeAttr());
-						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondInvariant ) {
-							assert( cond.parent instanceof Method && ((Method)cond.parent).isInvariantMethod() );
-							if( !isConstructor() ) {
-								if( !((DNode)cond.parent).isStatic() )
-									code.addInstrLoadThis();
-								code.addInstr(Instr.op_call,(JMethod)cond.ctx_method,false);
-							}
-							code.need_to_gen_post_cond = true;
-						}
-						if( !code.need_to_gen_post_cond ) {
-							foreach(WBCCondition cond; conditions(); cond.cond != WBCType.CondRequire ) {
-								code.need_to_gen_post_cond = true;
-								break;
-							}
-						}
+						foreach(JWBCCondition cond; this.conditions)
+							cond.generateEntryCall(jenv, code, isConstructor());
 					}
-					body.generate(code,Type.tpVoid);
+					body.generate(code,code.tenv.tpVoid);
 					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
-						if( mtype.ret() ≢ Type.tpVoid ) {
+						if( mtype.ret() ≢ code.tenv.tpVoid ) {
 							code.addVar(getRetVar());
 							code.addInstr(Instr.op_store,getRetVar());
 						}
-						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondInvariant ) {
-							if( !((DNode)cond.parent).isStatic() )
-								code.addInstrLoadThis();
-							code.addInstr(Instr.op_call,(JMethod)cond.ctx_method,false);
-							code.need_to_gen_post_cond = true;
-						}
-						foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondEnsure )
-							code.importCode(((JWBCCondition)cond).getCodeAttr());
-						if( mtype.ret() ≢ Type.tpVoid ) {
+						foreach(JWBCCondition cond; this.conditions)
+							cond.generateLeaveCall(jenv, code);
+						if( mtype.ret() ≢ code.tenv.tpVoid ) {
 							code.addInstr(Instr.op_load,getRetVar());
 							code.addInstr(Instr.op_return);
 							code.removeVar(getRetVar());
@@ -117,32 +143,46 @@ public final view JMethod of Method extends JDNode {
 						}
 					}
 				} else {
-					code.addInstr(Instr.op_new,Type.tpError);
+					code.addInstr(Instr.op_new,code.tenv.tpError);
 					code.addInstr(Instr.op_dup);
-					KString msg;
+					String msg;
 					if (isMacro())
-						msg = KString.from("Macro method invocation");
+						msg = "Macro method invocation";
 					else
-						msg = KString.from("Compiled with errors");
+						msg = "Compiled with errors";
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					JMethod func = jenv.getJTypeEnv().getJType(Type.tpError).getJStruct().resolveMethod(jenv,null,KString.from("(Ljava/lang/String;)V"));
+					JMethod func = jenv.getJTypeEnv().getJType(code.tenv.tpError).getJStruct().resolveMethod(jenv,null,"(Ljava/lang/String;)V");
 					code.addInstr(Instr.op_call,func,true);
 					code.addInstr(Instr.op_throw);
 				}
 				code.removeVars(params);
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode();
+				ENode bl = vn().body;
+				if (bl != null) {
+					bl.walkTree(new TreeWalker() {
+						public boolean pre_exec(ANode n) {
+							foreach (AHandleData nh; n.handle().getHandleData()) {
+								if (nh instanceof DataFlowInfo && nh.node_impl == n)
+									n.handle().delData(nh);
+								else if (nh instanceof JNode)
+									n.handle().delData(nh);
+							}
+							return true;
+						}
+					});
+				}
 			} catch(Exception e) {
-				Kiev.reportError(this,e);
+				Kiev.reportError(this.vn(),e);
 			}
 		}
 		MetaThrows throwns = getMetaThrows();
         if( throwns != null ) {
 			ASTNode[] mthrs = throwns.getThrowns();
-        	KString[] thrs = new KString[mthrs.length];
+        	String[] thrs = new String[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = jenv.getJTypeEnv().getJType(mthrs[i].getType()).java_signature;
+				thrs[i] = jenv.getJTypeEnv().getJType(mthrs[i].getType(jenv.env)).java_signature;
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);
@@ -162,40 +202,91 @@ public final view JMethod of Method extends JDNode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JInitializer of Initializer extends JDNode {
-	public:ro	JENode		body;
+public class JInitializer extends JDNode {
+
+	public static JInitializer attachJInitializer(Initializer impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JInitializer)jn;
+		return new JInitializer(impl);
+	}
+	
+	protected JInitializer(Initializer impl) {
+		super(impl);
+	}
+
+	public void backendCleanup() {
+		jattrs = Attr.emptyArray;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating Initializer");
 		code.setLinePos(this);
+		JENode body = (JENode)((Initializer)this.vn()).body;
 		body.generate(code,reqType);
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final final view JWBCCondition of WBCCondition extends JDNode {
+public class JWBCCondition extends JDNode {
+	
+	@virtual typedef VT  ≤ WBCCondition;
 
-	public static final class ExtRefAttrSlot_wbc_code_attr extends ExtRefAttrSlot {
-		ExtRefAttrSlot_wbc_code_attr() { super("wbc-code-attr", TypeInfo.newTypeInfo(CodeAttr.class,null)); }
-		public CodeAttr getCode(JWBCCondition parent) { return (CodeAttr)get((WBCCondition)parent); }
+	public static final JWBCCondition[] emptyArray = new JWBCCondition[0];
+
+	public WBCType			cond;
+	public Symbol				definer;
+	public CodeAttr				codeAttr;
+
+	public static JWBCCondition attachJWBCCondition(WBCCondition impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JWBCCondition)jn;
+		switch (impl.cond) {
+		case WBCType.CondUnknown:   return new JWBCConditionUnknown(impl);
+		case WBCType.CondInvariant: return new JWBCConditionInvariant(impl);
+		case WBCType.CondRequire:   return new JWBCConditionRequire(impl);
+		case WBCType.CondEnsure:    return new JWBCConditionEnsure(impl);
+		}
 	}
-	public static final ExtRefAttrSlot_wbc_code_attr WBC_CODE_ATTR = new ExtRefAttrSlot_wbc_code_attr();
+	
+	protected JWBCCondition(WBCCondition impl) {
+		super(impl);
+		cond = impl.cond;
+		definer = impl.definer.symbol;
+	}
 
+	public void backendCleanup() {
+		jattrs = Attr.emptyArray;
+	}
 
-	public:ro	WBCType				cond;
-	public:ro	JENode				body;
-	public:ro	JMethod				definer;
-
-	public CodeAttr getCodeAttr() { return WBC_CODE_ATTR.getCode(this); }
-	public void setCodeAttr(CodeAttr ca) { WBC_CODE_ATTR.set((WBCCondition)this, ca); }
+	public JMethod getImplMethod() { return null; }
+	
+	public CodeAttr getCodeAttr() { return codeAttr; }
+	public void setCodeAttr(CodeAttr ca) { codeAttr = ca; }
+	
+	public void generateEntryCall(JEnv jenv, Code code, boolean for_constructor) {
+	}
+	
+	public void generateLeaveCall(JEnv jenv, Code code) {
+	}
 	
 	public void generate(JEnv jenv, ConstPool constPool, Type reqType) {
 		Code code = new Code(jenv,(JStruct)jctx_tdecl, jctx_method, constPool);
 		code.generation = true;
 		code.cond_generation = true;
+		JENode body = (JENode)vn().body;
 		if( cond == WBCType.CondInvariant ) {
-			body.generate(code,Type.tpVoid);
+			body.generate(code,code.tenv.tpVoid);
 			code.addInstr(Instr.op_return);
 			return;
 		}
@@ -205,22 +296,75 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 			try {
 				JVar thisPar = null;
 				if( !isStatic() ) {
-					thisPar = (JVar)new LVar(pos,Constants.nameThis,jctx_tdecl.xtype,Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					thisPar = (JVar)new LVar(m.vn().pos,Constants.nameThis,jctx_tdecl.getType(),Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params);
-				if( cond==WBCType.CondEnsure && m.mtype.ret() ≢ Type.tpVoid ) code.addVar(m.getRetVar());
-				body.generate(code,Type.tpVoid);
-				if( cond==WBCType.CondEnsure && m.mtype.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.mtype.ret() ≢ code.tenv.tpVoid ) code.addVar(m.getRetVar());
+				body.generate(code,code.tenv.tpVoid);
+				if( cond==WBCType.CondEnsure && m.mtype.ret() ≢ code.tenv.tpVoid ) code.removeVar(m.getRetVar());
 				code.removeVars(m.params);
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode(this);
 			} catch(Exception e) {
-				Kiev.reportError(this,e);
+				Kiev.reportError(this.vn(),e);
 			}
 			return;
 		}
 		code_attr.generate(constPool);
 	}
 }
+
+public class JWBCConditionUnknown extends JWBCCondition {
+	public JWBCConditionUnknown(WBCCondition impl) {
+		super(impl);
+	}
+}
+
+public class JWBCConditionRequire extends JWBCCondition {
+	public JWBCConditionRequire(WBCCondition impl) {
+		super(impl);
+	}
+	public void generateEntryCall(JEnv jenv, Code code, boolean for_constructor) {
+		code.importCode(this.getCodeAttr());
+	}
+}
+
+public class JWBCConditionEnsure extends JWBCCondition {
+	public JWBCConditionEnsure(WBCCondition impl) {
+		super(impl);
+	}
+
+	public void generateLeaveCall(JEnv jenv, Code code) {
+		code.importCode(this.getCodeAttr());
+	}
+	
+}
+
+public class JWBCConditionInvariant extends JWBCCondition {
+	JMethod impl_method;
+	
+	public JWBCConditionInvariant(WBCCondition impl) {
+		super(impl);
+		impl_method = (JMethod)(Method)impl.parent();
+	}
+
+	public void generateEntryCall(JEnv jenv, Code code, boolean for_constructor) {
+		code.need_to_gen_post_cond = true;
+		assert( impl_method.isInvariantMethod() );
+		if( !for_constructor ) {
+			if( !impl_method.isStatic() )
+				code.addInstrLoadThis();
+			code.addInstr(Instr.op_call,impl_method,false);
+		}
+	}
+	
+	public void generateLeaveCall(JEnv jenv, Code code) {
+		if( !impl_method.isStatic() )
+			code.addInstrLoadThis();
+		code.addInstr(Instr.op_call,impl_method,false);
+	}
+	
+}
+
 

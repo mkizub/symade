@@ -22,7 +22,7 @@ import syntax kiev.stdlib.Syntax;
  * further changes to the buffer will cause a copy to be made. <p>
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  */
 
 import kiev.stdlib.List.*;

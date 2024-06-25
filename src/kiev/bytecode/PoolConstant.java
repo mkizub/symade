@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -208,9 +208,9 @@ public final class VoidPoolConstant extends PoolConstant {
 
 public final class Utf8PoolConstant extends PoolConstant {
 
-	public final KString			value;
+	public final String			value;
 
-	public Utf8PoolConstant(int idx, KString value) {
+	public Utf8PoolConstant(int idx, String value) {
 		super(idx);
 		this.value = value;
 	}
@@ -218,19 +218,19 @@ public final class Utf8PoolConstant extends PoolConstant {
 		super(idx);
 		int len = cont.readShort();
 		assert(cont.data.length-cont.offset >= len,"Too big length "+len+" specified for UTF8 string ");
-		value = KString.from(cont.data,cont.offset,cont.offset+len);
+		value = cont.readUtf8(len);
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
-		cont.offset += len;
 	}
 
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_UTF8 len="+value.length()+", value="+value);
+		int utf8len = ReadContext.utf8Length(value);
+		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_UTF8 len="+utf8len+", value="+value);
 		cont.writeByte(CONSTANT_UTF8);
-		cont.writeShort(value.length());
-		cont.write(KString.buffer,value.offset,value.offset+value.len);
+		cont.writeShort(utf8len);
+		cont.writeUtf8(value);
 	}
 	public int constant_type() { return CONSTANT_UTF8; }
-	public int size()	{ return 1+2+value.len; }
+	public int size()	{ return 1+2+ReadContext.utf8Length(value); }
 }
 
 public final class UnicodePoolConstant extends PoolConstant {
@@ -360,7 +360,7 @@ public abstract class RefPoolConstant extends PoolConstant {
 	}
 	public RefPoolConstant(int idx, ReadContext cont) {
 		super(idx);
-		ref = new Utf8PoolConstant(cont.readShort(), KString.Empty);
+		ref = new Utf8PoolConstant(cont.readShort(), "");
 		trace(Clazz.traceRead,cont.offset+": ref = "+ref);
 	}
 	public void write(ReadContext cont) {
@@ -409,8 +409,8 @@ public final class NameAndTypePoolConstant extends PoolConstant {
 	}
 	public NameAndTypePoolConstant(int idx, ReadContext cont) {
 		super(idx);
-		ref_name = new Utf8PoolConstant(cont.readShort(), KString.Empty);
-		ref_type = new Utf8PoolConstant(cont.readShort(), KString.Empty);
+		ref_name = new Utf8PoolConstant(cont.readShort(), "");
+		ref_type = new Utf8PoolConstant(cont.readShort(), "");
 		trace(Clazz.traceRead,cont.offset+": ref_name = "+ref_name+", ref_type="+ref_type);
 	}
 	public void write(ReadContext cont) {

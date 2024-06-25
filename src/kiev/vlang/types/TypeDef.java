@@ -57,35 +57,37 @@ public abstract class TypeDef extends TypeDecl {
 
 	public static final TypeDef[] emptyArray = new TypeDef[0];
 
-	public ComplexTypeDecl get_child_ctx_tdecl() {
-		ANode p = this.parent();
-		if (p == null)
-			return null;
-		return p.get_child_ctx_tdecl();
-	}
-
 	public TypeRef[] getUpperBounds() { return super_types; }
 	public TypeRef[] getLowerBounds() { return TypeRef.emptyArray; }
 	public TypeVariance getVarianceSafe() { return TypeVariance.IN_VARIANT; }
 
-	public TypeDef(String name) {
-		super(name);
+	public TypeDef(Symbol symbol) {
+		super(new AHandle(), symbol);
 	}
 
-	public void checkResolved() {}
+	public void checkResolved(Env env) {}
 
-	public Type getType() {
-		return getAType();
+	public Type getType(Env env) {
+		return getAType(env);
 	}
-	public ArgType getAType() {
-		if (this.xtype != null)
-			return (ArgType)this.xtype;
+	public ArgType getAType(Env env) {
+		ArgMetaType mt = (ArgMetaType)env.tenv.getExistingMetaType(this.symbol);
+		if (mt != null)
+			return mt.atype;
 		this.verifyMetas();
-		this.xmeta_type = new ArgMetaType(this);
-		return (ArgType)this.xtype;
+		return getMetaType(env).atype;
 	}
 
-	public abstract Struct getStruct();
+	public ArgMetaType getMetaType(Env env) {
+		synchronized (env.tenv) {
+			MetaType mt = env.tenv.getExistingMetaType(this.symbol);
+			if (mt != null)
+				return (ArgMetaType)mt;
+			return new ArgMetaType(env.getTypeEnv(),this);
+		}
+	}
+	
+	public abstract Struct getStruct(Env env);
 	
 	public String toString() {
 		return sname;
@@ -97,6 +99,7 @@ public final class TypeAssign extends TypeDef {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
+	@AttrBinDumpInfo(ignore=true)
 	@abstract @virtual
 	@nodeData public TypeRef type_ref;
 	
@@ -114,33 +117,33 @@ public final class TypeAssign extends TypeDef {
 	}
 	
 	public TypeAssign() {
-		super(null);
+		super(new Symbol());
 	}
-	public TypeAssign(String name) {
-		super(name);
+	public TypeAssign(Symbol symbol) {
+		super(symbol);
 	}
-	public TypeAssign(String name, TypeRef sup) {
-		super(name);
+	public TypeAssign(Symbol symbol, TypeRef sup) {
+		super(symbol);
 		this.super_types.add(sup);
 	}
-	public TypeAssign(String name, Type sup) {
-		super(name);
+	public TypeAssign(Symbol symbol, Type sup) {
+		super(symbol);
 		this.super_types.add(new TypeRef(sup));
 	}
 	
-	public Struct getStruct() {
+	public Struct getStruct(Env env) {
 		if (super_types.length > 0)
-			return super_types[0].getStruct();
+			return super_types[0].getStruct(env);
 		return null;
 	}
 
-	public void preResolveOut() {
+	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
 		if (isTypeVirtual()) {
 			ANode parent = parent();
 			if (parent instanceof TypeDecl) {
 				foreach (TypeRef tr; parent.super_types) {
-					TypeDecl td = tr.getTypeDecl();
-					ResInfo info = new ResInfo(this,this.sname,ResInfo.noForwards|ResInfo.noSyntaxContext);
+					TypeDecl td = tr.getTypeDecl(env);
+					ResInfo info = new ResInfo(env,this,this.sname,ResInfo.noForwards|ResInfo.noSyntaxContext);
 					foreach (td.resolveNameR(info)) {
 						DNode dn = info.resolvedDNode();
 						if !(dn instanceof TypeDef) {
@@ -162,10 +165,10 @@ public final class TypeAssign extends TypeDef {
 		}
 	}
 
-	public void postVerify() {
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
 		// check upper bounds
 		foreach (TypeRef tr; getUpperBounds()) {
-			Type t = tr.getType();
+			Type t = tr.getType(env);
 			VarianceCheckError err = t.checkVariance(t,TypeVariance.IN_VARIANT);
 			if (err != null)
 				Kiev.reportWarning(this, err.toString());
@@ -193,36 +196,42 @@ public final class TypeConstr extends TypeDef {
 	}
 
 	public TypeConstr() {
-		super(null);
+		super(new Symbol());
 	}
-	public TypeConstr(String name) {
-		super(name);
+	public TypeConstr(Symbol symbol) {
+		super(symbol);
 	}
-	public TypeConstr(String name, TypeRef sup) {
-		super(name);
+	public TypeConstr(Symbol symbol, TypeRef sup) {
+		super(symbol);
 		this.super_types.add(sup);
 	}
-	public TypeConstr(String name, Type sup) {
-		super(name);
+	public TypeConstr(Symbol symbol, Type sup) {
+		super(symbol);
 		this.super_types.add(new TypeRef(sup));
 	}
+
+	public void cleanupOnReload() {
+		super.cleanupOnReload();
+		lower_bound.delAll();
+		variance = null;
+	}
 	
-	public Struct getStruct() {
+	public Struct getStruct(Env env) {
 		foreach (TypeRef tr; super_types) {
-			Struct s = tr.getStruct();
+			Struct s = tr.getStruct(env);
 			if (s != null)
 				return s;
 		}
 		return null;
 	}
 	
-	public void postVerify() {
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
 		if !(parent() instanceof Method) {
 			TypeVariance variance = getVarianceSafe();
 			
 			// check upper bounds
 			foreach (TypeRef tr; getUpperBounds()) {
-				Type t = tr.getType();
+				Type t = tr.getType(env);
 				VarianceCheckError err = t.checkVariance(t,variance);
 				if (err != null)
 					Kiev.reportWarning(this, err.toString());
@@ -234,7 +243,7 @@ public final class TypeConstr extends TypeDef {
 			else if (variance == TypeVariance.CONTRA_VARIANT)
 				variance = TypeVariance.CO_VARIANT;
 			foreach (TypeRef tr; getLowerBounds()) {
-				Type t = tr.getType();
+				Type t = tr.getType(env);
 				VarianceCheckError err = t.checkVariance(t,variance);
 				if (err != null)
 					Kiev.reportWarning(this, err.toString());

@@ -1,0 +1,722 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2008 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<core:FileUnit name='syntax-for-inspector.xml' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <srpkg>
+  <core:SymbolRef full='true' name='stx-fmt' />
+ </srpkg>
+ <members>
+  <core:ImportImpl all='true'>
+   <name>
+    <core:SymbolRef full='true' name='kiev·fmt' />
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl all='true'>
+   <name>
+    <core:SymbolRef full='true' name='kiev·fmt·proj' />
+   </name>
+  </core:ImportImpl>
+  <syntax:TopLevelTextSyntax uuid='5e57c611-624b-454a-b14a-0f33618f5565' name='syntax-for-inspector'>
+   <style_sheet>
+    <core:SymbolRef name='style-sheet-default‣59857a48-3b20-4182-9681-e8d52ee317c9' />
+   </style_sheet>
+   <root_projection>kiev.fmt.proj.InspectorProjectorFactory</root_projection>
+   <members>
+    <syntax:SpaceInfo uuid='a1a1009f-b556-4bc7-a0b2-61e142cbb9c6' name='sp'>
+     <kind>SP_SPACE</kind>
+     <size>
+      <syntax:SyntaxSize unit='PIXELS' g='4' t='1' />
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid='c4df1b2f-08d6-4032-9769-c2540d326365' name='nl'>
+     <kind>SP_NEW_LINE</kind>
+     <size>
+      <syntax:SyntaxSize unit='PIXELS' g='1' t='1' />
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid='d6773f78-c7ab-4649-965c-e6ebb8fb1a4a' name='attr_width'>
+     <kind>SP_SPACE</kind>
+     <size>
+      <syntax:SyntaxSize unit='PIXELS' g='100' t='20' />
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:ParagraphLayout uuid='a07b5418-5d3f-4064-bced-7c1b725e34f6' name='par-vert-indent'>
+     <flow>VERTICAL</flow>
+     <options>
+      <syntax:ParagraphIndent>
+       <indent>
+        <syntax:SyntaxSize unit='PIXELS' g='10' />
+       </indent>
+      </syntax:ParagraphIndent>
+     </options>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid='2afa01cc-f378-4df8-95bc-c4cb397d876c' name='par-horiz-size'>
+     <flow>BLOCK_HORIZONTAL</flow>
+     <options>
+      <syntax:ParagraphSize>
+       <min_width>
+        <syntax:SyntaxSize unit='PIXELS' g='150' />
+       </min_width>
+      </syntax:ParagraphSize>
+     </options>
+    </syntax:ParagraphLayout>
+    <syntax:DrawColor uuid='72236a3f-2bea-4488-9351-65d403ecd795' name='color-default' />
+    <syntax:DrawFont uuid='426b5656-03d1-445c-be02-9b3ba35428e3' name='font-default'>
+     <font_name>Dialog-PLAIN-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid='c8538b49-21e5-4a90-b27f-b71799588cba' name='font-bold'>
+     <font_name>Dialog-BOLD-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid='590dc6d0-e0e1-493f-959c-bc3125849417' name='font-italic'>
+     <font_name>Dialog-ITALIC-12</font_name>
+    </syntax:DrawFont>
+    <syntax:SyntaxElemFormatDecl uuid='cc1bfe9b-bb83-4654-ae69-6aea1655b8f0' name='fmt-default'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='sp‣a1a1009f-b556-4bc7-a0b2-61e142cbb9c6' />
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='d9667121-815c-473f-8187-c5319d11ed75' name='fmt-bold'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='sp‣a1a1009f-b556-4bc7-a0b2-61e142cbb9c6' />
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='dd947e0c-d403-4ba5-a5b8-a0bbe4963a39' name='fmt-sep-+x'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='sp‣a1a1009f-b556-4bc7-a0b2-61e142cbb9c6' />
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='3aa9f6b6-8ce1-4d37-b362-9716fd97d464' name='fmt-sep-xx'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='sp‣a1a1009f-b556-4bc7-a0b2-61e142cbb9c6' />
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='87708858-0a8b-45fd-a81a-e1decfad36d6' name='fmt-sep-x+'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='sp‣a1a1009f-b556-4bc7-a0b2-61e142cbb9c6' />
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='29acbb93-2ee3-46fb-9de6-c8c58c5b1533' name='fmt-attr-name'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='attr_width‣d6773f78-c7ab-4649-965c-e6ebb8fb1a4a' />
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='4bc27f7e-1aef-44a3-ab2e-98056484dd95' name='fmt-nl-+'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='nl‣c4df1b2f-08d6-4032-9769-c2540d326365' />
+       </si>
+       <action_before>SP_NOP</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid='aefa2195-3d60-427f-a0d5-9efb2f45335d' name='fmt-nl-++'>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name='nl‣c4df1b2f-08d6-4032-9769-c2540d326365' />
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxIdentTemplate uuid='fa91edcb-5d9b-4c56-9c32-cfc5802ecb21' name='ident-template'>
+     <regexp_ok>.*</regexp_ok>
+     <elem>
+      <syntax:SyntaxNode />
+     </elem>
+    </syntax:SyntaxIdentTemplate>
+    <syntax:SyntaxElemDecl uuid='2e5ea674-58eb-4900-a3f1-85c67a710ea1' name='stx-insp-node'>
+     <rnode>
+      <core:SymbolRef name='InspectorNode‣3d39fc29-c10c-43b5-9989-29c3886493eb' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>node</text>
+         <fmt>
+          <core:SymbolRef name='fmt-bold‣d9667121-815c-473f-8187-c5319d11ed75' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>type_id</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes></text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode />
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-nl-++‣aefa2195-3d60-427f-a0d5-9efb2f45335d' />
+         </fmt>
+         <par>
+          <core:SymbolRef name='par-vert-indent‣a07b5418-5d3f-4064-bced-7c1b725e34f6' />
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='b59101b7-beaf-4dec-a96f-845aa250c826' name='stx-insp-sref'>
+     <rnode>
+      <core:SymbolRef name='InspectorSymRefNode‣c7379bb1-7f4d-4cd5-8803-5160e632c427' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>sref</text>
+         <fmt>
+          <core:SymbolRef name='fmt-bold‣d9667121-815c-473f-8187-c5319d11ed75' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>ident_or_symbol_or_type</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name='ident-template‣fa91edcb-5d9b-4c56-9c32-cfc5802ecb21' />
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes></text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode />
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-nl-++‣aefa2195-3d60-427f-a0d5-9efb2f45335d' />
+         </fmt>
+         <par>
+          <core:SymbolRef name='par-vert-indent‣a07b5418-5d3f-4064-bced-7c1b725e34f6' />
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='d7c4b52f-f4ce-40f8-9c0b-30b46b68dbf7' name='stx-attr-text'>
+     <rnode>
+      <core:SymbolRef name='InspectorTextAttr‣1c2ec2c5-02ca-41c3-9f56-e298798e446e' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxAttr>
+           <name>name</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>:</text>
+          </syntax:SyntaxToken>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+         </par>
+        </syntax:SyntaxSet>
+        <syntax:SyntaxAttr>
+         <name>value</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='e93d0d62-196e-4e18-833c-289d8c225698' name='stx-attr-text'>
+     <rnode>
+      <core:SymbolRef name='InspectorEnumAttr‣1556bd88-eb04-4b32-86c7-5186ef23ab4d' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxAttr>
+           <name>name</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>:</text>
+          </syntax:SyntaxToken>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+         </par>
+        </syntax:SyntaxSet>
+        <syntax:SyntaxAttr>
+         <name>value</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='205d4621-b66a-4790-ba2c-4745c13d20ee' name='stx-attr-space'>
+     <rnode>
+      <core:SymbolRef name='InspectorSpaceAttr‣c63685ca-400e-4a62-a03d-f2a591f2609d' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxFolder>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxAttr>
+             <name>name</name>
+             <format>
+              <syntax:SyntaxSubAttr />
+             </format>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxToken>
+             <text>[]</text>
+            </syntax:SyntaxToken>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+           </par>
+          </syntax:SyntaxSet>
+          <syntax:SyntaxAttr>
+           <name>length</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+         </par>
+        </syntax:SyntaxSet>
+       </folded>
+       <unfolded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxAttr>
+             <name>name</name>
+             <format>
+              <syntax:SyntaxSubAttr />
+             </format>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxToken>
+             <text>:</text>
+            </syntax:SyntaxToken>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+           </par>
+          </syntax:SyntaxSet>
+          <syntax:SyntaxAttr>
+           <name>length</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+           <fmt>
+            <core:SymbolRef name='fmt-nl-+‣4bc27f7e-1aef-44a3-ab2e-98056484dd95' />
+           </fmt>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>nodes</name>
+           <empty>
+            <syntax:SyntaxPlaceHolder>
+             <text>&lt;nodes></text>
+            </syntax:SyntaxPlaceHolder>
+           </empty>
+           <format>
+            <syntax:SyntaxList>
+             <element>
+              <syntax:SyntaxNode>
+               <in_syntax>
+                <core:SymbolRef name='syntax-for-inspector-short‣a5602b40-65af-4c72-93b1-2dfb4c2e3a2d' />
+               </in_syntax>
+              </syntax:SyntaxNode>
+             </element>
+            </syntax:SyntaxList>
+           </format>
+           <fmt>
+            <core:SymbolRef name='fmt-nl-++‣aefa2195-3d60-427f-a0d5-9efb2f45335d' />
+           </fmt>
+           <par>
+            <core:SymbolRef name='par-vert-indent‣a07b5418-5d3f-4064-bced-7c1b725e34f6' />
+           </par>
+          </syntax:SyntaxAttr>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+         </par>
+        </syntax:SyntaxSet>
+       </unfolded>
+      </syntax:SyntaxFolder>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='91939654-a446-4748-8cbd-cb7ccee66dec' name='stx-attr-space'>
+     <rnode>
+      <core:SymbolRef name='InspectorExtSpaceAttr‣4cd91d5a-6a5b-4f7b-8271-c96fb002503d' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxFolder>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxAttr>
+           <name>name</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>[...]</text>
+          </syntax:SyntaxToken>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+         </par>
+        </syntax:SyntaxSet>
+       </folded>
+       <unfolded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxAttr>
+             <name>name</name>
+             <format>
+              <syntax:SyntaxSubAttr />
+             </format>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxToken>
+             <text>[...]</text>
+            </syntax:SyntaxToken>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+           </par>
+          </syntax:SyntaxSet>
+          <syntax:SyntaxAttr>
+           <name>nodes</name>
+           <empty>
+            <syntax:SyntaxPlaceHolder>
+             <text>&lt;nodes></text>
+            </syntax:SyntaxPlaceHolder>
+           </empty>
+           <format>
+            <syntax:SyntaxList>
+             <element>
+              <syntax:SyntaxNode>
+               <in_syntax>
+                <core:SymbolRef name='syntax-for-inspector-short‣a5602b40-65af-4c72-93b1-2dfb4c2e3a2d' />
+               </in_syntax>
+              </syntax:SyntaxNode>
+             </element>
+            </syntax:SyntaxList>
+           </format>
+           <fmt>
+            <core:SymbolRef name='fmt-nl-++‣aefa2195-3d60-427f-a0d5-9efb2f45335d' />
+           </fmt>
+           <par>
+            <core:SymbolRef name='par-vert-indent‣a07b5418-5d3f-4064-bced-7c1b725e34f6' />
+           </par>
+          </syntax:SyntaxAttr>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+         </par>
+        </syntax:SyntaxSet>
+       </unfolded>
+      </syntax:SyntaxFolder>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='b034a9bf-a3e6-48f6-b398-f849b01040ad' name='stx-insp-node'>
+     <rnode>
+      <core:SymbolRef name='InspectorNodeAttr‣4afac8f0-1494-459a-b0aa-276f36b49c91' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxAttr>
+           <name>name</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>:</text>
+          </syntax:SyntaxToken>
+         </elements>
+         <par>
+          <core:SymbolRef name='par-horiz-size‣2afa01cc-f378-4df8-95bc-c4cb397d876c' />
+         </par>
+        </syntax:SyntaxSet>
+        <syntax:SyntaxAttr>
+         <name>node</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:TextSyntax uuid='a5602b40-65af-4c72-93b1-2dfb4c2e3a2d' name='syntax-for-inspector-short'>
+     <members>
+      <syntax:SyntaxElemDecl uuid='8b4dd502-faf7-4563-bea3-b505fb79d731' name='stx-insp-node'>
+       <rnode>
+        <core:SymbolRef name='InspectorNode‣3d39fc29-c10c-43b5-9989-29c3886493eb' />
+       </rnode>
+       <elem>
+        <syntax:SyntaxFolder>
+         <folded_by_default>true</folded_by_default>
+         <folded>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>node</text>
+             <fmt>
+              <core:SymbolRef name='fmt-bold‣d9667121-815c-473f-8187-c5319d11ed75' />
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxAttr>
+             <name>type_id</name>
+             <format>
+              <syntax:SyntaxSubAttr />
+             </format>
+            </syntax:SyntaxAttr>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+           </par>
+          </syntax:SyntaxSet>
+         </folded>
+         <unfolded>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>node</text>
+             <fmt>
+              <core:SymbolRef name='fmt-bold‣d9667121-815c-473f-8187-c5319d11ed75' />
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxAttr>
+             <name>type_id</name>
+             <format>
+              <syntax:SyntaxSubAttr />
+             </format>
+             <fmt>
+              <core:SymbolRef name='fmt-nl-+‣4bc27f7e-1aef-44a3-ab2e-98056484dd95' />
+             </fmt>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxAttr>
+             <name>attributes</name>
+             <empty>
+              <syntax:SyntaxPlaceHolder>
+               <text>&lt;attributes></text>
+              </syntax:SyntaxPlaceHolder>
+             </empty>
+             <format>
+              <syntax:SyntaxList>
+               <element>
+                <syntax:SyntaxNode />
+               </element>
+              </syntax:SyntaxList>
+             </format>
+             <par>
+              <core:SymbolRef name='par-vert-indent‣a07b5418-5d3f-4064-bced-7c1b725e34f6' />
+             </par>
+            </syntax:SyntaxAttr>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+           </par>
+          </syntax:SyntaxSet>
+         </unfolded>
+        </syntax:SyntaxFolder>
+       </elem>
+      </syntax:SyntaxElemDecl>
+      <syntax:SyntaxElemDecl uuid='d3525251-8b8c-4301-8f01-d6b0f107982c' name='stx-insp-node'>
+       <rnode>
+        <core:SymbolRef name='InspectorSymRefNode‣c7379bb1-7f4d-4cd5-8803-5160e632c427' />
+       </rnode>
+       <elem>
+        <syntax:SyntaxFolder>
+         <folded_by_default>true</folded_by_default>
+         <folded>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>sref</text>
+             <fmt>
+              <core:SymbolRef name='fmt-bold‣d9667121-815c-473f-8187-c5319d11ed75' />
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxAttr>
+             <name>ident_or_symbol_or_type</name>
+             <format>
+              <syntax:SyntaxIdentAttr>
+               <decl>
+                <core:SymbolRef name='ident-template‣fa91edcb-5d9b-4c56-9c32-cfc5802ecb21' />
+               </decl>
+              </syntax:SyntaxIdentAttr>
+             </format>
+            </syntax:SyntaxAttr>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+           </par>
+          </syntax:SyntaxSet>
+         </folded>
+         <unfolded>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>sref</text>
+             <fmt>
+              <core:SymbolRef name='fmt-bold‣d9667121-815c-473f-8187-c5319d11ed75' />
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxAttr>
+             <name>ident_or_symbol_or_type</name>
+             <format>
+              <syntax:SyntaxIdentAttr>
+               <decl>
+                <core:SymbolRef name='ident-template‣fa91edcb-5d9b-4c56-9c32-cfc5802ecb21' />
+               </decl>
+              </syntax:SyntaxIdentAttr>
+             </format>
+             <fmt>
+              <core:SymbolRef name='fmt-nl-+‣4bc27f7e-1aef-44a3-ab2e-98056484dd95' />
+             </fmt>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxAttr>
+             <name>attributes</name>
+             <empty>
+              <syntax:SyntaxPlaceHolder>
+               <text>&lt;attributes></text>
+              </syntax:SyntaxPlaceHolder>
+             </empty>
+             <format>
+              <syntax:SyntaxList>
+               <element>
+                <syntax:SyntaxNode />
+               </element>
+              </syntax:SyntaxList>
+             </format>
+             <par>
+              <core:SymbolRef name='par-vert-indent‣a07b5418-5d3f-4064-bced-7c1b725e34f6' />
+             </par>
+            </syntax:SyntaxAttr>
+           </elements>
+           <par>
+            <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+           </par>
+          </syntax:SyntaxSet>
+         </unfolded>
+        </syntax:SyntaxFolder>
+       </elem>
+      </syntax:SyntaxElemDecl>
+     </members>
+    </syntax:TextSyntax>
+   </members>
+  </syntax:TopLevelTextSyntax>
+ </members>
+</core:FileUnit>

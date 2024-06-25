@@ -31,16 +31,30 @@ public @interface ThisIsANode {
 public @interface nodeAttr {
 	boolean copyable() default true;
 	boolean ext_data() default false;
+	String parent() default "";
 }
-// syntax-tree reference field
+// syntax-tree data field
 @Retention(RetentionPolicy.RUNTIME)
 public @interface nodeData {
+	boolean copyable() default true;
+	boolean ext_data() default false;
+}
+// syntax-tree symbol reference field
+@Retention(RetentionPolicy.RUNTIME)
+public @interface nodeSRef {
 	boolean copyable() default true;
 	boolean ext_data() default false;
 }
 // the field of a node is not versioned and is present in compiler version only
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UnVersioned {}
+
+// syntax-tree language
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface ThisIsALanguage {
+	String name();
+}
 
 //
 // metadata of attributes
@@ -70,7 +84,17 @@ public @interface attrReadOnly {
 	boolean value() default true;
 }
 
-// attribute is not modifiable (read-only, final)
+// ignore(): don't dump at all
+// leading(): dump before others (non-leading) attributes
+// extended(): dump as extended attribute (in attr:value map)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AttrBinDumpInfo {
+	boolean ignore() default false;
+	boolean leading() default false;
+	boolean extended() default false;
+}
+
+// ignore(): don't dump at all
 // attr(): dump as XML attribute, instead of element; for primitive types only
 // name(): XML elemment/attribute name; use field name if empty
 @Retention(RetentionPolicy.RUNTIME)
@@ -84,6 +108,7 @@ public @interface AttrXMLDumpInfo {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SymbolRefAutoComplete {
 	boolean value() default true;
+	String in() default "";
 	Class[] scopes() default { kiev.vlang.GlobalDNodeContainer };
 }
 
@@ -91,6 +116,7 @@ public @interface SymbolRefAutoComplete {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SymbolRefAutoResolve {
 	boolean value() default true;
+	String in() default "";
 	SeverError sever() default SeverError.Error;
 }
 

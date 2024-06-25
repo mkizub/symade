@@ -39,11 +39,6 @@ public abstract class Type extends AType {
 		//bindings(); // update this type, if outdated
 		return meta_type.applay(this,bindings);
 	}
-	// rebind with lower bound or outer type, etc
-	public final Type rebind(TVarBld set) {
-		bindings(); // update this type, if outdated
-		return meta_type.rebind(this,set);
-	}
 	
 	public Struct getStruct() { return null; }
 	public MNode getMeta(String name) { return null; }
@@ -68,11 +63,11 @@ public abstract class Type extends AType {
 		meta_type.resolveNameAccessR(this,info)
 	}
 
-	public boolean isInstanceOf(Type t2) alias xfx operator ≥ {
+	public boolean isInstanceOf(Type t2) operator "V ≥ V" {
 		Type t1 = this;
-		if( t1 ≡ t2 || t2 ≡ Type.tpAny ) return true;
-		if( t1.isReference() && t2 ≈ Type.tpObject ) return true;
-		if( t1 ≡ Type.tpNull && t2.isReference() ) return true;
+		if( t1 ≡ t2 || t2 ≡ tenv.tpAny ) return true;
+		if( t1.isReference() && t2 ≈ tenv.tpObject ) return true;
+		if( t1 ≡ tenv.tpNull && t2.isReference() ) return true;
 		if (t2 instanceof WildcardCoType) {
 			return this.isInstanceOf(t2.getEnclosedType());
 		}
@@ -80,13 +75,13 @@ public abstract class Type extends AType {
 			ArgType at = (ArgType)t2;
 			if (at.definer.super_types.length > 0) {
 				foreach (TypeRef tr; at.definer.super_types) {
-					if (!this.isInstanceOf(tr.getType()))
+					if (!this.isInstanceOf(tr.getType(tenv.env)))
 						return false;
 				}
 			}
 			if (at.definer.getLowerBounds().length > 0) {
 				foreach (TypeRef tr; at.definer.getLowerBounds()) {
-					if (!tr.getType().isInstanceOf(this))
+					if (!tr.getType(tenv.env).isInstanceOf(this))
 						return false;
 				}
 			}
@@ -104,13 +99,13 @@ public abstract class Type extends AType {
 				if (a2 ≡ r2)
 					continue;
 				Type r1 = t1.resolve(a2);
-				if (r1 ≈ r2 || r1 ≡ Type.tpNull && r2.isReference())
+				if (r1 ≈ r2 || r1 ≡ tenv.tpNull && r2.isReference())
 					continue;
 				if (a2.name == "This" && r1.meta_type.tdecl.instanceOf(r2.meta_type.tdecl))
 					continue;
-				if (a2.isCoVariant() && r1.isInstanceOf(r2))
+				if ((a2.isCoVariant() || r2 instanceof WildcardCoType) && r1.isInstanceOf(r2))
 					continue;
-				if (a2.isContraVariant() && r2.isInstanceOf(r1))
+				if ((a2.isContraVariant() || r2 instanceof WildcardContraType)&& r2.isInstanceOf(r1))
 					continue;
 				// before we can declare N to be covariant in NodeSpace<+N extends ANode>
 				if (t1.isArray() && t2.isArray() && r1.isInstanceOf(r2))
@@ -126,16 +121,17 @@ public abstract class Type extends AType {
 
 	public Type getAutoCastTo(Type t)
 	{
-		if( t ≡ tpVoid ) return tpVoid;
-		if( t ≡ tpAny ) return tpAny;
-		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return this;
+		StdTypes tenv = this.tenv;
+		if( t ≡ tenv.tpVoid ) return tenv.tpVoid;
+		if( t ≡ tenv.tpAny ) return tenv.tpAny;
+		if( this.isReference() && t.isReference() && (this ≡ tenv.tpNull || t ≡ tenv.tpNull) ) return this;
 		if( this.isInstanceOf(t) ) return this;
-		if( this ≡ tpRule && t ≡ tpBoolean ) return tpBoolean;
-		if( this.isBoolean() && t.isBoolean() ) return tpBoolean;
+		if( this ≡ tenv.tpRule && t ≡ tenv.tpBoolean ) return tenv.tpBoolean;
+		if( this.isBoolean() && t.isBoolean() ) return tenv.tpBoolean;
 		if( this.isReference() && !t.isReference() ) {
 			if !(t instanceof CoreType) return null;
 			if (((CoreType)t).getRefTypeForPrimitive() ≈ this) return t;
-			else if (t ≡ Type.tpInt && this ≥ Type.tpEnum)
+			else if (t ≡ tenv.tpInt && this ≥ tenv.tpEnum)
 				return t;
 		}
 		if( this instanceof CTimeType || t instanceof CTimeType ) {
@@ -158,7 +154,7 @@ public abstract class Type extends AType {
 			if( t1.isReference() && !t2.isReference() ) return t1;
 			else if( !t1.isReference() && t2.isReference() ) return t2;
 			else if( !t1.isReference() && !t2.isReference() ) return null;
-			if( this ≡ tpNull ) return null;
+			if( this ≡ tenv.tpNull ) return null;
 			if( isInstanceOf(t1) ) {
 				if( !isInstanceOf(t2) ) return t1;
 				else if( t2.isInstanceOf(t1) ) return t2;
@@ -194,7 +190,7 @@ public abstract class Type extends AType {
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( this.isReference() && t ≡ tpNull || t ≡ Type.tpAny  ) return true;
+		if( this.isReference() && t ≡ tenv.tpNull || t ≡ tenv.tpAny  ) return true;
 		foreach (Type st; t.getMetaSupers(); this.isCastableTo(st))
 			return true;
 		return false;
@@ -221,11 +217,11 @@ public abstract class Type extends AType {
 
 	public static CompaundType getProxyType(Type tp) {
 		TVarBld set = new TVarBld();
-		set.append(tpRefProxy.tdecl.args[0].getAType(), tp);
-		return (CompaundType)((CompaundMetaType)tpRefProxy.meta_type).make(set);
+		set.append(tp.tenv.tpRefProxy.tdecl.args[0].getAType(tp.tenv.env), tp);
+		return (CompaundType)((CompaundMetaType)tp.tenv.tpRefProxy.meta_type).make(set);
 	}
 
-	public final Field resolveField(String name) { return meta_type.tdecl.resolveField(name); }
+	public final Field resolveField(String name) { return meta_type.tdecl.resolveField(tenv.env, name); }
 
 
 	// checks the type 'base' for argument 'at' to confirm variance 'variance'
@@ -242,7 +238,7 @@ public abstract class Type extends AType {
 				return null;
 			return new VarianceCheckError(base, at, variance);
 		}
-		assert ("Unexpected variance "+at.definer.getVarianceSafe()+" of "+at);
+		Debug.assert ("Unexpected variance "+at.definer.getVarianceSafe()+" of "+at);
 		return null;
 	}
 	
@@ -295,9 +291,9 @@ public final class XType extends Type {
 	}
 	
 	public Type getErasedType() {
-		foreach (Type t; getMetaSupers(); t != null && t != Type.tpVoid)
+		foreach (Type t; getMetaSupers(); t != null && t != tenv.tpVoid)
 			return t.getErasedType();
-		return Type.tpVoid;
+		return tenv.tpVoid;
 	}
 
 	public Struct getStruct() {
@@ -321,7 +317,7 @@ public final class XType extends Type {
 		if (n > 0) {
 			str.append('<');
 			for(int i=0; i < n; i++) {
-				str.append(resolve(tdecl.args[i].getAType()));
+				str.append(resolve(tdecl.args[i].getAType(tenv.env)));
 				if( i < n-1)
 					str.append(',');
 			}
@@ -332,7 +328,7 @@ public final class XType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( t ≡ Type.tpAny ) return true;
+		if( t ≡ tenv.tpAny ) return true;
 		if( this.isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		return super.isCastableTo(t);
@@ -344,10 +340,9 @@ public final class CoreType extends Type {
 	@virtual typedef MType = CoreMetaType;
 
 	public final String name;
-	CoreType(String name, Type super_type, int meta_flags) {
-		super(new CoreMetaType(name,super_type,meta_flags), TemplateTVarSet.emptySet, 0);
+	CoreType(StdTypes tenv, String name, Type super_type, int meta_flags) {
+		super(new CoreMetaType(tenv,name,super_type,meta_flags), TemplateTVarSet.emptySet, 0);
 		((CoreMetaType)meta_type).core_type = this;
-		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name.intern();
 	}
 	public MNode getMeta(String name)		{ return null; }
@@ -356,28 +351,31 @@ public final class CoreType extends Type {
 
 	public Type getAutoCastTo(Type t)
 	{
-		if( t ≡ tpVoid ) return tpVoid;
-		if( t ≡ tpAny ) return tpAny;
-		if( this.isBoolean() && t.isBoolean() ) return tpBoolean;
-		if( this ≡ tpByte && (t ≡ tpShort || t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return t;
-		if( (this ≡ tpShort || this ≡ tpChar) && (t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return t;
-		if( this ≡ tpInt && (t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return t;
-		if( this ≡ tpLong && t ≡ tpDouble ) return t;
-		if( this ≡ tpFloat && t ≡ tpDouble ) return t;
-		if( this ≡ tpNull && t.isReference() ) return t;
+		StdTypes tenv = this.tenv;
+		if( t ≡ tenv.tpVoid ) return tenv.tpVoid;
+		if( t ≡ tenv.tpAny ) return tenv.tpAny;
+		if( this.isBoolean() && t.isBoolean() ) return tenv.tpBoolean;
+		if( this ≡ tenv.tpByte && (t ≡ tenv.tpShort || t ≡ tenv.tpInt || t ≡ tenv.tpLong || t ≡ tenv.tpFloat || t ≡ tenv.tpDouble) ) return t;
+		if( (this ≡ tenv.tpShort || this ≡ tenv.tpChar) && (t ≡ tenv.tpInt || t ≡ tenv.tpLong || t ≡ tenv.tpFloat || t ≡ tenv.tpDouble) ) return t;
+		if( this ≡ tenv.tpInt && (t ≡ tenv.tpLong || t ≡ tenv.tpFloat || t ≡ tenv.tpDouble) ) return t;
+		if( this ≡ tenv.tpLong && t ≡ tenv.tpDouble ) return t;
+		if( this ≡ tenv.tpFloat && t ≡ tenv.tpDouble ) return t;
+		if( this ≡ tenv.tpNull && t.isReference() ) return t;
 		if( !this.isReference() && t.isReference() ) {
 			if( this.getRefTypeForPrimitive() ≈ t ) return t;
-			else if( this ≡ Type.tpInt && t ≥ Type.tpEnum ) return t;
+			//CompaundType reftp = this.getRefTypeForPrimitive();
+			//if( reftp.isInstanceOf(t) ) return reftp;
+			else if( this ≡ tenv.tpInt && t ≥ tenv.tpEnum ) return t;
 		}
 		return super.getAutoCastTo(t);
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( this ≡ t || t ≡ Type.tpAny ) return true;
+		if( this ≡ t || t ≡ tenv.tpAny ) return true;
 		if( this.isNumber() && t.isNumber() ) return true;
-		if( t.isReference() && this ≡ tpNull ) return true;
+		if( t.isReference() && this ≡ tenv.tpNull ) return true;
 		if( t.getStruct() != null && t.getStruct().isEnum())
-			return this.isCastableTo(Type.tpInt);
+			return this.isCastableTo(tenv.tpInt);
 		return super.isCastableTo(t);
 	}
 
@@ -386,40 +384,41 @@ public final class CoreType extends Type {
 		if(this ≡ t2) return t2;
 		if( isBoolean() && t1.isBoolean() ) return t1;
 		if( isBoolean() && t2.isBoolean() ) return t2;
+		StdTypes tenv = this.tenv;
 		if( isNumber() ) {
 			if( isInteger() ) {
-				if( this ≡ tpByte )
-					if     ( t1 ≡ tpShort  || t2 ≡ tpShort  ) return tpShort;
-					else if( t1 ≡ tpInt    || t2 ≡ tpInt    ) return tpInt;
-					else if( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
-					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
-					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
+				if( this ≡ tenv.tpByte )
+					if     ( t1 ≡ tenv.tpShort  || t2 ≡ tenv.tpShort  ) return tenv.tpShort;
+					else if( t1 ≡ tenv.tpInt    || t2 ≡ tenv.tpInt    ) return tenv.tpInt;
+					else if( t1 ≡ tenv.tpLong   || t2 ≡ tenv.tpLong   ) return tenv.tpLong;
+					else if( t1 ≡ tenv.tpFloat  || t2 ≡ tenv.tpFloat  ) return tenv.tpFloat;
+					else if( t1 ≡ tenv.tpDouble || t2 ≡ tenv.tpDouble ) return tenv.tpDouble;
 					else return null;
-				else if( this ≡ tpChar )
-					if     ( t1 ≡ tpShort  || t2 ≡ tpShort  ) return tpShort;
-					else if( t1 ≡ tpInt    || t2 ≡ tpInt    ) return tpInt;
-					else if( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
-					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
-					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
+				else if( this ≡ tenv.tpChar )
+					if     ( t1 ≡ tenv.tpShort  || t2 ≡ tenv.tpShort  ) return tenv.tpShort;
+					else if( t1 ≡ tenv.tpInt    || t2 ≡ tenv.tpInt    ) return tenv.tpInt;
+					else if( t1 ≡ tenv.tpLong   || t2 ≡ tenv.tpLong   ) return tenv.tpLong;
+					else if( t1 ≡ tenv.tpFloat  || t2 ≡ tenv.tpFloat  ) return tenv.tpFloat;
+					else if( t1 ≡ tenv.tpDouble || t2 ≡ tenv.tpDouble ) return tenv.tpDouble;
 					else return null;
-				else if( this ≡ tpShort )
-					if     ( t1 ≡ tpInt    || t2 ≡ tpInt    ) return tpInt;
-					else if( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
-					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
-					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
+				else if( this ≡ tenv.tpShort )
+					if     ( t1 ≡ tenv.tpInt    || t2 ≡ tenv.tpInt    ) return tenv.tpInt;
+					else if( t1 ≡ tenv.tpLong   || t2 ≡ tenv.tpLong   ) return tenv.tpLong;
+					else if( t1 ≡ tenv.tpFloat  || t2 ≡ tenv.tpFloat  ) return tenv.tpFloat;
+					else if( t1 ≡ tenv.tpDouble || t2 ≡ tenv.tpDouble ) return tenv.tpDouble;
 					else return null;
-				else if( this ≡ tpInt )
-					if     ( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
-					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
-					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
+				else if( this ≡ tenv.tpInt )
+					if     ( t1 ≡ tenv.tpLong   || t2 ≡ tenv.tpLong   ) return tenv.tpLong;
+					else if( t1 ≡ tenv.tpFloat  || t2 ≡ tenv.tpFloat  ) return tenv.tpFloat;
+					else if( t1 ≡ tenv.tpDouble || t2 ≡ tenv.tpDouble ) return tenv.tpDouble;
 					else return null;
 			} else {
-				if( this ≡ tpFloat )
-					if     ( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
-					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
+				if( this ≡ tenv.tpFloat )
+					if     ( t1 ≡ tenv.tpFloat  || t2 ≡ tenv.tpFloat  ) return tenv.tpFloat;
+					else if( t1 ≡ tenv.tpDouble || t2 ≡ tenv.tpDouble ) return tenv.tpDouble;
 					else return null;
-				else if( this ≡ tpDouble )
-					if     ( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
+				else if( this ≡ tenv.tpDouble )
+					if     ( t1 ≡ tenv.tpDouble || t2 ≡ tenv.tpDouble ) return tenv.tpDouble;
 					else return null;
 			}
 		}
@@ -429,26 +428,28 @@ public final class CoreType extends Type {
 	public static Type upperCastNumbers(Type tp1, Type tp2) {
 		assert( tp1.isNumber() );
 		assert( tp2.isNumber() );
-		if( tp1 ≡ Type.tpDouble || tp2 ≡ Type.tpDouble) return Type.tpDouble;
-		if( tp1 ≡ Type.tpFloat  || tp2 ≡ Type.tpFloat ) return Type.tpFloat;
-		if( tp1 ≡ Type.tpLong   || tp2 ≡ Type.tpLong  ) return Type.tpLong;
-		if( tp1 ≡ Type.tpInt    || tp2 ≡ Type.tpInt   ) return Type.tpInt;
-		if( tp1 ≡ Type.tpChar   || tp2 ≡ Type.tpChar  ) return Type.tpChar;
-		if( tp1 ≡ Type.tpShort  || tp2 ≡ Type.tpShort ) return Type.tpShort;
-		if( tp1 ≡ Type.tpByte   || tp2 ≡ Type.tpByte  ) return Type.tpByte;
+		StdTypes tenv = tp1.tenv;
+		if( tp1 ≡ tenv.tpDouble || tp2 ≡ tenv.tpDouble) return tenv.tpDouble;
+		if( tp1 ≡ tenv.tpFloat  || tp2 ≡ tenv.tpFloat ) return tenv.tpFloat;
+		if( tp1 ≡ tenv.tpLong   || tp2 ≡ tenv.tpLong  ) return tenv.tpLong;
+		if( tp1 ≡ tenv.tpInt    || tp2 ≡ tenv.tpInt   ) return tenv.tpInt;
+		if( tp1 ≡ tenv.tpChar   || tp2 ≡ tenv.tpChar  ) return tenv.tpChar;
+		if( tp1 ≡ tenv.tpShort  || tp2 ≡ tenv.tpShort ) return tenv.tpShort;
+		if( tp1 ≡ tenv.tpByte   || tp2 ≡ tenv.tpByte  ) return tenv.tpByte;
 		throw new RuntimeException("Bad number types "+tp1+" or "+tp2);
 	}
 
 	public CompaundType getRefTypeForPrimitive() {
-		if     ( this ≡ Type.tpBoolean) return Type.tpBooleanRef;
-		else if( this ≡ Type.tpByte   ) return Type.tpByteRef;
-		else if( this ≡ Type.tpShort  ) return Type.tpShortRef;
-		else if( this ≡ Type.tpInt    ) return Type.tpIntRef;
-		else if( this ≡ Type.tpLong   ) return Type.tpLongRef;
-		else if( this ≡ Type.tpFloat  ) return Type.tpFloatRef;
-		else if( this ≡ Type.tpDouble ) return Type.tpDoubleRef;
-		else if( this ≡ Type.tpChar   ) return Type.tpCharRef;
-		else if( this ≡ Type.tpVoid   ) return Type.tpVoidRef;
+		StdTypes tenv = this.tenv;
+		if     ( this ≡ tenv.tpBoolean) return tenv.tpBooleanRef;
+		else if( this ≡ tenv.tpByte   ) return tenv.tpByteRef;
+		else if( this ≡ tenv.tpShort  ) return tenv.tpShortRef;
+		else if( this ≡ tenv.tpInt    ) return tenv.tpIntRef;
+		else if( this ≡ tenv.tpLong   ) return tenv.tpLongRef;
+		else if( this ≡ tenv.tpFloat  ) return tenv.tpFloatRef;
+		else if( this ≡ tenv.tpDouble ) return tenv.tpDoubleRef;
+		else if( this ≡ tenv.tpChar   ) return tenv.tpCharRef;
+		else if( this ≡ tenv.tpVoid   ) return tenv.tpVoidRef;
 		else
 			throw new RuntimeException("No reference type for "+this);
 	}
@@ -460,37 +461,39 @@ public final class ASTNodeType extends Type {
 	@virtual typedef MType = ASTNodeMetaType;
 
 	public static ASTNodeType newASTNodeType(Type tp)
-		alias lfy operator new
+		operator "new T"
 	{
 		Class clazz = null;
-		if      (tp == StdTypes.tpBoolean)   clazz = Boolean.TYPE;
-		else if (tp == StdTypes.tpChar)      clazz = Character.TYPE;
-		else if (tp == StdTypes.tpByte)      clazz = Byte.TYPE;
-		else if (tp == StdTypes.tpShort)     clazz = Short.TYPE;
-		else if (tp == StdTypes.tpInt)       clazz = Integer.TYPE;
-		else if (tp == StdTypes.tpLong)      clazz = Long.TYPE;
-		else if (tp == StdTypes.tpFloat)     clazz = Float.TYPE;
-		else if (tp == StdTypes.tpDouble)    clazz = Double.TYPE;
+		StdTypes tenv = tp.tenv;
+		if      (tp == tenv.tpBoolean)   clazz = Boolean.TYPE;
+		else if (tp == tenv.tpChar)      clazz = Character.TYPE;
+		else if (tp == tenv.tpByte)      clazz = Byte.TYPE;
+		else if (tp == tenv.tpShort)     clazz = Short.TYPE;
+		else if (tp == tenv.tpInt)       clazz = Integer.TYPE;
+		else if (tp == tenv.tpLong)      clazz = Long.TYPE;
+		else if (tp == tenv.tpFloat)     clazz = Float.TYPE;
+		else if (tp == tenv.tpDouble)    clazz = Double.TYPE;
 		else if (tp instanceof CompaundType) clazz = Class.forName(tp.tdecl.qname().replace('·','.'));
 		else
 			throw new RuntimeException("Can't make ASTNodeType for type "+tp);
-		return new ASTNodeType(ASTNodeMetaType.instance(clazz));
+		return new ASTNodeType(ASTNodeMetaType.instance(tenv,clazz));
 	}
 
 	public static ASTNodeType newASTNodeType(Class clazz)
-		alias lfy operator new
+		operator "new T"
 	{
-		return new ASTNodeType(ASTNodeMetaType.instance(clazz));
+		StdTypes tenv = Env.getEnv().tenv;
+		return new ASTNodeType(ASTNodeMetaType.instance(tenv, clazz));
 	}
 
 	public static ASTNodeType newASTNodeType(RewritePattern rp)
-		alias lfy operator new
+		operator "new T"
 	{
-		ASTNodeMetaType meta_type = (ASTNodeMetaType)rp.vtype.getType().meta_type;
+		ASTNodeMetaType meta_type = (ASTNodeMetaType)rp.var.vtype.getType(Env.getEnv()).meta_type;
 		TVarBld tvb = new TVarBld();
 		foreach (RewritePattern var; rp.vars) {
 			ASTNodeType ast = newASTNodeType(var);
-			String name = ("attr$"+var.sname+"$type").intern();
+			String name = ("attr$"+var.var.sname+"$type").intern();
 			foreach (TVar tv; meta_type.getTemplBindings().tvars; tv.var.name == name) {
 				tvb.append(tv.var, ast);
 				break;
@@ -537,13 +540,13 @@ public final class ArgType extends Type {
 
 	private static int makeFlags(ArgMetaType mt) {
 		TypeDef definer = (TypeDef)mt.tdecl;
-		int flags = flValAppliable;
-		if (definer.isTypeAbstract())   flags |= flAbstract | flArgAppliable;
-		if (definer.isTypeUnerasable()) flags |= flUnerasable;
-		if (definer.isTypeVirtual())    flags |= flVirtual;
-		if (definer.isTypeFinal())      flags |= flFinal;
-		if (definer.isTypeStatic())     flags |= flStatic;
-		if (definer.isTypeForward())    flags |= flForward;
+		int flags = StdTypes.flValAppliable;
+		if (definer.isTypeAbstract())   flags |= StdTypes.flAbstract | StdTypes.flArgAppliable;
+		if (definer.isTypeUnerasable()) flags |= StdTypes.flUnerasable;
+		if (definer.isTypeVirtual())    flags |= StdTypes.flVirtual;
+		if (definer.isTypeFinal())      flags |= StdTypes.flFinal;
+		if (definer.isTypeStatic())     flags |= StdTypes.flStatic;
+		if (definer.isTypeForward())    flags |= StdTypes.flForward;
 		return flags;
 	}
 	
@@ -557,8 +560,8 @@ public final class ArgType extends Type {
 	public Type getErasedType() {
 		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
-			return tpObject;
-		return up[0].getType().getErasedType();
+			return tenv.tpObject;
+		return up[0].getType(tenv.env).getErasedType();
 	}
 
 	public String toString() {
@@ -570,24 +573,24 @@ public final class ArgType extends Type {
 	public boolean isInVariant() { return definer.getVarianceSafe() == TypeVariance.IN_VARIANT; }
 
 	public boolean isCastableTo(Type t) {
-		if( this ≡ t || t ≡ Type.tpAny ) return true;
+		if( this ≡ t || t ≡ tenv.tpAny ) return true;
 		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
-			return tpObject.isCastableTo(t);
+			return tenv.tpObject.isCastableTo(t);
 		foreach (TypeRef tr; up) {
-			if (tr.getType().isCastableTo(t))
+			if (tr.getType(tenv.env).isCastableTo(t))
 				return true;
 		}
 		return false;
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t || t ≡ tpAny) return true;
+		if (this ≡ t || t ≡ tenv.tpAny) return true;
 		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
-			return tpObject.isInstanceOf(t);
+			return tenv.tpObject.isInstanceOf(t);
 		foreach (TypeRef tr; up) {
-			if (tr.getType().isInstanceOf(t))
+			if (tr.getType(tenv.env).isInstanceOf(t))
 				return true;
 		}
 		return false;
@@ -601,7 +604,7 @@ public final class ArgType extends Type {
 	private boolean checkUpperBounds(Type base, Type t) {
 		TypeRef[] types = definer.getUpperBounds();
 		foreach (TypeRef tr; types) {
-			Type bnd = tr.getType();
+			Type bnd = tr.getType(tenv.env);
 			while (bnd instanceof ArgType) {
 				Type res = base.resolve((ArgType)bnd);
 				if (res == bnd)
@@ -617,7 +620,7 @@ public final class ArgType extends Type {
 	private boolean checkLowerBounds(Type base, Type t) {
 		TypeRef[] types = definer.getLowerBounds();
 		foreach (TypeRef tr; types) {
-			Type bnd = tr.getType();
+			Type bnd = tr.getType(tenv.env);
 			while (bnd instanceof ArgType) {
 				Type res = base.resolve((ArgType)bnd);
 				if (res == bnd)
@@ -647,7 +650,7 @@ public final class CompaundType extends Type {
 	
 	public Struct getStruct()					{ return (Struct)tdecl; }
 	public MNode getMeta(String name)			{ return tdecl.getMeta(name); }
-	public Type getErasedType()					{ return tdecl.xtype; }
+	public Type getErasedType()					{ return tdecl.getType(tenv.env); }
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
@@ -656,7 +659,7 @@ public final class CompaundType extends Type {
 		if (n > 0) {
 			str.append('<');
 			for(int i=0; i < n; i++) {
-				str.append(resolve(tdecl.args[i].getAType()));
+				str.append(resolve(tdecl.args[i].getAType(tenv.env)));
 				if( i < n-1)
 					str.append(',');
 			}
@@ -667,14 +670,15 @@ public final class CompaundType extends Type {
 
 	public Type getAutoCastTo(Type t)
 	{
-		if( t ≡ tpVoid ) return t;
-		if( t ≡ tpAny ) return t;
+		StdTypes tenv = this.tenv;
+		if( t ≡ tenv.tpVoid ) return t;
+		if( t ≡ tenv.tpAny ) return t;
 		if( isInstanceOf(t) ) return this;
-		if( this.tdecl.isStructView() && ((KievView)this.tdecl).view_of.getType().getAutoCastTo(t) != null ) return t;
+		if( this.tdecl.isStructView() && ((KievView)this.tdecl).view_of.getType(tenv.env).getAutoCastTo(t) != null ) return t;
 		if( t instanceof CoreType && !t.isReference() ) {
 			if( t.getRefTypeForPrimitive() ≈ this )
 				return t;
-			else if( t ≡ Type.tpInt && this ≥ Type.tpEnum )
+			else if( t ≡ tenv.tpInt && this ≥ tenv.tpEnum )
 				return t;
 		}
 		return super.getAutoCastTo(t);
@@ -682,7 +686,7 @@ public final class CompaundType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( t ≡ tpNull || t ≡ Type.tpAny ) return true;
+		if( t ≡ tenv.tpNull || t ≡ tenv.tpAny ) return true;
 		if( this.isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( t.isReference() && t.getStruct() != null &&
@@ -693,9 +697,9 @@ public final class CompaundType extends Type {
 	}
 }
 
-public final class ArrayType extends Type {
+public class ArrayType extends Type {
 
-	@virtual typedef MType = ArrayMetaType;
+	@virtual typedef MType ≤ ArrayMetaType;
 
 	@virtual @abstract
 	public:ro Type		arg;
@@ -703,13 +707,17 @@ public final class ArrayType extends Type {
 	@getter public Type get$arg() { return this.resolveArg(0); }
 	
 	public static ArrayType newArrayType(Type tp)
-		alias lfy operator new
+		operator "new T"
 	{
-		return new ArrayType(tp);
+		return new ArrayType(tp, tp.meta_type.tenv);
 	}
 	
-	private ArrayType(Type arg) {
-		super(ArrayMetaType.instance, ArrayMetaType.instance.getTemplBindings(), 0, new TVarBld(tpArrayArg, arg));
+	private ArrayType(Type arg, StdTypes tenv) {
+		super(tenv.arrayMetaType, tenv.arrayTemplBindings, 0, new TVarBld(tenv.tpArrayArg, arg));
+	}
+	
+	protected ArrayType(VarargMetaType meta_type, TemplateTVarSet template, int flags, TVarBld bindings) {
+		super(meta_type, template, flags, bindings);
 	}
 
 	public MNode getMeta(String name)				{ return null; }
@@ -723,7 +731,45 @@ public final class ArrayType extends Type {
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( t ≡ tpNull || t ≡ tpAny ) return true;
+		if( t ≡ tenv.tpNull || t ≡ tenv.tpAny ) return true;
+		if( isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		return super.isCastableTo(t);
+	}
+
+}
+
+public final class VarargType extends ArrayType {
+
+	@virtual typedef MType = VarargMetaType;
+
+	@virtual @abstract
+	public:ro Type		arg;
+
+	@getter public Type get$arg() { return this.resolveArg(0); }
+	
+	public static VarargType newVarargType(Type tp)
+		operator "new T"
+	{
+		return new VarargType(tp, tp.meta_type.tenv);
+	}
+	
+	private VarargType(Type arg, StdTypes tenv) {
+		super(tenv.varargMetaType, tenv.varargTemplBindings, 0, new TVarBld(tenv.tpVarargArg, arg));
+	}
+
+	public MNode getMeta(String name)				{ return null; }
+	
+	public Type getErasedType() {
+		return newArrayType(arg.getErasedType());
+	}
+
+	public String toString() {
+		return String.valueOf(arg)+"...";
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( t ≡ tenv.tpNull || t ≡ tenv.tpAny ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		return super.isCastableTo(t);
@@ -748,8 +794,14 @@ public final class WildcardCoType extends CTimeType {
 
 	@virtual typedef MType = WildcardCoMetaType;
 	
-	public WildcardCoType(Type base_type) {
-		super(WildcardCoMetaType.instance, 0, tpWildcardCoArg, base_type);
+	public static WildcardCoType newWildcardCoType(Type tp)
+		operator "new T"
+	{
+		return new WildcardCoType(tp, tp.meta_type.tenv);
+	}
+	
+	private WildcardCoType(Type base_type, StdTypes tenv) {
+		super(tenv.wildcardCoMetaType, 0, tenv.tpWildcardCoArg, base_type);
 	}
 	
 	public final ENode makeUnboxedExpr(ENode from) { from }
@@ -765,7 +817,7 @@ public final class WildcardCoType extends CTimeType {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( t ≡ tpNull ) return true;
+		if( t ≡ tenv.tpNull ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( this.getEnclosedType().isCastableTo(t) )
@@ -774,7 +826,7 @@ public final class WildcardCoType extends CTimeType {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t || t ≡ tpAny) return true;
+		if (this ≡ t || t ≡ tenv.tpAny) return true;
 		if (getEnclosedType().isInstanceOf(t))
 			return true;
 		return false;
@@ -790,8 +842,14 @@ public final class WildcardContraType extends CTimeType {
 
 	@virtual typedef MType = WildcardContraMetaType;
 	
-	public WildcardContraType(Type base_type) {
-		super(WildcardContraMetaType.instance, 0, tpWildcardContraArg, base_type);
+	public static WildcardContraType newWildcardContraType(Type tp)
+		operator "new T"
+	{
+		return new WildcardContraType(tp, tp.meta_type.tenv);
+	}
+	
+	private WildcardContraType(Type base_type, StdTypes tenv) {
+		super(tenv.wildcardContraMetaType, 0, tenv.tpWildcardContraArg, base_type);
 	}
 	
 	public final ENode makeUnboxedExpr(ENode from) { from }
@@ -807,7 +865,7 @@ public final class WildcardContraType extends CTimeType {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( t ≡ tpNull ) return true;
+		if( t ≡ tenv.tpNull ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( this.getEnclosedType().isCastableTo(t) )
@@ -816,7 +874,7 @@ public final class WildcardContraType extends CTimeType {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t || t ≡ tpAny) return true;
+		if (this ≡ t || t ≡ tenv.tpAny) return true;
 		if (t.isInstanceOf(getEnclosedType()))
 			return true;
 		return false;
@@ -837,7 +895,7 @@ public final class WrapperType extends CTimeType {
 	}
 	
 	public WrapperType(Type unwrapped_type) {
-		super(WrapperMetaType.instance(unwrapped_type), 0, tpWrapperArg, unwrapped_type);
+		super(WrapperMetaType.instance(unwrapped_type.tenv, unwrapped_type), 0, unwrapped_type.tenv.tpWrapperArg, unwrapped_type);
 	}
 
 	@virtual @abstract
@@ -873,7 +931,7 @@ public final class WrapperType extends CTimeType {
 		Field wf = wrapped_field;
 		if (wf == null)
 			return getEnclosedType();
-		return Type.getRealType(getEnclosedType(), wf.getType());
+		return Type.getRealType(getEnclosedType(), wf.getType(tenv.env));
 	}
 	
 	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
@@ -885,7 +943,7 @@ public final class WrapperType extends CTimeType {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( t ≡ tpNull ) return true;
+		if( t ≡ tenv.tpNull ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( this.getEnclosedType().isCastableTo(t) )
@@ -896,7 +954,7 @@ public final class WrapperType extends CTimeType {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t || t ≡ tpAny) return true;
+		if (this ≡ t || t ≡ tenv.tpAny) return true;
 		if (t instanceof WrapperType)
 			return getEnclosedType().isInstanceOf(t.getEnclosedType());
 		return false;
@@ -952,79 +1010,82 @@ public final class CallType extends Type {
 		super(meta_type, meta_type.getTemplBindings(), 0, bld);
 		this.arity = arity;
 		assert(this.getArgsLength() >= 2);
-		assert(this.getArg(0) == tpCallRetArg);
-		assert(this.getArg(1) == tpCallTupleArg);
-		assert(this.resolveArg(1).meta_type == TupleMetaType.instancies[arity]);
+		assert(this.getArg(0) == tenv.tpCallRetArg);
+		assert(this.getArg(1) == tenv.tpCallTupleArg);
+		assert(this.resolveArg(1).meta_type == tenv.tupleMetaTypes[arity]);
 	}
 	
 	public static CallType createCallType(Type accessor, Type[] bnd_targs, Type[] args, Type ret, boolean is_closure)
-		alias lfy operator new
+		operator "new T"
 	{
+		StdTypes tenv = ret.tenv;
 		bnd_targs = (bnd_targs != null && bnd_targs.length > 0) ? bnd_targs : Type.emptyArray;
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
-		ret   = (ret  == null) ? Type.tpAny : ret;
+		ret   = (ret  == null) ? tenv.tpAny : ret;
 		TVarBld vs = new TVarBld();
-		vs.append(tpCallRetArg, ret);
+		vs.append(tenv.tpCallRetArg, ret);
 		TVarBld ts = new TVarBld();
 		for (int i=0; i < args.length; i++)
-			ts.append(tpCallParamArgs[i], args[i]);
-		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts));
+			ts.append(tenv.tpCallParamArgs[i], args[i]);
+		vs.append(tenv.tpCallTupleArg, new TupleType(tenv.tupleMetaTypes[args.length], ts));
 		if (accessor != null)
-			vs.append(tpSelfTypeArg, accessor);
+			vs.append(tenv.tpSelfTypeArg, accessor);
 		ArgType[] targs = ArgType.emptyArray;
 		if (bnd_targs.length > 0) {
 			targs = new ArgType[bnd_targs.length];
 			for (int i=0; i < bnd_targs.length; i++) {
-				vs.append(tpUnattachedArgs[i], bnd_targs[i]);
-				targs[i] = tpUnattachedArgs[i];
+				vs.append(tenv.tpUnattachedArgs[i], bnd_targs[i]);
+				targs[i] = tenv.tpUnattachedArgs[i];
 			}
 		}
-		return new CallType(CallMetaType.newCallMetaType(accessor==null,is_closure,targs), vs, args.length);
+		return new CallType(CallMetaType.newCallMetaType(tenv,accessor==null,is_closure,targs), vs, args.length);
 	}
 
 	public static CallType createCallType(Method meth, Type[] args, Type ret)
-		alias lfy operator new
+		operator "new T"
 	{
+		StdTypes tenv = ret.tenv;
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
-		ret   = (ret  == null) ? Type.tpAny : ret;
+		ret   = (ret  == null) ? tenv.tpAny : ret;
 		TVarBld vs = new TVarBld();
-		vs.append(tpCallRetArg, ret);
+		vs.append(tenv.tpCallRetArg, ret);
 		TVarBld ts = new TVarBld();
 		for (int i=0; i < args.length; i++)
-			ts.append(tpCallParamArgs[i], args[i]);
-		vs.append(tpCallTupleArg, new TupleType(TupleMetaType.instancies[args.length], ts));
+			ts.append(tenv.tpCallParamArgs[i], args[i]);
+		vs.append(tenv.tpCallTupleArg, new TupleType(tenv.tupleMetaTypes[args.length], ts));
 		Type accessor = null;
 		if (!meth.mflags_is_static && !meth.is_mth_virtual_static)
-			accessor = meth.ctx_tdecl.xtype;
+			accessor = Env.ctxTDecl(meth).getType(tenv.env);
 		if (accessor != null)
-			vs.append(tpSelfTypeArg, tpSelfTypeArg /*accessor*/);
+			vs.append(tenv.tpSelfTypeArg, tenv.tpSelfTypeArg /*accessor*/);
 		ArgType[] targs = ArgType.emptyArray;
 		if (meth.targs.length > 0) {
 			TypeConstr[] mtargs = meth.targs;
 			targs = new ArgType[mtargs.length];
 			for (int i=0; i < mtargs.length; i++) {
-				ArgType at = mtargs[i].getAType();
+				ArgType at = mtargs[i].getAType(tenv.env);
 				vs.append(at, null);
 				targs[i] = at;
 			}
 		}
-		return new CallType(CallMetaType.newCallMetaType(accessor==null,false,targs), vs, args.length);
+		return new CallType(CallMetaType.newCallMetaType(tenv,accessor==null,false,targs), vs, args.length);
 	}
 
 	public CallType toCallTypeRetAny() {
-		TVarBld vs = rebind_bld(new TVarBld(tpCallRetArg, tpAny));
+		TVarBld vs = new TVarBld(tenv.tpCallRetArg, tenv.tpAny);
+		vs.append(this);
 		return new CallType((CallMetaType)this.meta_type, vs, this.arity);
 	}
 	
 	public Type ret() {
 		AType bindings = this.bindings();
-		assert (bindings.getArg(0) ≡ tpCallRetArg);
+		assert (bindings.getArg(0) ≡ tenv.tpCallRetArg);
 		return bindings.resolveArg(0).applay(bindings);
 	}
 	
 	public Type arg(int idx) {
 		AType bindings = this.bindings();
-		assert (bindings.getArg(1) ≡ tpCallTupleArg);
+		assert (bindings.getArg(1) ≡ tenv.tpCallTupleArg);
 		TupleType tp = (TupleType)bindings.resolveArg(1);
 		return tp.resolveArg(idx).applay(bindings);
 	}
@@ -1041,7 +1102,7 @@ public final class CallType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( this.isReference() && t ≡ tpNull ) return true;
+		if( this.isReference() && t ≡ tenv.tpNull ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( this.arity == 0 && !(t instanceof CallType) && this.ret().isCastableTo(t) )
 			return true;
@@ -1049,7 +1110,7 @@ public final class CallType extends Type {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t || t ≡ tpAny) return true;
+		if (this ≡ t || t ≡ tenv.tpAny) return true;
 		if (t instanceof CallType) {
 			CallType ct = (CallType)t;
 			if( this.arity != ct.arity ) return false;
@@ -1120,7 +1181,7 @@ public final class CallType extends Type {
 
 	public Type getErasedType() {
 		if (this.isReference())
-			return Type.tpClosure;
+			return tenv.tpClosure;
 		if( this.arity == 0 )
 			return new CallType(null,null,null,this.ret().getErasedType(),false);
 		Type[] targs = new Type[this.arity];

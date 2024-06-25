@@ -17,50 +17,45 @@ import syntax kiev.Syntax;
  *
  */
 
-@ThisIsANode(lang=void)
-public final class ASTModifiers extends ASTNode {
+@unerasable
+public final class ASTModifiers extends Vector<MNode> {
 	
-	@nodeData public ANode∅				annotations;
-
 	public ASTModifiers() {}
 	
-	public UserMeta add(UserMeta m)
-		alias lfy operator +=
+	public MNode add(MNode m)
+		operator "V += V"
 	{
-		this.annotations += m;
-		return m;
-	}
-	public MetaFlag add(MetaFlag m)
-		alias lfy operator +=
-	{
-		this.annotations += m;
+		super.append(m);
 		return m;
 	}
 	
 	public void moveToNode(DNode dn) {
-		ANode[] annotations = this.annotations.delToArray();
-		foreach (MNode m; annotations)
+		foreach (MNode m; this)
 			dn.setMeta(m);
 	}
 	public void copyToNode(DNode dn) {
-		ANode[] annotations = this.annotations;
-		foreach (MNode m; annotations)
-			dn.setMeta(m.ncopy());
+		foreach (MNode m; this)
+			dn.setMeta(new Copier().copyFull(m));
 	}
 	
 	public String getUUID() {
-		foreach (MetaUUID m; annotations)
+		foreach (MetaUUID m; this)
 			return m.value;
 		return null;
 	}
 	
 	public boolean isGetter() {
-		foreach (UserMeta m; annotations; m.qname() == VirtFldFE_GenMembers.nameMetaGetter)
+		foreach (MetaGetter m; this)
 			return true;
 		return false;
 	}
 	public boolean isSetter() {
-		foreach (UserMeta m; annotations; m.qname() == VirtFldFE_GenMembers.nameMetaSetter)
+		foreach (MetaSetter m; this)
+			return true;
+		return false;
+	}
+	public boolean isSymadeNode() {
+		foreach (UserMeta m; this; m.decl.name == "ThisIsANode" || m.decl.name == "kiev·vtree·ThisIsANode")
 			return true;
 		return false;
 	}

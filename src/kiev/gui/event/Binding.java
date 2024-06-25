@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Common Public License Version 1.0
  * which accompanies this distribution, and is available at
@@ -7,21 +7,43 @@
  *
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
  *******************************************************************************/
 package kiev.gui.event;
 
 import java.io.ObjectStreamException;
 
+/**
+ * The Binding.
+ */
 public final class Binding extends Item {
+	/**
+	 * The serial.
+	 */
 	private static final long serialVersionUID = -2474249288446471032L;
 
+	/**
+	 * The events. 
+	 */
 	public Event[] events;
+	
+	/**
+	 * The action.
+	 */
 	public Action action;
 
+	/**
+	 * The constructor.
+	 */
 	public Binding(){
 		events = Event.emptyArray;
 	}
 	
+	/**
+	 * Resolve.
+	 * @return Object
+	 * @throws ObjectStreamException
+	 */
 	Object readResolve() throws ObjectStreamException {
 		return this;
 	}

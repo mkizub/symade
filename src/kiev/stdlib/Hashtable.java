@@ -14,7 +14,7 @@ import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -198,7 +198,9 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @see Hashtable#get
      * @return the old value of the key, or null if it did not have one.
      */
-    public synchronized B put(A key, B value) {
+    public synchronized B put(A key, B value)
+		alias add
+	{
 	// Makes sure the key is not already in the hashtable.
 	HashtableEntry<A,B>[] tab = table;
 	int hash = key.hashCode();

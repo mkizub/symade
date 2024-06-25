@@ -17,8 +17,19 @@ import syntax kiev.Syntax;
  *
  */
 
-@ThisIsANode(lang=CoreLang)
-public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,GlobalDNode {
+@ThisIsANode(name="AMethod", lang=CoreLang)
+public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods {
+	private static final Class[] $meta_flags = new Class[] {
+		MetaPublic.class,    MetaPrivate.class,        MetaProtected.class, MetaStatic.class,
+		MetaFinal.class,     MetaSynchronized.class,   MetaBridge.class,    MetaVarArgs.class,
+		MetaNative.class,    null,                     MetaAbstract.class,  null,
+		MetaSynthetic.class, null,                     null,                null,
+		MetaForward.class,   MetaVirtual.class,        MetaUnerasable.class,MetaMacro.class,
+		null,                null,                     null,               null,
+		null,                null,                     null,               null,
+		null,                null,                     null,               null
+	};
+	
 	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
 	@nodeAttr public TypeConstr∅			targs;
@@ -28,13 +39,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	@abstract
 	@nodeAttr(ext_data=true)
-	public Symbol⋈							aliases;
+	public Alias⋈							aliases;
 	@abstract
 	@nodeAttr(ext_data=true)
 	public WBCCondition⋈				 	conditions;
 	@nodeAttr(ext_data=true)
 	public Var								ret_var;
 
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData(ext_data=true)
 	public Method		caller_from_inner;
 
@@ -49,23 +61,17 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@virtual @abstract
 	public:ro			Block			block;
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "params") {
-			Var p = (Var)data;
-			if (ct == ChildChangeType.ATTACHED && p.kind == Var.VAR_LOCAL)
-				p.mflags_var_kind = Var.PARAM_NORMAL;
-			else if (ct == ChildChangeType.DETACHED && p.kind == Var.PARAM_NORMAL)
-				p.mflags_var_kind = Var.VAR_LOCAL;
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.content_change) {
+			if (info.slot.name == "params") {
+				notifyParentThatIHaveChanged();
+			}
+			if (info.slot.name == "params" || info.slot.name == "type_ret" || info.slot.name == "metas") {
+				_mtype = null;
+				_dtype = null;
+			}
 		}
-		if (isAttached()) {
-			if      (attr.name == "params")
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
-		}
-		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "metas") {
-			_mtype = null;
-			_dtype = null;
-		}
-		super.callbackChildChanged(ct, attr, data);
+		super.callbackChanged(info);
 	}
 
 	@getter public final CallType				get$mtype()	{ if (this._mtype == null) rebuildTypes(); return this._mtype; }
@@ -74,17 +80,17 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		if (this._dtype == null) rebuildTypes();
 		if (isStatic())
 			(CallType)this._dtype.getErasedType();
-		TypeDecl tdecl = this.ctx_tdecl;
+		TypeDecl tdecl = Env.ctxTDecl(this);
 		if (tdecl == null)
 			(CallType)this._dtype.getErasedType();
-		return (CallType)this._dtype.applay(tdecl.xtype.bindings()).getErasedType();
+		return (CallType)this._dtype.applay(tdecl.getType(Env.getEnv()).bindings()).getErasedType();
 	}
 
 	@getter public final Block					get$block()	{ return (Block)this.body; }
 
 	public String qname() {
 		ANode p = parent();
-		if (p == null || p instanceof Env)
+		if (p == null || p instanceof KievRoot)
 			return sname;
 		if (p instanceof GlobalDNode)
 			return (((GlobalDNode)p).qname()+'·'+sname);
@@ -94,12 +100,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public Var getRetVar() {
 		Var retvar = this.ret_var;
 		if( retvar == null ) {
-			retvar = new LVar(pos,nameResultVar,type_ret.getType(),Var.VAR_LOCAL,ACC_FINAL);
+			retvar = new LVar(pos,nameResultVar,type_ret.getType(Env.getEnv()),Var.VAR_LOCAL,ACC_FINAL);
 			this.ret_var = retvar;
 		}
 		return retvar;
 	}
 
+	public Class[] getMetaFlags() { return Method.$meta_flags; }
+	
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)getMeta("kiev·stdlib·meta·throws");
 	}
@@ -126,15 +134,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	// logic rule method
 	public final boolean isRuleMethod() {
 		return this instanceof RuleMethod;
-	}
-	// method with attached operator	
-	public final boolean isOperatorMethod() {
-		return this.is_mth_operator;
-	}
-	public final void setOperatorMethod(boolean on) {
-		if (this.is_mth_operator != on) {
-			this.is_mth_operator = on;
-		}
 	}
 	// need fields initialization	
 	public final boolean isNeedFieldInits() {
@@ -169,6 +168,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	final void rebuildTypes() {
+		Env env = Env.getEnv();
 		Vector<Type> args = new Vector<Type>();
 		Vector<Type> dargs = new Vector<Type>();
 		boolean is_varargs = false;
@@ -177,9 +177,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (fpdtype == null)
 				fpdtype = fp.vtype;
 			switch (fp.kind) {
-			case Var.PARAM_NORMAL:
-				args.append(fp.getType());
-				dargs.append(fpdtype.getType());
+			case Var.VAR_LOCAL:
+				args.append(fp.getType(env));
+				dargs.append(fpdtype.getType(env));
+				if (fp.getType(env) instanceof VarargType)
+					is_varargs = true;
 				break;
 			case Var.PARAM_OUTER_THIS:
 				assert(this instanceof Constructor);
@@ -187,50 +189,43 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.sname == nameThisDollar);
-				dargs.append(fp.getType());
+				dargs.append(fp.getType(env));
 				break;
 			case Var.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
 				assert(fp.isForward());
 				assert(fp.isFinal());
-				assert(fp.getType() ≡ Type.tpRule);
-				assert(fp.sname == namePEnv);
-				dargs.append(Type.tpRule);
+				assert(fp.getType(env) ≡ env.tenv.tpRule);
+				assert(fp.sname == namePEnvParam);
+				dargs.append(env.tenv.tpRule);
 				break;
 			case Var.PARAM_ENUM_NAME:
 				assert(this instanceof Constructor && !this.isStatic());
-				assert(fp.getType() ≈ Type.tpString);
-				dargs.append(Type.tpString);
+				assert(fp.getType(env) ≈ env.tenv.tpString);
+				dargs.append(env.tenv.tpString);
 				break;
 			case Var.PARAM_ENUM_ORD:
 				assert(this instanceof Constructor && !this.isStatic());
-				assert(fp.getType() ≈ Type.tpInt);
-				dargs.append(Type.tpInt);
+				assert(fp.getType(env) ≈ env.tenv.tpInt);
+				dargs.append(env.tenv.tpInt);
 				break;
-			case Var.PARAM_TYPEINFO:
+			case Var.PARAM_CLASS_TYPEINFO:
 				assert(this instanceof Constructor || (this.isStatic() && this.hasName(nameNewOp)));
 				assert(fp.isFinal());
-				assert(fpdtype == null || fpdtype.getType() ≈ fp.getType());
-				dargs.append(fp.getType());
-				break;
-			case Var.PARAM_VARARGS:
-				//assert(fp.isFinal());
-				assert(fp.getType().isInstanceOf(Type.tpArray));
-				args.append(fp.getType());
-				dargs.append(fp.getType());
-				is_varargs = true;
+				assert(fpdtype == null || fpdtype.getType(env) ≈ fp.getType(env));
+				dargs.append(fp.getType(env));
 				break;
 			case Var.PARAM_LVAR_PROXY:
 				assert(this instanceof Constructor);
 				assert(fp.isFinal());
-				dargs.append(fp.getType());
+				dargs.append(fp.getType(env));
 				break;
 			default:
-				if (fp.kind >= Var.PARAM_TYPEINFO_N && fp.kind < Var.PARAM_TYPEINFO_N+128) {
+				if (fp.kind == Var.PARAM_METHOD_TYPEINFO) {
 					assert(this.mflags_is_type_unerasable);
 					assert(fp.isFinal());
-					assert(fp.getType() ≈ Type.tpTypeInfo);
-					dargs.append(fp.getType());
+					assert(fp.getType(env) ≈ env.tenv.tpTypeInfo);
+					dargs.append(fp.getType(env));
 					break;
 				}
 				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
@@ -240,15 +235,15 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			this.setVarArgs(is_varargs);
 		Type tp_ret, dtp_ret;
 		if (type_ret == null)
-			tp_ret = Type.tpVoid;
+			tp_ret = env.tenv.tpVoid;
 		else
-			tp_ret = type_ret.getType();
+			tp_ret = type_ret.getType(env);
+		if (tp_ret == null)
+			tp_ret = env.tenv.tpVoid;
 		
 		this._mtype = new CallType(this, args.toArray(), tp_ret);
 		this._dtype = new CallType(this, dargs.toArray(), tp_ret);
 	}
-
-	public Method get_child_ctx_method() { return this; }
 
 	public static final Method[]	emptyArray = new Method[0];
 
@@ -256,27 +251,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public Method(String name, TypeRef type_ret, int flags) {
 		this.sname = name;
 		this.type_ret = type_ret;
-		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
-			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
-			if ((flags & ACC_STATIC) == ACC_STATIC) setMeta(new MetaStatic());
-			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) setMeta(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
-			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
-			if ((flags & ACC_SYNCHRONIZED) == ACC_SYNCHRONIZED) setMeta(new MetaSynchronized());
-			if ((flags & ACC_BRIDGE) == ACC_BRIDGE) setMeta(new MetaBridge());
-			if ((flags & ACC_VARARGS) == ACC_VARARGS) setMeta(new MetaVarArgs());
-			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
-			this.nodeflags |= flags;
-		}
+		this.nodeflags |= flags;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "body") {
-			if (this.isMacro() || this.ctx_tdecl.isMixin()) // save for macroses and trait/mixin
+			if (this.isMacro() || Env.ctxTDecl(this).isMixin()) // save for macroses and trait/mixin
 				return true;
 			if (this.body instanceof MetaValue)
 				return true;
@@ -288,21 +268,27 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public boolean hasName(String nm) {
 		String sname = this.sname;
 		if (sname == nm) return true;
-		foreach(Symbol s; aliases; s.sname == nm)
+		foreach(Alias a; aliases; a.symbol.sname == nm)
 			return true;
 		return false;
 	}
 
 	public Symbol getSymbol(String nm) {
 		if (sname == nm) return this.symbol;
-		foreach(Symbol s; aliases; s.sname == nm)
-			return s;
+		foreach(Alias a; aliases; a.symbol.sname == nm)
+			return a.symbol;
 		assert (false, "Symbol "+nm+" not found in "+this);
 		return null;
 	}
 
-	public Type	getType() { return mtype; }
+	public Type	getType(Env env) { return mtype; }
 
+	public Var getHiddenParam(int kind) {
+		foreach (Var fp; params; fp.kind == kind)
+			return fp;
+		return null;
+	}
+	
 	public Var getOuterThisParam() {
 		Type t = this.mtype; // rebuildTypes()
 		foreach (Var fp; params; fp.kind == Var.PARAM_OUTER_THIS)
@@ -310,28 +296,34 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return null;
 	}
 	
-	public Var getTypeInfoParam(int kind) {
-		Type t = this.mtype; // rebuildTypes()
-		foreach (Var fp; params; fp.kind == kind)
+	public Var getClassTypeInfoParam() {
+		foreach (Var fp; params; fp.kind == Var.PARAM_CLASS_TYPEINFO)
+			return fp;
+		return null;
+	}
+	
+	public Var getMethodTypeInfoParam(String name) {
+		name = (nameTypeInfo+"$"+name).intern();
+		foreach (Var fp; params; fp.kind == Var.PARAM_METHOD_TYPEINFO && fp.sname == name)
 			return fp;
 		return null;
 	}
 	
 	public Var getVarArgParam() {
 		Type t = this.mtype; // rebuildTypes()
-		foreach (Var fp; params; fp.kind == Var.PARAM_VARARGS)
+		foreach (Var fp; params; fp.getType(Env.getEnv()) instanceof VarargType)
 			return fp;
 		return null;
 	}
 	
 	public void addViolatedField(Field f) {
-/*		if (!this.ctx_tdecl.instanceOf(f.ctx_tdecl))
+/*		if (!Env.ctxTDecl(this).instanceOf(Env.ctxTDecl(f)))
 			return;
 		Field[] violated_fields = Method.ATTR_VIOLATED_FIELDS.get((Method)this);
 		if( isInvariantMethod() ) {
 			if (Field.ATTR_INVARIANT_CHECKERS.indexOf(f,this) < 0)
 				Field.ATTR_INVARIANT_CHECKERS.add(f,this);
-			if( this.ctx_tdecl.instanceOf(f.ctx_tdecl) ) {
+			if( Env.ctxTDecl(this).instanceOf(Env.ctxTDecl(f)) ) {
 				if (Method.ATTR_VIOLATED_FIELDS.indexOf(this, f) < 0)
 					Method.ATTR_VIOLATED_FIELDS.add(this,f);
 			}
@@ -341,20 +333,18 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 */	}
 
-	public boolean preResolveIn() {
-		//foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
-		//	fp.mflags_var_kind = Var.PARAM_NORMAL;
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		Type t = this.mtype; // rebuildTypes()
 		return true;
 	}
 
-	public boolean mainResolveIn() {
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		Type t = this.mtype; // rebuildTypes()
 		return true;
 	}
 
-	public boolean preVerify() {
-		TypeDecl ctx_tdecl = this.ctx_tdecl;
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		TypeDecl ctx_tdecl = Env.ctxTDecl(this);
 		if (isAbstract() && isStatic()) {
 			setBad(true);
 			ctx_tdecl.setBad(true);
@@ -375,7 +365,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		StringBuffer sb = new StringBuffer(sname+"(");
 		int n = params.length;
 		boolean comma = false;
-		foreach (Var fp; params; fp.kind == Var.PARAM_NORMAL || fp.kind == Var.PARAM_VARARGS) {
+		foreach (Var fp; params; fp.kind == Var.VAR_LOCAL) {
 			if (comma) sb.append(",");
 			sb.append(fp.vtype.toString());
 			comma = true;
@@ -391,7 +381,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public static String toString(String nm, ENode[] args, Type ret) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; args!=null && i < args.length; i++) {
-			sb.append(args[i].getType().toString());
+			sb.append(args[i].getType(Env.getEnv()).toString());
 			if( i < (args.length-1) ) sb.append(",");
 		}
 		if( ret != null )
@@ -411,72 +401,41 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return sb.toString();
 	}
 
-	public void normilizeExpr(ENode expr) {
-		if (body instanceof CoreExpr && ((CoreExpr)body).core_func != null) {
-			((CoreExpr)body).core_func.normilizeExpr(this,expr);
-			return;
+	public void normilizeExpr(Env env, ENode expr, Symbol sym, INode parent, AttrSlot slot) {
+		assert (sym.dnode == this);
+		if (body instanceof CoreExpr) {
+			CoreOperation cop = ((CoreExpr)body).getCoreOperation(env);
+			if (cop != null)
+				cop.core_func.normilizeExpr(expr,parent,slot);
 		}
-		if (expr.ident == null) {
-			Operator op = expr.getOper();
-			if (op != null)
-				expr.ident = op.name;
-			else
-				expr.ident = this.sname;
-		}
-		if (expr.dnode != this)
-			expr.symbol = this.symbol;
-		if (!isMacro())
-			return;
-		UserMeta m = (UserMeta)this.getMeta("kiev·stdlib·meta·CompilerNode");
-		if (m == null)
-			return;
-		Class cls = ASTNodeMetaType.allNodes.get(m.getS("value"));
-		if (cls == null) {
-			Kiev.reportWarning(expr,"Compiler node '"+m.getS("value")+"' does not exists");
-			return;
-		}
-		if (expr.getClass() == cls)
-			return;
-		ENode[] args = expr.getEArgs();
-		if (args == null) {
-			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
-			return;
-		}
-		ENode en = (ENode)cls.newInstance();
-		foreach (ENode e; args)
-			e.detach();
-		Operator op = expr.getOper();
-		if (op == null && this.isOperatorMethod())
-			op = Operator.lookupOperatorForMethod(this);
-		en.initFrom(expr, op, this, args);
-		expr.replaceWithNodeReWalk(en);
 	}
 
 	public void makeArgs(ENode[] args, Type t) {
+		Env env = Env.getEnv();
 		CallType mt = this.mtype;
 		//assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
 			for(; i < mt.arity-1; i++) {
 				Type ptp = Type.getRealType(t,mt.arg(i));
-				if !(args[i].getType().isInstanceOf(ptp))
-					CastExpr.autoCast(args[i],ptp);
+				if !(args[i].getType(env).isInstanceOf(ptp))
+					CastExpr.autoCast(env, args[i], ptp, args[i].parent(), args[i].pslot());
 			}
-			Type tn = Type.getRealType(t,getVarArgParam().getType());
+			Type tn = Type.getRealType(t,getVarArgParam().getType(env));
 			Type varg_tp = tn.resolveArg(0);
-			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
+			if (args.length == i+1 && args[i].getType(env).isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 			} else {
 				for(; i < args.length; i++) {
-					if !(args[i].getType().isInstanceOf(varg_tp))
-						CastExpr.autoCast(CastExpr.autoCastToReference(args[i]),varg_tp);
+					if !(args[i].getType(env).isInstanceOf(varg_tp))
+						CastExpr.autoCast(env, CastExpr.autoCastToReference(env, args[i], args[i].parent(), args[i].pslot()), varg_tp, args[i].parent(), args[i].pslot());
 				}
 			}
 		} else {
 			for(int i=0; i < mt.arity; i++) {
 				Type ptp = Type.getRealType(t,mt.arg(i));
-				if !(args[i].getType().isInstanceOf(ptp))
-					CastExpr.autoCast(args[i],ptp);
+				if !(args[i].getType(env).isInstanceOf(ptp))
+					CastExpr.autoCast(env, args[i], ptp, args[i].parent(), args[i].pslot());
 			}
 		}
 	}
@@ -488,8 +447,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (sname == name) {
 				sym = this.symbol;
 			} else {
-				foreach(Symbol s; aliases; s.sname == name) {
-					sym = s;
+				foreach(Alias a; aliases; a.symbol.sname == name) {
+					sym = a.symbol;
 					break;
 				}
 				if (sym == null)
@@ -511,14 +470,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		CallType rt = (CallType)this.mtype.applay(tp);
-		if (!this.isStatic() && tp != null && tp != Type.tpVoid)
-			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpSelfTypeArg, tp));
+		
+		Env env = info.env;
 		
 		if ((mt.getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
-			foreach (TypeConstr tc; this.targs) {
-				ArgType arg = tc.getAType();
-				Type bound = mt.resolve(arg);
+			for (int i=0; i < this.targs.length; i++) {
+				ArgType arg = this.targs[i].getAType(info.env);
+				Type bound = mt.resolve(env.tenv.tpUnattachedArgs[i]);
+				if (bound == env.tenv.tpUnattachedArgs[i])
+					continue;
 				if!(bound.isInstanceOf(arg)) {
 					trace(Kiev.debug && Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg);
 					return null;
@@ -541,8 +502,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			Vector<Type> bindings = new Vector<Type>();
 			// bind from mt
 			for (int i=0; i < rt.arity && i < mt.arity; i++)
-				addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
-			addBindingsFor(at, mt.ret(), rt.ret(), bindings);
+				addBindingsFor(env, at, mt.arg(i), rt.arg(i), bindings);
+			addBindingsFor(env, at, mt.ret(), rt.ret(), bindings);
 			if (bindings.length == 0) {
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" do not allow to infer type: "+at);
@@ -553,7 +514,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				b = Type.leastCommonType(b, bindings.at(i));
 			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 				+" infer argument: "+at+" to "+b);
-			if (b ≡ Type.tpAny)
+			if (b ≡ env.tenv.tpAny)
 				return null;
 			rt = (CallType)rt.applay(new TVarBld(at, b));
 		}
@@ -568,7 +529,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		
-		if (mt.ret() ≢ Type.tpAny && rt.ret().getAutoCastTo(mt.ret()) == null) {
+		if (mt.ret() ≢ env.tenv.tpAny && rt.ret().getAutoCastTo(mt.ret()) == null) {
 			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
 			return null;
@@ -579,25 +540,36 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return sym;
 	}
 	
-	public final CallType makeType(TypeRef[] targs, ENode[] args) {
-		Type[] mt;
+	public CallType makeType(ENode expr) {
+		return makeType(null, expr.getEArgs());
+	}
+	public CallType makeType(TypeRef[] targs, ENode[] args) {
+		Env env = Env.getEnv();
+		if (this.isStatic()) {
+			Type[] mt = new Type[args.length];
+			for (int i=0; i < mt.length; i++)
+				mt[i] = args[i].getType(env);
+			return makeType(targs, null, mt);
+		} else {
+			Type[] mt = new Type[args.length-1];
+			for (int i=0; i < mt.length; i++)
+				mt[i] = args[i+1].getType(env);
+			return makeType(targs, args[0].getType(env), mt);
+		}
+	}
+	public CallType makeType(TypeRef[] targs, Type ttp, Type[] mt) {
+		Env env = Env.getEnv();
 		CallType rt;
 		if (this.isStatic()) {
-			mt = new Type[args.length];
-			for (int i=0; i < mt.length; i++)
-				mt[i] = args[i].getType();
 			rt = (CallType)this.mtype;
 		} else {
-			mt = new Type[args.length-1];
-			for (int i=0; i < mt.length; i++)
-				mt[i] = args[i+1].getType();
-			rt = (CallType)this.mtype.applay(args[0].getType());
+			rt = (CallType)this.mtype.applay(ttp);
 		}
 		if (targs != null && targs.length > 0) {
 			TVarBld set = new TVarBld();
 			for (int i=0; i < targs.length && i < this.targs.length; i++) {
-				Type bound = targs[i].getType();
-				ArgType arg = this.targs[i].getAType();
+				Type bound = targs[i].getType(env);
+				ArgType arg = this.targs[i].getAType(env);
 				set.append(arg, bound);
 			}
 			rt = (CallType)rt.applay(set);
@@ -606,13 +578,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			Vector<Type> bindings = new Vector<Type>();
 			// bind from mt
 			for (int i=0; i < rt.arity && i < mt.length; i++)
-				addBindingsFor(at, mt[i], rt.arg(i), bindings);
+				addBindingsFor(env, at, mt[i], rt.arg(i), bindings);
 			if (bindings.length == 0)
 				continue;
 			Type b = bindings.at(0);
 			for (int i=1; i < bindings.length; i++)
 				b = Type.leastCommonType(b, bindings.at(i));
-			if (b ≡ Type.tpAny)
+			if (b ≡ env.tenv.tpAny)
 				continue;
 			rt = (CallType)rt.applay(new TVarBld(at, b));
 		}
@@ -621,8 +593,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	// compares pattern type (pt) with query type (qt) to find bindings for argument type (at),
 	// and adds found bindings to the set of bindings
-	private static void addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
-		if (pt ≡ null || pt ≡ Type.tpAny || pt ≡ at)
+	private static void addBindingsFor(Env env, ArgType at, Type pt, Type qt, Vector<Type> bindings) {
+		if (qt instanceof VarargType) {
+			qt = qt.arg;
+			if (pt instanceof ArrayType)
+				pt = pt.arg;
+		}
+		if (pt ≡ null || pt ≡ env.tenv.tpAny || pt ≡ at)
 			return;
 		qt.checkResolved();
 		pt.checkResolved();
@@ -636,8 +613,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			return;
 		final int qt_size = qt.getArgsLength();
 		for (int i=0; i < qt_size; i++) {
-			if (qt.isAliasArg(i))
-				continue;
+			//if (qt.isAliasArg(i))
+			//	continue;
 			ArgType qtvar = qt.getArg(i);
 			Type qtval = qt.resolveArg(i);
 			if (qtval ≡ at) {
@@ -650,8 +627,23 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 			else if (qtval.hasApplayable(at)) {
 				Type bnd = pt.resolve(qtvar);
-				if (bnd ≢ qtvar)
-					addBindingsFor(at, bnd, qtval, bindings);
+				if (bnd ≢ qtvar && !bindings.contains(bnd)) {
+					if (qtval instanceof WildcardCoType && qtval.getUnboxedType() ≡ at) {
+						Type t = bnd.getAutoCastTo(at);
+						if (t != null) {
+							bindings.append(t);
+							continue;
+						}
+					}
+					if (qtval instanceof WildcardContraType && qtval.getUnboxedType() ≡ at) {
+						Type t = bnd.getAutoCastTo(at);
+						if (t != null) {
+							bindings.append(t);
+							continue;
+						}
+					}
+					addBindingsFor(env, at, bnd, qtval, bindings);
+				}
 			}
 		}
 		return;
@@ -677,14 +669,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		path @= targs
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
-		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveNameAccessR(path)
+		path.enterForward(path.env.proj.thisPar) : path.leaveForward(path.env.proj.thisPar),
+		Env.ctxTDecl(this).getType(path.env).resolveNameAccessR(path)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.getType().resolveNameAccessR(path)
+		var.getType(path.env).resolveNameAccessR(path)
 	}
 
 	public rule resolveMethodR(ResInfo info, CallType mt)
@@ -693,20 +685,20 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		info.isForwardsAllowed(),
 	{
 		!this.isStatic(),
-		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveCallAccessR(info,mt)
+		info.enterForward(info.env.proj.thisPar) : info.leaveForward(info.env.proj.thisPar),
+		Env.ctxTDecl(this).getType(info.env).resolveCallAccessR(info,mt)
 	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(info,mt)
+		n.getType(info.env).resolveCallAccessR(info,mt)
 	}
 	}
 
-    public void pass3() {
+    public void pass3(Env env) {
 		if !( this.parent() instanceof TypeDecl )
 			throw new CompilerException(this,"Method must be declared on class level only");
-		TypeDecl clazz = this.ctx_tdecl;
+		TypeDecl clazz = Env.ctxTDecl(this);
 		// TODO: check flags for methods
 		if( isPrivate() && isFinal() ) { setFinal(false); }
 		else if( clazz.isClazz() && clazz.isFinal() && !isFinal() ) { setFinal(true); }
@@ -727,48 +719,44 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 
 		if (isTypeUnerasable()) {
-			foreach (Var fp; params; fp.kind >= Var.PARAM_TYPEINFO_N) {
+			foreach (Var fp; params; fp.kind >= Var.PARAM_METHOD_TYPEINFO || (fp.sname != null && fp.sname.startsWith(nameTypeInfo+"$"))) {
 				fp.detach();
 			}
-			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, Type.tpTypeInfo, Var.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
+				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, env.tenv.tpTypeInfo, Var.PARAM_METHOD_TYPEINFO, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}
 
 		// push the method, because formal parameters may refer method's type args
 		foreach (Var fp; params) {
-			fp.vtype.getType(); // resolve
+			fp.vtype.getType(env); // resolve
 			if (fp.stype != null)
-				fp.stype.getType(); // resolve
+				fp.stype.getType(env); // resolve
 			fp.verifyMetas();
-			//if (fp.kind == Var.VAR_LOCAL)
-			//	fp.mflags_var_kind = Var.PARAM_NORMAL;
 		}
 
 		Type t = this.mtype; // rebuildTypes()
 		trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		verifyMetas();
 		if (body instanceof MetaValue)
-			((MetaValue)body).verify();
-		foreach(ASTOperatorAlias al; aliases) al.pass3();
+			((MetaValue)body).verify(this,nodeattr$body);
 
 		foreach(WBCCondition cond; conditions) {
 			if (cond.definer != this)
 				cond.definer = this;
 		}
 
-		if (isMacro() && isNative() && body == null) {
-			String name = clazz.qname().replace('·','.')+":"+sname;
-			body = CoreExpr.makeInstance(pos,name);
+		if (isMacro() && isNative()) {
+			if !(body instanceof CoreExpr)
+				Kiev.reportError(this, "@native @macro method must have CoreExpr body");
 		}
 	}
 
-	public void resolveMetaDefaults() {
+	public void resolveMetaDefaults(Env env) {
 		if (body instanceof MetaValue) {
-			Type tp = this.type_ret.getType();
+			Type tp = this.type_ret.getType(env);
 			Type t = tp;
 			if (t instanceof ArrayType) {
 				if (body instanceof MetaValueScalar) {
@@ -780,10 +768,10 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (t.getStruct() == null || !(t ≈ Type.tpString || t ≈ Type.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
+				if (t.getStruct() == null || !(t ≈ env.tenv.tpString || t ≈ env.tenv.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
 					throw new CompilerException(body, "Bad annotation value type "+tp);
 			}
-			((MetaValue)body).resolve(t);
+			((MetaValue)body).resolveFrontEnd(t);
 		}
 	}
 	
@@ -810,36 +798,36 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		return new MethodDFFunc(dfi);
 	}
 
-	public Method makeAccessor() {
+	public Method makeAccessor(Env env) {
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), type_ret.getType(), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), type_ret.getType(env), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		CallExpr ce;
 		if (isStatic()) {
-			ce = new CallExpr(pos, new TypeRef(ctx_tdecl.xtype), this, ENode.emptyArray);
+			ce = new CallExpr(pos, new TypeRef(Env.ctxTDecl(this).getType(env)), this, ENode.emptyArray);
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,ctx_tdecl.xtype,Var.PARAM_NORMAL,0);
+			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
 			m.params += self;
 			ce = new CallExpr(pos, new LVarExpr(pos,self), this, ENode.emptyArray);
 		}
 		foreach (Var v; this.params) {
-			v = v.ncopy();
+			v = new Copier().copyFull(v);
 			m.params += v;
 			ce.args += new LVarExpr(pos,v);
 		}
 		m.block.stats += ce;
-		ctx_tdecl.members += m;
+		Env.ctxTDecl(this).members += m;
 		Kiev.runProcessorsOn(m);
 		this.caller_from_inner = m;
 		return m;
 	}
 
-	public void postVerify() {
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
 		if (!isStatic() && !isPrivate()) {
 			CallType ct = this.mtype;
-			if (ct.ret() != StdTypes.tpVoid) {
+			if (ct.ret() != env.tenv.tpVoid) {
 				// check return to be co-variant
 				VarianceCheckError err = ct.ret().checkVariance(ct,TypeVariance.CO_VARIANT);
 				if (err != null)
@@ -885,7 +873,7 @@ public final class MethodGetter extends Method {
 	public MethodGetter() {}
 
 	public MethodGetter(Field f) {
-		super(nameGet+f.sname, new TypeRef(f.getType()), f.getJavaFlags());
+		super(nameGet+f.sname, new TypeRef(f.getType(Env.getEnv())), f.getJavaFlags());
 		this.pos = f.pos;
 	}
 }
@@ -900,28 +888,9 @@ public final class MethodSetter extends Method {
 	public MethodSetter() {}
 
 	public MethodSetter(Field f) {
-		super(nameSet+f.sname, new TypeRef(StdTypes.tpVoid), f.getJavaFlags());
+		super(nameSet+f.sname, new TypeRef(Env.getEnv().tenv.tpVoid), f.getJavaFlags());
 		this.pos = f.pos;
-		this.params += new LVar(f.pos,"value",f.getType(),Var.PARAM_NORMAL,0);
-	}
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class CtorSymbol extends Symbol {
-	@abstract
-	@AttrXMLDumpInfo(ignore=true)
-	@nodeData
-	public:ro String	decl_sname;
-	
-	@getter String get$decl_sname() {
-		ANode p = parent();
-		AttrSlot pslot = pslot();
-		if (p instanceof Constructor && pslot.name == "symbol") {
-			p = p.parent();
-			if (p instanceof DNode)
-				return p.sname;
-		}
-		return "<constructor>";
+		this.params += new LVar(f.pos,"value",f.getType(Env.getEnv()),Var.VAR_LOCAL,0);
 	}
 }
 
@@ -936,38 +905,35 @@ public final class Constructor extends Method {
 
 	@nodeAttr public ENode∅				addstats;
 
-	public Constructor() {
-		this.symbol = new CtorSymbol();
-	}
+	public Constructor() {}
 
 	public Constructor(int fl) {
-		super(null, new TypeRef(Type.tpVoid), fl);
-		this.symbol = new CtorSymbol();
+		super(null, new TypeRef(Env.getEnv().tenv.tpVoid), fl);
 	}
 	
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "sname") {
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.content_change && info.slot.name == "sname") {
 			assert(this.sname == null);
 			if (this.sname != null)
 				this.sname = null; // constructors are anonymouse
 		}
-		super.callbackChildChanged(ct, attr, data);
+		super.callbackChanged(info);
 	}
 
-	public Method makeAccessor() {
+	public Method makeAccessor(Env env) {
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), ctx_tdecl.xtype, ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), Env.ctxTDecl(this).getType(env), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
-		NewExpr ne = new NewExpr(pos, new TypeRef(ctx_tdecl.xtype), ENode.emptyArray);
+		NewExpr ne = new NewExpr(pos, new TypeRef(Env.ctxTDecl(this).getType(env)), ENode.emptyArray);
 		foreach (Var v; this.params) {
-			v = v.ncopy();
+			v = new Copier().copyFull(v);
 			m.params += v;
 			ne.args += new LVarExpr(pos,v);
 		}
 		m.block.stats += ne;
-		ctx_tdecl.members += m;
+		Env.ctxTDecl(this).members += m;
 		Kiev.runProcessorsOn(m);
 		this.caller_from_inner = m;
 		return m;

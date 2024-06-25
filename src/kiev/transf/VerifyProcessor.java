@@ -17,11 +17,12 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class VerifyProcessor implements Constants {
+public abstract class VerifyProcessor extends AbstractProcessor implements Constants {
 	
 	private final KievExt extension;
 	
-	public VerifyProcessor(KievExt ext) {
+	public VerifyProcessor(Env env, int id, KievExt ext) {
+		super(env, id);
 		this.extension = ext;
 	}
 	public boolean isEnabled() {
@@ -29,17 +30,6 @@ public abstract class VerifyProcessor implements Constants {
 	}
 	public boolean isDisabled() {
 		return Kiev.disabled(extension);
-	}
-	
-	public abstract void verify(ASTNode node);
-	
-	public static String getPropS(String base, String name, String dflt) {
-		String fname = base+"."+name;
-		String val = System.getProperty(fname,dflt);
-		if (val != null)
-			val = val.trim().intern();
-		trace(Kiev.debug, "Loaded "+fname+" as \""+val+"\"");
-		return val;
 	}
 }
 

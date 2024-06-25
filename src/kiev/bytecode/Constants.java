@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 247 $
  *
  */
 
@@ -290,82 +290,36 @@ public interface NewArrayConstants {
 
 }
 
-public interface ClazzSignatures {
-
-	public final static KString nameVoid		= KString.from("void");
-	public final static KString sigVoid			= KString.from("V");
-
-	public final static KString nameBoolean		= KString.from("boolean");
-	public final static KString sigBoolean		= KString.from("Z");
-
-	public final static KString nameByte		= KString.from("byte");
-	public final static KString sigByte			= KString.from("B");
-
-	public final static KString nameChar		= KString.from("char");
-	public final static KString sigChar			= KString.from("C");
-
-	public final static KString nameShort		= KString.from("short");
-	public final static KString sigShort		= KString.from("S");
-
-	public final static KString nameInt			= KString.from("int");
-	public final static KString sigInt			= KString.from("I");
-
-	public final static KString nameLong		= KString.from("long");
-	public final static KString sigLong			= KString.from("J");
-
-	public final static KString nameFloat		= KString.from("float");
-	public final static KString sigFloat		= KString.from("F");
-
-	public final static KString nameDouble		= KString.from("double");
-	public final static KString sigDouble		= KString.from("D");
-
-	public final static KString sigClazz1		= KString.from("L");
-	public final static KString sigClazz2		= KString.from(";");
-
-	public final static KString sigArgument1	= KString.from("A");
-	public final static KString sigArgument2	= KString.from(";");
-
-	public final static KString sigParams1		= KString.from("<");
-	public final static KString sigParams2		= KString.from(">");
-
-	public final static KString sigMethod1		= KString.from("(");
-	public final static KString sigMethod2		= KString.from(")");
-
-	public final static KString sigArray		= KString.from("[");
-	public final static KString sigClosure		= KString.from("&");
-
-}
-
 public interface BytecodeAttributeNames {
 
-	public final static KString attrCode				= KString.from("Code");
-	public final static KString attrSourceFile			= KString.from("SourceFile");
-	public final static KString attrSourceDebugExtension= KString.from("SourceDebugExtension");
-	public final static KString attrSignature			= KString.from("Signature");
-	public final static KString attrLocalVarTable		= KString.from("LocalVariableTable");
-	public final static KString attrLinenoTable		= KString.from("LineNumberTable");
-	public final static KString attrExceptions			= KString.from("Exceptions");
-	public final static KString attrInnerClasses		= KString.from("InnerClasses");
-	public final static KString attrConstantValue		= KString.from("ConstantValue");
-//	public final static KString attrClassArguments		= KString.from("kiev.ClassArguments");
-//	public final static KString attrPizzaCase			= KString.from("kiev.PizzaCase");
-//	public final static KString attrKiev				= KString.from("kiev.Kiev");
-//	public final static KString attrFlags				= KString.from("kiev.Flags");
-//	public final static KString attrAlias				= KString.from("kiev.Alias");
-//	public final static KString attrTypedef			= KString.from("kiev.Typedef");
-//	public final static KString attrOperator			= KString.from("kiev.Operator");
-//	public final static KString attrImport				= KString.from("kiev.Import");
-//	public final static KString attrEnum				= KString.from("kiev.Enum");
-	public final static KString attrRequire			= KString.from("kiev.Require");
-	public final static KString attrEnsure				= KString.from("kiev.Ensure");
-//	public final static KString attrCheckFields		= KString.from("kiev.CheckFields");
-//	public final static KString attrGenerations		= KString.from("kiev.Generations");
-//	public final static KString attrPackedFields		= KString.from("kiev.PackedFields");
-//	public final static KString attrPackerField		= KString.from("kiev.PackerField");
-	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
-	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
-	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
-	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
-	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
+	public final static String attrCode				= "Code";
+	public final static String attrSourceFile			= "SourceFile";
+	public final static String attrSourceDebugExtension= "SourceDebugExtension";
+	public final static String attrSignature			= "Signature";
+	public final static String attrLocalVarTable		= "LocalVariableTable";
+	public final static String attrLinenoTable		= "LineNumberTable";
+	public final static String attrExceptions			= "Exceptions";
+	public final static String attrInnerClasses		= "InnerClasses";
+	public final static String attrConstantValue		= "ConstantValue";
+//	public final static String attrClassArguments		= "kiev.ClassArguments";
+//	public final static String attrPizzaCase			= "kiev.PizzaCase";
+//	public final static String attrKiev				= "kiev.Kiev";
+//	public final static String attrFlags				= "kiev.Flags";
+//	public final static String attrAlias				= "kiev.Alias";
+//	public final static String attrTypedef			= "kiev.Typedef";
+//	public final static String attrOperator			= "kiev.Operator";
+//	public final static String attrImport				= "kiev.Import";
+//	public final static String attrEnum				= "kiev.Enum";
+	public final static String attrRequire			= "kiev.Require";
+	public final static String attrEnsure				= "kiev.Ensure";
+//	public final static String attrCheckFields		= "kiev.CheckFields";
+//	public final static String attrGenerations		= "kiev.Generations";
+//	public final static String attrPackedFields		= "kiev.PackedFields";
+//	public final static String attrPackerField		= "kiev.PackerField";
+	public final static String attrRVAnnotations		= "RuntimeVisibleAnnotations";
+	public final static String attrRIAnnotations		= "RuntimeInvisibleAnnotations";
+	public final static String attrRVParAnnotations	= "RuntimeVisibleParameterAnnotations";
+	public final static String attrRIParAnnotations	= "RuntimeInvisibleParameterAnnotations";
+	public final static String attrAnnotationDefault	= "AnnotationDefault";
 }
 

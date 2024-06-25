@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RRuleMethod of RuleMethod extends RMethod {
 	public:ro	Var[]				localvars;
 	public		int					base;
@@ -26,29 +26,48 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public		int					max_vars;
 	public		int					index;		// index counter for RuleNode.idx
 
-	public boolean preGenerate() {
-		Var penv = params[0];
-		assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+	public void ruleGenerate(Env env) {
+		RuleMethod rm = (RuleMethod)this;
+		if (params.length == 0 || params[0].kind != Var.PARAM_RULE_ENV)
+			rm.params.insert(0, new LVar(rm.pos,namePEnvParam,env.tenv.tpRule,Var.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 		ENode b = this.body;
 		if (b instanceof RuleBlock) {
 			RuleBlock rb = (RuleBlock)b;
-			((RRuleBlock)rb).preGenerate();
+			((RRuleBlock)rb).ruleGenerate(env,rm);
+			Struct frame = (Struct)rm.block.stats[0];
+			Var pEnv = null;
+			foreach (Var dn; rm.block.stats; dn.sname == namePEnvLVar) {
+				pEnv = dn;
+				break;
+			}
+			if (pEnv == null) {
+				Kiev.reportError(this, "Cannot find "+namePEnvLVar);
+				return;
+			}
+			this.body.walkTree(null,null,new ITreeWalker() {
+				public void post_exec(INode n, INode parent, AttrSlot slot) {
+					if (n instanceof LVarExpr) {
+						Var var = n.getVarSafe();
+						if (rm.localvars.indexOf(var) >= 0) {
+							Field f = frame.resolveField(env,var.sname);
+							n.replaceWithNode(new IFldExpr(n.pos, new LVarExpr(n.pos, pEnv), f), parent, slot);
+						}
+					}
+				}
+			});
 			Kiev.runProcessorsOn(this.body);
 		}
-		return true;
 	}
 
-	public void resolveDecl() {
+	public void resolveDecl(Env env) {
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving rule "+this);
 		try {
-			Var penv = params[0];
-			assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
-				if( mtype.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
-				body.resolve(Type.tpVoid);
+				if( mtype.ret() ≡ env.tenv.tpVoid ) body.setAutoReturnable(true);
+				resolveENode(body,env.tenv.tpVoid,env);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( mtype.ret() ≡ Type.tpVoid ) {
+				if( mtype.ret() ≡ env.tenv.tpVoid ) {
 					block.stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
@@ -61,14 +80,14 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RRuleBlock of RuleBlock extends RENode {
 	public ASTRuleNode		rnode;
 
-	public boolean preGenerate() {
-		rnode.rnResolve();
-		rnode.resolve1(null,null,false);
-		((RuleBlock)this).testGenerate(null, null);
+	public boolean ruleGenerate(Env env, RuleMethod rule_method) {
+		rnode.rnResolve(env, ((RuleBlock)this), RuleBlock.nodeattr$rnode);
+		rnode.resolve1(env,null,null,false);
+		((RuleBlock)this).generateRuleBlock(env, rule_method);
 		return false;
 	}
 }

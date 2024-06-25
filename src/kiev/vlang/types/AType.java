@@ -18,10 +18,12 @@ import java.util.StringTokenizer;
  *
  */
 
-public abstract class AType extends TVSet implements StdTypes {
+public abstract class AType extends TVSet {
 	
 	@virtual typedef MType  ≤ MetaType;
 
+	@abstract @virtual
+	public:ro final			StdTypes			tenv;
 	public final			MType				meta_type;
 	private					TemplateTVarSet		template;
 	private					Type[]				binds;
@@ -29,6 +31,7 @@ public abstract class AType extends TVSet implements StdTypes {
 	public:ro,ro,rw,rw		int					flags;
 	
 	protected AType(MType meta_type, TemplateTVarSet template, int flags) {
+		assert(meta_type != null && meta_type.tenv != null);
 		this.meta_type = meta_type;
 		this.template = template;
 		this.flags = flags;
@@ -38,6 +41,7 @@ public abstract class AType extends TVSet implements StdTypes {
 	
 	protected AType(MType meta_type, TemplateTVarSet template, int flags, TVarBld bld)
 	{
+		assert(meta_type != null && meta_type.tenv != null);
 		this.meta_type = meta_type;
 		this.template = template;
 		this.flags = flags;
@@ -45,24 +49,27 @@ public abstract class AType extends TVSet implements StdTypes {
 			this.setFromBld(bld);
 	}
 	
+	@getter
+	public final StdTypes get$tenv() { return meta_type.tenv; }
+	
 	public final boolean isReference()		{ return (meta_type.flags & MetaType.flReference)		!= 0 ; }
 	public final boolean isArray()			{ return (meta_type.flags & MetaType.flArray)			!= 0 ; }
 	public final boolean isIntegerInCode()	{ return (meta_type.flags & MetaType.flIntegerInCode)	!= 0 ; }
-	public final boolean isInteger()		{ return (meta_type.flags & MetaType.flInteger)		!= 0 ; }
-	public final boolean isFloatInCode()	{ return (meta_type.flags & MetaType.flFloatInCode)	!= 0 ; }
+	public final boolean isInteger()		{ return (meta_type.flags & MetaType.flInteger)			!= 0 ; }
+	public final boolean isFloatInCode()	{ return (meta_type.flags & MetaType.flFloatInCode)		!= 0 ; }
 	public final boolean isFloat()			{ return (meta_type.flags & MetaType.flFloat)			!= 0 ; }
-	public final boolean isNumber()		{ return (meta_type.flags & MetaType.flNumber)			!= 0 ; }
-	public final boolean isDoubleSize()	{ return (meta_type.flags & MetaType.flDoubleSize)		!= 0 ; }
-	public final boolean isBoolean()		{ return (meta_type.flags & MetaType.flBoolean)		!= 0 ; }
+	public final boolean isNumber()			{ return (meta_type.flags & MetaType.flNumber)			!= 0 ; }
+	public final boolean isDoubleSize()		{ return (meta_type.flags & MetaType.flDoubleSize)		!= 0 ; }
+	public final boolean isBoolean()		{ return (meta_type.flags & MetaType.flBoolean)			!= 0 ; }
 	public final boolean isCallable()		{ return (meta_type.flags & MetaType.flCallable)		!= 0 ; }
-	public final boolean isAbstract()		{ return (flags & flAbstract)							!= 0 ; }
-	public final boolean isUnerasable()	{ return (flags & flUnerasable)						!= 0 ; }
-	public final boolean isVirtual()		{ return (flags & flVirtual)							!= 0 ; }
-	public final boolean isFinal()			{ return (flags & flFinal)								!= 0 ; }
-	public final boolean isStatic()		{ return (flags & flStatic)								!= 0 ; }
-	public final boolean isForward()		{ return (flags & flForward)							!= 0 ; }
-	public final boolean isArgAppliable()	{ return (flags & flArgAppliable)						!= 0 ; }
-	public final boolean isValAppliable()	{ return (flags & flValAppliable)						!= 0 ; }
+	public final boolean isAbstract()		{ return (flags & StdTypes.flAbstract)					!= 0 ; }
+	public final boolean isUnerasable()		{ return (flags & StdTypes.flUnerasable)				!= 0 ; }
+	public final boolean isVirtual()		{ return (flags & StdTypes.flVirtual)					!= 0 ; }
+	public final boolean isFinal()			{ return (flags & StdTypes.flFinal)						!= 0 ; }
+	public final boolean isStatic()			{ return (flags & StdTypes.flStatic)					!= 0 ; }
+	public final boolean isForward()		{ return (flags & StdTypes.flForward)					!= 0 ; }
+	public final boolean isArgAppliable()	{ return (flags & StdTypes.flArgAppliable)				!= 0 ; }
+	public final boolean isValAppliable()	{ return (flags & StdTypes.flValAppliable)				!= 0 ; }
 
 	private void setFromBld(TVarBld bld) {
 		bld.close(0);
@@ -97,16 +104,16 @@ public abstract class AType extends TVSet implements StdTypes {
 				this.binds[j] = template.resolveArg(j);
 		}
 
-		flags &= ~(flAbstract|flValAppliable);
+		flags &= ~(StdTypes.flAbstract|StdTypes.flValAppliable);
 		for (int i=0; i < template_vars.length; i++) {
 			TVar tv = template_vars[i];
 			if (tv.isAlias())
 				continue;
 			Type r = tv.result();
 			ArgType v = tv.var;
-			if (r.isAbstract()) flags |= flAbstract;
-			if (v.isUnerasable()) flags |= flUnerasable;
-			if (v.isArgAppliable() && r.isValAppliable()) flags |= flValAppliable;
+			if (r.isAbstract()) flags |= StdTypes.flAbstract;
+			if (v.isUnerasable()) flags |= StdTypes.flUnerasable;
+			if (v.isArgAppliable() && r.isValAppliable()) flags |= StdTypes.flValAppliable;
 		}
 	}
 	
@@ -130,16 +137,16 @@ public abstract class AType extends TVSet implements StdTypes {
 			}
 			this.template = template;
 			TVar[] template_vars = template.getTVars();
-			int flags = this.flags & ~(flAbstract|flValAppliable);
+			int flags = this.flags & ~(StdTypes.flAbstract|StdTypes.flValAppliable);
 			for (int i=0; i < template_vars.length; i++) {
 				TVar tv = template_vars[i];
 				if (tv.isAlias())
 					continue;
 				Type r = tv.result();
 				ArgType v = tv.var;
-				if (r.isAbstract()) flags |= flAbstract;
-				if (v.isUnerasable()) flags |= flUnerasable;
-				if (v.isArgAppliable() && r.isValAppliable()) flags |= flValAppliable;
+				if (r.isAbstract()) flags |= StdTypes.flAbstract;
+				if (v.isUnerasable()) flags |= StdTypes.flUnerasable;
+				if (v.isArgAppliable() && r.isValAppliable()) flags |= StdTypes.flValAppliable;
 			}
 			this.flags = flags;
 		}
@@ -147,24 +154,24 @@ public abstract class AType extends TVSet implements StdTypes {
 	}
 	
 	public final void checkResolved() {
-		meta_type.tdecl.checkResolved();
+		meta_type.tdecl.checkResolved(tenv.env);
 		this.bindings();
 	}
 
-	public static boolean identity(AType t1, AType t2) alias xfx operator ≡ {
+	public static boolean identity(AType t1, AType t2) operator "V ≡ V" {
 		return t1 == t2;
 	}
 
-	public static boolean not_identity(AType t1, AType t2) alias xfx operator ≢ {
+	public static boolean not_identity(AType t1, AType t2) operator "V ≢ V" {
 		return t1 != t2;
 	}
 
-	public static boolean type_not_equals(AType t1, AType t2) alias xfx operator ≉ {
+	public static boolean type_not_equals(AType t1, AType t2) operator "V ≉ V" {
 		if (t1 == null || t2 == null) return true;
 		return !(t1 ≈ t2);
 	}
 	
-	public static boolean type_equals(AType t1, AType t2) alias xfx operator ≈ {
+	public static boolean type_equals(AType t1, AType t2) operator "V ≈ V" {
 		if (t1 == null || t2 == null) return false;
 		if (t1 == t2) return true;
 		if (t1.meta_type.tdecl != t2.meta_type.tdecl) return false;
@@ -214,43 +221,6 @@ public abstract class AType extends TVSet implements StdTypes {
 	}
 	public final boolean isAliasArg(int i) { return this.template.isAliasArg(i); }
 
-	// change bound types, for virtual args, outer args, etc
-	public TVarBld rebind_bld(TVarBld vs) {
-		TVar[] my_vars = this.template.getTVars();
-		TVar[] vs_vars = vs.tvars;
-		final int my_size = my_vars.length;
-		final int vs_size = vs_vars.length;
-		TVarBld sr = new TVarBld(this);
-
-	next_my:
-		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i];
-			// TVarBound already bound
-			if (!x.isAlias()) {
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
-						sr.set(i, vs.resolveArg(j));
-						continue next_my;
-					}
-				}
-				continue next_my;
-			}
-			// bind virtual aliases
-			if (x.var.isVirtual()) {
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
-						sr.set(i, vs.resolveArg(j));
-						continue next_my;
-					}
-				}
-				continue next_my;
-			}
-		}
-		return sr;
-	}
-
 	// Re-bind type set, replace all abstract types in current set
 	// with results of another set. It binds unbound vars, and re-binds
 	// (changes) vars bound to abstract types, i.e. it changes only 'TVar.bnd' field.
@@ -276,9 +246,9 @@ public abstract class AType extends TVSet implements StdTypes {
 	
 	public TVarBld applay_bld(TVSet vs)
 	{
-		TVarBld sr = new TVarBld(this);
 		if (!this.hasApplayables(vs))
-			return sr;
+			return null;
+		TVarBld sr = new TVarBld(this);
 		final TVar[] template_vars = this.template.getTVars();
 		final int vs_size = vs.getArgsLength();
 		final int my_size = template_vars.length;
@@ -292,7 +262,7 @@ public abstract class AType extends TVSet implements StdTypes {
 			Type bnd = (p < this.binds.length) ? this.binds[p] : null;
 			if (bnd == null)
 				continue;
-			if (bnd ≡ StdTypes.tpSelfTypeArg && vs instanceof Type) {
+			if (bnd ≡ tenv.tpSelfTypeArg && vs instanceof Type) {
 				sr.set(i, (Type)vs);
 			}
 			else if (bnd instanceof ArgType) {
@@ -320,7 +290,7 @@ public abstract class AType extends TVSet implements StdTypes {
 		if (my_size == 0)
 			return false;
 		for (int i=0; i < my_size; i++) {
-			if (appls[i] ≡ StdTypes.tpSelfTypeArg)
+			if (appls[i] ≡ tenv.tpSelfTypeArg)
 				return true;
 		}
 		final int tp_size = vs.getArgsLength();
@@ -392,19 +362,19 @@ public abstract class AType extends TVSet implements StdTypes {
 		sb.append(" {\n");
 		for (int i=0; i < binds.length; i++)
 			sb.append(i).append(": ").append(binds[i]).append('\n');
-		sb.append("}");
+		sb.append("} ").append(template.toDump());
 		return sb.toString();
 	}
 
-	public String makeSignature() {
+	public String makeSignature(Env env) {
 		StringBuffer str = new StringBuffer();
 		TypeDecl tdecl = meta_type.tdecl;
 		str.append(tdecl.qname());
-		String uuid = tdecl.uuid;
-		if (uuid == null && !tdecl.isInterfaceOnly())
-			uuid = tdecl.symbol.getUUID();
-		if (uuid != null)
-			str.append('‣').append(uuid);
+		SymUUID suuid = tdecl.symbol.suuid();
+		if (suuid == null && suuid != SymUUID.Empty && !tdecl.isInterfaceOnly())
+			suuid = tdecl.symbol.getUUID(env);
+		if (suuid != null && suuid != SymUUID.Empty)
+			str.append('‣').append(suuid);
 		this.bindings();
 		if (this.binds.length == 0)
 			return str.toString();
@@ -423,7 +393,7 @@ public abstract class AType extends TVSet implements StdTypes {
 			}
 			str.append(at.name);
 			str.append('=');
-			str.append(tp.makeSignature());
+			str.append(tp.makeSignature(env));
 		}
 		if (params)
 			str.append(')');
@@ -446,12 +416,12 @@ public abstract class AType extends TVSet implements StdTypes {
 			return sign.substring(0, p);
 		return sign;
 	}
-	public static Type fromSignature(String sign, boolean full) {
+	public static Type fromSignature(Env env, String sign, boolean full) {
 		StringTokenizer st = new StringTokenizer(sign,"=,()",true);
 		String[] sep = {""};
-		return fromSignature(st,sep,full);
+		return fromSignature(env,st,sep,full);
 	}
-	private static Type fromSignature(StringTokenizer st, String[] sep, boolean full) {
+	private static Type fromSignature(Env env, StringTokenizer st, String[] sep, boolean full) {
 		String name = st.nextToken();
 		String uuid = null;
 		int p = name.indexOf('‣');
@@ -463,47 +433,47 @@ public abstract class AType extends TVSet implements StdTypes {
 		}
 		TypeDecl tdecl = null;
 		if (uuid != null) {
-			Symbol sym = Env.getRoot().getSymbolByUUID(uuid);
+			Symbol sym = env.getSymbolByUUID(uuid);
 			if (sym != null && sym.dnode instanceof TypeDecl)
 				tdecl = (TypeDecl)sym.dnode;
 			//if (tdecl != null)
 			//	assert (tdecl.qname().equals(name));
 		}
 		if (tdecl == null) {
-			tdecl = (TypeDecl)Env.getRoot().resolveGlobalDNode(name);
+			tdecl = (TypeDecl)env.resolveGlobalDNode(name);
 		}
 		if (tdecl == null) {
 			// pre-load all top-level classes, to find an inner class
 			int p = name.indexOf('·');
 			while (p > 0) {
 				String pnm = name.substring(0,p);
-				if (Env.getRoot().existsTypeDecl(pnm))
-					Env.getRoot().loadAnyDecl(pnm);
+				if (env.existsTypeDecl(pnm))
+					env.loadAnyDecl(pnm);
 				p = name.indexOf('·', p+1);
 			}
-			if (Env.getRoot().existsTypeDecl(name))
-				tdecl = Env.getRoot().loadTypeDecl(name,false);
+			if (env.existsTypeDecl(name))
+				tdecl = env.loadTypeDecl(name,false);
 			if (tdecl == null) {
 				System.out.println("Warning: Cannot find TypeDecl "+name);
-				tdecl = StdTypes.tpVoid.meta_type.tdecl;
+				tdecl = env.tenv.tpVoid.meta_type.tdecl;
 			}
 		}
 		if (!st.hasMoreElements())
-			return tdecl.xtype;
+			return tdecl.getType(env);
 		sep[0] = st.nextToken();
 		if (!sep[0].equals("(")) {
 			assert (sep[0].equals(",")||sep[0].equals(")"));
 			if (tdecl instanceof TypeDef)
-				return tdecl.getAType();
-			return tdecl.xtype;
+				return tdecl.getAType(env);
+			return tdecl.getType(env);
 		}
-		TVar[] template_vars = tdecl.xmeta_type.getTemplBindings().getTVars();
+		TVar[] template_vars = tdecl.getMetaType(env).getTemplBindings().getTVars();
 		TVarBld set = new TVarBld();
 		while (!sep[0].equals(")")) {
 			String aname = st.nextToken();
 			sep[0] = st.nextToken();
 			assert (sep[0].equals("="));
-			Type tp = fromSignature(st,sep,full);
+			Type tp = fromSignature(env,st,sep,full);
 			ArgType a = null;
 			foreach (TVar t; template_vars; t.var.name.equals(aname)) {
 				a = t.var;
@@ -515,7 +485,7 @@ public abstract class AType extends TVSet implements StdTypes {
 				System.out.println("Warning: Cannot find var "+aname+" in type "+tdecl);
 			assert (sep[0].equals(",")||sep[0].equals(")"));
 		}
-		return tdecl.xmeta_type.make(set);
+		return tdecl.getMetaType(env).make(set);
 	}
 }
 

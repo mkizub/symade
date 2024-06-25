@@ -1,83 +1,80 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
+ *******************************************************************************/
 package kiev.gui;
 
-import kiev.fmt.*;
 import kiev.gui.ActionPoint;
 import kiev.gui.Editor;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
-import kiev.vtree.ANode;
 
-public final class NewElemHere extends NewElemEditor implements Runnable {
+/**
+ * New element here UI Action.
+ */
+public final class NewElemHere extends NewElemEditor {
 
-	public NewElemHere(Editor editor) { super(editor); }
+	/**
+	 * The constructor.
+	 * @param editor the editor
+	 */
+	public NewElemHere(Editor editor, ActionPoint ap, int idx) {
+		super(editor, ap, idx);
+	}
 
-	public void run() {
-		Drawable dr = editor.getCur_elem().dr;
-		if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
-			ANode n = dr.drnode;
-			makeMenu("Set new item", n, (Draw_SyntaxPlaceHolder)dr.syntax, dr.text_syntax);
-			return;
+	/* (non-Javadoc)
+	 * @see kiev.gui.UIAction#run()
+	 */
+	public void exec() {
+		if (ap.curr_node != null && ap.curr_slot != null) {
+			boolean ok = makeMenu("Insert new item", ap.curr_node, ap.curr_syntax, ap.curr_slot.name, null/*ap.dr.text_syntax*/);
+			if (ok)
+				return;
 		}
-		if (dr instanceof DrawNodeTerm && (dr.drnode == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
-			ANode n = dr.drnode;
-			while (n == null) {
-				dr = (Drawable)dr.parent();
-				n = dr.drnode;
-			}
-			Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
-			makeMenu("Set new item", n, satt, dr.text_syntax);
-			return;
-		}
-		ActionPoint ap = editor.getActionPoint(false);
-		if (ap != null && ap.length >= 0) {
-			Draw_SyntaxElem se = ap.dr.syntax;
-			if (se instanceof Draw_SyntaxElemWrapper)
-				se = ((Draw_SyntaxElemWrapper)se).element;
-			idx = ap.index;
-			if (se instanceof Draw_SyntaxAttr)
-				makeMenu("Insert new item", ap.node, (Draw_SyntaxAttr)se, dr.text_syntax);
-			return;
+		if (ap.space_node != null) {
+			boolean ok = makeMenu("Insert new item", ap.space_node, ap.space_syntax, ap.space_slot.name, null/*ap.dr.text_syntax*/);
+			if (ok)
+				return;
 		}
 	}
 	
+	/**
+	 * New Element Here UI Action Factory.
+	 */
 	public final static class Factory implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Create a new element at this position"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return true; }
-		public Runnable getAction(UIActionViewContext context) {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
-			Drawable dr = context.dr;
-			if (dr instanceof DrawPlaceHolder && dr.syntax.elem_decl != null && ((Draw_SyntaxPlaceHolder)dr.syntax).attr_name != null) {
-				ExpectedTypeInfo[] exp = ((Draw_SyntaxPlaceHolder)dr.syntax).getExpectedTypes();
-				if (exp == null)
-					return null;
-				return new NewElemHere(editor);
+			ActionPoint ap = context.ap;
+			if (ap.curr_node != null && ap.curr_slot != null) {
+				if (checkNewFuncAvailable(ap.curr_syntax))
+					return new NewElemHere(editor, ap, -1);
 			}
-			if (dr instanceof DrawNodeTerm && (dr.drnode == null || ((DrawNodeTerm)dr).getAttrObject() == null)) {
-				ANode n = dr.drnode;
-				while (n == null) {
-					dr = (Drawable)dr.parent();
-					n = dr.drnode;
-				}
-				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)dr.syntax;
-				ExpectedTypeInfo[] exp = satt.getExpectedTypes();
-				if (exp == null)
-					return null;
-				return new NewElemHere(editor);
-			}
-			ActionPoint ap = editor.getActionPoint(false);
-			if (ap == null || ap.length < 0)
-				return null;
-			Draw_SyntaxElem se = ap.dr.syntax;
-			if (se instanceof Draw_SyntaxElemWrapper)
-				se = ((Draw_SyntaxElemWrapper)se).element;
-			if (se instanceof Draw_SyntaxAttr) {
-				Draw_SyntaxAttr satt = (Draw_SyntaxAttr)se;
-				ExpectedTypeInfo[] exp = satt.getExpectedTypes();
-				if (exp == null)
-					return null;
-				return new NewElemHere(editor);
+			if (ap.space_node != null) {
+				if (checkNewFuncAvailable(ap.space_syntax))
+					return new NewElemHere(editor, ap, ap.prev_index);
 			}
 			return null;
 		}

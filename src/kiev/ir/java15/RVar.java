@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public static view RVar of Var extends RDNode {
 	public	TypeRef		vtype;
 	public	ENode		init;
@@ -29,37 +29,36 @@ public static view RVar of Var extends RDNode {
 	public final boolean isNeedProxy();
 	public final void setNeedProxy(boolean on);
 
-	public boolean preGenerate() { return true; }
+	public boolean preGenerate(Env env) { return true; }
 
-	public void resolveDecl() {
+	public void resolveDecl(Env env) {
 		if( isResolved() ) return;
-		Type tp = this.getType();
+		Type tp = this.getType(env);
 		if (init instanceof TypeRef)
-			((TypeRef)init).toExpr(tp);
+			((RTypeRef)(TypeRef)init).toExpr(tp,env);
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr((Var)this,init);
 			try {
 				Kiev.runProcessorsOn(init);
-				init.resolve(tp.getEnclosedType());
+				resolveENode(init,tp.getEnclosedType(),env);
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}
 		}
 		else if (init != null) {
 			try {
-				init.resolve(tp);
-				Type it = init.getType();
+				resolveENode(init,tp,env);
+				Type it = init.getType(env);
 				if (!it.isInstanceOf(tp)) {
 					if (it.getAutoCastTo(tp) == null)
 						Kiev.reportWarning(this, "Cannot auto-cast initializer to the var "+this);
 					init = new CastExpr(init.pos,tp,~init);
-					init.resolve(tp);
+					resolveENode(init,tp,env);
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}
 		}
-		DataFlowInfo.getDFlow((Var)this).out();
 		setResolved(true);
 	}
 }

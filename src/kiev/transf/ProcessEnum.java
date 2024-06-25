@@ -17,26 +17,40 @@ import syntax kiev.Syntax;
  *
  */
 
-@singleton
-public class EnumFE_GenMembers extends TransfProcessor {
-	private EnumFE_GenMembers() { super(KievExt.Enum); }
+public final class EnumPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("enum")) {
+			pd = new PluginDescr("enum").depends("kiev");
+			pd.proc(new ProcessorDescr("gen-members", "fe", 0, EnumFE_GenMembers.class).after("kiev:fe:pass3").before("kiev:fe:pre-resolve"));
+		}
+		return pd;
+	}
+}
+
+public final class EnumFE_GenMembers extends TransfProcessor {
+	public EnumFE_GenMembers(Env env, int id) { super(env,id,KievExt.Enum); }
 	public String getDescr() { "Enum members generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		doProcess(node);
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"EnumFE_GenMembers");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+		}
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
+	public void doProcess(SyntaxScope:ASTNode ss) {
+		foreach (ASTNode dn; ss.members)
 			this.doProcess(dn);
 	}
 	
@@ -47,18 +61,20 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			return;
 		}
 		
-		if (clazz.isInterfaceOnly() || clazz.resolveField(nameEnumValuesFld, false) != null)
+		if (clazz.isInterfaceOnly() || clazz.resolveField(env, nameEnumValuesFld, false) != null)
 			return;
+		
+		StdTypes tenv = this.env.getTypeEnv();
 		
 		Field[] eflds = ((JavaEnum)clazz).getEnumFields();
 		int pos = clazz.pos;
 		
 		{
-			if (!clazz.instanceOf(Type.tpEnum.tdecl))
-				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
+			if (!clazz.instanceOf(tenv.tpEnum.tdecl))
+				clazz.super_types.insert(0, new TypeRef(tenv.tpEnum));
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
-				new ArrayType(clazz.xtype), ACC_SYNTHETIC|ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			vals.init = new NewInitializedArrayExpr(pos, new TypeExpr(clazz.xtype,Operator.PostTypeArray), ENode.emptyArray);
+				new ArrayType(clazz.getType(env)), ACC_SYNTHETIC|ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+			vals.init = new NewInitializedArrayExpr(pos, new TypeExpr(clazz.getType(env),Operator.PostTypeArray,new ArrayType(clazz.getType(env))), ENode.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
 				ENode e = new SFldExpr(eflds[i].pos,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);
@@ -75,14 +91,14 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		
 		// values()[]
 		{
-			Method mvals = new MethodImpl(nameEnumValues,new ArrayType(clazz.xtype),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method mvals = new MethodImpl(nameEnumValues,new ArrayType(clazz.getType(env)),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			mvals.pos = pos;
 			mvals.body = new Block(pos);
 			mvals.block.stats.add(
 				new ReturnStat(pos,
-					new SFldExpr(pos,clazz.resolveField(nameEnumValuesFld)) ) );
+					new SFldExpr(pos,clazz.resolveField(env,nameEnumValuesFld)) ) );
 			foreach (Method m; clazz.members; m.sname == mvals.sname) {
-				m.replaceWithNode(mvals);
+				m.replaceWithNode(mvals,clazz,Struct.nodeattr$members);
 				break;
 			}
 			if (!mvals.isAttached())
@@ -91,10 +107,10 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		
 		// Cast from int
 		{
-			Method tome = new MethodImpl("fromInt",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
-			tome.aliases += new ASTOperatorAlias(nameCastOp);
+			Method tome = new MethodImpl("fromInt",clazz.getType(env),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			tome.aliases += new OperatorAlias(nameCastOp, tome);
 			tome.pos = pos;
-			tome.params.append(new LVar(pos,nameEnumOrdinal,Type.tpInt, Var.PARAM_NORMAL,0));
+			tome.params.append(new LVar(pos,nameEnumOrdinal,tenv.tpInt, Var.VAR_LOCAL,0));
 			tome.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,new LVarExpr(pos,tome.params[0]));
 			//EnumAttr ea = (EnumAttr)clazz.getAttr(attrEnum);
@@ -105,10 +121,10 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				sw.stats.add(new ReturnStat(pos,new SFldExpr(pos,eflds[i])));
 			}
 			sw.stats.add(new CaseLabel(pos,null));
-			sw.stats.add(new ThrowStat(pos,new NewExpr(pos,Type.tpCastException,ENode.emptyArray)));
+			sw.stats.add(new ThrowStat(pos,new NewExpr(pos,tenv.tpCastException,ENode.emptyArray)));
 			tome.block.stats.add(sw);
 			foreach (Method m; clazz.members; m.sname == tome.sname) {
-				m.replaceWithNode(tome);
+				m.replaceWithNode(tome,clazz,Struct.nodeattr$members);
 				break;
 			}
 			if (!tome.isAttached())
@@ -117,13 +133,13 @@ public class EnumFE_GenMembers extends TransfProcessor {
 
 		// toString
 		{
-			Method tostr = new MethodImpl("toString",Type.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
-			tostr.aliases += new ASTOperatorAlias(nameCastOp);
+			Method tostr = new MethodImpl("toString",tenv.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
+			tostr.aliases += new OperatorAlias(nameCastOp, tostr);
 			tostr.pos = pos;
 			tostr.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
-					Type.tpEnum.tdecl.resolveMethod(nameEnumOrdinal, Type.tpInt),
+					tenv.tpEnum.tdecl.resolveMethod(env, nameEnumOrdinal, tenv.tpInt),
 					ENode.emptyArray));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
@@ -133,10 +149,10 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				sw.stats.add(new ReturnStat(pos,new ConstStringExpr(str)));
 			}
 			sw.stats.add(new CaseLabel(pos,null));
-			sw.stats.add(new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray)));
+			sw.stats.add(new ThrowStat(pos,new NewExpr(pos,tenv.tpRuntimeException,ENode.emptyArray)));
 			tostr.block.stats.add(sw);
 			foreach (Method m; clazz.members; m.sname == tostr.sname) {
-				m.replaceWithNode(tostr);
+				m.replaceWithNode(tostr,clazz,Struct.nodeattr$members);
 				break;
 			}
 			if (!tostr.isAttached())
@@ -145,17 +161,17 @@ public class EnumFE_GenMembers extends TransfProcessor {
 
 		// fromString
 		{
-			Method fromstr = new MethodImpl("valueOf",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
-			fromstr.aliases += new ASTOperatorAlias(nameCastOp);
-			fromstr.aliases += new Symbol("fromString");
+			Method fromstr = new MethodImpl("valueOf",clazz.getType(env),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			fromstr.aliases += new OperatorAlias(nameCastOp, fromstr);
+			fromstr.aliases += new Alias("fromString", fromstr);
 			fromstr.pos = pos;
-			fromstr.params.add(new LVar(pos,"val",Type.tpString, Var.PARAM_NORMAL,0));
+			fromstr.params.add(new LVar(pos,"val",tenv.tpString, Var.VAR_LOCAL,0));
 			fromstr.body = new Block(pos);
-			AssignExpr ae = new AssignExpr(pos,Operator.Assign,
+			AssignExpr ae = new AssignExpr(pos,
 				new LVarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
 					new LVarExpr(pos,fromstr.params[0]),
-					Type.tpString.tdecl.resolveMethod("intern",Type.tpString),
+					tenv.tpString.tdecl.resolveMethod(env,"intern",tenv.tpString),
 					ENode.emptyArray
 				));
 			fromstr.block.stats.add(new ExprStat(pos,ae));
@@ -163,7 +179,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				Field f = eflds[i];
 				String str = f.sname;
 				IfElseStat ifst = new IfElseStat(pos,
-					new BinaryBoolExpr(pos,Operator.Equals,
+					new BinaryBoolExpr(pos,env.coreFuncs.fObjectBoolEQ,
 						new LVarExpr(pos,fromstr.params[0]),
 						new ConstStringExpr(str)),
 					new ReturnStat(pos,new SFldExpr(pos,f)),
@@ -175,7 +191,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 					str = alt_id.value;
 					if (str != f.sname) {
 						ifst = new IfElseStat(pos,
-							new BinaryBoolExpr(pos,Operator.Equals,
+							new BinaryBoolExpr(pos,env.coreFuncs.fObjectBoolEQ,
 								new LVarExpr(pos,fromstr.params[0]),
 								new ConstStringExpr(str)),
 								new ReturnStat(pos,new SFldExpr(pos,f)),
@@ -186,10 +202,10 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				}
 			}
 			fromstr.block.stats.add(
-				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
+				new ThrowStat(pos,new NewExpr(pos,tenv.tpRuntimeException,ENode.emptyArray))
 				);
 			foreach (Method m; clazz.members; m.sname == fromstr.sname) {
-				m.replaceWithNode(fromstr);
+				m.replaceWithNode(fromstr,clazz,Struct.nodeattr$members);
 				break;
 			}
 			if (!fromstr.isAttached())

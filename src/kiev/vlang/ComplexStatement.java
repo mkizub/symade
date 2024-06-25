@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
@@ -29,8 +29,8 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
 	@nodeAttr public ENode			val;
-	@nodeData public Type			ctype;
 	@nodeAttr public Var∅			pattern;
+	          public Type			ctype;
 
 	public CaseLabel() {}
 
@@ -53,8 +53,9 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 				if (sel != null)
 					res = DataFlowInfo.getDFlow(sel).out();
 			}
-			if (ANode.getPrevNode(cl) != null) {
-				DFState prev = DataFlowInfo.getDFlow((ASTNode)ANode.getPrevNode(cl)).out();
+			INode prev = Env.getPrevNode(cl);
+			if (prev != null) {
+				DFState prev = DataFlowInfo.getDFlow((ASTNode)prev).out();
 				if (res != null)
 					res = DFState.join(res,prev);
 				else
@@ -99,7 +100,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		n @= pattern,
 		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		((Var)n).getType().resolveCallAccessR(info,mt)
+		((Var)n).getType(info.env).resolveCallAccessR(info,mt)
 	}
 
 }
@@ -115,7 +116,7 @@ public class SwitchStat extends Block {
 	}
 	
 	@nodeAttr public ENode                 sel;
-	@nodeData public CaseLabel∅           cases;
+	@nodeData public CaseLabel∅            cases;
 	@nodeData public CaseLabel             defCase;
 	@nodeAttr public ENode                 sel_to_int;
 	@nodeAttr(copyable=false, ext_data=true)
@@ -135,7 +136,7 @@ public class SwitchStat extends Block {
 
 	public String toString() { return "switch("+sel+")"; }
 	
-	public void preResolveOut() {
+	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
 		Vector<CaseLabel> labels = new Vector<CaseLabel>();
 		CaseLabel dflt = null;
 		foreach (CaseLabel l; stats) {
@@ -161,30 +162,30 @@ public class SwitchStat extends Block {
 			cases += l;
 	}
 	
-	public void mainResolveOut() {
-		Type tp = sel.getType();
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		Type tp = sel.getType(env);
 		if (tp.meta_type.tdecl.isEnum()) {
 			SwitchEnumStat sw = new SwitchEnumStat();
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
 				sw.stats += st;
-			this.replaceWithNodeReWalk(sw);
+			this.replaceWithNodeReWalk(sw,parent,slot);
 		}
 		if (tp.isReference() && tp.meta_type.tdecl.isHasCases()) {
 			MatchStat sw = new MatchStat();
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
 				sw.stats += st;
-			this.replaceWithNodeReWalk(sw);
+			this.replaceWithNodeReWalk(sw,parent,slot);
 		}
 		if (tp.isReference()) {
 			SwitchTypeStat sw = new SwitchTypeStat();
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
 				sw.stats += st;
-			this.replaceWithNodeReWalk(sw);
+			this.replaceWithNodeReWalk(sw,parent,slot);
 		}
-		if (tp.getAutoCastTo(Type.tpInt) ≢ Type.tpInt)
+		if (tp.getAutoCastTo(env.tenv.tpInt) ≢ env.tenv.tpInt)
 			Kiev.reportError(this, "Type of switch selector must be int");
 	}
 
@@ -209,8 +210,8 @@ public class SwitchEnumStat extends SwitchStat {
 
 	public String toString() { return "switch-enum("+sel+")"; }
 	
-	public void mainResolveOut() {
-		Type tp = sel.getType();
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		Type tp = sel.getType(env);
 		if (!tp.meta_type.tdecl.isEnum())
 			Kiev.reportError(this, "Expected enum value as selector");
 	}
@@ -232,8 +233,8 @@ public class SwitchTypeStat extends SwitchStat {
 
 	public String toString() { return "switch-type("+sel+")"; }
 	
-	public void mainResolveOut() {
-		Type tp = sel.getType();
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		Type tp = sel.getType(env);
 		if (!tp.isReference())
 			Kiev.reportError(this, "Expected value of reference type as selector");
 	}
@@ -257,8 +258,8 @@ public class MatchStat extends SwitchStat {
 
 	public String toString() { return "match("+sel+")"; }
 	
-	public void mainResolveOut() {
-		Type tp = sel.getType();
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		Type tp = sel.getType(env);
 		if (!tp.isReference() || !tp.meta_type.tdecl.isHasCases())
 			Kiev.reportError(this, "Expected value of type with cases as selector");
 	}
@@ -348,6 +349,7 @@ public class WithStat extends ENode {
 	
 	@nodeAttr public ENode		expr;
 	@nodeAttr public ENode		body;
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public Var			var_or_field;
 
 	public WithStat() {}

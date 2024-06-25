@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 298 $
  *
  */
 
@@ -54,7 +54,9 @@ public final class AccessExpr extends LvalueExpr {
 		this.ident = ident;
 	}
 
-	public int		getPriority() { return Constants.opAccessPriority; }
+	public int getLvalArity() { return 1; }
+
+	public int		getPriority(Env env) { return Constants.opAccessPriority; }
 
 	public final ENode makeExpr(ResInfo info, ASTNode o) {
 		DNode dn = info.resolvedDNode();
@@ -62,7 +64,7 @@ public final class AccessExpr extends LvalueExpr {
 			return info.buildAccess(this, o, info.resolvedSymbol());
 		}
 		else if (dn instanceof TypeDecl) {
-			TypeRef tr = new TypeRef(dn.xtype);
+			TypeRef tr = new TypeRef(dn.getType(info.env));
 			return tr;
 		}
 		else {
@@ -74,20 +76,20 @@ public final class AccessExpr extends LvalueExpr {
     	return obj+"."+ident;
 	}
 
-	public void mainResolveOut() {
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		ENode[] res;
 		Type[] tps;
 
 		ENode obj = this.obj;
 		// pre-resolve result
 		if( obj instanceof TypeRef ) {
-			tps = new Type[]{ ((TypeRef)obj).getType() };
+			tps = new Type[]{ ((TypeRef)obj).getType(env) };
 			res = new ENode[1];
 			if( ident.equals(nameThis) )
-				this.replaceWithNodeReWalk(new OuterThisAccessExpr(pos,(TypeRef)~obj));
+				this.replaceWithNodeReWalk(new OuterThisAccessExpr(pos,(TypeRef)~obj),parent,slot);
 		}
 		else {
-			tps = obj.getAccessTypes();
+			tps = obj.getAccessTypes(env);
 			res = new ENode[tps.length];
 			// fall down
 		}
@@ -95,12 +97,27 @@ public final class AccessExpr extends LvalueExpr {
 			if (res[si] != null)
 				continue;
 			Type tp = tps[si];
-			ResInfo info;
-			if (tp.resolveNameAccessR(info=new ResInfo(this,this.ident,ResInfo.noStatic | ResInfo.noSyntaxContext)) ) {
-				res[si] = makeExpr(info,obj);
+			// try to resolve instance members
+			ResInfo info = new ResInfo(env,this,this.ident,ResInfo.noStatic | ResInfo.noSyntaxContext);
+			if (obj instanceof TypeRef) {
+				if (obj.getTypeDecl(env).isSingleton()) {
+					info.enterForward(obj.getTypeDecl(env).resolveField(env,nameInstance));
+					if (tp.resolveNameAccessR(info) ) {
+						// resolved in a singleton
+						res[si] = makeExpr(info,obj);
+						continue;
+					}
+				}
 			}
-			else if (tp.meta_type.tdecl.resolveNameR(info=new ResInfo(this,this.ident))) {
-				if (obj instanceof TypeRef && obj.getType() ≈ tp) {
+			else if (tp.resolveNameAccessR(info) ) {
+				// resolved in an instance
+				res[si] = makeExpr(info,obj);
+				continue;
+			}
+			// try to resolve static members
+			info = new ResInfo(env,this,this.ident);
+			if (tp.meta_type.tdecl.resolveNameR(info)) {
+				if (obj instanceof TypeRef && obj.getType(env) ≈ tp) {
 					res[si] = makeExpr(info,obj);
 				} else {
 					TypeRef tr = new TypeRef(tp);
@@ -131,7 +148,7 @@ public final class AccessExpr extends LvalueExpr {
 			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0) {
-			if (ctx_method != null && ctx_method.isMacro())
+			if (Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
 				return;
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
 			for(int si=0; si < res.length; si++) {
@@ -145,19 +162,7 @@ public final class AccessExpr extends LvalueExpr {
 		ENode e = res[idx].closeBuild();
 		if (isPrimaryExpr())
 			e.setPrimaryExpr(true);
-		this.replaceWithNodeReWalk(e);
-	}
-
-	public ANode doRewrite(RewriteContext ctx) {
-		Type ot = obj.getType();
-		if (ot.getErasedType() instanceof ASTNodeType) {
-			boolean prim = obj.isPrimaryExpr();
-			ANode o = this.obj.doRewrite(ctx);
-			if (!prim)
-				return (ANode)o.getVal(this.ident);
-			return new AccessExpr(pos,(ENode)ctx.fixup(obj.pslot(),o),new SymbolRef<DNode>(ctx.replace(ident)));
-		}
-		return super.doRewrite(ctx);
+		this.replaceWithNodeReWalk(e,parent,slot);
 	}
 }
 
@@ -169,6 +174,7 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	@nodeAttr public ENode			obj;
+	@AttrBinDumpInfo(ignore=true)
 	@abstract
 	@nodeData public:ro Field		var;
 
@@ -208,12 +214,14 @@ public final class IFldExpr extends LvalueExpr {
 		this.ident = ident;
 	}
 
-	public Operator getOper() { return Operator.Access; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fIFldAccess.operation }
 
-	public Type getType() {
-		Type ot = obj.getType();
+	public int getLvalArity() { return 1; }
+
+	public Type getType(Env env) {
+		Type ot = obj.getType(env);
 		if (var == null)
-			return StdTypes.tpVoid;
+			return env.tenv.tpVoid;
 		if (ot.getErasedType() instanceof ASTNodeType) {
 			String name = ("attr$"+var.sname+"$type").intern();
 			int n = ot.getArgsLength();
@@ -221,30 +229,30 @@ public final class IFldExpr extends LvalueExpr {
 				if (ot.getArg(i).name == name)
 					return ot.resolveArg(i);
 			}
-			if (var.getType().getErasedType() instanceof ASTNodeType)
-				return var.getType();
-			return new ASTNodeType(var.getType());
+			if (var.getType(env).getErasedType() instanceof ASTNodeType)
+				return var.getType(env);
+			return new ASTNodeType(var.getType(env));
 		} else {
-			return Type.getRealType(ot,var.getType());
+			return Type.getRealType(ot,var.getType(env));
 		}
 	}
 
-	public boolean	isConstantExpr() {
+	public boolean	isConstantExpr(Env env) {
 		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
+			if (var.init != null && var.init.isConstantExpr(env))
 				return true;
 			else if (var.const_value != null)
 				return true;
 		}
 		return false;
 	}
-	public Object	getConstValue() {
+	public Object	getConstValue(Env env) {
 		MetaAccess.verifyRead(this,var);
 		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
-				return var.init.getConstValue();
+			if (var.init != null && var.init.isConstantExpr(env))
+				return var.init.getConstValue(env);
 			else if (var.const_value != null) {
-				return var.const_value.getConstValue();
+				return var.const_value.getConstValue(env);
 			}
 		}
 		throw new RuntimeException("Request for constant value of non-constant expression");
@@ -253,7 +261,7 @@ public final class IFldExpr extends LvalueExpr {
 	public String toString() {
 		if (obj == null)
 			return this.ident;
-		if (obj.getPriority() < opAccessPriority)
+		if (obj.getPriority(Env.getEnv()) < opAccessPriority)
 			return "("+obj.toString()+")."+this.ident;
 		else
 			return obj.toString()+"."+this.ident;
@@ -278,20 +286,20 @@ public final class IFldExpr extends LvalueExpr {
 		return null;
 	}
 
-	public void mainResolveOut() {
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		if (this.var != null)
 			return;
 
 		ENode obj = this.obj;
 		// pre-resolve result
-		Type[] tps = obj.getAccessTypes();
+		Type[] tps = obj.getAccessTypes(env);
 		int len = tps.length;
 		Field[] res = new Field[len];
 		for (int si=0; si < len; si++) {
 			if (res[si] != null)
 				continue;
 			Type tp = tps[si];
-			ResInfo<Field> info = new ResInfo<Field>(this,this.ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards);
+			ResInfo<Field> info = new ResInfo<Field>(env,this,this.ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards);
 			if (tp.resolveNameAccessR(info) ) {
 				res[si] = info.resolvedDNode();
 			}
@@ -315,7 +323,7 @@ public final class IFldExpr extends LvalueExpr {
 			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0) {
-			if (ctx_method != null && ctx_method.isMacro())
+			if (Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
 				return;
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
 			for(int si=0; si < len; si++) {
@@ -329,35 +337,35 @@ public final class IFldExpr extends LvalueExpr {
 		this.symbol = res[idx].symbol;
 	}
 
-	public ANode doRewrite(RewriteContext ctx) {
-		Type ot = obj.getType();
+	public INode doRewrite(RewriteContext ctx) {
+		Type ot = obj.getType(ctx.env);
 		if (ot.getErasedType() instanceof ASTNodeType) {
-			ANode obj = this.obj.doRewrite(ctx);
-			return (ANode)ctx.toANode(obj.getVal(this.ident));
+			INode obj = this.obj.doRewrite(ctx);
+			return ctx.toINode(obj.getVal(obj.getAttrSlot(this.ident)));
 		}
 		return super.doRewrite(ctx);
 	}
 
 	// verify resolved tree
-	public boolean preVerify() {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
 		Field f = this.var;
-		if (!f.isAttached()) {
-			Type tp = obj.getType();
-			ResInfo info = new ResInfo(this,f.sname,ResInfo.noStatic | ResInfo.noSyntaxContext);
+		if (f == null || !f.isAttached()) {
+			Type tp = obj.getType(env);
+			ResInfo info = new ResInfo(env,this,ident,ResInfo.noStatic | ResInfo.noSyntaxContext);
 			if (tp.resolveNameAccessR(info) ) {
 				DNode dn = info.resolvedDNode();
-				if (!info.isEmpty() || !(dn instanceof Field) || dn.getType() != f.getType()) {
+				if (!info.isEmpty() || !(dn instanceof Field) || (f != null && dn.getType(env) != f.getType(env))) {
 					Kiev.reportError(this, "Re-resolved field "+dn+" does not match old field "+f);
 				} else {
 					f = (Field)dn;
 					this.symbol = info.resolvedSymbol();
 				}
 			} else {
-				Kiev.reportError(this, "Error resolving "+f+" in "+tp);
+				Kiev.reportError(this, "Error resolving "+ident+" in "+tp);
 			}
 		}
-		if (f.isStatic() || (f.isMacro() && !f.isNative()))
-			Kiev.reportError(this, "Bad instance field "+f+" access from "+obj);
+		if (f == null || f.isStatic() || (f.isMacro() && !f.isNative()))
+			Kiev.reportError(this, "Bad instance field "+ident+" access from "+obj);
 		return true;
 	}
 }
@@ -381,40 +389,42 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		this.index = index;
 	}
 
-	public int getPriority() { return opContainerElementPriority; }
+	public int getLvalArity() { return 2; }
+
+	public int getPriority(Env env) { return opContainerElementPriority; }
 
 	public ENode[] getEArgs() { return new ENode[]{obj,index}; }
 
-	public Type getType() {
+	public Type getType(Env env) {
 		try {
-			Type t = obj.getType();
+			Type t = obj.getType(env);
 			if (t instanceof ArrayType)
 				return Type.getRealType(t,t.arg);
 			// Resolve overloaded access method
-			CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
-			ResInfo<Method> info = new ResInfo<Method>(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			CallType mt = new CallType(t,null,new Type[]{index.getType(env)},env.tenv.tpAny,false);
+			ResInfo<Method> info = new ResInfo<Method>(env,this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(t,info,mt) )
-				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
+				return env.tenv.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 			return Type.getRealType(t,info.resolvedDNode().mtype.ret());
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return Type.tpVoid;
+			return env.tenv.tpVoid;
 		}
 	}
 
 	public String toString() {
-		if( obj.getPriority() < opContainerElementPriority )
+		if( obj.getPriority(Env.getEnv()) < opContainerElementPriority )
 			return "("+obj.toString()+")["+index.toString()+"]";
 		else
 			return obj.toString()+"["+index.toString()+"]";
 	}
 
-	public Type[] getAccessTypes() {
-		Type t = obj.getType();
+	public Type[] getAccessTypes(Env env) {
+		Type t = obj.getType(env);
 		if (t instanceof ArrayType)
 			return new Type[]{Type.getRealType(t,t.arg)};
-		CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
-		ResInfo<Method> info = new ResInfo<Method>(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		CallType mt = new CallType(t,null,new Type[]{index.getType(env)},env.tenv.tpAny,false);
+		ResInfo<Method> info = new ResInfo<Method>(env,this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(t,info,mt) )
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 		return new Type[]{Type.getRealType(t,info.resolvedDNode().mtype.ret())};
@@ -426,43 +436,28 @@ public final class ThisExpr extends LvalueExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
-	static public final LVar thisPar = new LVar(0,Constants.nameThis,Type.tpVoid,Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
-	
 	public ThisExpr() {}
 	public ThisExpr(int pos) {
 		this.pos = pos;
 	}
 
-	public Type getType() {
+	public int getLvalArity() { return 0; }
+
+	public Type getType(Env env) {
 		try {
-			ComplexTypeDecl td = ctx_tdecl;
+			ComplexTypeDecl td = Env.ctxTDecl(this);
 			if (td == null)
-				return Type.tpVoid;
+				return env.tenv.tpVoid;
 			if (td.sname == nameIFaceImpl)
-				return td.ctx_tdecl.xtype;
-			return td.xtype;
+				return Env.ctxTDecl(td).getType(env);
+			return td.getType(env);
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return Type.tpVoid;
+			return env.tenv.tpVoid;
 		}
 	}
 
 	public String toString() { return "this"; }
-
-	public void mainResolveOut() {
-		Method m = ctx_method;
-		boolean rt = (m != null && m.isMacro());
-		if (rt != isRewriteTarget())
-			setRewriteTarget(rt);
-	}
-
-	public ANode doRewrite(RewriteContext ctx) {
-		if (isRewriteTarget()) {
-			if (ctx.root instanceof CallExpr)
-				return ((CallExpr)ctx.root).obj;
-		}
-		return super.doRewrite(ctx);
-	}
 }
 
 @ThisIsANode(name="Super", lang=CoreLang)
@@ -471,21 +466,21 @@ public final class SuperExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public SuperExpr() {
-		setSuperExpr(true);
 	}
 	public SuperExpr(int pos) {
 		this.pos = pos;
-		setSuperExpr(true);
 	}
 
-	public Type getType() {
+	public int getLvalArity() { return 0; }
+
+	public Type getType(Env env) {
 		try {
-			if (ctx_tdecl == null)
-				return Type.tpVoid;
-			return ctx_tdecl.super_types[0].getType();
+			if (Env.ctxTDecl(this) == null)
+				return env.tenv.tpVoid;
+			return Env.ctxTDecl(this).super_types[0].getType(env);
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return Type.tpVoid;
+			return env.tenv.tpVoid;
 		}
 	}
 
@@ -520,45 +515,39 @@ public final class LVarExpr extends LvalueExpr {
 		this.ident = name;
 	}
 
-	public Type getType() {
+	public int getLvalArity() { return 0; }
+
+	public Type getType(Env env) {
 		try {
-			return var.getType();
+			return var.getType(env);
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return Type.tpVoid;
+			return env.tenv.tpVoid;
 		}
 	}
 
 	public Var getVarSafe() {
 		if (var != null)
 			return var;
-		ResInfo<Var> info = new ResInfo<Var>(this,this.ident);
+		ResInfo<Var> info = new ResInfo<Var>(Env.getEnv(),this,this.ident);
 		if( !PassInfo.resolveNameR((ASTNode)this,info) )
 			throw new CompilerException(this,"Unresolved var "+ident);
 		this.symbol = info.resolvedSymbol();
 		return info.resolvedDNode();
 	}
 
-	public void set(Token t) {
-        pos = t.getPos();
-		if (t.image.startsWith("#id\""))
-			this.ident = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
-		else
-			this.ident = t.image;
-	}
-	
-	public boolean preResolveIn() {
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		Var v = getVarSafe(); // calls resolving
-		if (v.ctx_root != this.ctx_root) {
+		if (!Env.hasSameRoot(v, this)) {
 			this.ident = v.sname;
 			getVarSafe();
 		}
 		return false;
 	}
 
-	public boolean mainResolveIn() {
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		Var v = getVarSafe(); // calls resolving
-		if (v.ctx_root != this.ctx_root) {
+		if (!Env.hasSameRoot(v, this)) {
 			this.ident = v.sname;
 			getVarSafe();
 		}
@@ -569,16 +558,16 @@ public final class LVarExpr extends LvalueExpr {
 		return ident.toString();
 	}
 
-	public Type[] getAccessTypes() {
+	public Type[] getAccessTypes(Env env) {
 		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{getVarSafe()});
 		if( sni == null || sni.getTypes().length == 0 )
-			return new Type[]{var.getType()};
+			return new Type[]{var.getType(env)};
 		return (Type[])sni.getTypes().clone();
 	}
 	
-	public ANode doRewrite(RewriteContext ctx) {
+	public INode doRewrite(RewriteContext ctx) {
 		if (ctx.args.containsKey(ident))
-			return ctx.toANode(ctx.args.get(ident));
+			return ctx.toINode(ctx.args.get(ident));
 		return super.doRewrite(ctx); //throw new RuntimeException("doRewrite on unresolved var "+this);
 	}
 }
@@ -598,7 +587,7 @@ public final class SFldExpr extends LvalueExpr {
 		if (sym instanceof Field)
 			return (Field)sym;
 		if (obj != null) {
-			Field f = obj.getType().meta_type.tdecl.resolveField(ident, false);
+			Field f = obj.getType(Env.getEnv()).meta_type.tdecl.resolveField(Env.getEnv(), ident, false);
 			if (f != null && f.isStatic()) {
 				this.symbol = f.symbol;
 				return f;
@@ -618,44 +607,46 @@ public final class SFldExpr extends LvalueExpr {
 		if (obj != null) {
 			this.obj = obj;
 		}
-		else if (var.ctx_tdecl == null) {
-			this.obj = new TypeRef(Type.tpVoid);
+		else if (Env.ctxTDecl(var) == null) {
+			this.obj = new TypeRef(Env.getEnv().tenv.tpVoid);
 			this.obj.setAutoGenerated(true);
 		}
 		else {
-			this.obj = new TypeRef(var.ctx_tdecl.xtype);
+			this.obj = new TypeRef(Env.ctxTDecl(var).getType(Env.getEnv()));
 			this.obj.setAutoGenerated(true);
 		}
 		this.symbol = var.symbol;
 	}
 
-	public Operator getOper() { return Operator.Access; }
+	public int getLvalArity() { return 0; }
 
-	public Type getType() {
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fSFldAccess.operation }
+
+	public Type getType(Env env) {
 		try {
-			return var.getType();
+			return var.getType(env);
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return Type.tpVoid;
+			return env.tenv.tpVoid;
 		}
 	}
 
-	public boolean	isConstantExpr() {
+	public boolean	isConstantExpr(Env env) {
 		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
+			if (var.init != null && var.init.isConstantExpr(env))
 				return true;
 			else if (var.const_value != null)
 				return true;
 		}
 		return false;
 	}
-	public Object	getConstValue() {
+	public Object	getConstValue(Env env) {
 		MetaAccess.verifyRead((ASTNode)this,var);
 		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
-				return var.init.getConstValue();
+			if (var.init != null && var.init.isConstantExpr(env))
+				return var.init.getConstValue(env);
 			else if (var.const_value != null) {
-				return var.const_value.getConstValue();
+				return var.const_value.getConstValue(env);
 			}
 		}
 		throw new RuntimeException("Request for constant value of non-constant expression");
@@ -663,32 +654,32 @@ public final class SFldExpr extends LvalueExpr {
 
 	public String toString() { return ident.toString(); }
 
-	public Type[] getAccessTypes() {
+	public Type[] getAccessTypes(Env env) {
 		Type[] types;
 		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{var});
 		if( sni == null || sni.getTypes().length == 0 )
-			types = new Type[]{var.getType()};
+			types = new Type[]{var.getType(env)};
 		else
 			types = (Type[])sni.getTypes().clone();
 		return types;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "obj" && this.dnode != null && this.dnode.parent() == Env.getRoot())
+		if (attr.name == "obj" && this.dnode != null && this.dnode.parent() == Env.getEnv())
 			return false;
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public void mainResolveOut() {
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		if (var != null) {
 			if (!var.isStatic())
 				throw new CompilerException(this, "Field "+var+" is not static");
 			if (obj == null) {
-				if (var.ctx_tdecl == null) {
-					this.obj = new TypeRef(Type.tpVoid);
+				if (Env.ctxTDecl(var) == null) {
+					this.obj = new TypeRef(env.tenv.tpVoid);
 					this.obj.setAutoGenerated(true);
 				} else {
-					obj = new TypeRef(var.ctx_tdecl.xtype);
+					obj = new TypeRef(Env.ctxTDecl(var).getType(env));
 					obj.setAutoGenerated(true);
 				}
 			}
@@ -696,15 +687,15 @@ public final class SFldExpr extends LvalueExpr {
 		}
 		
 		if (this.obj == null)
-			this.obj = new TypeRef(StdTypes.tpVoid);
+			this.obj = new TypeRef(env.tenv.tpVoid);
 		
-		Type tp = this.obj.getType();
+		Type tp = this.obj.getType(env);
 		ScopeOfNames scope = tp.meta_type.tdecl;
-		if (tp ≡ StdTypes.tpVoid)
-			scope = Env.getRoot();
+		if (tp ≡ env.tenv.tpVoid)
+			scope = Env.getEnv().root;
 		else
 			scope = tp.meta_type.tdecl;
-		ResInfo info = new ResInfo(this,this.ident);
+		ResInfo info = new ResInfo(env,this,this.ident);
 		if (!scope.resolveNameR(info))
 			throw new CompilerException(this, "Unresolved static field "+ident+" in "+scope);
 		DNode res = info.resolvedDNode();
@@ -714,14 +705,14 @@ public final class SFldExpr extends LvalueExpr {
 	}
 
 	// verify resolved tree
-	public boolean preVerify() {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
 		Field f = this.var;
-		if (!f.isAttached()) {
-			Type tp = obj.getType();
-			ResInfo info = new ResInfo(this,f.sname);
+		if (f == null || !f.isAttached()) {
+			Type tp = obj.getType(env);
+			ResInfo info = new ResInfo(env,this,f.sname);
 			if (tp.meta_type.tdecl.resolveNameR(info)) {
 				DNode dn = info.resolvedDNode();
-				if (!info.isEmpty() || !(dn instanceof Field) || dn.getType() != f.getType()) {
+				if (!info.isEmpty() || !(dn instanceof Field) || dn.getType(env) != f.getType(env)) {
 					Kiev.reportError(this, "Re-resolved field "+dn+" does not match old field "+f);
 				} else {
 					f = (Field)dn;
@@ -743,6 +734,7 @@ public final class OuterThisAccessExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeRef			outer;
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData public Var∅			outer_refs;
 
 	public OuterThisAccessExpr() {}
@@ -753,23 +745,25 @@ public final class OuterThisAccessExpr extends ENode {
 		this.ident = nameThis;
 	}
 
-	public Operator getOper() { return Operator.Access; }
+	public int getLvalArity() { return 0; }
 
-	public Type getType() {
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fOuterThisAccess.operation }
+
+	public Type getType(Env env) {
 		try {
-			if (ctx_tdecl == null || outer_refs.length == 0)
-				return outer.getType();
-			Type tp = ctx_tdecl.xtype;
+			if (Env.ctxTDecl(this) == null || outer_refs.length == 0)
+				return outer.getType(env);
+			Type tp = Env.ctxTDecl(this).getType(env);
 			foreach (Field f; outer_refs)
-				tp = f.getType().applay(tp);
+				tp = f.getType(env).applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return outer.getType();
+			return outer.getType(env);
 		}
 	}
 
-	public String toString() { return getType().meta_type.tdecl.qname().replace('·','.')+".this"; }
+	public String toString() { return getType(Env.getEnv()).meta_type.tdecl.qname().replace('·','.')+".this"; }
 
 	public static Field outerOf(ComplexTypeDecl clazz) {
 		foreach (Field f; clazz.members) {
@@ -783,18 +777,19 @@ public final class OuterThisAccessExpr extends ENode {
 	
 	public void setupOuterFields() {
 		this.outer_refs.delAll();
-		Field ou_ref = OuterThisAccessExpr.outerOf((Struct)ctx_tdecl);
+		Env env = Env.getEnv();
+		Field ou_ref = OuterThisAccessExpr.outerOf((Struct)Env.ctxTDecl(this));
 		if( ou_ref == null )
-			throw new CompilerException(this, "Outer 'this' reference in non-inner or static inner class "+ctx_tdecl);
+			throw new CompilerException(this, "Outer 'this' reference in non-inner or static inner class "+Env.ctxTDecl(this));
 		do {
 			outer_refs.append(ou_ref);
-			if( ou_ref.getType().isInstanceOf(outer.getType()) ) break;
-			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.getType().getStruct());
+			if( ou_ref.getType(env).isInstanceOf(outer.getType(env)) ) break;
+			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.getType(env).getStruct());
 		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].getType().isInstanceOf(outer.getType()) )
-			throw new CompilerException(this, "Outer class "+outer+" not found for inner class "+ctx_tdecl);
-		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() )
-			throw new CompilerException(this, "Access to 'this' in static method "+ctx_method);
+		if( !outer_refs[outer_refs.length-1].getType(env).isInstanceOf(outer.getType(env)) )
+			throw new CompilerException(this, "Outer class "+outer+" not found for inner class "+Env.ctxTDecl(this));
+		if( Env.ctxMethod(this).isStatic() && !Env.ctxMethod(this).isVirtualStatic() )
+			throw new CompilerException(this, "Access to 'this' in static method "+Env.ctxMethod(this));
 	}
 }
 
@@ -822,16 +817,23 @@ public final class ReinterpExpr extends LvalueExpr {
 		this.expr = expr;
 	}
 
-	public Operator getOper() { return Operator.Reinterp; }
+	public int getLvalArity() {
+		ENode expr = this.expr;
+		if (expr == null)
+			return -1;
+		return expr.getLvalArity();
+	}
+
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fReinterp.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{ctype, expr}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public int getPriority() { return opCastPriority; }
+	public int getPriority(Env env) { return opCastPriority; }
 
-	public Type getType() {
-		return this.ctype.getType();
+	public Type getType(Env env) {
+		return this.ctype.getType(env);
 	}
 }
 

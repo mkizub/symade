@@ -18,20 +18,20 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=CoreLang)
-public abstract class MNode extends ASTNode {
+public interface MNode extends ANode {
 	public static final MNode[] emptyArray = new MNode[0];
 
-	public abstract String qname();
-	public abstract JavaAnnotation getAnnotationDecl();
-	public void resolve(Type reqType) {}
-	public void verify() {}
-	public boolean isRuntimeVisible() { return false; }
-	public boolean isRuntimeInvisible() { return false; }
+	public String qname();
+	public JavaAnnotation getAnnotationDecl(Env env);
+	public void resolve(Env env, Type reqType);
+	public void verify(INode parent, AttrSlot slot);
+	public boolean isRuntimeVisible();
+	public boolean isRuntimeInvisible();
 
 }
 
 @ThisIsANode(name="UserMeta", lang=CoreLang)
-public class UserMeta extends MNode {
+public class UserMeta extends ASTNode implements MNode {
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public final JavaAnnotation⇑		decl;
 	@nodeAttr public       MetaValue∅			values;
@@ -42,7 +42,7 @@ public class UserMeta extends MNode {
 		UserMeta meta = (UserMeta)o;
 		if (qname() != o.qname())
 			return false;
-		foreach (Method m; getAnnotationDecl().members) {
+		foreach (Method m; getAnnotationDecl(Env.getEnv()).members) {
 			MetaValue v1 = this.get(m.sname);
 			MetaValue v2 = meta.get(m.sname);
 			if (v1 == null && v2 == null)
@@ -55,14 +55,12 @@ public class UserMeta extends MNode {
 		return true;
 	}
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (isAttached()) {
-			if      (attr.name == "decl")
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
-			else if (attr.name == "values")
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.content_change && isAttached()) {
+			if (info.slot.name == "decl" || info.slot.name == "values")
+				notifyParentThatIHaveChanged();
 		}
-		super.callbackChildChanged(ct, attr, data);
+		super.callbackChanged(info);
 	}
 
 	public UserMeta() {}
@@ -82,25 +80,29 @@ public class UserMeta extends MNode {
 		return decl.name;
 	}
 
-	public final JavaAnnotation getAnnotationDecl() {
+	public final JavaAnnotation getAnnotationDecl(Env env) {
 		JavaAnnotation td = decl.dnode;
 		if (td != null)
 			return td;
 		String name = decl.name;
 		if (name.indexOf('·') < 0) {
-			ResInfo<JavaAnnotation> info = new ResInfo<JavaAnnotation>(this,name,ResInfo.noForwards);
-			if (!PassInfo.resolveNameR(this,info))
+			ResInfo<JavaAnnotation> info = new ResInfo<JavaAnnotation>(Env.getEnv(),this,name,ResInfo.noForwards);
+			if (!PassInfo.resolveNameR(this,info)) {
 				Kiev.reportError(this,"Unresolved annotation name "+name);
+				return null;
+			}
 			JavaAnnotation ann = info.resolvedDNode();
 			this.decl.symbol = info.resolvedSymbol();
-			ann.checkResolved();
+			ann = ann.checkResolved(env);
 			return ann;
 		}
-		DNode scope = Env.getRoot();
+		DNode scope = Env.getEnv().root;
 		int dot;
 		do {
-			if !(scope instanceof ScopeOfNames)
+			if !(scope instanceof ScopeOfNames) {
 				Kiev.reportError(this,"Unresolved identifier "+name+" in "+scope);
+				return null;
+			}
 			dot = name.indexOf('·');
 			String head;
 			if (dot > 0) {
@@ -109,7 +111,7 @@ public class UserMeta extends MNode {
 			} else {
 				head = name;
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 			if!(((ScopeOfNames)scope).resolveNameR(info)) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
 				return null;
@@ -121,12 +123,12 @@ public class UserMeta extends MNode {
 			return null;
 		}
 		this.decl.symbol = scope.symbol;
-		scope.checkResolved();
+		scope = scope.checkResolved(env);
 		return (JavaAnnotation)scope;
 	}
 	
 	public boolean isRuntimeVisible() {
-		JavaAnnotation tdecl = getAnnotationDecl();
+		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
 		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
 		if (retens == null)
 			return false;
@@ -140,7 +142,7 @@ public class UserMeta extends MNode {
 	}
 
 	public boolean isRuntimeInvisible() {
-		JavaAnnotation tdecl = getAnnotationDecl();
+		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
 		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
 		if (retens == null)
 			return true;
@@ -153,11 +155,11 @@ public class UserMeta extends MNode {
 		return false;
 	}
 
-	public Type getType() {
-		JavaAnnotation td = getAnnotationDecl();
+	public Type getType(Env env) {
+		JavaAnnotation td = getAnnotationDecl(env);
 		if (td == null)
-			return Type.tpVoid;
-		return td.xtype;
+			return env.tenv.tpVoid;
+		return td.getType(env);
 	}
 	
 	public int size() alias length {
@@ -167,27 +169,19 @@ public class UserMeta extends MNode {
 		return values.length == 0;
 	}
 	
-	public void verify() {
-		JavaAnnotation tdecl = getAnnotationDecl();
+	public void verify(INode parent, AttrSlot slot) {
+		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
 		if (tdecl == null || !tdecl.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-//		String name = this.qname();
-//		UserMeta m = this;
-//		if (m != this) {
-//			this.replaceWithNode(m);
-//			foreach (MetaValue v; values)
-//				m.set(v.ncopy());
-//			m.verify();
-//		}
 		foreach (MetaValue v; values)
-			v.verify();
+			v.verify(this,nodeattr$values);
 		return;
 	}
 	
-	public void resolve(Type reqType) {
-		JavaAnnotation tdecl = getAnnotationDecl();
-		tdecl.checkResolved();
+	public void resolve(Env env, Type reqType) {
+		JavaAnnotation tdecl = getAnnotationDecl(env);
+		tdecl = tdecl.checkResolved(env);
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
@@ -204,7 +198,8 @@ public class UserMeta extends MNode {
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
 					ASTNode val = ((MetaValueScalar)v).value;
-					MetaValueArray mva = new MetaValueArray(new SymbolRef(v.pos,v.ident)); 
+					MetaValueArray mva = new MetaValueArray(new SymbolRef(v.pos,v.ident));
+					mva.symbol = v.symbol;
 					mva.values.add(~val);
 					values[n] = v = mva;
 				}
@@ -212,10 +207,10 @@ public class UserMeta extends MNode {
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (t.getStruct() == null || !(t ≈ Type.tpString || t ≈ Type.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
+				if (t.getStruct() == null || !(t ≈ env.tenv.tpString || t ≈ env.tenv.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
 					throw new CompilerException(m, "Bad annotation value type "+t);
 			}
-			v.resolve(t);
+			Kiev.runFrontEndProcessorsOn(v); //v.resolve(t);
 		}
 		// check that all non-default values are specified, and add default values
 	next_method:
@@ -230,7 +225,7 @@ public class UserMeta extends MNode {
 		}
 	}
 	
-	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "decl") {
 			TypeDecl scope;
 			String head;
@@ -244,16 +239,16 @@ public class UserMeta extends MNode {
 			}
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
-				Vector<Symbol> vect = new Vector<Symbol>();
-				ResInfo info = new ResInfo(this,head,flags);
+				AutoCompleteResult result = new AutoCompleteResult(false);
+				ResInfo info = new ResInfo(Env.getEnv(),this,head,flags);
 				foreach (PassInfo.resolveNameR(this,info)) {
 					DNode dn = info.resolvedDNode();
-					if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !vect.contains(info.resolvedSymbol()))
-						vect.append(info.resolvedSymbol());
+					if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !result.containsData(info.resolvedSymbol()))
+						result.append(info.resolvedSymbol());
 				}
-				return vect.toArray();
+				return result;
 			} else {
-				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,ResInfo.noForwards);
+				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,ResInfo.noForwards);
 				if (!PassInfo.resolveNameR(this,info))
 					return null;
 				scope = info.resolvedDNode();
@@ -269,16 +264,16 @@ public class UserMeta extends MNode {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<Symbol> vect = new Vector<Symbol>();
-					ResInfo info = new ResInfo(this,head,flags);
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags);
 					foreach (scope.resolveNameR(info)) {
 						DNode dn = info.resolvedDNode();
-						if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
+						if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
 					}
-					return vect.toArray();
+					return result;
 				} else {
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,ResInfo.noForwards);
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,ResInfo.noForwards);
 					if!(scope.resolveNameR(info))
 						return null;
 					scope = info.resolvedDNode();
@@ -296,7 +291,7 @@ public class UserMeta extends MNode {
 				return v;
 			}
 		}
-		JavaAnnotation td = getAnnotationDecl();
+		JavaAnnotation td = getAnnotationDecl(Env.getEnv());
 		foreach (Method m; td.members; m.hasName(name))
 			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+decl+" annotation");
@@ -309,12 +304,12 @@ public class UserMeta extends MNode {
 			return false;
 		if (v instanceof ConstBoolExpr)
 			return ((ConstBoolExpr)v).value;
-		if (v instanceof ENode && v.isConstantExpr()) {
-			Object val = v.getConstValue();
+		if (v instanceof ENode && v.isConstantExpr(Env.getEnv())) {
+			Object val = v.getConstValue(Env.getEnv());
 			if (val instanceof Boolean)
 				return ((Boolean)val).booleanValue();
 		}
-		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a boolean constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a boolean constant, but "+v+(v != null ? (" of "+v.getClass()) : ""));
 	}
 	
 	public int getI(String name) {
@@ -324,8 +319,8 @@ public class UserMeta extends MNode {
 			return 0;
 		if (v instanceof ConstIntExpr)
 			return ((ConstIntExpr)v).value;
-		if (v instanceof ENode && v.isConstantExpr()) {
-			Object val = v.getConstValue();
+		if (v instanceof ENode && v.isConstantExpr(Env.getEnv())) {
+			Object val = v.getConstValue(Env.getEnv());
 			if (val instanceof Number)
 				return ((Number)val).intValue();
 		}
@@ -339,8 +334,8 @@ public class UserMeta extends MNode {
 			return null;
 		if (v instanceof ConstStringExpr)
 			return ((ConstStringExpr)v).value;
-		if (v instanceof ENode && v.isConstantExpr()) {
-			Object val = v.getConstValue();
+		if (v instanceof ENode && v.isConstantExpr(Env.getEnv())) {
+			Object val = v.getConstValue(Env.getEnv());
 			if (val instanceof String)
 				return (String)val;
 		}
@@ -404,11 +399,15 @@ public class UserMeta extends MNode {
 		return mv;
 	}
 
-	public MetaValue unset(MetaValue value) alias del alias lfy operator -=
+	public MetaValue unset(MetaValue value)
+		operator "V -= V"
+		alias del
 	{
 		return unset(value.ident);
 	}
-	public MetaValue unset(String name) alias del alias lfy operator -=
+	public MetaValue unset(String name)
+		operator "V -= V"
+		alias del
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
@@ -444,10 +443,11 @@ public abstract class MetaValue extends ENode {
 	}
 
 	public abstract boolean valueEquals(Object mv);
+	public abstract void resolveFrontEnd(Type reqType);
 
-	public void verify() {
-		if (parent() instanceof Method && pslot().name == "body") {
-			Method m = (Method)parent();
+	public void verify(INode parent, AttrSlot slot) {
+		if (parent instanceof Method && slot.name == "body") {
+			Method m = (Method)parent;
 			if (this.dnode != m)
 				this.symbol = m.symbol;
 		}
@@ -457,10 +457,11 @@ public abstract class MetaValue extends ENode {
 		}
 	}
 	
-	boolean checkValue(Type reqType, ASTNode value) {
+	boolean checkValue(Type reqType, ASTNode value, AttrSlot slot) {
+		Env env = Env.getEnv();
 		if (value instanceof TypeRef) {
-			if (reqType ≈ Type.tpClass) {
-				((TypeRef)value).getType();
+			if (reqType ≈ env.tenv.tpClass) {
+				((TypeRef)value).getType(env);
 				return false;
 			} else {
 				throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
@@ -473,16 +474,16 @@ public abstract class MetaValue extends ENode {
 		if (v instanceof SFldExpr && ((SFldExpr)v).var.isEnumField()) {
 			return false;
 		}
-		else if (!v.isConstantExpr())
+		else if (!v.isConstantExpr(env))
 			throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
-		Type vt = value.getType();
+		Type vt = value.getType(env);
 		if (vt ≉ reqType) {
-			v.replaceWith(fun ()->ASTNode {return new CastExpr(v.pos, reqType, v);});
+			v.replaceWith(fun ()->ASTNode {return new CastExpr(v.pos, reqType, v);}, this, slot);
 			return true;
 		}
-		if (!v.isConstantExpr())
+		if (!v.isConstantExpr(env))
 			throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
-		Type vt = v.getType();
+		Type vt = v.getType(env);
 		if (vt ≉ reqType)
 			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+ident);
 		return false;
@@ -515,20 +516,20 @@ public final class MetaValueScalar extends MetaValue {
 		return false;
 	}
 
-	public void verify() {
-		super.verify();
+	public void verify(INode parent, AttrSlot slot) {
+		super.verify(parent,slot);
 		if (value instanceof MNode)
-			((MNode)value).verify();
+			((MNode)value).verify(this,nodeattr$value);
 	}
 	
-	public void resolve(Type reqType) {
+	public void resolveFrontEnd(Type reqType) {
 		boolean ok;
 		do {
 			ok = true;
 			try {
 				Kiev.runFrontEndProcessorsOn(value);
 			} catch (ReWalkNodeException e) { ok = false; }
-		} while (ok && checkValue(reqType, value));
+		} while (ok && checkValue(reqType, value, nodeattr$value));
 	}
 }
 
@@ -564,15 +565,15 @@ public final class MetaValueArray extends MetaValue {
 		return false;
 	}
 
-	public void verify() {
-		super.verify();
+	public void verify(INode parent, AttrSlot slot) {
+		super.verify(parent,slot);
 		for (int i=0; i < values.length; i++) {
 			if (values[i] instanceof MNode)
-				((MNode)values[i]).verify();
+				((MNode)values[i]).verify(this,nodeattr$values);
 		}
 	}
 	
-	public void resolve(Type reqType) {
+	public void resolveFrontEnd(Type reqType) {
 		for (int i=0; i < values.length; i++) {
 			boolean ok;
 			do {
@@ -580,7 +581,7 @@ public final class MetaValueArray extends MetaValue {
 				try {
 					Kiev.runFrontEndProcessorsOn(this.values[i]);
 				} catch (ReWalkNodeException e) { ok = false; }
-			} while (ok && checkValue(reqType, this.values[i]));
+			} while (ok && checkValue(reqType, this.values[i], nodeattr$values));
 		}
 	}
 }

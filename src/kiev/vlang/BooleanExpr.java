@@ -22,32 +22,18 @@ public abstract class BoolExpr extends ENode {
 
 	public BoolExpr() {}
 
-	public Type getType() { return Type.tpBoolean; }
+	public Type getType(Env env) { return env.tenv.tpBoolean; }
 
-	public void mainResolveOut() {
-		resolveMethodAndNormalize();
-	}
-
-	public static void checkBool(ENode e) {
-		Type et = e.getType();
-		if (et.isBoolean())
-			return;
-		if (et ≡ Type.tpRule) {
-			e.replaceWithResolve(Type.tpBoolean, fun ()->ENode {
-				return new BinaryBoolExpr(e.pos,Operator.NotEquals,e,new ConstNullExpr());
-			});
-			return;
-		}
-		if (et instanceof CallType) {
-			CallType ct = (CallType)et;
-			if (ct.arity == 0 && ct.ret().getAutoCastTo(Type.tpBoolean) != null) {
-				((ClosureCallExpr)e).is_a_call = Boolean.TRUE;
-				return;
-			}
-		}
-		throw new RuntimeException("Expression "+e+" must be of boolean type, but found "+e.getType());
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		if (getOperation(env) == null)
+			resolveOpdef(env);
+		return true;
 	}
 	
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		resolveMethodAndNormalize(env,parent,slot);
+	}
+
 }
 
 @ThisIsANode(name="Or", lang=CoreLang)
@@ -61,60 +47,62 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
-	public BinaryBooleanOrExpr() {}
+	public BinaryBooleanOrExpr() {
+		this.symbol = getOperation(Env.getEnv()).symbol;
+	}
 
 	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
+		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.BooleanOr);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOper() { return Operator.BooleanOr; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fBoolBoolOR.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public boolean	isConstantExpr() {
-		if (expr1.isConstantExpr()) {
-			Object b1 = expr1.getConstValue();
+	public boolean	isConstantExpr(Env env) {
+		if (expr1.isConstantExpr(env)) {
+			Object b1 = expr1.getConstValue(env);
 			if (b1 instanceof Boolean && b1.booleanValue())
 				return true;
 		}
-		if (expr2.isConstantExpr()) {
-			Object b2 = expr2.getConstValue();
+		if (expr2.isConstantExpr(env)) {
+			Object b2 = expr2.getConstValue(env);
 			if (b2 instanceof Boolean && b2.booleanValue())
 				return true;
 		}
-		if (expr1.isConstantExpr() && expr2.isConstantExpr()) {
-			Object b1 = expr1.getConstValue();
-			Object b2 = expr2.getConstValue();
+		if (expr1.isConstantExpr(env) && expr2.isConstantExpr(env)) {
+			Object b1 = expr1.getConstValue(env);
+			Object b2 = expr2.getConstValue(env);
 			if (b1 instanceof Boolean && b2 instanceof Boolean)
 				return true;
 		}
 		return false;
 	}
-	public Object	getConstValue() {
-		if (expr1.isConstantExpr()) {
-			Object b1 = expr1.getConstValue();
+	public Object	getConstValue(Env env) {
+		if (expr1.isConstantExpr(env)) {
+			Object b1 = expr1.getConstValue(env);
 			if (b1 instanceof Boolean && b1.booleanValue())
 				return Boolean.TRUE;
 		}
-		if (expr2.isConstantExpr()) {
-			Object b2 = expr2.getConstValue();
+		if (expr2.isConstantExpr(env)) {
+			Object b2 = expr2.getConstValue(env);
 			if (b2 instanceof Boolean && b2.booleanValue())
 				return Boolean.TRUE;
 		}
-		Boolean b1 = (Boolean)expr1.getConstValue();
-		Boolean b2 = (Boolean)expr2.getConstValue();
+		Boolean b1 = (Boolean)expr1.getConstValue(env);
+		Boolean b2 = (Boolean)expr2.getConstValue(env);
 		return Boolean.valueOf(b1.booleanValue() || b2.booleanValue());
 	}
 }
@@ -131,60 +119,62 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
-	public BinaryBooleanAndExpr() {}
+	public BinaryBooleanAndExpr() {
+		this.symbol = getOperation(Env.getEnv()).symbol;
+	}
 
 	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
+		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.BooleanAnd);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOper() { return Operator.BooleanAnd; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fBoolBoolAND.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public boolean	isConstantExpr() {
-		if (expr1.isConstantExpr()) {
-			Object b1 = expr1.getConstValue();
+	public boolean	isConstantExpr(Env env) {
+		if (expr1.isConstantExpr(env)) {
+			Object b1 = expr1.getConstValue(env);
 			if (b1 instanceof Boolean && !b1.booleanValue())
 				return true;
 		}
-		if (expr2.isConstantExpr()) {
-			Object b2 = expr2.getConstValue();
+		if (expr2.isConstantExpr(env)) {
+			Object b2 = expr2.getConstValue(env);
 			if (b2 instanceof Boolean && !b2.booleanValue())
 				return true;
 		}
-		if (expr1.isConstantExpr() && expr2.isConstantExpr()) {
-			Object b1 = expr1.getConstValue();
-			Object b2 = expr2.getConstValue();
+		if (expr1.isConstantExpr(env) && expr2.isConstantExpr(env)) {
+			Object b1 = expr1.getConstValue(env);
+			Object b2 = expr2.getConstValue(env);
 			if (b1 instanceof Boolean && b2 instanceof Boolean)
 				return true;
 		}
 		return false;
 	}
-	public Object	getConstValue() {
-		if (expr1.isConstantExpr()) {
-			Object b1 = expr1.getConstValue();
+	public Object	getConstValue(Env env) {
+		if (expr1.isConstantExpr(env)) {
+			Object b1 = expr1.getConstValue(env);
 			if (b1 instanceof Boolean && !b1.booleanValue())
 				return Boolean.FALSE;
 		}
-		if (expr2.isConstantExpr()) {
-			Object b2 = expr2.getConstValue();
+		if (expr2.isConstantExpr(env)) {
+			Object b2 = expr2.getConstValue(env);
 			if (b2 instanceof Boolean && !b2.booleanValue())
 				return Boolean.FALSE;
 		}
-		Boolean b1 = (Boolean)expr1.getConstValue();
-		Boolean b2 = (Boolean)expr2.getConstValue();
+		Boolean b1 = (Boolean)expr1.getConstValue(env);
+		Boolean b2 = (Boolean)expr2.getConstValue(env);
 		return Boolean.valueOf(b1.booleanValue() && b2.booleanValue());
 	}
 }
@@ -197,62 +187,61 @@ public class BinaryBoolExpr extends BoolExpr {
 	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
 	
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
 	public BinaryBoolExpr() {}
 
-	public BinaryBoolExpr(int pos, Operator op, ENode expr1, ENode expr2) {
+	public BinaryBoolExpr(int pos, CoreFunc op, ENode expr1, ENode expr2) {
 		this.pos = pos;
-		this.op = op;
+		this.symbol = op.operation.symbol;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		this.op = op;
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOper() { return op; }
-
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public void mainResolveOut() {
-		resolveMethodAndNormalize();
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		resolveMethodAndNormalize(env,parent,slot);
 	}
 
-	public boolean	isConstantExpr() {
-		if (!expr1.isConstantExpr())
+	public boolean	isConstantExpr(Env env) {
+		if (!expr1.isConstantExpr(env))
 			return false;
-		if (!expr2.isConstantExpr())
+		if (!expr2.isConstantExpr(env))
 			return false;
 		DNode m = this.dnode;
-		if (m == null) {
-			Symbol sym = getOper().resolveMethod(this);
-			if (sym != null)
+		if !(m instanceof Method) {
+			Opdef opd = resolveOpdef(env);
+			if (opd == null)
+				return false;
+			Symbol sym = opd.resolveMethod(env,this);
+			if (sym != null) {
+				this.symbol = sym;
 				m = sym.dnode;
+			}
 		}
-		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
-			return false;
-		return true;
+		if (m instanceof CoreOperation)
+			return true;
+		return false;
 	}
-	public Object	getConstValue() {
+	public Object	getConstValue(Env env) {
 		Method m = (Method)this.dnode;
 		if (m == null) {
-			Symbol sym = getOper().resolveMethod(this);
+			Symbol sym = resolveOpdef(env).resolveMethod(env,this);
 			if (sym != null)
 				m = (Method)sym.dnode;
 		}
-		ConstExpr ce = ((CoreExpr)m.body).calc(this);
-		return ce.getConstValue();
+		return ((CoreOperation)m).calc(this).getConstValue(env);
 	}
 }
 
@@ -266,33 +255,36 @@ public class InstanceofExpr extends BoolExpr {
 	@nodeAttr public ENode			expr;
 	@nodeAttr public TypeRef		itype;
 
-	public InstanceofExpr() {}
+	public InstanceofExpr() {
+		this.symbol = getOperation(Env.getEnv()).symbol;
+	}
 
 	public InstanceofExpr(int pos, ENode expr, TypeRef itype) {
 		this.pos = pos;
 		this.expr = expr;
 		this.itype = itype;
+		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
 	public InstanceofExpr(int pos, ENode expr, Type itype) {
 		this.pos = pos;
 		this.expr = expr;
 		this.itype = new TypeRef(itype);
+		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.InstanceOf);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr = args[0];
 		this.itype = (TypeRef)args[1];
 	}
 	
-	public Operator getOper() { return Operator.InstanceOf; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fAnyInstanceOf.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr,itype}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
 	static class InstanceofExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -327,8 +319,8 @@ public class InstanceofExpr extends BoolExpr {
 			break;
 		}
 		if (path != null) {
-			Type et = expr.getType();
-			Type tp = itype.getType();
+			Type et = expr.getType(Env.getEnv());
+			Type tp = itype.getType(Env.getEnv());
 			if (et instanceof CTimeType && !(tp instanceof CTimeType)) {
 				tp = et.applay(new TVarBld(et.getArg(0), tp));
 			}
@@ -347,36 +339,38 @@ public class BooleanNotExpr extends BoolExpr {
 	
 	@nodeAttr public ENode		expr;
 
-	public BooleanNotExpr() {}
+	public BooleanNotExpr() {
+		this.symbol = getOperation(Env.getEnv()).symbol;
+	}
 
 	public BooleanNotExpr(int pos, ENode expr) {
 		this.pos = pos;
 		this.expr = expr;
+		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.BooleanNot);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr = args[0];
 	}
 	
-	public Operator getOper() { return Operator.BooleanNot; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fBoolBoolNOT.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public boolean	isConstantExpr() {
-		if (expr.isConstantExpr()) {
-			Object b1 = expr.getConstValue();
+	public boolean	isConstantExpr(Env env) {
+		if (expr.isConstantExpr(env)) {
+			Object b1 = expr.getConstValue(env);
 			if (b1 instanceof Boolean)
 				return true;
 		}
 		return false;
 	}
-	public Object	getConstValue() {
-		Boolean b = (Boolean)expr.getConstValue();
+	public Object	getConstValue(Env env) {
+		Boolean b = (Boolean)expr.getConstValue(env);
 		return b.booleanValue() ? Boolean.FALSE : Boolean.TRUE;
 	}
 }

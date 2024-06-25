@@ -13,33 +13,50 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
-@ViewOf(vcast=true, iface=true)
-public final view JField of Field extends JVar {
+public class JField extends JVar {
 
-	public:ro	JConstExpr			const_value;
-	
-	public final boolean isVirtual();
+	@virtual typedef VT  ≤ Field;
 
-	public boolean	isConstantExpr() {
-		if( this.isFinal() ) {
-			if (this.init != null && this.init.isConstantExpr())
-				return true;
-			else if (this.const_value != null)
-				return true;
-		}
-		return false;
+	private final boolean is_const;
+	private final Object  obj_const;
+
+	public static JField attachJField(Field impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JField)jn;
+		return new JField(impl);
 	}
-	public Object	getConstValue() {
-		if (this.init != null && this.init.isConstantExpr())
-			return this.init.getConstValue();
-		else if (this.const_value != null)
-			return this.const_value.getConstValue();
+	
+	public JField(Field impl) {
+		super(impl);
+		if (vn().isConstantExpr(Env.getEnv())) {
+			obj_const = vn().getConstValue(Env.getEnv());
+			is_const = true;
+		}
+	}
+
+	public void backendCleanup() {
+		jattrs = Attr.emptyArray;
+	}
+
+	public final boolean isVirtual() { vn().isVirtual() }
+
+	public boolean	isConstantExpr(Env env) {
+		return is_const;
+	}
+	public Object	getConstValue(Env env) {
+		if (is_const)
+			return obj_const;
     	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
-
 }
 

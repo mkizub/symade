@@ -16,14 +16,26 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@singleton
-public class ViewFE_GenMembers extends TransfProcessor {
-	private ViewFE_GenMembers() { super(KievExt.View); }
+
+public final class ViewPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("view")) {
+			pd = new PluginDescr("view").depends("kiev");
+			pd.proc(new ProcessorDescr("gen-members", "fe", 0, ViewFE_GenMembers.class).after("kiev:fe:pass3").before("kiev:fe:pre-resolve"));
+			pd.proc(new ProcessorDescr("pre-generate", "me", 0, ViewME_PreGenerate.class).after("kiev:me:pre-generate").after("virt-fld:me:pre-generate"));
+		}
+		return pd;
+	}
+}
+
+public final class ViewFE_GenMembers extends TransfProcessor {
+	public ViewFE_GenMembers(Env env, int id) { super(env,id,KievExt.View); }
 	public String getDescr() { "Class views members generation" }
 
 	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
-		Struct clazz = tr.getStruct();
+		Struct clazz = tr.getStruct(env);
 		if (clazz == null) return null;
 		return getViewImpl(clazz);
 	}
@@ -34,20 +46,24 @@ public class ViewFE_GenMembers extends TransfProcessor {
 	}
 
 	public void process(ASTNode node, Transaction tr) {
-		doProcess(node);
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"ViewFE_GenMembers");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+		}
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
+	public void doProcess(SyntaxScope:ASTNode ss) {
+		foreach (ASTNode dn; ss.members)
 			this.doProcess(dn);
 	}
 	
@@ -71,57 +87,68 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		
 		// generate constructor
 		{
-			Constructor ctor = new Constructor(ACC_PUBLIC);
-			ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
-			ctor.body = new Block(clazz.pos);
-			clazz.members.add(ctor);
+			boolean ctor_found = false;
+			foreach (Constructor dn; clazz.members; !dn.isStatic()) {
+				ctor_found = true;
+				break;
+			}
+			if (!ctor_found) {
+				Constructor ctor = new Constructor(ACC_PUBLIC);
+				ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL|ACC_SYNTHETIC));
+				ctor.body = new Block(clazz.pos);
+				clazz.members.add(ctor);
+			}
 		}
 
 		// add a cast from clazz.view_of to this view
 		if (view_meta != null && view_meta.getZ("vcast")) {
 			boolean cast_found = false;
-			foreach (Method dn; view_of.getStruct().members) {
-				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.xtype) {
+			foreach (Method dn; view_of.getStruct(env).members) {
+				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType(env)) {
 					cast_found = true;
 					break;
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", clazz.xtype, ACC_PUBLIC|ACC_SYNTHETIC);
-				cast.aliases += new ASTOperatorAlias(nameCastOp);
+				Method cast = new MethodImpl("$cast", clazz.getType(env), ACC_PUBLIC|ACC_SYNTHETIC);
+				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				if (clazz.isAbstract()) {
 					cast.setAbstract(true);
 				} else {
 					cast.body = new Block();
 				}
-				view_of.getStruct().addMethod(cast);
+				view_of.getStruct(env).addMethod(cast);
 			}
 		}
 		// add casts from this view to the clazz and a view instantiation cast
 		{
 			boolean cast_found = false;
 			foreach (Method dn; clazz.members) {
-				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType()) {
+				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType(env)) {
 					cast_found = true;
 					break;
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
-				cast.aliases += new ASTOperatorAlias(nameCastOp);
+				Method cast = new MethodImpl("$cast", view_of.getType(env), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				clazz.addMethod(cast);
+				if (!clazz.isInterface()) {
+					cast.setAbstract(false);
+					cast.body = new Block();
+				}
 			}
 			cast_found = false;
 			foreach (Method dn; clazz.members) {
-				if (dn.hasName("makeView") && dn.isStatic() && dn.mtype.ret() ≈ clazz.xtype) {
+				if (dn.hasName("makeView") && dn.isStatic() && dn.mtype.ret() ≈ clazz.getType(env)) {
 					cast_found = true;
 					break;
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("makeView", clazz.xtype, ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
-				cast.aliases += new ASTOperatorAlias(nameCastOp);
-				cast.params.add(new LVar(0,"obj",view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL));
+				Method cast = new MethodImpl("makeView", clazz.getType(env), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
+				cast.aliases += new OperatorAlias(nameCastOp, cast);
+				cast.params.add(new LVar(0,"obj",view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL));
 				cast.body = new Block();
 				clazz.addMethod(cast);
 			}
@@ -131,14 +158,13 @@ public class ViewFE_GenMembers extends TransfProcessor {
 	}
 }
 
-@singleton
-public class ViewME_PreGenerate extends BackendProcessor implements Constants {
-	private ViewME_PreGenerate() { super(KievBackend.Java15); }
+public final class ViewME_PreGenerate extends BackendProcessor implements Constants {
+	public ViewME_PreGenerate(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Class views pre-generation" }
 
 	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
-		Struct clazz = tr.getStruct();
+		Struct clazz = tr.getStruct(env);
 		if (clazz == null) return null;
 		return getViewImpl(clazz);
 	}
@@ -153,26 +179,27 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr,"ViewME_PreGenerate");
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"ViewME_PreGenerate");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+		}
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
+	public void doProcess(SyntaxScope:ASTNode ss) {
+		foreach (ASTNode dn; ss.members)
 			this.doProcess(dn);
 	}
 	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-
 	public void doProcess(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members)
@@ -181,7 +208,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		
 		foreach (TypeRef st; clazz.super_types)
-			doProcess(st.getStruct());
+			doProcess(st.getStruct(env));
 			
 		if (clazz.isForward())
 			return;
@@ -198,7 +225,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		// generate implementation
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev·stdlib·meta·ViewOf");
 		if (view_meta != null && view_meta.getZ("iface")) {
-			impl = Env.getRoot().newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
+			impl = this.env.newStruct(nameIFaceImpl,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),null);
 			if (clazz.isInterfaceOnly())
 				impl.is_interface_only = true;
 			impl.pos = clazz.pos;
@@ -213,20 +240,20 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			clazz.iface_impl = impl;
 			super_view_impl = getViewImpl(clazz.super_types[0]);
 			if (super_view_impl != null)
-				impl.super_types += new TypeRef(super_view_impl.xtype);
+				impl.super_types += new TypeRef(super_view_impl.getType(env));
 			else
-				impl.super_types += new TypeRef(Type.tpObject);
-			impl.super_types += new TypeRef(clazz.xtype);
+				impl.super_types += new TypeRef(this.env.getTypeEnv().tpObject);
+			impl.super_types += new TypeRef(clazz.getType(env));
 			
-			if (clazz.super_types[0].getType() ≉ Type.tpObject)
-				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+			if (clazz.super_types[0].getType(env) ≉ this.env.getTypeEnv().tpObject)
+				clazz.super_types.insert(0, new TypeRef(this.env.getTypeEnv().tpObject));
 			clazz.members.append(~impl);
 
-			ASTNode.CopyContext cc = new ASTNode.CopyContext();
+			CopyContext cc = new Copier();
 			foreach (ASTNode dn; clazz.members) {
 				if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 					Method cm = (Method)dn;
-					Method im = cm.ncopy(cc);
+					Method im = cc.copyRoot(cm);
 					impl.members.add(im);
 					cm.setFinal(false);
 					cm.setPublic();
@@ -240,7 +267,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 						Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
 						cf.setPublic();
 					}
-					Field f = cf.ncopy(cc);
+					Field f = cc.copyRoot(cf);
 					cf.init = null;
 					cf.setPublic();
 					cf.setAbstract(true);
@@ -259,14 +286,14 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		} else {
 			impl = clazz;
 			super_view_impl = getViewImpl(clazz.super_types[0]);
-			if (super_view_impl != null && super_view_impl != clazz.super_types[0].getStruct())
-				impl.super_types.insert(0, new TypeRef(super_view_impl.xtype));
+			if (super_view_impl != null && super_view_impl != clazz.super_types[0].getStruct(env))
+				impl.super_types.insert(0, new TypeRef(super_view_impl.getType(env)));
 		}
 		
 		// generate a field for the object this view represents
-		Field fview = impl.resolveField(nameImpl, false);
+		Field fview = impl.resolveField(env, nameImpl, false);
 		if (fview == null)
-			fview = impl.addField(new Field(nameImpl,view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+			fview = impl.addField(new Field(nameImpl,view_of.getType(env), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		foreach (Constructor ctor; impl.members; !ctor.isStatic()) {
 			if (clazz.isInterfaceOnly()) {
@@ -290,7 +317,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				ctor.block.stats.insert(0,new ExprStat(ctor_call));
 				ctor.block.stats.insert(1,
 					new ExprStat(ctor.pos,
-						new AssignExpr(ctor.pos,Operator.Assign,
+						new AssignExpr(ctor.pos,
 							new IFldExpr(ctor.pos,new ThisExpr(ctor.pos),fview),
 							new LVarExpr(ctor.pos,pimpl)
 						)
@@ -312,7 +339,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			CallType ct = m.mtype;
 			Method vm;
 			try {
-				vm = view_of.getStruct().resolveMethod(m.sname, ct.ret(), ct.params());
+				vm = view_of.getStruct(env).resolveMethod(env, m.sname, ct.ret(), ct.params());
 			} catch (CompilerException e) {
 				Kiev.reportError(m, e.getMessage());
 				m.setAbstract(true);
@@ -320,13 +347,13 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			}
 			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos,
-				new CastExpr(m.pos, view_of.getType(),
+				new CastExpr(m.pos, view_of.getType(env),
 					new IFldExpr(m.pos, new ThisExpr(m.pos), fview)
 					),
 				vm, ENode.emptyArray);
 			foreach (Var fp; m.params)
 				ce.args.append(new LVarExpr(fp.pos, fp));
-			if (ct.ret() ≢ Type.tpVoid)
+			if (ct.ret() ≢ this.env.getTypeEnv().tpVoid)
 				m.block.stats.add(new ReturnStat(m.pos, ce));
 			else
 				m.block.stats.add(new ExprStat(m.pos, ce));
@@ -341,13 +368,14 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				Block body = new Block(f.pos);
 				set_var.setFinal(true);
 				set_var.body = body;
-				Field view_fld = view_of.getType().getStruct().resolveField(f.sname);
+				Field view_fld = view_of.getType(env).getStruct().resolveField(env,f.sname);
 				ENode val = new LVarExpr(f.pos,set_var.params[0]);
-				ENode ass_st = new ExprStat(f.pos,
-					new AssignExpr(f.pos,Operator.Assign,
+				if (f.getType(env).getAutoCastTo(view_fld.getType(env)) == null)
+					val = new CastExpr(f.pos,view_fld.getType(env),val);
+				AssignExpr ae = new AssignExpr(f.pos,
 						new IFldExpr(f.pos,
 							new CastExpr(f.pos,
-								view_of.getType(),
+								view_of.getType(env),
 								new IFldExpr(f.pos,
 									new ThisExpr(f.pos),
 									fview
@@ -356,12 +384,9 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 							view_fld
 						),
 						val
-					)
-				);
-				body.stats.append(ass_st);
+					);
+				body.stats.append(new ExprStat(f.pos, ae));
 				body.stats.append(new ReturnStat(f.pos,null));
-				if (f.getType().getAutoCastTo(view_fld.getType()) == null)
-					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
 				set_var.setAbstract(false);
 			}
 			Method mv_get = f.getGetterMethod();
@@ -373,24 +398,24 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
 					new CastExpr(f.pos,
-						view_of.getType(),
+						view_of.getType(env),
 						new IFldExpr(f.pos,new ThisExpr(f.pos),fview)
 					),
-					view_of.getType().getStruct().resolveField(f.sname)
+					view_of.getType(env).getStruct().resolveField(env,f.sname)
 				);
+				if (val.getType(env).getAutoCastTo(f.getType(env)) == null)
+					val = new CastExpr(f.pos,f.getType(env),val);
 				body.stats.add(new ReturnStat(f.pos,val));
-				if (val.getType().getAutoCastTo(f.getType()) == null)
-					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),~val); });
 				get_var.setAbstract(false);
 			}
 		}
 		
 		// implement the cast from clazz.view_of to this view
-		assert (!view_of.getStruct().isResolved());
-		foreach (Method dn; view_of.getStruct().members; !dn.isStatic()) {
-			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.xtype) {
+		assert (!view_of.getStruct(env).isResolved());
+		foreach (Method dn; view_of.getStruct(env).members; !dn.isStatic()) {
+			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType(env)) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
-					ReturnStat rst = new ReturnStat(0, new NewExpr(0, impl.xtype, new ENode[]{new ThisExpr()}));
+					ReturnStat rst = new ReturnStat(0, new NewExpr(0, impl.getType(env), new ENode[]{new ThisExpr()}));
 					dn.block.stats.add(rst);
 					Kiev.runProcessorsOn(rst);
 				}
@@ -399,11 +424,11 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		// implement the cast from this view to the clazz
 		foreach (Method dn; impl.members; !dn.isStatic()) {
-			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType()) {
+			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType(env)) {
 				if (dn.isSynthetic()) {
 					dn.setAbstract(false);
 					dn.body = new Block();
-					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
+					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, view_of.getType(env), new IFldExpr(0, new ThisExpr(), fview))));
 					Kiev.runProcessorsOn(dn.body);
 				}
 				break;
@@ -411,12 +436,12 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		// implement the view instantiation
 		foreach (Method dn; impl.members; dn.isStatic()) {
-			if (dn.hasName(nameCastOp) && dn.params.length == 1 && dn.mtype.ret() ≈ clazz.xtype) {
+			if (dn.hasName(nameCastOp) && dn.params.length == 1 && dn.mtype.ret() ≈ clazz.getType(env)) {
 				if (dn.isSynthetic()) {
 					ENode stat = new IfElseStat(0,
-						new BinaryBoolExpr(0, Operator.Equals,new LVarExpr(0, dn.params[0]),new ConstNullExpr()),
+						new BinaryBoolExpr(0, env.coreFuncs.fObjectBoolEQ,new LVarExpr(0, dn.params[0]),new ConstNullExpr()),
 						new ReturnStat(0, new ConstNullExpr()),
-						new ReturnStat(0, new NewExpr(0, impl.xtype, new ENode[]{new LVarExpr(0, dn.params[0])}))
+						new ReturnStat(0, new NewExpr(0, impl.getType(env), new ENode[]{new LVarExpr(0, dn.params[0])}))
 						);
 					dn.block.stats.add(stat);
 					Kiev.runProcessorsOn(stat);

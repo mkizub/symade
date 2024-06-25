@@ -53,24 +53,24 @@ public final class TypeNameRef extends TypeRef {
 		return ident;
 	}
 	
-	public Type getType() {
+	public Type getType(Env env) {
 		if (this.type_lnk != null)
 			return this.type_lnk;
-		TypeDecl td = getTypeDecl();
-		td.checkResolved();
-		Type tp = td.getType();
+		TypeDecl td = getTypeDecl(env);
+		td = td.checkResolved(env);
+		Type tp = td.getType(env);
 		this.type_lnk = tp;
 		return tp;
 	}
 
-	public Struct getStruct() {
-		TypeDecl td = getTypeDecl();
+	public Struct getStruct(Env env) {
+		TypeDecl td = getTypeDecl(env);
 		if (td instanceof Struct)
 			return (Struct)td;
 		return null;
 	}
 
-	public TypeDecl getTypeDecl() {
+	public TypeDecl getTypeDecl(Env env) {
 		if (this.type_lnk != null) return this.type_lnk.meta_type.tdecl;
 		if (this.dnode instanceof TypeDecl)
 			return (TypeDecl)this.dnode;
@@ -86,7 +86,7 @@ public final class TypeNameRef extends TypeRef {
 				head = name;
 				name = "";
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,head,ResInfo.noForwards);
 			if( !PassInfo.resolveNameR(this,info) )
 				throw new CompilerException(this,"Unresolved type "+head);
 			scope = info.resolvedDNode();
@@ -102,18 +102,18 @@ public final class TypeNameRef extends TypeRef {
 				head = name.intern();
 				name = "";
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,head,ResInfo.noForwards);
 			if!(((ScopeOfNames)scope).resolveNameR(info))
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
 			scope = info.resolvedDNode();
 		}
 		if !(scope instanceof TypeDecl)
-			throw new CompilerException(this,"Unresolved type "+name);
+			throw new CompilerException(this,"Unresolved type "+this.ident);
 		this.symbol = scope.symbol;
 		return (TypeDecl)scope;
 	}
 
-	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -127,15 +127,15 @@ public final class TypeNameRef extends TypeRef {
 			}
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
-				Vector<Symbol> vect = new Vector<Symbol>();
-				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+				AutoCompleteResult result = new AutoCompleteResult(false);
+				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
 				foreach (PassInfo.resolveNameR(this,info)) {
-					if (!vect.contains(info.resolvedSymbol()))
-						vect.append(info.resolvedSymbol());
+					if (!result.containsData(info.resolvedSymbol()))
+						result.append(info.resolvedSymbol());
 				}
-				return vect.toArray();
+				return result;
 			} else {
-				ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+				ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards);
 				if( !PassInfo.resolveNameR(this,info) )
 					return null;
 				scope = info.resolvedDNode();
@@ -153,15 +153,15 @@ public final class TypeNameRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<Symbol> vect = new Vector<Symbol>();
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
-						if (!vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
+						if (!result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
 					}
-					return vect.toArray();
+					return result;
 				} else {
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards);
 					if!(scope.resolveNameR(info))
 						return null;
 					scope = info.resolvedDNode();
@@ -202,12 +202,12 @@ public final class TypeNameArgsRef extends TypeRef {
 		return ident;
 	}
 	
-	public Type getType() {
+	public Type getType(Env env) {
 		if (this.type_lnk != null)
 			return this.type_lnk;
-		TypeDecl td = getTypeDecl();
-		td.checkResolved();
-		Type tp = td.getType();
+		TypeDecl td = getTypeDecl(env);
+		td = td.checkResolved(env);
+		Type tp = td.getType(env);
 		if (args.length > 0) {
 			TemplateTVarSet tpset = tp.meta_type.getTemplBindings();
 			TVarBld set = new TVarBld();
@@ -215,7 +215,7 @@ public final class TypeNameArgsRef extends TypeRef {
 			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
 				if (tpset.tvars[b].val != null)
 					continue;
-				Type bound = args[a].getType();
+				Type bound = args[a].getType(env);
 				if (bound == null)
 					throw new CompilerException(this,"Type "+args[a]+" is not found");
 				if!(bound.isInstanceOf(tpset.tvars[b].var)) {
@@ -233,14 +233,14 @@ public final class TypeNameArgsRef extends TypeRef {
 		return tp;
 	}
 
-	public Struct getStruct() {
-		TypeDecl td = getTypeDecl();
+	public Struct getStruct(Env env) {
+		TypeDecl td = getTypeDecl(env);
 		if (td instanceof Struct)
 			return (Struct)td;
 		return null;
 	}
 
-	public TypeDecl getTypeDecl() {
+	public TypeDecl getTypeDecl(Env env) {
 		if (this.type_lnk != null) return this.type_lnk.meta_type.tdecl;
 		if (this.dnode instanceof TypeDecl)
 			return (TypeDecl)this.dnode;
@@ -256,7 +256,7 @@ public final class TypeNameArgsRef extends TypeRef {
 				head = name;
 				name = "";
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,head,ResInfo.noForwards);
 			if( !PassInfo.resolveNameR(this,info) )
 				throw new CompilerException(this,"Unresolved type "+head);
 			scope = info.resolvedDNode();
@@ -272,18 +272,18 @@ public final class TypeNameArgsRef extends TypeRef {
 				head = name.intern();
 				name = "";
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,head,ResInfo.noForwards);
 			if!(((ScopeOfNames)scope).resolveNameR(info))
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
 			scope = info.resolvedDNode();
 		}
 		if !(scope instanceof TypeDecl)
-			throw new CompilerException(this,"Unresolved type "+name);
+			throw new CompilerException(this,"Unresolved type "+this.ident);
 		this.symbol = scope.symbol;
 		return (TypeDecl)scope;
 	}
 
-	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -298,15 +298,15 @@ public final class TypeNameArgsRef extends TypeRef {
 			{
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<Symbol> vect = new Vector<Symbol>();
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
 					foreach (PassInfo.resolveNameR(this,info)) {
-						if (!vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
+						if (!result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
 					}
-					return vect.toArray();
+					return result;
 				} else {
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards);
 					if( !PassInfo.resolveNameR(this,info) )
 						return null;
 					scope = info.resolvedDNode();
@@ -325,15 +325,15 @@ public final class TypeNameArgsRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<Symbol> vect = new Vector<Symbol>();
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
-						if (!vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
+						if (!result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
 					}
-					return vect.toArray();
+					return result;
 				} else {
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards);
 					if!(((ScopeOfNames)scope).resolveNameR(info))
 						return null;
 					scope = info.resolvedDNode();
@@ -397,25 +397,29 @@ public final class TypeInnerNameRef extends TypeRef {
 			this.outer.setAutoGenerated(on);
 	}
 
-	public Type getType() {
+	public Type getType(Env env) {
 		if (this.type_lnk != null)
 			return this.type_lnk;
-		TypeDecl td = getTypeDecl();
-		td.checkResolved();
-		Type tp = td.getType();
+		TypeDecl td = getTypeDecl(env);
+		td = td.checkResolved(env);
+		Type tp = td.getType(env);
+		TVarBld set = null;
 		if (this.outer != null && td instanceof ComplexTypeDecl) {
 			TypeAssign ta = ((ComplexTypeDecl)td).ometa_tdef;
-			if (ta != null)
-				tp = tp.rebind(new TVarBld(ta.getAType(), this.outer.getType()));
+			if (ta != null) {
+				set = new TVarBld();
+				set.append(ta.getAType(env), this.outer.getType(env));
+			}
 		}
-		if (args.length > 0) {
+		if (set != null || args.length > 0) {
 			TemplateTVarSet tpset = tp.meta_type.getTemplBindings();
-			TVarBld set = new TVarBld();
+			if (set == null)
+				set = new TVarBld();
 			int a = 0;
 			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
 				if (tpset.tvars[b].val != null)
 					continue;
-				Type bound = args[a].getType();
+				Type bound = args[a].getType(env);
 				if (bound == null)
 					throw new CompilerException(this,"Type "+args[a]+" is not found");
 				if!(bound.isInstanceOf(tpset.tvars[b].var)) {
@@ -433,14 +437,14 @@ public final class TypeInnerNameRef extends TypeRef {
 		return tp;
 	}
 
-	public Struct getStruct() {
-		TypeDecl td = getTypeDecl();
+	public Struct getStruct(Env env) {
+		TypeDecl td = getTypeDecl(env);
 		if (td instanceof Struct)
 			return (Struct)td;
 		return null;
 	}
 
-	public TypeDecl getTypeDecl() {
+	public TypeDecl getTypeDecl(Env env) {
 		if (this.type_lnk != null) return this.type_lnk.meta_type.tdecl;
 		if (this.dnode instanceof TypeDecl)
 			return (TypeDecl)this.dnode;
@@ -456,12 +460,12 @@ public final class TypeInnerNameRef extends TypeRef {
 				head = name;
 				name = "";
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,head,ResInfo.noForwards);
 			if( !PassInfo.resolveNameR(this,info) )
 				throw new CompilerException(this,"Unresolved type "+head);
 			scope = info.resolvedDNode();
 		} else {
-			Type outer = this.outer.getType();
+			Type outer = this.outer.getType(env);
 			scope = outer.meta_type.tdecl;
 		}
 		while (name.length() > 0) {
@@ -475,18 +479,18 @@ public final class TypeInnerNameRef extends TypeRef {
 				head = name.intern();
 				name = "";
 			}
-			ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,head,ResInfo.noForwards);
 			if!(((ScopeOfNames)scope).resolveNameR(info))
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
 			scope = info.resolvedDNode();
 		}
 		if !(scope instanceof TypeDecl)
-			throw new CompilerException(this,"Unresolved type "+name);
+			throw new CompilerException(this,"Unresolved type "+this.ident);
 		this.symbol = scope.symbol;
 		return (TypeDecl)scope;
 	}
 
-	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
+	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "ident") {
 			DNode scope;
 			String head;
@@ -501,21 +505,21 @@ public final class TypeInnerNameRef extends TypeRef {
 			if (this.outer == null) {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<Symbol> vect = new Vector<Symbol>();
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
 					foreach (PassInfo.resolveNameR(this,info)) {
-						if (!vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
+						if (!result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
 					}
-					return vect.toArray();
+					return result;
 				} else {
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards);
 					if( !PassInfo.resolveNameR(this,info) )
 						return null;
 					scope = info.resolvedDNode();
 				}
 			} else {
-				Type outer = this.outer.getType();
+				Type outer = this.outer.getType(Env.getEnv());
 				scope = outer.meta_type.tdecl;
 			}
 			while (dot >= 0) {
@@ -531,15 +535,15 @@ public final class TypeInnerNameRef extends TypeRef {
 				}
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
-					Vector<Symbol> vect = new Vector<Symbol>();
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(this,head,flags);
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
-						if (!vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
+						if (!result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
 					}
-					return vect.toArray();
+					return result;
 				} else {
-					ResInfo info = new ResInfo(this,head,ResInfo.noForwards);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards);
 					if!(((ScopeOfNames)scope).resolveNameR(info))
 						return null;
 					scope = info.resolvedDNode();

@@ -1,0 +1,564 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+
+<!--
+ Copyright (c) 2005-2008 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+
+<core:FileUnit xmlns:sop="sop://sop/" xmlns:core="sop://languages/core?class=kiev.vlang.CoreLang" xmlns:syntax="sop://languages/syntax?class=kiev.fmt.SyntaxLang" name="style-sheet-default.xml">
+ <srpkg>
+  <core:SymbolRef full="true" name="stx-fmt"/>
+ </srpkg>
+ <members>
+  <core:Comment mode="DOCUMENTATION">
+   <elems>
+    <core:TextElem>
+     <text>Default syle-sheet</text>
+    </core:TextElem>
+   </elems>
+  </core:Comment>
+  <syntax:StyleSheet uuid="59857a48-3b20-4182-9681-e8d52ee317c9" name="style-sheet-default">
+   <members>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:TextElem>
+       <text>Spaces</text>
+      </core:TextElem>
+      <core:TextElem>
+       <text>and newlines</text>
+      </core:TextElem>
+     </elems>
+    </core:Comment>
+    <syntax:SpaceInfo uuid="70b6e697-2930-46aa-bc6a-3e0a69bacf58" name="sp">
+     <kind>SP_SPACE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS" g="4" t="2"/>
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid="26256522-ce29-43bb-8da0-7af993163ff7" name="sp-wide">
+     <kind>SP_SPACE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS" g="16" t="4"/>
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid="abdf8e45-513a-4661-be52-5fe193620394" name="nl">
+     <kind>SP_NEW_LINE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS"/>
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid="b50927de-a4f5-4eb8-916b-25ecc8f52ca8" name="nl2">
+     <kind>SP_NEW_LINE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS" g="10" t="1"/>
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid="748fd4db-4e8c-4b73-9bac-29a88c6a7a7e" name="nl_import">
+     <kind>SP_NEW_LINE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS" g="10" t="1"/>
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SpaceInfo uuid="5df5c60d-08d6-4fe9-8768-98bc0a245894" name="br">
+     <kind>SP_BRK_LINE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS"/>
+     </size>
+    </syntax:SpaceInfo>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:TextElem>
+       <text>Parapgaphs</text>
+      </core:TextElem>
+     </elems>
+    </core:Comment>
+    <syntax:ParagraphLayout uuid="4ec87250-7a1c-485d-bc36-58f64c002d72" name="par-horiz">
+     <flow>HORIZONTAL</flow>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="246c49ee-2486-4f48-b7d8-c32610c0333c" name="par-horiz-indent">
+     <flow>HORIZONTAL</flow>
+     <options>
+      <syntax:ParagraphIndent>
+       <indent>
+        <syntax:SyntaxSize unit="PIXELS" g="20"/>
+       </indent>
+      </syntax:ParagraphIndent>
+     </options>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="a7046f2d-e572-4ca5-b462-415c2728df7f" name="par-vert">
+     <flow>VERTICAL</flow>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="78af6c93-da1e-4f02-98b3-6a329a5f70e8" name="par-vert-indent">
+     <flow>VERTICAL</flow>
+     <options>
+      <syntax:ParagraphIndent>
+       <indent>
+        <syntax:SyntaxSize unit="PIXELS" g="20" t="2"/>
+       </indent>
+      </syntax:ParagraphIndent>
+     </options>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="aaeba86d-a474-42cd-8fd6-a3a13da0ec4e" name="par-flow">
+     <flow>FLOW</flow>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="9dfdd06a-6e40-41e6-b5bf-cf2db992ba37" name="par-flow-indent">
+     <flow>FLOW</flow>
+     <options>
+      <syntax:ParagraphIndent>
+       <indent>
+        <syntax:SyntaxSize unit="PIXELS" g="20" t="2"/>
+       </indent>
+      </syntax:ParagraphIndent>
+     </options>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="dd7c83f5-b7f7-4e0b-a67f-71949520e109" name="par-horiz-block">
+     <flow>BLOCK_HORIZONTAL</flow>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="0d92c06f-0611-47d9-b414-33a72db62abf" name="par-horiz-block-indent">
+     <flow>BLOCK_HORIZONTAL</flow>
+     <options>
+      <syntax:ParagraphIndent>
+       <indent>
+        <syntax:SyntaxSize unit="PIXELS" g="20" t="2"/>
+       </indent>
+      </syntax:ParagraphIndent>
+     </options>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="c27c0de3-6d8b-40a7-a572-2b3c4de179d2" name="par-vert-block">
+     <flow>BLOCK_VERTICAL</flow>
+    </syntax:ParagraphLayout>
+    <syntax:ParagraphLayout uuid="669184e9-3279-4ac6-a1c4-ec17e212c079" name="par-vert-block-indent">
+     <flow>BLOCK_VERTICAL</flow>
+     <options>
+      <syntax:ParagraphIndent>
+       <indent>
+        <syntax:SyntaxSize unit="PIXELS" g="10" t="2"/>
+       </indent>
+      </syntax:ParagraphIndent>
+     </options>
+    </syntax:ParagraphLayout>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:TextElem>
+       <text>Colors</text>
+      </core:TextElem>
+     </elems>
+    </core:Comment>
+    <syntax:DrawColor uuid="decbe2d5-b9e2-4103-85bb-26b0b6b8a897" name="color-default"/>
+    <syntax:DrawColor uuid="ed027390-d076-4bf6-aaac-87b41d695417" name="color-red">
+     <rgb_color>16711680</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="8de8599a-48c4-4987-bf32-6964dfe75e8a" name="color-red-dark">
+     <rgb_color>133169152</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="b5512224-1e91-412b-94c1-d104d489f4fa" name="color-blue">
+     <rgb_color>255</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="6fe9e593-d5df-46b1-ae29-38fc95ff0a71" name="color-blue-dark">
+     <rgb_color>127</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="64c47aad-00bf-4ddc-83bc-b7dc6ee5a803" name="color-green">
+     <rgb_color>65280</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="cbd80603-549e-4d19-9f0d-5c2210087014" name="color-green-dark">
+     <rgb_color>32768</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="89c1f98b-79d9-485b-b37c-eef843631ed6" name="color-black"/>
+    <syntax:DrawColor uuid="531888ed-3c1b-4e67-b02d-b9a7528f5035" name="color-gray">
+     <rgb_color>8421504</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="d47144ea-5fc0-4edc-a21b-7c7b53da6af9" name="color-symbol">
+     <rgb_color>255</rgb_color>
+    </syntax:DrawColor>
+    <syntax:DrawColor uuid="ece14786-3c54-4619-b355-11d619f1498b" name="color-symref">
+     <rgb_color>8947712</rgb_color>
+    </syntax:DrawColor>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:TextElem>
+       <text>Fonts</text>
+      </core:TextElem>
+     </elems>
+    </core:Comment>
+    <syntax:DrawFont uuid="16f93340-2829-4921-9fb7-ddacc018d88a" name="font-default">
+     <font_name>Dialog-PLAIN-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="68d7d0d5-b2b0-42ec-85c0-df858d4aae81" name="font-plain">
+     <font_name>Dialog-PLAIN-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="7cc22fc0-9cba-4fe0-9671-248a0df793ec" name="font-bold">
+     <font_name>Dialog-BOLD-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="7a6f2959-3172-4014-afef-803f364f2e80" name="font-italic">
+     <font_name>Dialog-ITALIC-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="42c79b5d-1743-4c71-96c3-4955c692ea50" name="font-bold-italic">
+     <font_name>Dialog-BOLDITALIC-12</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="a0d11b0e-245e-4023-b5a1-777aef8c69b5" name="font-plain-small">
+     <font_name>Dialog-PLAIN-10</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="5bb5a046-1373-47d1-b8b9-9c5dfd997a8b" name="font-bold-small">
+     <font_name>Dialog-BOLD-10</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="7701c598-dddf-47c2-b86c-153a2494ce9b" name="font-italic-small">
+     <font_name>Dialog-ITALIC-10</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="2881c3bd-badf-4b80-8703-34818335d11b" name="font-bold-italic-small">
+     <font_name>Dialog-BOLDITALIC-10</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="4518656c-eaa4-4d81-accb-fd240d6bdded" name="font-plain-big">
+     <font_name>Dialog-PLAIN-14</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="59a04e80-e313-4250-8ad2-649131615f10" name="font-bold-big">
+     <font_name>Dialog-BOLD-14</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="d5051c6b-85c9-4c52-a9f2-62111891981f" name="font-italic-big">
+     <font_name>Dialog-ITALIC-14</font_name>
+    </syntax:DrawFont>
+    <syntax:DrawFont uuid="d28a5eda-f081-4685-8e7e-304fca9390b3" name="font-bold-italic-big">
+     <font_name>Dialog-BOLDITALIC-14</font_name>
+    </syntax:DrawFont>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:TextElem>
+       <text>Styles</text>
+      </core:TextElem>
+     </elems>
+    </core:Comment>
+    <syntax:SyntaxStyleDecl uuid="fc2a7de5-23fb-4cff-a7dd-acd29d99d22a" name="style-default">
+     <color>
+      <core:SymbolRef name="color-default‣decbe2d5-b9e2-4103-85bb-26b0b6b8a897"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="6a086ece-1a02-4142-b96b-e6840f9cf0b7" name="style-keyword">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-black‣89c1f98b-79d9-485b-b37c-eef843631ed6"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold‣7cc22fc0-9cba-4fe0-9671-248a0df793ec"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="2080570b-1362-46c4-9ea4-692f94b3f78b" name="style-placeholder">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-gray‣531888ed-3c1b-4e67-b02d-b9a7528f5035"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="d0acb511-e8ee-40b5-b0cd-3cd3460b6403" name="style-symbol">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symbol‣d47144ea-5fc0-4edc-a21b-7c7b53da6af9"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold‣7cc22fc0-9cba-4fe0-9671-248a0df793ec"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="221a0035-0af7-49da-9974-57ce152263c9" name="style-symbol-alt">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symbol‣d47144ea-5fc0-4edc-a21b-7c7b53da6af9"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-plain‣68d7d0d5-b2b0-42ec-85c0-df858d4aae81"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="3677920e-0215-45a0-bbdc-aa2b4b83c843" name="style-symbol-small">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symbol‣d47144ea-5fc0-4edc-a21b-7c7b53da6af9"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold-small‣5bb5a046-1373-47d1-b8b9-9c5dfd997a8b"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="0e8632eb-b4f0-4eef-acad-4f1bc197cce4" name="style-symbol-big">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symbol‣d47144ea-5fc0-4edc-a21b-7c7b53da6af9"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold-big‣59a04e80-e313-4250-8ad2-649131615f10"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="206cee4c-db12-4dea-9151-9ab22b56eeed" name="style-symref">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symref‣ece14786-3c54-4619-b355-11d619f1498b"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold‣7cc22fc0-9cba-4fe0-9671-248a0df793ec"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="825ae136-2211-49e7-9a74-c74d30c2a16d" name="style-symref-small">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symref‣ece14786-3c54-4619-b355-11d619f1498b"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold-small‣5bb5a046-1373-47d1-b8b9-9c5dfd997a8b"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="67eb5af2-3f39-415e-8644-447ed46fdb50" name="style-symref-big">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-symref‣ece14786-3c54-4619-b355-11d619f1498b"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-bold-big‣59a04e80-e313-4250-8ad2-649131615f10"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="cc980cad-e10f-47ef-abf1-281b93575d26" name="style-separator">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-default‣decbe2d5-b9e2-4103-85bb-26b0b6b8a897"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="f564be38-dc54-47a5-9b70-1e055a1f2a64" name="style-delimiter">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-separator‣cc980cad-e10f-47ef-abf1-281b93575d26"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-default‣decbe2d5-b9e2-4103-85bb-26b0b6b8a897"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="8c35adbc-de32-402d-9c46-3d5d982d8fbf" name="style-lparen">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-separator‣cc980cad-e10f-47ef-abf1-281b93575d26"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-default‣decbe2d5-b9e2-4103-85bb-26b0b6b8a897"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxStyleDecl uuid="d3d96e35-a8de-481a-b67e-d38053a17126" name="style-rparen">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-separator‣cc980cad-e10f-47ef-abf1-281b93575d26"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-default‣decbe2d5-b9e2-4103-85bb-26b0b6b8a897"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxStyleDecl>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:TextElem>
+       <text>Layouts (newline/space format)</text>
+      </core:TextElem>
+     </elems>
+    </core:Comment>
+    <syntax:SyntaxElemFormatDecl uuid="ac76c9eb-db59-4ee6-960e-4a7ab0535763" name="fmt-default">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="0c493f87-c819-4477-9d77-74bc6a68727f" name="fmt-eat-right">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="3d3a7f03-6bc3-4e4d-821a-e5c388102bb9" name="fmt-eat-left">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="faebf7bd-a974-4c5d-b34c-3ff18ee1822c" name="fmt-eat-both">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="9c02ab50-fb1e-408c-8ed0-2a48dc9ff8ba" name="fmt-nl">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl‣abdf8e45-513a-4661-be52-5fe193620394"/>
+       </si>
+       <action_before>SP_NOP</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="885fab5a-9647-4f28-87db-f2cfd6ae0493" name="fmt-nl-before">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl‣abdf8e45-513a-4661-be52-5fe193620394"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_NOP</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="d7a15e10-9fae-48b2-866d-e20f835275e7" name="fmt-nl2">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl2‣b50927de-a4f5-4eb8-916b-25ecc8f52ca8"/>
+       </si>
+       <action_before>SP_NOP</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="f20d2bbf-e038-489f-aaf6-0ea9e16a4c76" name="fmt-nl-nl">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl‣abdf8e45-513a-4661-be52-5fe193620394"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="6add5693-f79d-4740-88c8-de4d38e5e7f3" name="fmt-nl2-nl2">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl2‣b50927de-a4f5-4eb8-916b-25ecc8f52ca8"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="f45e17a6-2914-4a44-969a-36d00c08122a" name="fmt-nl-import">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl_import‣748fd4db-4e8c-4b73-9bac-29a88c6a7a7e"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl‣abdf8e45-513a-4661-be52-5fe193620394"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxIdentTemplate uuid="a463bedd-34fb-429e-9409-6321b513f7df" name="ident-template">
+     <regexp_ok>.*</regexp_ok>
+     <elem>
+      <syntax:SyntaxNode/>
+     </elem>
+    </syntax:SyntaxIdentTemplate>
+   </members>
+  </syntax:StyleSheet>
+ </members>
+</core:FileUnit>

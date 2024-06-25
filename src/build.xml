@@ -19,17 +19,17 @@
   </target>
 
   <target name="compile1" depends="init" unless="build.notRequired" description="compile the source" >
-    <java classname="kiev.Main" fork="true" >
+    <java taskname="kiev" classname="kiev.Main" fork="true" >
 		<classpath>
 			<pathelement location="../bin/symade-05.jar"/>
 			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
 		</classpath>
 		<jvmarg value="-Xmx256M" />
-		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes -verify -enable vnode -enable view -p k5.prj -prop k5.props -g" />
+		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes -verify -enable vnode -enable view -p k5.prj -prop k5.props -g -ps" />
 	</java>
   </target>
   <target name="compile2" depends="compile1" unless="build.notRequired" description="compile the source" >
-    <java classname="kiev.Main" fork="true">
+    <java taskname="kiev" classname="kiev.Main" fork="true">
 		<classpath>
 			<pathelement location="${build}/classes"/>
 			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
@@ -38,19 +38,7 @@
 		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes2 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g" />
 	</java>
   </target>
-  <target name="compile3" depends="compile2" unless="build.notRequired" description="compile the source" >
-  	<!--
-    <java classname="kiev.Main" fork="true">
-		<classpath>
-			<pathelement location="${build}/classes2"/>
-			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
-		</classpath>
-		<jvmarg value="-Xmx256M" />
-		<arg line="-classpath ../bin/xpp3-1.1.4c.jar -d ${build}/classes3 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g" />
-	</java>
-	-->
-  </target>
-  <target name="compile" depends="compile3" unless="build.notRequired" description="compile the source" >
+  <target name="compile" depends="compile2" unless="build.notRequired" description="compile the source" >
   	<copy todir="${classes.to.jar}">
   		<fileset dir="${src}">
   			<include name="kiev/**/*.properties"/>

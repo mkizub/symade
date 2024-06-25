@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public static final view RField of Field extends RVar {
 	public		ConstExpr		const_value;
 	
@@ -25,26 +25,26 @@ public static final view RField of Field extends RVar {
 	public final boolean isAddedToInit();
 	public final void setAddedToInit(boolean on);
 
-	public void resolveDecl() {
-		Type tp = this.getType();
+	public void resolveDecl(Env env) {
+		Type tp = this.getType(env);
 		if (init instanceof TypeRef)
-			((TypeRef)init).toExpr(getType());
+			((RTypeRef)(TypeRef)init).toExpr(getType(env),env);
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr(this,init);
 			try {
 				Kiev.runProcessorsOn(init);
-				init.resolve(tp.getEnclosedType());
+				resolveENode(init,tp.getEnclosedType(),env);
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}
 		}
 		else if( init != null ) {
 			try {
-				init.resolve(tp);
-				Type it = init.getType();
+				resolveENode(init,tp,env);
+				Type it = init.getType(env);
 				if( !it.isInstanceOf(tp) ) {
 					init = new CastExpr(init.pos,tp,~init);
-					init.resolve(tp);
+					resolveENode(init,tp,env);
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);

@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
@@ -31,13 +31,13 @@ public class Shadow extends ENode {
 		this.rnode = node;
 	}
 	
-	public int getPriority() {
+	public int getPriority(Env env) {
 		if (rnode instanceof ENode)
-			return ((ENode)rnode).getPriority();
+			return ((ENode)rnode).getPriority(env);
 		return 255;
 	}
 
-	public Type getType() { return rnode.getType(); }
+	public Type getType(Env env) { return rnode.getType(env); }
 	
 	public String toString() {
 		return "(shadow of) "+rnode;
@@ -58,12 +58,12 @@ public class TypeClassExpr extends ENode {
 		this.ttype = ttype;
 	}
 
-	public Operator getOper() { return Operator.Access; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fClassAccess.operation }
 
-	public Type getType() {
-		if (this.ttype == null || StdTypes.tpClass.getArgsLength() == 0)
-			return StdTypes.tpClass;
-		return Type.tpClass.make(new TVarBld(StdTypes.tpClass.getArg(0), this.ttype.getType()));
+	public Type getType(Env env) {
+		if (this.ttype == null || env.tenv.tpClass.getArgsLength() == 0)
+			return env.tenv.tpClass;
+		return env.tenv.tpClass.make(new TVarBld(env.tenv.tpClass.getArg(0), this.ttype.getType(env)));
 	}
 
 	public String toString() {
@@ -87,13 +87,24 @@ public class TypeInfoExpr extends ENode {
 		this.ttype = ttype;
 	}
 
-	public Operator getOper() { return Operator.Access; }
+	public TypeInfoExpr(Type tp) {
+		this.ttype = new TypeRef(tp);
+	}
 
-	public Type getType() {
-		Type t = ttype.getType().getErasedType();
-		if (t.isUnerasable())
-			return t.getStruct().typeinfo_clazz.xtype;
-		return Type.tpTypeInfo;
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fTypeinfoAccess.operation }
+
+	public Type getType(Env env) {
+		Type t = ttype.getType(env).getErasedType();
+		if (t.isUnerasable()) {
+			Struct s = t.getStruct();
+			if (s == null)
+				return env.tenv.tpTypeInfo;
+			s = s.typeinfo_clazz;
+			if (s == null)
+				return env.tenv.tpTypeInfo;
+			return s.getType(env);
+		}
+		return env.tenv.tpTypeInfo;
 	}
 
 	public String toString() {
@@ -108,12 +119,12 @@ public class AssertEnabledExpr extends ENode {
 	
 	public AssertEnabledExpr() {}
 
-	public Type getType() {
-		return Type.tpBoolean;
+	public Type getType(Env env) {
+		return env.tenv.tpBoolean;
 	}
 
-	public boolean	isConstantExpr() { return !Kiev.debugOutputA; }
-	public Object	getConstValue() { return Boolean.FALSE; }
+	public boolean	isConstantExpr(Env env) { return !Kiev.debugOutputA; }
+	public Object	getConstValue(Env env) { return Boolean.FALSE; }
 
 	public String toString() {
 		return "$assertionsEnabled";
@@ -128,57 +139,68 @@ public class AssignExpr extends ENode {
 	@DataFlowDefinition(in="lval")		ENode			value;
 	}
 	
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			lval;
 	@nodeAttr public ENode			value;
 
 	public AssignExpr() {}
 
-	public AssignExpr(int pos, Operator op, ENode lval, ENode value) {
+	public AssignExpr(int pos, ENode lval, ENode value) {
 		this.pos = pos;
-		this.op = op;
+		this.symbol = getOperation(Env.getEnv()).symbol;
 		this.lval = lval;
 		this.value = value;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		this.op = op;
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.lval = args[0];
 		this.value = args[1];
 	}
 	
-	public Operator getOper() { return op; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fObjectAssign.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{lval,value}; }
 
-	public Type getType() { return lval.getType(); }
+	public Type getType(Env env) { return lval.getType(env); }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public void mainResolveOut() {
-		Type et1 = lval.getType();
-		Type et2 = value.getType();
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		resolveOpdef(env);
+		return true;
+	}
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		if (lval.getLvalArity() < 0 && !(Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro()))
+			Kiev.reportWarning(this,"Assigning to a non-lvalue "+lval);
+		Type et1 = lval.getType(env);
+		Type et2 = value.getType(env);
 		// Find out overloaded operator
-		if (op == Operator.Assign && lval instanceof ContainerAccessExpr) {
+		if (lval instanceof ContainerAccessExpr) {
 			ContainerAccessExpr cae = (ContainerAccessExpr)lval;
-			Type ect1 = cae.obj.getType();
-			Type ect2 = cae.index.getType();
-			ResInfo<Method> info = new ResInfo<Method>(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
+			Type ect1 = cae.obj.getType(env);
+			Type ect2 = cae.index.getType(env);
+			ResInfo<Method> info = new ResInfo<Method>(env,this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
 			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
 			if (PassInfo.resolveBestMethodR(ect1,info,mt)) {
 				Method rm = info.resolvedDNode();
 				if !(rm.isMacro() && rm.isNative()) {
 					ENode res = info.buildCall((ASTNode)this, cae.obj, null, new ENode[]{~cae.index,~value});
 					res = res.closeBuild();
-					this.replaceWithNodeReWalk(res);
+					this.replaceWithNodeReWalk(res,parent,slot);
+					return;
 				}
+				this.symbol = info.resolvedSymbol();
+				return;
 			}
-		} else {
-			resolveMethodAndNormalize();
 		}
+		resolveMethodAndNormalize(env,parent,slot);
+	}
+
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
+		if (lval.getLvalArity() < 0 && !(Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro()))
+			Kiev.reportError(this,"Assigning to a non-lvalue "+lval);
 	}
 
 	static class AssignExprDFFunc extends DFFunc {
@@ -223,6 +245,103 @@ public class AssignExpr extends ENode {
 }
 
 
+@ThisIsANode(name="Modify", lang=CoreLang)
+public class ModifyExpr extends ENode {
+	
+	@DataFlowDefinition(out="this:out()") private static class DFI {
+	@DataFlowDefinition(in="this:in")	ENode			lval;
+	@DataFlowDefinition(in="lval")		ENode			value;
+	}
+	
+	@nodeAttr public ENode			lval;
+	@nodeAttr public ENode			value;
+
+	public ModifyExpr() {}
+
+	public ModifyExpr(int pos, Operator op, ENode lval, ENode value) {
+		this.pos = pos;
+		this.ident = op.name;
+		this.lval = lval;
+		this.value = value;
+	}
+
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
+		this.pos = node.pos;
+		this.symbol = sym;
+		this.lval = args[0];
+		this.value = args[1];
+	}
+	
+	public ENode[] getEArgs() { return new ENode[]{lval,value}; }
+
+	public Type getType(Env env) { return lval.getType(env); }
+
+	public String toString() { toStringByOpdef() }
+
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		resolveOpdef(env);
+		return true;
+	}
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		if (lval.getLvalArity() < 0) {
+			if (Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
+				return;
+			Kiev.reportWarning(this,"Assigning/modify of a non-lvalue "+lval);
+		}
+		resolveMethodAndNormalize(env,parent,slot);
+	}
+
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
+		if (lval.getLvalArity() < 0) {
+			if (Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
+				return;
+			Kiev.reportError(this,"Assigning/modify of a non-lvalue "+lval);
+		}
+	}
+
+	static class ModifyExprDFFunc extends DFFunc {
+		final DFFunc f;
+		final int res_idx;
+		ModifyExprDFFunc(DataFlowInfo dfi) {
+			f = new DFFunc.DFFuncChildOut(dfi.getSocket("value"));
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			res = ((ModifyExpr)dfi.node_impl).addNodeTypeInfo(f.calc(dfi));
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new ModifyExprDFFunc(dfi);
+	}
+	
+	DFState addNodeTypeInfo(DFState dfs) {
+		if (value instanceof TypeRef)
+			return dfs;
+		Var[] path = null;
+		switch(lval) {
+		case LVarExpr:
+			path = new Var[]{((LVarExpr)lval).getVarSafe()};
+			break;
+		case IFldExpr:
+			path = ((IFldExpr)lval).getAccessPath();
+			break;
+		case SFldExpr:
+			path = new Var[]{((SFldExpr)lval).var};
+			break;
+		}
+		if (path != null)
+			return dfs.setNodeValue(path,value);
+		return dfs;
+	}
+
+}
+
+
 @ThisIsANode(name="BinOp", lang=CoreLang)
 public class BinaryExpr extends ENode {
 	
@@ -231,8 +350,6 @@ public class BinaryExpr extends ENode {
 	@DataFlowDefinition(in="expr1")		ENode				expr2;
 	}
 	
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
@@ -240,70 +357,83 @@ public class BinaryExpr extends ENode {
 
 	public BinaryExpr(int pos, Operator op, ENode expr1, ENode expr2) {
 		this.pos = pos;
-		this.op = op;
+		this.ident = op.name;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public BinaryExpr(int pos, CoreFunc op, ENode expr1, ENode expr2) {
+		this.pos = pos;
+		this.symbol = op.operation.symbol;
+		this.expr1 = expr1;
+		this.expr2 = expr2;
+	}
+
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		this.op = op;
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOper() { return op; }
-	public void setOper(Operator op) {
-		this.symbol = null;
-		this.op = op;
-	}
-
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public Type getType() {
+	public Type getType(Env env) {
+		DNode dn = this.dnode;
 		Method m;
-		if (this.dnode != null) {
-			m = (Method)this.dnode;
+		if (dn instanceof Method) {
+			m = (Method)dn;
 		} else {
-			Symbol sym = op.resolveMethod(this);
+			Opdef opd = resolveOpdef(env);
+			if (opd == null)
+				return env.tenv.tpVoid;
+			Symbol sym = opd.resolveMethod(env,this);
 			if (sym == null)
-				return Type.tpVoid;
+				return env.tenv.tpVoid;
 			this.symbol = sym;
 			m = (Method)sym.dnode;
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return m.makeType(null,getEArgs()).ret();
+		return m.makeType(this).ret();
 	}
 
-	public void mainResolveOut() {
-		resolveMethodAndNormalize();
-	}
-
-	public boolean	isConstantExpr() {
-		if (!expr1.isConstantExpr())
-			return false;
-		if (!expr2.isConstantExpr())
-			return false;
-		DNode m = this.dnode;
-		if (m == null) {
-			Symbol sym = getOper().resolveMethod(this);
-			if (sym != null)
-				m = sym.dnode;
-		}
-		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
-			return false;
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		resolveOpdef(env);
 		return true;
 	}
-	public Object	getConstValue() {
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		resolveMethodAndNormalize(env,parent,slot);
+	}
+
+	public boolean	isConstantExpr(Env env) {
+		if (!expr1.isConstantExpr(env))
+			return false;
+		if (!expr2.isConstantExpr(env))
+			return false;
+		DNode m = this.dnode;
+		if !(m instanceof Method) {
+			Opdef opd = resolveOpdef(env);
+			if (opd == null)
+				return false;
+			Symbol sym = opd.resolveMethod(env,this);
+			if (sym != null) {
+				this.symbol = sym;
+				m = sym.dnode;
+			}
+		}
+		if (m instanceof CoreOperation)
+			return true;
+		return false;
+	}
+	public Object	getConstValue(Env env) {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = (Method)getOper().resolveMethod(this).dnode;
-		ConstExpr ce = ((CoreExpr)m.body).calc(this);
-		return ce.getConstValue();
+			m = (Method)resolveOpdef(env).resolveMethod(env,this).dnode;
+		return ((CoreOperation)m).calc(this).getConstValue(env);
 	}
 }
 
@@ -314,81 +444,75 @@ public class UnaryExpr extends ENode {
 	@DataFlowDefinition(out="this:in")			ENode		expr;
 	}
 
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public Operator		op;
 	@nodeAttr public ENode			expr;
 
 	public UnaryExpr() {}
 
-	public UnaryExpr(int pos, Operator op, ENode expr) {
-		this.pos = pos;
-		this.op = op;
-		this.expr = expr;
-	}
-
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		this.op = (Operator)op;
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.expr = args[0];
 	}
 	
-	public Operator getOper() { return op; }
-	public void setOper(Operator op) {
-		this.symbol = null;
-		this.op = op;
-	}
-
 	public ENode[] getEArgs() { return new ENode[]{expr}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public Type getType() {
+	public Type getType(Env env) {
+		DNode dn = this.dnode;
 		Method m;
-		if (this.dnode != null) {
-			m = (Method)this.dnode;
+		if (dn instanceof Method) {
+			m = (Method)dn;
 		} else {
-			Symbol sym = op.resolveMethod(this);
+			Opdef opd = resolveOpdef(env);
+			if (opd == null)
+				return env.tenv.tpVoid;
+			Symbol sym = opd.resolveMethod(env,this);
 			if (sym == null)
-				return Type.tpVoid;
+				return env.tenv.tpVoid;
 			this.symbol = sym;
 			m = (Method)sym.dnode;
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return m.makeType(null,getEArgs()).ret();
+		return m.makeType(this).ret();
 	}
 
-	public void mainResolveOut() {
-		Method m = resolveMethodAndNormalize();
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		resolveOpdef(env);
+		return true;
+	}
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		Method m = resolveMethodAndNormalize(env,parent,slot);
 		if (m == null)
 			return; // error already reported
 		// Check if expression is a constant
-		if (m.body instanceof CoreExpr && expr.isConstantExpr()) {
-			ConstExpr ce = ((CoreExpr)m.body).calc(this);
-			replaceWithNodeReWalk(ce);
+		if (m instanceof CoreOperation && expr.isConstantExpr(env)) {
+			replaceWithNodeReWalk(((CoreOperation)m).calc(this),parent,slot);
 			return;
 		}
 	}
-	public boolean	isConstantExpr() {
-		if (!expr.isConstantExpr())
+	public boolean	isConstantExpr(Env env) {
+		if (!expr.isConstantExpr(env))
 			return false;
 		DNode m = this.dnode;
-		if (m == null) {
-			Symbol sym = getOper().resolveMethod(this);
-			if (sym != null)
+		if !(m instanceof Method) {
+			Opdef opd = resolveOpdef(env);
+			if (opd == null)
+				return false;
+			Symbol sym = opd.resolveMethod(env,this);
+			if (sym != null) {
+				this.symbol = sym;
 				m = sym.dnode;
+			}
 		}
-		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
-			return false;
-		return true;
+		if (m instanceof CoreOperation)
+			return true;
+		return false;
 	}
-	public Object	getConstValue() {
-		Method m = (Method)this.dnode;
-		if (m == null)
-			m = (Method)getOper().resolveMethod(this).dnode;
-		ConstExpr ce = ((CoreExpr)m.body).calc(this);
-		return ce.getConstValue();
+	public Object getConstValue(Env env) {
+		return ((CoreOperation)this.dnode).calc(this).getConstValue(env);
 	}
 }
 
@@ -407,10 +531,9 @@ public class StringConcatExpr extends ENode {
 		this.pos = pos;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == Operator.Add);
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		ENode arg1 = args[0];
 		ENode arg2 = args[1];
 		if (arg1 instanceof StringConcatExpr)
@@ -423,9 +546,9 @@ public class StringConcatExpr extends ENode {
 			this.args.add(arg2);
 	}
 	
-	public Operator getOper() { return Operator.Add; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fStringConcatSS.operation }
 
-	public Type getType() { return Type.tpString; }
+	public Type getType(Env env) { return env.tenv.tpString; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -458,9 +581,9 @@ public class CommaExpr extends ENode {
 		this.exprs.add(expr);
 	}
 
-	public int getPriority() { return 0; }
+	public int getPriority(Env env) { return 0; }
 
-	public Type getType() { return exprs[exprs.length-1].getType(); }
+	public Type getType(Env env) { return exprs[exprs.length-1].getType(env); }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -516,7 +639,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveNameR(ResInfo info)
 		ASTNode@ n;
 	{
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats, info.getPrevNode()),
 		{
 			n instanceof CaseLabel,
 			((CaseLabel)n).resolveNameR(info)
@@ -526,7 +649,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			info.isForwardsAllowed(),
 			n instanceof Var && ((Var)n).isForward(),
 			info.enterForward((Var)n) : info.leaveForward((Var)n),
-			n.getType().resolveNameAccessR(info)
+			((Var)n).getType(info.env).resolveNameAccessR(info)
 		}
 	}
 
@@ -534,23 +657,23 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats, info.getPrevNode()),
 		{
 			n instanceof CaseLabel,
 			((CaseLabel)n).resolveMethodR(info, mt)
 		;
 			n instanceof Var && ((Var)n).isForward(),
 			info.enterForward((Var)n) : info.leaveForward((Var)n),
-			((Var)n).getType().resolveCallAccessR(info, mt)
+			((Var)n).getType(info.env).resolveCallAccessR(info, mt)
 		}
 	}
 
-	public int		getPriority() { return 255; }
+	public int getPriority(Env env) { return 255; }
 
-	public Type getType() {
-		if (isGenVoidExpr()) return Type.tpVoid;
-		if (stats.length == 0) return Type.tpVoid;
-		return stats[stats.length-1].getType();
+	public Type getType(Env env) {
+		if (isGenVoidExpr()) return env.tenv.tpVoid;
+		if (stats.length == 0) return env.tenv.tpVoid;
+		return stats[stats.length-1].getType(env);
 	}
 
 	static class BlockDFFunc extends DFFunc {
@@ -596,42 +719,37 @@ public class IncrementExpr extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode			lval;
 	}
 
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public Operator			op;
 	@nodeAttr public ENode				lval;
 
 	public IncrementExpr() {}
 
-	public IncrementExpr(int pos, Operator op, ENode lval) {
+	public IncrementExpr(int pos, CoreFunc op, ENode lval) {
 		this.pos = pos;
-		this.op = op;
+		this.symbol = op.operation.symbol;
 		this.lval = lval;
 	}
 
-	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		this.pos = node.pos;
-		this.op = (Operator)op;
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = sym;
 		this.lval = args[0];
 	}
 	
-	public Operator getOper() { return op; }
-
 	public ENode[] getEArgs() { return new ENode[]{lval}; }
 
-	public Type getType() {
-		return lval.getType();
+	public Type getType(Env env) {
+		return lval.getType(env);
 	}
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public void mainResolveOut() {
-		Symbol m = op.resolveMethod(this);
-		if (m == null) {
-			if (ctx_method == null || !ctx_method.isMacro())
-				Kiev.reportWarning(this, "Unresolved method for operator "+op);
-			return;
-		}
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+		resolveOpdef(env);
+		return true;
+	}
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		resolveMethodAndNormalize(env,parent,slot);
 	}
 }
 
@@ -657,26 +775,26 @@ public class ConditionalExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
-	public Operator getOper() { return Operator.Conditional; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fConditional.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{cond, expr1, expr2}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public Type getType() {
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
+	public Type getType(Env env) {
+		Type t1 = expr1.getType(env);
+		Type t2 = expr2.getType(env);
 		if( t1.isReference() && t2.isReference() ) {
 			if( t1 ≡ t2 ) return t1;
-			if( t1 ≡ Type.tpNull ) return t2;
-			if( t2 ≡ Type.tpNull ) return t1;
+			if( t1 ≡ env.tenv.tpNull ) return t2;
+			if( t2 ≡ env.tenv.tpNull ) return t1;
 			return Type.leastCommonType(t1,t2);
 		}
 		if( t1.isNumber() && t2.isNumber() ) {
 			if( t1 ≡ t2 ) return t1;
 			return CoreType.upperCastNumbers(t1,t2);
 		}
-		return expr1.getType();
+		return expr1.getType(env);
 	}
 }
 
@@ -709,128 +827,181 @@ public class CastExpr extends ENode {
 		this.expr = expr;
 	}
 
-	public Operator getOper() { return Operator.CastForce; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fCast.operation }
 
-	public int getPriority() { return opCastPriority; }
+	public int getPriority(Env env) { return opCastPriority; }
 
 	public ENode[] getEArgs() { return new ENode[]{ctype, expr}; }
 
-	public String toString() { return getOper().toString(this); }
+	public String toString() { toStringByOpdef() }
 
-	public Type getType() {
-		return ctype.getType();
+	public Type getType(Env env) {
+		return ctype.getType(env);
 	}
 
-	public Type[] getAccessTypes() {
-		return new Type[]{getType()};
+	public Type[] getAccessTypes(Env env) {
+		return new Type[]{getType(env)};
 	}
 
-	public void mainResolveOut() {
-		Type ctype = this.ctype.getType();
-		Type extp = Type.getRealType(ctype,expr.getType());
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		Type ctype = this.ctype.getType(env);
+		Type extp = Type.getRealType(ctype,expr.getType(env));
 		if (extp.getAutoCastTo(ctype) == null) {
-			resolveOverloadedCast(extp);
+			resolveOverloadedCast(extp,env);
 		}
 		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(ctype) != null) {
-			resolveOverloadedCast(extp);
+			resolveOverloadedCast(extp,env);
 		}
 		else if (!extp.isInstanceOf(ctype) && extp.getStruct() != null && extp.getStruct().isStructView()
-				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(ctype) != null)
+				&& ((KievView)extp.getStruct()).view_of.getType(env).getAutoCastTo(ctype) != null)
 		{
-			resolveOverloadedCast(extp);
+			resolveOverloadedCast(extp,env);
 		}
 	}
 
-	private boolean resolveOverloadedCast(Type et) {
-		ResInfo<Method> info = new ResInfo<Method>(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
-		CallType mt = new CallType(et,null,null,this.ctype.getType(),false);
+	private boolean resolveOverloadedCast(Type et, Env env) {
+		ResInfo<Method> info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+		CallType mt = new CallType(et,null,null,this.ctype.getType(env),false);
 		if( PassInfo.resolveBestMethodR(et,info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return true;
 		}
-		info = new ResInfo<Method>(this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
-		mt = new CallType(null,null,new Type[]{expr.getType()},this.ctype.getType(),false);
+		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		mt = new CallType(null,null,new Type[]{expr.getType(env)},this.ctype.getType(env),false);
 		if( PassInfo.resolveMethodR(this,info,mt) ) {
+			this.symbol = info.resolvedSymbol();
+			return true;
+		}
+		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		if( this.ctype.getTypeDecl(env).resolveMethodR(info,mt) ) {
+			this.symbol = info.resolvedSymbol();
+			return true;
+		}
+		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		if( expr.getType(env).meta_type.tdecl.resolveMethodR(info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return true;
 		}
 		return false;
 	}
 
-	public static void autoCast(ENode ex, TypeRef tp) {
-		autoCast(ex, tp.getType());
+	public static void autoCast(Env env, ENode ex, TypeRef tp, INode parent, AttrSlot slot) {
+		autoCast(env, ex, tp.getType(env), parent, slot);
 	}
-	public static void autoCast(ENode ex, Type tp) {
+	public static void autoCast(Env env, ENode ex, Type tp, INode parent, AttrSlot slot) {
 		assert(ex.isAttached());
-		Type at = ex.getType();
+		Type at = ex.getType(env);
 		if( !at.equals(tp) ) {
 			if( at.isReference() && !tp.isReference() && ((CoreType)tp).getRefTypeForPrimitive() ≈ at )
-				autoCastToPrimitive(ex);
+				autoCastToPrimitive(env, ex, (CoreType)tp, parent, slot);
 			else if( !at.isReference() && tp.isReference() && ((CoreType)at).getRefTypeForPrimitive() ≈ tp )
-				autoCastToReference(ex);
+				autoCastToReference(env, ex, parent, slot);
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				;
 			else
-				ex.replaceWith(fun ()->ENode {return new CastExpr(ex.pos,tp,~ex);});
+				ex.replaceWith(fun ()->ENode {return new CastExpr(ex.pos,tp,~ex);}, parent, slot);
 		}
 	}
 
-	public static ENode autoCastToReference(ENode ex) {
+	public static ENode autoCastToReference(Env env, ENode ex, INode parent, AttrSlot slot) {
 		assert(ex.isAttached());
-		Type tp = ex.getType();
+		Type tp = ex.getType(env);
 		if( tp.isReference() ) return ex;
 		Type ref;
-		if     ( tp ≡ Type.tpBoolean )	ref = Type.tpBooleanRef;
-		else if( tp ≡ Type.tpByte    )	ref = Type.tpByteRef;
-		else if( tp ≡ Type.tpShort   )	ref = Type.tpShortRef;
-		else if( tp ≡ Type.tpInt     )	ref = Type.tpIntRef;
-		else if( tp ≡ Type.tpLong    )	ref = Type.tpLongRef;
-		else if( tp ≡ Type.tpFloat   )	ref = Type.tpFloatRef;
-		else if( tp ≡ Type.tpDouble  )	ref = Type.tpDoubleRef;
-		else if( tp ≡ Type.tpChar    )	ref = Type.tpCharRef;
+		if     ( tp ≡ env.tenv.tpBoolean )	ref = env.tenv.tpBooleanRef;
+		else if( tp ≡ env.tenv.tpByte    )	ref = env.tenv.tpByteRef;
+		else if( tp ≡ env.tenv.tpShort   )	ref = env.tenv.tpShortRef;
+		else if( tp ≡ env.tenv.tpInt     )	ref = env.tenv.tpIntRef;
+		else if( tp ≡ env.tenv.tpLong    )	ref = env.tenv.tpLongRef;
+		else if( tp ≡ env.tenv.tpFloat   )	ref = env.tenv.tpFloatRef;
+		else if( tp ≡ env.tenv.tpDouble  )	ref = env.tenv.tpDoubleRef;
+		else if( tp ≡ env.tenv.tpChar    )	ref = env.tenv.tpCharRef;
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
-		return (ENode)ex.replaceWith(fun ()->ENode {return new NewExpr(ex.pos,ref,new ENode[]{~ex});});
+		return (ENode)ex.replaceWith(fun ()->ENode {return new NewExpr(ex.pos,ref,new ENode[]{~ex});}, parent, slot);
 	}
 
-	public static ENode autoCastToPrimitive(ENode ex) {
+	public static ENode autoCastToPrimitive(Env env, ENode ex, CoreType ctp, INode parent, AttrSlot slot) {
 		assert(ex.isAttached());
-		Type tp = ex.getType();
+		Type tp = ex.getType(env);
 		if( !tp.isReference() ) return ex;
-		if( tp ≈ Type.tpBooleanRef )
+		if( tp ≈ env.tenv.tpBooleanRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpBooleanRef.tdecl.resolveMethod("booleanValue",Type.tpBoolean),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpByteRef )
+				env.tenv.tpBooleanRef.tdecl.resolveMethod(env,"booleanValue",env.tenv.tpBoolean),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpByteRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpByteRef.tdecl.resolveMethod("byteValue",Type.tpByte),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpShortRef )
+				env.tenv.tpByteRef.tdecl.resolveMethod(env,"byteValue",env.tenv.tpByte),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpShortRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpShortRef.tdecl.resolveMethod("shortValue",Type.tpShort),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpIntRef )
+				env.tenv.tpShortRef.tdecl.resolveMethod(env,"shortValue",env.tenv.tpShort),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpIntRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpIntRef.tdecl.resolveMethod("intValue",Type.tpInt),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpLongRef )
+				env.tenv.tpIntRef.tdecl.resolveMethod(env,"intValue",env.tenv.tpInt),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpLongRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpLongRef.tdecl.resolveMethod("longValue",Type.tpLong),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpFloatRef )
+				env.tenv.tpLongRef.tdecl.resolveMethod(env,"longValue",env.tenv.tpLong),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpFloatRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpFloatRef.tdecl.resolveMethod("floatValue",Type.tpFloat),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpDoubleRef )
+				env.tenv.tpFloatRef.tdecl.resolveMethod(env,"floatValue",env.tenv.tpFloat),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpDoubleRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpDoubleRef.tdecl.resolveMethod("doubleValue",Type.tpDouble),ENode.emptyArray
-			);});
-		else if( tp ≈ Type.tpCharRef )
+				env.tenv.tpDoubleRef.tdecl.resolveMethod(env,"doubleValue",env.tenv.tpDouble),ENode.emptyArray
+			);}, parent, slot);
+		if( tp ≈ env.tenv.tpCharRef )
 			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpCharRef.tdecl.resolveMethod("charValue",Type.tpChar),ENode.emptyArray
-			);});
-		else
-			throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");
+				env.tenv.tpCharRef.tdecl.resolveMethod(env,"charValue",env.tenv.tpChar),ENode.emptyArray
+			);}, parent, slot);
+		if ( tp ≈ env.tenv.tpNumberRef ) {
+			if ( ctp ≡ env.tenv.tpBoolean )
+				return (ENode)ex.replaceWith(fun ()->ENode {return
+						new BinaryBoolExpr(ex.pos, env.coreFuncs.fIntBoolNE,
+							new CallExpr(ex.pos,
+								new NewExpr(ex.pos,env.tenv.tpBigDecRef,new ENode[]{
+									new CallExpr(ex.pos,~ex,env.tenv.tpNumberRef.tdecl.resolveMethod(env,"toString",env.tenv.tpString),ENode.emptyArray)
+								}),
+								env.tenv.tpBigDecRef.tdecl.resolveMethod(env,"compareTo",env.tenv.tpInt),
+								new ENode[]{
+									env.tenv.tpBigDecRef.tdecl.resolveField(env,"ZERO")
+								}),
+							new ConstIntExpr(0)
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpByte )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+					env.tenv.tpNumberRef.tdecl.resolveMethod(env,"byteValue",env.tenv.tpByte),ENode.emptyArray
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpShort )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+					env.tenv.tpNumberRef.tdecl.resolveMethod(env,"shortValue",env.tenv.tpShort),ENode.emptyArray
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpInt )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+					env.tenv.tpNumberRef.tdecl.resolveMethod(env,"intValue",env.tenv.tpInt),ENode.emptyArray
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpLong )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+					env.tenv.tpNumberRef.tdecl.resolveMethod(env,"longValue",env.tenv.tpLong),ENode.emptyArray
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpFloat )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+					env.tenv.tpNumberRef.tdecl.resolveMethod(env,"floatValue",env.tenv.tpFloat),ENode.emptyArray
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpDouble )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+					env.tenv.tpNumberRef.tdecl.resolveMethod(env,"doubleValue",env.tenv.tpDouble),ENode.emptyArray
+				);}, parent, slot);
+			if ( ctp ≡ env.tenv.tpChar )
+				return (ENode)ex.replaceWith(fun ()->ENode {return new CastExpr(ex.pos, env.tenv.tpChar,
+					new CallExpr(ex.pos,~ex,
+						env.tenv.tpNumberRef.tdecl.resolveMethod(env,"intValue",env.tenv.tpInt),ENode.emptyArray)
+				);}, parent, slot);
+		}
+		throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");
 	}
 }
 

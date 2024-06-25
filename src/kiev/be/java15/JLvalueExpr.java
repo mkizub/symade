@@ -13,77 +13,116 @@ import syntax kiev.Syntax;
 
 import static kiev.be.java15.Instr.*;
 
-@ViewOf(vcast=true, iface=true)
-public abstract view JLvalueExpr of LvalueExpr extends JENode {
+public class JLvalueExpr extends JENode {
 
+	@virtual typedef VT  ≤ LvalueExpr;
+
+	public static JLvalueExpr attach(LvalueExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JLvalueExpr)jn;
+		if (impl instanceof IFldExpr)
+			return JIFldExpr.attach((IFldExpr)impl);
+		if (impl instanceof ThisExpr)
+			return JThisExpr.attach((ThisExpr)impl);
+		if (impl instanceof ContainerAccessExpr)
+			return JContainerAccessExpr.attach((ContainerAccessExpr)impl);
+		if (impl instanceof LVarExpr)
+			return JLVarExpr.attach((LVarExpr)impl);
+		if (impl instanceof SFldExpr)
+			return JSFldExpr.attach((SFldExpr)impl);
+		if (impl instanceof ReinterpExpr)
+			return JReinterpExpr.attach((ReinterpExpr)impl);
+		return new JLvalueExpr(impl);
+	}
+	
+	protected JLvalueExpr(LvalueExpr impl) {
+		super(impl);
+	}
+	
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		generateLoad(code);
-		if( reqType ≡ Type.tpVoid )
+		if( reqType ≡ code.tenv.tpVoid )
 			code.addInstr(Instr.op_pop);
 	}
 
 	/** Just load value referenced by lvalue */
-	public abstract void generateLoad(Code code);
+	public void generateLoad(Code code) { throw new RuntimeException("JLvalueExpr.generateLoad()"); }
 
 	/** Load value and dup info needed for generateStore or generateStoreDupValue
 		(the caller MUST provide one of Store call after a while) */
-	public abstract void generateLoadDup(Code code);
+	public void generateLoadDup(Code code) { throw new RuntimeException("JLvalueExpr.generateLoadDup()"); }
 
 	/** Load info needed for generateStore or generateStoreDupValue
 		(the caller MUST provide one of Store call after a while) */
-	public abstract void generateAccess(Code code);
+	public void generateAccess(Code code) { throw new RuntimeException("JLvalueExpr.generateAccess()"); }
 
 	/** Stores value using previously duped info */
-	public abstract void generateStore(Code code);
+	public void generateStore(Code code) { throw new RuntimeException("JLvalueExpr.generateStore()"); }
 
 	/** Stores value using previously duped info, and put stored value in stack */
-	public abstract void generateStoreDupValue(Code code);
+	public void generateStoreDupValue(Code code) { throw new RuntimeException("JLvalueExpr.generateStoreDupValue()"); }
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JAccessExpr of AccessExpr extends JLvalueExpr {
-	public:ro	JENode		obj;
+public final class JIFldExpr extends JLvalueExpr {
 
-	public void generateLoad(Code code) { throw new RuntimeException("JAccessExpr.generateLoad()"); }
-	public void generateLoadDup(Code code) { throw new RuntimeException("JAccessExpr.generateLoadDup()"); }
-	public void generateAccess(Code code) { throw new RuntimeException("JAccessExpr.generateAccess()"); }
-	public void generateStore(Code code) { throw new RuntimeException("JAccessExpr.generateStore()"); }
-	public void generateStoreDupValue(Code code) { throw new RuntimeException("JAccessExpr.generateStoreDupValue()"); }
-}
+	@virtual typedef VT  ≤ IFldExpr;
 
-@ViewOf(vcast=true, iface=true)
-public final view JIFldExpr of IFldExpr extends JLvalueExpr {
+	public final JField var;
+
+	public static JIFldExpr attach(IFldExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JIFldExpr)jn;
+		return new JIFldExpr(impl);
+	}
 	
-	public:ro JENode		obj;
-	public:ro JField		var;
+	protected JIFldExpr(IFldExpr impl) {
+		super(impl);
+		this.var = (JField)impl.var;
+	}
 
-	public boolean	isConstantExpr() { return var.isConstantExpr(); }
-	public Object	getConstValue() { return var.getConstValue(); }
+	public boolean	isConstantExpr(Env env) { return var.isConstantExpr(env); }
+	public Object	getConstValue(Env env) { return var.getConstValue(env); }
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
+		IFldExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
 		Type ot = obj.getType();
 		if( !code.jtenv.getJType(ot).isInstanceOf(var.jctx_tdecl.getJType(code.jtenv)) )
-			code.addInstr(Instr.op_checkcast,var.jctx_tdecl.xtype);
+			code.addInstr(Instr.op_checkcast,var.jctx_tdecl.getType());
 	}
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - load only: "+this);
 		code.setLinePos(this);
+		IFldExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		MetaAccess.verifyRead(this,var);
+			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+		MetaAccess.verifyRead(vn,var.vn());
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		if (var.isNative()) {
-			Field var = (Field)this.var;
+			Field var = this.var.vn();
 			assert(var.isMacro());
 			Field arr_length = code.jenv.getFldArrLength();
 			if (var == arr_length) {
 				code.addInstr(Instr.op_arrlength);
 			} else {
-				Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+				Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
 				JConstExpr.generateConst(null, code, getType());
 			}
 		} else {
@@ -96,20 +135,22 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
 		code.setLinePos(this);
+		IFldExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		MetaAccess.verifyRead(this,var);
+			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+		MetaAccess.verifyRead(vn,var.vn());
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_dup);
 		if (var.isNative()) {
-			Field var = (Field)this.var;
+			Field var = this.var.vn();
 			assert(var.isMacro());
 			Field arr_length = code.jenv.getFldArrLength();
 			if (var == arr_length) {
 				code.addInstr(Instr.op_arrlength);
 			} else {
-				Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+				Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
 				JConstExpr.generateConst(null, code, getType());
 			}
 		} else {
@@ -122,8 +163,10 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateAccess(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - access only: "+this);
 		code.setLinePos(this);
+		IFldExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 	}
@@ -131,12 +174,14 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateStore(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - store only: "+this);
 		code.setLinePos(this);
+		IFldExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		MetaAccess.verifyWrite(this,var);
+			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+		MetaAccess.verifyWrite(vn,var.vn());
 		if (var.isNative()) {
 			assert(var.isMacro());
-			Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+			Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
 			code.addInstr(op_pop);
 			code.addInstr(op_pop);
 		} else {
@@ -147,13 +192,15 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
 		code.setLinePos(this);
+		IFldExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		MetaAccess.verifyWrite(this,var);
+			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+		MetaAccess.verifyWrite(vn,var.vn());
 		code.addInstr(op_dup_x);
 		if (var.isNative()) {
 			assert(var.isMacro());
-			Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+			Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
 			code.addInstr(op_pop);
 			code.addInstr(op_pop);
 		} else {
@@ -164,113 +211,121 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 }
 
 
-@ViewOf(vcast=true, iface=true)
-public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExpr {
-	public:ro	JENode		obj;
-	public:ro	JENode		index;
+public final class JContainerAccessExpr extends JLvalueExpr {
+
+	@virtual typedef VT  ≤ ContainerAccessExpr;
+
+	public static JContainerAccessExpr attach(ContainerAccessExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JContainerAccessExpr)jn;
+		return new JContainerAccessExpr(impl);
+	}
+	
+	protected JContainerAccessExpr(ContainerAccessExpr impl) {
+		super(impl);
+	}
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
 		code.setLinePos(this);
+		ContainerAccessExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
+		JENode index = (JENode)vn.index;
 		if( obj.getType().isArray() ) {
 			obj.generate(code,null);
 			index.generate(code,null);
 			code.addInstr(Instr.op_arr_load);
 		} else {
-			// Resolve overloaded access method
-			CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},Type.tpAny,false);
-			ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),info,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
-			obj.generate(code,null);
-			index.generate(code,null);
-			Method func = info.resolvedDNode();
-			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
-			if( Kiev.verify
-			 && func.mtype.ret().isReference()
-			 && ( !func.mtype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
-				code.addInstr(op_checkcast,getType());
+			throw new CompilerException(vn,"Overloaded arr[value] at generation phase");
 		}
 	}
 
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load & dup: "+this);
 		code.setLinePos(this);
+		ContainerAccessExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
+		JENode index = (JENode)vn.index;
 		if( obj.getType().isArray() ) {
 			obj.generate(code,null);
 			index.generate(code,null);
 			code.addInstr(op_dup2);
 			code.addInstr(Instr.op_arr_load);
 		} else {
-			throw new CompilerException(this,"Too complex expression for overloaded operator '[]'");
+			throw new CompilerException(vn,"Too complex expression for overloaded operator '[]'");
 		}
 	}
 
 	public void generateAccess(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - access only: "+this);
-		code.setLinePos(this);
-		obj.generate(code,null);
-		index.generate(code,null);
+		ContainerAccessExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
+		JENode index = (JENode)vn.index;
+		if( obj.getType().isArray() ) {
+			code.setLinePos(this);
+			obj.generate(code,null);
+			index.generate(code,null);
+		} else {
+			throw new CompilerException(vn,"Too complex expression for overloaded operator '[]'");
+		}
 	}
 
 	public void generateStore(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
 		code.setLinePos(this);
+		ContainerAccessExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
+		JENode index = (JENode)vn.index;
 		Type objType = obj.getType();
 		if( objType.isArray() ) {
 			code.addInstr(Instr.op_arr_store);
 		} else {
-			// Resolve overloaded set method
-			// We need to get the type of object in stack
-			JType jt = code.stack_at(0);
-			Type t = Signature.getType(code.jenv,jt.java_signature);
-			ENode o = new LVarExpr(pos,new LVar(pos,"",t,Var.VAR_LOCAL,0));
-			Struct s = objType.getStruct();
-			CallType mt = new CallType(objType,null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
-			ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(objType,info,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArraySetOp,mt)+" in "+objType);
-			Method func = info.resolvedDNode();
-			code.addInstr(Instr.op_call,(JMethod)func,false,objType);
-			// Pop return value
-			code.addInstr(Instr.op_pop);
+			throw new CompilerException(vn,"Overloaded arr[value] at generation phase");
 		}
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store & dup: "+this);
 		code.setLinePos(this);
+		ContainerAccessExpr vn = vn();
+		JENode obj = (JENode)vn.obj;
+		JENode index = (JENode)vn.index;
 		if( obj.getType().isArray() ) {
 			code.addInstr(op_dup_x2);
 			code.addInstr(Instr.op_arr_store);
 		} else {
-			// Resolve overloaded set method
-			// We need to get the type of object in stack
-			JType jt = code.stack_at(0);
-			Type t = Signature.getType(code.jenv,jt.java_signature);
-			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
-				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
-			ENode o = new LVarExpr(pos,new LVar(pos,"",t,Var.VAR_LOCAL,0));
-			Struct s = obj.getType().getStruct();
-			CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
-			ResInfo<Method> info = new ResInfo<Method>((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),info,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArraySetOp,mt));
-			// The method must return the value to duplicate
-			Method func = info.resolvedDNode();
-			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
-			if( Kiev.verify
-			 && func.mtype.ret().isReference()
-			 && ( !func.mtype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
-				code.addInstr(op_checkcast,getType());
+			throw new CompilerException(vn,"Overloaded arr[value] at generation phase");
 		}
 	}
 
 }
 
 
-@ViewOf(vcast=true, iface=true)
-public final view JThisExpr of ThisExpr extends JLvalueExpr {
+public final class JThisExpr extends JLvalueExpr {
+
+	@virtual typedef VT  ≤ ThisExpr;
+
+	public static JThisExpr attach(ThisExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JThisExpr)jn;
+		return new JThisExpr(impl);
+	}
+	
+	protected JThisExpr(ThisExpr impl) {
+		super(impl);
+	}
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
@@ -280,7 +335,7 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_load,code.method.params[0]);
 		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
+			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
 			code.addNullConst();
 		}
 	}
@@ -293,7 +348,7 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_load,code.method.params[0]);
 		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
+			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
 			code.addNullConst();
 		}
 		code.addInstr(op_dup);
@@ -311,7 +366,7 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_store,code.method.params[0]);
 		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
+			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
 			code.addInstr(op_pop);
 		}
 	}
@@ -325,15 +380,32 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_store,code.method.params[0]);
 		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
+			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
 			code.addInstr(op_pop);
 		}
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JSuperExpr of SuperExpr extends JENode {
+public final class JSuperExpr extends JENode {
+
+	@virtual typedef VT  ≤ SuperExpr;
+
+	public static JSuperExpr attach(SuperExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JSuperExpr)jn;
+		return new JSuperExpr(impl);
+	}
+	
+	protected JSuperExpr(SuperExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SuperExpr");
@@ -343,20 +415,39 @@ public final view JSuperExpr of SuperExpr extends JENode {
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_load,code.method.params[0]);
 		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
+			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
 			code.addNullConst();
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JLVarExpr of LVarExpr extends JLvalueExpr {
-	public:ro	JVar		var;
+public final class JLVarExpr extends JLvalueExpr {
+
+	@virtual typedef VT  ≤ LVarExpr;
+
+	public final JVar var;
+
+	public static JLVarExpr attach(LVarExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JLVarExpr)jn;
+		return new JLVarExpr(impl);
+	}
+	
+	protected JLVarExpr(LVarExpr impl) {
+		super(impl);
+		this.var = (JVar)impl.var;
+	}
 
 	public JField resolveProxyVar(Code code) {
-		JField proxy_var = code.clazz.resolveField(code.jenv,this.ident,true);
+		JField proxy_var = code.clazz.resolveField(code.jenv,this.getIdent(),true);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
-			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
+			throw new CompilerException(vn(),"Proxyed var cannot be referenced from static context");
 		return proxy_var;
 	}
 
@@ -372,7 +463,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		// Bind the correct var
 		if( !var.jparent.equals(code.method) ) {
 			assert( var.jparent instanceof JMethod, "Non-parametrs var in condition" );
-			if (this.ident == nameResultVar) {
+			if (this.getIdent() == nameResultVar) {
 				var = code.method.getRetVar();
 			} else {
 				for(int i=0; i < code.method.params.length; i++) {
@@ -418,12 +509,12 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
 			if( code.lookupCodeVar(var) == null )
-				throw new CompilerException("Var "+var+" not exists in the code");
+				throw new CompilerException(vn(), "Var "+var+" not exists in the code");
 			code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.xtype);
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.getType());
 			} else {
 				code.addInstr(op_load,var);
 			}
@@ -438,13 +529,13 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
 			if( code.lookupCodeVar(var) == null )
-				throw new CompilerException("Var "+var+" not exists in the code");
+				throw new CompilerException(vn(), "Var "+var+" not exists in the code");
 			code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
 				code.addInstr(op_dup);
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.xtype);
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.getType());
 			} else {
 				code.addInstr(op_load,var);
 				code.addInstr(op_dup);
@@ -474,11 +565,11 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
 			if( code.lookupCodeVar(var) == null )
-				throw new CompilerException("Var "+var+" not exists in the code");
+				throw new CompilerException(vn(), "Var "+var+" not exists in the code");
 			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
-				code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.xtype);
+				code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.getType());
 			} else {
 				code.addInstr(op_store,var);
 			}
@@ -492,16 +583,16 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() ) {
 			if( code.lookupCodeVar(var) == null )
-				throw new CompilerException("Var "+var+" not exists in the code");
+				throw new CompilerException(vn(), "Var "+var+" not exists in the code");
 			code.addInstr(op_dup);
 			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(code.jenv),code.clazz.xtype);
+				code.addInstr(op_putfield,resolveVarVal(code.jenv),code.clazz.getType());
 			} else {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(code.jenv),code.clazz.xtype);
+				code.addInstr(op_putfield,resolveVarVal(code.jenv),code.clazz.getType());
 			}
 		}
 		generateVerifyCheckCast(code);
@@ -509,26 +600,44 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JSFldExpr of SFldExpr extends JLvalueExpr {
-	public:ro JTypeRef		obj;
-	public:ro JField		var;
+public final class JSFldExpr extends JLvalueExpr {
+
+	@virtual typedef VT  ≤ SFldExpr;
+
+	public final JField var;
+
+	public static JSFldExpr attach(SFldExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JSFldExpr)jn;
+		return new JSFldExpr(impl);
+	}
 	
-	public boolean	isConstantExpr() { return var.isConstantExpr(); }
-	public Object	getConstValue() { return var.getConstValue(); }
+	protected JSFldExpr(SFldExpr impl) {
+		super(impl);
+		this.var = (JField)impl.var;
+	}
+
+	public boolean	isConstantExpr(Env env) { return var.isConstantExpr(env); }
+	public Object	getConstValue(Env env) { return var.getConstValue(env); }
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);
-		MetaAccess.verifyRead(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.xtype);
+		MetaAccess.verifyRead(vn(),var.vn());
+		code.addInstr(op_getstatic,var,code.clazz.getType());
 	}
 
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		code.setLinePos(this);
-		MetaAccess.verifyRead(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.xtype);
+		MetaAccess.verifyRead(vn(),var.vn());
+		code.addInstr(op_getstatic,var,code.clazz.getType());
 	}
 
 	public void generateAccess(Code code) {
@@ -538,42 +647,76 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 	public void generateStore(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		code.setLinePos(this);
-		MetaAccess.verifyWrite(this,var);
-		code.addInstr(op_putstatic,var,code.clazz.xtype);
+		MetaAccess.verifyWrite(vn(),var.vn());
+		code.addInstr(op_putstatic,var,code.clazz.getType());
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
 		code.setLinePos(this);
-		MetaAccess.verifyWrite(this,var);
+		MetaAccess.verifyWrite(vn(),var.vn());
 		code.addInstr(op_dup);
-		code.addInstr(op_putstatic,var,code.clazz.xtype);
+		code.addInstr(op_putstatic,var,code.clazz.getType());
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JENode {
-	public:ro	JField[]		outer_refs;
+public final class JOuterThisAccessExpr extends JENode {
+
+	@virtual typedef VT  ≤ OuterThisAccessExpr;
+
+	public static JOuterThisAccessExpr attach(OuterThisAccessExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JOuterThisAccessExpr)jn;
+		return new JOuterThisAccessExpr(impl);
+	}
+	
+	protected JOuterThisAccessExpr(OuterThisAccessExpr impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr: "+this);
 		code.setLinePos(this);
 		code.addInstrLoadThis();
+		JField[] outer_refs = JNode.toJArray<JField>(vn().outer_refs);
 		for(int i=0; i < outer_refs.length; i++)
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.getType());
 	}
 
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JReinterpExpr of ReinterpExpr extends JLvalueExpr {
-	public:ro	JENode		expr;
+public final class JReinterpExpr extends JLvalueExpr {
+
+	@virtual typedef VT  ≤ ReinterpExpr;
+
+	public static JReinterpExpr attach(ReinterpExpr impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JReinterpExpr)jn;
+		return new JReinterpExpr(impl);
+	}
+	
+	protected JReinterpExpr(ReinterpExpr impl) {
+		super(impl);
+	}
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - load only: "+this);
 		code.setLinePos(this);
-		JENode expr = this.expr;
+		ReinterpExpr vn = vn();
+		JENode expr = (JENode)vn.expr;
 		if (expr instanceof JLvalueExpr)
 			expr.generateLoad(code);
 		else
@@ -583,7 +726,8 @@ public final view JReinterpExpr of ReinterpExpr extends JLvalueExpr {
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - load & dup: "+this);
 		code.setLinePos(this);
-		JENode expr = this.expr;
+		ReinterpExpr vn = vn();
+		JENode expr = (JENode)vn.expr;
 		if (expr instanceof JLvalueExpr) {
 			expr.generateLoadDup(code);
 		} else {
@@ -595,7 +739,8 @@ public final view JReinterpExpr of ReinterpExpr extends JLvalueExpr {
 	public void generateAccess(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - access only: "+this);
 		code.setLinePos(this);
-		JENode expr = this.expr;
+		ReinterpExpr vn = vn();
+		JENode expr = (JENode)vn.expr;
 		if (expr instanceof JLvalueExpr)
 			expr.generateAccess(code);
 		else
@@ -605,21 +750,23 @@ public final view JReinterpExpr of ReinterpExpr extends JLvalueExpr {
 	public void generateStore(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - store only: "+this);
 		code.setLinePos(this);
-		JENode expr = this.expr;
+		ReinterpExpr vn = vn();
+		JENode expr = (JENode)vn.expr;
 		if (expr instanceof JLvalueExpr)
 			expr.generateStore(code);
 		else
-			throw new CompilerException(this,"Cannot generate store for non-lvalue "+expr);
+			throw new CompilerException(vn,"Cannot generate store for non-lvalue "+expr);
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - store & dup: "+this);
 		code.setLinePos(this);
-		JENode expr = this.expr;
+		ReinterpExpr vn = vn();
+		JENode expr = (JENode)vn.expr;
 		if (expr instanceof JLvalueExpr)
 			expr.generateStoreDupValue(code);
 		else
-			throw new CompilerException(this,"Cannot generate store+dup value for non-lvalue "+expr);
+			throw new CompilerException(vn,"Cannot generate store+dup value for non-lvalue "+expr);
 	}
 
 }

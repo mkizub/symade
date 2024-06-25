@@ -80,7 +80,7 @@ public final class Kiev {
 		reportError(dummy, e);
 	}
 	
-   	public static void reportError(ASTNode from, Throwable e) {
+   	public static void reportError(INode from, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
 		if (e instanceof CompilerException) {
@@ -90,27 +90,27 @@ public final class Kiev {
 		if( debug ) e.printStackTrace(System.out);
 		int pos = 0;
 		if (from != null && from.isAttached()) {
-			pos = from.pos;
-			ASTNode f = from;
+			pos = from.asANode().pos;
+			INode f = from;
 			FileUnit fu = null;
 			TypeDecl clazz = null;
 			Method method = null;
 			try {
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
-					pos = f.pos;
-				method = from.ctx_method;
-				clazz = from.ctx_tdecl;
-				fu = from.ctx_file_unit;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
+					pos = f.asANode().pos;
+				method = Env.ctxMethod(from.asANode());
+				clazz = Env.ctxTDecl(from.asANode());
+				fu = Env.ctxFileUnit(from.asANode());
 			} catch (Exception e) { /*ignore*/}
 			if( e.getMessage() == null )
-				report(pos,fu,clazz,method,SeverError.Error,e.getClass().getName());
+				report(from,pos,fu,clazz,method,SeverError.Error,e.getClass().getName());
 			else
-				report(pos,fu,clazz,method,SeverError.Error,e.getMessage());
+				report(from,pos,fu,clazz,method,SeverError.Error,e.getMessage());
 		} else {
 			if( e.getMessage() == null )
-				report(0,null,null,null,SeverError.Error,e.getClass().getName());
+				report(from,0,null,null,null,SeverError.Error,e.getClass().getName());
 			else
-				report(0,null,null,null,SeverError.Error,e.getMessage());
+				report(from,0,null,null,null,SeverError.Error,e.getMessage());
 		}
 		if (testError != null) {
 			if !(e instanceof CompilerException) {
@@ -130,13 +130,13 @@ public final class Kiev {
 		}
 	}
 
-   	public static void reportParserError(int pos, String msg) {
+   	public static void reportParserError(FileUnit fu, int pos, String msg) {
         errorPrompt = false;
 		if( debug ) new Exception().printStackTrace(System.out);
-		report( pos, k.curFileUnit, null, null, SeverError.Error, msg);
+		report(null, pos, fu, null, null, SeverError.Error, msg);
 	}
 
-   	public static void reportParserError(int pos, String msg, Throwable e) {
+   	public static void reportParserError(FileUnit fu, int pos, String msg, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
 		if (e instanceof ParseException) {
@@ -149,10 +149,10 @@ public final class Kiev {
 		}
         errorPrompt = false;
 		if( debug ) e.printStackTrace(System.out);
-		report( pos, k.curFileUnit, null, null, SeverError.Error, msg + ": " + e);
+		report(null, pos, fu, null, null, SeverError.Error, msg + ": " + e);
 	}
 
-   	public static void reportParserError(int pos, Throwable e) {
+   	public static void reportParserError(FileUnit fu, int pos, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
 		if (e instanceof ParseException) {
@@ -166,9 +166,9 @@ public final class Kiev {
         errorPrompt = false;
 		if( debug ) e.printStackTrace(System.out);
 		if( e.getMessage() == null )
-			report(pos, k.curFileUnit, null, null, SeverError.Error,e.getClass().getName());
+			report(null, pos, fu, null, null, SeverError.Error,e.getClass().getName());
 		else
-			report(pos, k.curFileUnit, null, null, SeverError.Error,e.getMessage());
+			report(null, pos, fu, null, null, SeverError.Error,e.getMessage());
 	}
 
    	public static void reportError(String msg) {
@@ -187,13 +187,13 @@ public final class Kiev {
 				ASTNode f = from;
 				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
 					pos = f.pos;
-				method = from.ctx_method;
-				clazz = from.ctx_tdecl;
-				fu = from.ctx_file_unit;
+				method = Env.ctxMethod(from);
+				clazz = Env.ctxTDecl(from);
+				fu = Env.ctxFileUnit(from);
 			} catch (Exception e) { /*ignore*/}
-			report(pos,fu,clazz,method,SeverError.Error,msg);
+			report(from,pos,fu,clazz,method,SeverError.Error,msg);
 		} else {
-			report(0,null,null,null,SeverError.Error,msg);
+			report(from,0,null,null,null,SeverError.Error,msg);
 		}
 	}
 
@@ -208,20 +208,21 @@ public final class Kiev {
 				ASTNode f = from;
 				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
 					pos = f.pos;
-				method = from.ctx_method;
-				clazz = from.ctx_tdecl;
-				fu = from.ctx_file_unit;
+				method = Env.ctxMethod(from);
+				clazz = Env.ctxTDecl(from);
+				fu = Env.ctxFileUnit(from);
 			} catch (Exception e) { /*ignore*/}
-			report(pos,fu,clazz,method,sever,msg);
+			report(from,pos,fu,clazz,method,sever,msg);
 		} else {
-			report(0,null,null,null,sever,msg);
+			report(from,0,null,null,null,sever,msg);
 		}
 	}
 
-	private static void report(int pos, FileUnit file_unit, TypeDecl clazz, Method method, SeverError err, String msg) {
+	private static void report(INode from, int pos, FileUnit file_unit, TypeDecl clazz, Method method, SeverError err, String msg) {
 		WorkerThreadGroup thrg = null;
-		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup)
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
 			thrg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+		}
 		if (err == SeverError.Warning) {
 			if (thrg != null)
 				thrg.warnCount++;
@@ -235,7 +236,7 @@ public final class Kiev {
 		if (file_unit != null) {
 			cf = file_unit.pname();
 			if (javacerrors) {
-				String fn = new File(cf.toString()).getAbsolutePath();
+				String fn = new File(cf).getAbsolutePath();
 				System.out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
 			}
 			else if (pos > 0) {
@@ -246,6 +247,13 @@ public final class Kiev {
 			}
 		} else {
 			System.out.println(err+": "+msg);
+		}
+		if (thrg != null) {
+			Env env = thrg.getEnv();
+			if (from != null)
+				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorNodeInfo(err,msg,from.asANode()));
+			else
+				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorTextInfo(err,msg,cf,pos>>>11));
 		}
 		if( cf != null && verbose && (pos >>> 11) != 0 ) {
 			File f = new File(cf.toString());
@@ -300,7 +308,7 @@ public final class Kiev {
 		if (Kiev.code_nowarn)
 			return;
 		if (Kiev.debug && Kiev.verbose) new Exception().printStackTrace(System.out);
-		report(last_lineno<<11, fu, clazz, method, SeverError.Warning, msg);
+		report(null,last_lineno<<11, fu, clazz, method, SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {
@@ -321,24 +329,29 @@ public final class Kiev {
 				ASTNode f = from;
 				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
 					pos = f.pos;
-				method = from.ctx_method;
-				clazz = from.ctx_tdecl;
-				fu = from.ctx_file_unit;
+				method = Env.ctxMethod(from);
+				clazz = Env.ctxTDecl(from);
+				fu = Env.ctxFileUnit(from);
 			} catch (Exception e) { /*ignore*/}
-			report(pos,fu,clazz,method,SeverError.Warning,msg);
+			report(from,pos,fu,clazz,method,SeverError.Warning,msg);
 		} else {
-			report(0,null,null,null,SeverError.Warning,msg);
+			report(from,0,null,null,null,SeverError.Warning,msg);
 		}
 	}
 
     private static char[] emptyString = new char[80];
     static { for(int i=0; i < 80; i++) emptyString[i] = ' '; }
 	public static void reportInfo(String msg, long diff_time) {
+		String thread_idx = "?";
+		if (Thread.currentThread() instanceof WorkerThread)
+			thread_idx = String.valueOf(((WorkerThread)Thread.currentThread()).worker_id);
+		while (thread_idx.length() < 2)
+			thread_idx = " "+thread_idx;
     	StringBuffer sb = new StringBuffer(79);
-        sb.append("[ ");
+        sb.append("[").append(thread_idx).append(": ");
         sb.append(msg);
         String tm = String.valueOf(diff_time);
-        int i = 73 - msg.length() - tm.length();
+        int i = 70 - msg.length() - tm.length();
         while( i < 0 ) i+=80;
         sb.append(emptyString,0,i);
         sb.append(tm).append("ms ]");
@@ -386,6 +399,7 @@ public final class Kiev {
 	public static boolean verbose				= Compiler.verbose;
 	public static boolean verify				= Compiler.verify;
 	public static boolean safe					= Compiler.safe;
+	public static boolean fast_gen				= Compiler.fast_gen;
 	public static boolean debugOutputA			= Compiler.debugOutputA;
 	public static boolean debugOutputT			= Compiler.debugOutputT;
 	public static boolean debugOutputC			= Compiler.debugOutputC;
@@ -400,6 +414,8 @@ public final class Kiev {
 	public static final boolean run_gui_swt		= Compiler.run_gui_swt;
 
 	public static String output_dir				= Compiler.output_dir;
+	public static String dump_src_dir		= Compiler.dump_src_dir;
+	public static String btd_dir				= Compiler.btd_dir;
 	public static String compiler_classpath	= Compiler.compiler_classpath;
 
 	public static boolean javacerrors			= Compiler.javacerrors;
@@ -411,106 +427,32 @@ public final class Kiev {
 	public static int    testErrorOffs			= Compiler.testErrorOffs;
 
 	public static boolean interface_only		= Compiler.interface_only;
-	public static boolean initialized			= false;
 
 	public static File project_file				= Compiler.project_file==null? null : new File(Compiler.project_file);
 
 	// Scanning & parsing
 	public static Parser				k;
 
-	private static int		parserAddrIdx;
-
-	public static KievBackend useBackend = Compiler.useBackend;
-
+	public  static KievBackend useBackend = Compiler.useBackend;
 	private static int					fe_pass_no;
 	private static int					me_pass_no;
-	private static int					be_pass_no;
-	private static TransfProcessor[]	feProcessors;
-	private static VerifyProcessor[]	vfProcessors;
-	private static BackendProcessor[]	meProcessors;
-	private static BackendProcessor[]	beProcessors;
-	private static BackendProcessor		beCleanup;
-	static {
-		{
-			Vector<TransfProcessor> processors = new Vector<TransfProcessor>();
-			processors.append(KievFE_Pass1);
-			processors.append(KievFE_Pass2);
-			processors.append(KievFE_CheckStdTypes);
-			processors.append(KievFE_MetaDecls);
-			processors.append(KievFE_MetaDefaults);
-			processors.append(KievFE_MetaValues);
-			processors.append(KievFE_Pass3);
-			processors.append(PizzaFE_Pass3);
-			processors.append(VNodeFE_Pass3);
-			processors.append(VirtFldFE_GenMembers);
-			processors.append(EnumFE_GenMembers);
-			processors.append(ViewFE_GenMembers);
-			processors.append(VNodeFE_GenMembers);
-			processors.append(KievFE_PreResolve);
-			processors.append(KievFE_MainResolve);
-			feProcessors = processors.toArray();
-		}
-		
-		{
-			Vector<VerifyProcessor> processors = new Vector<VerifyProcessor>();
-			processors.append(VNodeFE_Verify);
-			processors.append(PackedFldFE_Verify);
-			vfProcessors = processors.toArray();
-		}
-		
-		{
-			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
-			processors.append(KievME_DumpAPI);
-			processors.append(RewriteME_PreGenerate);
-			processors.append(XPathME_PreGenerate);
-			processors.append(KievME_PreGenartion);
-			processors.append(PackedFldME_PreGenerate);
-			processors.append(VirtFldME_PreGenerate);
-			processors.append(PizzaME_PreGenerate);
-			processors.append(ViewME_PreGenerate);
-			processors.append(VNodeME_PreGenerate);
-			processors.append(InnerBE_Rewrite);
-			meProcessors = processors.toArray();
-		}
 
-		{
-			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
-			processors.append(KievBE_Resolve);
-			processors.append(VNodeBE_FixResolve);
-			processors.append(VirtFldBE_Rewrite);
-			processors.append(KievBE_Generate);
-			//processors.append(ExportBE_Generate);
-			processors.append(KievBE_Cleanup);
-			beProcessors = processors.toArray();
-		}
-		beCleanup = KievBE_Cleanup;
-	}
-	
 	private static boolean[] disabled_extensions = Compiler.getCmdLineExtSet();
 	
 	public static void resetFrontEndPass() {
 		fe_pass_no = 0;
 		me_pass_no = 0;
-		be_pass_no = 0;
 	}
-	public static boolean nextFrontEndPass() {
+	public static boolean nextFrontEndPass(Env env) {
 		fe_pass_no += 1;
-		return fe_pass_no < feProcessors.length;
+		return fe_pass_no < env.getFEProcessors().length;
 	}
 	public static void resetMidEndPass() {
 		me_pass_no = 0;
-		be_pass_no = 0;
 	}
-	public static boolean nextMidEndPass() {
+	public static boolean nextMidEndPass(Env env) {
 		me_pass_no += 1;
-		return me_pass_no < meProcessors.length;
-	}
-	public static void resetBackEndPass() {
-		be_pass_no = 0;
-	}
-	public static boolean nextBackEndPass() {
-		be_pass_no += 1;
-		return be_pass_no < beProcessors.length;
+		return me_pass_no < env.getMEProcessors().length;
 	}
 	
 	public static boolean disabled(KievExt ext) {
@@ -535,14 +477,14 @@ public final class Kiev {
 		disabled_extensions[((int)ext)] = false;
 	}
 	
-	public static void lockNodeTree(ANode node) {
+	public static void lockNodeTree(INode node) {
 		if (ASTNode.EXECUTE_UNVERSIONED)
 			return;
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) {
+		node.walkTree(null, null, new ITreeWalker() {
+			public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 				if (n instanceof ASTNode) {
 					ASTNode astn = (ASTNode)n;
-					astn.compileflags = 3; // locked & versioned
+					astn.compflagsClearAndLock();
 				}
 				return true;
 			}
@@ -554,7 +496,7 @@ public final class Kiev {
 		if (node instanceof FileUnit) {
 			Kiev.setCurFile(node.pname());
 		} else {
-			FileUnit fu = node.ctx_file_unit;
+			FileUnit fu = Env.ctxFileUnit(node);
 			if (fu != null)
 				Kiev.setCurFile(fu.pname());
 			else
@@ -563,25 +505,22 @@ public final class Kiev {
 		return old_file;
 	}
 	
-	public static String runCurrentFrontEndProcessor(ANode root) {
+	public static String runCurrentFrontEndProcessor(Env env, INode root) {
 		if !(root instanceof ASTNode)
 			return null;
-		TransfProcessor tp = feProcessors[fe_pass_no];
+		AbstractProcessor tp = env.getFEProcessors()[fe_pass_no];
 		if (!tp.isEnabled())
 			return null;
-		if (root == Env.getRoot()) {
-			foreach(CompilationUnit cu; Env.getProject().enumerateAllCompilationUnits())
+		if (root == env.root) {
+			foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits())
 				runCurrentFEP(tp, cu);
 		} else {
-			Enumeration<CompilationUnit> new_files = Env.getProject().enumerateNewCompilationUnits(); 
 			runCurrentFEP(tp, (ASTNode)root);
-			foreach(CompilationUnit cu; new_files)
-				runCurrentFEP(tp, cu);
 		}
 		return tp.getDescr();
 	}
 
-	private static void runCurrentFEP(TransfProcessor tp, ASTNode root) {
+	private static void runCurrentFEP(AbstractProcessor tp, ASTNode root) {
 		String old_file = Kiev.swapCurFile(root);
 		try {
 			tp.process(root,Transaction.get());
@@ -592,31 +531,31 @@ public final class Kiev {
 		}
 	}
 
-	public static void runVerifyProcessors(ANode root) {
+	public static void runVerifyProcessors(Env env, INode root) {
 		Transaction tr = Transaction.enter(Transaction.get(),"Verification");
 		try {
-			root.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) {
+			root.walkTree(root.parent(), root.pslot(), new ITreeWalker() {
+				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 					if !(n instanceof ASTNode)
 						return false;
 					ASTNode astn = (ASTNode)n;
-					foreach (VerifyProcessor vp; vfProcessors; vp.isEnabled())
-						vp.verify(astn);
-					return n.preVerify();
+					foreach (AbstractProcessor vp; env.getVFProcessors(); vp.isEnabled())
+						vp.process(astn, tr);
+					return n.preVerify(env, parent, slot);
 				}
-				public void post_exec(ANode n) {
+				public void post_exec(INode n, INode parent, AttrSlot slot) {
 					if (n instanceof ASTNode)
-						n.postVerify();
+						n.postVerify(env, parent, slot);
 				}
 			});
 		} finally { tr.leave(); }
 	}
 
-	public static String runCurrentMidEndProcessor() {
-		BackendProcessor bp = meProcessors[me_pass_no];
+	public static String runCurrentMidEndProcessor(Env env) {
+		AbstractProcessor bp = env.getMEProcessors()[me_pass_no];
 		if (!bp.isEnabled())
 			return null;
-		foreach(CompilationUnit cu; Env.getProject().enumerateAllCompilationUnits()) {
+		foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits()) {
 			String old_file = Kiev.swapCurFile(cu);
 			try {
 				bp.process(cu,Transaction.get());
@@ -629,50 +568,29 @@ public final class Kiev {
 		return bp.getDescr();
 	}
 
-	public static void openBackEndFileUnit(FileUnit fu) {
-		Kiev.setCurFile(fu.pname());
-		Kiev.setExtSet(fu.disabled_extensions);
-	}
-	public static void closeBackEndFileUnit() {
-		Kiev.setCurFile("");
-		Kiev.setExtSet(Compiler.getCmdLineExtSet());
-	}
-	public static void runBackEndCleanup() {
-		Kiev.setCurFile("");
-		BackendProcessor bp = beCleanup;
-		if (bp == null || !bp.isEnabled())
-			return;
-		try {
-			bp.process(Env.getRoot(),Transaction.get());
-		} catch (Exception e) {
-			Kiev.reportError(e);
-		}
-	}
-	
-	public static String runCurrentBackEndProcessor(FileUnit fu) {
-		BackendProcessor bp = beProcessors[be_pass_no];
-		if (!bp.isEnabled())
-			return null;
-		try {
-			bp.process(fu,Transaction.get());
-		} catch (Exception e) {
-			Kiev.reportError(e);
-		}
-		return bp.getDescr();
-	}
-	
 	public static void runFrontEndProcessorsOn(ASTNode node) {
+		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+		Env env = wthg.getEnv();
+		AbstractProcessor[] feProcessors = env.getFEProcessors();
 		for (int i=fe_pass_no; i < feProcessors.length; i++) {
-			TransfProcessor tp = feProcessors[i];
+			AbstractProcessor tp = feProcessors[i];
 			if (tp.isEnabled())
 				tp.process(node,Transaction.get());
 		}
 	}
 
 	public static void runProcessorsOn(ASTNode node) {
+		runProcessorsOn(node, false);
+	}
+	public static void runProcessorsOn(ASTNode node, boolean with_current) {
+		WorkerThread wth = (WorkerThread)Thread.currentThread();
+		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+		Env env = wthg.getEnv();
+		AbstractProcessor[] feProcessors = env.getFEProcessors();
 		int N = fe_pass_no;
+		if (with_current && N < feProcessors.length) N += 1;
 		for (int i=0; i < N; i++) {
-			TransfProcessor tp = feProcessors[i];
+			AbstractProcessor tp = feProcessors[i];
 			if (tp.isEnabled())
 				tp.process(node,Transaction.get());
 		}
@@ -680,17 +598,21 @@ public final class Kiev {
 			return;
 		Transaction tr = Transaction.enter(Transaction.get(),"Kiev.java:runProcessorsOn()");
 		try {
+			AbstractProcessor[] meProcessors = env.getMEProcessors();
 			N = me_pass_no;
+			if (with_current && N < meProcessors.length) N += 1;
 			for (int i=0; i < N; i++) {
-				BackendProcessor mp = meProcessors[i];
+				AbstractProcessor mp = meProcessors[i];
 				if (mp.isEnabled())
 					mp.process(node,tr);
 			}
 			if (N < meProcessors.length)
 				return;
-			N = be_pass_no;
+			AbstractProcessor[] beProcessors = env.getBEProcessors();
+			N = wth.be_pass_no;
+			if (with_current && N < beProcessors.length) N += 1;
 			for (int i=0; i < N; i++) {
-				BackendProcessor bp = beProcessors[i];
+				AbstractProcessor bp = beProcessors[i];
 				if (bp.isEnabled())
 					bp.process(node,tr);
 			}

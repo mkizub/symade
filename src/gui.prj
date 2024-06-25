@@ -1,4 +1,4 @@
-<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
 <!--
  Copyright (c) 2005-2007 UAB "MAKSINETA".
  All rights reserved. This program and the accompanying materials
@@ -9,19 +9,116 @@
  Contributors:
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
-<sop:dump version='1.0' xmlns:sop='sop://sop/'
-  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
- <sop:kiev.vlang.Project>
-  <root_dir>
-   <sop:kiev.vlang.DirUnit name='.'>
-    <members>
-     <sop:kiev.vlang.DirUnit name='test'>
-      <members>
-       <core:FileUnit name='GUITest.java' />
-      </members>
-     </sop:kiev.vlang.DirUnit>
-    </members>
-   </sop:kiev.vlang.DirUnit>
-  </root_dir>
- </sop:kiev.vlang.Project>
-</sop:dump>
+<sop:kiev.vlang.Project name='GUI Test' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <root_dir>
+  <sop:kiev.vlang.DirUnit name='.'>
+   <members>
+    <sop:kiev.vlang.DirUnit name='test'>
+     <members>
+      <core:FileUnit name='GUITest.java' />
+     </members>
+    </sop:kiev.vlang.DirUnit>
+    <sop:kiev.vlang.DirUnit name='stx-fmt'>
+     <members>
+      <core:FileUnit name='style-sheet-default.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-default.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-syntax.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-xml.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-inspector.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-errors.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-java.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-java2.xml' type='text/xml/tree-dump' />
+     </members>
+    </sop:kiev.vlang.DirUnit>
+   </members>
+  </sop:kiev.vlang.DirUnit>
+ </root_dir>
+ <syntax_infos>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='txt' name='GUI Events Syntax Standard' qname='stx-fmt·syntax-for-evt'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-evt' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+   <printer>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-evt' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </printer>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='txt' name='GUI Events Syntax Alternative' qname='stx-fmt·syntax-for-evt-alt'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-evt-alt' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='java' name='Kiev source' qname='stx-fmt·syntax-for-java'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-java' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+   <printer>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-java' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </printer>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='java' name='Kiev source projected' qname='stx-fmt·syntax-for-java2'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-java2' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+   <printer>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-java2' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </printer>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='xml' name='XML projection syntax' qname='stx-fmt·syntax-for-xml'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-xml' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='xml' name='Inspector' qname='stx-fmt·syntax-for-inspector'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-inspector' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='xml' name='Errors' qname='stx-fmt·syntax-for-errors'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-errors' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+ </syntax_infos>
+</sop:kiev.vlang.Project>

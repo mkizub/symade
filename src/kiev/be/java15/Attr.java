@@ -15,7 +15,7 @@ import java.io.File;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 271 $
  *
  */
 
@@ -23,11 +23,11 @@ public class Attr implements JConstants {
 	public static final Attr[] emptyArray = new Attr[0];
 
 	/** Name of the attribute */
-	public KString		name;
+	public String		name;
 
 	public boolean isKievAttr() { return false; }
 
-	protected Attr(KString name) {
+	protected Attr(String name) {
 		this.name = name;
 	}
 
@@ -65,7 +65,7 @@ public class CodeAttr extends Attr {
 		this.code_attrs = code_attrs;
 	}
 
-	protected CodeAttr(KString nm, int max_st,int max_locs, byte[] bcode, Attr[] code_attrs) {
+	protected CodeAttr(String nm, int max_st,int max_locs, byte[] bcode, Attr[] code_attrs) {
 		super(nm);
 		this.method = null;
 		this.bcode = bcode;
@@ -75,7 +75,7 @@ public class CodeAttr extends Attr {
 		this.code_attrs = code_attrs;
 	}
 
-	public Attr getAttr(KString name) {
+	public Attr getAttr(String name) {
 		if( code_attrs != null )
 			for(int i=0; i < code_attrs.length; i++)
 				if( code_attrs[i].name.equals(name) )
@@ -123,12 +123,12 @@ public class CodeAttr extends Attr {
 public class SourceFileAttr extends Attr {
 
 	/** File name */
-	public KString		filename;
+	public String		filename;
 
 	/** Constructor for bytecode reader and raw field creation */
-	public SourceFileAttr(KString filename) {
+	public SourceFileAttr(String filename) {
 		super(attrSourceFile);
-		this.filename = KString.from((new File(filename.toString())).getName());
+		this.filename = new File(filename).getName();
 	}
 
 	public void generate(ConstPool constPool) {
@@ -198,7 +198,7 @@ public class LocalVarTableAttr extends Attr {
 		for(int i=0; i < len; i++) {
 			CodeVar cv = vars[i];
 			JVar v = cv.jvar;
-			KString sign = cv.code.jtenv.getJType(v.vtype).java_signature;
+			String sign = cv.code.jtenv.getJType(v.vtype).java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = cv.start_pc;
@@ -239,12 +239,12 @@ public class LinenoTableAttr extends Attr {
 public class ExceptionsAttr extends Attr {
 
 	/** Java signatures of exception types */
-	public KString[]		exceptions;
+	public String[]		exceptions;
 
 	/** Constructor for bytecode reader and raw field creation */
 	public ExceptionsAttr() {
 		super(attrExceptions);
-		exceptions = new KString[0];
+		exceptions = new String[0];
 	}
 
 	public void generate(ConstPool constPool) {
@@ -286,10 +286,10 @@ public class InnerClassesAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				constPool.addClazzCP(jenv.getJTypeEnv().getJType(inner[i]).java_signature);
+				constPool.addClazzCP(jenv.getJTypeEnv().getJType(inner[i].vn()).java_signature);
 			}
 			if( outer[i] != null ) {
-				constPool.addClazzCP(jenv.getJTypeEnv().getJType(outer[i]).java_signature);
+				constPool.addClazzCP(jenv.getJTypeEnv().getJType(outer[i].vn()).java_signature);
 			}
 		}
 	}
@@ -304,13 +304,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i]).java_signature).pos];
+				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i].vn()).java_signature).pos];
 			}
 			if( outer[i] != null ) {
-				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(outer[i]).java_signature).pos];
+				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(outer[i].vn()).java_signature).pos];
 			}
 			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i]).java_signature).asc.pos];
+				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i].vn()).java_signature).asc.pos];
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}
@@ -335,9 +335,7 @@ public class ConstantValueAttr extends Attr {
 		else if( value instanceof Character )
 			constPool.addNumberCP(Integer.valueOf((int)((Character)value).charValue()));
 		else if( value instanceof String )
-			constPool.addStringCP(KString.from((String)value));
-		else if( value instanceof KString )
-			constPool.addStringCP((KString)value);
+			constPool.addStringCP((String)value);
 		else if( value instanceof Boolean ) {
 			Integer i = Integer.valueOf(((Boolean)value).booleanValue()? 1: 0 );
 			constPool.addNumberCP(i);
@@ -358,10 +356,7 @@ public class ConstantValueAttr extends Attr {
 			cva.cp_value = bcclazz.pool[constPool.getNumberCP((Number)value).pos];
 			break;
 		case String:
-			cva.cp_value = bcclazz.pool[constPool.getStringCP(KString.from((String)value)).pos];
-			break;
-		case KString:
-			cva.cp_value = bcclazz.pool[constPool.getStringCP((KString)value).pos];
+			cva.cp_value = bcclazz.pool[constPool.getStringCP((String)value).pos];
 			break;
 		default:
 			throw new RuntimeException("Bad type for ConstantValueAttr: "+value.getClass());
@@ -458,14 +453,14 @@ public abstract class MetaAttr extends Attr {
 	
 	final JEnv jenv;
 	
-	public MetaAttr(KString name, JEnv jenv) {
+	public MetaAttr(String name, JEnv jenv) {
 		super(name);
 		this.jenv = jenv;
 	}
 	
 	protected final void generateValue(ConstPool constPool, ASTNode value) {
 		if (value instanceof ConstExpr) {
-			Object v = ((ConstExpr)value).getConstValue();
+			Object v = ((ConstExpr)value).getConstValue(jenv.env);
 			if     ( v instanceof Boolean )			constPool.addNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0));
 			else if( v instanceof Byte )			constPool.addNumberCP((Byte)v);
 			else if( v instanceof Short )			constPool.addNumberCP((Short)v);
@@ -474,22 +469,21 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof Long )			constPool.addNumberCP((Long)v);
 			else if( v instanceof Float )			constPool.addNumberCP((Float)v);
 			else if( v instanceof Double )			constPool.addNumberCP((Double)v);
-			else if( v instanceof KString )			constPool.addAsciiCP((KString)v);
 			else if( v instanceof String )			constPool.addAsciiCP((String)v);
 		}
 		else if (value instanceof TypeRef) {
-			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType()).java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType(jenv.env)).java_signature);
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
-			Struct s = (Struct)f.ctx_tdecl;
+			Struct s = (Struct)Env.ctxTDecl(f);
 			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(s).java_signature);
 			constPool.addAsciiCP(f.sname);
 		}
 		else if (value instanceof UserMeta) {
 			UserMeta m = (UserMeta)value;
-			JavaAnnotation tdecl = m.getAnnotationDecl();
+			JavaAnnotation tdecl = m.getAnnotationDecl(jenv.env);
 			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(tdecl).java_signature);
 			foreach (Method mm; tdecl.members) {
 				MetaValue v = m.get(mm.sname); 
@@ -524,7 +518,7 @@ public abstract class MetaAttr extends Attr {
 	public kiev.bytecode.Annotation.element_value write_value(ConstPool constPool, ASTNode value) {
 		if (value instanceof ConstExpr) {
 			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
-			Object v = ((ConstExpr)value).getConstValue();
+			Object v = ((ConstExpr)value).getConstValue(jenv.env);
 			if     ( v instanceof Boolean ) {
 				ev.tag = (byte)'Z';
 				ev.const_value_index = constPool.getNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0)).pos;
@@ -557,26 +551,25 @@ public abstract class MetaAttr extends Attr {
 				ev.tag = (byte)'D';
 				ev.const_value_index = constPool.getNumberCP((Double)v).pos;
 			}
-			else if( v instanceof KString ) {
-				ev.tag = (byte)'s';
-				ev.const_value_index = constPool.getAsciiCP((KString)v).pos;
-			}
 			else if( v instanceof String ) {
 				ev.tag = (byte)'s';
-				ev.const_value_index = constPool.getAsciiCP(KString.from((String)v)).pos;
+				ev.const_value_index = constPool.getAsciiCP((String)v).pos;
+			}
+			else {
+				throw new RuntimeException("value is: "+(value==null?"null":String.valueOf(value.getClass()))+" const is "+(v==null?"null":String.valueOf(v.getClass())));
 			}
 			return ev;
 		}
 		else if (value instanceof TypeRef) {
 			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
 			ev.tag = (byte)'c';
-			ev.class_info_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType()).java_signature).pos;
+			ev.class_info_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType(jenv.env)).java_signature).pos;
 			return ev;
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
-			Struct s = (Struct)f.ctx_tdecl;
+			Struct s = (Struct)Env.ctxTDecl(f);
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
 			ev.type_name_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(s).java_signature).pos;
@@ -595,7 +588,7 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(ConstPool constPool, UserMeta m, kiev.bytecode.Annotation.annotation a) {
-		JavaAnnotation tdecl = m.getAnnotationDecl();
+		JavaAnnotation tdecl = m.getAnnotationDecl(jenv.env);
 		a.type_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(tdecl).java_signature).pos;
 		int n = 0;
 		foreach (Method mm; tdecl.members)
@@ -619,9 +612,9 @@ public abstract class MetaAttr extends Attr {
 
 public class RVMetaAttr extends MetaAttr {
 	public DNode      ms;
-	public RVMetaAttr(JEnv jenv, DNode metas) {
+	public RVMetaAttr(JEnv jenv, DNode dn) {
 		super(JConstants.attrRVAnnotations, jenv);
-		this.ms = metas;
+		this.ms = dn;
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
@@ -647,9 +640,9 @@ public class RVMetaAttr extends MetaAttr {
 
 public class RIMetaAttr extends MetaAttr {
 	public DNode      ms;
-	public RIMetaAttr(JEnv jenv, DNode metas) {
+	public RIMetaAttr(JEnv jenv, DNode dn) {
 		super(JConstants.attrRIAnnotations, jenv);
-		this.ms = metas;
+		this.ms = dn;
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
@@ -675,9 +668,9 @@ public class RIMetaAttr extends MetaAttr {
 
 public class RVParMetaAttr extends MetaAttr {
 	public DNode[]      mss;
-	public RVParMetaAttr(JEnv jenv, DNode[] metas) {
+	public RVParMetaAttr(JEnv jenv, DNode[] dns) {
 		super(JConstants.attrRVParAnnotations, jenv);
-		this.mss = mss;
+		this.mss = dns;
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
@@ -713,9 +706,9 @@ public class RVParMetaAttr extends MetaAttr {
 
 public class RIParMetaAttr extends MetaAttr {
 	public DNode[]      mss;
-	public RIParMetaAttr(JEnv jenv, DNode[] metas) {
+	public RIParMetaAttr(JEnv jenv, DNode[] dns) {
 		super(JConstants.attrRIParAnnotations, jenv);
-		this.mss = mss;
+		this.mss = dns;
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
@@ -772,7 +765,5 @@ public class DefaultMetaAttr extends MetaAttr {
 		return a;
 	}
 }
-
-
 
 

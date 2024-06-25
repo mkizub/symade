@@ -21,288 +21,43 @@ import syntax kiev.Syntax;
 //	   PASS - rewrite code                        //
 ////////////////////////////////////////////////////
 
-@singleton
-public class InnerBE_Rewrite extends BackendProcessor implements Constants {
+public final class InnerPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("inner")) {
+			pd = new PluginDescr("inner").depends("kiev");
+			pd.proc(new ProcessorDescr("pre-generate", "me", -100, InnerBE_PreGenartion.class).after("vnode:me:pre-generate").after("view:me:pre-generate").after("virt-fld:me:pre-generate"));
+			pd.proc(new ProcessorDescr("rewrite", "be", 0, InnerBE_Rewrite.class).before("kiev:be:resolve").after("macro:me:rewrite"));
+		}
+		return pd;
+	}
+}
 
-	private InnerBE_Rewrite() { super(KievBackend.Java15); }
-	public String getDescr() { "Inner classes access rewrite" }
+public final class InnerBE_PreGenartion extends BackendProcessor implements Constants {
+
+	public InnerBE_PreGenartion(Env env, int id) { super(env,id,KievBackend.Java15); }
+	public String getDescr() { "Inner classes pre-generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr,"InnerBE_Rewrite");
-		try {
-			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return InnerBE_Rewrite.this.rewrite((ASTNode)n); return false; }
-			});
-		} finally { tr.leave(); }
-	}
-	
-	boolean rewrite(ASTNode:ASTNode o) {
-		return true;
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"InnerBE_PreGenartion");
+			try {
+				node.walkTree(new TreeWalker() {
+					public boolean pre_exec(ANode n) {
+						if (n instanceof Struct)
+							return processStruct((Struct)n);
+						return true;
+					}
+				});
+			} finally { tr.leave(); }
+		}
 	}
 
-	boolean rewrite(DNode:ASTNode dn) {
-		if (dn.isMacro())
-			return false;
-		return true;
-	}
-
-	boolean rewrite(IFldExpr:ASTNode fa) {
-		Field f = fa.var;
-		if (!MetaAccess.accessedFromInner(fa,f))
-			return true;
-		Method getter = f.makeReadAccessor();
-		ENode ce = new CallExpr(fa.pos, new TypeRef(getter.ctx_tdecl.xtype), getter, new ENode[]{ ~fa.obj });
-		fa.replaceWithNodeReWalk(ce);
-		throw new Error();
-	}
-	
-	boolean rewrite(SFldExpr:ASTNode fa) {
-		Field f = fa.var;
-		if (!MetaAccess.accessedFromInner(fa,f))
-			return true;
-		Method getter = f.makeReadAccessor();
-		ENode ce = new CallExpr(fa.pos, new TypeRef(getter.ctx_tdecl.xtype), getter, ENode.emptyArray);
-		fa.replaceWithNodeReWalk(ce);
-		throw new Error();
-	}
-	
-	boolean rewrite(CallExpr:ASTNode ce) {
-		Method func = ce.func;
-		if (func == null || !MetaAccess.accessedFromInner(ce,func))
-			return true;
-		Method m = func.makeAccessor();
-		ce.symbol = m.symbol;
-		if (!func.isStatic()) {
-			ce.args.insert(0, ~ce.obj);
-			ce.obj = new TypeRef(m.ctx_tdecl.xtype);
-		}
-		return true;
-	}
-	
-	boolean rewrite(NewExpr:ASTNode ne) {
-		Method func = ne.func;
-		if (func == null || !MetaAccess.accessedFromInner(ne,func))
-			return true;
-		Method m = func.makeAccessor();
-		CallExpr ce = new CallExpr(ne.pos, new TypeRef(m.ctx_tdecl.xtype), m, ne.args.delToArray());
-		ce.setGenVoidExpr(ne.isGenVoidExpr());
-		ne.replaceWithNodeReWalk(ce);
-		return true;
-	}
-	
-	boolean rewrite(AssignExpr:ASTNode ae) {
-		if (ae.lval instanceof IFldExpr) {
-			IFldExpr fa = (IFldExpr)ae.lval;
-			Field f = fa.var;
-			if (!MetaAccess.accessedFromInner(fa,f))
-				return true;
-
-			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
-			Operator op = null;
-			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
-			else if (ae.op == Operator.AssignSub)                  op = Operator.Sub;
-			else if (ae.op == Operator.AssignMul)                  op = Operator.Mul;
-			else if (ae.op == Operator.AssignDiv)                  op = Operator.Div;
-			else if (ae.op == Operator.AssignMod)                  op = Operator.Mod;
-			else if (ae.op == Operator.AssignLeftShift)            op = Operator.LeftShift;
-			else if (ae.op == Operator.AssignRightShift)           op = Operator.RightShift;
-			else if (ae.op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
-			else if (ae.op == Operator.AssignBitOr)                op = Operator.BitOr;
-			else if (ae.op == Operator.AssignBitXor)               op = Operator.BitXor;
-			else if (ae.op == Operator.AssignBitAnd)               op = Operator.BitAnd;
-			ENode expr;
-			if (ae.isGenVoidExpr() && (ae.op == Operator.Assign || ae.op == Operator.Assign2)) {
-				expr = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeWriteAccessor(), new ENode[]{~fa.obj, ~ae.value});
-			}
-			else {
-				Block be = new Block(ae.pos);
-				Object acc;
-				if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
-					acc = ~fa.obj;
-				}
-				else if (fa.obj instanceof LVarExpr) {
-					acc = ((LVarExpr)fa.obj).getVarSafe();
-				}
-				else {
-					Var var = new LVar(0,"tmp$access",fa.obj.getType(),Var.VAR_LOCAL,0);
-					var.init = ~fa.obj;
-					be.stats += var;
-					acc = var;
-				}
-				ENode g;
-				if !(ae.op == Operator.Assign || ae.op == Operator.Assign2) {
-					g = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), new ENode[]{mkAccess(acc)});
-					g = new BinaryExpr(ae.pos, op, g, ~ae.value);
-				} else {
-					g = ~ae.value;
-				}
-				g = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeWriteAccessor(), new ENode[]{mkAccess(acc), g});
-				be.stats += new ExprStat(0, g);
-				if (!ae.isGenVoidExpr()) {
-					g = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), new ENode[]{mkAccess(acc)});
-					be.stats += g;
-				}
-				expr = be;
-			}
-			expr.setGenVoidExpr(ae.isGenVoidExpr());
-			ae.replaceWithNodeReWalk(expr);
-		}
-		else if (ae.lval instanceof SFldExpr) {
-			SFldExpr fa = (SFldExpr)ae.lval;
-			Field f = fa.var;
-			if (!MetaAccess.accessedFromInner(fa,f))
-				return true;
-
-			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
-			Operator op = null;
-			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
-			else if (ae.op == Operator.AssignSub)                  op = Operator.Sub;
-			else if (ae.op == Operator.AssignMul)                  op = Operator.Mul;
-			else if (ae.op == Operator.AssignDiv)                  op = Operator.Div;
-			else if (ae.op == Operator.AssignMod)                  op = Operator.Mod;
-			else if (ae.op == Operator.AssignLeftShift)            op = Operator.LeftShift;
-			else if (ae.op == Operator.AssignRightShift)           op = Operator.RightShift;
-			else if (ae.op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
-			else if (ae.op == Operator.AssignBitOr)                op = Operator.BitOr;
-			else if (ae.op == Operator.AssignBitXor)               op = Operator.BitXor;
-			else if (ae.op == Operator.AssignBitAnd)               op = Operator.BitAnd;
-			ENode expr;
-			if (ae.isGenVoidExpr() && (ae.op == Operator.Assign || ae.op == Operator.Assign2)) {
-				expr = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeWriteAccessor(), new ENode[]{~ae.value});
-			}
-			else {
-				Block be = new Block(ae.pos);
-				ENode g;
-				if !(ae.op == Operator.Assign || ae.op == Operator.Assign2) {
-					g = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), ENode.emptyArray);
-					g = new BinaryExpr(ae.pos, op, g, ~ae.value);
-				} else {
-					g = ~ae.value;
-				}
-				g = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeWriteAccessor(), new ENode[]{g});
-				be.stats += new ExprStat(0, g);
-				if (!ae.isGenVoidExpr()) {
-					g = new CallExpr(ae.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), ENode.emptyArray);
-					be.stats += g;
-				}
-				expr = be;
-			}
-			expr.setGenVoidExpr(ae.isGenVoidExpr());
-			ae.replaceWithNodeReWalk(expr);
-		}
-		return true;
-	}
-	
-	boolean rewrite(IncrementExpr:ASTNode ie) {
-		if (ie.lval instanceof IFldExpr) {
-			IFldExpr fa = (IFldExpr)ie.lval;
-			Field f = fa.var;
-			if (!MetaAccess.accessedFromInner(fa,f))
-				return true;
-			ENode expr;
-			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
-			if (ie.isGenVoidExpr()) {
-				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
-					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
-				} else {
-					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
-				}
-			}
-			else {
-				Block be = new Block(ie.pos);
-				Object acc;
-				if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
-					acc = fa.obj;
-				}
-				else if (fa.obj instanceof LVarExpr) {
-					acc = ((LVarExpr)fa.obj).getVarSafe();
-				}
-				else {
-					Var var = new LVar(0,"tmp$access",fa.obj.getType(),Var.VAR_LOCAL,0);
-					var.init = ~fa.obj;
-					be.addSymbol(var);
-					acc = var;
-				}
-				Var res = null;
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(),Var.VAR_LOCAL,0);
-					be.addSymbol(res);
-				}
-				ConstExpr ce;
-				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr)
-					ce = new ConstIntExpr(1);
-				else
-					ce = new ConstIntExpr(-1);
-				ENode g;
-				g = new CallExpr(ie.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), new ENode[]{mkAccess(acc)});
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
-					g = new AssignExpr(ie.pos, Operator.Assign, mkAccess(res), g);
-				g = new BinaryExpr(ie.pos, Operator.Add, ce, g);
-				g = new CallExpr(ie.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeWriteAccessor(), new ENode[]{mkAccess(acc),g});
-				be.stats.add(new ExprStat(0, g));
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
-					be.stats.add(mkAccess(res));
-				else
-					be.stats.add(new CallExpr(ie.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), new ENode[]{mkAccess(acc)}));
-				expr = be;
-			}
-			expr.setGenVoidExpr(ie.isGenVoidExpr());
-			ie.replaceWithNodeReWalk(expr);
-		}
-		else if (ie.lval instanceof SFldExpr) {
-			SFldExpr fa = (SFldExpr)ie.lval;
-			Field f = fa.var;
-			if (!MetaAccess.accessedFromInner(fa,f))
-				return true;
-			ENode expr;
-			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
-			if (ie.isGenVoidExpr()) {
-				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
-					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
-				} else {
-					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
-				}
-			}
-			else {
-				Block be = new Block(ie.pos);
-				Var res = null;
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(),Var.VAR_LOCAL,0);
-					be.addSymbol(res);
-				}
-				ConstExpr ce;
-				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr)
-					ce = new ConstIntExpr(1);
-				else
-					ce = new ConstIntExpr(-1);
-				ENode g;
-				g = new CallExpr(ie.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), ENode.emptyArray);
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
-					g = new AssignExpr(ie.pos, Operator.Assign, mkAccess(res), g);
-				g = new BinaryExpr(ie.pos, Operator.Add, ce, g);
-				g = new CallExpr(ie.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeWriteAccessor(), new ENode[]{g});
-				be.stats.add(new ExprStat(0, g));
-				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
-					be.stats.add(mkAccess(res));
-				else
-					be.stats.add(new CallExpr(ie.pos, new TypeRef(f.ctx_tdecl.xtype), f.makeReadAccessor(), ENode.emptyArray));
-				expr = be;
-			}
-			expr.setGenVoidExpr(ie.isGenVoidExpr());
-			ie.replaceWithNodeReWalk(expr);
-		}
-		return true;
-	}
-	
-	private ENode mkAccess(Object o) {
-		if (o instanceof Var) return new LVarExpr(0,(Var)o);
-		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVarSafe());
-		if (o instanceof ThisExpr) return new ThisExpr(0);
-		if (o instanceof SuperExpr) return new SuperExpr(0);
-		throw new RuntimeException("Unknown accessor "+o);
-	}
-
-	boolean rewrite(Struct:ASTNode s) {
+	boolean processStruct(Struct s) {
 		addToOuter(s);
 		cleanupMixins(s);
 		return true;
@@ -310,13 +65,13 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 	
 	private GlobalDNode getOuterStruct(Struct s) {
 		ANode n = s.parent();
-		while (n != null && !(n instanceof NameSpace || n instanceof KievPackage || n instanceof ComplexTypeDecl))
+		while (n != null && !(n instanceof SyntaxScope || n instanceof KievPackage || n instanceof ComplexTypeDecl))
 			n = n.parent();
 		if (n == null)
-			return Env.getRoot();
+			return this.env.root;
 		if (n instanceof KievPackage)
 			return (KievPackage)n;
-		if (n instanceof NameSpace)
+		if (n instanceof SyntaxScope)
 			return n.getPackage();
 		return (ComplexTypeDecl)n;
 	}
@@ -329,7 +84,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 				return;
 			String pkg_name = outer.qname().replace('·','/');
 			String bc_name = pkg_name + '/' + s.sname;
-			s.bytecode_name = KString.from(bc_name);
+			s.bytecode_name = bc_name;
 			return;
 		}
 		outer = (Struct)outer;
@@ -342,7 +97,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			assert (s.bytecode_name != null);
 			return;
 		}
-		String pkg_name = outer.bytecode_name.toString();
+		String pkg_name = outer.bytecode_name;
 		String bc_name;
 		if (s.parent() == outer) {
 			bc_name = s.sname;
@@ -353,17 +108,47 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			else
 				bc_name = String.valueOf(idx) + '$' + s.sname;
 		}
-		s.bytecode_name = KString.from(pkg_name + '$' + bc_name);
+		s.bytecode_name = pkg_name + '$' + bc_name;
 		inf.inners.append(s);
+	}
+	
+	private void addSuperIfaces(Type tp, Struct s) {
+		TypeDecl td = tp.meta_type.tdecl;
+		if (td instanceof Struct && td.isInterface()) {
+			// add it to super-types, if not already there
+			boolean found = false;
+			foreach (TypeRef tr; s.super_types; tp.isInstanceOf(tr.getType(env))) {
+				found = true;
+				break;
+			}
+			if (!found) {
+				TypeRef tr = new TypeRef(tp);
+				//tr.setAutoGenerated(true);
+				s.super_types += tr;
+			}
+		}
+		foreach (Type sup; tp.getMetaSupers())
+			addSuperIfaces(sup, s);
 	}
 	
 	private void cleanupMixins(Struct s) {
 		if (!s.isInterface() || s.isAnnotation())
 			return;
-		if (s.super_types.length > 0 && s.super_types[0].getType() ≉ StdTypes.tpObject) {
-			TypeRef tr = new TypeRef(Type.tpObject);
+		StdTypes tenv = this.env.getTypeEnv();
+		foreach (TypeRef tr; s.super_types) {
+			Type tp = tr.getType(env);
+			if (tp ≈ tenv.tpObject)
+				continue;
+			TypeDecl td = tp.meta_type.tdecl;
+			if (!(td instanceof Struct) || !td.isInterface()) {
+				tr.detach();
+				addSuperIfaces(tp, s);
+			}
+		}
+		if (s.super_types.length == 0 || s.super_types[0].getType(env) ≉ tenv.tpObject) {
+			TypeRef tr = new TypeRef(tenv.tpObject);
 			tr.setAutoGenerated(true);
-			s.super_types[0] = tr;
+			s.super_types.insert(0, tr);
 		}
 		foreach (DNode dn; s.members) {
 			if (dn instanceof Constructor) {
@@ -384,4 +169,352 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			}
 		}
 	}
+}
+
+public final class InnerBE_Rewrite extends BackendProcessor implements Constants {
+
+	public InnerBE_Rewrite(Env env, int id) { super(env,id,KievBackend.Java15); }
+	public String getDescr() { "Inner classes access rewrite" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"InnerBE_Rewrite");
+			try {
+				node.walkTree(null,null,new ITreeWalker() {
+					public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
+						if (n instanceof ASTNode)
+							return InnerBE_Rewrite.this.rewrite((ASTNode)n,parent,slot);
+						return false;
+					}
+				});
+			} finally { tr.leave(); }
+		}
+	}
+	
+	boolean rewrite(ASTNode:ASTNode o, INode parent, AttrSlot slot) {
+		return true;
+	}
+
+	boolean rewrite(DNode:ASTNode dn, INode parent, AttrSlot slot) {
+		if (dn.isMacro())
+			return false;
+		return true;
+	}
+
+	boolean rewrite(IFldExpr:ASTNode fa, INode parent, AttrSlot slot) {
+		Field f = fa.var;
+		if (!MetaAccess.accessedFromInner(fa,f))
+			return true;
+		Method getter = f.makeReadAccessor(env);
+		ENode ce = new CallExpr(fa.pos, new TypeRef(Env.ctxTDecl(getter).getType(env)), getter, new ENode[]{ ~fa.obj });
+		fa.replaceWithNodeReWalk(ce,parent,slot);
+		throw new Error();
+	}
+	
+	boolean rewrite(SFldExpr:ASTNode fa, INode parent, AttrSlot slot) {
+		Field f = fa.var;
+		if (!MetaAccess.accessedFromInner(fa,f))
+			return true;
+		Method getter = f.makeReadAccessor(env);
+		ENode ce = new CallExpr(fa.pos, new TypeRef(Env.ctxTDecl(getter).getType(env)), getter, ENode.emptyArray);
+		fa.replaceWithNodeReWalk(ce,parent,slot);
+		throw new Error();
+	}
+	
+	boolean rewrite(CallExpr:ASTNode ce, INode parent, AttrSlot slot) {
+		Method func = ce.func;
+		if (func == null || !MetaAccess.accessedFromInner(ce,func))
+			return true;
+		Method m = func.makeAccessor(env);
+		ce.symbol = m.symbol;
+		if (!func.isStatic()) {
+			ce.args.insert(0, ~ce.obj);
+			ce.obj = new TypeRef(Env.ctxTDecl(m).getType(env));
+		}
+		return true;
+	}
+	
+	boolean rewrite(NewExpr:ASTNode ne, INode parent, AttrSlot slot) {
+		Method func = ne.func;
+		if (func == null || !MetaAccess.accessedFromInner(ne,func))
+			return true;
+		Method m = func.makeAccessor(env);
+		CallExpr ce = new CallExpr(ne.pos, new TypeRef(Env.ctxTDecl(m).getType(env)), m, ne.args.delToArray());
+		ce.setGenVoidExpr(ne.isGenVoidExpr());
+		ne.replaceWithNodeReWalk(ce,parent,slot);
+		return true;
+	}
+	
+	boolean rewrite(ModifyExpr:ASTNode ae, INode parent, AttrSlot slot) {
+		StdTypes tenv = this.env.getTypeEnv();
+		if (ae.lval instanceof IFldExpr) {
+			IFldExpr fa = (IFldExpr)ae.lval;
+			Field f = fa.var;
+			if (!MetaAccess.accessedFromInner(fa,f))
+				return true;
+
+			Type ae_tp = ae.isGenVoidExpr() ? tenv.tpVoid : ae.getType(env);
+			Operator op = ae.getOper();
+			if      (op == Operator.AssignAdd)                  op = Operator.Add;
+			else if (op == Operator.AssignSub)                  op = Operator.Sub;
+			else if (op == Operator.AssignMul)                  op = Operator.Mul;
+			else if (op == Operator.AssignDiv)                  op = Operator.Div;
+			else if (op == Operator.AssignMod)                  op = Operator.Mod;
+			else if (op == Operator.AssignLeftShift)            op = Operator.LeftShift;
+			else if (op == Operator.AssignRightShift)           op = Operator.RightShift;
+			else if (op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
+			else if (op == Operator.AssignBitOr)                op = Operator.BitOr;
+			else if (op == Operator.AssignBitXor)               op = Operator.BitXor;
+			else if (op == Operator.AssignBitAnd)               op = Operator.BitAnd;
+			ENode expr;
+			Block be = new Block(ae.pos);
+			Object acc;
+			if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
+				acc = ~fa.obj;
+			}
+			else if (fa.obj instanceof LVarExpr) {
+				acc = ((LVarExpr)fa.obj).getVarSafe();
+			}
+			else {
+				Var var = new LVar(0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
+				var.init = ~fa.obj;
+				be.stats += var;
+				acc = var;
+			}
+			ENode g;
+			g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), new ENode[]{mkAccess(acc)});
+			g = new BinaryExpr(ae.pos, op, g, ~ae.value);
+			g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{mkAccess(acc), g});
+			be.stats += new ExprStat(0, g);
+			if (!ae.isGenVoidExpr()) {
+				g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), new ENode[]{mkAccess(acc)});
+				be.stats += g;
+			}
+			expr = be;
+			expr.setGenVoidExpr(ae.isGenVoidExpr());
+			ae.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		else if (ae.lval instanceof SFldExpr) {
+			SFldExpr fa = (SFldExpr)ae.lval;
+			Field f = fa.var;
+			if (!MetaAccess.accessedFromInner(fa,f))
+				return true;
+
+			Type ae_tp = ae.isGenVoidExpr() ? tenv.tpVoid : ae.getType(env);
+			Operator op = ae.getOper();
+			if      (op == Operator.AssignAdd)                  op = Operator.Add;
+			else if (op == Operator.AssignSub)                  op = Operator.Sub;
+			else if (op == Operator.AssignMul)                  op = Operator.Mul;
+			else if (op == Operator.AssignDiv)                  op = Operator.Div;
+			else if (op == Operator.AssignMod)                  op = Operator.Mod;
+			else if (op == Operator.AssignLeftShift)            op = Operator.LeftShift;
+			else if (op == Operator.AssignRightShift)           op = Operator.RightShift;
+			else if (op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
+			else if (op == Operator.AssignBitOr)                op = Operator.BitOr;
+			else if (op == Operator.AssignBitXor)               op = Operator.BitXor;
+			else if (op == Operator.AssignBitAnd)               op = Operator.BitAnd;
+			ENode expr;
+			Block be = new Block(ae.pos);
+			ENode g;
+			g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), ENode.emptyArray);
+			g = new BinaryExpr(ae.pos, op, g, ~ae.value);
+			g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{g});
+			be.stats += new ExprStat(0, g);
+			if (!ae.isGenVoidExpr()) {
+				g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), ENode.emptyArray);
+				be.stats += g;
+			}
+			expr = be;
+			expr.setGenVoidExpr(ae.isGenVoidExpr());
+			ae.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		return true;
+	}
+	
+	boolean rewrite(AssignExpr:ASTNode ae, INode parent, AttrSlot slot) {
+		StdTypes tenv = this.env.getTypeEnv();
+		if (ae.lval instanceof IFldExpr) {
+			IFldExpr fa = (IFldExpr)ae.lval;
+			Field f = fa.var;
+			if (!MetaAccess.accessedFromInner(fa,f))
+				return true;
+
+			Type ae_tp = ae.isGenVoidExpr() ? tenv.tpVoid : ae.getType(env);
+			Operator op = ae.getOper();
+			ENode expr;
+			if (ae.isGenVoidExpr()) {
+				expr = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{~fa.obj, ~ae.value});
+			}
+			else {
+				Block be = new Block(ae.pos);
+				Object acc;
+				if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
+					acc = ~fa.obj;
+				}
+				else if (fa.obj instanceof LVarExpr) {
+					acc = ((LVarExpr)fa.obj).getVarSafe();
+				}
+				else {
+					Var var = new LVar(0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					var.init = ~fa.obj;
+					be.stats += var;
+					acc = var;
+				}
+				ENode g = ~ae.value;
+				g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{mkAccess(acc), g});
+				be.stats += new ExprStat(0, g);
+				if (!ae.isGenVoidExpr()) {
+					g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), new ENode[]{mkAccess(acc)});
+					be.stats += g;
+				}
+				expr = be;
+			}
+			expr.setGenVoidExpr(ae.isGenVoidExpr());
+			ae.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		else if (ae.lval instanceof SFldExpr) {
+			SFldExpr fa = (SFldExpr)ae.lval;
+			Field f = fa.var;
+			if (!MetaAccess.accessedFromInner(fa,f))
+				return true;
+
+			Type ae_tp = ae.isGenVoidExpr() ? tenv.tpVoid : ae.getType(env);
+			Operator op = ae.getOper();
+			ENode expr;
+			if (ae.isGenVoidExpr()) {
+				expr = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{~ae.value});
+			}
+			else {
+				Block be = new Block(ae.pos);
+				ENode g = ~ae.value;
+				g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{g});
+				be.stats += new ExprStat(0, g);
+				if (!ae.isGenVoidExpr()) {
+					g = new CallExpr(ae.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), ENode.emptyArray);
+					be.stats += g;
+				}
+				expr = be;
+			}
+			expr.setGenVoidExpr(ae.isGenVoidExpr());
+			ae.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		return true;
+	}
+	
+	boolean rewrite(IncrementExpr:ASTNode ie, INode parent, AttrSlot slot) {
+		StdTypes tenv = this.env.getTypeEnv();
+		if (ie.lval instanceof IFldExpr) {
+			IFldExpr fa = (IFldExpr)ie.lval;
+			Field f = fa.var;
+			if (!MetaAccess.accessedFromInner(fa,f))
+				return true;
+			ENode expr;
+			Type ie_tp = ie.isGenVoidExpr() ? tenv.tpVoid : ie.getType(env);
+			Operator ieop = ie.getOper();
+			if (ie.isGenVoidExpr()) {
+				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr) {
+					expr = new ModifyExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
+				} else {
+					expr = new ModifyExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
+				}
+			}
+			else {
+				Block be = new Block(ie.pos);
+				Object acc;
+				if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
+					acc = fa.obj;
+				}
+				else if (fa.obj instanceof LVarExpr) {
+					acc = ((LVarExpr)fa.obj).getVarSafe();
+				}
+				else {
+					Var var = new LVar(0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					var.init = ~fa.obj;
+					be.addSymbol(var);
+					acc = var;
+				}
+				Var res = null;
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
+					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
+					be.addSymbol(res);
+				}
+				ConstExpr ce;
+				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr)
+					ce = new ConstIntExpr(1);
+				else
+					ce = new ConstIntExpr(-1);
+				ENode g;
+				g = new CallExpr(ie.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), new ENode[]{mkAccess(acc)});
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr)
+					g = new AssignExpr(ie.pos, mkAccess(res), g);
+				g = new BinaryExpr(ie.pos, Operator.Add, ce, g);
+				g = new CallExpr(ie.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{mkAccess(acc),g});
+				be.stats.add(new ExprStat(0, g));
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr)
+					be.stats.add(mkAccess(res));
+				else
+					be.stats.add(new CallExpr(ie.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), new ENode[]{mkAccess(acc)}));
+				expr = be;
+			}
+			expr.setGenVoidExpr(ie.isGenVoidExpr());
+			ie.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		else if (ie.lval instanceof SFldExpr) {
+			SFldExpr fa = (SFldExpr)ie.lval;
+			Field f = fa.var;
+			if (!MetaAccess.accessedFromInner(fa,f))
+				return true;
+			ENode expr;
+			Type ie_tp = ie.isGenVoidExpr() ? tenv.tpVoid : ie.getType(env);
+			Operator ieop = ie.getOper();
+			if (ie.isGenVoidExpr()) {
+				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr) {
+					expr = new ModifyExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
+				} else {
+					expr = new ModifyExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
+				}
+			}
+			else {
+				Block be = new Block(ie.pos);
+				Var res = null;
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
+					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
+					be.addSymbol(res);
+				}
+				ConstExpr ce;
+				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr)
+					ce = new ConstIntExpr(1);
+				else
+					ce = new ConstIntExpr(-1);
+				ENode g;
+				g = new CallExpr(ie.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), ENode.emptyArray);
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr)
+					g = new AssignExpr(ie.pos, mkAccess(res), g);
+				g = new BinaryExpr(ie.pos, Operator.Add, ce, g);
+				g = new CallExpr(ie.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeWriteAccessor(env), new ENode[]{g});
+				be.stats.add(new ExprStat(0, g));
+				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr)
+					be.stats.add(mkAccess(res));
+				else
+					be.stats.add(new CallExpr(ie.pos, new TypeRef(Env.ctxTDecl(f).getType(env)), f.makeReadAccessor(env), ENode.emptyArray));
+				expr = be;
+			}
+			expr.setGenVoidExpr(ie.isGenVoidExpr());
+			ie.replaceWithNodeReWalk(expr,parent,slot);
+		}
+		return true;
+	}
+	
+	private ENode mkAccess(Object o) {
+		if (o instanceof Var) return new LVarExpr(0,(Var)o);
+		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVarSafe());
+		if (o instanceof ThisExpr) return new ThisExpr(0);
+		if (o instanceof SuperExpr) return new SuperExpr(0);
+		throw new RuntimeException("Unknown accessor "+o);
+	}
+
 }

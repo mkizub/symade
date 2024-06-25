@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-enum IntRadix {
+public enum IntRadix {
 	RADIX_DEC,
 	RADIX_HEX,
 	RADIX_OCT
@@ -34,9 +34,9 @@ public final class ConstBoolExpr extends ConstExpr {
 	public ConstBoolExpr() {}
 	public ConstBoolExpr(boolean value) { this.value = value; }
 	
-	public Type		getType()			{ return Type.tpBoolean; }
+	public Type		getType(Env env)			{ return env.tenv.tpBoolean; }
 
-	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
+	public Object	getConstValue(Env env)		{ return value ? Boolean.TRUE: Boolean.FALSE; }
 	
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstBoolExpr)
@@ -54,9 +54,9 @@ public final class ConstNullExpr extends ConstExpr {
 	
 	public ConstNullExpr() {}
 
-	public Type		getType()			{ return Type.tpNull; }
+	public Type		getType(Env env)			{ return env.tenv.tpNull; }
 
-	public Object	getConstValue()		{ return null; }
+	public Object	getConstValue(Env env)		{ return null; }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstNullExpr)
@@ -68,21 +68,32 @@ public final class ConstNullExpr extends ConstExpr {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class ConstByteExpr extends ConstExpr {
+public abstract class ConstRadixExpr extends ConstExpr {
+	@AttrXMLDumpInfo(attr=true)
+	@nodeAttr public IntRadix	radix;
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "radix")
+			return this.radix != null && this.radix != IntRadix.RADIX_DEC;
+		return super.includeInDump(dump, attr, val);
+	}
+
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class ConstByteExpr extends ConstRadixExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public byte		value;
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public IntRadix	radix;
 
 	public ConstByteExpr() {}
 	public ConstByteExpr(byte value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpByte; }
+	public Type		getType(Env env)			{ return env.tenv.tpByte; }
 
-	public Object	getConstValue()		{ return Byte.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Byte.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstByteExpr)
@@ -100,21 +111,19 @@ public final class ConstByteExpr extends ConstExpr {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class ConstShortExpr extends ConstExpr {
+public final class ConstShortExpr extends ConstRadixExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public short		value;
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public IntRadix	radix;
 
 	public ConstShortExpr() {}
 	public ConstShortExpr(short value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpShort; }
+	public Type		getType(Env env)			{ return env.tenv.tpShort; }
 
-	public Object	getConstValue()		{ return Short.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Short.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstShortExpr)
@@ -132,21 +141,19 @@ public final class ConstShortExpr extends ConstExpr {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class ConstIntExpr extends ConstExpr {
+public final class ConstIntExpr extends ConstRadixExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public int		value;
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public IntRadix	radix;
 
 	public ConstIntExpr() {}
 	public ConstIntExpr(int value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpInt; }
+	public Type		getType(Env env)			{ return env.tenv.tpInt; }
 
-	public Object	getConstValue()		{ return Integer.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Integer.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstIntExpr)
@@ -164,21 +171,19 @@ public final class ConstIntExpr extends ConstExpr {
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class ConstLongExpr extends ConstExpr {
+public final class ConstLongExpr extends ConstRadixExpr {
 	
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 	
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public long		value;
-	@AttrXMLDumpInfo(attr=true)
-	@nodeAttr public IntRadix	radix;
 
 	public ConstLongExpr() {}
 	public ConstLongExpr(long value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpLong; }
+	public Type		getType(Env env)			{ return env.tenv.tpLong; }
 
-	public Object	getConstValue()		{ return Long.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Long.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstLongExpr)
@@ -206,9 +211,9 @@ public final class ConstCharExpr extends ConstExpr {
 	public ConstCharExpr() {}
 	public ConstCharExpr(char value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpChar; }
+	public Type		getType(Env env)			{ return env.tenv.tpChar; }
 
-	public Object	getConstValue()		{ return Character.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Character.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstCharExpr)
@@ -216,7 +221,7 @@ public final class ConstCharExpr extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
+	public String	toString()			{ return "'"+value+"'"; }
 }
 
 
@@ -231,9 +236,9 @@ public final class ConstFloatExpr extends ConstExpr {
 	public ConstFloatExpr() {}
 	public ConstFloatExpr(float value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpFloat; }
+	public Type		getType(Env env)			{ return env.tenv.tpFloat; }
 
-	public Object	getConstValue()		{ return Float.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Float.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstFloatExpr)
@@ -256,9 +261,9 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public ConstDoubleExpr() {}
 	public ConstDoubleExpr(double value) { this.value = value; }
 
-	public Type		getType()			{ return Type.tpDouble; }
+	public Type		getType(Env env)			{ return env.tenv.tpDouble; }
 
-	public Object	getConstValue()		{ return Double.valueOf(value); }
+	public Object	getConstValue(Env env)		{ return Double.valueOf(value); }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstDoubleExpr)
@@ -278,12 +283,19 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	@nodeAttr public String value;
 
-	public ConstStringExpr() {}
-	public ConstStringExpr(String value) { this.value = value; }
+	public ConstStringExpr() {
+		this.value = "";
+	}
+	public ConstStringExpr(String value) {
+		if (value == null)
+			this.value = "";
+		else
+			this.value = value;
+	}
 
-	public Type		getType()			{ return Type.tpString; }
+	public Type		getType(Env env)			{ return env.tenv.tpString; }
 
-	public Object	getConstValue()		{ return value; }
+	public Object	getConstValue(Env env)		{ return value; }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstStringExpr)
@@ -294,6 +306,7 @@ public final class ConstStringExpr extends ConstExpr {
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 }
 
+@unerasable
 @ThisIsANode(lang=CoreLang)
 public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	
@@ -305,9 +318,13 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	public ConstEnumExpr() {}
 	public ConstEnumExpr(E value) { this.value = value; }
 
-	public Type		getType()			{ return new ASTNodeType(value.getClass()); }
+	public Type getType(Env env) {
+		if (value == null)
+			return new ASTNodeType(this.getTypeInfoField().getTopArgs()[0].clazz);
+		return new ASTNodeType(value.getClass());
+	}
 
-	public Object	getConstValue()		{ return value; }
+	public Object	getConstValue(Env env)		{ return value; }
 
 	public boolean valueEquals(Object o) {
 		if (o instanceof ConstEnumExpr)
@@ -315,7 +332,19 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return getType() + "." + value.toString(); }
+	public String	toString()			{ return String.valueOf(value); }
+
+	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
+		if (slot == ConstEnumExpr.nodeattr$value) {
+			AutoCompleteResult result = new AutoCompleteResult(true);
+			foreach (Enum e; (Enum[])this.getTypeInfoField().getTopArgs()[0].clazz.getDeclaredMethod(Constants.nameEnumValues).invoke(null)) {
+				result.append(e.toString(), e.getClass().getName(), null, e); 
+			}
+			result.append("null", "null", null, null);
+			return result;
+		}
+		return null;
+	}
 }
 
 
@@ -326,13 +355,13 @@ public abstract class ConstExpr extends ENode {
 		setResolved(true);
 	}
 
-	public int		getPriority() { return 255; }
+	public int		getPriority(Env env) { return 255; }
 
-	public abstract Object getConstValue();
+	public abstract Object getConstValue(Env env);
 
-	public boolean	isConstantExpr() { return true; }
+	public boolean	isConstantExpr(Env env) { return true; }
 
-	public final boolean mainResolveIn() {
+	public final boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		// already fully resolved
 		setResolved(true);
 		return false;
@@ -352,95 +381,6 @@ public abstract class ConstExpr extends ENode {
 		throw new RuntimeException("Bad constant object "+o+" ("+o.getClass()+")");
 	}
 	
-	public static ConstExpr fromSource(Token t) throws ParseException {
-		ConstExpr ce = null;
-		try
-		{
-			switch(t.kind) {
-			case ParserConstants.INTEGER_LITERAL:
-			{
-				String image;
-				int radix;
-				if( t.image.startsWith("0x") || t.image.startsWith("0X") ) { image = t.image.substring(2); radix = 16; }
-				else if( t.image.startsWith("0") && t.image.length() > 1 ) { image = t.image.substring(1); radix = 8; }
-				else { image = t.image; radix = 10; }
-				long i = ConstExpr.parseLong(image,radix);
-				ce = new ConstIntExpr((int)i);
-				switch (radix) {
-				case 16: ce.radix = IntRadix.RADIX_HEX; break;
-				case  8: ce.radix = IntRadix.RADIX_OCT; break;
-				default: ce.radix = IntRadix.RADIX_DEC; break;
-				}
-				break;
-			}
-			case ParserConstants.LONG_INTEGER_LITERAL:
-			{
-				String image;
-				int radix;
-				if( t.image.startsWith("0x") || t.image.startsWith("0X") ) { image = t.image.substring(2,t.image.length()-1); radix = 16; }
-				else if( t.image.startsWith("0") && !t.image.equals("0") && !t.image.equals("0L") ) { image = t.image.substring(1,t.image.length()-1); radix = 8; }
-				else { image = t.image.substring(0,t.image.length()-1); radix = 10; }
-				long l = ConstExpr.parseLong(image,radix);
-				ce = new ConstLongExpr(l);
-				switch (radix) {
-				case 16: ce.radix = IntRadix.RADIX_HEX; break;
-				case  8: ce.radix = IntRadix.RADIX_OCT; break;
-				default: ce.radix = IntRadix.RADIX_DEC; break;
-				}
-				break;
-			}
-			case ParserConstants.FLOATING_POINT_LITERAL:
-			{
-				String image;
-				if( t.image.endsWith("f") || t.image.endsWith("F") ) image = t.image.substring(0,t.image.length()-1);
-				else image = t.image;
-				float f = Float.valueOf(image).floatValue();
-				ce = new ConstFloatExpr(f);
-				break;
-			}
-			case ParserConstants.DOUBLE_POINT_LITERAL:
-			{
-				String image;
-				if( t.image.endsWith("d") || t.image.endsWith("D") ) image = t.image.substring(0,t.image.length()-1);
-				else image = t.image;
-				double d = Double.valueOf(t.image).doubleValue();
-				ce = new ConstDoubleExpr(d);
-				break;
-			}
-			case ParserConstants.CHARACTER_LITERAL:
-			{
-				char c;
-				if( t.image.length() == 3 )
-					c = t.image.charAt(1);
-				else
-					c = source2ascii(t.image.substring(1,t.image.length()-1)).charAt(0);
-				ce = new ConstCharExpr(c);
-				break;
-			}
-			case ParserConstants.STRING_LITERAL:
-				ce = new ConstStringExpr(source2ascii(t.image.substring(1,t.image.length()-1)));
-				break;
-			case ParserConstants.TRUE:
-				ce = new ConstBoolExpr(true);
-				break;
-			case ParserConstants.FALSE:
-				ce = new ConstBoolExpr(false);
-				break;
-			case ParserConstants.NULL:
-				ce = new ConstNullExpr();
-				break;
-			}
-		} catch( NumberFormatException e ) {
-			throw new ParseException(t.image);
-		}
-		if (ce == null) {
-			Kiev.reportParserError(t.getPos(), "Unknown term "+t.image);
-			ce = new ConstNullExpr();
-		}
-		ce.pos = t.getPos();
-		return ce;
-	}
-
     public static long parseLong(String s, int radix)
               throws NumberFormatException
     {
@@ -517,7 +457,11 @@ public abstract class ConstExpr extends ENode {
                         int k = 1;
                         int d = 0;
                         while (k <= 4 && d >= 0) {
-                            d = Convert.digit2int((byte)source.charAt(i+k), 16);
+							d = source.charAt(i+k);
+							if (d >= '0' && d <= '9') d -= '0';
+							else if (d >= 'a' && d <= 'f') d = d - 'a' + 10;
+							else if (d >= 'A' && d <= 'F') d = d - 'A' + 10;
+							else d = 0;
                             code = code * 16 + d;
                             k++;
                         }

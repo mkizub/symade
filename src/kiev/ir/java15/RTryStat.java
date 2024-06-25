@@ -17,14 +17,14 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RCatchInfo of CatchInfo extends RENode {
 	public Var				arg;
 	public ENode			body;
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		try {
-			body.resolve(Type.tpVoid);
+			resolveENode(body,env.tenv.tpVoid,env);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
 			Kiev.reportError(body,e);
@@ -32,17 +32,17 @@ public final view RCatchInfo of CatchInfo extends RENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RFinallyInfo of FinallyInfo extends RENode {
 	public ENode		body;
 	public Var			ret_arg;
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		if (ret_arg == null) {
-			ret_arg = new LVar(pos,"",Type.tpObject,Var.VAR_LOCAL,0);
+			ret_arg = new LVar(pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
 		}
 		try {
-			body.resolve(Type.tpVoid);
+			resolveENode(body,env.tenv.tpVoid,env);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
 			Kiev.reportError(body,e);
@@ -50,29 +50,29 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RTryStat of TryStat extends RENode {
 	public		ENode				body;
 	public:ro	CatchInfo[]			catchers;
 	public		FinallyInfo			finally_catcher;
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		for(int i=0; i < catchers.length; i++) {
 			try {
-				catchers[i].resolve(Type.tpVoid);
+				resolveENode(catchers[i],env.tenv.tpVoid,env);
 			} catch(Exception e ) {
 				Kiev.reportError(catchers[i],e);
 			}
 		}
 		if(finally_catcher != null) {
 			try {
-				finally_catcher.resolve(Type.tpVoid);
+				resolveENode(finally_catcher,env.tenv.tpVoid,env);
 			} catch(Exception e ) {
 				Kiev.reportError(finally_catcher,e);
 			}
 		}
 		try {
-			body.resolve(Type.tpVoid);
+			resolveENode(body,env.tenv.tpVoid,env);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}

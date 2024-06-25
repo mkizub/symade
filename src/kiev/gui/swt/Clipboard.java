@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Common Public License Version 1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
  *******************************************************************************/
 package kiev.gui.swt;
 
@@ -17,15 +18,21 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.MessageBox;
 
-import kiev.vtree.ANode;
+import kiev.vtree.INode;
 
-public class Clipboard {
+/**
+ * Put it out or get something to it.
+ */
+public final class Clipboard {
 	
+	/**
+	 * We put object into clipboard and get content from it.
+	 * @param obj the object
+	 */
 	public static void setClipboardContent(Object obj) {
-		org.eclipse.swt.dnd.Clipboard clipboard
-		= new org.eclipse.swt.dnd.Clipboard(Window.display);
+		org.eclipse.swt.dnd.Clipboard clipboard = new org.eclipse.swt.dnd.Clipboard(Window.getDisplay());
 		Transfer tr = null;
-		if (obj instanceof ANode){ 
+		if (obj instanceof INode){ 
 			LocalObjectTransfer lot = LocalObjectTransfer.getTransfer();
 			lot.setObject(obj);
 			lot.setObjectSetTime(System.currentTimeMillis());
@@ -41,8 +48,8 @@ public class Clipboard {
 			if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) {
 				throw e;
 			}
-			MessageBox mb = new MessageBox(Window.shell, SWT.ICON_QUESTION | SWT.RETRY | SWT.CANCEL);
-			mb.setMessage("There was a problem when accessing the system clipboard. Retry?");
+			MessageBox mb = new MessageBox(Window.getShell(), SWT.ICON_QUESTION | SWT.RETRY | SWT.CANCEL);
+			mb.setMessage(Window.resources.getString("Clipboard_problem"));
 			if (SWT.OK == mb.open())
 				setClipboardContent(obj);
 		}
@@ -52,21 +59,24 @@ public class Clipboard {
 			
 	}
 	
+	/**
+	 * The Local Object transfer used to transfer object inside the JVM. Clipboard is
+	 * a normal widget that we used to dispose.
+	 * @return The clipboard content.
+	 */
 	public static Object getClipboardContent() {
-		org.eclipse.swt.dnd.Clipboard clipboard
-		= new org.eclipse.swt.dnd.Clipboard(Window.display);
+		org.eclipse.swt.dnd.Clipboard clipboard = new org.eclipse.swt.dnd.Clipboard(Window.getDisplay());
 		LocalObjectTransfer lot = LocalObjectTransfer.getTransfer();
-		Transfer tr = lot;
 		Object content = null;
 		try {
-			content = clipboard.getContents(tr);
+			content = clipboard.getContents(lot);
 		}
 		finally {
 			clipboard.dispose();
 		}
 		if (content == null){
-			System.out.println("Clipboard is empty");
 			content = lot.getObject();
+			assert (content == null);
 		}
 		return content;
 	}

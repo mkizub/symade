@@ -14,26 +14,23 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 271 $
  *
  */
 
-@ViewOf(vcast=true, iface=true)
-public view RNode of ASTNode implements Constants {
+@ViewOf(vcast=true)
+public view RNode of ASTNode extends Object implements Constants {
 	public String toString();
 	
 	public int			pos;
 	
-	public:ro @virtual @abstract ANode				ctx_root;
-	public:ro @virtual @abstract FileUnit			ctx_file_unit;
-	public:ro @virtual @abstract NameSpace			ctx_name_space;
 	public:ro @virtual @abstract ComplexTypeDecl	ctx_tdecl;
 	public:ro @virtual @abstract Method				ctx_method;
 
 	public final ANode parent();
 	public AttrSlot[] values();
-	public final <N extends ANode> N replaceWithNode(N node);
-	public final ASTNode replaceWith(()->ASTNode fnode);
+	public final <N extends ANode> N replaceWithNode(N node, INode parent, AttrSlot slot);
+	public final ASTNode replaceWith(()->ASTNode fnode, INode parent, AttrSlot slot);
 	public final boolean isAttached();
 	public final boolean isBreakTarget();
 	public final boolean isResolved();
@@ -43,18 +40,31 @@ public view RNode of ASTNode implements Constants {
 	public final boolean isBad();
 	public final void    setBad(boolean on);
 
-	public final Type getType();
-	public final SpacePtr getSpacePtr(String name);
+	public final Type getType(Env env);
 
-	public boolean preGenerate() { return true; }
+	@getter public final ComplexTypeDecl get$ctx_tdecl()  { return Env.ctxTDecl((ASTNode)this); }
+	@getter public final Method          get$ctx_method() { return Env.ctxMethod((ASTNode)this); }
+	public boolean preGenerate(Env env) { return true; }
+
+	public static void resolveSNode(ANode node, Env env) {
+		((RSNode)(SNode)node).resolveDecl(env);
+	}
+	
+	public static void resolveDNode(ANode node, Env env) {
+		((RDNode)(DNode)node).resolveDecl(env);
+	}
+	
+	public static void resolveENode(ANode node, Type reqType, Env env) {
+		((RENode)(ENode)node).resolveENode(reqType,env);
+	}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public static view RSNode of SNode extends RNode {
-	public void resolveDecl() {}
+	public void resolveDecl(Env env) {}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public static view RDNode of DNode extends RNode {
 
 	public:ro MNode[]	metas;
@@ -108,11 +118,10 @@ public static view RDNode of DNode extends RNode {
 	public final boolean hasRuntimeVisibleMetas();
 	public final boolean hasRuntimeInvisibleMetas();
 	
-	public boolean preGenerate() { return false; }
-	public void resolveDecl() { /* empty */ }
+	public void resolveDecl(Env env) { /* empty */ }
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public static view RENode of ENode extends RNode {
 
 	public		String			ident;
@@ -132,12 +141,6 @@ public static view RENode of ENode extends RNode {
 	// used bt for()
 	public final boolean isForWrapper();
 	public final void setForWrapper(boolean on);
-	// used for primary expressions, i.e. (a+b)
-	public final boolean isPrimaryExpr();
-	public final void setPrimaryExpr(boolean on);
-	// used for super-expressions, i.e. (super.foo or super.foo())
-	public final boolean isSuperExpr();
-	public final void setSuperExpr(boolean on);
 	// used for cast calls (to check for null)
 	public final boolean isCastCall();
 	public final void setCastCall(boolean on);
@@ -162,47 +165,142 @@ public static view RENode of ENode extends RNode {
 	public final boolean isDirectFlowReachable();
 	public final void setDirectFlowReachable(boolean on);
 
-	public final void replaceWithNodeResolve(Type reqType, ENode node);
-	public final void replaceWithResolve(Type reqType, ()->ENode fnode);
-	public final void replaceWithNodeResolve(ENode node);
-	public final void replaceWithResolve(()->ENode fnode);
+	public final void replaceWithResolve(Env env, Type reqType, ()->ENode fnode);
+	public final void replaceWithResolve(Env env, ()->ENode fnode);
 
 	public final Operator getOper();
 	public final ENode[] getEArgs();
-	public final int getPriority();
 	public final boolean valueEquals(Object o);
-	public final boolean isConstantExpr();
-	public final Object	getConstValue();
-	public final Method resolveMethodAndNormalize();
+	public final boolean isConstantExpr(Env env);
+	public final Object	getConstValue(Env env);
+	public final Method resolveMethodAndNormalize(Env env) {
+		ENode en = (ENode)this;
+		return en.resolveMethodAndNormalize(env, en.parent(), en.pslot());
+	}
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass()+" / "+((ENode)this).getClass());
 	}
+
+	private static void do_resolve(Type reqType, ASTNode node, Env env) {
+		try {
+			Kiev.runProcessorsOn(node);
+		} catch (ReWalkNodeException e) {
+			do_resolve(reqType, (ASTNode)e.replacer, env);
+			return;
+		}
+		resolveENode(node, reqType, env);
+	}
+	
+	public final void replaceWithNodeResolve(Env env, Type reqType, ENode node) {
+		assert(isAttached());
+		ENode self = (ENode)this;
+		ASTNode n = this.replaceWithNode(node, self.parent(), self.pslot());
+		assert(n == node);
+		assert(n.isAttached());
+		do_resolve(reqType,n,env);
+	}
+
+	public final void replaceWithResolve(Env env, Type reqType, ()->ENode fnode) {
+		assert(isAttached());
+		ENode self = (ENode)this;
+		ASTNode n = this.replaceWith(fnode, self.parent(), self.pslot());
+		assert(n.isAttached());
+		do_resolve(reqType,n, env);
+	}
+
+	public final void replaceWithNodeResolve(Env env, ENode node) {
+		assert(isAttached());
+		ENode self = (ENode)this;
+		ASTNode n = this.replaceWithNode(node, self.parent(), self.pslot());
+		assert(n == node);
+		assert(n.isAttached());
+		do_resolve(null,n,env);
+	}
+
+	public final void replaceWithResolve(Env env, ()->ENode fnode) {
+		assert(isAttached());
+		ENode self = (ENode)this;
+		ASTNode n = this.replaceWith(fnode, self.parent(), self.pslot());
+		assert(n.isAttached());
+		do_resolve(null,n,env);
+	}
+	
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RNopExpr of NopExpr extends RENode {
 
-	public void resolve(Type reqType) {
+	public void resolveENode(Type reqType, Env env) {
 		setResolved(true);
 		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+			RReturnStat.autoReturn(reqType, this, env);
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
+public final view RArgExpr of ArgExpr extends RENode {
+
+	public ENode			expr;
+	
+	public void resolveENode(Type reqType, Env env) {
+		setResolved(true);
+		resolveENode(expr,reqType,env);
+	}
+}
+
+@ViewOf(vcast=true)
+public final view RTypeRef of TypeRef extends RENode {
+
+	public void resolveENode(Type reqType, Env env) {
+		if (reqType ≢ null && reqType ≉ env.tenv.tpClass)
+			toExpr(reqType,env);
+		else
+			getType(env); // calls resolving
+	}
+	
+	public void toExpr(Type reqType, Env env) {
+		Type st = getType(env);
+		TypeDecl s = st.meta_type.tdecl;
+		if (s.isPizzaCase()) {
+			// Pizza case may be casted to int or to itself or super-class
+			PizzaCase pcase = (PizzaCase)s;
+			Type tp = Type.getRealType(reqType,st);
+			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
+				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
+			if (pcase.case_fields.length != 0)
+				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
+			if (reqType.isInteger()) {
+				ENode expr = new ConstIntExpr(pcase.tag);
+				if( reqType ≢ env.tenv.tpInt )
+					expr = new CastExpr(pos,reqType,expr);
+				replaceWithNodeResolve(env, reqType, expr);
+			}
+			else if (s.isSingleton()) {
+				replaceWithNodeResolve(env, reqType, new SFldExpr(pos, s.resolveField(env,nameInstance)));
+			}
+			else {
+				replaceWithResolve(env, reqType, fun ()->ENode {return new NewExpr(pos,tp,ENode.emptyArray);});
+			}
+			return;
+		}
+		if (s.isSingleton()) {
+			replaceWithNodeResolve(env, reqType, new SFldExpr(pos, s.resolveField(env, nameInstance)));
+			return;
+		}
+		throw new CompilerException(this,"Type "+this+" is not a singleton");
+	}
+}
+
+@ViewOf(vcast=true)
 public view RTypeDecl of TypeDecl extends RDNode {
 	public:ro			TypeRef[]				super_types;
-	public:ro			MetaType				xmeta_type;
-	public:ro			Type					xtype;
 
 	public boolean isClazz();
 	public final boolean isStructInner();
-
-	public boolean preGenerate() { return true; }
 }
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public view RComplexTypeDecl of ComplexTypeDecl extends RTypeDecl {
 	public:ro			TypeDef[]				args;
 	public:ro			ASTNode[]				members;

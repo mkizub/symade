@@ -14,8 +14,18 @@ import syntax kiev.Syntax;
 public interface JConstants extends Constants {
 
 	
-	public final static KString jsigRule		= KString.from("Lkiev/stdlib/rule;");
-
+	public final static String jsigRule		= "Lkiev/stdlib/rule;";
+	public final static String sigAny			= "?";
+	public final static String sigVoid		= "V";
+	public final static String sigBoolean		= "Z";
+	public final static String sigByte		= "B";
+	public final static String sigChar		= "C";
+	public final static String sigShort		= "S";
+	public final static String sigInt			= "I";
+	public final static String sigLong		= "J";
+	public final static String sigFloat		= "F";
+	public final static String sigDouble		= "D";
+	public final static String sigNull		= "0";
 	
 	/** Java bytecode constants */
 
@@ -40,26 +50,24 @@ public interface JConstants extends Constants {
 
 	public final static String nameInit				= "<init>";
 	public final static String nameClassInit			= "<clinit>";
-	public final static KString knameInit				= KString.from(nameInit);
-	public final static KString knameClassInit			= KString.from(nameClassInit);
 
 	// Well known attributes
-	public final static KString attrCode				= KString.from("Code");
-	public final static KString attrSourceFile			= KString.from("SourceFile");
-	public final static KString attrSourceDebugExtension= KString.from("SourceDebugExtension");
-	public final static KString attrSignature			= KString.from("Signature");
-	public final static KString attrLocalVarTable		= KString.from("LocalVariableTable");
-	public final static KString attrLinenoTable		= KString.from("LineNumberTable");
-	public final static KString attrExceptions			= KString.from("Exceptions");
-	public final static KString attrInnerClasses		= KString.from("InnerClasses");
-	public final static KString attrConstantValue		= KString.from("ConstantValue");
-	public final static KString attrRequire			= KString.from("kiev.Require");
-	public final static KString attrEnsure				= KString.from("kiev.Ensure");
-	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
-	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
-	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
-	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
-	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
+	public final static String attrCode				= "Code";
+	public final static String attrSourceFile			= "SourceFile";
+	public final static String attrSourceDebugExtension= "SourceDebugExtension";
+	public final static String attrSignature			= "Signature";
+	public final static String attrLocalVarTable		= "LocalVariableTable";
+	public final static String attrLinenoTable		= "LineNumberTable";
+	public final static String attrExceptions			= "Exceptions";
+	public final static String attrInnerClasses		= "InnerClasses";
+	public final static String attrConstantValue		= "ConstantValue";
+	public final static String attrRequire			= "kiev.Require";
+	public final static String attrEnsure				= "kiev.Ensure";
+	public final static String attrRVAnnotations		= "RuntimeVisibleAnnotations";
+	public final static String attrRIAnnotations		= "RuntimeInvisibleAnnotations";
+	public final static String attrRVParAnnotations	= "RuntimeVisibleParameterAnnotations";
+	public final static String attrRIParAnnotations	= "RuntimeInvisibleParameterAnnotations";
+	public final static String attrAnnotationDefault	= "AnnotationDefault";
 
     // types for newarray
     public static final int T_CLASS			= 2;

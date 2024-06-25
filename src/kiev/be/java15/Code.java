@@ -15,24 +15,26 @@ import static kiev.be.java15.Instr.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
 public final class Code implements JConstants {
 	
 	/** Current backend environment we are generating for */
-	public JEnv			jenv;
-	public JTypeEnv     jtenv;
+	public final JEnv         jenv;
+	public final JTypeEnv     jtenv;
+	public final Env          env;
+	public final StdTypes     tenv;
 	
 	/** Current class we are generating */
-	public JStruct		clazz;
+	public final JStruct      clazz;
 	
 	/** Current method we are generating */
-	public JMethod		method;
+	public final JMethod      method;
 	
 	/** Current ConstPool of the class we are generating */
-	public ConstPool		constPool;
+	public final ConstPool    constPool;
 	
 	/** Current position (for error reporting) from setLinePos */
 	public int				last_lineno;
@@ -105,6 +107,8 @@ public final class Code implements JConstants {
 	public Code(JEnv je, JStruct s, JMethod m, ConstPool cp) {
 		jenv = je;
 		jtenv = jenv.getJTypeEnv();
+		env = je.env;
+		tenv = je.env.getTypeEnv();
 		clazz = s;
 		method = m;
 		constPool = cp;
@@ -149,7 +153,7 @@ public final class Code implements JConstants {
 	private void reportCodeWarning(String msg) {
 		if (Kiev.code_nowarn)
 			return;
-		Kiev.reportCodeWarning(last_lineno, (FileUnit)this.clazz.jctx_file_unit, (TypeDecl)this.clazz, (Method)this.method, msg);
+		Kiev.reportCodeWarning(last_lineno, Env.ctxFileUnit(this.clazz.vn()), this.clazz.vn(), this.method.vn(), msg);
 	}
 	
 	public void pushStackPos() {};
@@ -381,83 +385,6 @@ public final class Code implements JConstants {
 //		}
 //	}
 
-	/** Push constant into stack
-		optimize integer and numeric constants
-		if possible, otherwise put constant in the structure's pool
-		and load it by reference
-	 */
-	private void generatePushConst(Object value) {
-		if( value == null ) {
-			add_opcode(opc_aconst_null);
-			stack_push(jtenv.tpNull);
-		}
-		else if( value instanceof java.lang.Character ) {
-			add_opcode_and_short(opc_sipush,((java.lang.Character)value).charValue());
-		}
-		else if( value instanceof Long ) {
-			long val = ((Long)value).longValue();
-			if( val == 0L )			add_opcode(opc_lconst_0);
-			else if( val == 1L )	add_opcode(opc_lconst_1);
-			else {
-				CP c = constPool.addNumberCP((Number)value);
-				add_opcode_and_CP(opc_ldc2_w,c);
-				stack_push(jtenv.tpLong);
-			}
-		}
-		else if( value instanceof Float ) {
-			float val = ((Float)value).floatValue();
-			if( val == 0.0f )		add_opcode(opc_fconst_0);
-			else if( val == 1.0f )	add_opcode(opc_fconst_1);
-			else if( val == 2.0f )	add_opcode(opc_fconst_1);
-			else {
-				CP c = constPool.addNumberCP((Number)value);
-				add_opcode_and_CP(opc_ldc,c);
-				stack_push(jtenv.tpFloat);
-			}
-		}
-		else if( value instanceof Double ) {
-			double val = ((Double)value).doubleValue();
-			if( val == 0.0D )		add_opcode(opc_dconst_0);
-			else if( val == 1.0D )	add_opcode(opc_dconst_1);
-			else {
-				CP c = constPool.addNumberCP((Number)value);
-				add_opcode_and_CP(opc_ldc2_w,c);
-				stack_push(jtenv.tpDouble);
-			}
-		}
-		else if( value instanceof KString ) {
-			CP c = constPool.addStringCP((KString)value);
-			add_opcode_and_CP(opc_ldc,c);
-			stack_push(jtenv.tpString);
-		}
-		else if( value instanceof Number ) {
-			int val = ((Number)value).intValue();
-			switch(val) {
-			case -1:	add_opcode(opc_iconst_m1); break;
-			case 0:		add_opcode(opc_iconst_0); break;
-			case 1:		add_opcode(opc_iconst_1); break;
-			case 2:		add_opcode(opc_iconst_2); break;
-			case 3:		add_opcode(opc_iconst_3); break;
-			case 4:		add_opcode(opc_iconst_4); break;
-			case 5:		add_opcode(opc_iconst_5); break;
-			default:
-				if( val >=  Byte.MIN_VALUE && val <= Byte.MAX_VALUE ) {
-					add_opcode_and_byte(opc_bipush,val);
-				}
-				else if( val >= Short.MIN_VALUE && val <= Short.MAX_VALUE ) {
-					add_opcode_and_short(opc_sipush,val);
-				}
-				else {
-					CP c = constPool.addNumberCP((Number)value);
-					add_opcode_and_CP(opc_ldc,c);
-					stack_push(jtenv.tpInt);
-				}
-			}
-		}
-		else
-	        throw new RuntimeException("Adding constant of undefined type "+value.getClass());
-	}
-
 	/** Pop out value from
 		Check whether two-word or one-word value is popped
 	 */
@@ -574,20 +501,19 @@ public final class Code implements JConstants {
 				throw new RuntimeException("Unresolved type at generation phase: "+e);
 			}
 		}
-		KString sign;
-		JType ttt = jtenv.getJType(Type.getRealType(tp,((JTypeDecl)m.jparent).xtype));
-		sign = jtenv.getJType(m.etype).java_signature;
+		JType ttt = jtenv.getJType(Type.getRealType(tp,m.jparent.getType()));
+		String sign = jtenv.getJType(m.etype).java_signature;
 		CP cpm;
 		if( m.jctx_tdecl.isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,KString.from(m.sname),sign);
+			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,m.sname,sign);
 		else if (m.isConstructor())
-			cpm = constPool.addMethodCP(ttt.java_signature,knameInit,sign);
+			cpm = constPool.addMethodCP(ttt.java_signature,nameInit,sign);
 		else
-			cpm = constPool.addMethodCP(ttt.java_signature,KString.from(m.sname),sign);
+			cpm = constPool.addMethodCP(ttt.java_signature,m.sname,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
-		else if( ((JTypeDecl)m.jparent).isInterface() ) {
+		else if( ((JStruct)m.jparent).isInterface() ) {
 			add_opcode_and_CP(opc_invokeinterface,cpm);
 			int argslen = 1;
 			foreach(JType t; mtype.jargs) {
@@ -945,7 +871,7 @@ public final class Code implements JConstants {
 	private static boolean var_eq(JVar v1, JVar v2) {
 		if (v1 == null || v2 == null)
 			return false;
-		return ((Var)v1) == ((Var)v2);
+		return v1.vn() == v2.vn();
 	}
 	
 	public CodeVar lookupCodeVar(JVar jv) {
@@ -1289,10 +1215,10 @@ public final class Code implements JConstants {
 			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		JType ttt = jtenv.getJType(Type.getRealType(tp.getErasedType(),f.jctx_tdecl.xtype));
-		KString struct_sig = ttt.java_signature;
-		KString field_sig = jtenv.getJType(Type.getRealType(f.jctx_tdecl.xtype,f.vtype)).java_signature;
-		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.sname),field_sig);
+		JType ttt = jtenv.getJType(Type.getRealType(tp.getErasedType(),f.jctx_tdecl.getType()));
+		String struct_sig = ttt.java_signature;
+		String field_sig = jtenv.getJType(Type.getRealType(f.jctx_tdecl.getType(),f.vtype)).java_signature;
+		FieldCP cpf = constPool.addFieldCP(struct_sig,f.sname,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
@@ -1536,7 +1462,7 @@ public final class Code implements JConstants {
 		}
 	}
 
-	public void addConst(KString val) {
+	public void addConst(String val) {
 		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_sconst+" \""+val+"\"");
 		if( !reachable ) {
 			this.reportCodeWarning("\""+Instr.op_push_sconst+"\" ingnored as unreachable");

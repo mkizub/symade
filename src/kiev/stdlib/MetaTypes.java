@@ -21,7 +21,7 @@ import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -39,12 +39,6 @@ public metatype any {
 	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign(L lval, R val) operator "V = V" continue "kiev.vlang.Globals:ref_assign";
 
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) operator "V := V" continue "kiev.vlang.Globals:ref_assign2";
-
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) operator "V := V" continue "kiev.vlang.Globals:ref_pvar_init";
-
 	@macro @CompilerNode("RuleIstheExpr")
 	public static boolean ref_pvar_is_the(Object@ lval, Object val) operator "V ?= V" continue "kiev.vlang.Globals:ref_pvar_is_the";
 
@@ -55,9 +49,9 @@ public metatype any {
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
 	{
 		case Set# self():
-			self.lval = (self.value).get$$var()
+			self.lval = (self.value).$get_var()
 		case Call# self():
-			lval = (val).get$$var()
+			lval = (val).$get_var()
 	}
 
 	@macro @CompilerNode("Set")
@@ -98,40 +92,40 @@ public metatype boolean extends any {
 	public static final boolean #id"true"# = ($reinterp boolean)1;
 	
 	@macro @native @CompilerNode("Set")
-	public boolean assign(boolean val) alias lfy operator = ;
+	public boolean assign(boolean val) operator "V = V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_bit_or(boolean val) alias lfy operator |= ;
+	public int assign_bit_or(boolean val) operator "V |= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_bit_and(boolean val) alias lfy operator &= ;
+	public int assign_bit_and(boolean val) operator "V &= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_bit_xor(boolean val) alias lfy operator ^= ;
+	public int assign_bit_xor(boolean val) operator "V ^= V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static boolean bit_or(boolean b1, boolean b2) alias yfx operator | ;
+	public static boolean bit_or(boolean b1, boolean b2) operator "V | V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static boolean bit_and(boolean b1, boolean b2) alias yfx operator & ;
+	public static boolean bit_and(boolean b1, boolean b2) operator "V & V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static boolean bit_xor(boolean b1, boolean b2) alias yfx operator ^ ;
+	public static boolean bit_xor(boolean b1, boolean b2) operator "V ^ V";
 
 	@macro @native @CompilerNode("Or")
-	public static boolean bool_or(boolean b1, boolean b2) alias yfx operator || ;
+	public static boolean bool_or(boolean b1, boolean b2) operator "V || V";
 
 	@macro @native @CompilerNode("And")
-	public static boolean bool_and(boolean b1, boolean b2) alias yfx operator && ;
+	public static boolean bool_and(boolean b1, boolean b2) operator "V && V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_eq(boolean b1, boolean b2) alias xfx operator == ;
+	public static boolean bool_eq(boolean b1, boolean b2) operator "V == V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_neq(boolean b1, boolean b2) alias xfx operator != ;
+	public static boolean bool_neq(boolean b1, boolean b2) operator "V != V";
 
 	@macro @native @CompilerNode("Not")
-	public static boolean bool_not(boolean b1) alias fy operator ! ;
+	public static boolean bool_not(boolean b1) operator "! V";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(boolean val)
@@ -167,7 +161,7 @@ public metatype boolean extends any {
 @uuid("7713311e-809c-30f7-964a-3d28beb7aab3")
 public metatype char extends any {
 	@macro @native @CompilerNode("Set")
-	public char assign(char val) alias lfy operator = ;
+	public char assign(char val) operator "V = V";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(char val)
@@ -203,13 +197,13 @@ public metatype char extends any {
 @uuid("89ed44f6-f9a6-3ef7-b396-d2248d5f69db")
 public metatype byte extends any {
 	@macro @native @CompilerNode("Set")
-	public byte assign(byte val) alias lfy operator = ;
+	public byte assign(byte val) operator "V = V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public byte positive() alias fy operator + ;
+	public byte positive() operator "+ V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public byte negative() alias fy operator - ;
+	public byte negative() operator "- V";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(byte val)
@@ -245,13 +239,13 @@ public metatype byte extends any {
 @uuid("f9bb2439-c397-3930-b36c-5b1565ec7841")
 public metatype short extends any {
 	@macro @native @CompilerNode("Set")
-	public short assign(short val) alias lfy operator = ;
+	public short assign(short val) operator "V = V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public short positive() alias fy operator + ;
+	public short positive() operator "+ V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public short negative() alias fy operator - ;
+	public short negative() operator "- V";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(short val)
@@ -287,112 +281,112 @@ public metatype short extends any {
 @uuid("d50f9a1a-2e09-3313-8a64-6b58b300579e")
 public metatype int extends any {
 	@macro @native @CompilerNode("Set")
-	public int assign(int val) alias lfy operator = ;
+	public int assign(int val) operator "V = V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_bit_or(int val) alias lfy operator |= ;
+	public int assign_bit_or(int val) operator "V |= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_bit_and(int val) alias lfy operator &= ;
+	public int assign_bit_and(int val) operator "V &= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_bit_xor(int val) alias lfy operator ^= ;
+	public int assign_bit_xor(int val) operator "V ^= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_left_shift(int val) alias lfy operator <<= ;
+	public int assign_left_shift(int val) operator "V <<= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_right_shift(int val) alias lfy operator >>= ;
+	public int assign_right_shift(int val) operator "V >>= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_unsigned_right_shift(int val) alias lfy operator >>>= ;
+	public int assign_unsigned_right_shift(int val) operator "V >>>= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_add(int val) alias lfy operator += ;
+	public int assign_add(int val) operator "V += V" ;
 
 	@macro @native @CompilerNode("Set")
-	public int assign_sub(int val) alias lfy operator -= ;
+	public int assign_sub(int val) operator "V -= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_mul(int val) alias lfy operator *= ;
+	public int assign_mul(int val) operator "V *= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_div(int val) alias lfy operator /= ;
+	public int assign_div(int val) operator "V /= V";
 
 	@macro @native @CompilerNode("Set")
-	public int assign_mod(int val) alias lfy operator %= ;
+	public int assign_mod(int val) operator "V %= V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int bit_or(int i1, int i2) alias yfx operator | ;
+	public static int bit_or(int i1, int i2) operator "V | V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int bit_xor(int i1, int i2) alias yfx operator ^ ;
+	public static int bit_xor(int i1, int i2) operator "V ^ V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int bit_and(int i1, int i2) alias yfx operator & ;
+	public static int bit_and(int i1, int i2) operator "V & V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_eq(int i1, int i2) alias xfx operator == ;
+	public static boolean bool_eq(int i1, int i2) operator "V == V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_neq(int i1, int i2) alias xfx operator != ;
+	public static boolean bool_neq(int i1, int i2) operator "V != V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_ge(int i1, int i2) alias xfx operator >= ;
+	public static boolean bool_ge(int i1, int i2) operator "V >= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_le(int i1, int i2) alias xfx operator <= ;
+	public static boolean bool_le(int i1, int i2) operator "V <= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_gt(int i1, int i2) alias xfx operator > ;
+	public static boolean bool_gt(int i1, int i2) operator "V > V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_lt(int i1, int i2) alias xfx operator < ;
+	public static boolean bool_lt(int i1, int i2) operator "V < V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int left_shift(int i1, int shft) alias xfx operator << ;
+	public static int left_shift(int i1, int shft) operator "V << V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int right_shift(int i1, int shft) alias xfx operator >> ;
+	public static int right_shift(int i1, int shft) operator "V >> V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int unsigned_right_shift(int i1, int shft) alias xfx operator >>> ;
+	public static int unsigned_right_shift(int i1, int shft) operator "V >>> V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int add(int i1, int i2) alias yfx operator + ;
+	public static int add(int i1, int i2) operator "V + V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int sub(int i1, int i2) alias yfx operator - ;
+	public static int sub(int i1, int i2) operator "V - V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int mul(int i1, int i2) alias yfx operator * ;
+	public static int mul(int i1, int i2) operator "V * V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int div(int i1, int i2) alias yfx operator / ;
+	public static int div(int i1, int i2) operator "V / V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static int mod(int i1, int i2) alias yfx operator % ;
+	public static int mod(int i1, int i2) operator "V % V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public int positive() alias fy operator + ;
+	public int positive() operator "+ V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public int negative() alias fy operator - ;
+	public int negative() operator "- V";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static int pre_incr(int lval) alias fx operator ++ ;
+	public static int pre_incr(int lval) operator "++ V";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static int pre_decr(int lval) alias fx operator -- ;
+	public static int pre_decr(int lval) operator "-- V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public static int bit_not(int i1) alias fy operator ~ ;
+	public static int bit_not(int i1) operator "~ V";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static int post_incr(int lval) alias xf operator ++ ;
+	public static int post_incr(int lval) operator "V ++";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static int post_decr(int lval) alias xf operator -- ;
+	public static int post_decr(int lval) operator "V --";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(int val)
@@ -428,112 +422,112 @@ public metatype int extends any {
 @uuid("2d6eef81-2c5e-36e4-ab9d-136dfec1dc6b")
 public metatype long extends any {
 	@macro @native @CompilerNode("Set")
-	public long assign(long val) alias lfy operator = ;
+	public long assign(long val) operator "V = V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_bit_or(long val) alias lfy operator |= ;
+	public long assign_bit_or(long val) operator "V |= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_bit_and(long val) alias lfy operator &= ;
+	public long assign_bit_and(long val) operator "V &= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_bit_xor(long val) alias lfy operator ^= ;
+	public long assign_bit_xor(long val) operator "V ^= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_left_shift(int val) alias lfy operator <<= ;
+	public long assign_left_shift(int val) operator "V <<= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_right_shift(int val) alias lfy operator >>= ;
+	public long assign_right_shift(int val) operator "V >>= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_unsigned_right_shift(int val) alias lfy operator >>>= ;
+	public long assign_unsigned_right_shift(int val) operator "V >>>= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_add(long val) alias lfy operator += ;
+	public long assign_add(long val) operator "V += V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_sub(long val) alias lfy operator -= ;
+	public long assign_sub(long val) operator "V -= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_mul(long val) alias lfy operator *= ;
+	public long assign_mul(long val) operator "V *= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_div(long val) alias lfy operator /= ;
+	public long assign_div(long val) operator "V /= V";
 
 	@macro @native @CompilerNode("Set")
-	public long assign_mod(long val) alias lfy operator %= ;
+	public long assign_mod(long val) operator "V %= V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long bit_or(long l1, long l2) alias yfx operator | ;
+	public static long bit_or(long l1, long l2) operator "V | V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long bit_xor(long l1, long l2) alias yfx operator ^ ;
+	public static long bit_xor(long l1, long l2) operator "V ^ V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long bit_and(long l1, long l2) alias yfx operator & ;
+	public static long bit_and(long l1, long l2) operator "V & V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_eq(long l1, long l2) alias xfx operator == ;
+	public static boolean bool_eq(long l1, long l2) operator "V == V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_neq(long l1, long l2) alias xfx operator != ;
+	public static boolean bool_neq(long l1, long l2) operator "V != V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_ge(long l1, long l2) alias xfx operator >= ;
+	public static boolean bool_ge(long l1, long l2) operator "V >= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_le(long l1, long l2) alias xfx operator <= ;
+	public static boolean bool_le(long l1, long l2) operator "V <= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_gt(long l1, long l2) alias xfx operator > ;
+	public static boolean bool_gt(long l1, long l2) operator "V > V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static boolean bool_lt(long l1, long l2) alias xfx operator < ;
+	public static boolean bool_lt(long l1, long l2) operator "V < V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long left_shift(long val, int shft) alias xfx operator << ;
+	public static long left_shift(long val, int shft) operator "V << V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long right_shift(long val, int shft) alias xfx operator >> ;
+	public static long right_shift(long val, int shft) operator "V >> V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long unsigned_right_shift(long val, int shft) alias xfx operator >>> ;
+	public static long unsigned_right_shift(long val, int shft) operator "V >>> V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long add(long l1, long l2) alias yfx operator + ;
+	public static long add(long l1, long l2) operator "V + V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long sub(long l1, long l2) alias yfx operator - ;
+	public static long sub(long l1, long l2) operator "V - V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long mul(long l1, long l2) alias yfx operator * ;
+	public static long mul(long l1, long l2) operator "V * V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long div(long l1, long l2) alias yfx operator / ;
+	public static long div(long l1, long l2) operator "V / V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static long mod(long l1, long l2) alias yfx operator % ;
+	public static long mod(long l1, long l2) operator "V % V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public long positive() alias fy operator + ;
+	public long positive() operator "+ V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public long negative() alias fy operator - ;
+	public long negative() operator "- V";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static long pre_incr(long lval) alias fx operator ++ ;
+	public static long pre_incr(long lval) operator "++ V";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static long pre_decr(long lval) alias fx operator -- ;
+	public static long pre_decr(long lval) operator "-- V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public static long bit_not(long val) alias fy operator ~ ;
+	public static long bit_not(long val) operator "~ V" ;
 
 	@macro @native @CompilerNode("IncrOp")
-	public static long post_incr(long lval) alias xf operator ++ ;
+	public static long post_incr(long lval) operator "V ++";
 
 	@macro @native @CompilerNode("IncrOp")
-	public static long post_decr(long lval) alias xf operator -- ;
+	public static long post_decr(long lval) operator "V --";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(long val)
@@ -569,61 +563,61 @@ public metatype long extends any {
 @uuid("a02d23b3-8055-3c87-b331-2b242964a7f1")
 public metatype float extends any {
 	@macro @native @CompilerNode("Set")
-	public float assign(float val) alias lfy operator = ;
+	public float assign(float val) operator "V = V";
 
 	@macro @native @CompilerNode("Set")
-	public float assign_add(float val) alias lfy operator += ;
+	public float assign_add(float val) operator "V += V";
 
 	@macro @native @CompilerNode("Set")
-	public float assign_sub(float val) alias lfy operator -= ;
+	public float assign_sub(float val) operator "V -= V";
 
 	@macro @native @CompilerNode("Set")
-	public float assign_mul(float val) alias lfy operator *= ;
+	public float assign_mul(float val) operator "V *= V";
 
 	@macro @native @CompilerNode("Set")
-	public float assign_div(float val) alias lfy operator /= ;
+	public float assign_div(float val) operator "V /= V";
 
 	@macro @native @CompilerNode("Set")
-	public float assign_mod(float val) alias lfy operator %= ;
+	public float assign_mod(float val) operator "V %= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_eq(float f1, float f2) alias xfx operator == ;
+	public static boolean bool_eq(float f1, float f2) operator "V == V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_neq(float f1, float f2) alias xfx operator != ;
+	public static boolean bool_neq(float f1, float f2) operator "V != V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_ge(float f1, float f2) alias xfx operator >= ;
+	public static boolean bool_ge(float f1, float f2) operator "V >= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_le(float f1, float f2) alias xfx operator <= ;
+	public static boolean bool_le(float f1, float f2) operator "V <= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_gt(float f1, float f2) alias xfx operator > ;
+	public static boolean bool_gt(float f1, float f2) operator "V > V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_lt(float f1, float f2) alias xfx operator < ;
+	public static boolean bool_lt(float f1, float f2) operator "V < V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static float add(float f1, float f2) alias yfx operator + ;
+	public static float add(float f1, float f2) operator "V + V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static float sub(float f1, float f2) alias yfx operator - ;
+	public static float sub(float f1, float f2) operator "V - V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static float mul(float f1, float f2) alias yfx operator * ;
+	public static float mul(float f1, float f2) operator "V * V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static float div(float f1, float f2) alias yfx operator / ;
+	public static float div(float f1, float f2) operator "V / V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static float mod(float f1, float f2) alias yfx operator % ;
+	public static float mod(float f1, float f2) operator "V % V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public float positive() alias fy operator + ;
+	public float positive() operator "+ V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public float negative() alias fy operator - ;
+	public float negative() operator "- V";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(float val)
@@ -659,61 +653,61 @@ public metatype float extends any {
 @uuid("d741575d-769c-3108-810e-6c0e57a4b03e")
 public metatype double extends any {
 	@macro @native @CompilerNode("Set")
-	public double assign(double val) alias lfy operator = ;
+	public double assign(double val) operator "V = V";
 
 	@macro @native @CompilerNode("Set")
-	public double assign_add(double val) alias lfy operator += ;
+	public double assign_add(double val) operator "V += V";
 
 	@macro @native @CompilerNode("Set")
-	public double assign_sub(double val) alias lfy operator -= ;
+	public double assign_sub(double val) operator "V -= V";
 
 	@macro @native @CompilerNode("Set")
-	public double assign_mul(double val) alias lfy operator *= ;
+	public double assign_mul(double val) operator "V *= V";
 
 	@macro @native @CompilerNode("Set")
-	public double assign_div(double val) alias lfy operator /= ;
+	public double assign_div(double val) operator "V /= V";
 
 	@macro @native @CompilerNode("Set")
-	public double assign_mod(double val) alias lfy operator %= ;
+	public double assign_mod(double val) operator "V %= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_eq(double d1, double d2) alias xfx operator == ;
+	public static boolean bool_eq(double d1, double d2) operator "V == V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_neq(double d1, double d2) alias xfx operator != ;
+	public static boolean bool_neq(double d1, double d2) operator "V != V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_ge(double d1, double d2) alias xfx operator >= ;
+	public static boolean bool_ge(double d1, double d2) operator "V >= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_le(double d1, double d2) alias xfx operator <= ;
+	public static boolean bool_le(double d1, double d2) operator "V <= V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_gt(double d1, double d2) alias xfx operator > ;
+	public static boolean bool_gt(double d1, double d2) operator "V > V";
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean bool_lt(double d1, double d2) alias xfx operator < ;
+	public static boolean bool_lt(double d1, double d2) operator "V < V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static double add(double d1, double d2) alias yfx operator + ;
+	public static double add(double d1, double d2) operator "V + V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static double sub(double d1, double d2) alias yfx operator - ;
+	public static double sub(double d1, double d2) operator "V - V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static double mul(double d1, double d2) alias yfx operator * ;
+	public static double mul(double d1, double d2) operator "V * V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static double div(double d1, double d2) alias yfx operator / ;
+	public static double div(double d1, double d2) operator "V / V";
 
 	@macro @native @CompilerNode("BinOp")
-	public static double mod(double d1, double d2) alias yfx operator % ;
+	public static double mod(double d1, double d2) operator "V % V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public double positive() alias fy operator + ;
+	public double positive() operator "+ V";
 
 	@macro @native @CompilerNode("UnaryOp")
-	public double negative() alias fy operator - ;
+	public double negative() operator "- V";
 
 	@macro @CompilerNode("Cmp")
 	public boolean equals(double val)
@@ -749,15 +743,15 @@ public metatype double extends any {
 public metatype GString extends java.lang.String {
 
 	@macro @native @CompilerNode("StrConcat")
-	public static String str_concat_ss(String s1, String s2) alias yfx operator + ;
+	public static String str_concat_ss(String s1, String s2) operator "V + V";
 
 	@macro @native @CompilerNode("StrConcat")
-	public static String str_concat_as(any s1, String s2) alias yfx operator + ;
+	public static String str_concat_as(any s1, String s2) operator "V + V";
 
 	@macro @native @CompilerNode("StrConcat")
-	public static String str_concat_sa(String s1, any s2) alias yfx operator + ;
+	public static String str_concat_sa(String s1, any s2) operator "V + V";
 
 	@macro @native @CompilerNode("Set")
-	public static String str_assign_add(String s1, any s2) alias lfy operator += ;
+	public static String str_assign_add(String s1, any s2) operator "V += V" ;
 }
 

@@ -1,0 +1,2254 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+
+<!--
+ Copyright (c) 2005-2008 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+
+<core:FileUnit xmlns:sop="sop://sop/" xmlns:core="sop://languages/core?class=kiev.vlang.CoreLang" xmlns:syntax="sop://languages/syntax?class=kiev.fmt.SyntaxLang" name="syntax-for-ant.xml">
+ <srpkg>
+  <core:SymbolRef full="true" name="org·apache·tools·ant·lang"/>
+ </srpkg>
+ <members>
+  <core:ImportImpl all="true">
+   <name>
+    <core:SymbolRef full="true" name="stx-fmt"/>
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl all="true">
+   <name>
+    <core:SymbolRef full="true" name="kiev·vtree"/>
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl all="true">
+   <name>
+    <core:SymbolRef full="true" name="kiev·vlang"/>
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl all="true">
+   <name>
+    <core:SymbolRef full="true" name="kiev·vdom"/>
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl all="true">
+   <name>
+    <core:SymbolRef full="true" name="org·apache·tools·ant·lang"/>
+   </name>
+  </core:ImportImpl>
+  <syntax:TopLevelTextSyntax uuid="0fe657a3-e180-4b00-a359-519e3b7a81e1" name="syntax-for-ant">
+   <parent_syntax>
+    <core:SymbolRef name="syntax-default‣ad03537f-3c1b-4131-ac10-bf3a8662ddcb"/>
+   </parent_syntax>
+   <style_sheet>
+    <core:SymbolRef name="style-sheet-default‣59857a48-3b20-4182-9681-e8d52ee317c9"/>
+   </style_sheet>
+   <members>
+    <syntax:SyntaxExpectedType uuid="f418ec6b-f435-48f6-b3be-b980079c29e1" name="TargetRef">
+     <title>TargetRef</title>
+     <type_ref>
+      <syntax:SyntaxTypeRef>
+       <clazz>
+        <core:SymbolRef name="SymbolRef‣4e0a9406-2807-4608-9f53-37eb0da71fee"/>
+       </clazz>
+       <args>
+        <syntax:SyntaxTypeRef>
+         <clazz>
+          <core:SymbolRef name="AntTarget‣27e8b75f-b4d5-4f46-b20e-3dc96c841fd1"/>
+         </clazz>
+        </syntax:SyntaxTypeRef>
+       </args>
+      </syntax:SyntaxTypeRef>
+     </type_ref>
+    </syntax:SyntaxExpectedType>
+    <syntax:SyntaxExpectedType uuid="370732d4-cd41-4b4e-8917-9532e6c7fdf0" name="PropertyRef">
+     <title>PropertyRef</title>
+     <type_ref>
+      <syntax:SyntaxTypeRef>
+       <clazz>
+        <core:SymbolRef name="SymbolRef‣4e0a9406-2807-4608-9f53-37eb0da71fee"/>
+       </clazz>
+       <args>
+        <syntax:SyntaxTypeRef>
+         <clazz>
+          <core:SymbolRef name="AntProperty‣a19212d4-a1b9-4af5-8c63-0c4f4bc9b046"/>
+         </clazz>
+        </syntax:SyntaxTypeRef>
+       </args>
+      </syntax:SyntaxTypeRef>
+     </type_ref>
+    </syntax:SyntaxExpectedType>
+    <syntax:SpaceInfo uuid="be45b358-41b8-4e48-8755-e723af0909d4" name="sp-attr">
+     <kind>SP_SPACE</kind>
+     <size>
+      <syntax:SyntaxSize unit="PIXELS" g="4" t="1"/>
+     </size>
+    </syntax:SpaceInfo>
+    <syntax:SyntaxStyleDecl uuid="d2b53d33-5cca-4853-95af-63bd61f7b301" name="style-&quot;">
+     <fallback>
+      <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.fmt.SyntaxStyleDecl;»" name="style-default‣fc2a7de5-23fb-4cff-a7dd-acd29d99d22a"/>
+     </fallback>
+     <color>
+      <core:SymbolRef name="color-default‣decbe2d5-b9e2-4103-85bb-26b0b6b8a897"/>
+     </color>
+     <font>
+      <core:SymbolRef name="font-default‣16f93340-2829-4921-9fb7-ddacc018d88a"/>
+     </font>
+    </syntax:SyntaxStyleDecl>
+    <syntax:SyntaxElemFormatDecl uuid="71e00426-360e-4896-b56c-5ee099bdc1e2" name="fmt-xml-attr">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp-attr‣be45b358-41b8-4e48-8755-e723af0909d4"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_NOP</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="c7cf0f2a-cf82-4277-9f7d-90b0afafffa6" name="fmt-xml-attr-left-&quot;">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="6dcda970-e18b-4308-8f89-2575bf84c6ca" name="fmt-xml-attr-right-&quot;">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="4e243d30-141a-499b-aca3-5ff1089bc695" name="fmt-xml-attr">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp-attr‣be45b358-41b8-4e48-8755-e723af0909d4"/>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_NOP</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="610221e7-d751-4e34-a417-fa36824bfb71" name="fmt-xml-&lt;/&gt;">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="0aaeca31-fb57-4266-95d3-e7521e480e94" name="fmt-text-el">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="sp‣70b6e697-2930-46aa-bc6a-3e0a69bacf58"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemFormatDecl uuid="0cc98deb-b87a-43db-8903-1ce5a3a02d58" name="fmt-xml-text">
+     <spaces>
+      <syntax:SpaceCmd>
+       <si>
+        <core:SymbolRef name="nl‣abdf8e45-513a-4661-be52-5fe193620394"/>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_EAT</action_after>
+      </syntax:SpaceCmd>
+     </spaces>
+    </syntax:SyntaxElemFormatDecl>
+    <syntax:SyntaxElemDecl uuid="1a3e6545-57e2-4c86-863a-dc68a1359cdf" name="stx-file-unit">
+     <rnode>
+      <core:SymbolRef name="FileUnit‣8ce8a2c9-7a21-45c1-a7ef-cdfb11e0510e"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="Comment‣21e791f2-9d19-46c9-9dd2-35cbe700496c"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntProject‣5b5a473b-1969-475d-9b59-5e2c5105b4f4"/>
+       </expected_types>
+       <title>Make new node at members</title>
+       <attr>members</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="a7899d79-5b5a-4734-b7a9-8c24a1793deb" name="stx-def-symbol-ref">
+     <rnode>
+      <core:SymbolRef name="SymbolRef‣4e0a9406-2807-4608-9f53-37eb0da71fee"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>ident_or_symbol_or_type</name>
+       <format>
+        <syntax:SyntaxIdentAttr>
+         <decl>
+          <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+         </decl>
+        </syntax:SyntaxIdentAttr>
+       </format>
+       <style>
+        <core:SymbolRef name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+       </style>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="e346f073-820b-4758-b79a-b278b0636916" name="stx-ant-project">
+     <rnode>
+      <core:SymbolRef name="AntProject‣5b5a473b-1969-475d-9b59-5e2c5105b4f4"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntTarget‣27e8b75f-b4d5-4f46-b20e-3dc96c841fd1"/>
+       </expected_types>
+       <title>Make new project element</title>
+       <attr>members</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TargetRef‣f418ec6b-f435-48f6-b3be-b980079c29e1"/>
+       </expected_types>
+       <title>Set default target</title>
+       <attr>dflt</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntLib‣439a984f-8283-4f1f-ba22-4a5dfafb9f6b"/>
+       </expected_types>
+       <title>Add antlib</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>project</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <style>
+          <core:SymbolRef name="style-symbol-big‣0e8632eb-b4f0-4eef-acad-4f1bc197cce4"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>basedir</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>basedir</text>
+          </syntax:SyntaxToken>
+         </prefix>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>dflt</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>default</text>
+          </syntax:SyntaxToken>
+         </prefix>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>libs</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;libs&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+         <par>
+          <core:SymbolRef name="par-vert-block-indent‣669184e9-3279-4ac6-a1c4-ec17e212c079"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <par>
+            <core:SymbolRef name="par-vert-indent‣78af6c93-da1e-4f02-98b3-6a329a5f70e8"/>
+           </par>
+           <element>
+            <syntax:SyntaxNode>
+             <par>
+              <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+             </par>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="42239502-1c74-48f6-a358-09ced48812f5" name="stx-ant-lib">
+     <rnode>
+      <core:SymbolRef name="AntLib‣439a984f-8283-4f1f-ba22-4a5dfafb9f6b"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntTypeDef‣aba53812-f746-4964-ba10-1eb11aec2145"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntTaskDef‣d13652c6-f842-4dae-a3e5-e1e59dda6924"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntPresetDef‣03e358b6-53e3-4d95-8655-e181e578a1b5"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntMacroDef‣78d534ec-b8c8-48f9-be8f-118eee80bf1f"/>
+       </expected_types>
+       <title>Make new antlib element</title>
+       <attr>members</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TargetRef‣f418ec6b-f435-48f6-b3be-b980079c29e1"/>
+       </expected_types>
+       <title>Set default target</title>
+       <attr>dflt</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntLib‣439a984f-8283-4f1f-ba22-4a5dfafb9f6b"/>
+       </expected_types>
+       <title>Add antlib</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>antlib</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <style>
+          <core:SymbolRef name="style-symbol-big‣0e8632eb-b4f0-4eef-acad-4f1bc197cce4"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>libs</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;libs&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+         <par>
+          <core:SymbolRef name="par-vert-block-indent‣669184e9-3279-4ac6-a1c4-ec17e212c079"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <par>
+            <core:SymbolRef name="par-vert-indent‣78af6c93-da1e-4f02-98b3-6a329a5f70e8"/>
+           </par>
+           <element>
+            <syntax:SyntaxNode>
+             <par>
+              <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+             </par>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="89591e7e-abe5-413e-9da1-093cbbcc742d" name="stx-ant-target">
+     <rnode>
+      <core:SymbolRef name="AntTarget‣27e8b75f-b4d5-4f46-b20e-3dc96c841fd1"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TargetRef‣f418ec6b-f435-48f6-b3be-b980079c29e1"/>
+       </expected_types>
+       <title>Add target this one depends on</title>
+       <attr>depends</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="PropertyRef‣370732d4-cd41-4b4e-8917-9532e6c7fdf0"/>
+       </expected_types>
+       <title>Add 'if' condition</title>
+       <attr>onlyif</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="PropertyRef‣370732d4-cd41-4b4e-8917-9532e6c7fdf0"/>
+       </expected_types>
+       <title>Add 'unless' condition</title>
+       <attr>unless</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntTask‣b24b758d-5915-49e4-b71f-e7678c149d68"/>
+       </expected_types>
+       <title>Add a task</title>
+       <attr>members</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxAttr>
+         <name>description</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;description&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <style>
+          <core:SymbolRef name="style-placeholder‣2080570b-1362-46c4-9ea4-692f94b3f78b"/>
+         </style>
+         <fmt>
+          <core:SymbolRef name="fmt-nl‣9c02ab50-fb1e-408c-8ed0-2a48dc9ff8ba"/>
+         </fmt>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>target</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>depends</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>:</text>
+          </syntax:SyntaxToken>
+         </prefix>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>: &lt;depends&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <sufix>
+              <syntax:SyntaxToken>
+               <text>,</text>
+              </syntax:SyntaxToken>
+             </sufix>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-flow-indent‣9dfdd06a-6e40-41e6-b5bf-cf2db992ba37"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>onlyif</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>if</text>
+          </syntax:SyntaxToken>
+         </prefix>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;only if&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>unless</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>unless</text>
+          </syntax:SyntaxToken>
+         </prefix>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;unless&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <par>
+            <core:SymbolRef name="par-vert-indent‣78af6c93-da1e-4f02-98b3-6a329a5f70e8"/>
+           </par>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl2-nl2‣6add5693-f79d-4740-88c8-de4d38e5e7f3"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="81ee31ec-d60a-4e92-a78a-230d93d0bbc3" name="stx-ant-prop-val">
+     <rnode>
+      <core:SymbolRef name="AntValueProperty‣0114c170-21b6-4fc0-b421-84fccfbf59fa"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>let</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>:=</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>value</name>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="b5d9ddb8-d9b5-4989-974f-6a4a815e449f" name="stx-ant-prop-loc">
+     <rnode>
+      <core:SymbolRef name="AntLocationProperty‣c23cde0a-2df5-4482-baa9-35b7944bfb94"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>let</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>:=</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxToken>
+         <text>file</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>location</name>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="e0ece75b-52f2-4916-8f97-4fab7fac9088" name="stx-ant-typedef">
+     <rnode>
+      <core:SymbolRef name="AntTypeDef‣aba53812-f746-4964-ba10-1eb11aec2145"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>def</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxToken>
+         <text>type</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>&lt;=</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>classname</name>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="afb748ca-0fac-41cb-96e3-2264e7f54e2a" name="stx-ant-typedef">
+     <rnode>
+      <core:SymbolRef name="AntTaskDef‣d13652c6-f842-4dae-a3e5-e1e59dda6924"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>def</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxToken>
+         <text>task</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>&lt;=</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>classname</name>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="4c396302-8030-441a-a448-0b692819bdc9" name="stx-ant-presetdef">
+     <rnode>
+      <core:SymbolRef name="AntPresetDef‣03e358b6-53e3-4d95-8655-e181e578a1b5"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>def</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxToken>
+         <text>preset</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>task</name>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="098de859-7263-4055-9f10-7ae6d659118c" name="stx-ant-macrodef">
+     <rnode>
+      <core:SymbolRef name="AntMacroDef‣78d534ec-b8c8-48f9-be8f-118eee80bf1f"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>def</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxToken>
+         <text>macro</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="31a2097c-d574-4698-90e9-116d853d6257" name="stx-ant-macro-data">
+     <rnode>
+      <core:SymbolRef name="AntMacroData‣8e0def5d-3e2a-46c4-bec5-85e0fefc7626"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>macro</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>tdef</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+         </style>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="6192ea57-0760-4cb5-ab64-11a02488e820" name="stx-ant-std-data">
+     <rnode>
+      <core:SymbolRef name="AntStdData‣a92b9ba1-eae0-485f-8a6b-178d6846212b"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>data</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>lib</name>
+         <sufix>
+          <syntax:SyntaxToken>
+           <text>:</text>
+          </syntax:SyntaxToken>
+         </sufix>
+         <empty>
+          <syntax:SyntaxSpace/>
+         </empty>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>tdef</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="b71e653a-be7b-4933-9946-8cc8a8cf4eb4" name="stx-ant-sub-data">
+     <rnode>
+      <core:SymbolRef name="AntSubData‣758cd561-ad12-4a99-b71c-f4b01a11df48"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxAttr>
+         <name>name</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="976daaec-ebee-4059-8e8c-14cf8d953dec" name="stx-ant-task">
+     <rnode>
+      <core:SymbolRef name="AntTask‣b24b758d-5915-49e4-b71f-e7678c149d68"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>do</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>lib</name>
+         <sufix>
+          <syntax:SyntaxToken>
+           <text>:</text>
+          </syntax:SyntaxToken>
+         </sufix>
+         <empty>
+          <syntax:SyntaxSpace/>
+         </empty>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>tdef</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="de69da84-6314-4d49-aee3-5ea543483897" name="stx-ant-macro-attr">
+     <rnode>
+      <core:SymbolRef name="AntMacroAttribute‣b3b48fbb-593c-43e8-9295-b68e9441b461"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>attribute</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="fa588d5c-e501-4db7-87cd-2dd8e2da7b26" name="stx-ant-macro-elem">
+     <rnode>
+      <core:SymbolRef name="AntMacroElement‣f59f7327-4e2d-44e0-ab0b-20cf870be366"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>element</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="f1de22f2-1d0a-46cd-8714-8ff802aea5de" name="stx-ant-macro-text">
+     <rnode>
+      <core:SymbolRef name="AntMacroText‣0630a18e-be89-4b00-be5c-df6b41e74e74"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>text</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="910187c4-1b46-4bcf-b217-a9418370891a" name="stx-ant-attr">
+     <rnode>
+      <core:SymbolRef name="AntAttribute‣9f202a45-4269-46fa-9d07-997ab7b3777a"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntText‣e9f71d3a-730f-4392-a7ba-1efe4c6c9a00"/>
+       </expected_types>
+       <title>Set text</title>
+       <attr>text</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxAttr>
+         <name>name</name>
+         <format>
+          <syntax:SyntaxSubAttr/>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol-alt‣221a0035-0af7-49da-9974-57ce152263c9"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>=</text>
+         <style>
+          <core:SymbolRef name="style-delimiter‣f564be38-dc54-47a5-9b70-1e055a1f2a64"/>
+         </style>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>text</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;text&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="ff52f188-66f9-41d1-befc-a616396d55cb" name="stx-ant-libref">
+     <rnode>
+      <core:SymbolRef name="AntLibRef‣547aa8d3-c11d-45bd-9f6d-becf45e8c55d"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntText‣e9f71d3a-730f-4392-a7ba-1efe4c6c9a00"/>
+       </expected_types>
+       <title>Set text</title>
+       <attr>text</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>antlib:</text>
+         <fmt>
+          <core:SymbolRef name="fmt-eat-right‣0c493f87-c819-4477-9d77-74bc6a68727f"/>
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>=</text>
+         <style>
+          <core:SymbolRef name="style-delimiter‣f564be38-dc54-47a5-9b70-1e055a1f2a64"/>
+         </style>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>qname</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;name&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="6b97ab03-659e-421c-add3-b4aee8b211a2" name="stx-ant-txt-prop-ref">
+     <rnode>
+      <core:SymbolRef name="AntTextPropRef‣ec5aebe2-6652-4dd8-9fba-b72550453ea5"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>prop</name>
+       <format>
+        <syntax:SyntaxIdentAttr>
+         <decl>
+          <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+         </decl>
+        </syntax:SyntaxIdentAttr>
+       </format>
+       <style>
+        <core:SymbolRef name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+       </style>
+       <fmt>
+        <core:SymbolRef name="fmt-text-el‣0aaeca31-fb57-4266-95d3-e7521e480e94"/>
+       </fmt>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="2abc0c16-4b9b-4d37-a8f3-a1ae137b0e87" name="stx-ant-txt-macroattr-ref">
+     <rnode>
+      <core:SymbolRef name="AntTextMacroAttrRef‣5a1d7664-cfad-4866-9c1a-260ad0c3bd37"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>attr</name>
+       <format>
+        <syntax:SyntaxIdentAttr>
+         <decl>
+          <core:SymbolRef name="ident-template‣a463bedd-34fb-429e-9409-6321b513f7df"/>
+         </decl>
+        </syntax:SyntaxIdentAttr>
+       </format>
+       <style>
+        <core:SymbolRef name="style-symref‣206cee4c-db12-4dea-9151-9ab22b56eeed"/>
+       </style>
+       <fmt>
+        <core:SymbolRef name="fmt-text-el‣0aaeca31-fb57-4266-95d3-e7521e480e94"/>
+       </fmt>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="830b2cd4-390e-46f3-99e9-d3d1f01fd891" name="stx-ant-task-uptodate">
+     <rnode>
+      <core:SymbolRef name="AntUpToDate‣858e7e82-d543-4d5e-bf72-f2249edb8d62"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntAttr</factory>
+       <title>Add new attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByFactory>
+      <syntax:SyntaxFuncNewByFactory>
+       <factory>org.apache.tools.ant.lang.FuncNewAntElem</factory>
+       <title>Add new element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByFactory>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>let</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>property</name>
+         <style>
+          <core:SymbolRef name="style-symbol‣d0acb511-e8ee-40b5-b0cd-3cd3460b6403"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>=</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>value</name>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>if</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxToken>
+         <text>uptodate</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>attributes</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;attributes&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode/>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <par>
+          <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+         </par>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+       </fmt>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <core:Comment mode="LINE">
+     <elems>
+      <core:Line>
+       <elems>
+        <core:TextElem>
+         <text>XML and Text elements</text>
+        </core:TextElem>
+       </elems>
+      </core:Line>
+     </elems>
+    </core:Comment>
+    <syntax:SyntaxElemDecl uuid="cb4a0873-a339-41e5-9d86-fcb559c71ccb" name="stx-ant-text">
+     <rnode>
+      <core:SymbolRef name="AntText‣e9f71d3a-730f-4392-a7ba-1efe4c6c9a00"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="AntTextPropRef‣ec5aebe2-6652-4dd8-9fba-b72550453ea5"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TextElem‣b3e84123-8f5d-453c-97d8-4e7dd796ab76"/>
+       </expected_types>
+       <title>Make new node</title>
+       <attr>elems</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>elems</name>
+       <prefix>
+        <syntax:SyntaxToken>
+         <text>«</text>
+        </syntax:SyntaxToken>
+       </prefix>
+       <sufix>
+        <syntax:SyntaxToken>
+         <text>»</text>
+        </syntax:SyntaxToken>
+       </sufix>
+       <format>
+        <syntax:SyntaxList>
+         <element>
+          <syntax:SyntaxNode>
+           <fmt>
+            <core:SymbolRef name="fmt-text-el‣0aaeca31-fb57-4266-95d3-e7521e480e94"/>
+           </fmt>
+          </syntax:SyntaxNode>
+         </element>
+        </syntax:SyntaxList>
+       </format>
+       <fmt>
+        <core:SymbolRef name="fmt-text-el‣0aaeca31-fb57-4266-95d3-e7521e480e94"/>
+       </fmt>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="c2dc63b6-23b4-4752-88d5-29dcc8793ecf" name="stx-text">
+     <rnode>
+      <core:SymbolRef name="Text‣17b8c2f3-6a2e-44f9-adf3-0125b44f183f"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TextLine‣0ff0c2ba-700a-4eca-b8db-3a39b1764e86"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TextBrk‣a84e3e31-6157-428f-8655-162902e52c52"/>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="TextElem‣b3e84123-8f5d-453c-97d8-4e7dd796ab76"/>
+       </expected_types>
+       <title>Make new node</title>
+       <attr>elems</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>elems</name>
+       <prefix>
+        <syntax:SyntaxToken>
+         <text>«</text>
+        </syntax:SyntaxToken>
+       </prefix>
+       <sufix>
+        <syntax:SyntaxToken>
+         <text>»</text>
+        </syntax:SyntaxToken>
+       </sufix>
+       <format>
+        <syntax:SyntaxList>
+         <element>
+          <syntax:SyntaxNode>
+           <fmt>
+            <core:SymbolRef name="fmt-text-el‣0aaeca31-fb57-4266-95d3-e7521e480e94"/>
+           </fmt>
+          </syntax:SyntaxNode>
+         </element>
+        </syntax:SyntaxList>
+       </format>
+       <fmt>
+        <core:SymbolRef name="fmt-xml-text‣0cc98deb-b87a-43db-8903-1ce5a3a02d58"/>
+       </fmt>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="b96d3c19-9ab9-420e-b673-fe0209066f43" name="stx-xml-text">
+     <rnode>
+      <core:SymbolRef name="XMLText‣0d244535-a0de-4187-b497-98df07cdecad"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>text</name>
+       <format>
+        <syntax:SyntaxStrAttr/>
+       </format>
+       <fmt>
+        <core:SymbolRef name="fmt-xml-text‣0cc98deb-b87a-43db-8903-1ce5a3a02d58"/>
+       </fmt>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="4dc36611-31f7-4860-a127-322f14061c7b" name="stx-qname">
+     <rnode>
+      <core:SymbolRef name="XMLQName‣29e5c4f7-a0f0-472f-9a5c-7edbd68e732f"/>
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxAttr>
+         <name>prefix</name>
+         <sufix>
+          <syntax:SyntaxToken>
+           <text>:</text>
+           <fmt>
+            <core:SymbolRef name="fmt-text-el‣0aaeca31-fb57-4266-95d3-e7521e480e94"/>
+           </fmt>
+          </syntax:SyntaxToken>
+         </sufix>
+         <empty>
+          <syntax:SyntaxSpace/>
+         </empty>
+         <format>
+          <syntax:SyntaxStrAttr/>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>local</name>
+         <format>
+          <syntax:SyntaxStrAttr/>
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="b92345fe-5ab0-4aa4-a422-24776072328d" name="stx-attr">
+     <rnode>
+      <core:SymbolRef name="XMLAttribute‣a33fba3c-4f16-4e64-b078-fead3fa6a015"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="XMLText‣0d244535-a0de-4187-b497-98df07cdecad"/>
+       </expected_types>
+       <title>Set text</title>
+       <attr>text</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="XMLQName‣29e5c4f7-a0f0-472f-9a5c-7edbd68e732f"/>
+       </expected_types>
+       <title>Set name</title>
+       <attr>name</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxAttr>
+         <name>name</name>
+         <format>
+          <syntax:SyntaxSubAttr/>
+         </format>
+         <style>
+          <core:SymbolRef name="style-symbol-alt‣221a0035-0af7-49da-9974-57ce152263c9"/>
+         </style>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>=</text>
+         <style>
+          <core:SymbolRef name="style-delimiter‣f564be38-dc54-47a5-9b70-1e055a1f2a64"/>
+         </style>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>text</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>"</text>
+           <fmt>
+            <core:SymbolRef name="fmt-xml-attr-left-&quot;‣c7cf0f2a-cf82-4277-9f7d-90b0afafffa6"/>
+           </fmt>
+          </syntax:SyntaxToken>
+         </prefix>
+         <sufix>
+          <syntax:SyntaxToken>
+           <text>"</text>
+           <fmt>
+            <core:SymbolRef name="fmt-xml-attr-right-&quot;‣6dcda970-e18b-4308-8f89-2575bf84c6ca"/>
+           </fmt>
+          </syntax:SyntaxToken>
+         </sufix>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;text&gt;</text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxSubAttr/>
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+       <par>
+        <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+       </par>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid="be6fc8e8-e327-40dd-854b-a43bb9fbd949" name="stx-elem">
+     <rnode>
+      <core:SymbolRef name="XMLElement‣d6f27bbf-e26b-4524-baf3-a8047807e3e5"/>
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="XMLQName‣29e5c4f7-a0f0-472f-9a5c-7edbd68e732f"/>
+       </expected_types>
+       <title>Set name</title>
+       <attr>name</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="XMLAttribute‣a33fba3c-4f16-4e64-b078-fead3fa6a015"/>
+       </expected_types>
+       <title>Add attribute</title>
+       <attr>attributes</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti="kiev.vtree.SymbolRef«kiev.vlang.DNode;»" name="XMLElement‣d6f27bbf-e26b-4524-baf3-a8047807e3e5"/>
+       </expected_types>
+       <title>Add element</title>
+       <attr>elements</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxOptional>
+       <calculator>
+        <syntax:CalcOptionNotEmpty>
+         <name>elements</name>
+        </syntax:CalcOptionNotEmpty>
+       </calculator>
+       <opt_true>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>&lt;</text>
+             <fmt>
+              <core:SymbolRef name="fmt-xml-&lt;/&gt;‣610221e7-d751-4e34-a417-fa36824bfb71"/>
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxAttr>
+             <name>name</name>
+             <format>
+              <syntax:SyntaxSubAttr/>
+             </format>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxAttr>
+             <name>attributes</name>
+             <empty>
+              <syntax:SyntaxPlaceHolder>
+               <text>&lt;attributes&gt;</text>
+              </syntax:SyntaxPlaceHolder>
+             </empty>
+             <format>
+              <syntax:SyntaxList>
+               <element>
+                <syntax:SyntaxNode/>
+               </element>
+              </syntax:SyntaxList>
+             </format>
+             <par>
+              <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+             </par>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxToken>
+             <text>&gt;</text>
+             <fmt>
+              <core:SymbolRef name="fmt-xml-&lt;/&gt;‣610221e7-d751-4e34-a417-fa36824bfb71"/>
+             </fmt>
+            </syntax:SyntaxToken>
+           </elements>
+           <fmt>
+            <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+           </fmt>
+           <par>
+            <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+           </par>
+          </syntax:SyntaxSet>
+          <syntax:SyntaxAttr>
+           <name>elements</name>
+           <empty>
+            <syntax:SyntaxPlaceHolder>
+             <text>&lt;elements&gt;</text>
+            </syntax:SyntaxPlaceHolder>
+           </empty>
+           <format>
+            <syntax:SyntaxList>
+             <element>
+              <syntax:SyntaxNode>
+               <fmt>
+                <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+               </fmt>
+              </syntax:SyntaxNode>
+             </element>
+            </syntax:SyntaxList>
+           </format>
+           <par>
+            <core:SymbolRef name="par-horiz-indent‣246c49ee-2486-4f48-b7d8-c32610c0333c"/>
+           </par>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxSet>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>&lt;/</text>
+             <fmt>
+              <core:SymbolRef name="fmt-xml-&lt;/&gt;‣610221e7-d751-4e34-a417-fa36824bfb71"/>
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxAttr>
+             <name>name</name>
+             <format>
+              <syntax:SyntaxSubAttr/>
+             </format>
+            </syntax:SyntaxAttr>
+            <syntax:SyntaxToken>
+             <text>&gt;</text>
+             <fmt>
+              <core:SymbolRef name="fmt-xml-&lt;/&gt;‣610221e7-d751-4e34-a417-fa36824bfb71"/>
+             </fmt>
+            </syntax:SyntaxToken>
+           </elements>
+           <fmt>
+            <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+           </fmt>
+           <par>
+            <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+           </par>
+          </syntax:SyntaxSet>
+         </elements>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxSet>
+       </opt_true>
+       <opt_false>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxToken>
+           <text>&lt;</text>
+           <fmt>
+            <core:SymbolRef name="fmt-xml-&lt;/&gt;‣610221e7-d751-4e34-a417-fa36824bfb71"/>
+           </fmt>
+          </syntax:SyntaxToken>
+          <syntax:SyntaxAttr>
+           <name>name</name>
+           <format>
+            <syntax:SyntaxSubAttr/>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>attributes</name>
+           <empty>
+            <syntax:SyntaxPlaceHolder>
+             <text>&lt;attributes&gt;</text>
+            </syntax:SyntaxPlaceHolder>
+           </empty>
+           <format>
+            <syntax:SyntaxList>
+             <element>
+              <syntax:SyntaxNode/>
+             </element>
+            </syntax:SyntaxList>
+           </format>
+           <par>
+            <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+           </par>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>/&gt;</text>
+           <fmt>
+            <core:SymbolRef name="fmt-xml-&lt;/&gt;‣610221e7-d751-4e34-a417-fa36824bfb71"/>
+           </fmt>
+          </syntax:SyntaxToken>
+         </elements>
+         <fmt>
+          <core:SymbolRef name="fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76"/>
+         </fmt>
+         <par>
+          <core:SymbolRef name="par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72"/>
+         </par>
+        </syntax:SyntaxSet>
+       </opt_false>
+      </syntax:SyntaxOptional>
+     </elem>
+    </syntax:SyntaxElemDecl>
+   </members>
+  </syntax:TopLevelTextSyntax>
+ </members>
+</core:FileUnit>

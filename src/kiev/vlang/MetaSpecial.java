@@ -24,27 +24,24 @@ public final class MetaUUID extends UserMeta {
 
 	public MetaUUID() { super("kiev·stdlib·meta·uuid"); }
 
-	public void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
-			setFlag(true);
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.tree_change && info.slot.isSemantic()) {
+			if      (info.ct == ChangeType.THIS_ATTACHED)
+				setFlag(info.parent.asANode(), true);
+			else if (info.ct == ChangeType.THIS_DETACHED)
+				setFlag(info.parent.asANode(), false);
 		}
-		super.callbackAttached(pi);
+		super.callbackChanged(info);
 	}
-	public void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic()) {
-			setFlag(false);
-		}
-		super.callbackDetached(parent, slot);
-	}
-	private void setFlag(boolean on) {
-		ANode p = parent();
-		if (p instanceof DNode) {
-			DNode dn = (DNode)p;
+
+	private void setFlag(ANode parent, boolean on) {
+		if (parent instanceof DNode) {
+			DNode dn = (DNode)parent;
 			if (on) {
-				if (dn.uuid != null)
-					this.value = dn.uuid;
+				if (dn.symbol.suuid() != null)
+					this.value = dn.symbol.suuid().toString();
 				else if (this.value != null)
-					dn.uuid = this.value;
+					dn.symbol.setUUID(Env.getEnv(),this.value);
 			}
 		}
 	}
@@ -55,9 +52,9 @@ public final class MetaUUID extends UserMeta {
 		ANode p = parent();
 		if (p instanceof DNode) {
 			DNode dn = (DNode)p;
-			if (dn.uuid != null)
+			if (dn.symbol.suuid() != null)
 				return;
-			dn.uuid = val;
+			dn.symbol.setUUID(Env.getEnv(),val);
 		}
 		this.value = val;
 		super.setS("value",val);
@@ -122,6 +119,7 @@ public final class MetaPacker extends UserMeta {
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaThrows extends UserMeta {
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData @abstract public ASTNode∅		 exceptions;
 
 	public MetaThrows() { super("kiev·stdlib·meta·throws"); }
@@ -152,38 +150,17 @@ public final class MetaThrows extends UserMeta {
 }
 
 @ThisIsANode(lang=CoreLang)
-public abstract class MetaFlag extends MNode {
-
-	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)Env.getRoot().resolveGlobalDNode(this.qname()); }
-
-	public final void callbackAttached(ParentInfo pi) {
-		if (pi.isSemantic()) {
-			setFlag(getDNode(), true);
-		}
-		super.callbackAttached(pi);
-	}
-	public final void callbackDetached(ANode parent, AttrSlot slot) {
-		if (slot.isSemantic()) {
-			setFlag(getDNode(), false);
-		}
-		super.callbackDetached(parent, slot);
-	}
-	private DNode getDNode() {
-		ANode p = parent();
-		if (p instanceof DNode) return (DNode)p;
-		return null;
-	}
-	abstract void setFlag(DNode dn, boolean on);
-	
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		return (o.getClass() == this.getClass());
-	}
+public final class MetaGetter extends UserMeta {
+	public MetaGetter() { super("kiev·stdlib·meta·getter"); }
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class MetaAccess extends MetaFlag {
+public final class MetaSetter extends UserMeta {
+	public MetaSetter() { super("kiev·stdlib·meta·setter"); }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaAccess extends ASTNode implements MNode {
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr public String			simple;
 	@AttrXMLDumpInfo(attr=true)
@@ -213,16 +190,45 @@ public final class MetaAccess extends MetaFlag {
 
 	public String qname() { return "kiev·stdlib·meta·access"; }
 
+	public JavaAnnotation getAnnotationDecl(Env env) { return (JavaAnnotation)env.resolveGlobalDNode(this.qname()); }
+
+	public void resolve(Env env, Type reqType) {}
+	public void verify(INode parent, AttrSlot slot) {}
+	public boolean isRuntimeVisible() { return false; }
+	public boolean isRuntimeInvisible() { return false; }
+
 	public boolean equals(Object o) {
 		if (o instanceof MetaAccess)
 			return this.simple == o.simple && this.flags == o.flags;
 		return false;
 	}
 
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (attr.name == "flags")
-			return this.flags != -1;
-		return super.includeInDump(dump, attr, val);
+	//public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+	//	if (attr.name == "flags")
+	//		return this.flags != -1;
+	//	return super.includeInDump(dump, attr, val);
+	//}
+
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.tree_change && info.slot.isSemantic()) {
+			if      (info.ct == ChangeType.THIS_ATTACHED && info.parent instanceof DNode)
+				setFlag((DNode)info.parent, true);
+			else if (info.ct == ChangeType.THIS_DETACHED && info.parent instanceof DNode)
+				setFlag((DNode)info.parent, false);
+		}
+		super.callbackChanged(info);
+	}
+
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		if (this.flags == -1) {
+			ANode parent = parent();
+			if (parent instanceof DNode) {
+				this.detach(parent,slot);
+				this.setFlag((DNode)parent, true);
+				return false;
+			}
+		}
+		return true;
 	}
 
 	void setFlag(DNode dn, boolean on) {
@@ -254,8 +260,15 @@ public final class MetaAccess extends MetaFlag {
 	
 	public static final int getFlags(DNode dn) {
 		MetaAccess acc = dn.getMetaAccess();
-		if (acc == null)
+		if (acc == null) {
+			if (dn.isPublic())
+				return 0xFF;
+			if (dn.isProtected())
+				return 0x3F;
+			if (dn.isPrivate())
+				return 0x03;
 			return 0x0F;
+		}
 		if (acc.flags != -1)
 			return acc.flags;
 		else if (acc.simple == "public")
@@ -387,9 +400,9 @@ public final class MetaAccess extends MetaFlag {
 		if (outer1 == outer2)
 			return false;
 		while !(outer1.parent() instanceof KievPackage)
-			outer1 = outer1.ctx_tdecl;
+			outer1 = Env.ctxTDecl(outer1);
 		while !(outer2.parent() instanceof KievPackage)
-			outer2 = outer2.ctx_tdecl;
+			outer2 = Env.ctxTDecl(outer2);
 		if (outer1 == outer2)
 			return true;
 		return false;
@@ -397,7 +410,7 @@ public final class MetaAccess extends MetaFlag {
 
 	private static ComplexTypeDecl getStructOf(ASTNode n) {
 		if (n instanceof ComplexTypeDecl) return (ComplexTypeDecl)n;
-		return n.ctx_tdecl;
+		return Env.ctxTDecl(n);
 	}
 
 	private static KievPackage getPackageOf(ASTNode n) {
@@ -428,9 +441,9 @@ public final class MetaAccess extends MetaFlag {
 			ComplexTypeDecl outer1 = getStructOf(from);
 			ComplexTypeDecl outer2 = getStructOf(n);
 			while !(outer1.parent() instanceof KievPackage)
-				outer1 = outer1.ctx_tdecl;
+				outer1 = Env.ctxTDecl(outer1);
 			while !(outer2.parent() instanceof KievPackage)
-				outer2 = outer2.ctx_tdecl;
+				outer2 = Env.ctxTDecl(outer2);
 			if (outer1 == outer2) {
 				if( (flags & acc) == acc ) {
 					checkFinalWrite(from,n,acc);
@@ -465,10 +478,10 @@ public final class MetaAccess extends MetaFlag {
 			return; // not final
 		if (n instanceof Field) {
 			// final var, may be initialized only in constructor
-			Method m = from.ctx_method;
-			if (m instanceof Constructor && m.ctx_tdecl == n.ctx_tdecl)
+			Method m = Env.ctxMethod(from);
+			if (m instanceof Constructor && Env.ctxTDecl(m) == Env.ctxTDecl(n))
 				return;
-			if (m == null && from.ctx_tdecl == n.ctx_tdecl)
+			if (m == null && Env.ctxTDecl(from) == Env.ctxTDecl(n))
 				return;
 			throwFinalWriteError(from,n);
 		}
@@ -489,7 +502,7 @@ public final class MetaAccess extends MetaFlag {
 		else if(n instanceof Method) sb.append("method ");
 		else if(n instanceof Struct) sb.append("class ");
 		if (n instanceof Struct) sb.append(n);
-		else sb.append(n.ctx_tdecl).append('.').append(n);
+		else sb.append(Env.ctxTDecl(n)).append('.').append(n);
 		sb.append("\n\tfrom class ").append(getStructOf(from));
 		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}
@@ -498,111 +511,185 @@ public final class MetaAccess extends MetaFlag {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Write for final value is denied to ");
 		if (n instanceof Field)
-			sb.append("field ").append(n.ctx_tdecl).append('.').append(n);
+			sb.append("field ").append(Env.ctxTDecl(n)).append('.').append(n);
 		else if (n instanceof Var)
 			sb.append("var ").append(n);
 		else
 			sb.append(n);
-		Method m = from.ctx_method;
+		Method m = Env.ctxMethod(from);
 		if (m != null)
-			sb.append("\n\tin method ").append(m.ctx_tdecl).append('.').append(m);
+			sb.append("\n\tin method ").append(Env.ctxTDecl(m)).append('.').append(m);
 		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class MetaUnerasable extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·unerasable"; }
-	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_type_unerasable = on; }
+public abstract class MetaFlag extends ANode implements MNode {
+
+	public MetaFlag() {
+		super(new AHandle(), Context.DEFAULT);
+	}
+
+	public Language getCompilerLang() { return CoreLang; }
+	public String getCompilerNodeName() { return getClass().getSimpleName().intern(); }
+
+	public final JavaAnnotation getAnnotationDecl(Env env) { return (JavaAnnotation)env.resolveGlobalDNode(this.qname()); }
+
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.tree_change && info.slot.isSemantic()) {
+			if      (info.ct == ChangeType.THIS_ATTACHED && info.parent instanceof DNode)
+				setFlag((DNode)info.parent, true);
+			else if (info.ct == ChangeType.THIS_DETACHED && info.parent instanceof DNode)
+				setFlag((DNode)info.parent, false);
+		}
+		super.callbackChanged(info);
+	}
+
+	public abstract int getBitPos();
+	abstract void setFlag(DNode dn, boolean on);
+	
+	public boolean equals(Object o) {
+		if (o == null)
+			return false;
+		return (o.getClass() == this.getClass());
+	}
+
+	public void resolve(Env env, Type reqType) {}
+	public void verify(INode parent, AttrSlot slot) {}
+	public boolean isRuntimeVisible() { return false; }
+	public boolean isRuntimeInvisible() { return false; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSingleton extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·singleton"; }
+	public int getBitPos() { -1 }
 	void setFlag(DNode dn, boolean on) {}
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaMixin extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·mixin"; }
+	public int getBitPos() { -1 }
 	void setFlag(DNode dn, boolean on) {}
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class MetaForward extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·forward"; }
-	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_forward = on; }
+public final class MetaPublic extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·public"; }
+	public int getBitPos() { 0 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_access = DNode.MASK_ACC_PUBLIC; }
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class MetaVirtual extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·virtual"; }
-	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_virtual = on; }
+public final class MetaPrivate extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·private"; }
+	public int getBitPos() { 1 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_access = DNode.MASK_ACC_PRIVATE; }
 }
 
 @ThisIsANode(lang=CoreLang)
-public final class MetaMacro extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·macro"; }
-	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_macro = on; }
+public final class MetaProtected extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·protected"; }
+	public int getBitPos() { 2 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_access = DNode.MASK_ACC_PROTECTED; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaStatic extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·static"; }
+	public int getBitPos() { 3 }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_static = on; }
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class MetaAbstract extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·abstract"; }
-	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_abstract = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaFinal extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·final"; }
+	public int getBitPos() { 4 }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_final = on; }
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class MetaNative extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·native"; }
-	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_native = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSynchronized extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·synchronized"; }
+	public int getBitPos() { 5 }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.mflags_is_mth_synchronized = on; }
-}
-
-@ThisIsANode(lang=CoreLang)
-public final class MetaTransient extends MetaFlag {
-	public String qname() { return "kiev·stdlib·meta·transient"; }
-	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.mflags_is_fld_transient = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVolatile extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·volatile"; }
+	public int getBitPos() { 6 }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.mflags_is_fld_volatile = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaBridge extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·bridge"; }
+	public int getBitPos() { 6 }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.mflags_is_mth_bridge = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaTransient extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·transient"; }
+	public int getBitPos() { 7 }
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.mflags_is_fld_transient = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaVarArgs extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·varargs"; }
+	public int getBitPos() { 7 }
 	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.mflags_is_mth_varargs = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaNative extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·native"; }
+	public int getBitPos() { 8 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_native = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaAbstract extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·abstract"; }
+	public int getBitPos() { 10 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_abstract = on; }
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class MetaSynthetic extends MetaFlag {
 	public String qname() { return "kiev·stdlib·meta·synthetic"; }
+	public int getBitPos() { 12 }
 	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_synthetic = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaForward extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·forward"; }
+	public int getBitPos() { 16 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_forward = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaVirtual extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·virtual"; }
+	public int getBitPos() { 17 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_virtual = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaUnerasable extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·unerasable"; }
+	public int getBitPos() { 18 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_type_unerasable = on; }
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class MetaMacro extends MetaFlag {
+	public String qname() { return "kiev·stdlib·meta·macro"; }
+	public int getBitPos() { 19 }
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.mflags_is_macro = on; }
 }
 

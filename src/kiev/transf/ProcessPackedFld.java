@@ -16,11 +16,25 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@singleton
-public final class PackedFldFE_Verify extends VerifyProcessor {
-	private PackedFldFE_Verify() { super(KievExt.PackedFields); }
 
-	public void verify(ASTNode node) {
+public final class PackFldPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("pack-fld")) {
+			pd = new PluginDescr("pack-fld").depends("kiev").depends("virt-fld");
+			pd.proc(new ProcessorDescr("verify", "fv", 0, PackedFldFE_Verify.class));
+			pd.proc(new ProcessorDescr("pre-generate", "me", 0, PackedFldME_PreGenerate.class).after("kiev:me:pre-generate").before("virt-fld:me:pre-generate"));
+		}
+		return pd;
+	}
+}
+
+public final class PackedFldFE_Verify extends VerifyProcessor {
+	public PackedFldFE_Verify(Env env, int id) { super(env,id,KievExt.PackedFields); }
+
+	public String getDescr() { "Packed fields verification" }
+
+	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof Field && !node.isInterfaceOnly())
 			verifyField((Field)node);
 	}
@@ -32,15 +46,15 @@ public final class PackedFldFE_Verify extends VerifyProcessor {
 			Kiev.reportWarning(f,"Packed field "+f+" must be abstract");
 			f.setAbstract(true);
 		}
-		TypeDecl s = f.ctx_tdecl;
+		TypeDecl s = Env.ctxTDecl(f);
 		String mp_in = mp.getS("in");
 		if( mp_in != null && mp_in.length() > 0 ) {
-			Field p = s.resolveField(mp_in.intern(),false);
+			Field p = s.resolveField(env,mp_in.intern(),false);
 			if( p == null ) {
 				Kiev.reportError(f,"Packer field "+mp_in+" not found");
 				return;
 			}
-			if( p.getType() ≢ Type.tpInt ) {
+			if( p.getType(env) ≢ this.env.getTypeEnv().tpInt ) {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
@@ -50,12 +64,11 @@ public final class PackedFldFE_Verify extends VerifyProcessor {
 	}
 }
 
-@singleton
-public class PackedFldME_PreGenerate extends BackendProcessor {
-	private PackedFldME_PreGenerate() { super(KievBackend.Java15); }
+public final class PackedFldME_PreGenerate extends BackendProcessor {
+	public PackedFldME_PreGenerate(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Packed fields pre-generation" }
 
-	private static final int[] masks =
+	private final int[] masks =
 		{	0,
 			0x1       ,0x3       ,0x7       ,0xF       ,
 			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
@@ -68,27 +81,29 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 		};
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr,"PackedFldME_PreGenerate");
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"PackedFldME_PreGenerate");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+		}
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
-			this.doProcess(dn);
-	}
-	
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach (ASTNode dn; fu.members)
+	public void doProcess(SyntaxScope:ASTNode ss) {
+		foreach (ASTNode dn; ss.members)
 			this.doProcess(dn);
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
+		StdTypes tenv = this.env.getTypeEnv();
 		// Setup packed/packer fields
 		MetaPacked mp;
 		foreach(Field f; s.members; (mp=f.getMetaPacked()) != null) {
@@ -97,13 +112,13 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			if (!f.isInterfaceOnly() && mp.fld.dnode == null) {
 				String mp_in = mp.getS("in");
 				if( mp_in != null && mp_in.length() > 0 ) {
-					Field p = s.resolveField(mp_in,false);
+					Field p = s.resolveField(env,mp_in,false);
 					if( p == null ) {
 						Kiev.reportError(f,"Packer field "+mp_in+" not found");
 						~mp;
 						continue;
 					}
-					if( p.getType() ≢ Type.tpInt ) {
+					if( p.getType(env) ≢ tenv.tpInt ) {
 						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 						~mp;
 						continue;
@@ -119,7 +134,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					mpr.size += mpr.size;
 				} else {
 					// Create
-					Field p = new Field("$pack$"+countPackerFields(s),Type.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
+					Field p = new Field("$pack$"+countPackerFields(s),tenv.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
 					p.setMeta(mpr);
@@ -144,15 +159,15 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					set_var.body = body;
 	
 					Field mpfld = (Field)mp.fld.dnode;
-					Var fval = new LVar(0,"tmp$fldval",Type.tpInt,Var.VAR_LOCAL,0);
+					Var fval = new LVar(0,"tmp$fldval",tenv.tpInt,Var.VAR_LOCAL,0);
 					if (mpfld.isStatic())
 						fval.init = new SFldExpr(f.pos,mpfld);
 					else
 						fval.init = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
 					body.addSymbol(fval);
-					Var tmp = new LVar(0,"tmp$val",Type.tpInt,Var.VAR_LOCAL,0);
-					if (f.getType() ≡ Type.tpBoolean)
-						tmp.init = new ReinterpExpr(f.pos, Type.tpInt, new LVarExpr(f.pos,value));
+					Var tmp = new LVar(0,"tmp$val",tenv.tpInt,Var.VAR_LOCAL,0);
+					if (f.getType(env) ≡ tenv.tpBoolean)
+						tmp.init = new ReinterpExpr(f.pos, tenv.tpInt, new LVarExpr(f.pos,value));
 					else
 						tmp.init = new LVarExpr(f.pos,value);
 					body.addSymbol(tmp);
@@ -167,13 +182,14 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					ENode expr_r = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,fval), clear);
 					ENode expr = new BinaryExpr(f.pos, Operator.BitOr, expr_r, expr_l);
 					if (mpfld.isStatic())
-						expr = new AssignExpr(f.pos, Operator.Assign, new SFldExpr(f.pos,mpfld), expr);
+						expr = new AssignExpr(f.pos, new SFldExpr(f.pos,mpfld), expr);
 					else
-						expr = new AssignExpr(f.pos, Operator.Assign, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
+						expr = new AssignExpr(f.pos, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
 					body.stats.add(new ExprStat(f.pos, expr));
 				}
 
 				f.setter = new SymbolRef<Method>(set_var);
+				Kiev.runProcessorsOn(set_var);
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
@@ -199,19 +215,20 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						expr = new BinaryExpr(f.pos, Operator.UnsignedRightShift, expr, sexpr);
 					}
 					expr = new BinaryExpr(f.pos, Operator.BitAnd, expr, mexpr);
-					if( mp.size == 8 && f.getType() ≡ Type.tpByte )
-						expr = new CastExpr(f.pos, Type.tpByte, expr);
-					else if( mp.size == 16 && f.getType() ≡ Type.tpShort )
-						expr = new CastExpr(f.pos, Type.tpShort, expr);
-					else if( mp.size == 16 && f.getType() ≡ Type.tpChar )
-						expr = new ReinterpExpr(f.pos, Type.tpChar, expr);
-					else if( mp.size == 1 && f.getType() ≡ Type.tpBoolean )
-						expr = new ReinterpExpr(f.pos, Type.tpBoolean, expr);
+					if( mp.size == 8 && f.getType(env) ≡ tenv.tpByte )
+						expr = new CastExpr(f.pos, tenv.tpByte, expr);
+					else if( mp.size == 16 && f.getType(env) ≡ tenv.tpShort )
+						expr = new CastExpr(f.pos, tenv.tpShort, expr);
+					else if( mp.size == 16 && f.getType(env) ≡ tenv.tpChar )
+						expr = new ReinterpExpr(f.pos, tenv.tpChar, expr);
+					else if( mp.size == 1 && f.getType(env) ≡ tenv.tpBoolean )
+						expr = new ReinterpExpr(f.pos, tenv.tpBoolean, expr);
 					
 					body.stats.add(new ReturnStat(f.pos,expr));
 				}
 				
 				f.getter = new SymbolRef<Method>(get_var);
+				Kiev.runProcessorsOn(get_var);
 			}
 		}
 		foreach(Struct n; s.members)
@@ -229,7 +246,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 		Field ff;
 	{
 		s.super_types.length > 0,
-		locatePackerField(f,size,s.super_types[0].getStruct())
+		locatePackerField(f,size,s.super_types[0].getStruct(env))
 	;	n @= s.members,
 		n instanceof Field && ((Field)n).getMetaPacker() != null,
 		ff = (Field)n : ff = null,

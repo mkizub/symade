@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * Copyright (c) 2005-2008 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Common Public License Version 1.0
  * which accompanies this distribution, and is available at
@@ -7,190 +7,275 @@
  *
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *     Roman Chepelyev (gromanc@gmail.com) - implementation and refactoring
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.fmt.Draw_ATextSyntax;
-import kiev.fmt.Draw_SyntaxAttr;
-import kiev.fmt.Draw_SyntaxFunction;
-import kiev.fmt.Draw_SyntaxList;
-import kiev.fmt.Draw_SyntaxToken;
 import kiev.fmt.Drawable;
-import kiev.fmt.GfxDrawTermLayoutInfo;
-import kiev.gui.ChooseItemEditor;
+import kiev.fmt.common.DrawLayoutInfo;
+import kiev.fmt.common.Draw_FuncEval;
+import kiev.fmt.common.Draw_FuncNewNode;
+import kiev.fmt.common.Draw_FuncSetEnum;
+import kiev.fmt.common.Draw_SyntaxFunc;
 import kiev.gui.Editor;
 import kiev.gui.NewElemHere;
 import kiev.gui.UIActionFactory;
 import kiev.gui.UIActionViewContext;
 import kiev.gui.UIManager;
-import kiev.vlang.ENode;
-import kiev.vtree.ANode;
+import kiev.gui.EditActions.ChooseItemEditor;
 
-public final class FunctionExecutor implements IPopupMenuListener, Runnable {
+/**
+ * Function Executor UI Action.
+ */
+public final class FunctionExecutor implements IPopupMenuListener, UIAction {
 
-	IPopupMenuPeer						menu;
-	final java.util.Vector<IMenuItem>	actions;
-	final Editor						editor;
+	/**
+	 * The menu.
+	 */
+	private IPopupMenuPeer menu;
+	
+	/**
+	 * The actions.
+	 */
+	private final java.util.Vector<IMenuItem>	actions;
+	
+	/**
+	 * The editor.
+	 */
+	private final Editor editor;
 
-	FunctionExecutor(Editor editor) {
+	/**
+	 * The constructor.
+	 * @param editor editor
+	 */
+	public FunctionExecutor(Editor editor) {
 		this.editor = editor;
 		actions = new java.util.Vector<IMenuItem>();
 	}
 	
-	public void run() {
-		menu = UIManager.newPopupMenu(editor, this);
-		for (IMenuItem act: actions)
-			menu.addItem(act);
-		GfxDrawTermLayoutInfo cur_dtli = editor.getCur_elem().dr.getGfxFmtInfo();
+	/* (non-Javadoc)
+	 * @see kiev.gui.UIAction#run()
+	 */
+	public void exec() {
+		menu = editor.getViewPeer().getPopupMenu(this, null);
+		for (IMenuItem act: actions) menu.addItem(act);
+		DrawLayoutInfo cur_dtli = editor.getDrawTerm().getGfxFmtInfo();
 		int x = cur_dtli.getX();
-		int h = cur_dtli.getHeight();
-		int y = cur_dtli.getY() + h - editor.getView_canvas().getTranslated_y();
+		int h = cur_dtli.height;
+		int y = cur_dtli.getY() + h - editor.getViewPeer().getVertOffset();
 		menu.showAt(x, y);
 	}
 
+	/**
+	 * Function Executor UI Action Factory.
+	 */
 	public final static class Factory implements UIActionFactory {
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getDescr()
+		 */
 		public String getDescr() { return "Popup list of functions for a current element"; }
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
+		 */
 		public boolean isForPopupMenu() { return false; }
-		public Runnable getAction(UIActionViewContext context) {
-			if (context.editor == null)
-				return null;
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
+		 */
+		public UIAction getAction(UIActionViewContext context) {
 			Editor editor = context.editor;
-			Drawable dr = context.dr;
-			if (dr == null)
-				return null;
-			if (dr.drnode != context.node)
-				return null;
-			Draw_SyntaxFunction[] sfs_funcs = dr.syntax.funcs;
+			Drawable dr = context.dt;
+			if (editor == null ||  dr == null || dr.drnode != context.node) return null;
+			Draw_SyntaxFunc[] sfs_funcs = dr.syntax.elem_decl.funcs;
 			FunctionExecutor fe = new FunctionExecutor(editor);
 			if (sfs_funcs != null && sfs_funcs.length > 0) {
-				for (Draw_SyntaxFunction sf: sfs_funcs) 
-					if(sf.act != null) {
+				for (Draw_SyntaxFunc sfunc: sfs_funcs) {
 					try {
-						dr = editor.getFunctionTarget(sf);
-						if (dr == null)
+						if (sfunc instanceof Draw_FuncNewNode) {
+							ActionPoint ap = context.ap;
+							if (ap.curr_node != null && ap.curr_slot != null) {
+								if (NewElemEditor.checkNewFuncAvailable(ap.curr_syntax))
+									fe.actions.add(fe.new NewElemAction(sfunc.title));
+							}
+							if (ap.space_node != null) {
+								if (NewElemEditor.checkNewFuncAvailable(ap.space_syntax))
+									fe.actions.add(fe.new NewElemAction(sfunc.title));
+							}
 							continue;
-						if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
-							if (dr.syntax instanceof Draw_SyntaxList) {
-								Draw_SyntaxList slst = (Draw_SyntaxList)dr.syntax;
-								if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
-									fe.actions.add(fe.new NewElemAction(sf.title, dr.drnode, slst, dr.text_syntax));
+						}
+						else if (sfunc instanceof Draw_FuncSetEnum) {
+							if (context.ap.curr_node != null) {
+								Draw_FuncSetEnum fs = (Draw_FuncSetEnum)sfunc;
+								IMenu m = fs.makeMenu(context.ap.curr_node);
+								fe.actions.add(m);
 							}
+							continue;
 						}
-						else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
-							if (dr.syntax instanceof Draw_SyntaxAttr) {
-								Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-								if (dr.drnode.getVal(satr.name) == null)
-									fe.actions.add(fe.new NewElemAction(sf.title, dr.drnode, satr, dr.text_syntax));
-							}
-						}
-						else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
-							if (dr.syntax instanceof Draw_SyntaxToken) {
-								if (dr.drnode instanceof ENode)
-									fe.actions.add(fe.new EditElemAction(sf.title, dr));
-							}
-						}
-						else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
-							if (dr.syntax instanceof Draw_SyntaxAttr) {
-								//Draw_SyntaxAttr satr = (Draw_SyntaxAttr)dr.syntax;
-								fe.actions.add(fe.new EditElemAction(sf.title, dr));
-							}
-						}
-						else {
-							try {
-								Class<?> c = Class.forName(sf.act);
-								UIActionFactory af = (UIActionFactory)c.newInstance();
-								if (!af.isForPopupMenu())
-									continue;
-								Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
-								if (r != null)
-									fe.actions.add(fe.new RunFuncAction(sf.title, r));
-							} catch (Throwable t) {}
-						}
+						if (!(sfunc instanceof Draw_FuncEval))
+							continue;
+						dr = editor.getFunctionTarget(sfunc);
+						if (dr == null) continue;
+						Draw_FuncEval sf = (Draw_FuncEval)sfunc;
+						if(sf.act == null)
+							continue;
+						try {
+							Class<?> c = Class.forName(sf.act);
+							UIActionFactory af = (UIActionFactory)c.newInstance();
+							if (! af.isForPopupMenu()) continue;
+							UIAction action = af.getAction(new UIActionViewContext(editor.window, null, editor));
+							if (action != null) fe.actions.add(fe.new RunFuncAction(sf.title, action));
+						} catch (Throwable t) {}
 					} catch (Throwable t) {}
 				}
 			}
+			
 			for (UIActionFactory af: UIManager.getUIActions(context.ui).getAllActions()) {
 				if(af.isForPopupMenu()) {
 					try {
-						Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
-						if (r != null)
-							fe.actions.add(fe.new RunFuncAction(af.getDescr(), r));
+						UIAction action = af.getAction(new UIActionViewContext(editor.window, null, editor));
+						if (action != null) fe.actions.add(fe.new RunFuncAction(af.getDescr(), action));
 					} catch (Throwable t) {}
 				}
 			}
-			if (fe.actions.size() > 0)
-				return fe;
+			if (fe.actions.size() > 0) return fe;
 			return null;
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see kiev.gui.IPopupMenuListener#popupMenuCanceled()
+	 */
 	public void popupMenuCanceled() {
 		menu.remove();
-		editor.stopItemEditor(true);
 	}
 
+	/* (non-Javadoc)
+	 * @see kiev.gui.IPopupMenuListener#popupMenuExecuted(kiev.gui.IMenuItem)
+	 */
 	public void popupMenuExecuted(IMenuItem item) {
-		Runnable act = (Runnable)item;
+		final UIAction action = (UIAction)item;
 		menu.remove();
-		try {
-			act.run();
-			act = null;
-		} catch (Throwable t) {
-			t.printStackTrace();
-		} finally {
-			editor.stopItemEditor(act != null);
-		}
+		editor.getWindow().getEditorThreadGroup().runTaskLater(new Runnable() {
+			public void run() {
+				action.exec();
+				editor.formatAndPaint(true);
+			}
+		});
 	}
 
-	class NewElemAction implements IMenuItem, Runnable {
-		private String				text;
-		private ANode				node;
-		private Draw_SyntaxAttr		stx;
-		private Draw_ATextSyntax	tstx;
-		NewElemAction(String text, ANode node, Draw_SyntaxAttr stx, Draw_ATextSyntax tstx) {
+	/**
+	 * New Element Action.
+	 */
+	public class NewElemAction implements IMenuItem {
+		
+		/**
+		 * The text.
+		 */
+		private final String text;
+		
+		/**
+		 * The constructor.
+		 * @param text the text
+		 * @param node the node
+		 * @param stx the draw syntax attribute
+		 * @param tstx the draw text syntax
+		 * @param attr_name the attribute name
+		 */
+		public NewElemAction(String text) {
 			this.text = text;
-			this.node = node;
-			this.stx = stx;
-			this.tstx = tstx;
 		}
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.IMenuItem#getText()
+		 */
 		public String getText() {
 			return text;
 		}
-		public void run() {
-			NewElemHere neh = new NewElemHere(editor);
-			neh.makeMenu(text, node, stx, tstx);
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIAction#run()
+		 */
+		public void exec() {
+			ActionPoint ap = editor.getActionPoint();
+			NewElemHere neh = new NewElemHere(editor, editor.getActionPoint(), ap.prev_index);
+			neh.exec();
 		}
 	}
 
-	class EditElemAction implements IMenuItem, Runnable {
-		private String				text;
-		private Drawable			dr;
-		EditElemAction(String text, Drawable dr) {
+	/**
+	 * Edit Element UI Action.
+	 */
+	public class EditElemAction implements IMenuItem {
+		
+		/**
+		 * The text.
+		 */
+		private final String text;
+		
+		/**
+		 * The constructor.
+		 * @param text the text
+		 * @param dr the drawable
+		 */
+		public EditElemAction(String text) {
 			this.text = text;
-			this.dr = dr;
 		}
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.IMenuItem#getText()
+		 */
 		public String getText() {
 			return text;
 		}
-		public void run() {
-			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, null, editor, dr));
-			if (r != null)
-				r.run();
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIAction#run()
+		 */
+		public void exec() {
+			UIAction action = new ChooseItemEditor().getAction(new UIActionViewContext(editor.window, null, editor));
+			if (action != null) action.exec();
 		}
 	}
 
-	class RunFuncAction implements IMenuItem, Runnable {
-		private String				text;
-		private Runnable			r;
-		RunFuncAction(String text, Runnable r) {
+	/**
+	 * Run Function Action.
+	 */
+	public class RunFuncAction implements IMenuItem {
+		
+		/**
+		 * The text.
+		 */
+		private final String text;
+		
+		/**
+		 * The action.
+		 */
+		private final UIAction action;
+		
+		/**
+		 * The constructor.
+		 * @param text the text
+		 * @param action the action
+		 */
+		public RunFuncAction(String text, UIAction action) {
 			this.text = text;
-			this.r = r;
+			this.action = action;
 		}
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.IMenuItem#getText()
+		 */
 		public String getText() {
 			return text;
 		}
-		public void run() {
-			r.run();
+		
+		/* (non-Javadoc)
+		 * @see kiev.gui.UIAction#run()
+		 */
+		public void exec() {
+			action.exec();
 		}
 	}
 }

@@ -14,51 +14,38 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
 @ThisIsANode(name="Var", lang=CoreLang)
-public abstract class Var extends DNode implements GlobalDNode {
+public abstract class Var extends DNode {
 	
 	public static final int VAR_LOCAL          = 0;
-	public static final int VAR_RULE           = 1;
-	public static final int FIELD_NORMAL       = 2;
-	public static final int REWRITE_PATTERN    = 3;
-	public static final int PARAM_NORMAL       = 4;
-	public static final int PARAM_THIS         = 5;
-	public static final int PARAM_OUTER_THIS   = 6;
-	public static final int PARAM_RULE_ENV     = 7;
-	public static final int PARAM_TYPEINFO     = 8;
-	public static final int PARAM_ENUM_NAME    = 9;
-	public static final int PARAM_ENUM_ORD     = 10;
-	public static final int PARAM_VARARGS      = 11;
-	public static final int PARAM_LVAR_PROXY   = 12;
-	public static final int PARAM_TYPEINFO_N   = 16;
-/*
-	@nodeAttr(ext_data=true)
-	static final class NodeAttr_getter extends ExtAttAttrSlot {
-		NodeAttr_getter() {
-			super("getter", ANode.nodeattr$syntax_parent, TypeInfo.newTypeInfo(MethodGetter.class, null));
-		}
-	}
-	@nodeAttr(ext_data=true)
-	static final class NodeAttr_setter extends ExtAttAttrSlot {
-		NodeAttr_setter() {
-			super("setter", ANode.nodeattr$syntax_parent, TypeInfo.newTypeInfo(MethodSetter.class, null));
-		}
-	}
-*/
+	public static final int FIELD_NORMAL       = 1;
+	public static final int PARAM_THIS         = 2;
+	public static final int PARAM_OUTER_THIS   = 3;
+	public static final int PARAM_RULE_ENV     = 4;
+	public static final int PARAM_CLASS_TYPEINFO     = 5;
+	public static final int PARAM_ENUM_NAME    = 6;
+	public static final int PARAM_ENUM_ORD     = 7;
+	public static final int PARAM_LVAR_PROXY   = 8;
+	public static final int PARAM_METHOD_TYPEINFO   = 16;
+
 	@nodeAttr
 	public TypeRef					vtype;
 	@nodeAttr(ext_data=true)
 	public TypeRef					stype;
 	@nodeAttr
 	public ENode					init;
+	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		getter;
+	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		setter;
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(ignore=true)
 	@nodeData(ext_data=true)
 	public ConstExpr				const_value;
 
@@ -66,7 +53,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public:ro int					kind;
 
 	@getter public int get$kind() { return this.mflags_var_kind; }
-
+	
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
 		return this.is_init_wrapper;
@@ -106,14 +93,12 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return (MetaPacker)this.getMeta("kiev·stdlib·meta·packer");
 	}
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (isAttached()) {
-			if      (attr.name == "vtype" || attr.name == "stype")
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
-			else if (attr.name == "metas")
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.content_change && isAttached()) {
+			if (info.slot.name == "vtype" || info.slot.name == "stype" || info.slot.name == "metas")
+				notifyParentThatIHaveChanged();
 		}
-		super.callbackChildChanged(ct, attr, data);
+		super.callbackChanged(info);
 	}
 
 	public static final Var[]	emptyArray = new Var[0];
@@ -127,21 +112,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	{
 		this.sname = name;
 		this.vtype = vtype;
-		if (flags != 0) {
-			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
-			if ((flags & ACC_FORWARD) == ACC_FORWARD) setMeta(new MetaForward());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) setMeta(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
-			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
-			if ((flags & ACC_STATIC) == ACC_STATIC) setMeta(new MetaStatic());
-			if ((flags & ACC_VOLATILE) == ACC_VOLATILE) setMeta(new MetaVolatile());
-			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) setMeta(new MetaTransient());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
-			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
-			this.nodeflags = flags;
-		}
+		this.nodeflags = flags;
 		this.mflags_var_kind = kind;
 	}
 
@@ -159,20 +130,11 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return super.includeInDump(dump,attr,val);
 	}
 
-	public String qname() {
-		ANode p = parent();
-		if (p == null || p instanceof Env)
-			return sname;
-		if (p instanceof GlobalDNode)
-			return (((GlobalDNode)p).qname()+'·'+sname);
-		return sname;
-	}
-
-	public boolean preResolveIn() {
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		verifyMetas();
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.ntype == null) {
-			Type tp = getType();
+			Type tp = getType(env);
 			if!(tp instanceof ArrayType)
 				Kiev.reportError(this,"Scalar var is initialized by array");
 			else
@@ -181,9 +143,9 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return true;
 	}
 
-	public boolean	isConstantExpr() {
+	public boolean	isConstantExpr(Env env) {
 		if (this.isFinal()) {
-			if (this.init != null && this.init.isConstantExpr())
+			if (this.init != null && this.init.isConstantExpr(env))
 				return true;
 			else if (this.const_value != null)
 				return true;
@@ -191,18 +153,18 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return false;
 	}
 
-	public Object	getConstValue() {
-		if (this.init != null && this.init.isConstantExpr())
-			return this.init.getConstValue();
+	public Object	getConstValue(Env env) {
+		if (this.init != null && this.init.isConstantExpr(env))
+			return this.init.getConstValue(env);
 		else if (this.const_value != null)
-			return this.const_value.getConstValue();
+			return this.const_value.getConstValue(env);
 		throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
-	public boolean preVerify() {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
 		if (this.init != null) {
-			if (isConstantExpr()) {
-				ConstExpr ce = ConstExpr.fromConst(getConstValue());
+			if (isConstantExpr(env)) {
+				ConstExpr ce = ConstExpr.fromConst(getConstValue(env));
 				if (!ce.valueEquals(this.const_value))
 					this.const_value = ce;
 			}
@@ -221,11 +183,11 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return sname.hashCode();
 	}
 
-	public Type	getType() {
+	public Type	getType(Env env) {
 		TypeRef vtype = this.vtype;
 		if (vtype == null)
-			return StdTypes.tpVoid;
-		return vtype.getType();
+			return Env.getEnv().tenv.tpVoid;
+		return vtype.getType(env);
 	}
 	
 	public Method getGetterMethod() {
@@ -242,7 +204,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return null; 
 	}
 
-	public ANode doRewrite(RewriteContext ctx) {
+	public INode doRewrite(RewriteContext ctx) {
 		if (getMeta("kiev·stdlib·meta·extern") != null)
 			return null;
 		return super.doRewrite(ctx);
@@ -261,7 +223,8 @@ public abstract class Var extends DNode implements GlobalDNode {
 			Var node = (Var)dfi.node_impl;
 			DFState out = DFFunc.calc(f, dfi);
 			out = out.declNode(node);
-			if( node.init != null && node.init.getType() ≢ Type.tpVoid )
+			Env env = Env.getEnv();
+			if( node.init != null && node.init.getType(env) ≢ env.tenv.tpVoid )
 				out = out.setNodeValue(new Var[]{node},node.init);
 			res = out;
 			dfi.setResult(res_idx, res);
@@ -303,21 +266,36 @@ public class LVar extends Var {
 }
 
 @ThisIsANode(name="Field", lang=CoreLang)
-public class Field extends Var {
+public class Field extends Var implements GlobalDNode {
 	public static final Field[]	emptyArray = new Field[0];
 
 	@DataFlowDefinition(out="init") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			init;
 	}
 
+	private static final Class[] $meta_flags = new Class[] {
+		MetaPublic.class,    MetaPrivate.class,MetaProtected.class, MetaStatic.class,
+		MetaFinal.class,     null,             MetaVolatile.class,  MetaTransient.class,
+		MetaNative.class,    null,             MetaAbstract.class,  null,
+		MetaSynthetic.class, null,             null,                null,
+		MetaForward.class,   MetaVirtual.class,MetaUnerasable.class,MetaMacro.class,
+		null,                null,              null,               null,
+		null,                null,              null,               null,
+		null,                null,              null,               null
+	};
+	
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
 
+	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		getter_from_inner;
+	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Method>		setter_from_inner;
 	@nodeAttr(ext_data=true)
 	public ConstStringExpr			alt_enum_id;
+	@nodeAttr(ext_data=true)
+	public SymbolRef<Field>			nodeattr_of_attr;
 
 	public Field() { super(FIELD_NORMAL); }
 	
@@ -331,55 +309,66 @@ public class Field extends Var {
 		super(name, vtype, FIELD_NORMAL, flags);
 	}
 
+	public Class[] getMetaFlags() { return Field.$meta_flags; }
+	
+	public String qname() {
+		ANode p = parent();
+		if (p == null || p instanceof KievRoot)
+			return sname;
+		if (p instanceof GlobalDNode)
+			return (((GlobalDNode)p).qname()+'·'+sname);
+		return sname;
+	}
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "const_value")
 			return isFinal() && const_value != null;
 		return super.includeInDump(dump,attr,val);
 	}
 
-	public Method makeReadAccessor() {
+	public Method makeReadAccessor(Env env) {
 		assert(isPrivate());
 		if (getter_from_inner != null && getter_from_inner.dnode != null)
 			return getter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), this.getType(env), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		if (isStatic()) {
 			m.block.stats += new SFldExpr(pos,this);
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,ctx_tdecl.xtype,Var.PARAM_NORMAL,0);
+			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
 			m.params += self;
 			m.block.stats += new IFldExpr(pos,new LVarExpr(pos,self),this);
 		}
-		ctx_tdecl.members += m;
+		Env.ctxTDecl(this).members += m;
 		Kiev.runProcessorsOn(m);
 		this.getter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
 
-	public Method makeWriteAccessor() {
+	public Method makeWriteAccessor(Env env) {
 		assert(isPrivate());
 		if (setter_from_inner != null && setter_from_inner.dnode != null)
 			return setter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), Type.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
-		Var val = new LVar(pos,"value",this.getType(),Var.PARAM_NORMAL,0);
+		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), env.tenv.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
+		Var val = new LVar(pos,"value",this.getType(env),Var.VAR_LOCAL,0);
 		m.params += val;
 		m.body = new Block();
 		if (isStatic()) {
-			m.block.stats += new ExprStat(pos,new AssignExpr(pos,Operator.Assign,new SFldExpr(pos,this),new LVarExpr(pos,val)));
+			m.block.stats += new ExprStat(pos,new AssignExpr(pos,new SFldExpr(pos,this),new LVarExpr(pos,val)));
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,ctx_tdecl.xtype,Var.PARAM_NORMAL,0);
+			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
 			m.params.insert(0,self);
-			m.block.stats += new ExprStat(pos,new AssignExpr(pos,Operator.Assign,new IFldExpr(pos,new LVarExpr(pos,self),this),new LVarExpr(pos,val)));
+			m.block.stats += new ExprStat(pos,new AssignExpr(pos,new IFldExpr(pos,new LVarExpr(pos,self),this),new LVarExpr(pos,val)));
 		}
-		ctx_tdecl.members += m;
+		Env.ctxTDecl(this).members += m;
 		Kiev.runProcessorsOn(m);
 		this.setter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
 	
-	public void postVerify() {
+	public void postVerify(Env env, INode parent, AttrSlot slot) {
 		if (!isStatic() && !isPrivate()) {
-			Type t = this.getType();
+			Type t = this.getType(env);
 			TypeVariance variance = TypeVariance.IN_VARIANT;
 			boolean readable = MetaAccess.readable(this);
 			boolean writable = MetaAccess.writeable(this) && !this.isFinal();

@@ -11,6 +11,8 @@
 package kiev.fmt;
 import syntax kiev.Syntax;
 
+import kiev.fmt.common.*;
+
 import static kiev.fmt.SpaceAction.*;
 import static kiev.fmt.SpaceKind.*;
 
@@ -73,7 +75,7 @@ public class SyntaxExpr extends SyntaxElem {
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxAutoParenth extends SyntaxElem {
 	@nodeAttr
-	public SyntaxAttr					attr;
+	public SyntaxElem					attr;
 
 	@nodeAttr
 	public int							priority;
@@ -94,7 +96,7 @@ public class SyntaxAutoParenth extends SyntaxElem {
 		Draw_SyntaxAutoParenth dr_elem = (Draw_SyntaxAutoParenth)_dr_elem;
 		super.fillCompiled(dr_elem);
 		dr_elem.template = (Draw_SyntaxExprTemplate)this.template.dnode.getCompiled();
-		dr_elem.attr = (Draw_SyntaxAttr)this.attr.getCompiled(dr_elem.elem_decl);
+		dr_elem.attr = this.attr.getCompiled(dr_elem.elem_decl);
 		dr_elem.priority = this.priority;
 	}
 }

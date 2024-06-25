@@ -18,7 +18,8 @@ import kiev.vlang.types.*;
 import kiev.vtree.*;
 import kiev.transf.*;
 import kiev.parser.*;
-import static kiev.stdlib.Debug.*;
+import static kiev.stdlib.Asserts.*;
+import static kiev.stdlib.Traces.*;
 
 operator "T ∅", type;
 operator "T ⋈", type;
@@ -28,15 +29,15 @@ typedef elem∅	kiev.vtree.NodeSpace<elem>;
 typedef elem⋈	kiev.vtree.NodeExtSpace<elem>;
 typedef elem⇑	kiev.vtree.NodeSymbolRef<elem>;
 
-operator ≡ , xfx, 60;	// == equiv
-operator ≢ , xfx, 60;	// !=
-operator ≈ , xfx, 60;	// approx aeq
-operator ≉ , xfx, 60;	// naeq
-operator ≅ , xfx, 60;	// cong
-operator ≃ , xfx, 60;	// simeq
-operator ≥ , xfx, 60;	// geq >=
-operator ≤ , xfx, 60;	// leq
-operator ≺ , xfx, 60;	// prec
-operator ≼ , xfx, 60;	// preceq
+operator "X ≡ X", 60;	// == equiv
+operator "X ≢ X", 60;	// !=
+operator "X ≈ X", 60;	// approx aeq
+operator "X ≉ X", 60;	// naeq
+operator "X ≅ X", 60;	// cong
+operator "X ≃ X", 60;	// simeq
+operator "X ≥ X", 60;	// geq >=
+operator "X ≤ X", 60;	// leq
+operator "X ≺ X", 60;	// prec
+operator "X ≼ X", 60;	// preceq
 }
 

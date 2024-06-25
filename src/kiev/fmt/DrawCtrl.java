@@ -12,23 +12,17 @@ package kiev.fmt;
 
 import syntax kiev.Syntax;
 
+import kiev.fmt.common.*;
+
 @ThisIsANode(copyable=false)
 public abstract class DrawCtrl extends Drawable {
 	@nodeAttr
 	public Drawable arg;
 	
-	public DrawCtrl(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawCtrl(INode node, Formatter fmt, Draw_SyntaxElem syntax) {
+		super(node, fmt, syntax);
 	}
 
-	public Drawable getNextChild(Drawable dr) {
-		assert (dr == arg);
-		return null;
-	}
-	public Drawable getPrevChild(Drawable dr) {
-		assert (dr == arg);
-		return null;
-	}
 	public Drawable[] getChildren() {
 		if (arg == null)
 			return Drawable.emptyArray;
@@ -39,85 +33,169 @@ public abstract class DrawCtrl extends Drawable {
 @ThisIsANode(copyable=false)
 public class DrawSpace extends DrawCtrl {
 
-	public DrawSpace(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawSpace(INode node, Formatter fmt, Draw_SyntaxElem syntax) {
+		super(node, fmt, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 	}
 
 }
 
 @ThisIsANode(copyable=false)
-public class DrawSubAttr extends DrawCtrl {
+public class DrawSubAttr extends DrawCtrl implements StyleProvider {
 
-	public DrawSubAttr(ANode node, Draw_SyntaxSubAttr syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	protected ScalarAttrSlot attr_slot;
+
+	public DrawSubAttr(INode node, Formatter fmt, Draw_SyntaxSubAttr syntax) {
+		super(node, fmt, syntax);
+		if (syntax.attr_slot != null) {
+			this.attr_slot = (ScalarAttrSlot)syntax.attr_slot;
+		} else {
+			foreach (ScalarAttrSlot a; node.values(); a.name == syntax.name) {
+				this.attr_slot = a;
+				break;
+			}
+		}
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxSubAttr sn = (Draw_SyntaxSubAttr)syntax;
-		ANode node = this.drnode;
-		Draw_ATextSyntax text_syntax = this.text_syntax;
-		if (sn.in_syntax != null)
-			text_syntax = sn.in_syntax;
-		Object obj;
+		INode node = this.drnode;
+		fmt.pushSyntax(sn.in_syntax);
 		try {
-			obj = node.getVal(sn.name);
-		} catch (RuntimeException e) {
-			obj = "<?error:"+sn.name+"?>";
-		}
-		if (arg == null) {
-			if (obj instanceof ANode)
-				arg = cont.fmt.getDrawable((ANode)obj, null, text_syntax);
-			else if (obj == null && sn.empty != null)
-				arg = sn.empty.makeDrawable(cont.fmt, node, text_syntax);
-			else
-				arg = new DrawNodeTerm(node, sn, text_syntax);
-		}
-		if (arg != null) {
-			if (obj instanceof ANode)
-				arg.preFormat(cont, text_syntax.getSyntaxElem((ANode)obj), (ANode)obj);
-			else if (obj == null && sn.empty != null)
-				arg.preFormat(cont, sn.empty, node);
-			else
-				arg.preFormat(cont, sn, node);
+			if (attr_slot == null) {
+				if!(arg instanceof DrawErrorTerm)
+					arg = new DrawErrorTerm(node, fmt, sn, "<?error:"+sn.name+"?>");
+				arg.preFormat(fmt, sn, node);
+				return;
+			}
+			Object obj = attr_slot.get(node);
+			if (obj != null && arg instanceof DrawEmptyNodeTerm)
+				arg = null;
+			if (arg == null) {
+				if (obj instanceof INode)
+					arg = fmt.getDrawable((INode)obj, null);
+				else if (obj == null) {
+					if (sn.empty != null)
+						arg = sn.empty.makeDrawable(fmt, node);
+					else if (attr_slot.isChild())
+						arg = new DrawEmptyNodeTerm(node, fmt, sn, attr_slot);
+				}
+				if (arg == null) {
+					Class clazz = attr_slot.typeinfo.clazz;
+					if (clazz == Boolean.class || clazz == Boolean.TYPE)
+						arg = new DrawEnumValueTerm(node, fmt, sn, attr_slot);
+					else if (Enum.class.isAssignableFrom(clazz))
+						arg = new DrawEnumValueTerm(node, fmt, sn, attr_slot);
+					else if (clazz == Character.class || clazz == Character.TYPE)
+						arg = new DrawCharValueTerm(node, fmt, sn, attr_slot);
+					else if (clazz == String.class)
+						arg = new DrawStrValueTerm(node, fmt, sn, attr_slot);
+					else if (clazz == Float.class || clazz == Float.TYPE
+							|| clazz == Double.class || clazz == Double.TYPE)
+						arg = new DrawFloatValueTerm(node, fmt, sn, attr_slot);
+					else if (clazz == Byte.class || clazz == Byte.TYPE
+							|| clazz == Short.class || clazz == Short.TYPE
+							|| clazz == Integer.class || clazz == Integer.TYPE
+							|| clazz == Long.class || clazz == Long.TYPE
+						)
+						arg = new DrawIntValueTerm(node, fmt, sn, attr_slot);
+					else
+						arg = new DrawValueTerm(node, fmt, sn, attr_slot);
+				}
+			}
+			if (arg != null) {
+				if (obj instanceof INode)
+					arg.preFormat(fmt, fmt.getSyntax().getSyntaxElem((INode)obj, fmt.getSyntaxList(), fmt.env), (INode)obj);
+				else if (obj == null && sn.empty != null)
+					arg.preFormat(fmt, sn.empty, node);
+				else
+					arg.preFormat(fmt, sn, node);
+			}
+		} finally {
+			fmt.popSyntax(sn.in_syntax);
 		}
 	}
 }
 
 @ThisIsANode(copyable=false)
-public class DrawNode extends DrawCtrl {
+public class DrawNode extends DrawCtrl implements StyleProvider {
 
-	public DrawNode(ANode node, Draw_SyntaxNode syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	@nodeAttr public Drawable		prefix;
+	@nodeAttr public Drawable		sufix;
+
+	public DrawNode(INode node, Formatter fmt, Draw_SyntaxNode syntax) {
+		super(node, fmt, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
-		if (this.isUnvisible()) return;
-		Draw_SyntaxNode sn = (Draw_SyntaxNode)syntax;
-		ANode node = this.drnode;
-		Draw_ATextSyntax text_syntax = this.text_syntax;
-		if (sn.in_syntax != null)
-			text_syntax = sn.in_syntax;
-		if (arg == null) {
-			if (node != null) {
-				arg = cont.fmt.getDrawable(node, null, text_syntax);
-				if (arg != null)
-					arg.preFormat(cont);
+	public Drawable[] getChildren() {
+		Drawable p = (Drawable)parent();
+		Drawable[] children = p.getChildren();
+		if (children != null && children.length > 0) {
+			Drawable prefix = this.prefix;
+			Drawable sufix = this.sufix;
+			Drawable f = children[0];
+			Drawable l = children[children.length-1];
+			if (this == f && this == l) {
+				return new Drawable[]{arg};
 			}
-			else if (sn.empty != null) {
-				arg = sn.empty.makeDrawable(cont.fmt, null, text_syntax);
-				if (arg != null)
-					arg.preFormat(cont, sn.empty, null);
+			else if (this == f) {
+				if (sufix != null)
+					return new Drawable[]{arg, sufix};
+			}
+			else if (this == l) {
+				if (prefix != null)
+					return new Drawable[]{prefix, arg};
+			}
+			else {
+				if (prefix != null && sufix != null)
+					return new Drawable[]{prefix, arg, sufix};
+				else if (sufix != null)
+					return new Drawable[]{arg, sufix};
+				else if (prefix != null)
+					return new Drawable[]{prefix, arg};
 			}
 		}
-		if (arg != null) {
-			if (node != null)
-				arg.preFormat(cont, text_syntax.getSyntaxElem(node), node);
-			else if (sn.empty != null)
-				arg.preFormat(cont, sn.empty, null);
+		return new Drawable[]{arg};
+	}
+
+	public void preFormat(Formatter fmt) {
+		if (this.isUnvisible()) return;
+		Draw_SyntaxNode sn = (Draw_SyntaxNode)syntax;
+		INode node = this.drnode;
+		fmt.pushSyntax(sn.in_syntax);
+		try {
+			if (prefix == null && sn.prefix != null)
+				prefix = sn.prefix.makeDrawable(fmt, node);
+			if (sufix == null && sn.sufix != null)
+				sufix = sn.sufix.makeDrawable(fmt, node);
+	
+			if (arg == null) {
+				if (node != null) {
+					arg = fmt.getDrawable(node, null);
+					if (arg != null)
+						arg.preFormat(fmt);
+				}
+				else if (sn.empty != null) {
+					arg = sn.empty.makeDrawable(fmt, null);
+					if (arg != null)
+						arg.preFormat(fmt, sn.empty, null);
+				}
+			}
+			if (prefix != null)
+				prefix.preFormat(fmt,sn.prefix,node);
+			if (arg != null) {
+				if (node != null)
+					arg.preFormat(fmt, fmt.getSyntax().getSyntaxElem(node, fmt.getSyntaxList(), fmt.env), node);
+				else if (sn.empty != null)
+					arg.preFormat(fmt, sn.empty, null);
+			}
+			if (sufix != null)
+				sufix.preFormat(fmt,sn.sufix,node);
+		} finally {
+			fmt.popSyntax(sn.in_syntax);
 		}
 	}
 }
@@ -127,19 +205,19 @@ public class DrawOptional extends DrawCtrl {
 
 	private	boolean drawed_as_true;
 	
-	public DrawOptional(ANode node, Draw_SyntaxOptional syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawOptional(INode node, Formatter fmt, Draw_SyntaxOptional syntax) {
+		super(node, fmt, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxOptional sc = (Draw_SyntaxOptional)syntax;
-		ANode node = this.drnode;
+		INode node = this.drnode;
 		if (sc.calculator == null || sc.calculator.calc(node)) {
 			if (!drawed_as_true || arg == null) {
 				drawed_as_true = true;
 				if (sc.opt_true != null) {
-					arg = sc.opt_true.makeDrawable(cont.fmt, node, text_syntax);
+					arg = sc.opt_true.makeDrawable(fmt, node);
 				} else {
 					arg = null;
 				}
@@ -148,7 +226,7 @@ public class DrawOptional extends DrawCtrl {
 			if (drawed_as_true || arg == null) {
 				drawed_as_true = false;
 				if (sc.opt_false != null) {
-					arg = sc.opt_false.makeDrawable(cont.fmt, node, text_syntax);
+					arg = sc.opt_false.makeDrawable(fmt, node);
 				} else {
 					arg = null;
 				}
@@ -156,31 +234,31 @@ public class DrawOptional extends DrawCtrl {
 		}
 		if (arg != null) {
 			if (drawed_as_true)
-				arg.preFormat(cont,sc.opt_true,node);
+				arg.preFormat(fmt,sc.opt_true,node);
 			else
-				arg.preFormat(cont,sc.opt_false,node);
+				arg.preFormat(fmt,sc.opt_false,node);
 		}
 	}
 }
 
 @ThisIsANode(copyable=false)
-public class DrawEnumChoice extends DrawCtrl {
+public class DrawEnumChoice extends DrawCtrl implements StyleProvider {
 
 	private Object drawed_en;
 	private ScalarAttrSlot attr;
 
-	public DrawEnumChoice(ANode node, Draw_SyntaxEnumChoice syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawEnumChoice(INode node, Formatter fmt, Draw_SyntaxEnumChoice syntax) {
+		super(node, fmt, syntax);
 		foreach (ScalarAttrSlot a; node.values(); a.name == syntax.name) {
 			attr = a;
 			break;
 		}
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxEnumChoice se = (Draw_SyntaxEnumChoice)syntax;
-		ANode node = this.drnode;
+		INode node = this.drnode;
 		Object en = attr.get(node);
 		int ord = -1;
 		if (en instanceof Boolean)
@@ -193,11 +271,11 @@ public class DrawEnumChoice extends DrawCtrl {
 			if (ord < 0 || ord >= se.elements.length)
 				arg = null;
 			else
-				arg = se.elements[ord].makeDrawable(cont.fmt, node, text_syntax);
+				arg = se.elements[ord].makeDrawable(fmt, node);
 			drawed_en = en;
 		}
 		if (arg != null)
-			arg.preFormat(cont,se.elements[ord],node);
+			arg.preFormat(fmt,se.elements[ord],node);
 	}
 }
 
@@ -212,30 +290,30 @@ public final class DrawFolded extends DrawCtrl {
 	// for GUI
 	public void setDrawFolded(boolean val) { draw_folded = val; }
 	
-	public DrawFolded(ANode node, Draw_SyntaxFolder syntax, Draw_ATextSyntax text_syntax) {
-		super(node, syntax, text_syntax);
+	public DrawFolded(INode node, Formatter fmt, Draw_SyntaxFolder syntax) {
+		super(node, fmt, syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(Formatter fmt) {
 		if (this.isUnvisible()) return;
 		Draw_SyntaxFolder sc = (Draw_SyntaxFolder)syntax;
-		ANode node = this.drnode;
+		INode node = this.drnode;
 		if (draw_folded) {
 			if (!drawed_as_folded || arg == null) {
 				drawed_as_folded = true;
-				arg = sc.folded.makeDrawable(cont.fmt, node, text_syntax);
+				arg = sc.folded.makeDrawable(fmt, node);
 			}
 		} else {
 			if (drawed_as_folded || arg == null) {
 				drawed_as_folded = false;
-				arg = sc.unfolded.makeDrawable(cont.fmt, node, text_syntax);
+				arg = sc.unfolded.makeDrawable(fmt, node);
 			}
 		}
 		if (drawed_as_folded)
-			arg.preFormat(cont,sc.folded,node);
+			arg.preFormat(fmt,sc.folded,node);
 		else
-			arg.preFormat(cont,sc.unfolded,node);
+			arg.preFormat(fmt,sc.unfolded,node);
 	}
 }
 

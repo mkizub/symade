@@ -1,5 +1,4 @@
 package kiev.fmt.evt;
-
 import syntax kiev.Syntax;
 
 @ThisIsANode

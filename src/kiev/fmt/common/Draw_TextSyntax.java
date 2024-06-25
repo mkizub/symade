@@ -1,0 +1,6 @@
+package kiev.fmt.common;
+
+public class Draw_TextSyntax extends Draw_ATextSyntax {
+	private static final long serialVersionUID = -1299998982275479835L;
+}
+

@@ -14,8 +14,9 @@ import syntax kiev.Syntax;
 
 public class JTypeEnv {
 	public final JEnv jenv;
+	public final StdTypes tenv;
 	
-	final Hashtable<KString,JType> jtypeSignHash;
+	final Hashtable<String,JType> jtypeSignHash;
 
 	public final JFakeType tpAny;
 	public final JFakeType tpVoid;
@@ -40,27 +41,28 @@ public class JTypeEnv {
 
 	public JTypeEnv(JEnv jenv) {
 		this.jenv = jenv;
+		this.tenv = jenv.vtypes;
 		
-		this.jtypeSignHash = new Hashtable<KString,JType>();
+		this.jtypeSignHash = new Hashtable<String,JType>();
 
-		tpAny		= new JFakeType(this, StdTypes.tpAny,  JConstants.sigAny);
-		tpVoid		= new JFakeType(this, StdTypes.tpVoid, JConstants.sigVoid);
-		tpNull		= new JFakeType(this, StdTypes.tpNull, JConstants.sigNull);
+		tpAny		= new JFakeType(this, jenv.vtypes.tpAny,  JConstants.sigAny);
+		tpVoid		= new JFakeType(this, jenv.vtypes.tpVoid, JConstants.sigVoid);
+		tpNull		= new JFakeType(this, jenv.vtypes.tpNull, JConstants.sigNull);
 	
-		tpBoolean	= new JPrimitiveType(this, StdTypes.tpBoolean, JConstants.sigBoolean);
-		tpByte		= new JPrimitiveType(this, StdTypes.tpByte,    JConstants.sigByte);
-		tpChar		= new JPrimitiveType(this, StdTypes.tpChar,    JConstants.sigChar);
-		tpShort		= new JPrimitiveType(this, StdTypes.tpShort,   JConstants.sigShort);
-		tpInt		= new JPrimitiveType(this, StdTypes.tpInt,     JConstants.sigInt);
-		tpLong		= new JPrimitiveType(this, StdTypes.tpLong,    JConstants.sigLong);
-		tpFloat		= new JPrimitiveType(this, StdTypes.tpFloat,   JConstants.sigFloat);
-		tpDouble	= new JPrimitiveType(this, StdTypes.tpDouble,  JConstants.sigDouble);
+		tpBoolean	= new JPrimitiveType(this, jenv.vtypes.tpBoolean, JConstants.sigBoolean);
+		tpByte		= new JPrimitiveType(this, jenv.vtypes.tpByte,    JConstants.sigByte);
+		tpChar		= new JPrimitiveType(this, jenv.vtypes.tpChar,    JConstants.sigChar);
+		tpShort		= new JPrimitiveType(this, jenv.vtypes.tpShort,   JConstants.sigShort);
+		tpInt		= new JPrimitiveType(this, jenv.vtypes.tpInt,     JConstants.sigInt);
+		tpLong		= new JPrimitiveType(this, jenv.vtypes.tpLong,    JConstants.sigLong);
+		tpFloat		= new JPrimitiveType(this, jenv.vtypes.tpFloat,   JConstants.sigFloat);
+		tpDouble	= new JPrimitiveType(this, jenv.vtypes.tpDouble,  JConstants.sigDouble);
 	
-		tpObject	= new JBaseType(this, StdTypes.tpObject.tdecl);
-		tpClass		= new JBaseType(this, StdTypes.tpClass.tdecl);
-		tpString	= new JBaseType(this, StdTypes.tpString.tdecl);
-		tpCloneable	= new JBaseType(this, StdTypes.tpCloneable.tdecl);
-		tpThrowable	= new JBaseType(this, StdTypes.tpThrowable.tdecl);
+		tpObject	= new JBaseType(this, jenv.vtypes.tpObject.tdecl);
+		tpClass		= new JBaseType(this, jenv.vtypes.tpClass.tdecl);
+		tpString	= new JBaseType(this, jenv.vtypes.tpString.tdecl);
+		tpCloneable	= new JBaseType(this, jenv.vtypes.tpCloneable.tdecl);
+		tpThrowable	= new JBaseType(this, jenv.vtypes.tpThrowable.tdecl);
 	
 		tpArray		= new JArrayType(this, tpVoid);
 	}
@@ -79,17 +81,17 @@ public class JTypeEnv {
 			return tpVoid;
 		}
 		if (tp instanceof CoreType) {
-			if (tp == StdTypes.tpBoolean) return tpBoolean;
-			if (tp == StdTypes.tpByte   ) return tpByte;
-			if (tp == StdTypes.tpChar   ) return tpChar;
-			if (tp == StdTypes.tpShort  ) return tpShort;
-			if (tp == StdTypes.tpInt    ) return tpInt;
-			if (tp == StdTypes.tpLong   ) return tpLong;
-			if (tp == StdTypes.tpFloat  ) return tpFloat;
-			if (tp == StdTypes.tpDouble ) return tpDouble;
-			if (tp == StdTypes.tpAny    ) return tpAny;
-			if (tp == StdTypes.tpVoid   ) return tpVoid;
-			if (tp == StdTypes.tpNull   ) return tpNull;
+			if (tp == tenv.tpBoolean) return tpBoolean;
+			if (tp == tenv.tpByte   ) return tpByte;
+			if (tp == tenv.tpChar   ) return tpChar;
+			if (tp == tenv.tpShort  ) return tpShort;
+			if (tp == tenv.tpInt    ) return tpInt;
+			if (tp == tenv.tpLong   ) return tpLong;
+			if (tp == tenv.tpFloat  ) return tpFloat;
+			if (tp == tenv.tpDouble ) return tpDouble;
+			if (tp == tenv.tpAny    ) return tpAny;
+			if (tp == tenv.tpVoid   ) return tpVoid;
+			if (tp == tenv.tpNull   ) return tpNull;
 			return tpVoid;
 		}
 		if (tp instanceof ArgType) {
@@ -106,7 +108,7 @@ public class JTypeEnv {
 		}
 		if (tp instanceof CallType) {
 			if (tp.isReference()) {
-				return this.getJType(Type.tpClosure);
+				return this.getJType(tenv.tpClosure);
 			} else {
 				int arity = tp.arity;
 				JType[] jargs = JType.emptyArray;
@@ -128,29 +130,32 @@ public class JTypeEnv {
 }
 
 public class JPrimitiveMetaType extends MetaType {
-	JPrimitiveMetaType(int flags) {
-		super(null, flags);
+	JPrimitiveMetaType(StdTypes tenv, String name, int flags) {
+		super(tenv, new Symbol("<java-primitive-meta-type-"+name+">"), flags);
 	}
 	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
+	public TypeDecl getDefType() { null }
 }
 
 public class JFakeMetaType extends MetaType {
 
-	JFakeMetaType(int flags) {
-		super(null, flags);
+	JFakeMetaType(StdTypes tenv, String name, int flags) {
+		super(tenv, new Symbol("<java-fake-meta-type-"+name+">"), flags);
 	}
 	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
+	public TypeDecl getDefType() { null }
 }
 
 public class JBaseMetaType extends MetaType {
 
 	public final Struct clazz;
 	
-	JBaseMetaType(Struct clazz, int flags) {
-		super(clazz, flags);
+	JBaseMetaType(StdTypes tenv, Struct clazz, int flags) {
+		super(tenv, new Symbol("<java-class-"+clazz.qname()+">"), flags);
 		this.clazz = clazz;
 	}
 	public TemplateTVarSet getTemplBindings() { return TemplateTVarSet.emptySet; }
+	public TypeDecl getDefType() { null }
 }
 
 
@@ -167,10 +172,10 @@ public abstract class JType {
 	
 	public final JTypeEnv		jtenv;
 	public final MetaType		jmeta_type;
-	public final KString		java_signature;
+	public final String		java_signature;
 	public final int			flags;
 	
-	JType(JTypeEnv jtenv, MetaType meta_type, KString java_signature, int flags) {
+	JType(JTypeEnv jtenv, MetaType meta_type, String java_signature, int flags) {
 		this.jtenv = jtenv;
 		this.jmeta_type = meta_type;
 		this.java_signature = java_signature;
@@ -182,7 +187,6 @@ public abstract class JType {
 	public abstract String toClassForNameString();
 	public abstract JType getSuperType();
 	public JStruct getJStruct() { return null; }
-	public JTypeDecl getJTypeDecl() { return (JTypeDecl)jmeta_type.tdecl; }
 
 	public final boolean isReference()		{ return (jmeta_type.flags & MetaType.flReference)		!= 0 ; }
 	public final boolean isArray()			{ return (jmeta_type.flags & MetaType.flArray)			!= 0 ; }
@@ -231,34 +235,34 @@ public abstract class JType {
 }
 
 public final class JFakeType extends JType {
-	JFakeType(JTypeEnv jtenv, CoreType vtype, KString signature) {
-		super(jtenv, new JFakeMetaType(vtype.meta_type.flags), signature, vtype.flags);
+	JFakeType(JTypeEnv jtenv, CoreType vtype, String signature) {
+		super(jtenv, new JFakeMetaType(jtenv.tenv,vtype.name,vtype.meta_type.flags), signature, vtype.flags);
 		//assert (vtype.jtype == null);
 		//vtype.jtype = this;
 	}
 	
 	public String toClassForNameString() {
-		return String.valueOf(java_signature);
+		return java_signature;
 	}
 
 	public JType getSuperType() { return null; }
 
-	public String toString() { return java_signature.toString(); }
+	public String toString() { return java_signature; }
 }
 
 public class JPrimitiveType extends JType {
 	
 	private final CoreType vtype;
 	
-	JPrimitiveType(JTypeEnv jtenv, CoreType vtype, KString signature) {
-		super(jtenv, new JPrimitiveMetaType(vtype.meta_type.flags), signature, vtype.flags);
+	JPrimitiveType(JTypeEnv jtenv, CoreType vtype, String signature) {
+		super(jtenv, new JPrimitiveMetaType(jtenv.tenv,vtype.name,vtype.meta_type.flags), signature, vtype.flags);
 		//assert (vtype.jtype == null);
 		//vtype.jtype = this;
 		this.vtype = vtype;
 	}
 	
 	public String toClassForNameString() {
-		return String.valueOf(java_signature);
+		return java_signature;
 	}
 
 	public JType getSuperType() { return null; }
@@ -271,19 +275,21 @@ public class JBaseType extends JType {
 	
 	public final Struct clazz;
 
-	private JBaseType(JTypeEnv jtenv, KString java_signature, Struct clazz) {
-		super(jtenv, new JBaseMetaType(clazz, MetaType.flReference), java_signature, 0);
+	private JBaseType(JTypeEnv jtenv, String java_signature, Struct clazz) {
+		super(jtenv, new JBaseMetaType(jtenv.tenv, clazz, MetaType.flReference), java_signature, 0);
 		this.clazz = clazz;
 	}
 	
 	public static JBaseType newJBaseType(JTypeEnv jtenv, Struct clazz)
-		alias lfy operator new
+		operator "new T"
 	{
-		KString signature = KString.from("L"+((JStruct)clazz).bname()+";");
-		JBaseType jbt = (JBaseType)jtenv.jtypeSignHash.get(signature);
-		if (jbt != null)
-			return jbt;
-		return new JBaseType(jtenv,signature,clazz);
+		String signature = "L"+((JStruct)clazz).bname()+";";
+		synchronized (jtenv) {
+			JBaseType jbt = (JBaseType)jtenv.jtypeSignHash.get(signature);
+			if (jbt != null)
+				return jbt;
+			return new JBaseType(jtenv,signature,clazz);
+		}
 	}
 	
 	
@@ -293,7 +299,7 @@ public class JBaseType extends JType {
 	
 	public String toClassForNameString() {
 		Struct s = ((JBaseMetaType)this.jmeta_type).clazz;
-		return ((JStruct)s).bname().toString().replace('/','.');
+		return ((JStruct)s).bname().replace('/','.');
 	}
 
 	public String toString() {
@@ -303,7 +309,7 @@ public class JBaseType extends JType {
 	public JType getSuperType() {
 		if (clazz.super_types.length == 0)
 			return null;
-		Type sup = clazz.super_types[0].getType();
+		Type sup = clazz.super_types[0].getType(jtenv.jenv.env);
 		return jtenv.getJType(sup);
 	}
 	
@@ -312,8 +318,8 @@ public class JBaseType extends JType {
 		if!(_t2 instanceof JBaseType) return false;
 		JBaseType t2 = (JBaseType)_t2;
 		JBaseType t1 = this;
-		t1.clazz.checkResolved();
-		t2.clazz.checkResolved();
+		t1.clazz.checkResolved(jtenv.tenv.env);
+		t2.clazz.checkResolved(jtenv.tenv.env);
 		return t1.clazz.instanceOf(t2.clazz);
 	}
 }
@@ -321,19 +327,21 @@ public class JBaseType extends JType {
 public class JArrayType extends JType {
 	public final JType				jarg;
 	
-	private JArrayType(JTypeEnv jtenv, KString java_signature, JType jarg) {
-		super(jtenv, ArrayMetaType.instance, java_signature, 0);
+	private JArrayType(JTypeEnv jtenv, String java_signature, JType jarg) {
+		super(jtenv, jtenv.tenv.arrayMetaType, java_signature, 0);
 		this.jarg = jarg;
 	}
 
 	public static JArrayType newJArrayType(JTypeEnv jtenv, JType jarg)
-		alias lfy operator new
+		operator "new T"
 	{
-		KString signature = KString.from("["+jarg.java_signature);
-		JArrayType jat = (JArrayType)jtenv.jtypeSignHash.get(signature);
-		if (jat != null)
-			return jat;
-		return new JArrayType(jtenv,signature,jarg);
+		String signature = "["+jarg.java_signature;
+		synchronized (jtenv) {
+			JArrayType jat = (JArrayType)jtenv.jtypeSignHash.get(signature);
+			if (jat != null)
+				return jat;
+			return new JArrayType(jtenv,signature,jarg);
+		}
 	}
 
 	public String toClassForNameString() {
@@ -363,26 +371,28 @@ public class JMethodType extends JType {
 	public final JType[]			jargs;
 	public final JType				jret;
 	
-	private JMethodType(JTypeEnv jtenv, CallMetaType meta_type, KString java_signature, JType[] jargs, JType jret) {
+	private JMethodType(JTypeEnv jtenv, CallMetaType meta_type, String java_signature, JType[] jargs, JType jret) {
 		super(jtenv, meta_type, java_signature, 0);
 		this.jargs = jargs;
 		this.jret = jret;
 	}
 
 	public static JMethodType newJMethodType(JTypeEnv jtenv, CallMetaType meta_type, JType[] jargs, JType jret)
-		alias lfy operator new
+		operator "new T"
 	{
-		KStringBuffer ksb = new KStringBuffer(64);
-		ksb.append('(');
+		StringBuffer sb = new StringBuffer();
+		sb.append('(');
 		for (int i=0; i < jargs.length; i++)
-			ksb.append(jargs[i].java_signature);
-		ksb.append(')');
-		ksb.append(jret.java_signature);
-		KString signature = ksb.toKString();
-		JMethodType jmt = (JMethodType)jtenv.jtypeSignHash.get(signature);
-		if (jmt != null)
-			return jmt;
-		return new JMethodType(jtenv,meta_type,signature,jargs,jret);
+			sb.append(jargs[i].java_signature);
+		sb.append(')');
+		sb.append(jret.java_signature);
+		String signature = sb.toString();
+		synchronized (jtenv) {
+			JMethodType jmt = (JMethodType)jtenv.jtypeSignHash.get(signature);
+			if (jmt != null)
+				return jmt;
+			return new JMethodType(jtenv,meta_type,signature,jargs,jret);
+		}
 	}
 
 	public JType getSuperType() {

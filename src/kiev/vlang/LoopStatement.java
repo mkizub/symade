@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 254 $
  *
  */
 
@@ -39,22 +39,23 @@ public final class Label extends DNode {
 	
 	@DataFlowDefinition(out="this:out()") private static class DFI {}
 
+	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false)	public ASTNode∅		links;
 
-	public boolean preResolveIn() {
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		verifyMetas();
 		return true;
 	}
 
-	public boolean preVerify() {
-		ASTNode root = (ASTNode)this.ctx_root;
-		foreach (ASTNode lnk; links; lnk.ctx_root != root) {
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		ASTNode root = (ASTNode)Env.ctxRoot(this);
+		foreach (ASTNode lnk; links; Env.ctxRoot(lnk) != root) {
 			links.detach(lnk);
 		}
-		return super.preVerify();
+		return super.preVerify(env, parent, slot);
 	}	
 
-	public ANode doRewrite(RewriteContext ctx) {
+	public INode doRewrite(RewriteContext ctx) {
 		if (getMeta("kiev·stdlib·meta·extern") != null)
 			return null;
 		return super.doRewrite(ctx);
@@ -180,7 +181,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		n instanceof Var,
 		((Var)n).isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(info,mt)
+		n.getType(info.env).resolveCallAccessR(info,mt)
 	}
 }
 
@@ -203,10 +204,11 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	}
 
 	public static final int	ARRAY = 0;
-	public static final int	KENUM = 1;
-	public static final int	JENUM = 2;
-	public static final int	ELEMS = 3;
-	public static final int	RULE  = 4;
+	public static final int	JENUM = 1;
+	public static final int	JITERATOR = 2;
+	public static final int	JITERABLE = 3;
+	public static final int	ELEMS = 4;
+	public static final int	RULE  = 5;
 
 	@nodeAttr public int			mode;
 	@nodeAttr public ENode		container;
@@ -244,7 +246,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		},
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(info,mt)
+		n.getType(info.env).resolveCallAccessR(info,mt)
 	}
 }
 

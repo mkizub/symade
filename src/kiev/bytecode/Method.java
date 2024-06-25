@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -26,15 +26,15 @@ public class Method implements BytecodeElement,BytecodeFileConstants {
 	public Utf8PoolConstant		cp_type;
 	public Attribute[]			attrs;
 
-	public KString getName(Clazz clazz) {
+	public String getName(Clazz clazz) {
 		return cp_name.value;
 	}
 
-	public KString getSignature(Clazz clazz) {
+	public String getSignature(Clazz clazz) {
 		return cp_type.value;
 	}
 
-	public KString getMethodSignature(Clazz clazz) {
+	public String getMethodSignature(Clazz clazz) {
 		foreach (GenericsSignatureAttribute a; attrs)
 			return a.getSignature(clazz);
 		return null;

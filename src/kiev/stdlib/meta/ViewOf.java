@@ -17,5 +17,5 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 public @interface ViewOf {
 	public boolean vcast() default false;
-	public boolean iface() default true;
+	public boolean iface() default false;
 }

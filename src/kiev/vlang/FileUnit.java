@@ -15,31 +15,205 @@ import java.io.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 295 $
  *
  */
 
-@ThisIsANode(name="FileUnit", lang=CoreLang)
-public final class FileUnit extends NameSpace, CompilationUnit {
+@ThisIsANode(lang=CoreLang)
+public class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
+	@nodeAttr @final
+	public KievPackage⇑			srpkg;
+	@nodeAttr
+	public ImportSyntax∅			syntaxes;
+	@nodeAttr(parent="kiev·vtree·ANode.nodeattr$syntax_parent")
+	public ASTNode∅					members;
 
-	public static final FileUnit[] emptyArray = new FileUnit[0];
+	private COpdef[]						all_opdefs;
 
-	@AttrXMLDumpInfo(attr=true, name="name")
-	@nodeAttr public String					fname;
-	@nodeAttr public ImportSyntax∅			syntaxes;
+	public SyntaxScope() {
+		this.srpkg.symbol = Env.getEnv().root.symbol;
+		this.srpkg.qualified = true;
+	}
 	
+	public KievPackage getPackage() {
+		KievPackage td = srpkg.dnode;
+		if (td != null)
+			return td;
+		if (srpkg.name == "") {
+			td = Env.getEnv().root;
+			srpkg.symbol = td.symbol;
+		} else {
+			SyntaxScope ss = Env.ctxSyntaxScope(parent());
+			if (ss != null)
+				td = ss.getPackage();
+			if (td == null || td instanceof KievRoot) {
+				td = Env.getEnv().newPackage(srpkg.name);
+				srpkg.symbol = td.symbol;
+				srpkg.qualified = true;
+			} else {
+				td = Env.getEnv().newPackage(td.qname() + "·" + srpkg.name);
+				srpkg.symbol = td.symbol;
+				srpkg.qualified = false;
+			}
+		}
+		return td;
+	}
+
+	public rule resolveNameR(ResInfo path)
+		ASTNode@ syn;
+		ImportSyntax@ istx;
+	{
+		syn @= members,
+		{
+			path ?= syn
+		;	syn instanceof Import && syn instanceof ScopeOfNames,
+			trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
+			((ScopeOfNames)syn).resolveNameR(path)
+		}
+	;
+		path.getPrevSlotName() != "srpkg",
+		trace( Kiev.debug && Kiev.debugResolve, "In namespace package: "+srpkg),
+		getPackage().resolveNameR(path)
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		syn @= members,
+		syn instanceof Import && syn instanceof ScopeOfNames,
+		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
+		((ScopeOfNames)syn).resolveNameR(path)
+	;
+		srpkg.name != "",
+		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
+		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
+		Env.getEnv().root.resolveNameR(path)
+	;
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
+		istx.resolveNameR(path)
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
+		istx.resolveNameR(path)
+	}
+
+
+	public rule resolveMethodR(ResInfo path, CallType mt)
+		ASTNode@ syn;
+		ImportSyntax@ istx;
+	{
+		syn @= members,
+		syn instanceof Import && syn instanceof ScopeOfMethods,
+		trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
+		((ScopeOfMethods)syn).resolveMethodR(path,mt)
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		syn @= members,
+		syn instanceof Import && syn instanceof ScopeOfMethods,
+		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
+		((ScopeOfMethods)syn).resolveMethodR(path,mt)
+	;
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
+		istx.resolveMethodR(path,mt)
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		istx @= syntaxes,
+		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
+		istx.resolveMethodR(path,mt)
+	}
+
+	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
+		if (slot.name == "srpkg") {
+			KievPackage scope = Env.getEnv().root;
+			SyntaxScope ss = Env.ctxSyntaxScope(parent());
+			if (ss != null)
+				scope = ss.getPackage();
+			int dot = -1;
+			if (scope instanceof KievRoot)
+				dot = name.indexOf('·');
+			do {
+				String head;
+				if (dot > 0) {
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1);
+					ResInfo<KievPackage> info = new ResInfo<KievPackage>(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					if !(scope.resolveNameR(info))
+						return null;
+					scope = info.resolvedDNode();
+					dot = name.indexOf('·');
+				}
+				if (dot < 0) {
+					head = name.intern();
+					AutoCompleteResult result = new AutoCompleteResult(false);
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags);
+					foreach (scope.resolveNameR(info)) {
+						if (!result.containsData(info.resolvedSymbol()))
+							result.append(info.resolvedSymbol());
+					}
+					return result;
+				}
+			} while (dot > 0);
+		}
+		return super.resolveAutoComplete(name,slot);
+	}
+
+	public boolean isOperator(String s) {
+		foreach (ImportSyntax imp; syntaxes) {
+			KievSyntax stx = imp.name.dnode;
+			if (stx != null && stx.isOperator(s))
+				return true;
+		}
+		return false;
+	}
+	
+	public COpdef[] getAllOpdefs() {
+		if (all_opdefs != null)
+			return all_opdefs;
+		Vector<COpdef> opdefs = new Vector<COpdef>();
+		foreach (ImportSyntax imp; syntaxes) {
+			KievSyntax stx = imp.name.dnode;
+			if (stx != null)
+				stx.getAllOpdefs(opdefs);
+		}
+		all_opdefs = opdefs.toArray();
+		return all_opdefs;
+		//return opdefs.toArray();
+	}
+	
+}
+
+// FileUnit is a node for a compilation unit stored in a file.
+// 'ftype' specifies the type of the file, i.e. the kind of nodes it contains and the storage type, like
+// 'text/java/1.6' - java source code (1.6)
+// 'text/xml/tree-dump' or 'binary/tree-dump' - symade XML or Binary Tree Dump
+// 'text/apache-ant+xml'
+// and so on. The file type will be taken from ProjectSyntaxInfo when the file is created.
+// Default file type is 'text/java/1.6' for *.java, 'text/xml/tree-dump' for .xml files
+@ThisIsANode(name="FileUnit", lang=CoreLang)
+public final class FileUnit extends SyntaxScope, CompilationUnit {
+
+	@AttrBinDumpInfo(leading=true)
+	@AttrXMLDumpInfo(attr=true, name="name")
+	@nodeAttr public String							fname;
+	@AttrXMLDumpInfo(attr=true, name="type")
+	@nodeAttr public String							ftype;
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData public ProjectSyntaxFactory		current_syntax;
+	
+	@UnVersioned
 	public boolean							scanned_for_interface_only;
-	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
-	public String							current_syntax;
+	@UnVersioned
+	public boolean							loded_from_binary_dump;
+	@UnVersioned
+	public boolean							dont_run_backend;
 	@UnVersioned
 	public boolean							is_project_file;
 	@UnVersioned
-	public int								line_count;		// for text source files
-
-	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
-	public ComplexTypeDecl get_child_ctx_tdecl() { return null; }
-	@getter public Method get$ctx_method() { return null; }
-	public Method get_child_ctx_method() { return null; }
+	public int									line_count;		// for text source files
+	@UnVersioned
+	public long								source_timestamp;
 
 	public String pname() {
 		if!(parent() instanceof DirUnit)
@@ -47,23 +221,19 @@ public final class FileUnit extends NameSpace, CompilationUnit {
 		return ((DirUnit)parent()).pname() + '/' + fname;
 	}
 	
-	// for GUI
-	public String getCurrentSyntax() { this.current_syntax }
-	// for GUI
-	public void setCurrentSyntax(String val) { this.current_syntax = val; }
-
 	public boolean isInterfaceOnly() { scanned_for_interface_only }
+	public boolean isLodedFromBinaryDump() { loded_from_binary_dump }
 
-	public static FileUnit makeFile(String qname, boolean project_file) {
+	public static FileUnit makeFile(String qname, Project proj, boolean project_file) {
 		qname = qname.replace(File.separatorChar, '/');
 		DirUnit dir;
 		String name;
 		int end = qname.lastIndexOf('/');
 		if (end < 0) {
-			dir = Env.getProject().root_dir;
+			dir = proj.root_dir;
 			name = qname;
 		} else {
-			dir = Env.getProject().root_dir.makeDir(qname.substring(0,end));
+			dir = proj.root_dir.makeDir(qname.substring(0,end));
 			name = qname.substring(end+1);
 		}
 		foreach (FileUnit fu; dir.members; name.equals(fu.fname))
@@ -82,201 +252,13 @@ public final class FileUnit extends NameSpace, CompilationUnit {
 
 	public String toString() { return fname; }
 
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "proj") {
-			if (attr == ANode.nodeattr$this)
-				return this.is_project_file;
-			if (attr.name == "fname")
-				return true;
-			return false;
-		}
-		else if (attr.name == "fname")
-			return false;
-		return super.includeInDump(dump, attr, val);
-	}
-
-	public void setPragma(ASTPragma pr) {
-		foreach (ConstStringExpr e; pr.options)
-			setExtension(e,pr.enable,e.value.toString());
-	}
-
-	private void setExtension(ASTNode at, boolean enabled, String s) {
-		KievExt ext;
-		try {
-			ext = KievExt.fromString(s);
-		} catch(RuntimeException e) {
-			Kiev.reportWarning(at,"Unknown pragma '"+s+"'");
-			return;
-		}
-		int i = ((int)ext)-1;
-		if (enabled && Compiler.getCmdLineExtSet()[i])
-			Kiev.reportError(this,"Extension '"+s+"' was disabled from command line");
-		disabled_extensions[i] = !enabled;
-	}
-	
-	public rule resolveNameR(ResInfo path)
-		ImportSyntax@ istx;
-	{
-		super.resolveNameR(path)
-	;
-		srpkg.name != "",
-		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
-		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
-		Env.getRoot().resolveNameR(path)
-	;
-		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
-		istx.resolveNameR(path)
-	;
-		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
-		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
-		istx.resolveNameR(path)
-	}
-
-	public rule resolveMethodR(ResInfo path, CallType mt)
-		ImportSyntax@ istx;
-	{
-		super.resolveMethodR(path,mt)
-	;
-		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
-		istx.resolveMethodR(path,mt)
-	;
-		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
-		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
-		istx.resolveMethodR(path,mt)
-	}
-
 }
 
 
 @ThisIsANode(name="NameSpace", lang=CoreLang)
-public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public class NameSpace extends SyntaxScope {
 
-	public static final NameSpace[] emptyArray = new NameSpace[0];
-
-	// declare NodeAttr_members to be an attribute for ANode.nodeattr$syntax_parent
-	static final class NodeAttr_members extends SpaceAttAttrSlot<ASTNode> {
-		public final ANode[] getArray(ANode parent) { return ((NameSpace)parent).members; }
-		public final ANode[] get(ANode parent) { return ((NameSpace)parent).members; }
-		public final void setArray(ANode parent, Object narr) { ((NameSpace)parent).members = (ASTNode∅)narr; }
-		public final void set(ANode parent, Object narr) { ((NameSpace)parent).members = (ASTNode∅)narr; }
-		NodeAttr_members(String name, TypeInfo typeinfo) {
-			super(name, ANode.nodeattr$syntax_parent, typeinfo);
-		}
-	}
-
-	@nodeAttr public final KievPackage⇑				srpkg;
-	@nodeAttr public       ASTNode∅					members;
-	
-	@getter public ComplexTypeDecl get$ctx_tdecl() { return null; }
-	public ComplexTypeDecl get_child_ctx_tdecl() { return null; }
-	@getter public Method get$ctx_method() { return null; }
-	public Method get_child_ctx_method() { return null; }
-
-	public NameSpace() {
-		this.srpkg.symbol = Env.getRoot().symbol;
-		this.srpkg.qualified = true;
-	}
-	
-	public KievPackage getPackage() {
-		KievPackage td = srpkg.dnode;
-		if (td != null)
-			return td;
-		if (srpkg.name == "") {
-			td = Env.getRoot();
-			srpkg.symbol = td.symbol;
-		} else {
-			if (parent() != null && parent().ctx_name_space != null)
-				td = parent().ctx_name_space.getPackage();
-			if (td == null || td instanceof Env) {
-				td = Env.getRoot().newPackage(srpkg.name);
-				srpkg.symbol = td.symbol;
-				srpkg.qualified = true;
-			} else {
-				td = Env.getRoot().newPackage(td.qname() + "·" + srpkg.name);
-				srpkg.symbol = td.symbol;
-				srpkg.qualified = false;
-			}
-		}
-		return td;
-	}
-
-	public String toString() { return srpkg.name; }
-
-	public rule resolveNameR(ResInfo path)
-		ASTNode@ syn;
-	{
-		syn @= members,
-		{
-			path ?= syn
-		;	syn instanceof Import,
-			trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
-			((Import)syn).resolveNameR(path)
-		}
-	;
-		path.getPrevSlotName() != "srpkg",
-		trace( Kiev.debug && Kiev.debugResolve, "In namespace package: "+srpkg),
-		getPackage().resolveNameR(path)
-	;
-		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
-		syn @= members,
-		syn instanceof Import,
-		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
-		((Import)syn).resolveNameR(path)
-	}
-
-	public rule resolveMethodR(ResInfo path, CallType mt)
-		ASTNode@ syn;
-	{
-		syn @= members,
-		syn instanceof Import,
-		trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
-		((Import)syn).resolveMethodR(path,mt)
-	;
-		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
-		syn @= members,
-		syn instanceof Import,
-		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
-		((Import)syn).resolveMethodR(path,mt)
-	}
-
-	public Symbol[] resolveAutoComplete(String name, AttrSlot slot) {
-		if (slot.name == "srpkg") {
-			KievPackage scope = Env.getRoot();
-			if (parent() != null && parent().ctx_name_space != null)
-				scope = (KievPackage)parent().ctx_name_space.getPackage();
-			int dot = -1;
-			if (scope instanceof Env)
-				dot = name.indexOf('·');
-			do {
-				String head;
-				if (dot > 0) {
-					head = name.substring(0,dot).intern();
-					name = name.substring(dot+1);
-					ResInfo<KievPackage> info = new ResInfo<KievPackage>(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
-					if !(scope.resolveNameR(info))
-						return null;
-					scope = info.resolvedDNode();
-					dot = name.indexOf('·');
-				}
-				if (dot < 0) {
-					head = name.intern();
-					Vector<Symbol> vect = new Vector<Symbol>();
-					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
-					ResInfo info = new ResInfo(this,head,flags);
-					foreach (scope.resolveNameR(info)) {
-						if (!vect.contains(info.resolvedSymbol()))
-							vect.append(info.resolvedSymbol());
-					}
-					return vect.toArray();
-				}
-			} while (dot > 0);
-		}
-		return super.resolveAutoComplete(name,slot);
-	}
+	public String toString() { return "namespace "+srpkg.name; }
 }
 
 

@@ -26,19 +26,45 @@ public interface Language {
 	public String getDefaultInfoSyntax();
 	public String getClassByNodeName(String name);
 	public AttrSlot getExtAttrByName(String name);
-	public ANode makeNode(String name, String ti_sign);
+	public ANode makeNode(Env env, String name, String ti_sign, String uuid);
+}
+
+@ThisIsANode(lang=CoreLang)
+public final class LangDecl extends DNode implements GlobalDNodeContainer {
+	@nodeAttr
+	public LangDecl⇑∅       super_langs;
+	@nodeAttr
+	public NodeDecl∅        decls;
+
+	public ASTNode[] getContainerMembers() { decls }
+
+	public String qname() {
+		ANode p = parent();
+		if (p instanceof GlobalDNode)
+			return (((GlobalDNode)p).qname()+"·"+sname).intern();
+		else
+			return sname;
+	}
+
+	public rule resolveNameR(ResInfo path)
+	{
+		path ?= this
+	;
+		path @= decls
+	}
 }
 
 public abstract class LangBase implements Language {
 	
 	public static final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
-	protected static String defaultEditorSyntaxName;
-	protected static String defaultInfoSyntaxName;
-	protected final String langURI;
-
-	public final String getURI() { return langURI; }
+	protected String defaultEditorSyntaxName;
+	protected String defaultInfoSyntaxName;
+	protected String languageName;
+	protected String langURI;
 
 	public LangBase() {
+		if (getClass().getAnnotation(ThisIsALanguage.class) != null)
+			languageName = getClass().getAnnotation(ThisIsALanguage.class).name();
 		langURI = "sop://languages/"+getName()+"?class="+getClass().getName().intern();
 		foreach (Class c; getNodeClasses()) {
 			ThisIsANode um = (ThisIsANode)c.getAnnotation(ThisIsANode.class);
@@ -51,6 +77,9 @@ public abstract class LangBase implements Language {
 		}
 	}
 	
+	public String getName() { return languageName; }
+
+	public final String getURI() { return langURI; }
 	
 	public String getClassByNodeName(String name) {
 		Class c = allNodesMap.get(name);
@@ -58,13 +87,27 @@ public abstract class LangBase implements Language {
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
 		return c.getName();
 	}
-	public ANode makeNode(String name, String ti_sign) {
+	public ANode makeNode(Env env, String name, String ti_sign, String uuid) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
+		Symbol symbol = null;
+		if (uuid != null)
+			symbol = env.getSymbolByUUID(uuid);
+		ANode node;
 		if (ti_sign != null)
-			return (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
-		return (ANode)c.newInstance();
+			node = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
+		else
+			node = (ANode)c.newInstance();
+		if (symbol != null) {
+			if (node instanceof Symbol)
+				node = symbol;
+			else if (node instanceof DNode) {
+				node.symbol = symbol;
+				env.tenv.callbackTypeVersionChanged(symbol);
+			}
+		}
+		return node;
 	}
 	public AttrSlot getExtAttrByName(String name) {
 		return null;
@@ -78,25 +121,37 @@ public abstract class LangBase implements Language {
 	}
 }
 
+@ThisIsALanguage(name="core")
 @singleton
 public final class CoreLang extends LangBase {
-	static {
-		defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
-		defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
+	{
+		this.defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
+		this.defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
 	}
-	public String getName() { "core" }
+	public String getName() { return "core"; }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 	
-	public ANode makeNode(String name, String ti_sign) {
+	public ANode makeNode(Env env, String name, String ti_sign, String uuid) {
 		if (ti_sign == null && name.equals("SymbolRef"))
 			return new SymbolRef();
-		return super.makeNode(name, ti_sign);
+		if (uuid != null) {
+			Symbol symbol = env.getSymbolByUUID(uuid);
+			if (symbol != null && symbol.dnode != null) {
+				DNode dn = symbol.dnode;
+				env.tenv.callbackTypeVersionChanged(symbol);
+				if (dn.isTypeDeclNotLoaded()) {
+					dn.cleanupOnReload();
+					return dn;
+				}
+			}
+		}
+		return super.makeNode(env, name, ti_sign, uuid);
 	}
 
 	public AttrSlot getExtAttrByName(String name) {
-		if (name.equals("comment"))
-			return Comment.ATTR_COMMENT;
+		//if (name.equals("comment"))
+		//	return Comment.ATTR_COMMENT;
 		return null;
 	}
 
@@ -104,8 +159,8 @@ public final class CoreLang extends LangBase {
 	private static Class[] nodeClasses = {
 	ASTNode.class,
 		Symbol.class,
-			OpdefSymbol.class,
-			CtorSymbol.class,
+		Alias.class,
+		OperatorAlias.class,
 		SymbolRef.class,
 		DNode.class,	// declaration nodes
 			KievSyntax.class,
@@ -118,16 +173,37 @@ public final class CoreLang extends LangBase {
 					MetaTypeDecl.class,		// abstract type declaration
 				Struct.class,			// abstract structure
 					KievPackage.class,
+						KievRoot.class,
 					JavaClass.class,
 					JavaAnonymouseClass.class,
-					JavaInterface.class,
 					KievView.class,
 					JavaAnnotation.class,
 					PizzaCase.class,
 					JavaEnum.class,
-					Env.class,
+					SymadeNode.class,
+			LangDecl.class,
+			NodeDecl.class,
+			NodeAttribute.class,
 			Label.class,		// code label
 			Opdef.class,		// operator declaration
+			OpArgument.class,
+				OpArgEXPR.class,
+					OpArgEXPR_X.class,
+					OpArgEXPR_Y.class,
+					OpArgEXPR_Z.class,
+					OpArgEXPR_P.class,
+				OpArgTYPE.class,
+				OpArgIDNT.class,
+				OpArgNODE.class,
+				OpArgOPER.class,
+				OpArgLIST.class,
+					OpArgLIST_ANY.class,
+					OpArgLIST_ONE.class,
+					OpArgLIST_NUM.class,
+				OpArgSEQS.class,
+				OpArgALTR.class,
+				OpArgOPTIONAL.class,
+			CoreOperation.class,
 			Method.class,
 				MethodImpl.class,	// a concrete method
 				MethodGetter.class,	// a field getter method
@@ -141,6 +217,7 @@ public final class CoreLang extends LangBase {
 				RewritePattern.class,	// pattern
 		ENode.class,	// expression nodes
 			NopExpr.class,
+			ArgExpr.class,
 			BoolExpr.class,			// boolean expressions / data flow
 				BinaryBooleanOrExpr.class,
 				BinaryBooleanAndExpr.class,
@@ -153,10 +230,11 @@ public final class CoreLang extends LangBase {
 			ConstExpr.class,
 				ConstBoolExpr.class,
 				ConstNullExpr.class,
-				ConstByteExpr.class,
-				ConstShortExpr.class,
-				ConstIntExpr.class,
-				ConstLongExpr.class,
+				ConstRadixExpr.class,
+					ConstByteExpr.class,
+					ConstShortExpr.class,
+					ConstIntExpr.class,
+					ConstLongExpr.class,
 				ConstCharExpr.class,
 				ConstFloatExpr.class,
 				ConstDoubleExpr.class,
@@ -195,6 +273,7 @@ public final class CoreLang extends LangBase {
 			TypeInfoExpr.class,
 			AssertEnabledExpr.class,
 			AssignExpr.class,
+			ModifyExpr.class,
 			BinaryExpr.class,
 			UnaryExpr.class,
 			StringConcatExpr.class,
@@ -236,8 +315,13 @@ public final class CoreLang extends LangBase {
 				MetaPacked.class,	// data for packed fields
 				MetaPacker.class,	// data for packer field
 				MetaThrows.class,	// data for throwed exceptions
+				MetaGetter.class,
+				MetaSetter.class,
 			MetaFlag.class,		// special meta-data, acting as flags
 				MetaAccess.class,		// access rights (public, private and so on)
+				MetaPublic.class,
+				MetaPrivate.class,
+				MetaProtected.class,
 				MetaUnerasable.class,	// runtime type uneraseble nodes
 				MetaSingleton.class,
 				MetaMixin.class,
@@ -255,26 +339,35 @@ public final class CoreLang extends LangBase {
 				MetaVarArgs.class,
 				MetaSynthetic.class,
 		SNode.class,	// syntax nodes
-			NameSpace.class,	// name space unit
+			SyntaxScope.class,
+				NameSpace.class,	// name space unit
 				FileUnit.class,	// file/compilation unit, also acts as a namespace
 			Import.class,
+				ImportImpl.class,
+				ImportStatic.class,
+				ImportMethod.class,
+				ImportOperators.class,
 			ImportSyntax.class,
-			Comment.class,		// comments
+			ATextNode.class,
+				TextElem.class,
+				TextBrk.class,
+				TextLine.class,
+				Text.class,
+					Comment.class,		// comments
 		// in parser
 		ASTExpression.class,
-		ASTOperatorAlias.class,
-		ASTPragma.class,
 		EToken.class
 	};
 }
 
+@ThisIsALanguage(name="logic")
 @singleton
 public final class LogicLang extends LangBase {
-	static {
-		defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
-		defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
+	{
+		this.defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
+		this.defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
 	}
-	public String getName() { "logic" }
+	public String getName() { return "logic"; }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 
@@ -295,13 +388,14 @@ public final class LogicLang extends LangBase {
 	};
 }
 
+@ThisIsALanguage(name="macro")
 @singleton
 public final class MacroLang extends LangBase {
-	static {
-		defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
-		defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
+	{
+		this.defaultEditorSyntaxName = "stx-fmt·syntax-for-java";
+		this.defaultInfoSyntaxName = "stx-fmt·syntax-for-java";
 	}
-	public String getName() { "macro" }
+	public String getName() { return "macro"; }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 
@@ -318,6 +412,7 @@ public final class MacroLang extends LangBase {
 		SwitchRewr.class,
 		ForEachRewr.class,
 		MacroListIntExpr.class,
+		MacroSelfExpr.class,
 		MacroAccessExpr.class,
 		MacroSubstExpr.class,
 		MacroSubstTypeRef.class,

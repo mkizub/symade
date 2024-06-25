@@ -14,7 +14,7 @@ import syntax kiev.stdlib.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 213 $
  *
  */
 
@@ -77,48 +77,6 @@ public class Debug {
 		Debug.log.println(msg);
 	}
 	
-	/**
-	 *  trace is a generic tracing/logging method.
-	 *  It uses "log" stream to trace/log program
-	 *  execution.           
-	 *  The message is printed by log.println(String)
-	 *
-	 *  @param	msg		the message to log
-	 */
-
-	@macro
-	public static void trace(String msg)
-	{
-		case Call# self():
-			if# ($GenTraces)
-				Debug.trace_force(msg)
-			else
-				new # NopExpr()
-	}
-
-	/**
-	 *  The conditional version of trace method.
-	 *  The message is printed only of condition
-	 *  is true.
-	 *  Note, that compiler automatically optimizes
-	 *  the usage of this method - the message is
-	 *  evaluated and method is called *only* if
-	 *  condition is true.
-	 *
-	 *  @param	cond	the condition
-	 *  @param	msg		the message to log
-	 */
-
-	@macro
-	public static void trace(boolean cond, String msg)
-	{
-		case Call# self():
-			if# ($GenTraces)
-				{ if (cond) Debug.trace_force(msg) }
-			else
-				new # NopExpr()
-	}
-
 	/**
 	 *  Unconditional assert method. Always throws
 	 *  provided exception or pass exception
@@ -239,59 +197,6 @@ public class Debug {
 			new EnsureFailedException(name,msg);
 		if( $AssertionHandler == null ) throw afe;
 		else $AssertionHandler.failedAssertion(afe);
-	}
-
-	/**
-	 *  Conditional version of assert method.
-	 *  The exception will be throwed if
-	 *  condition is "false", i.e. - assertion
-	 *  check failed.
-	 *
-	 *  @param	cond	the condition
-	 */
-	@macro
-	public static void assert(boolean cond)
-	{
-		case Call# self():
-			if# ($GenAsserts)
-				{ if (new #AssertEnabledExpr() && ! cond) Debug.assert(); }
-			else
-				new #NopExpr()
-	}
-
-	/**
-	 *  Conditional version of assert method with
-	 *  message of exception specified
-	 *
-	 *  @param	cond	the condition
-	 *  @param	msg		the message for exception
-	 */
-	@macro
-	public static void assert(boolean cond, String msg)
-	{
-		case Call# self():
-			if# ($GenAsserts)
-				{ if (new #AssertEnabledExpr() && ! cond) Debug.assert(msg); }
-			else
-				new #NopExpr()
-	}
-
-	/**
-	 *  Conditional version of assert method with
-	 *  explicit exception specified to be throwed
-	 *  or passed to $AssertionHandler
-	 *
-	 *  @param	cond	the condition
-	 *  @param	t		the Throwable for exception
-	 */
-	@macro
-	public static void assert(boolean cond, Throwable t)
-	{
-		case Call# self():
-			if# ($GenAsserts)
-				{ if (new #AssertEnabledExpr() && ! cond) Debug.assert(t); }
-			else
-				new #NopExpr()
 	}
 
 }

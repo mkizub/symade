@@ -11,64 +11,279 @@
 package kiev.vlang;
 import syntax kiev.Syntax;
 
-import kiev.be.java15.JEnv;
+import kiev.dump.DumpFactory;
+import kiev.dump.XMLDumpFilter;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 299 $
  *
  */
+
+public interface BEndEnvFactory {
+	public BEndEnv makeBEndEnv(Env env);
+}
+public interface BEndEnv {
+	public DNode actuallyLoadDecl(String qname);
+	public Struct actuallyLoadDecl(Struct cl);
+	public void generateFile(FileUnit fu);
+	public void backendCleanup(ASTNode node);
+}
 
 /** Class Env is a static class that implements global
 	static methods and data for kiev compiler
  */
 
-@ThisIsANode(lang=CoreLang)
-public final class Env extends KievPackage {
-
-	/** Hashtable of all defined and loaded classes */
-	public static Hash<String>						classHashOfFails	= new Hash<String>();
+public final class Env {
 
 	/** Root of package hierarchy */
-	private static Env								root = new Env();
+	//private static Env[]							allEnvironments = new Env[0];
+	
+	/** Hashtable of all defined and loaded classes */
+	private Hash<String>							classHashOfFails;
 
 	/** Class/library path */
 	private kiev.bytecode.Classpath					classpath;
 
-	/** Backend environment */
-	private JEnv									jenv;
+	/** Type environment */
+	public StdTypes									tenv;
 
-	@nodeAttr public Project						proj;
+	/** Backend environment */
+	private BEndEnv									benv;
+
+	public Project									proj;
 	
-	private java.util.WeakHashMap<String,Symbol>	uuidToSymbolMap	= new java.util.WeakHashMap<String,Symbol>();
+	public KievRoot									root;
 	
-	public static Env getRoot() { return root; }
-	public static Project getProject() { return root.proj; }
+	public CoreFuncs								coreFuncs;
 	
+	private SymUUIDHash	uuidToSymbolMap	= new SymUUIDHash();
+	
+	private AbstractProcessor[]	feProcessors;
+	private AbstractProcessor[]	vfProcessors;
+	private AbstractProcessor[]	meProcessors;
+	private AbstractProcessor[]	beProcessors;
+
+	public static Env getEnv() {
+		WorkerThread wt = (WorkerThread)Thread.currentThread();
+		return wt.theEnv;
+		
+	}
+	public static Project getProject() {
+		WorkerThread wt = (WorkerThread)Thread.currentThread();
+		return wt.theEnv.proj;
+	}
+	
+	public static synchronized Env createEnv() {
+		Env env = new Env();
+		return env;
+	}
+
 	/** Private class constructor -
 		really there may be no instances of this class
 	 */
 	private Env() {
-		root = this;
-		this.setTypeDeclNotLoaded(false);
-		StdTypes.tpAny;
+		this.classHashOfFails = new Hash<String>();
 	}
 
-	public JEnv getBackendEnv() {
-		return jenv;
-	}
+	public StdTypes           getTypeEnv()            { return tenv; }
+	public BEndEnv             getBackendEnv()         { return benv; }
+	public AbstractProcessor[]  getFEProcessors()       { return feProcessors; }
+	public AbstractProcessor[]  getVFProcessors()       { return vfProcessors; }
+	public AbstractProcessor[] getMEProcessors()       { return meProcessors; }
+	public AbstractProcessor[] getBEProcessors()       { return beProcessors; }
 	
 	public void cleanupBackendEnv() {
-		jenv = null;
+		this.benv = null;
+	}
+
+	public void cleanupHashOfFails() {
+		classHashOfFails.clear();
+	}
+	
+	public boolean isInHashOfFails(String name) {
+		return classHashOfFails.get(name) != null;
+	}
+	
+	public void addToHashOfFails(String name) {
+		return classHashOfFails.put(name);
 	}
 	
 	public String toString() {
 		return "<root>";
 	}
+	
+	private void addCorePlugin(String name, String clazz) {
+		name = "symade.plugin."+name;
+		if (System.getProperty(name) != null)
+			return;
+		System.setProperty(name, clazz);
+	}
+	
+	@unerasable
+	private AbstractProcessor[] collectProcessors(String stage, ProcessorDescr[][] processors, int proc_id) {
+		for (int i=0; i < PluginDescr.stages.length; i++) {
+			if (!PluginDescr.stages[i].equals(stage))
+				continue;
+			Vector<AbstractProcessor> v = new Vector<AbstractProcessor>();
+			foreach (ProcessorDescr pd; processors[i]) {
+				AbstractProcessor p = pd.makeProcessor(this, proc_id++);
+				if (p != null)
+					v.append(p);
+			}
+			return v.toArray();
+		}
+		throw new Error("Unknown stage "+stage);
+	}
 
+	/** Environment initialization with specified CLASSPATH
+		for the compiling classes
+	 */
+	public void InitializeEnv(String path) {
+		if (this.root != null)
+			return;
+		this.root = new KievRoot();
+		this.root.symbol.setUUID(this, "7067fac2-59db-33f6-9094-60b0aff4ad95");
+		if (path == null) path = System.getProperty("java.class.path");
+		this.classpath = new kiev.bytecode.Classpath(path);
+		this.tenv = new StdTypes(this);
+		this.coreFuncs = new CoreFuncs(this);
+		BEndEnvFactory benv_factory = (BEndEnvFactory)Class.forName("kiev.be.java15.JEnvFactory").newInstance();
+		this.benv = benv_factory.makeBEndEnv(this);
+		if (Kiev.project_file != null && Kiev.project_file.exists()) {
+			Project prj = (Project)DumpFactory.getXMLDumper().loadProject(this, Kiev.project_file);
+			this.proj = prj;
+			prj.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) {
+					if (n instanceof CompilationUnit) {
+						CompilationUnit cu = (CompilationUnit)n;
+						if (cu instanceof FileUnit)
+							cu.is_project_file = true;
+							if (prj.compilationUnits.indexOf(cu) < 0)
+								prj.compilationUnits += cu;
+						return false;
+					}
+					return true;
+				}
+			});
+		}
+		if (this.proj == null)
+			this.proj = new Project();
+
+		proj.thisPar = new LVar(0,Constants.nameThis,getTypeEnv().tpVoid,Var.PARAM_THIS,Constants.ACC_FINAL|Constants.ACC_FORWARD|Constants.ACC_SYNTHETIC);
+		this.addSpecialField("$GenAsserts", getTypeEnv().tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));
+		this.addSpecialField("$GenTraces",  getTypeEnv().tpBoolean, new ConstBoolExpr(Kiev.debugOutputT));
+
+		addCorePlugin("kiev", "kiev.transf.KievPlugin");
+		addCorePlugin("inner", "kiev.transf.InnerPlugin");
+		addCorePlugin("pizza", "kiev.transf.PizzaPlugin");
+		addCorePlugin("vnode", "kiev.transf.VNodePlugin");
+		addCorePlugin("virt-fld", "kiev.transf.VirtFldPlugin");
+		addCorePlugin("pack-fld", "kiev.transf.PackFldPlugin");
+		addCorePlugin("enum", "kiev.transf.EnumPlugin");
+		addCorePlugin("view", "kiev.transf.ViewPlugin");
+		addCorePlugin("logic", "kiev.transf.LogicPlugin");
+		addCorePlugin("macro", "kiev.transf.MacroPlugin");
+		ProcessorDescr[][] stages = PluginDescr.loadAllPlugins();
+		
+		int proc_id = 0;
+		{
+			//processors.append(new KievFE_Pass1(this,proc_id++));
+			//processors.append(new KievFE_Pass2(this,proc_id++));
+			//processors.append(new KievFE_MetaDecls(this,proc_id++));
+			//processors.append(new KievFE_MetaDefaults(this,proc_id++));
+			//processors.append(new KievFE_MetaValues(this,proc_id++));
+			//processors.append(new KievFE_Pass3(this,proc_id++));
+			//processors.append(new PizzaFE_Pass3(this,proc_id++));
+			//processors.append(new VNodeFE_Pass3(this,proc_id++));
+			//processors.append(new VirtFldFE_GenMembers(this,proc_id++));
+			//processors.append(new EnumFE_GenMembers(this,proc_id++));
+			//processors.append(new ViewFE_GenMembers(this,proc_id++));
+			//processors.append(new VNodeFE_GenMembers(this,proc_id++));
+			//processors.append(new KievFE_PreResolve(this,proc_id++));
+			//processors.append(new KievFE_MainResolve(this,proc_id++));
+			//this.feProcessors = processors.toArray();
+			this.feProcessors = collectProcessors("fe", stages, proc_id);
+			proc_id += this.feProcessors.length;
+		}
+		
+		{
+			//processors.append(new VNodeFE_Verify(this,proc_id++));
+			//processors.append(new PackedFldFE_Verify(this,proc_id++));
+			//this.vfProcessors = processors.toArray();
+			this.vfProcessors = collectProcessors("fv", stages, proc_id);
+			proc_id += this.vfProcessors.length;
+		}
+		
+		{
+			//processors.append(new KievME_DumpAPI(this,proc_id++));
+			//processors.append(new KievME_RuleGenartion(this,proc_id++));
+			//processors.append(new KievME_PreGenartion(this,proc_id++));
+			//processors.append(new PackedFldME_PreGenerate(this,proc_id++));
+			//processors.append(new VirtFldME_PreGenerate(this,proc_id++));
+			//processors.append(new PizzaME_PreGenerate(this,proc_id++));
+			//processors.append(new ViewME_PreGenerate(this,proc_id++));
+			//processors.append(new VNodeME_PreGenerate(this,proc_id++));
+			//processors.append(new InnerBE_PreGenartion(this,proc_id++));
+			//this.meProcessors = processors.toArray();
+			this.meProcessors = collectProcessors("me", stages, proc_id);
+			proc_id += this.meProcessors.length;
+		}
+
+		{
+			//processors.append(new RewriteME_Rewrite(this,proc_id++));
+			//processors.append(new InnerBE_Rewrite(this,proc_id++));
+			//processors.append(new KievBE_Resolve(this,proc_id++));
+			//processors.append(new VNodeBE_FixResolve(this,proc_id++));
+			//processors.append(new VirtFldBE_Rewrite(this,proc_id++));
+			//processors.append(new KievBE_Generate(this,proc_id++));
+			////processors.append(new ExportBE_Generate(this,proc_id++));
+			//processors.append(new KievBE_Cleanup(this,proc_id++));
+			//this.beProcessors = processors.toArray();
+			this.beProcessors = collectProcessors("be", stages, proc_id);
+			proc_id += this.beProcessors.length;
+		}
+		//this.beCleanup = new KievBE_Cleanup(this,proc_id++);
+	}
+	
+	private void addSpecialField(String name, Type tp, ENode init) {
+		foreach (Field f; root.pkg_members; f.sname == name) {
+			f.init = init;
+			return;
+		}
+		Field f = new Field(name,tp,Constants.ACC_PUBLIC|Constants.ACC_STATIC|Constants.ACC_FINAL|Constants.ACC_SYNTHETIC);
+		f.init = init;
+		root.pkg_members.add(f);
+	}
+
+	public Symbol makeGlobalSymbol(String qname) {
+		Symbol sym = null;
+		Symbol psym = root.symbol;
+		int s = 0;
+		int e = qname.indexOf('·');
+		for (;;) {
+			String name = e < 0 ? qname.substring(s).intern() : qname.substring(s,e).intern();
+			sym = null;
+			foreach (Symbol sub; psym.sub_symbols; sub.sname == name) {
+				sym = sub;
+				break;
+			}
+			if (sym == null) {
+				sym = new Symbol(name);
+				psym.sub_symbols += sym;
+			}
+			psym = sym;
+			if (e < 0)
+				break;
+			s = e+1;
+			e = qname.indexOf('·', s);
+		}
+		return sym;
+	}
+	
 	public DNode resolveGlobalDNode(String qname) {
 		//assert(qname.indexOf('.') < 0);
-		DNode pkg = (DNode)Env.getRoot();
+		DNode pkg = (DNode)root;
 		int start = 0;
 		int end = qname.indexOf('·', start);
 		while (end > 0) {
@@ -106,174 +321,103 @@ public final class Env extends KievPackage {
 		return null;
 	}
 	
-	public void registerSymbol(String uuid, Symbol sym) {
-		Symbol old = this.uuidToSymbolMap.get(uuid);
+	public synchronized void registerSymbol(SymUUID suuid) {
+		Symbol old = this.uuidToSymbolMap.get(suuid);
 		if (old != null) {
-			if (old == sym)
-				return;
-			Debug.assert("Registering another symbol with the same UUID ("+uuid+"):\n\t"+sym);
+			Debug.assert("Registering another symbol with the same UUID ("+suuid+"):\n\t"+suuid.symbol);
+			return;
 		}
-		this.uuidToSymbolMap.put(uuid,sym);
+		this.uuidToSymbolMap.put(suuid);
 	}
 	
+	public Symbol getSymbolByUUID(long high, long low) {
+		return this.uuidToSymbolMap.get(new SymUUID(high, low, null));
+	}
+	public Symbol getSymbolByUUID(SymUUID suuid) {
+		return this.uuidToSymbolMap.get(suuid);
+	}
 	public Symbol getSymbolByUUID(String uuid) {
-		return this.uuidToSymbolMap.get(uuid);
+		if (uuid == "")
+			return null;
+		SymUUID suuid = new SymUUID(uuid, null);
+		return this.uuidToSymbolMap.get(suuid);
 	}
 	
-	public Struct newStruct(String sname, Struct outer, int acces, Struct variant) {
-		return newStruct(sname,true,outer,acces,variant,false,null);
-	}
-
-	public Struct newStruct(String sname, KievPackage outer, int acces, Struct variant) {
-		return newStruct(sname,true,outer,acces,variant,false,null);
-	}
-
-	public Struct newStruct(String sname, boolean direct, Struct outer, int acces, Struct cl, boolean cleanup, String uuid)
+	public synchronized Struct newStruct(String sname, DNode outer, int acces, Struct cl, String uuid)
 	{
-		Struct bcl = null;
-		if (direct && sname != null && outer != null) {
-			foreach (Struct s; outer.members; s.sname == sname) {
-				bcl = s;
-				break;
-			}
-		}
-		if( bcl != null ) {
-			assert (bcl.getClass() == cl.getClass());
-			cl = bcl;
-			if( cleanup ) {
-				if (cl.uuid != uuid)
-					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
-				cl.cleanupOnReload();
-				cl.nodeflags |= acces;
-			}
-			return cl;
-		}
+		Symbol sym = null;
 		if (outer != null) {
-			if (!cl.isAttached())
+			Symbol psym = outer.symbol;
+			if (sname != null && psym.isGlobalSymbol())
+				sym = psym.makeGlobalSubSymbol(sname);
+		}
+		if (sym == null)
+			sym = new Symbol(sname);
+		if (uuid != null && uuid != "")
+			sym.setUUID(this,uuid);
+		if (sym.isAttached())
+			sym.parent().detach();
+		cl.symbol = ~sym;
+		cl.nodeflags |= acces;
+		if (outer != null) {
+			if (outer instanceof ComplexTypeDecl)
 				outer.members += cl;
-			else
-				assert (cl.parent() == outer);
-		}
-		cl.initStruct(sname,acces);
-		return cl;
-	}
-
-	public Struct newStruct(String sname, boolean direct, KievPackage outer, int acces, Struct cl, boolean cleanup, String uuid)
-	{
-		assert(outer != null);
-		Struct bcl = null;
-		if (direct && sname != null && outer != null) {
-			foreach (Struct s; outer.pkg_members; s.sname == sname) {
-				bcl = s;
-				break;
-			}
-		}
-		if( bcl != null ) {
-			assert (bcl.getClass() == cl.getClass());
-			cl = bcl;
-			if( cleanup ) {
-				if (cl.uuid != uuid)
-					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.uuid+" != "+uuid);
-				cl.cleanupOnReload();
-				cl.nodeflags |= acces;
-			}
-		}
-		if (outer != null) {
-			if (!cl.isAttached())
+			else if (outer instanceof KievPackage)
 				outer.pkg_members += cl;
-			else
-				assert (cl.parent() == outer);
 		}
-		cl.initStruct(sname,acces);
+		cl.nodeflags |= acces;
+		tenv.callbackTypeVersionChanged(cl);
 		return cl;
 	}
 
-	public KievPackage newPackage(String qname) {
+	public synchronized KievPackage newPackage(String qname) {
 		if (qname == "")
-			return Env.getRoot();
+			return this.root;
 		assert(qname.indexOf('.') < 0);
 		int end = qname.lastIndexOf('·');
 		if (end < 0)
-			return newPackage(qname,Env.getRoot());
+			return newPackage(qname,root);
 		else
 			return newPackage(qname.substring(end+1).intern(),newPackage(qname.substring(0,end).intern()));
 	}
 
-	public KievPackage newPackage(String sname, KievPackage outer) {
+	public synchronized KievPackage newPackage(String sname, KievPackage outer) {
 		if (sname.indexOf(" ") >= 0)
-			Kiev.reportWarning(this,"Creating a package with space in the name: '"+sname+"'");
-		KievPackage cl = null;
-		foreach (KievPackage s; outer.pkg_members; s.sname == sname) {
-			cl = s;
-			break;
-		}
-		if (cl == null) {
-			cl = new KievPackage();
-			cl.sname = sname;
-			outer.pkg_members += cl;
-		}
-		return cl;
+			Kiev.reportWarning(root,"Creating a package with space in the name: '"+sname+"'");
+		foreach (KievPackage pkg; outer.pkg_members; pkg.sname == sname)
+			return pkg;
+		KievPackage pkg = new KievPackage(outer.symbol.makeGlobalSubSymbol(sname));
+		outer.pkg_members += pkg;
+		return pkg;
 	}
 
-	public MetaTypeDecl newMetaType(Symbol id, KievPackage pkg, boolean cleanup, String uuid) {
-		if (pkg == null)
-			pkg = Env.getRoot();
-		MetaTypeDecl tdecl = null;
-		foreach (MetaTypeDecl pmt; pkg.pkg_members; pmt.sname == id.sname) {
-			tdecl = pmt;
-			break;
+	static class ProjDumpFilter extends XMLDumpFilter {
+		ProjDumpFilter() { super("api"); }
+		public boolean ignoreAttr(INode parent, AttrSlot attr) {
+			if (parent instanceof FileUnit) {
+				if (attr.name == "fname" || attr.name == "ftype")
+					return false;
+				return true;
+			}
+			return super.ignoreAttr(parent, attr);
 		}
-		if (tdecl == null) {
-			tdecl = new MetaTypeDecl();
-			tdecl.pos = id.pos;
-			tdecl.sname = id.sname;
-			tdecl.nodeflags |= ACC_MACRO;
-			pkg.pkg_members.add(tdecl);
+		public boolean ignoreNode(INode parent, AttrSlot attr, INode node) {
+			if (node instanceof FileUnit)
+				return !node.is_project_file;
+			if (node instanceof DirUnit)
+				return !node.hasProjectFiles();
+			return super.ignoreNode(parent, attr, node);
 		}
-		else if (cleanup) {
-			if (tdecl.uuid != uuid)
-				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.uuid+" != "+uuid);
-			tdecl.cleanupOnReload();
-			tdecl.nodeflags |= ACC_MACRO;
-			if (!tdecl.isAttached())
-				pkg.pkg_members.add(tdecl);
-			else
-				assert(pkg.pkg_members.indexOf(tdecl) >= 0);
-		}
-
-		return tdecl;
-	}
-
-	/** Environment initialization with specified CLASSPATH
-		for the compiling classes
-	 */
-	public void InitializeEnv(String path) {
-		if (path == null) path = System.getProperty("java.class.path");
-		this.classpath = new kiev.bytecode.Classpath(path);
-		this.jenv = new JEnv(this);
-		if (Kiev.project_file != null && Kiev.project_file.exists())
-			this.proj = DumpUtils.loadProject(Kiev.project_file);
-		if (this.proj == null)
-			this.proj = new Project();
-
-		//root.setPackage();
-		root.addSpecialField("$GenAsserts", Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));
-		root.addSpecialField("$GenTraces",  Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputT));
-	}
-	
-	private void addSpecialField(String name, Type tp, ENode init) {
-		foreach (Field f; this.pkg_members; f.sname == name) {
-			f.init = init;
+	};
+	public void dumpProjectFile() {
+		if (Kiev.project_file == null) return;
+		try {
+			Kiev.project_file.createNewFile();
+		} catch (Exception e) {
 			return;
 		}
-		Field f = new Field(name,tp,ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
-		f.init = init;
-		pkg_members.add(f);
-	}
-
-	public void dumpProjectFile() {
-		if( Kiev.project_file == null ) return;
-		DumpUtils.dumpToXMLFile("proj", getProject(), Kiev.project_file);
+		if (!Kiev.project_file.canWrite()) return;
+		DumpFactory.getXMLDumper().dumpToXMLFile(this, new ProjDumpFilter(), new ANode[]{this.proj}, Kiev.project_file);
 	}
 
 	public boolean existsTypeDecl(String qname) {
@@ -301,27 +445,27 @@ public final class Env extends KievPackage {
 		// Load if not loaded or not resolved
 		if (cl.isTypeDeclNotLoaded()) {
 			if (cl instanceof Struct)
-				jenv.actuallyLoadDecl((Struct)cl);
+				return (TypeDecl)benv.actuallyLoadDecl((Struct)cl);
 			else
-				jenv.actuallyLoadDecl(cl.qname());
+				return (TypeDecl)benv.actuallyLoadDecl(cl.qname());
 		}
 		return cl;
 	}
 	
 	public DNode loadAnyDecl(String qname) {
-		if (qname.length() == 0) return Env.getRoot();
+		if (qname.length() == 0) return this.root;
 		if (qname.indexOf('.') >= 0) return null;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		DNode dn = resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (dn == null)
-			dn = jenv.actuallyLoadDecl(qname);
+			dn = benv.actuallyLoadDecl(qname);
 		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded()) {
 			if (dn instanceof Struct)
-				dn = jenv.actuallyLoadDecl((Struct)dn);
+				dn = benv.actuallyLoadDecl((Struct)dn);
 			else
-				dn = jenv.actuallyLoadDecl(dn.qname());
+				dn = benv.actuallyLoadDecl(dn.qname());
 		}
 		if (dn == null)
 			classHashOfFails.put(qname);
@@ -340,5 +484,143 @@ public final class Env extends KievPackage {
 		return data;
 	}
 
+	public static INode getPrevNode(ANode node) {
+		AttrSlot slot = node.pslot();
+		if (slot instanceof ASpaceAttrSlot) {
+			INode prev = null;
+			foreach (INode n; slot.iterate(node.parent())) {
+				if (node == n)
+					return prev;
+				prev = n;
+			}
+		}
+		return null;
+	}
+	public static INode getNextNode(ANode node) {
+		AttrSlot slot = node.pslot();
+		if (slot instanceof ASpaceAttrSlot) {
+			Enumeration<INode> iter = slot.iterate(node.parent());
+			foreach (INode n; iter; node == n) {
+				if (iter.hasMoreElements())
+					return iter.nextElement();
+				return null;
+			}
+		}
+		return null;
+	}
+	
+	public static ScalarPtr getScalarPtr(INode node, String name) {
+		foreach (ScalarAttrSlot attr; node.values(); attr.name == name)
+			return new ScalarPtr(node.asANode(), attr);
+		throw new RuntimeException("No @nodeAttr/@nodeData attribute '"+name+"' in "+node.getClass());
+	}
+	
+	public static SpacePtr getSpacePtr(INode node, String name) {
+		foreach (SpaceAttrSlot attr; node.values(); attr.name == name)
+			return new SpacePtr(node.asANode(), attr);
+		throw new RuntimeException("No @nodeAttr/@nodeData space '"+name+"' in "+node.getClass());
+	}
+
+	public static boolean hasSameRoot(INode n1, INode n2) {
+		return ctxRoot(n1) == ctxRoot(n2);
+	}
+
+	public static boolean needResolving(SymbolRef sref) {
+		Symbol symb = sref.symbol;
+		if (symb == null)
+			return (sref.name != null && sref.name != "");
+		else
+			return !hasSameRoot(sref, symb);
+	}
+	
+	public static INode ctxRoot(INode self) {
+		while (self.isAttached())
+			self = self.parent();
+		return self;
+	}
+	
+	public static ANode ctxRoot(ANode self) {
+		while (self.isAttached())
+			self = self.parent();
+		return self;
+	}
+	
+	public static FileUnit ctxFileUnit(INode self) {
+		return ctxFileUnit((ANode)self);
+	}
+	public static FileUnit ctxFileUnit(ANode self) {
+		if (self == null)
+			return null;
+		if (self instanceof FileUnit)
+			return (FileUnit)self;
+		for (;;) {
+			ANode p = ANode.nodeattr$syntax_parent.get(self);
+			if (p != null) {
+				if (p instanceof FileUnit)
+					return (FileUnit)p;
+				self = p;
+				continue;
+			}
+			p = self.parent();
+			if (p != null) {
+				if (p instanceof FileUnit)
+					return (FileUnit)p;
+				self = p;
+				continue;
+			}
+			return null;
+		}
+	}
+	public static SyntaxScope ctxSyntaxScope(INode self) {
+		return ctxSyntaxScope((ANode)self);
+	}
+	public static SyntaxScope ctxSyntaxScope(ANode self) {
+		if (self == null)
+			return null;
+		if (self instanceof SyntaxScope)
+			return (SyntaxScope)self;
+		for (;;) {
+			ANode p = ANode.nodeattr$syntax_parent.get(self);
+			if (p != null) {
+				if (p instanceof SyntaxScope)
+					return (SyntaxScope)p;
+				self = p;
+				continue;
+			}
+			p = self.parent();
+			if (p != null) {
+				if (p instanceof SyntaxScope)
+					return (SyntaxScope)p;
+				self = p;
+				continue;
+			}
+			return null;
+		}
+	}
+	
+	public static ComplexTypeDecl ctxTDecl(ANode self) {
+		if (self == null || self instanceof SyntaxScope)
+			return null;
+		return ctxChildTDecl(self.parent());
+	}
+	private static ComplexTypeDecl ctxChildTDecl(ANode self) {
+		if (self == null || self instanceof SyntaxScope)
+			return null;
+		if (self instanceof ComplexTypeDecl)
+			return (ComplexTypeDecl)self;
+		return ctxChildTDecl(self.parent());
+	}
+	public static Method ctxMethod(ANode self) {
+		if (self == null || self instanceof SyntaxScope)
+			return null;
+		return ctxChildMethod(self.parent());
+	}
+	private static Method ctxChildMethod(ANode self) {
+		if (self == null || self instanceof SyntaxScope)
+			return null;
+		if (self instanceof Method)
+			return (Method)self;
+		return ctxChildMethod(self.parent());
+	}
 }
 

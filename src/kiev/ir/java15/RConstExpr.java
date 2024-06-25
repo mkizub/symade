@@ -17,13 +17,13 @@ import syntax kiev.Syntax;
  *
  */
 
-@ViewOf(vcast=true, iface=true)
+@ViewOf(vcast=true)
 public final view RConstExpr of ConstExpr extends RENode {
 	
-	public final void resolve(Type reqType) {
+	public final void resolveENode(Type reqType, Env env) {
 		setResolved(true);
 		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+			RReturnStat.autoReturn(reqType, this, env);
 	}
 }
 

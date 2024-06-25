@@ -1,1 +1,1 @@
-C:\Sun\Java\jdk1.6.0_06\bin\java.exe -ea -Xmx256M -classpath classes4;..\bin\piccolo.jar -verify kiev.Main %*
+java.exe -ea -Xmx256M -classpath classes4;..\bin\piccolo.jar -verify kiev.Main %*

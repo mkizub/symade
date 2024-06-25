@@ -10,9 +10,11 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.WorkerThreadGroup;
+
 public class Main {
 
-	public Main(){
-		UIManager.newWindow();
+	public Main(WorkerThreadGroup thrg){
+		UIManager.newWindow(thrg);
 	}
 }

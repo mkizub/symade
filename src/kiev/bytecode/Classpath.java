@@ -18,7 +18,7 @@ import java.util.zip.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 238 $
  *
  */
 
@@ -79,10 +79,7 @@ public class Classpath implements BytecodeFileConstants {
 	}
 
 	public byte[]	read(String clazz_name) {
-		return read(KString.from( clazz_name.replace('.','/') ));
-	}
-
-	public byte[]	read(KString clazz_name) {
+		clazz_name = clazz_name.replace('.','/');
 		foreach(ClasspathEntry cpe; entries; cpe != null) {
 			byte[] data = cpe.read(clazz_name);
 			if( data != null ) return data;
@@ -90,8 +87,7 @@ public class Classpath implements BytecodeFileConstants {
 		return null;
 	}
 
-	public static byte[] createPlainPackage(KString _clazz_name) {
-		String clazz_name = _clazz_name.toString();
+	public static byte[] createPlainPackage(String clazz_name) {
 		String name, pkg;
 		int p = clazz_name.lastIndexOf('/');
 		if (p > 0) {
@@ -102,7 +98,7 @@ public class Classpath implements BytecodeFileConstants {
 			pkg = "";
 		}
 		String data =
-		"<?xml version='1.1' encoding='UTF-8' standalone='yes'?>\n"+
+		"<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n"+
 		"<sop:kiev.vlang.KievPackage xmlns:sop='sop://sop/' name='"+name+"' />";
 		return data.getBytes("UTF-8");
 	}
@@ -120,7 +116,7 @@ public class Classpath implements BytecodeFileConstants {
 
 public interface ClasspathEntry {
 	public boolean	exists(String clazz_name);
-	public byte[]	read(KString clazz_name);
+	public byte[]	read(String clazz_name);
 }
 
 public class DirClasspathEntry implements ClasspathEntry {
@@ -144,8 +140,8 @@ public class DirClasspathEntry implements ClasspathEntry {
 		return false;
 	}
 
-	public byte[] read(KString clazz_name) {
-		String name = clazz_name.toString();
+	public byte[] read(String clazz_name) {
+		String name = clazz_name;
 		if( File.separatorChar != '/' )
 			name = name.replace('/',File.separatorChar);
 		File f;
@@ -214,15 +210,15 @@ public class ZipClasspathEntry implements ClasspathEntry {
 		ZipEntry f;
 		if( (f=zipfile.getEntry(name+"/")) != null )
 			return true;
-		else if( (f=zipfile.getEntry(name+".class")) != null )
-			return true;
 		else if( (f=zipfile.getEntry(name+".xml")) != null )
+			return true;
+		else if( (f=zipfile.getEntry(name+".class")) != null )
 			return true;
 		return false;
 	}
 
-	public byte[] read(KString clazz_name) {
-		String name = clazz_name.toString();
+	public byte[] read(String clazz_name) {
+		String name = clazz_name;
 		ZipEntry f;
 		if( direntries.contains(name+"/") ) { //if (f=zipfile.getEntry(name+"/")) != null ) {
 			if( (f=zipfile.getEntry(name+"/package.class")) != null ) {
@@ -235,14 +231,14 @@ public class ZipClasspathEntry implements ClasspathEntry {
 				return Classpath.createPlainPackage(clazz_name);
 			}
 		}
-		else if( (f=zipfile.getEntry(name+".class")) != null ) {
+		else if( (f=zipfile.getEntry(name+".xml")) != null ) {
 			byte[] data = new byte[(int)f.getSize()];
 			InputStream zis = zipfile.getInputStream(f);
 			Classpath.readFully(zis,data);
 			zis.close();
 			return data;
 		}
-		else if( (f=zipfile.getEntry(name+".xml")) != null ) {
+		else if( (f=zipfile.getEntry(name+".class")) != null ) {
 			byte[] data = new byte[(int)f.getSize()];
 			InputStream zis = zipfile.getInputStream(f);
 			Classpath.readFully(zis,data);

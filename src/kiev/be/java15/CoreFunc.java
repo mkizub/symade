@@ -13,16 +13,14 @@ import syntax kiev.Syntax;
 
 import static kiev.be.java15.Instr.*;
 
-public abstract class BEndFunc {
-	public static Hashtable<String,BEndFunc> coreFuncs;
-	static {
-		coreFuncs = new Hashtable<String,BEndFunc>(1024);
+public abstract class BEndFunc implements BEndOperation {
+
+	public static int init(JEnv jenv) {
+		Hashtable<String,BEndFunc> coreFuncs = new Hashtable<String,BEndFunc>(1024);
 
 //		coreFuncs.put("kiev.stdlib.any:_instanceof_",       AnyInstanceOf);
 
 		coreFuncs.put("kiev.vlang.Globals:ref_assign",      new AssignFunc());
-		coreFuncs.put("kiev.vlang.Globals:ref_assign2",     new AssignFunc());
-		coreFuncs.put("kiev.vlang.Globals:ref_pvar_init",   new AssignFunc());
 //		coreFuncs.put("kiev.stdlib.any:ref_eq",             ObjectBoolEQ);
 //		coreFuncs.put("kiev.stdlib.any:ref_neq",            ObjectBoolNE);
 
@@ -162,42 +160,47 @@ public abstract class BEndFunc {
 		coreFuncs.put("kiev.stdlib.double:mod",             new BinaryOpFunc(Instr.op_drem));
 		coreFuncs.put("kiev.stdlib.double:positive",        new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.double:negative",        new UnaryOpFunc(Instr.op_dneg));
-	}
 
+		foreach (String key; coreFuncs.keys()) {
+			BEndFunc bend_func = coreFuncs.get(key);
+			kiev.vlang.CoreFunc core_func = jenv.env.coreFuncs.get(key);
+			core_func.operation.bend_func = bend_func;
+		}
+		return coreFuncs.size();
+	}
+	
 	public abstract void generate(Code code, Type reqType, JENode expr);
 	
 	final JENode[] getJArgs(JENode expr) {
-		ENode[] args = ((ENode)expr).getEArgs();
+		ENode[] args = expr.vn().getEArgs();
 		JENode[] jargs = new JENode[args.length];
 		for (int i=0; i < args.length; i++)
 			jargs[i] = (JENode)args[i];
 		return jargs;
 	}
 	
-}
 
-@singleton
-final class UnimplementedFunc extends BEndFunc {
+static final class UnimplementedFunc extends BEndFunc {
 	public void generate(Code code, Type reqType, JENode expr) {
-		Kiev.reportError(expr, "Unsupported core function "+this+" for java backend");
+		Kiev.reportError(expr.vn(), "Unsupported core function "+this+" for java backend");
 	}
 }
 
-final class AssignFunc extends BEndFunc {
+static final class AssignFunc extends BEndFunc {
 	public void generate(Code code, Type reqType, JENode expr) {
 		JENode[] args = this.getJArgs(expr);
 		JLvalueExpr lval = (JLvalueExpr)args[0];
 		JENode value = args[1];
 		lval.generateAccess(code);
 		value.generate(code,null);
-		if( reqType ≢ Type.tpVoid )
+		if( reqType ≢ code.tenv.tpVoid )
 			lval.generateStoreDupValue(code);
 		else
 			lval.generateStore(code);
 	}
 }
 
-final class AssignWithOpFunc extends BEndFunc {
+static final class AssignWithOpFunc extends BEndFunc {
 	private final Instr instr;
 	AssignWithOpFunc(Instr instr) { this.instr = instr; }
 	public void generate(Code code, Type reqType, JENode expr) {
@@ -207,14 +210,14 @@ final class AssignWithOpFunc extends BEndFunc {
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		code.addInstr(instr);
-		if( reqType ≢ Type.tpVoid )
+		if( reqType ≢ code.tenv.tpVoid )
 			lval.generateStoreDupValue(code);
 		else
 			lval.generateStore(code);
 	}
 }
 
-final class AssignIntOpFunc extends BEndFunc {
+static final class AssignIntOpFunc extends BEndFunc {
 	private final Instr instr;
 	AssignIntOpFunc(Instr instr) { this.instr = instr; }
 	public void generate(Code code, Type reqType, JENode expr) {
@@ -224,7 +227,7 @@ final class AssignIntOpFunc extends BEndFunc {
 		if( lval instanceof JLVarExpr && value instanceof JConstExpr) {
 			JLVarExpr va = (JLVarExpr)lval;
 			if( !va.var.isNeedProxy() ) {
-				int val = ((Number)((JConstExpr)value).getConstValue()).intValue();
+				int val = ((Number)((JConstExpr)value).getConstValue(code.env)).intValue();
 				if (instr == Instr.op_isub) val = -val;
 				if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
 					IntPreIncrFunc.genVarIncr(code, reqType, va, val);
@@ -236,14 +239,14 @@ final class AssignIntOpFunc extends BEndFunc {
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		code.addInstr(instr);
-		if( reqType ≢ Type.tpVoid )
+		if( reqType ≢ code.tenv.tpVoid )
 			lval.generateStoreDupValue(code);
 		else
 			lval.generateStore(code);
 	}
 }
 
-final class BinaryOpFunc extends BEndFunc {
+static final class BinaryOpFunc extends BEndFunc {
 	private final Instr instr;
 	BinaryOpFunc(Instr instr) { this.instr = instr; }
 	public void generate(Code code, Type reqType, JENode expr) {
@@ -253,11 +256,11 @@ final class BinaryOpFunc extends BEndFunc {
 		expr1.generate(code,null);
 		expr2.generate(code,null);
 		code.addInstr(instr);
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 }
 
-final class UnaryOpFunc extends BEndFunc {
+static final class UnaryOpFunc extends BEndFunc {
 	private final Instr instr;
 	UnaryOpFunc(Instr instr) { this.instr = instr; }
 	public void generate(Code code, Type reqType, JENode expr) {
@@ -266,11 +269,11 @@ final class UnaryOpFunc extends BEndFunc {
 		expr.generate(code,null);
 		if (instr != Instr.op_nop)
 			code.addInstr(instr);
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ code.tenv.tpVoid ) code.addInstr(op_pop);
 	}
 }
 
-final class IntBitNOT extends BEndFunc {
+static final class IntBitNOT extends BEndFunc {
 	public void generate(Code code, Type reqType, JENode expr) {
 		JENode[] args = this.getJArgs(expr);
 		JENode expr = args[0];
@@ -280,7 +283,7 @@ final class IntBitNOT extends BEndFunc {
 	}
 }
 
-final class LongBitNOT extends BEndFunc {
+static final class LongBitNOT extends BEndFunc {
 	public void generate(Code code, Type reqType, JENode expr) {
 		JENode[] args = this.getJArgs(expr);
 		JENode expr = args[0];
@@ -291,7 +294,7 @@ final class LongBitNOT extends BEndFunc {
 }
 
 
-abstract class IncrFunc extends BEndFunc {
+abstract static class IncrFunc extends BEndFunc {
 	final Instr instr;
 	IncrFunc(Instr instr) { this.instr = instr; }
 	abstract void genIncr(Code code, Type reqType, JLvalueExpr lval);
@@ -302,10 +305,10 @@ abstract class IncrFunc extends BEndFunc {
 	}
 }
 
-abstract class PreIncrFunc extends IncrFunc {
+abstract static class PreIncrFunc extends IncrFunc {
 	PreIncrFunc(Instr instr) { super(instr); }
 	public void genIncr(Code code, Type reqType, JLvalueExpr lval) {
-		if( reqType ≢ Type.tpVoid ) {
+		if( reqType ≢ code.tenv.tpVoid ) {
 			lval.generateLoadDup(code);
 			pushProperConstant(code);
 			code.addInstr(instr);
@@ -319,14 +322,14 @@ abstract class PreIncrFunc extends IncrFunc {
 	}
 }
 
-abstract class PostIncrFunc extends IncrFunc {
+abstract static class PostIncrFunc extends IncrFunc {
 	PostIncrFunc(Instr instr) { super(instr); }
-	abstract JVar makeTempVar();
+	abstract JVar makeTempVar(Code code);
 	public void genIncr(Code code, Type reqType, JLvalueExpr lval) {
-		if( reqType ≢ Type.tpVoid ) {
+		if( reqType ≢ code.tenv.tpVoid ) {
 			lval.generateLoadDup(code);
 			code.addInstr(Instr.op_dup);
-			JVar tmp_var = makeTempVar();
+			JVar tmp_var = makeTempVar(code);
 			code.addVar(tmp_var);
 			code.addInstr(Instr.op_store,tmp_var);
 			pushProperConstant(code);
@@ -343,7 +346,7 @@ abstract class PostIncrFunc extends IncrFunc {
 	}
 }
 
-final class IntPreIncrFunc extends PreIncrFunc {
+static final class IntPreIncrFunc extends PreIncrFunc {
 	private final int val;
 	IntPreIncrFunc(Instr instr, int val) { super(instr); this.val = val; }
 	void pushProperConstant(Code code) { code.addConst(val); }
@@ -360,16 +363,16 @@ final class IntPreIncrFunc extends PreIncrFunc {
 	}
 	public static void genVarIncr(Code code, Type reqType, JLVarExpr va, int val) {
 		code.addInstrIncr(va.var,val);
-		if( reqType ≢ Type.tpVoid )
+		if( reqType ≢ code.tenv.tpVoid )
 			code.addInstr(op_load,va.var);
 	}
 }
 
-final class IntPostIncrFunc extends PostIncrFunc {
+static final class IntPostIncrFunc extends PostIncrFunc {
 	private final int val;
 	IntPostIncrFunc(Instr instr, int val) { super(instr); this.val = val; }
 	void pushProperConstant(Code code) { code.addConst(val); }
-	JVar makeTempVar() { return (JVar)new LVar(0,"",Type.tpInt,Var.VAR_LOCAL,0); }
+	JVar makeTempVar(Code code) { return (JVar)new LVar(0,"",code.tenv.tpInt,Var.VAR_LOCAL,0); }
 	public void generate(Code code, Type reqType, JENode expr) {
 		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
 		if( lval instanceof JLVarExpr ) {
@@ -382,23 +385,24 @@ final class IntPostIncrFunc extends PostIncrFunc {
 		genIncr(code, reqType, lval);
 	}
 	public static void genVarIncr(Code code, Type reqType, JLVarExpr va, int val) {
-		if( reqType ≢ Type.tpVoid )
+		if( reqType ≢ code.tenv.tpVoid )
 			code.addInstr(op_load,va.var);
 		code.addInstrIncr(va.var,val);
 	}
 }
 
-final class LongPreIncrFunc extends PreIncrFunc {
+static final class LongPreIncrFunc extends PreIncrFunc {
 	private final long val;
 	LongPreIncrFunc(Instr instr, long val) { super(instr); this.val = val; }
 	void pushProperConstant(Code code) { code.addConst(val); }
 }
 
-final class LongPostIncrFunc extends PostIncrFunc {
+static final class LongPostIncrFunc extends PostIncrFunc {
 	private final long val;
 	LongPostIncrFunc(Instr instr, long val) { super(instr); this.val = val; }
 	void pushProperConstant(Code code) { code.addConst(val); }
-	JVar makeTempVar() { return (JVar)new LVar(0,"",Type.tpLong,Var.VAR_LOCAL,0); }
+	JVar makeTempVar(Code code) { return (JVar)new LVar(0,"",code.tenv.tpLong,Var.VAR_LOCAL,0); }
 }
 
 
+} // BEndFunc

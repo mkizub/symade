@@ -13,16 +13,37 @@ import syntax kiev.Syntax;
 
 import static kiev.be.java15.Instr.*;
 
-@ViewOf(vcast=true, iface=true)
-public final view JInlineMethodStat of InlineMethodStat extends JENode {
-	public:ro JMethod				dispatched;
-	public:ro JMethod				dispatcher;
-	public:ro SymbolRef[]			old_vars;
-	public:ro SymbolRef[]			new_vars;
+public final class JInlineMethodStat extends JENode {
+
+	@virtual typedef VT  ≤ InlineMethodStat;
+
+	public final JMethod dispatched;
+	public final JMethod dispatcher;
+
+	public static JInlineMethodStat attach(InlineMethodStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JInlineMethodStat)jn;
+		return new JInlineMethodStat(impl);
+	}
+	
+	protected JInlineMethodStat(InlineMethodStat impl) {
+		super(impl);
+		this.dispatched = (JMethod)impl.dispatched;
+		this.dispatcher = (JMethod)impl.dispatcher;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating InlineMethodStat");
 		code.setLinePos(this);
+		InlineMethodStat vn = vn();
+		SymbolRef[] old_vars = vn.old_vars;
+		SymbolRef[] new_vars = vn.new_vars;
 		for (int i=0; i < old_vars.length; i++) {
 			Var vold = (Var)old_vars[i].dnode;
 			Var vnew = (Var)new_vars[i].dnode;
@@ -43,6 +64,9 @@ public final view JInlineMethodStat of InlineMethodStat extends JENode {
 
 	public void generateArgumentCheck(Code code) {
 		JMethod m = dispatched;
+		InlineMethodStat vn = vn();
+		SymbolRef[] old_vars = vn.old_vars;
+		SymbolRef[] new_vars = vn.new_vars;
 		for (int i=0; i < old_vars.length; i++) {
 			JVar vold = (JVar)(Var)old_vars[i].dnode;
 			JVar vnew = (JVar)(Var)new_vars[i].dnode;
@@ -55,28 +79,65 @@ public final view JInlineMethodStat of InlineMethodStat extends JENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final final view JExprStat of ExprStat extends JENode {
-	public:ro	JENode		expr;
+public final class JExprStat extends JENode {
+
+	@virtual typedef VT  ≤ ExprStat;
+
+	public static JExprStat attach(ExprStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JExprStat)jn;
+		return new JExprStat(impl);
+	}
+	
+	protected JExprStat(ExprStat impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ExprStat");
+		code.setLinePos(this);
+		ExprStat vn = vn();
+		JENode expr = (JENode)vn.expr;
 		try {
 			if (expr != null)
-				expr.generate(code,Type.tpVoid);
+				expr.generate(code,code.tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn,e);
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JReturnStat of ReturnStat extends JENode {
-	public:ro	JENode		expr;
+public final class JReturnStat extends JENode {
+
+	@virtual typedef VT  ≤ ReturnStat;
+
+	public static JReturnStat attach(ReturnStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JReturnStat)jn;
+		return new JReturnStat(impl);
+	}
+	
+	protected JReturnStat(ReturnStat impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ReturnStat");
 		code.setLinePos(this);
+		ReturnStat vn = vn();
+		JENode expr = (JENode)vn.expr;
 		try {
 			if( expr != null ) {
 				expr.generate(code,code.method.mtype.ret());
@@ -87,7 +148,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 			}
 			generateReturn(code,this);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn,e);
 		}
 	}
 
@@ -103,16 +164,16 @@ public final view JReturnStat of ReturnStat extends JENode {
 			}
 			else if (node instanceof JTryStat) {
 				if( node.finally_catcher != null ) {
-					if( tmp_var==null && code.method.mtype.ret() ≢ Type.tpVoid ) {
+					if( tmp_var==null && code.method.mtype.ret() ≢ code.tenv.tpVoid ) {
 						tmp_var = (JVar)new LVar(0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
-					code.addInstr(Instr.op_jsr,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
+					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 				}
 			}
 			else if (node instanceof JSynchronizedStat) {
-				if( tmp_var==null && code.method.mtype.ret() ≢ Type.tpVoid ) {
+				if( tmp_var==null && code.method.mtype.ret() ≢ code.tenv.tpVoid ) {
 					tmp_var = (JVar)new LVar(0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
@@ -127,47 +188,82 @@ public final view JReturnStat of ReturnStat extends JENode {
 		}
 		if( code.need_to_gen_post_cond ) {
 			code.addInstr(Instr.op_goto,code.method.getBrkLabel().getCodeLabel(code));
-			if( code.method.mtype.ret() ≢ Type.tpVoid )
+			if( code.method.mtype.ret() ≢ code.tenv.tpVoid )
 				code.stack_pop();
 		} else
 			code.addInstr(Instr.op_return);
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JThrowStat of ThrowStat extends JENode {
-	public:ro	JENode		expr;
+public final class JThrowStat extends JENode {
+
+	@virtual typedef VT  ≤ ThrowStat;
+
+	public static JThrowStat attach(ThrowStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JThrowStat)jn;
+		return new JThrowStat(impl);
+	}
+	
+	protected JThrowStat(ThrowStat impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ThrowStat");
 		code.setLinePos(this);
+		ThrowStat vn = vn();
+		JENode expr = (JENode)vn.expr;
 		try {
 			expr.generate(code,null);
 			code.addInstr(Instr.op_throw);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn,e);
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JIfElseStat of IfElseStat extends JENode {
-	public:ro	JENode		cond;
-	public:ro	JENode		thenSt;
-	public:ro	JENode		elseSt;
+public final class JIfElseStat extends JENode {
+
+	@virtual typedef VT  ≤ IfElseStat;
+
+	public static JIfElseStat attach(IfElseStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JIfElseStat)jn;
+		return new JIfElseStat(impl);
+	}
+	
+	protected JIfElseStat(IfElseStat impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating IfElseStat");
 		code.setLinePos(this);
+		IfElseStat vn = vn();
+		JENode cond = (JENode)vn.cond;
+		JENode thenSt = (JENode)vn.thenSt;
+		JENode elseSt = (JENode)vn.elseSt;
 		Type gen_tp;
-		if( reqType ≡ Type.tpVoid )
-			gen_tp = Type.tpVoid;
+		if( reqType ≡ code.tenv.tpVoid )
+			gen_tp = code.tenv.tpVoid;
 		else
 			gen_tp = this.getType(); 
 		try {
-			if( cond.isConstantExpr() ) {
-				JENode cond = this.cond;
-				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
+			if( cond.isConstantExpr(code.env) ) {
+				if( ((Boolean)cond.getConstValue(code.env)).booleanValue() ) {
 					if( isAutoReturnable() )
 						thenSt.setAutoReturnable(true);
 					thenSt.generate(code,gen_tp);
@@ -197,24 +293,38 @@ public final view JIfElseStat of IfElseStat extends JENode {
 				}
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn,e);
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JCondStat of CondStat extends JENode {
-	public:ro	JENode		enabled;
-	public:ro	JENode		cond;
-	public:ro	JENode		message;
+public final class JCondStat extends JENode {
+
+	@virtual typedef VT  ≤ CondStat;
+
+	public static JCondStat attach(CondStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JCondStat)jn;
+		return new JCondStat(impl);
+	}
+	
+	protected JCondStat(CondStat impl) {
+		super(impl);
+	}
 
 	public void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		if (wbc.sname == null) return;
-		code.addConst(KString.from(wbc.sname));
+		code.addConst(wbc.sname);
 	}
 
-	public JMethod getAssertMethod() {
+	public JMethod getAssertMethod(Code code) {
 		String fname;
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		switch( wbc.cond ) {
@@ -225,9 +335,9 @@ public final view JCondStat of CondStat extends JENode {
 		}
 		Method func;
 		if (wbc.sname == null)
-			func = Type.tpDebug.tdecl.resolveMethod(fname,Type.tpVoid,Type.tpString);
+			func = code.tenv.tpDebug.tdecl.resolveMethod(code.env,fname,code.tenv.tpVoid,code.tenv.tpString);
 		else
-			func = Type.tpDebug.tdecl.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
+			func = code.tenv.tpDebug.tdecl.resolveMethod(code.env,fname,code.tenv.tpVoid,code.tenv.tpString,code.tenv.tpString);
 		return (JMethod)func;
 	}
 	
@@ -236,43 +346,66 @@ public final view JCondStat of CondStat extends JENode {
 		if (!Kiev.debugOutputA)
 			return;
 		code.setLinePos(this);
+		CondStat vn = vn();
+		JENode enabled = (JENode)vn.enabled;
+		JENode cond = (JENode)vn.cond;
+		JENode message = (JENode)vn.message;
 		try {
-			if(cond.isConstantExpr() ) {
-				JENode cond = this.cond;
-				if( ((Boolean)cond.getConstValue()).booleanValue() );
+			if(cond.isConstantExpr(code.env) ) {
+				if( ((Boolean)cond.getConstValue(code.env)).booleanValue() );
 				else {
 					generateAssertName(code);
-					message.generate(code,Type.tpString);
-					code.addInstr(Instr.op_call,getAssertMethod(),false);
+					message.generate(code,code.tenv.tpString);
+					code.addInstr(Instr.op_call,getAssertMethod(code),false);
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
 				JBoolExpr.gen_iffalse(code, enabled, else_label);
 				JBoolExpr.gen_iftrue(code, cond, else_label);
 				generateAssertName(code);
-				message.generate(code,Type.tpString);
-				code.addInstr(Instr.op_call,getAssertMethod(),false);
+				message.generate(code,code.tenv.tpString);
+				code.addInstr(Instr.op_call,getAssertMethod(code),false);
 				code.addInstr(Instr.set_label,else_label);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn,e);
 		}
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JLabeledStat of LabeledStat extends JENode {
-	public:ro	JLabel		lbl;
-	public:ro	JENode		stat;
+public final class JLabeledStat extends JENode {
+
+	@virtual typedef VT  ≤ LabeledStat;
+
+	public final JLabel lbl;
+
+	public static JLabeledStat attach(LabeledStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JLabeledStat)jn;
+		return new JLabeledStat(impl);
+	}
+	
+	protected JLabeledStat(LabeledStat impl) {
+		super(impl);
+		this.lbl = (JLabel)impl.lbl;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating LabeledStat");
 		code.setLinePos(this);
+		LabeledStat vn = vn();
+		JENode stat = (JENode)vn.stat;
 		try {
-			lbl.generate(code,Type.tpVoid);
-			stat.generate(code,Type.tpVoid);
+			lbl.generate(code,code.tenv.tpVoid);
+			stat.generate(code,code.tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(stat,e);
+			Kiev.reportError(stat.vn(),e);
 		}
 	}
 
@@ -281,9 +414,28 @@ public final view JLabeledStat of LabeledStat extends JENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JBreakStat of BreakStat extends JENode {
-	public:ro	JLabel		dest;
+public final class JBreakStat extends JENode {
+
+	@virtual typedef VT  ≤ BreakStat;
+
+	public final JLabel dest;
+
+	public static JBreakStat attach(BreakStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JBreakStat)jn;
+		return new JBreakStat(impl);
+	}
+	
+	protected JBreakStat(BreakStat impl) {
+		super(impl);
+		this.dest = (JLabel)impl.dest;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating BreakStat");
@@ -304,21 +456,21 @@ public final view JBreakStat of BreakStat extends JENode {
 			else
 				code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn(),e);
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
 	public Object[] resolveBreakLabel(Code code) {
-		String name = this.ident;
+		String name = this.getIdent();
 		Object[] cl = new Object[0];
 		if( name == null || name == "" ) {
 			// Search for loop statements
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
@@ -341,14 +493,14 @@ public final view JBreakStat of BreakStat extends JENode {
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
 				if( node instanceof JLabeledStat && ((JLabeledStat)node).lbl.sname == name ) {
-					JENode st = ((JLabeledStat)node).stat;
+					JENode st = (JENode)((LabeledStat)node.vn()).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
 					else if (st instanceof JBlock)
@@ -362,9 +514,28 @@ public final view JBreakStat of BreakStat extends JENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JContinueStat of ContinueStat extends JENode {
-	public:ro	JLabel		dest;
+public final class JContinueStat extends JENode {
+
+	@virtual typedef VT  ≤ ContinueStat;
+
+	public final JLabel dest;
+
+	public static JContinueStat attach(ContinueStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JContinueStat)jn;
+		return new JContinueStat(impl);
+	}
+	
+	protected JContinueStat(ContinueStat impl) {
+		super(impl);
+		this.dest = (JLabel)impl.dest;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ContinueStat");
@@ -381,21 +552,21 @@ public final view JContinueStat of ContinueStat extends JENode {
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn(),e);
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
 	public Object[] resolveContinueLabel(Code code) {
-		String name = this.ident;
+		String name = this.getIdent();
 		Object[] cl = new Object[0];
 		if( name == null || name == "" ) {
 			// Search for loop statements
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
@@ -410,14 +581,14 @@ public final view JContinueStat of ContinueStat extends JENode {
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
 				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
 				if( node instanceof JLabeledStat && ((JLabeledStat)node).lbl.sname == name ) {
-					JENode st = ((JLabeledStat)node).stat;
+					JENode st = (JENode)((LabeledStat)node.vn()).stat;
 					if( st instanceof ContinueTarget )
 						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));
 					throw new RuntimeException("Label "+name+" does not refer to continue target");
@@ -428,9 +599,28 @@ public final view JContinueStat of ContinueStat extends JENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JGotoStat of GotoStat extends JENode {
-	public:ro	JLabel		dest;
+public final class JGotoStat extends JENode {
+
+	@virtual typedef VT  ≤ GotoStat;
+
+	public final JLabel dest;
+
+	public static JGotoStat attach(GotoStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JGotoStat)jn;
+		return new JGotoStat(impl);
+	}
+	
+	protected JGotoStat(GotoStat impl) {
+		super(impl);
+		this.dest = (JLabel)impl.dest;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating GotoStat");
@@ -447,10 +637,8 @@ public final view JGotoStat of GotoStat extends JENode {
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn(),e);
 			throw new RuntimeException(e.getMessage());
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
 		}
 	}
 
@@ -468,7 +656,7 @@ public final view JGotoStat of GotoStat extends JENode {
 			else if( st instanceof JTryStat ) {
 				JTryStat ts = (JTryStat)st;
 				if( ts.finally_catcher != null )
-					cl1 = (Object[])Arrays.append(cl1,JTryStat.SUBR_LABEL_ATTR.getLabel(ts.finally_catcher));
+					cl1 = (Object[])Arrays.append(cl1,ts.finally_catcher.subr_label);
 			}
 			else if( st instanceof JSynchronizedStat ) {
 				cl1 = (Object[])Arrays.append(cl1,st.expr_var);
@@ -484,7 +672,7 @@ public final view JGotoStat of GotoStat extends JENode {
 			if( st instanceof JTryStat ) {
 				JTryStat ts = (JTryStat)st;
 				if( ts.finally_catcher != null )
-					cl2 = (Object[])Arrays.append(cl2,JTryStat.SUBR_LABEL_ATTR.getLabel(ts.finally_catcher));
+					cl2 = (Object[])Arrays.append(cl2,ts.finally_catcher.subr_label);
 			}
 			else if( st instanceof JSynchronizedStat ) {
 				cl2 = (Object[])Arrays.append(cl2, st.expr_var);
@@ -501,21 +689,40 @@ public final view JGotoStat of GotoStat extends JENode {
 	}
 }
 
-@ViewOf(vcast=true, iface=true)
-public final view JGotoCaseStat of GotoCaseStat extends JENode {
-	public:ro	JENode			expr;
-	public:ro	JSwitchStat		sw;
+public final class JGotoCaseStat extends JENode {
+
+	@virtual typedef VT  ≤ GotoCaseStat;
+
+	public static JGotoCaseStat attach(GotoCaseStat impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JGotoCaseStat)jn;
+		return new JGotoCaseStat(impl);
+	}
+	
+	protected JGotoCaseStat(GotoCaseStat impl) {
+		super(impl);
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating GotoCaseStat");
 		code.setLinePos(this);
+		GotoCaseStat vn = vn();
+		JENode expr = (JENode)vn.expr;
+		SwitchStat swvn = vn.sw;
+		JSwitchStat sw = (JSwitchStat)vn.sw;
 		try {
-			if (!expr.isConstantExpr())
+			if (!expr.isConstantExpr(code.env))
 				expr.generate(code,null);
 
 			JVar tmp_var = null;
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
-				if ((ASTNode)node == (ASTNode)sw)
+				if (node.vn() == swvn)
 					break;
 				if (node instanceof JFinallyInfo) {
 					node = node.jparent; // skip calling jsr if we are in it
@@ -523,12 +730,12 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 				}
 				if (node instanceof JTryStat) {
 					if( node.finally_catcher != null ) {
-						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
+						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr(code.env) ) {
 							tmp_var = (JVar)new LVar(0,"",expr.getType(),Var.VAR_LOCAL,0);
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
 						}
-						code.addInstr(Instr.op_jsr,JTryStat.SUBR_LABEL_ATTR.getLabel(node.finally_catcher));
+						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 					}
 				}
 				else if (node instanceof JSynchronizedStat) {
@@ -541,37 +748,36 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 				code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;
+			JCaseLabel sw_defCase = (JCaseLabel)swvn.defCase;
 			if !( expr instanceof JENode ) {
-				if( sw.defCase != null )
-					lb = sw.defCase.getLabel(code);
+				if( sw_defCase != null )
+					lb = sw_defCase.getLabel(code);
 				else
 					lb = sw.getBrkLabel().getCodeLabel(code);
 			}
-			else if (!expr.isConstantExpr()) {
+			else if (!expr.isConstantExpr(code.env)) {
 				lb = sw.getCntLabel().getCodeLabel(code);
 			}
 			else {
-				int goto_value = ((Number)((JConstExpr)expr).getConstValue()).intValue();
-				foreach(JCaseLabel cl; sw.cases) {
-					int case_value = ((Number)((JConstExpr)cl.val).getConstValue()).intValue();
-					if( goto_value == case_value ) {
-						lb = cl.getLabel(code);
-						break;
-					}
+				int goto_value = ((Number)((JConstExpr)expr).getConstValue(code.env)).intValue();
+				JCaseLabel[] sw_cases = JNode.toJArray<JCaseLabel>(swvn.cases);
+				foreach(JCaseLabel cl; sw_cases; cl.has_value && goto_value == cl.case_value) {
+					lb = cl.getLabel(code);
+					break;
 				}
 				if( lb == null ) {
-					Kiev.reportError(this,"'goto case "+expr+"' not found, replaced by "+(sw.defCase!=null?"'goto default'":"'break"));
-					if( sw.defCase != null )
-						lb = sw.defCase.getLabel(code);
+					Kiev.reportError(vn,"'goto case "+expr+"' not found, replaced by "+(sw_defCase!=null?"'goto default'":"'break"));
+					if( sw_defCase != null )
+						lb = sw_defCase.getLabel(code);
 					else
 						lb = sw.getBrkLabel().getCodeLabel(code);
 				}
 			}
 			code.addInstr(Instr.op_goto,lb);
-			if( !expr.isConstantExpr() && !(sw instanceof JSwitchTypeStat) )
+			if( !expr.isConstantExpr(code.env) && !(sw instanceof JSwitchTypeStat) )
 				code.stack_pop();
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(vn,e);
 		}
 	}
 

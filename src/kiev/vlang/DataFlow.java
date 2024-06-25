@@ -14,7 +14,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 296 $
  *
  */
 
@@ -100,8 +100,9 @@ changed:;
 	}
 
 	public DFState setNodeValue(Var[] path, ENode expr) {
-		Type tp = expr.getType();
-		if( tp ≡ Type.tpNull && tp ≡ Type.tpVoid )
+		Env env = Env.getEnv();
+		Type tp = expr.getType(env);
+		if( tp ≡ env.tenv.tpNull && tp ≡ env.tenv.tpVoid )
 			return this;
 		ScopeNodeInfo sni = makeNode(path);
 		if (sni == null) return this;
@@ -117,14 +118,15 @@ changed:;
 	 *  the class type (if exists), and others to be interface types
 	 */
 	static Type[] addAccessType(Type[] types, Type tp) {
-		if( tp ≡ null || tp ≡ Type.tpVoid || tp ≡ Type.tpNull ) return types;
+		Env env = Env.getEnv();
+		if( tp ≡ null || tp ≡ env.tenv.tpVoid || tp ≡ env.tenv.tpNull ) return types;
 		if( types == null || !tp.isReference() ) {
 			return new Type[]{tp};
 		}
 		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add type "+tp+" to "+Arrays.toString(types));
 		Type[] newtypes = new Type[]{tp};
 	next_type:
-		foreach(Type t1; types; t1 ≢ null && t1 ≢ Type.tpVoid && t1 ≢ Type.tpNull ) {
+		foreach(Type t1; types; t1 ≢ null && t1 ≢ env.tenv.tpVoid && t1 ≢ env.tenv.tpNull ) {
 			for( int i=0; i < newtypes.length; i++) {
 				Type t2 = newtypes[i];
 				if (t2.isInstanceOf(t1))
@@ -232,12 +234,12 @@ public abstract class ScopeNodeInfo implements Cloneable {
 	private Type[]	types;
 	private ScopeNodeInfo j1;
 	private ScopeNodeInfo j2;
-	public abstract Type getDeclType();
+	public abstract Type getDeclType(Env env);
 	public abstract boolean match(Var[] path);
 	public abstract Var[] getPath();
 	
 	protected final void setupDeclType() {
-		types = new Type[]{getDeclType()};
+		types = new Type[]{getDeclType(Env.getEnv())};
 	}
 	
 	public final ScopeNodeInfo makeWithTypes(Type[] types) {
@@ -257,9 +259,10 @@ public abstract class ScopeNodeInfo implements Cloneable {
 	public final Type[] getTypes() {
 		if (types != null)
 			return types;
-		Type[] types = new Type[]{this.getDeclType()};
-		foreach(Type t1; j1.getTypes(); t1 ≢ null && t1 ≢ Type.tpVoid && t1 ≢ Type.tpNull) {
-			foreach(Type t2; j2.getTypes(); t2 ≢ null && t2 ≢ Type.tpVoid && t2 ≢ Type.tpNull )
+		Env env = Env.getEnv();
+		Type[] types = new Type[]{this.getDeclType(env)};
+		foreach(Type t1; j1.getTypes(); t1 ≢ null && t1 ≢ env.tenv.tpVoid && t1 ≢ env.tenv.tpNull) {
+			foreach(Type t2; j2.getTypes(); t2 ≢ null && t2 ≢ env.tenv.tpVoid && t2 ≢ env.tenv.tpNull )
 				types = DFState.addAccessType(types,Type.leastCommonType(t1,t2));
 		}
 		this.types = types;
@@ -276,8 +279,8 @@ public class ScopeVarInfo extends ScopeNodeInfo {
 		setupDeclType();
 	}
 
-	public Type getDeclType() {
-		return var.getType();
+	public Type getDeclType(Env env) {
+		return var.getType(env);
 	}
 	
 	public String toString() {
@@ -309,8 +312,8 @@ public class ScopeStaticFieldInfo extends ScopeNodeInfo {
 		setupDeclType();
 	}
 
-	public Type getDeclType() {
-		return fld.getType();
+	public Type getDeclType(Env env) {
+		return fld.getType(env);
 	}
 	
 	public String toString() {
@@ -361,10 +364,10 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 		return true;
 	}
 	
-	public Type getDeclType() {
-		Type tp = ((Var)path[0]).getType();
+	public Type getDeclType(Env env) {
+		Type tp = ((Var)path[0]).getType(env);
 		for(int i=1; i < path.length; i++)
-			tp = Type.getRealType(tp, ((Field)path[i]).getType());
+			tp = Type.getRealType(tp, ((Field)path[i]).getType(env));
 		return tp;
 	}
 	
@@ -407,14 +410,22 @@ public interface DataFlowSlots {
 	public final int FLS = 3;
 	public final int JMP = 4;
 	
-	public final boolean ASSERT_MORE = false;
+	public final boolean ASSERT_MORE = Kiev.debug;
 }
 
-public final class DataFlowInfo extends ANode implements DataFlowSlots {
+public final class DataFlowContext extends Context {
+	public static final DataFlowContext DEFAULT = new DataFlowContext();
+	
+	private DataFlowContext() {}
+}
+
+
+
+public final class DataFlowInfo extends AHandleData implements DataFlowSlots {
 
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 
-	final ASTNode node_impl;
+	public final ASTNode node_impl;
 	
 	// will be a set of fields (DataFlow nodes for children) in code-generation 
 	final DFSocket[] children;
@@ -436,13 +447,9 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 
 	// build data flow for this node
 	public static DataFlowInfo getDFlow(ASTNode n) {
-		WorkerThreadGroup wtg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
-		DataFlowInfo df = (DataFlowInfo)wtg.dataFlowInfos.get(n);
-		if (df == null) {
-			df = newDataFlowInfo(n);
-			wtg.dataFlowInfos.put(n,df);
-		}
-		return df;
+		foreach (DataFlowInfo nh; n.handle().getHandleData(); nh.node_impl == n)
+			return nh;
+		return new DataFlowInfo(n, getTemplate(n.getClass()));
 	}
 
 	private static DataFlowInfo getTemplate(Class cls) {
@@ -457,11 +464,10 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		}
 		return template;
 	}
-	public static DataFlowInfo newDataFlowInfo(ASTNode node_impl) {
-		return new DataFlowInfo(node_impl, getTemplate(node_impl.getClass()));
-	}
 	private DataFlowInfo(ASTNode node_impl, DataFlowInfo template) {
+		super(DataFlowContext.DEFAULT);
 		this.node_impl = node_impl;
+		node_impl.handle().addData(this);
 		this.children = template.children;
 		if (template.results != null)
 			this.results = new DFState[template.results.length];
@@ -473,23 +479,25 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		this.func_jmp = template.func_jmp;
 	}
 	private DataFlowInfo(ASTNode node_impl) {
+		super(DataFlowContext.DEFAULT);
 		this.node_impl = node_impl;
+		node_impl.handle().addData(this);
 		Vector<DFSocket> chl_dfs = new Vector<DFSocket>();
 		Hashtable<String,DataFlowDefinition> dflows = new Hashtable<String,DataFlowDefinition>();
 		int attach_idx = 0;
-		foreach (AttrSlot attr; node_impl.values(); attr.is_attr) {
+		foreach (AttrSlot attr; node_impl.values(); attr.isAttr()) {
 			DataFlowDefinition dfd = getFieldAnnotation(attr.name);
 			if (dfd != null) {
 				String seq = dfd.seq().intern();
 				if (ASSERT_MORE) assert (seq=="true" || seq=="false" || seq=="");
 				DFSocket df;
 				if (seq == "true")
-					df = new DFSocketSpaceSeq(attr.name);
+					df = new DFSocketSpaceSeq(attr);
 				else if (seq == "false")
-					df = new DFSocketSpaceUnknown(attr.name);
+					df = new DFSocketSpaceUnknown(attr);
 				else
-					df = new DFSocketChild(attr.name, attach_idx++);
-				if (ASSERT_MORE) assert (df.pslot_name == attr.name);
+					df = new DFSocketChild(attr, attach_idx++);
+				if (ASSERT_MORE) assert (df.pslot == attr);
 				chl_dfs.append(df);
 				dflows.put(attr.name,dfd);
 			}
@@ -543,6 +551,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		}
 		if (this.locks > 0)
 			results = new DFState[this.locks];
+		//this.node_impl = null;
 	}
 	
 	public final int allocResult() { return locks++; }
@@ -562,8 +571,9 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 				return func_in.calc(this);
 			DataFlowInfo parent_dfi = DataFlowInfo.getDFlow((ASTNode)node_impl.parent());
 			DFSocket parent_dfs = parent_dfi.getSocket(node_impl.pslot().name);
-			if (parent_dfs.isSeqSpace() && ANode.getPrevNode(node_impl) != null)
-				return DataFlowInfo.getDFlow((ASTNode)ANode.getPrevNode(node_impl)).calc(OUT);
+			INode prev;
+			if (parent_dfs.isSeqSpace() && (prev=Env.getPrevNode(node_impl)) != null)
+				return DataFlowInfo.getDFlow((ASTNode)prev).calc(OUT);
 			return DFFunc.calc(parent_dfs.func_in, parent_dfi);
 		case OUT:
 			return func_out.calc(this);
@@ -607,7 +617,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	// build data flow for a child node
 	final DFSocket getSocket(String name) {
 		for (int i=0; i < children.length; i++) {
-			if (children[i].pslot_name == name)
+			if (children[i].pslot.name == name)
 				return children[i];
 		}
 		throw new RuntimeException("Internal error: no dflow socket "+name+" in "+node_impl.getClass());
@@ -664,11 +674,11 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 }
 
 public abstract class DFSocket implements DataFlowSlots, Cloneable {
-	final String pslot_name;
+	final AttrSlot pslot;
 	DFFunc func_in;
 	
-	DFSocket(String pslot_name) {
-		this.pslot_name = pslot_name;
+	DFSocket(AttrSlot pslot) {
+		this.pslot = pslot;
 	}
 	public boolean isSeqSpace() { return false; }
 	public Object clone() { return super.clone(); }
@@ -679,13 +689,13 @@ public class DFSocketChild extends DFSocket {
 	// plugged in data flow info of a sub-node
 	final int socket_idx;
 	
-	public DFSocketChild(String pslot_name, int socket_idx) {
-		super(pslot_name);
+	public DFSocketChild(AttrSlot pslot, int socket_idx) {
+		super(pslot);
 		this.socket_idx = socket_idx;
 	}
 
 	public final DataFlowInfo getAttached(DataFlowInfo owner_dfi) {
-		Object obj = owner_dfi.node_impl.getVal(pslot_name);
+		Object obj = owner_dfi.node_impl.getVal(pslot);
 		if (obj instanceof ASTNode)
 			return DataFlowInfo.getDFlow((ASTNode)obj);
 		return null;
@@ -693,19 +703,19 @@ public class DFSocketChild extends DFSocket {
 }
 
 public abstract class DFSocketSpace extends DFSocket {
-	public DFSocketSpace(String pslot_name) {
-		super(pslot_name);
+	public DFSocketSpace(AttrSlot pslot) {
+		super(pslot);
 	}
 }
 public class DFSocketSpaceSeq extends DFSocketSpace {
-	public DFSocketSpaceSeq(String pslot_name) {
-		super(pslot_name);
+	public DFSocketSpaceSeq(AttrSlot pslot) {
+		super(pslot);
 	}
 	public boolean isSeqSpace() { return true; }
 }
 public class DFSocketSpaceUnknown extends DFSocketSpace {
-	public DFSocketSpaceUnknown(String pslot_name) {
-		super(pslot_name);
+	public DFSocketSpaceUnknown(AttrSlot pslot) {
+		super(pslot);
 	}
 }
 
@@ -727,7 +737,7 @@ public abstract class DFFunc implements DataFlowSlots {
 	
 	static boolean checkNode(ANode _node, Vector<ASTNode> lst) {
 		ASTNode node = (ASTNode)_node;
-		if (node instanceof NameSpace || node instanceof Method || node instanceof Initializer || node instanceof KievPackage)
+		if (node instanceof SyntaxScope || node instanceof Method || node instanceof Initializer || node instanceof KievPackage)
 			return true;
 		if (lst == null) lst = new Vector<ASTNode>();
 		assert(!lst.contains(node));
@@ -735,7 +745,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		if (node.pslot() instanceof SpaceAttrSlot)
 			assert(((SpaceAttrSlot<ASTNode>)node.pslot()).indexOf(node.parent(),node) >= 0);
 		else
-			assert(node.parent().getVal(node.pslot().name) == node);
+			assert(node.parent().getVal(node.pslot()) == node);
 		lst.append(node);
 		checkNode(node.parent(), lst);
 		return true;
@@ -755,8 +765,9 @@ public abstract class DFFunc implements DataFlowSlots {
 			} else {
 				DataFlowInfo parent_dfi = DataFlowInfo.getDFlow((ASTNode)dfi.node_impl.parent());
 				DFSocket parent_dfs = parent_dfi.getSocket(dfi.node_impl.pslot().name);
-				if (parent_dfs.isSeqSpace() && ANode.getPrevNode(dfi.node_impl) != null) {
-					dfi = DataFlowInfo.getDFlow((ASTNode)ANode.getPrevNode(dfi.node_impl));
+				INode prev;
+				if (parent_dfs.isSeqSpace() && (prev=Env.getPrevNode(dfi.node_impl)) != null) {
+					dfi = DataFlowInfo.getDFlow((ASTNode)prev);
 					f = dfi.func_out;
 				} else {
 					f = parent_dfs.func_in;
@@ -790,7 +801,7 @@ public abstract class DFFunc implements DataFlowSlots {
 				}
 			}
 			else if (dfs instanceof DFSocketSpace) {
-				Object space = dfi.node_impl.getVal(dfs.pslot_name);
+				Object space = dfi.node_impl.getVal(dfs.pslot);
 				ASTNode[] arr = (ASTNode[])space;
 				if (arr.length == 0) {
 					f = dfs.func_in;

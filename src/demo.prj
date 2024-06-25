@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<sop:kiev.vlang.Project name='Demo' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:logic='sop://languages/logic?class=kiev.vlang.LogicLang'
+  xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <root_dir>
+  <sop:kiev.vlang.DirUnit name='.'>
+   <members>
+    <sop:kiev.vlang.DirUnit name='kiev'>
+     <members>
+      <sop:kiev.vlang.DirUnit name='fmt'>
+       <members>
+        <sop:kiev.vlang.DirUnit name='evt'>
+         <members>
+          <core:FileUnit name='Action.java' />
+          <core:FileUnit name='Binding.java' />
+          <core:FileUnit name='BindingSet.java' />
+          <core:FileUnit name='KeyboardEvent.java' />
+          <core:FileUnit name='MouseEvent.java' />
+          <core:FileUnit name='UIEvent.java' />
+         </members>
+        </sop:kiev.vlang.DirUnit>
+       </members>
+      </sop:kiev.vlang.DirUnit>
+      <sop:kiev.vlang.DirUnit name='gui'>
+       <members>
+        <sop:kiev.vlang.DirUnit name='swing'>
+         <members>
+          <core:FileUnit name='bindings.xml' type='text/xml/tree-dump' />
+         </members>
+        </sop:kiev.vlang.DirUnit>
+       </members>
+      </sop:kiev.vlang.DirUnit>
+     </members>
+    </sop:kiev.vlang.DirUnit>
+    <sop:kiev.vlang.DirUnit name='stx-fmt'>
+     <members>
+      <core:FileUnit name='style-sheet-default.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-evt-alt.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-evt.xml' type='text/xml/tree-dump' />
+      <core:FileUnit name='syntax-for-syntax.xml' type='text/xml/tree-dump' />
+     </members>
+    </sop:kiev.vlang.DirUnit>
+   </members>
+  </sop:kiev.vlang.DirUnit>
+ </root_dir>
+ <syntax_infos>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='txt' name='GUI Events Syntax Standard' qname='stx-fmt·syntax-for-evt'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-evt' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+  <sop:kiev.vlang.ProjectSyntaxInfo ext='txt' name='GUI Events Syntax Alternative' qname='stx-fmt·syntax-for-evt-alt'>
+   <syntax>
+    <sop:kiev.vlang.ProjectSyntaxFactoryAny factory='kiev·fmt·common·DefaultTextProcessor'>
+     <params>
+      <sop:kiev.vlang.ProjectSyntaxParam name='class' value='stx-fmt·syntax-for-evt-alt' />
+     </params>
+    </sop:kiev.vlang.ProjectSyntaxFactoryAny>
+   </syntax>
+  </sop:kiev.vlang.ProjectSyntaxInfo>
+ </syntax_infos>
+</sop:kiev.vlang.Project>

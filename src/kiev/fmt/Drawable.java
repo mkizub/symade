@@ -12,6 +12,10 @@ package kiev.fmt;
 
 import syntax kiev.Syntax;
 
+import kiev.fmt.common.*;
+
+public interface StyleProvider {
+}
 
 @ThisIsANode(copyable=false)
 public abstract class Drawable extends ANode {
@@ -19,34 +23,76 @@ public abstract class Drawable extends ANode {
 	public static final Drawable[] emptyArray = new Drawable[0];
 
 	// the node we draw
-	public final ANode					drnode;
+	public final INode					drnode;
 	// syntax kind & draw layout
 	public final Draw_SyntaxElem		syntax;
-	// syntax, which has produced this drawable, to get
-	// sub-nodes in the same syntax
-	public final Draw_ATextSyntax		text_syntax;
+	// block layout info
+	@UnVersioned
+	public       DrawLayoutInfo         dr_dli;
 	
-	public Drawable(ANode node, Draw_SyntaxElem syntax, Draw_ATextSyntax text_syntax) {
+	public Drawable(INode node, Formatter fmt, Draw_SyntaxElem syntax) {
+		super(node.handle(), fmt.formatter_context);
 		this.drnode = node;
 		this.syntax = syntax;
-		this.text_syntax = text_syntax;
 	}
 	
-	public abstract void preFormat(DrawContext cont);
-	public abstract Drawable getNextChild(Drawable dr);
-	public abstract Drawable getPrevChild(Drawable dr);
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.ct == ChangeType.THIS_DETACHED) {
+			handle().delData(this);
+		}
+		else if (info.ct == ChangeType.THIS_ATTACHED) {
+			foreach (AHandleData nh; handle().getHandleData(); nh == this)
+				goto call_super;
+			handle().addData(this);
+		}
+	call_super:
+		super.callbackChanged(info);
+	}
+
+	public abstract void preFormat(Formatter fmt);
 	public abstract Drawable[] getChildren();
 
-	public final void preFormat(DrawContext cont, Draw_SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, this, expected_node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node, text_syntax);
+	public final Drawable getNextChild(Drawable dr) {
+		Drawable[] children = this.getChildren();
+		if (dr == null || children == null)
+			return null;
+		for (int i=0; i < children.length; i++) {
+			if (children[i] == dr) {
+				for (i++; i < children.length; i++) {
+					if (children[i] != null)
+						return children[i];
+				}
+				return null;
+			}
+		}
+		return null;
+	}
+	public final Drawable getPrevChild(Drawable dr) {
+		Drawable[] children = this.getChildren();
+		if (dr == null || children == null)
+			return null;
+		for (int i=children.length-1; i >= 0; i--) {
+			if (children[i] == dr) {
+				for (i--; i >= 0; i--) {
+					if (children[i] != null)
+						return children[i];
+				}
+				return null;
+			}
+		}
+		return null;
+	}
+
+	public final void preFormat(Formatter fmt, Draw_SyntaxElem expected_stx, INode expected_node) {
+		if (!expected_stx.check(fmt, this, expected_node)) {
+			Drawable dr = expected_stx.makeDrawable(fmt, expected_node);
 			if (!this.isAttached())
 				throw new ChangeRootException(dr);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
+			replaceWithNode(dr, this.parent(), this.pslot());
+			dr.preFormat(fmt, expected_stx, expected_node);
 			return;
 		}
-		this.preFormat(cont);
+		this.preFormat(fmt);
 	}
 
 	public boolean isUnvisible() {
@@ -129,25 +175,17 @@ public abstract class Drawable extends ANode {
 		}
 	}
 
-	public void lnkFormat(DrawLinkContext cont) {
-		if (this.isUnvisible())
-			return;
-		cont.processSpaceBefore(this);
-		foreach (Drawable arg; this.getChildren(); arg != null)
-			arg.lnkFormat(cont);
-		cont.processSpaceAfter(this);
-	}
-
-	public final void postFormat(DrawLayoutBlock context) {
+	public final void postFormat(DrawLayoutInfo context, Formatter fmt) {
 		if (this.isUnvisible())
 			return;
 		if (this instanceof DrawTerm) {
-			context.addLeaf(((DrawTerm)this).dt_fmt);
+			context.addLeaf((DrawTerm)this);
+			((DrawTerm)this).formatTerm(fmt);
 		} else {
 			context = context.pushDrawable(this);
 			try {
 				foreach (Drawable dr; this.getChildren(); dr != null)
-					dr.postFormat(context);
+					dr.postFormat(context, fmt);
 			} finally {
 				context.popDrawable(this);
 			}

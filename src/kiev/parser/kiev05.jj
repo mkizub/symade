@@ -33,14 +33,14 @@ import java.io.Reader;
 
 import static kiev.vlang.AccessFlags.*;
 
-typedef SymbolRefStx = SymbolRef<KievSyntax> ;
-typedef SymbolRefFld = SymbolRef<Field> ;
+typedef SymbolRef<Field>		SymbolRefFld;
 
 }*/ 
 
 public final class Parser extends kiev050 {
-	public Parser(Reader r) {
+	public Parser(Reader r, Env env) {
 		super(r,1,1);
+		this.curEnv = env;
 	}
 }
 
@@ -49,6 +49,7 @@ public interface ParserConstants extends kiev050Constants {
 
 public abstract class kiev050 {
 
+	public Env				curEnv;
 	public FileUnit			curFileUnit;
 	public boolean			interface_only = false;
 
@@ -68,9 +69,9 @@ public abstract class kiev050 {
 		else if( token.next==null ) pos = token.getPos();
 		else pos = token.next.getPos();
 		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(pos, msg, e);
+			kiev.Kiev.reportParserError(curFileUnit, pos, msg, e);
 		} else {
-			kiev.Kiev.reportParserError(pos, msg);
+			kiev.Kiev.reportParserError(curFileUnit, pos, msg);
 		}
 	}
 
@@ -81,9 +82,9 @@ public abstract class kiev050 {
 		else if( token.next==null ) pos = token.getPos();
 		else pos = token.next.getPos();
 		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(pos, "Internal error:\n"+e, e);
+			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal error:\n"+e, e);
 		} else {
-			kiev.Kiev.reportParserError(pos, "Internal error");
+			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal error");
 		}
 		throw e;
 	}
@@ -98,7 +99,6 @@ public abstract class kiev050 {
 		case LT:
 		case GT:
 		case ASSIGN:
-		case ASSIGN2:
 		case OPERATOR_AT:
 		case OPERATOR_SHARP:
 		case OPERATOR_UPPER_BOUND:
@@ -123,29 +123,20 @@ public abstract class kiev050 {
 	}
 
 	/*{
-	private ComplexTypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, NameSpace fu) {
-		KievPackage pkg = fu.getPackage();
-		String uuid = modifiers == null ? null : modifiers.getUUID();
-		MetaTypeDecl tdecl = Env.getRoot().newMetaType(new Symbol(name.pos,name.sname), pkg, true, uuid);
-		tdecl.setTypeDeclNotLoaded(false);
-		modifiers.moveToNode(tdecl);
-		return tdecl;
-	}
-
 	private Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		Struct clazz;
-		if (parent instanceof NameSpace) {
-			clazz = Env.getRoot().newStruct(name.sname,true,parent.getPackage(),flags,variant,true,uuid);
+		if (parent instanceof SyntaxScope) {
+			clazz = curEnv.newStruct(name.sname,parent.getPackage(),flags,variant,uuid);
 		}
 		else if (parent instanceof Struct) {
-			clazz = Env.getRoot().newStruct(name.sname,true,(Struct)parent,flags,variant,true,uuid);
+			clazz = curEnv.newStruct(name.sname,(Struct)parent,flags,variant,uuid);
 		}
 		else if (name != null) {
-			clazz = Env.getRoot().newStruct(name.sname,false,null,flags,variant,true,uuid);
+			clazz = curEnv.newStruct(name.sname,null,flags,variant,uuid);
 		}
 		else {
-			clazz = Env.getRoot().newStruct(null,false,null,flags,variant,true,uuid);
+			clazz = curEnv.newStruct(null,null,flags,variant,uuid);
 		}
 		if (name != null)
 			clazz.pos  = name.pos;
@@ -157,40 +148,37 @@ public abstract class kiev050 {
 		return clazz;
 	}
 
-	private KievSyntax mkSyntax(Symbol name, ASTModifiers modifiers, NameSpace ns) {
-		KievSyntax stx = new KievSyntax();
-		stx.sname = name.sname;
-		stx.pos = name.pos;
-		modifiers.moveToNode(stx);
-		ns.getPackage().pkg_members += stx;
-		return stx;
-	}
-
-	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
+	private TypeAssign mkTypeAssign(int pos, String name, ASTModifiers modifiers, DNode parent) {
+		Symbol sym = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
-		TypeAssign arg = new TypeAssign(name.sname);
-		arg.pos = name.pos;
+		if (uuid != null)
+			sym = curEnv.getSymbolByUUID(uuid);
+		if (sym == null && parent instanceof TypeDecl) {
+			if (parent.symbol.isGlobalSymbol())
+				sym = parent.symbol.makeGlobalSubSymbol(name);
+		}
+		if (sym == null)
+			sym = new Symbol(name);
+		TypeAssign arg = new TypeAssign(sym);
+		arg.pos = pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
 		return arg;
 	}
 
-	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
-		TypeConstr arg = null;
+	private TypeConstr mkTypeConstr(int pos, String name, ASTModifiers modifiers, DNode parent) {
+		Symbol sym = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
-		if (uuid != null) {
-			Symbol sym = Env.getRoot().getSymbolByUUID(uuid);
-			if (sym != null && sym.dnode instanceof TypeConstr) {
-				arg = (TypeConstr)sym.dnode;
-				arg.sname = name.sname;
-				arg.metas.delAll();
-				arg.super_types.delAll();
-				arg.lower_bound.delAll();
-			}
+		if (uuid != null)
+			sym = curEnv.getSymbolByUUID(uuid);
+		if (sym == null && parent instanceof TypeDecl) {
+			if (parent.symbol.isGlobalSymbol())
+				sym = parent.symbol.makeGlobalSubSymbol(name);
 		}
-		if (arg == null)
-			arg = new TypeConstr(name.sname);
-		arg.pos = name.pos;
+		if (sym == null)
+			sym = new Symbol(name);
+		TypeConstr arg = new TypeConstr(sym);
+		arg.pos = pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
 		return arg;
@@ -268,14 +256,14 @@ public abstract class kiev050 {
 	
 	private LVar mkRuleVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
-			tp = tp.ncopy();
-		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_RULE, 0);
+			tp = new Copier().copyFull(tp);
+		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
 		modifiers.copyToNode(v);
 		return v;
 	}
 	
 	private LVar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
-		LVar v = new LVar(id.pos, id.sname, vt, LVar.PARAM_NORMAL, 0);
+		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, 0);
 		if (st != null)
 			v.stype = st;
 		modifiers.moveToNode(v);
@@ -283,14 +271,7 @@ public abstract class kiev050 {
 	}
 	
 	private LVar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
-		LVar v = new LVar(id.pos, id.sname, vt, LVar.PARAM_VARARGS, ACC_FINAL);
-		modifiers.moveToNode(v);
-		return v;
-	}
-	
-	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
-		RewritePattern v = new RewritePattern(id.sname, tp);
-		v.pos = id.pos;
+		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, ACC_FINAL);
 		modifiers.moveToNode(v);
 		return v;
 	}
@@ -314,13 +295,116 @@ public abstract class kiev050 {
 	
 	private void expandExpr(ASTExpression e, ENode n) {
 		if (n instanceof ASTExpression) {
-			foreach (ENode x; n.nodes.delToArray())
+			foreach (ANode x; n.nodes.delToArray())
 				e.nodes += x;
 		} else {
 			e.nodes += n;
 		}
 	}
 
+	static ConstExpr sourceToConst(Token t) throws ParseException {
+		ConstExpr ce = null;
+		try
+		{
+			switch(t.kind) {
+			case ParserConstants.INTEGER_LITERAL:
+			{
+				String image;
+				int radix;
+				if( t.image.startsWith("0x") || t.image.startsWith("0X") ) { image = t.image.substring(2); radix = 16; }
+				else if( t.image.startsWith("0") && t.image.length() > 1 ) { image = t.image.substring(1); radix = 8; }
+				else { image = t.image; radix = 10; }
+				long i = ConstExpr.parseLong(image,radix);
+				ce = new ConstIntExpr((int)i);
+				switch (radix) {
+				case 16: ce.radix = IntRadix.RADIX_HEX; break;
+				case  8: ce.radix = IntRadix.RADIX_OCT; break;
+				default: ce.radix = IntRadix.RADIX_DEC; break;
+				}
+				break;
+			}
+			case ParserConstants.LONG_INTEGER_LITERAL:
+			{
+				String image;
+				int radix;
+				if( t.image.startsWith("0x") || t.image.startsWith("0X") ) { image = t.image.substring(2,t.image.length()-1); radix = 16; }
+				else if( t.image.startsWith("0") && !t.image.equals("0") && !t.image.equals("0L") ) { image = t.image.substring(1,t.image.length()-1); radix = 8; }
+				else { image = t.image.substring(0,t.image.length()-1); radix = 10; }
+				long l = ConstExpr.parseLong(image,radix);
+				ce = new ConstLongExpr(l);
+				switch (radix) {
+				case 16: ce.radix = IntRadix.RADIX_HEX; break;
+				case  8: ce.radix = IntRadix.RADIX_OCT; break;
+				default: ce.radix = IntRadix.RADIX_DEC; break;
+				}
+				break;
+			}
+			case ParserConstants.FLOATING_POINT_LITERAL:
+			{
+				String image;
+				if( t.image.endsWith("f") || t.image.endsWith("F") ) image = t.image.substring(0,t.image.length()-1);
+				else image = t.image;
+				float f = Float.valueOf(image).floatValue();
+				ce = new ConstFloatExpr(f);
+				break;
+			}
+			case ParserConstants.DOUBLE_POINT_LITERAL:
+			{
+				String image;
+				if( t.image.endsWith("d") || t.image.endsWith("D") ) image = t.image.substring(0,t.image.length()-1);
+				else image = t.image;
+				double d = Double.valueOf(t.image).doubleValue();
+				ce = new ConstDoubleExpr(d);
+				break;
+			}
+			case ParserConstants.CHARACTER_LITERAL:
+			{
+				char c;
+				if( t.image.length() == 3 )
+					c = t.image.charAt(1);
+				else
+					c = ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1)).charAt(0);
+				ce = new ConstCharExpr(c);
+				break;
+			}
+			case ParserConstants.STRING_LITERAL:
+				ce = new ConstStringExpr(ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1)));
+				break;
+			//case ParserConstants.TRUE:
+			//	ce = new ConstBoolExpr(true);
+			//	break;
+			//case ParserConstants.FALSE:
+			//	ce = new ConstBoolExpr(false);
+			//	break;
+			//case ParserConstants.NULL:
+			//	ce = new ConstNullExpr();
+			//	break;
+			}
+		} catch( NumberFormatException e ) {
+			throw new ParseException(t.image);
+		}
+		if (ce == null) {
+			Kiev.reportParserError(null, t.getPos(), "Unknown term "+t.image);
+			ce = new ConstNullExpr();
+		}
+		ce.pos = t.getPos();
+		return ce;
+	}
+
+	private TypeRef makeTypeExpr(TypeRef arg, Token op) {
+		if (op.kind == ParserConstants.OPERATOR_SHARP)
+			return new TypeASTNodeRef(arg.ident, null);
+		TypeExpr te = new TypeExpr();
+		te.arg = arg;
+		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS) {
+			te.op_name = "T []";
+		} else {
+			te.op_name = ("T "+op.image).intern();
+		}
+		te.pos = op.getPos();
+		return te;
+	}
+	
 
 	}*/
 
@@ -331,13 +415,13 @@ public abstract class kiev050 {
 		for (int i=0; i < comments.length; i++)
 			arr += comments[i];
 	}
-	void comments_before(ASTNode node) {
-		Comment[] comments = get_comments();
-		if (comments == null || comments.length == 0)
-			return;
-		for (int i=0; i < comments.length; i++)
-			Comment.ATTR_COMMENT.add(node, comments[i]);
-	}
+	//void comments_before(ASTNode node) {
+	//	Comment[] comments = get_comments();
+	//	if (comments == null || comments.length == 0)
+	//		return;
+	//	for (int i=0; i < comments.length; i++)
+	//		Comment.ATTR_COMMENT.add(node, comments[i]);
+	//}
 
 	Comment[] get_comments() {
 		Token t0 = getToken(0);
@@ -353,21 +437,19 @@ public abstract class kiev050 {
 			if (st.kind == SINGLE_LINE_COMMENT) {
 				String text = st.image.substring(2);
 				text = text.trim();
-				if (comments.length > 0 && comments[comments.length-1].eol_form) {
+				if (comments.length > 0 && (comments[comments.length-1].mode == CommentMode.LINE || comments[comments.length-1].mode == CommentMode.EOLINE)) {
 					Comment c = comments[comments.length-1];
-					c.text = new StringBuffer(c.text.length()+1+text.length()).append(c.text).append('\n').append(text).toString();
-					c.multiline = true;
+					c.elems.append(new TextLine(text));
 				} else {
 					Comment c = new Comment();
-					c.text = text;
-					c.eol_form = true;
-					c.nl_after = true;
+					c.mode = CommentMode.EOLINE;
+					c.elems.append(new TextLine(text));
 					if (st.specialToken != null) {
 						if (st.beginLine > st.specialToken.endLine)
-							c.nl_before = true;
+							c.mode = CommentMode.LINE;
 					} else {
 						if (st.beginLine < t0.endLine)
-							c.nl_before = true;
+							c.mode = CommentMode.LINE;
 					}
 					comments = (Comment[])Arrays.append(comments, c);
 				}
@@ -385,34 +467,32 @@ public abstract class kiev050 {
 					}
 					lines[i] = l;
 				}
+				boolean nl = false;
 				Comment c = new Comment();
-				c.doc_form = (st.kind == FORMAL_COMMENT);
-				if (lines.length > 1) {
-					c.multiline = true;
-					c.text = "";
-					for (int i=0; i < lines.length; i++) {
-						String txt = lines[i].trim();
-						c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();
-					}
-				} else {
-					c.text = lines[0];
-				}
+				for (int i=0; i < lines.length; i++)
+					c.elems.append(new TextLine(lines[i].trim()));
 				
 				if (st.specialToken != null) {
 					if (st.beginLine > st.specialToken.endLine)
-						c.nl_before = true;
+						nl = true;
 				} else {
 					if (st.beginLine < t0.endLine)
-						c.nl_before = true;
+						nl = true;
 				}
 				
 				if (st.next != null) {
 					if (st.endLine < st.next.beginLine)
-						c.nl_after = true;
+						nl = true;
 				} else {
 					if (st.endLine < t1.beginLine)
-						c.nl_after = true;
+						nl = true;
 				}
+				if (st.kind == FORMAL_COMMENT)
+					c.mode = CommentMode.DOCUMENTATION;
+				else if (nl)
+					c.mode = CommentMode.FLOW;
+				else
+					c.mode = CommentMode.INLINE;
 				comments = (Comment[])Arrays.append(comments, c);
 			}
 		}
@@ -507,7 +587,6 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < IMPLEMENTS: "implements" >
 | < IMPORT: "import" >
 | < INTERFACE: "interface" >
-| < METATYPE: "metatype" >
 | < NATIVE: "native" >
 | < PACKAGE: "package">
 | < RETURN: "return" >
@@ -605,10 +684,7 @@ TOKEN :
 TOKEN : /* RESERVED WORDS FOR EXPRS */
 {
   < FUNCTION: "fun" >
-| < FALSE: "false" >
 | < NEW: "new" >
-| < NULL: "null" >
-| < TRUE: "true" >
 | < OPERATOR_ID: "operator" >
 }
 
@@ -768,7 +844,6 @@ TOKEN : /* Special Operators */
 TOKEN : /* OPERATORS */
 {
   < ASSIGN: "=" >
-| < ASSIGN2: ":=" >
 
 | < IS_THE: "?=" >
 | < IS_ONE_OF: "@=" >
@@ -799,23 +874,20 @@ FileUnit FileUnit(String filename) :
 {
 	{
 		oldFileUnit = curFileUnit;
-		FileUnit fu = FileUnit.makeFile(filename, false);
+		FileUnit fu = FileUnit.makeFile(filename, curEnv.proj, false);
 		curFileUnit = fu;
 		declMode = true;
 		ASTModifiers modifiers;
 	}
 	try {
 		(
-			Pragma(fu)
-		|
 			LOOKAHEAD({ getToken(1).kind==IMPORT && getToken(2).kind==IDENTIFIER && getToken(2).image.equals("syntax") })
 			fu.syntaxes += ImportSyntax()
 		|
-			//LOOKAHEAD({ getToken(1).kind==PACKAGE && (fu.srpkg == null ||  fu.srpkg.name == null) })
 			pkg = Package()
 			{
 				if (fu.srpkg.name == null) {
-					fu.srpkg.name = pkg.name;
+					fu.srpkg.symbol = pkg.symbol;
 					fu.srpkg.pos = pkg.pos;
 				} else
 					Kiev.reportError(pkg,"Duplicate package declaration "+pkg);
@@ -834,14 +906,14 @@ FileUnit FileUnit(String filename) :
 	}
 }
 
-NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
+NameSpace NameSpaceDeclaration(ASTModifiers modifiers, SyntaxScope parent) :
 { NameSpace ns = new NameSpace(); SymbolRef sr; }
 {
 	{ declMode = true; }
 	try {
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
 		<IDENTIFIER>	// "namespace"
-		(	LOOKAHEAD({ parent.getPackage() instanceof Env })
+		(	LOOKAHEAD({ parent.getPackage() instanceof KievRoot })
 			sr = QName()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
 		|	sr = NameRef()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
 		)
@@ -858,25 +930,21 @@ NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
 	}
 }
 
-void TopLevelDeclarations(NameSpace ns) :
-{ ASTModifiers modifiers; SpacePtr ns_members = ns.getSpacePtr("members"); }
+void TopLevelDeclarations(SyntaxScope ss) :
+{ ASTModifiers modifiers; SpacePtr ss_members = Env.getSpacePtr(ss, "members"); }
 {
 	(	LOOKAHEAD({ getToken(1).kind != RBRACE && getToken(1).kind != EOF })
-		{ comments_alone(ns_members); }
+		{ comments_alone(ss_members); }
 		modifiers = Modifiers()
 		(
-			ns.members += Import(modifiers)
-		|	ns.members += Typedef(modifiers)
-		|	ns.members += Opdef(modifiers)
-		|	ns.members += MetaTypeDeclaration(modifiers, ns) [ ";" ]
-		|	ns.members += TypeDeclaration(modifiers, ns) [ ";" ]
-		|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-			SyntaxDeclaration(modifiers, ns) [ ";" ]
+			ss.members += Import(modifiers)
+		|	ss.members += Typedef(modifiers)
+		|	ss.members += TypeDeclaration(modifiers, ss) [ ";" ]
 		|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
-			NameSpaceDeclaration(modifiers, ns) [ ";" ]
+			NameSpaceDeclaration(modifiers, ss) [ ";" ]
 		)
 	)*
-	{ comments_alone(ns_members); }
+	{ comments_alone(ss_members); }
 }
 
 ASTModifiers Modifiers() :
@@ -886,7 +954,7 @@ ASTModifiers Modifiers() :
 		SpecialAnnotation(n)
 	|	Access(n)			// TODO: remove, use @access and views
 	|	LOOKAHEAD({ getToken(1).kind==OPERATOR_AT })
-		n.annotations	+= Annotation()
+		n += Annotation()
 	)*
 	{ return n; }
 }
@@ -931,23 +999,9 @@ SymbolRef Package() :
 	qn = QName()
 	";"
 	{
-		qn.symbol = Env.getRoot().newPackage(qn.name).symbol;
+		qn.symbol = curEnv.newPackage(qn.name).symbol;
 		return qn;
 	}
-}
-
-void Pragma(FileUnit fu) :
-{ ASTPragma p = new ASTPragma(); }
-{
-	{ comments_before(p); }
-	"pragma"
-	(
-		<PRAGMA_ENABLE>		{ p.enable = true; }
-	|	<PRAGMA_DISABLE>	{ p.enable = false; }
-	)
-	( p.options += StringConstExpression() )+
-	";"
-	{ fu.setPragma(p); }
 }
 
 ImportSyntax ImportSyntax() :
@@ -960,26 +1014,51 @@ ImportSyntax ImportSyntax() :
 	";"
 	{
 		ImportSyntax imp = new ImportSyntax();
-		imp.name = (SymbolRefStx)qname;
+		imp.name.name = qname.name;
 		imp.name.qualified = true;
+		imp.pos = qname.pos;
 		return imp;
 	}
 }
 
 Import Import(ASTModifiers modifiers) :
-{ Import imp = new Import(); }
+{ Import imp = new ImportImpl(); SymbolRef name; }
 {
 	"import"
-	[ "static"	{ imp.mode = Import.ImportMode.IMPORT_STATIC; } ]
-	imp.name = QName()
+	[ "static"	{ imp = new ImportStatic(); } ]
+	name = QName() { imp.name.name = name.name; imp.name.pos = name.pos; }
 	[	LOOKAHEAD( "." <OPERATOR>, { getToken(2).image.equals("*") })
-		"." <OPERATOR> { imp.star = true; }
-	|	"("		{ imp.of_method = true; }
+		"." <OPERATOR>
+		{
+			if (imp instanceof ImportImpl)
+				imp.star = true;
+			else if (imp instanceof ImportStatic)
+				imp.star = true;
+		}
+	|	"("
+		{
+			ImportMethod im = new ImportMethod();
+			int p = imp.name.name.indexOf('\u00b7');
+			String nm; 
+			String meth; 
+			if (p < 0) {
+				nm = "";
+				meth = imp.name.name;
+			} else {
+				nm = imp.name.name.substring(0,p);
+				meth = imp.name.name.substring(0,p+1);
+			}
+			im.name.name = nm;
+			im.method.name = meth;
+			im.name.pos = imp.pos;
+			im.method.pos = getToken(0).getPos();
+			imp = im;
+		}
 		[
-			imp.args += Type()
+			im.args += Type()
 			(
 				","
-				imp.args += Type()
+				im.args += Type()
 			)*
 		]
 		")"
@@ -988,109 +1067,15 @@ Import Import(ASTModifiers modifiers) :
 	{ return imp; }
 }
 
-DNode Typedef(ASTModifiers modifiers) :
-{ Symbol id; DNode n; TypeRef tr; Token t; EToken et; }
+TypeAssign Typedef(ASTModifiers modifiers) :
+{ Symbol id; TypeAssign ta; TypeRef tr; Token t; EToken et; }
 {
 	("typedef"|"type")
-	(
-		LOOKAHEAD(3, <IDENTIFIER> "=" <IDENTIFIER>)
-		id = Name()
-		"="
-		tr = Type()
-		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
-	|
-		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>)
-		{ n = new TypeOpDef(); }
-		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers()); }
-		(	et   = Operator()            { n.op = et.ident; }
-		|	t    = <OPERATOR_LRBRACKETS> { n.op = "[]"; }
-		|	t    = "..."                 { n.op = "..."; }
-		)
-		n.dtype = Type()
-	|
-		tr = Type()
-		id = Name()
-		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
-	) ";"
-	{ return n; }
-}
-
-Opdef Opdef(ASTModifiers modifiers) :
-{ SymbolRef id; EToken op; ConstIntExpr ce; ConstStringExpr cs; Opdef opd = new Opdef(); }
-{
-	"operator"								{ opd.pos = getToken(0).getPos(); }
-	(
-		(
-			op = Operator()					{ opd.image = op.ident; }
-		|	id = NameRef()					{ opd.image = id.name; }
-		)
-		","
-		// FX,FY,XF,YF,XFX,YFX,XFY,YFY
-		id = NameRef()						{ opd.opmode = OpdefMode.fromString(id.name.toUpperCase()); }
-		","
-		ce = IntConstExpression()			{ opd.prior = ce.value; }
-	|
-		cs = StringConstExpression()		{ opd.sname = cs.value; }
-		[ "," ]
-		(
-			"type"							{ opd.prior = 255; opd.type_operator = true; }
-		|
-			ce = IntConstExpression()		{ opd.prior = ce.value; }
-		)
-	)
+	tr = Type()
+	id = Name()
+	{ ta = mkTypeAssign(id.pos, id.sname, modifiers, null); ta.super_types += tr; }
 	";"
-	{ return opd; }
-}
-
-KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) :
-{ KievSyntax stx; Symbol name; SymbolRef sr; }
-{
-	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-	<IDENTIFIER>	// "syntax"
-	name = Name()
-	{
-		stx = mkSyntax(name, modifiers, parent);
-	}
-	[
-		"extends"
-		sr = QName() { stx.super_syntax += new SymbolRefStx(sr.pos, sr.name); }
-		(
-			","
-			sr = QName() { stx.super_syntax += new SymbolRefStx(sr.pos, sr.name); }
-		)*
-	]
-	{ parent.members += stx; }
-	"{"
-	(	LOOKAHEAD({ getToken(1).kind != RBRACE })
-		modifiers = Modifiers()
-		(
-			stx.members += Typedef(modifiers)
-		|	stx.members += Opdef(modifiers)
-		|	stx.members += Import(modifiers)
-		)
-	)*
-	"}"
-	{ return stx; }
-}
-
-ComplexTypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ ComplexTypeDecl tdecl; Symbol name; TypeRef tp; TypeConstr[] args; }
-{
-	"metatype"
-	name = Name()
-	{
-		tdecl = mkMetaType(name, modifiers, (NameSpace)parent);	
-	}
-	[
-		args = ClazzArguments() { tdecl.args.addAll(args); }
-	]
-	[
-		"extends"
-		tdecl.super_types += Type()
-		( "," tdecl.super_types += Type()	)*
-	]
-	TypeBodyDeclaration(tdecl)
-	{ return tdecl; }
+	{ return ta; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
@@ -1100,10 +1085,13 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		"class"
 		name = Name()
 		{
-			clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
+			if (modifiers.isSymadeNode())
+				clazz = mkStruct(name, new SymadeNode(), 0, modifiers, parent);
+			else
+				clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
 		}
 		[
-			args = ClazzArguments() { clazz.args.addAll(args); }
+			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
 		]
 		[
 			"extends"
@@ -1118,10 +1106,13 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	|	"interface"
 		name = Name()
 		{
-			clazz = mkStruct(name, new JavaInterface(), ACC_INTERFACE, modifiers, parent);
+			if (modifiers.isSymadeNode())
+				clazz = mkStruct(name, new SymadeNode(), ACC_INTERFACE, modifiers, parent);
+			else
+				clazz = mkStruct(name, new JavaClass(), ACC_INTERFACE, modifiers, parent);
 		}
 		[
-			args = ClazzArguments() { clazz.args.addAll(args); }
+			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
 		]
 		[
 			"extends"
@@ -1147,7 +1138,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			KievView kview = (KievView)clazz;
 		}
 		[
-			args = ClazzArguments() { clazz.args.addAll(args); }
+			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
 		]
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
@@ -1168,7 +1159,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 void TypeBodyDeclaration(ComplexTypeDecl clazz) :
-{ ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members"); Struct sub_struct; }
+{ ASTModifiers modifiers; SpacePtr clazz_members = Env.getSpacePtr(clazz, "members"); Struct sub_struct; }
 {
 	"{"
 	(
@@ -1196,7 +1187,7 @@ void TypeBodyDeclaration(ComplexTypeDecl clazz) :
 			{ if (!sub_struct.isAttached()) clazz.members += sub_struct; else assert(clazz.members.indexOf(sub_struct) >= 0); }
 			[ ";" ]
 		|	LOOKAHEAD(1)
-			clazz.members += MemberArgDecl(modifiers)
+			clazz.members += MemberArgDecl(modifiers,clazz)
 		|	LOOKAHEAD(1)
 			sub_struct     = CaseTypeDeclaration(modifiers, clazz)
 			{ if (!sub_struct.isAttached()) clazz.members += sub_struct; else assert(clazz.members.indexOf(sub_struct) >= 0); }
@@ -1217,7 +1208,7 @@ DNode FieldOrMethodDecl(ASTModifiers modifiers, ComplexTypeDecl clazz) :
 { TypeConstr[] args; TypeRef dtype; DNode res = null; }
 {
 	(
-		args = ClazzArguments()
+		args = ClazzArguments(null)
 		(
 			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
 			res = ConstructorDeclaration(modifiers, args, clazz)
@@ -1273,7 +1264,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
 	}
 	[
-		args = ClazzArguments() { clazz.args.addAll(args); }
+		args = ClazzArguments(clazz) { clazz.args.addAll(args); }
 	]
 	(
 		"("
@@ -1297,21 +1288,21 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 }
 
 
-TypeConstr[] ClazzArguments() :
+TypeConstr[] ClazzArguments(DNode dn) :
 { TypeConstr[] args = new TypeConstr[0]; TypeConstr arg; }
 {
 	("<" | <LANGLE>)
-		arg = ArgumentDeclaration()
+		arg = ArgumentDeclaration(dn)
 		{ args = (TypeConstr[])Arrays.append(args,arg); }
 		(	","
-			arg = ArgumentDeclaration()
+			arg = ArgumentDeclaration(dn)
 			{ args = (TypeConstr[])Arrays.append(args,arg); }
 		)*
 	(">" | <RANGLE>)
 	{ return args; }
 }
 
-TypeDef MemberArgDecl(ASTModifiers modifiers) :
+TypeDef MemberArgDecl(ASTModifiers modifiers, DNode dn) :
 { Symbol name; TypeDef arg; TypeRef t; }
 {
 	("typedef"|"type")
@@ -1319,11 +1310,11 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 		name      = Name()
 		(
 			"="
-			{ arg = mkTypeAssign(name,modifiers); }
+			{ arg = mkTypeAssign(name.pos,name.sname,modifiers,dn); }
 			t = Type() { arg.super_types += t; }
 			";"
 		|
-			{ arg = mkTypeConstr(name,modifiers); }
+			{ arg = mkTypeConstr(name.pos,name.sname,modifiers,dn); }
 			(
 				<OPERATOR_UPPER_BOUND> t = Type() { arg.super_types.add(t);}
 			|	<OPERATOR_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
@@ -1334,7 +1325,7 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 	{ return arg; }
 }
 
-TypeConstr ArgumentDeclaration() :
+TypeConstr ArgumentDeclaration(DNode dn) :
 { ASTModifiers modifiers; Symbol name; TypeConstr arg; TypeRef tr; TypeVariance variance = null; }
 {
 	modifiers = Modifiers()
@@ -1354,7 +1345,7 @@ TypeConstr ArgumentDeclaration() :
 	)?
 	name      = Name()
 	{
-		arg = mkTypeConstr(name,modifiers); arg.setAbstract(true);
+		arg = mkTypeConstr(name.pos,name.sname,modifiers,dn); arg.setAbstract(true);
 		if (variance != null)
 			arg.variance = variance;
 	}
@@ -1394,7 +1385,6 @@ void Access(ASTModifiers modifiers) :
 	|	"@private"		{ ma = new MetaAccess("private"); }
 	|	"private"		{ ma = new MetaAccess("private"); }
 	)
-	{ modifiers += ma; }
 	(
 		<COLON1> // ":"
 		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
@@ -1412,6 +1402,16 @@ void Access(ASTModifiers modifiers) :
 		<CLOSE_ACCESS> // ")"
 		{ ma.flags = accflags; }
 	)?
+	{
+		if (ma.flags != -1)
+			modifiers += ma;
+		else if (ma.simple == "public")
+			modifiers += new MetaPublic();
+		else if (ma.simple == "protected")
+			modifiers += new MetaProtected();
+		else if (ma.simple == "private")
+			modifiers += new MetaPrivate();
+	}
 }
 
 int AccessSpec() :
@@ -1494,8 +1494,8 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 		cs = StringConstExpression()
 		")"
 		{ muuid.value = cs.value; modifiers += muuid; }
-	| "@getter"		{ modifiers += new UserMeta(VirtFldFE_GenMembers.nameMetaGetter); }
-	| "@setter"		{ modifiers += new UserMeta(VirtFldFE_GenMembers.nameMetaSetter); }
+	| "@getter"		{ modifiers += new MetaGetter(); }
+	| "@setter"		{ modifiers += new MetaSetter(); }
 }
 
 SymbolRef KeywordAsNameRef() :
@@ -1507,7 +1507,11 @@ SymbolRef KeywordAsNameRef() :
 	)
 	{
 		id = new SymbolRef();
-		id.set(t);
+		id.pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			id.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		else
+			id.name = t.image;
 		return id;
 	}
 }
@@ -1521,7 +1525,11 @@ Symbol KeywordAsName() :
 	)
 	{
 		id = new Symbol();
-		id.set(t);
+		id.pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			id.sname = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		else
+			id.sname = t.image;
 		return id;
 	}
 }
@@ -1683,7 +1691,7 @@ void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
 			id = Name()
 			[	"="	init = VariableInitializer()	]
 			{
-				var = mkVar(id, new ASTModifiers(), dtype.ncopy());
+				var = mkVar(id, new ASTModifiers(), new Copier().copyFull(dtype));
 				modifiers.copyToNode(var);
 				var.init = init;
 				stats += var;
@@ -1735,7 +1743,7 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 {
 	(
 		LOOKAHEAD({ getToken(1).image.equals("_") })
-		id = Name() { tp = new TypeRef(Type.tpVoid); tp.pos = id.pos; }
+		id = Name() { tp = new TypeRef(curEnv.tenv.tpVoid); tp.pos = id.pos; }
 	|
 		tp = Type()
 		id = Name()
@@ -1761,9 +1769,9 @@ LVar MethodVarargsParameter(ASTModifiers modifiers, TypeRef tp) :
 	[ id = Name() ]
 	{
 		if (tp == null)
-			tp = new TypeExpr(new TypeRef(Type.tpObject), t);
+			tp = makeTypeExpr(new TypeRef(curEnv.tenv.tpObject), t);
 		else
-			tp = new TypeExpr(tp, t);
+			tp = makeTypeExpr(tp, t);
 		tp.pos = t.getPos();
 		if (id == null) {
 			id = new Symbol(t.getPos(), Constants.nameVarArgs);
@@ -1792,31 +1800,21 @@ MetaThrows Throws() :
 }
 
 
-Symbol Alias() :
-{ Token t; Symbol a; SymbolRef id; EToken op; ConstIntExpr ce; ConstStringExpr cs; }
+Alias MethodAlias(Method m) :
+{ Alias a; Symbol s; SymbolRef id; EToken op; ConstIntExpr ce; ConstStringExpr cs; }
 {
 	(
 		"alias"
 		(
-			a = Name()
-			[
-				"operator"
-				{ String opmode = a.sname; a = new ASTOperatorAlias(); a.pos = getToken(0).getPos(); a.opmode = OpdefMode.fromString(opmode.toUpperCase()); }
-				(
-					op = Operator()				{ a.image = op.ident; }
-				|	id = NameRef()				{ a.image = id.name; }
-				|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
-				|	"new"						{ a.image = "new"; }
-				//|	"$cast"						{ a.image = "$cast"; }
-				)
-			]
+			s = Name()
+			{ a = new Alias(s.sname, m); a.pos = s.pos; }
 		|	"operator"
 			cs = StringConstExpression()
-			{ a = new ASTOperatorAlias(); a.sname = cs.value; a.pos = cs.pos;}
+			{ a = new OperatorAlias(cs.value, m); a.pos = cs.pos; }
 		)
 	|	"operator"
 		cs = StringConstExpression()
-		{ a = new ASTOperatorAlias(); a.sname = cs.value; a.pos = cs.pos; }
+		{ a = new OperatorAlias(cs.value, m); a.pos = cs.pos; }
 	)
 	{ return a; }
 }
@@ -1836,34 +1834,7 @@ void SkipBlock() :
 		} while( depth > 0 );
 	}
 }
-/*
-ENode MaybeSkipBlock(ASTNode target) :
-{ ENode bl = null; }
-{
-	(
-		LOOKAHEAD({ interface_only })
-		"{"
-		{
-			Token tk = getToken(0);
-			int depth = 1;
-			do {
-				tk = getNextToken();
-				if( tk.kind == LBRACE ) depth++;
-				else if( tk.kind == RBRACE ) depth--;
-			} while( depth > 0 );
-		}
-	|
-		LOOKAHEAD({ target instanceof RuleMethod })
-		bl = RuleBlock()
-	|
-		LOOKAHEAD({ target instanceof Method && ((Method)target).isMacro() })
-		bl = RewriteMatch()
-	|
-		bl = Block()
-	)
-	{ return bl; }
-}
-*/
+
 Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret) :
 { Token t; Method m; Symbol id; ConstStringExpr cor; MetaThrows thr; TypeRef ptype; }
 {
@@ -1894,7 +1865,7 @@ Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret)
 		)?
 	")"
 	(
-		m.aliases += Alias()
+		m.aliases += MethodAlias(m)
 	)*
 	[	thr = Throws()	{ m.setMeta(thr); } ]
 	(
@@ -1902,14 +1873,11 @@ Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret)
 	|	m.conditions += EnsureDeclaration()
 	)*
 	(
-		LOOKAHEAD({ getToken(1).kind == LBRACE && m.isMacro() })
-		m.body = RewriteMatch() [ ";" ]
-	|	LOOKAHEAD({ getToken(1).kind == LBRACE && interface_only })
+		LOOKAHEAD({ getToken(1).kind == LBRACE && interface_only })
 		SkipBlock() [ ";" ]
 	|	LOOKAHEAD({ getToken(1).kind == LBRACE })
 		m.body = Block() [ ";" ]
 	|	"default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m)) ";"
-	|	"continue" cor = StringConstExpression() { m.body = CoreExpr.makeInstance(cor.pos, cor.value); } ";"
 	|	";"
 	)
 	{ return m; }
@@ -1947,7 +1915,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args, Co
 		)?
 	")"
 	(
-		m.aliases += Alias()
+		m.aliases += MethodAlias(m)
 	)*
 	[	thr = Throws()	{ m.setMeta(thr); } ]
 	(
@@ -2039,7 +2007,7 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 {
 	<IDENTIFIER> // "rule"
 	id = Name()
-	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); }
+	{ m = mkRuleMethod(id, modifiers, new TypeRef(curEnv.tenv.tpRule)); }
 	"("
 		(
 			LOOKAHEAD({ getToken(1).kind != RPAREN })
@@ -2055,7 +2023,7 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 		)?
 	")"
 	(
-		m.aliases += Alias()
+		m.aliases += MethodAlias(m)
 	)*
 	(
 		modifiers = Modifiers()
@@ -2121,7 +2089,7 @@ TypeRef TypeExpr() :
 		(	t = TypeOperatorChar()
 		|	t = <OPERATOR_LRBRACKETS>
 		)
-		{ res = new TypeExpr(res,t); }
+		{ res = makeTypeExpr(res,t); }
 	)*
 	{ return res; }
 }
@@ -2129,10 +2097,10 @@ TypeRef TypeExpr() :
 PathTypeRef PathType() :
 { Token t; ENode e; }
 {
-	t = <IDENTIFIER>			{ e = new EToken(t,ETokenKind.IDENTIFIER); }
+	t = <IDENTIFIER>			{ e = new EToken(t,ETokenKind.MAYBE_IDENTIFIER); }
 	"."
 	(
-		t = <IDENTIFIER>		{ e = new AccessExpr(t.getPos(),e,new EToken(t,ETokenKind.IDENTIFIER).ident); }
+		t = <IDENTIFIER>		{ e = new AccessExpr(t.getPos(),e,new EToken(t,ETokenKind.MAYBE_IDENTIFIER).ident); }
 		"."
 	)*
 	t="type"
@@ -2145,7 +2113,7 @@ TypeNameRef TypeQName() :
 	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
 	(	LOOKAHEAD("." <IDENTIFIER>)
 		"."
-		id = NameRef()  { res.ident = res.ident + '·' + id.name; res.qualified = true; }
+		id = NameRef()  { res.ident = res.ident + '\u00b7' + id.name; }
 	)*
 	{ return res; }
 }
@@ -2160,14 +2128,14 @@ TypeRef TypeWithWildcard() :
 		(
 			"extends"
 			res = Type()
-			{ res = new TypeExpr(res, Operator.PostTypeWildcardCoVariant); }
+			{ res = new TypeExpr(res, Operator.PostTypeWildcardCoVariant, null); }
 		|
 			LOOKAHEAD({getToken(1).kind == IDENTIFIER && getToken(1).image.equals("super")})
 			<IDENTIFIER>
 			res = Type()
-			{ res = new TypeExpr(res, Operator.PostTypeWildcardContraVariant); }
+			{ res = new TypeExpr(res, Operator.PostTypeWildcardContraVariant, null); }
 		|
-			{ res = new TypeExpr(StdTypes.tpObject, Operator.PostTypeWildcardCoVariant); res.pos = getToken(0).getPos(); }
+			{ res = new TypeExpr(curEnv.tenv.tpObject, Operator.PostTypeWildcardCoVariant, null); res.pos = getToken(0).getPos(); }
 		)
 	|
 		res = Type()
@@ -2176,13 +2144,32 @@ TypeRef TypeWithWildcard() :
 }
 
 TypeRef TypeWithArgs() :
-{ SymbolRef qname; TypeRef res; }
+{ SymbolRef qname; TypeRef res; TypeRef arg; }
 {
 	qname = QName()
 	(	LOOKAHEAD({ getToken(1).kind == LT || getToken(1).kind == LANGLE })
 		("<" | <LANGLE>)
 			{ res = new TypeNameArgsRef(qname.name); }
-			res.args += Type()
+			(
+				// "?"
+				LOOKAHEAD({getToken(1).kind == OPERATOR && getToken(1).image.equals("?")})
+				<OPERATOR>
+				(
+					"extends"
+					arg = Type()
+					{ res.args += new TypeExpr(arg, Operator.PostTypeWildcardCoVariant, null); }
+				|
+					LOOKAHEAD({getToken(1).kind == IDENTIFIER && getToken(1).image.equals("super")})
+					<IDENTIFIER>
+					arg = Type()
+					{ res.args += new TypeExpr(arg, Operator.PostTypeWildcardContraVariant, null); }
+				|
+					{ res.args += new TypeExpr(curEnv.tenv.tpObject, Operator.PostTypeWildcardCoVariant, null); }
+				)
+			|
+				res.args += Type()
+			)
+
 			(	LOOKAHEAD({ getToken(1).kind == COMMA })
 				","
 				res.args += Type()
@@ -2212,10 +2199,10 @@ TypeRef NArrType() :
 	res = TypeWithArgs()
 	(	LOOKAHEAD(2)
 		(
-			t = TypeOperatorChar()			{ res = new TypeExpr(res,t); }
+			t = TypeOperatorChar()			{ res = makeTypeExpr(res,t); }
 		|
-			t = <OPERATOR_LRBRACKETS>		{ res = new TypeExpr(res,t); }
-			t = TypeOperatorChar()			{ res = new TypeExpr(res,t); }
+			t = <OPERATOR_LRBRACKETS>		{ res = makeTypeExpr(res,t); }
+			t = TypeOperatorChar()			{ res = makeTypeExpr(res,t); }
 		)
 	)*
 	{ return res; }
@@ -2239,7 +2226,11 @@ LVarExpr Var() :
 	t=<IDENTIFIER>
 	{
 		LVarExpr id = new LVarExpr();
-		id.set(t);
+		id.pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			id.ident = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		else
+			id.ident = t.image;
 		return id;
 	}
 }
@@ -2250,7 +2241,11 @@ Symbol Name() :
 	t=<IDENTIFIER>
 	{
 		Symbol id = new Symbol();
-		id.set(t);
+		id.pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			id.sname = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		else
+			id.sname = t.image;
 		return id;
 	}
 }
@@ -2261,7 +2256,11 @@ SymbolRef NameRef() :
 	t=<IDENTIFIER>
 	{
 		SymbolRef id = new SymbolRef();
-		id.set(t);
+		id.pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			id.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		else
+			id.name = t.image;
 		return id;
 	}
 }
@@ -2274,10 +2273,9 @@ SymbolRef QName() :
 		LOOKAHEAD(2)
 		"."
 		id2 = NameRef()
-		{ id.name = id.name+'·'+id2.name; }
+		{ id.name = id.name+'\u00b7'+id2.name; }
 	)*
 	{
-		id.qualified = true;
 		return id;
 	}
 }
@@ -2287,7 +2285,7 @@ EToken Identifier() :
 {
 	t=<IDENTIFIER>
 	{
-		return new EToken(t,ETokenKind.IDENTIFIER);
+		return new EToken(t,ETokenKind.MAYBE_IDENTIFIER);
 	}
 }
 
@@ -2442,8 +2440,6 @@ EToken Operator() :
 			{ image = image+t.image; }
 		)*
 	|
-		t=":=" { image = t.image; pos = t.getPos(); }
-	|
 		t="->" { image = t.image; pos = t.getPos(); }
 	|
 		t="?=" { image = t.image; pos = t.getPos(); }
@@ -2459,22 +2455,22 @@ EToken Operator() :
 				image = t.image;
 		}
 	)
-	{	return new EToken(pos, image, ETokenKind.OPERATOR, true);		}
+	{	return new EToken(pos, image, ETokenKind.EXPL_OPERATOR);		}
 }
 
 ENode ExpressionColonComma() :
 { ASTExpression e = new ASTExpression(); Token t; }
 {
 	(
-		t=":"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=":"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|
-		t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=","	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|	LOOKAHEAD({ExpressionNoNoLA()})
 		ExpressionNoNo(e)
 	)+
 	{
-		if (e.nodes.length == 1)
-			return ~e.nodes[0];
+		//if (e.nodes.length == 1)
+		//	return ~e.nodes[0];
 		return e;
 	}
 }
@@ -2482,13 +2478,13 @@ ENode ExpressionColon() :
 { ASTExpression e = new ASTExpression(); Token t; }
 {
 	(
-		t=":"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=":"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|	LOOKAHEAD({ExpressionNoNoLA()})
 		ExpressionNoNo(e)
 	)+
 	{
-		if (e.nodes.length == 1)
-			return ~e.nodes[0];
+		//if (e.nodes.length == 1)
+		//	return ~e.nodes[0];
 		return e;
 	}
 }
@@ -2496,13 +2492,13 @@ ENode ExpressionComma() :
 { ASTExpression e = new ASTExpression(); Token t; }
 {
 	(
-		t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=","	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|	LOOKAHEAD({ExpressionNoNoLA()})
 		ExpressionNoNo(e)
 	)+
 	{
-		if (e.nodes.length == 1)
-			return ~e.nodes[0];
+		//if (e.nodes.length == 1)
+		//	return ~e.nodes[0];
 		return e;
 	}
 }
@@ -2514,8 +2510,8 @@ ENode Expression() :
 		ExpressionNoNo(e)
 	)+
 	{
-		if (e.nodes.length == 1)
-			return ~e.nodes[0];
+		//if (e.nodes.length == 1)
+		//	return ~e.nodes[0];
 		return e;
 	}
 }
@@ -2528,84 +2524,100 @@ void ExpressionNoNo(ASTExpression e) :
 	|
 		e.nodes += Identifier()
 	|
-		t="("	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t="("	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		[
 			n = ExpressionColonComma() { expandExpr(e,n); }
 		]
-		t=")"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=")"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|
-		t="["	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t="["	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		e.nodes += ExpressionColonComma()
-		t="]"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t="]"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|
-		t=<LANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=<LANGLE>		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		e.nodes += Type()
 		(
-			t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); } 
+			t=","	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); } 
 			e.nodes += Type()
 		)*
-		t=<RANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t=<RANGLE>		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 	|
-		t=<OPERATOR_LRBRACKETS>	{ e.nodes += new EToken(t.getPos(), "[]", ETokenKind.OPERATOR, true); }
+		t=<OPERATOR_LRBRACKETS>	{ e.nodes += new EToken(t.getPos(), "[]", ETokenKind.EXPL_OPERATOR); }
 	|
-		t="."	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		t="."	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		(
-			t="class"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+			t="class"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		|
-			t="new"		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+			t="new"		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 			e.nodes += Type()
 		|
-			t="<"		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
-			e.nodes += Type()
-			(
-				t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); } 
-				e.nodes += Type()
-			)*
-			t=">"		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
-		|
-			t=<LANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+			t="<"		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 			e.nodes += Type()
 			(
-				t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); } 
+				t=","	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); } 
 				e.nodes += Type()
 			)*
-			t=<RANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+			t=">"		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+		|
+			t=<LANGLE>		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+			e.nodes += Type()
+			(
+				t=","	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); } 
+				e.nodes += Type()
+			)*
+			t=<RANGLE>		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		|
 			{}
 		)
 	|
-		e.nodes += AnonymouseClosure()
+		NewAny(e)
 	|
-		e.nodes += NewAny()
+		e.nodes += AnonymouseClosure()
 	|
 		e.nodes += Operator()
 	)
 }
 
-ENode NewAny() :
-{ ENode n; TypeRef tp; Token t; }
+void NewAny(ASTExpression e) :
+{ ENode n; TypeRef tp; Token t; Struct clazz; }
 {
-	t="new"
+	t="new"				{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+	tp = NArrType()		{ e.nodes += tp; }
 	(
-		//LOOKAHEAD("#")
-		n = RewriteFactoryCall()
-	|
-		tp = NArrType()
 		(
-			//LOOKAHEAD((<OPERATOR_LRBRACKETS>)+ "{" )
-			n = NewInitializedArrayExpression(tp)
+			t="["						{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+			n = Expression()			{ expandExpr(e,n); }
+			t="]"						{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
 		|
-			//LOOKAHEAD("[" )
-			n = NewArrayExpression(tp)
-		|
-			//LOOKAHEAD("(" )
-			n = NewExpression(tp)
-		)
+			t=<OPERATOR_LRBRACKETS>		{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+		)+
+		(
+			t="{"								{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+			[
+				n = VariableInitializer()		{ e.nodes += n; }
+				(	LOOKAHEAD(2)
+					t=","						{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+					n = VariableInitializer()	{ e.nodes += n; }
+				)*
+				[ "," ]
+			]
+			t="}"								{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+		)?
+	|
+		t="("	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+		[
+			n = ExpressionColonComma() { expandExpr(e,n); }
+		]
+		t=")"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
+		(
+			LOOKAHEAD({ getToken(1).kind == LBRACE })
+			{
+				clazz = mkStruct(null, new JavaAnonymouseClass(), ACC_FINAL, new ASTModifiers(), e);
+				e.nodes += clazz;
+			}
+			TypeBodyDeclaration(clazz)
+		)?
 	)
-	{
-		n.pos = t.getPos();
-		return n;
-	}
 }
 
 NewClosure AnonymouseClosure() :
@@ -2640,155 +2652,57 @@ ConstExpr ConstExpression() :
 { ConstExpr ce; }
 {
 	(
-		ce = BooleanConstExpression()
-	|	ce = IntConstExpression()
+		ce = IntConstExpression()
 	|	ce = LongConstExpression()
 	|	ce = FloatConstExpression()
 	|	ce = DoubleConstExpression()
 	|	ce = CharConstExpression()
-	|	ce = NullConstExpression()
 	|	ce = StringConstExpression()
 	)
 	{ return ce; }
-}
-
-ConstBoolExpr BooleanConstExpression() :
-{ Token t; }
-{
-	(
-		t="true"
-	|	t="false"
-	)
-	{ return (ConstBoolExpr)ConstExpr.fromSource(t); }
 }
 
 ConstIntExpr IntConstExpression() :
 { Token t; }
 {
  	t=<INTEGER_LITERAL>
-	{ return (ConstIntExpr)ConstExpr.fromSource(t); }
+	{ return (ConstIntExpr)sourceToConst(t); }
 }
 
 ConstLongExpr LongConstExpression() :
 { Token t; }
 {
 	t=<LONG_INTEGER_LITERAL>
-	{ return (ConstLongExpr)ConstExpr.fromSource(t); }
+	{ return (ConstLongExpr)sourceToConst(t); }
 }
 
 ConstFloatExpr FloatConstExpression() :
 { Token t; }
 {
 	t=<FLOATING_POINT_LITERAL>
-	{ return (ConstFloatExpr)ConstExpr.fromSource(t); }
+	{ return (ConstFloatExpr)sourceToConst(t); }
 }
 
 ConstDoubleExpr DoubleConstExpression() :
 { Token t; }
 {
 	t=<DOUBLE_POINT_LITERAL>
-	{ return (ConstDoubleExpr)ConstExpr.fromSource(t); }
+	{ return (ConstDoubleExpr)sourceToConst(t); }
 }
 
 ConstCharExpr CharConstExpression() :
 { Token t; }
 {
 	t=<CHARACTER_LITERAL>
-	{ return (ConstCharExpr)ConstExpr.fromSource(t); }
-}
-
-ConstNullExpr NullConstExpression() :
-{ Token t; }
-{
-	t="null"
-	{ return (ConstNullExpr)ConstExpr.fromSource(t); }
+	{ return (ConstCharExpr)sourceToConst(t); }
 }
 
 ConstStringExpr StringConstExpression() :
 { Token t, t1; }
 {
 	t=<STRING_LITERAL>
-	{ return (ConstStringExpr)ConstExpr.fromSource(t); }
+	{ return (ConstStringExpr)sourceToConst(t); }
 }
-
-NewExpr NewExpression(TypeRef tp) :
-{
-	boolean old_mode;
-	Struct clazz;
-	NewExpr ne = new NewExpr();
-	ne.pos = tp.pos;
-	ne.ntype = tp;
-}
-{
-	//"new"
-    //ne.ntype = NArrType()
-	"("
-		(
-			LOOKAHEAD({ getToken(1).kind != RPAREN })
-			ne.args += ExpressionColon()
-			(	"," ne.args += ExpressionColon()	)*
-		)?
-	")"
-	(
-		LOOKAHEAD({ getToken(1).kind == LBRACE })
-		{
-			old_mode = interface_only;
-			interface_only = false;
-			ne.clazz = clazz = mkStruct(null, new JavaAnonymouseClass(), ACC_FINAL, new ASTModifiers(), ne);
-		}
-		TypeBodyDeclaration(clazz)
-	)?
-	{ return ne; }
-}
-
-NewArrayExpr NewArrayExpression(TypeRef tp) :
-{ NewArrayExpr ne; }
-{
-	//"new"
-	//ne.ntype = NArrType()
-	{
-		NewArrayExpr ne = new NewArrayExpr();
-		ne.pos = tp.pos;
-		ne.ntype = tp;
-	}
-	(
-		LOOKAHEAD(2)
-		"["
-		ne.args += Expression()
-		"]"
-	)+
-	(	LOOKAHEAD({ getToken(1).kind == OPERATOR_LRBRACKETS })
-		<OPERATOR_LRBRACKETS>
-		{ ne.args += new NopExpr(); }
-	)*
-	{
-		return ne;
-	}
-}
-
-NewInitializedArrayExpr NewInitializedArrayExpression(TypeRef tp) :
-{ NewInitializedArrayExpr ne; Token t; }
-{
-	//tn="new"
-	//tr = NArrType()
-	(
-		t=<OPERATOR_LRBRACKETS> 
-		{ tp = new TypeExpr(tp,t); }
-	)+
-	{ ne = new NewInitializedArrayExpr(tp.pos, (TypeExpr)tp, null); }
-	"{"
-	[
-		ne.args += VariableInitializer()
-		(	LOOKAHEAD(2)
-			","
-			ne.args += VariableInitializer()
-		)*
-		[ "," ]
-	]
-	"}"
-	{ return ne; }
-}
-
 
 /*
  * Statement syntax follows.
@@ -2815,7 +2729,6 @@ ENode Statement() :
 	| st = WithStatement()
 	| st = TryStatement()
 	| st = GotoStatement()
-	| st = IfRewr()
 	| LOOKAHEAD(0)
 	  st = StatementExpression()
 	)
@@ -2843,7 +2756,7 @@ Block Block() :
 	}
 	try {
     	(
-			BlockStatement(bl.getSpacePtr("stats"))
+			BlockStatement(Env.getSpacePtr(bl, "stats"))
 		)*
 	} finally { declMode = old_declMode; }
     "}"
@@ -2997,7 +2910,7 @@ CaseLabel NormalCase(SwitchStat sw) :
 		":"
 	)
 	(
-		BlockStatement(sw.getSpacePtr("stats"))
+		BlockStatement(Env.getSpacePtr(sw, "stats"))
 	)*
 	{ return c; }
 }
@@ -3019,7 +2932,7 @@ CaseLabel PizzaCase(SwitchStat sw) :
 	)?
 	")" ":"
 	(
-		BlockStatement(sw.getSpacePtr("stats"))
+		BlockStatement(Env.getSpacePtr(sw, "stats"))
 	)*
 	{ return c; }
 }
@@ -3080,36 +2993,52 @@ DoWhileStat DoStatement() :
 	{ return st; }
 }
 
-ForStat ForStatement() :
-{ ASTModifiers modifiers; ForStat st = new ForStat(); }
+LoopStat ForStatement() :
+{ ASTModifiers modifiers; ForStat fs = new ForStat(); ForEachStat fe = null; }
 {
 	"for"
-	{ st.pos = getToken(0).getPos(); }
+	{ fs.pos = getToken(0).getPos(); }
 	"("
 		(	LOOKAHEAD( InBlockModifiersLA())
 			modifiers = Modifiers()
-			VarDecls(modifiers, st.getSpacePtr("inits"))
+			VarDecls(modifiers, Env.getSpacePtr(fs, "inits"))
 		|
 			LOOKAHEAD( Type() Name() )
-			VarDecls(new ASTModifiers(), st.getSpacePtr("inits"))
+			VarDecls(new ASTModifiers(), Env.getSpacePtr(fs, "inits"))
 		|
-			st.inits += Expression()
+			fs.inits += Expression()
 			(
 				","
-				st.inits += Expression()
+				fs.inits += Expression()
 			)*
 		)?
-	";"
-		[
-			st.cond = Expression()
-		]
-	";"
-		[
-			st.iter = CommaExpression()
-		]
-	")"
-	st.body = Statement()
-	{ return st; }
+	(
+		":"
+		{
+			if (fs.inits.length != 1 || !(fs.inits[0] instanceof Var))
+				rpe("Bad for(:) deflaration",null);
+			ForEachStat fe = new ForEachStat();
+			fe.pos = fs.pos;
+			fe.var = (Var)fs.inits[0].detach();
+			fs = null;
+		}
+		fe.container = Expression()
+		")"
+		fe.body = Statement()
+		{ return fe; }
+	|
+		";"
+			[
+				fs.cond = Expression()
+			]
+		";"
+			[
+				fs.iter = CommaExpression()
+			]
+		")"
+		fs.body = Statement()
+		{ return fs; }
+	)
 }
 
 ForEachStat ForEachStatement() :
@@ -3254,125 +3183,6 @@ FinallyInfo FinallyInfo() :
 	"finally"
 	{ st.pos = getToken(0).getPos(); }
 	st.body = Block()
-	{ return st; }
-}
-
-
-
-RewriteMatch RewriteMatch() :
-{ TypeRef tp; Symbol id; RewriteMatch rm = new RewriteMatch(); }
-{
-	"{"
-	(
-		rm.cases += RewriteCase()
-	)+
-	"}"
-	{ return rm; }
-}
-
-RewriteCase RewriteCase() :
-{ RewriteCase c = new RewriteCase(); }
-{
-	"case"		{ c.pos = getToken(0).getPos(); }
-	c.var = RewriteCasePattern()
-	":"
-	(
-		BlockStatement(c.getSpacePtr("stats"))
-	)+
-	{ return c; }
-}
-
-RewritePattern RewriteCasePattern() :
-{ ASTModifiers modifiers; TypeRef tp; Symbol id; RewritePattern p; }
-{
-	modifiers = Modifiers()
-	tp = Type()
-	id = Name()
-	{ p = mkRewritePattern(id, modifiers, tp); }
-	[
-	"("
-		[
-			p.vars += RewriteCasePattern()
-			(
-				","
-				p.vars += RewriteCasePattern()
-			)*
-		]
-	")"
-	]
-	{ return p; }
-}
-
-
-
-
-RewriteNodeFactory RewriteFactoryCall() :
-{ RewriteNodeFactory rn; SymbolRef id; }
-{
-	//"new"
-	"#"
-	id = QName()
-	{ rn = new RewriteNodeFactory(id.name); }
-	RewriteNodeArgs(rn)
-	{ return rn; }
-}
-
-void RewriteNodeArgs(RewriteNodeFactory nf) :
-{}
-{
-	"("
-	[
-		nf.args += RewriteNodeArg()
-		( "," nf.args += RewriteNodeArg() )*
-	]
-	")"
-}
-
-RewriteNodeArg RewriteNodeArg() :
-{ Token t; ENode rn; }
-{
-	t = <IDENTIFIER>
-	"="
-	(
-		rn = RewriteNodeArgArrayInit()
-	|
-		rn = Expression()
-	)
-	{ return new RewriteNodeArg(t.image, rn); }
-}
-
-RewriteNodeArgArray RewriteNodeArgArrayInit() :
-{ RewriteNodeArgArray rn = new RewriteNodeArgArray(); }
-{
-	"{" { rn.pos = getToken(0).getPos(); }
-	[	LOOKAHEAD(2)
-		rn.args += Expression()
-		(	LOOKAHEAD(2)
-			","
-			rn.args += VariableInitializer()
-		)*
-		[ "," ]
-	]
-	"}"
-	{ return rn; }
-}
-
-IfElseRewr IfRewr() :
-{ IfElseRewr st = new IfElseRewr(); EToken not = null; }
-{
-	"if#"
-	{ st.pos = getToken(0).getPos(); }
-	[
-		LOOKAHEAD(<OPERATOR>, { getToken(1).image.equals("!") })
-		not = Operator()
-	]
-    "("
-		st.cond = ExpressionColonComma()
-		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
-	")"
-	st.thenSt = Statement()
-	"else"
-	st.elseSt = Statement()
 	{ return st; }
 }
 

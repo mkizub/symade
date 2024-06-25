@@ -31,46 +31,45 @@ public class PathTypeRef extends TypeRef {
 		this.path = path;
 	}
 
-	public void callbackChildChanged(ChildChangeType ct, AttrSlot attr, Object data) {
-		if (attr.name == "path") {
+	public void callbackChanged(NodeChangeInfo info) {
+		if (info.content_change && info.slot.name == "path") {
 			if (!this.isExptTypeSignature() && this.type_lnk != null)
 				this.type_lnk = null;
-			if (this.isAttached())
-				parent().callbackChildChanged(ChildChangeType.MODIFIED, pslot(), this);
+			notifyParentThatIHaveChanged();
 		}
-		super.callbackChildChanged(ct, attr, data);
+		super.callbackChanged(info);
 	}
 	
-	public Operator getOper() { return Operator.PathTypeAccess; }
+	public CoreOperation getOperation(Env env) { env.coreFuncs.fPathTypeAccess.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{path}; }
 
-	public boolean preResolveIn() {
+	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		if (path instanceof EToken && path.ident == nameThis)
-			path.replaceWithNode(new ThisExpr(path.pos));
+			path.replaceWithNode(new ThisExpr(path.pos), this, nodeattr$path);
 		return true;
 	}
-	public void preResolveOut() { getType(); }
-	public boolean mainResolveIn() { return true; }
-	public void mainResolveOut() { getType(); }
+	public void preResolveOut(Env env, INode parent, AttrSlot slot) { getType(env); }
+	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return true; }
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) { getType(env); }
 
-	public Type getType() {
-		if (this.type_lnk != null)
-			return this.type_lnk;
+	public Type getType(Env env) {
+		//if (this.type_lnk != null)
+		//	return this.type_lnk;
 		Type tp;
 		if (path instanceof ThisExpr)
-			tp = StdTypes.tpSelfTypeArg;
+			tp = env.tenv.tpSelfTypeArg;
 		else
-			tp = path.getType();
-		this.type_lnk = tp;
+			tp = path.getType(env);
+		//this.type_lnk = tp;
 		return tp;
 	}
 
-	public Struct getStruct() {
-		return this.getType().getStruct();
+	public Struct getStruct(Env env) {
+		return this.getType(env).getStruct();
 	}
-	public TypeDecl getTypeDecl() {
-		return this.getType().meta_type.tdecl;
+	public TypeDecl getTypeDecl(Env env) {
+		return this.getType(env).meta_type.tdecl;
 	}
 
 	public String toString() {
