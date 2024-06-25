@@ -58,6 +58,7 @@ static public enum KievExt {
 public final class Kiev {
 
 	private static final ThreadLocal<String> curFile = new ThreadLocal<String>();
+	private static final ThreadLocal<SemContext> curSemContext = new ThreadLocal<SemContext>();
 
 	private Kiev() {}
 	
@@ -72,7 +73,21 @@ public final class Kiev {
 	public static void setCurFile(String cf) {
 		curFile.set(cf);
 	}
-	
+
+	public static SemContext getSemContext() {
+		Thread thread = Thread.currentThread();
+		if (thread instanceof WorkerThread)
+			return ((WorkerThread)thread).semantic_context;
+		return curSemContext.get();
+	}
+
+	public static void setSemContext(SemContext sc) {
+		Thread thread = Thread.currentThread();
+		if (thread instanceof WorkerThread)
+			reportError("Semantic Context in worker thread must be used from ThreadGroup");
+		curSemContext.set(sc);
+	}
+
    	public static void reportError(Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
@@ -413,6 +428,7 @@ public final class Kiev {
 	public static final boolean run_gui_swing	= Compiler.run_gui_swing;
 	public static final boolean run_gui_swt		= Compiler.run_gui_swt;
 
+	public static int    target					= Compiler.target;
 	public static String output_dir				= Compiler.output_dir;
 	public static String dump_src_dir		= Compiler.dump_src_dir;
 	public static String btd_dir				= Compiler.btd_dir;

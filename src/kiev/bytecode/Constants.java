@@ -35,13 +35,16 @@ public interface BytecodeFileConstants {
 	public static final int CONSTANT_INTEGER			= 3;
 	public static final int CONSTANT_FLOAT				= 4;
 	public static final int CONSTANT_LONG				= 5;
-	public static final int CONSTANT_DOUBLE			= 6;
+	public static final int CONSTANT_DOUBLE				= 6;
 	public static final int CONSTANT_CLASS				= 7;
-	public static final int CONSTANT_STRING			= 8;
+	public static final int CONSTANT_STRING				= 8;
 	public static final int CONSTANT_FIELD				= 9;
-	public static final int CONSTANT_METHOD			= 10;
+	public static final int CONSTANT_METHOD				= 10;
 	public static final int CONSTANT_INTERFACEMETHOD	= 11;
 	public static final int CONSTANT_NAMEANDTYPE		= 12;
+	public static final int CONSTANT_METHOD_HANDLE		= 15;
+	public static final int CONSTANT_METHOD_TYPE		= 16;
+	public static final int CONSTANT_INVOKE_DYNAMIC		= 18;
 
 	/** Class', field's and method's (access) flags */
 	public static final int ACC_PUBLIC					= 1 << 0;

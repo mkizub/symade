@@ -195,6 +195,8 @@ public abstract class AType extends TVSet {
 
 	// find bound value for an abstract type
 	public final Type resolve(ArgType arg) {
+		if (template == null)
+			return arg;
 		TVar[] template_tvars = this.template.getTVars();
 		final int n = template_tvars.length;
 		for(int i=0; i < n; i++) {
@@ -209,7 +211,7 @@ public abstract class AType extends TVSet {
 		return arg;
 	}
 	
-	public final int getArgsLength() { return this.template.getArgsLength(); }
+	public final int getArgsLength() { return this.template == null ? 0 : this.template.getArgsLength(); }
 	public final ArgType getArg(int i) { return this.template.getArg(i); }
 	public final Type resolveArg(int i)  {
 		TVar[] template_tvars = this.template.getTVars();

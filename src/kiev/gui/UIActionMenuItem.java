@@ -11,6 +11,8 @@
  *******************************************************************************/
 package kiev.gui;
 
+import kiev.Kiev;
+
 /**
  * UI Action Menu Item.
  */
@@ -41,7 +43,12 @@ public abstract class UIActionMenuItem {
 	 * @return boolean
 	 */
 	public boolean checkEnabled() {
-		return factory != null && factory.getAction(new UIActionViewContext(wnd, null, wnd.getCurrentView())) != null;
+		Kiev.setSemContext(wnd.currentEditorThreadGroup.semantic_context);
+		try {
+			return factory != null && factory.getAction(new UIActionViewContext(wnd, null, wnd.getCurrentView())) != null;
+		} finally {
+			Kiev.setSemContext(null);
+		}
 	}
 
 	/**

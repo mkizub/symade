@@ -1330,10 +1330,10 @@ public abstract class ASTNode extends ANode implements Constants {
 	public Type getType(Env env) { return env.tenv.tpVoid; }
 
 	public ASTNode() {
-		this(new AHandle(),((WorkerThread)Thread.currentThread()).semantic_context);
+		this(new AHandle(), Kiev.getSemContext());
 	}
 	public ASTNode(AHandle handle) {
-		super(handle, ((WorkerThread)Thread.currentThread()).semantic_context);
+		super(handle, Kiev.getSemContext());
 	}
 	public ASTNode(AHandle handle, SemContext context) {
 		super(handle, context);
@@ -1342,7 +1342,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public static ASTNode getActual(ASTNode node) {
 		if (node == null)
 			return null;
-		SemContext semantic_context = ((WorkerThread)Thread.currentThread()).semantic_context;
+		SemContext semantic_context = Kiev.getSemContext();
 		foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
 			return nh;
 		return null;
@@ -1352,7 +1352,7 @@ public abstract class ASTNode extends ANode implements Constants {
 		ANode parent = super.parent();
 		if (parent == null)
 			return null;
-		SemContext semantic_context = ((WorkerThread)Thread.currentThread()).semantic_context;
+		SemContext semantic_context = Kiev.getSemContext();
 		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
 			return nh;
 		return null;

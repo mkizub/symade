@@ -454,7 +454,6 @@ public final class Env {
 	
 	public DNode loadAnyDecl(String qname) {
 		if (qname.length() == 0) return this.root;
-		if (qname.indexOf('.') >= 0) return null;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		DNode dn = resolveGlobalDNode(qname);

@@ -61,7 +61,6 @@ public abstract class Window implements IWindow {
 
 	/**
 	 * The constructor.
-	 * @param env the <code>Env</code>
 	 */
 	public Window(WorkerThreadGroup thrg){
 		currentEnv = thrg.getEnv();
@@ -140,7 +139,6 @@ public abstract class Window implements IWindow {
 	 * @param e  the event to be forwarded
 	 * @see #addElementChangeListener
 	 * @see ElementEvent
-	 * @see EventListenerList
 	 */
 	public void fireElementChanged(ElementEvent e) {
 		for (ElementChangeListener l : elementChangeListeners) {

@@ -306,6 +306,15 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 		return cur_elem.dr;
 	}
 
+	private void execAction(UIAction action) {
+		Kiev.setSemContext(window.currentEditorThreadGroup.semantic_context);
+		try {
+			action.exec();
+		} finally {
+			Kiev.setSemContext(null);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see kiev.gui.UIView#formatAndPaint(boolean)
 	 */
@@ -363,7 +372,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 									e.printStackTrace();
 								}
 								if (action != null) {
-									action.exec();
+									execAction(action);
 									return true;
 								}
 							}
@@ -372,7 +381,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 				}
 				UIAction action = af.getAction(new UIActionViewContext(window, evt, this));
 				if (action != null) {
-					action.exec();
+					execAction(action);
 					return true;
 				}
 			}
@@ -380,7 +389,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 		if (insert_mode && evt.isKeyboardTyping() && !isInTextEditMode()) {
 			UIAction edt = new EditActions.ChooseItemEditor().getAction(avc);
 			if (edt != null) {
-				edt.exec();
+				execAction(edt);
 				return true;
 			}
 		}
@@ -592,13 +601,13 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 				if (edit_offset > 0) {
 					text = text.substring(0, edit_offset-1)+text.substring(edit_offset);
 					Editor.this.editSetItem(text);
-					new NavigateEditor(Editor.this, -1).exec();
+					execAction(new NavigateEditor(Editor.this, -1));
 				}
 			}
 			else if (ch >= 32 && ch != 127) {
 				text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
 				Editor.this.editSetItem(text);
-				new NavigateEditor(Editor.this, +1).exec();
+				execAction(new NavigateEditor(Editor.this, +1));
 			}
 		}
 	}

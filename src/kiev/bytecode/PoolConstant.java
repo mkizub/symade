@@ -123,6 +123,18 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_NAMEANDTYPE");
 				pool[i] = new NameAndTypePoolConstant(i, cont);
 				break;
+			case CONSTANT_METHOD_HANDLE:
+				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_METHOD_HANDLE");
+				pool[i] = new MethodHandlePoolConstant(i, cont);
+				break;
+			case CONSTANT_METHOD_TYPE:
+				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_METHOD_TYPE");
+				pool[i] = new MethodTypePoolConstant(i, cont);
+				break;
+			case CONSTANT_INVOKE_DYNAMIC:
+				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_INVOKE_DYNAMIC");
+				pool[i] = new InvokeDynamicPoolConstant(i, cont);
+				break;
 			default:
 				assert(false,"Bad pool constant type "+xtype+" for constant "+i);
 			}
@@ -498,4 +510,93 @@ public final class InterfaceMethodPoolConstant extends ClazzNameTypePoolConstant
 
 }
 
+public final class MethodHandlePoolConstant extends PoolConstant {
 
+	// 1:	REF_getField			getfield C.f:T
+	// 2:	REF_getStatic			getstatic C.f:T
+	// 3:	REF_putField			putfield C.f:T
+	// 4:	REF_putStatic			putstatic C.f:T
+	// 5:	REF_invokeVirtual		invokevirtual C.m:(A*)T
+	// 6:	REF_invokeStatic		invokestatic C.m:(A*)T
+	// 7:	REF_invokeSpecial		invokespecial C.m:(A*)T
+	// 8:	REF_newInvokeSpecial	new C; dup; invokespecial C.<init>:(A*)V
+	// 9:	REF_invokeInterface		invokeinterface C.m:(A*)T
+	public final int ref_kind;
+
+	// if ref_kind:
+	// 1,2,3,4:	CONSTANT_Fieldref_info
+	// 5,8:		CONSTANT_Methodref_info
+	// 6,7:		CONSTANT_Methodref_info (or if JAVA_VERSION>=52) CONSTANT_InterfaceMethodref_info
+	// 9:		CONSTANT_InterfaceMethodref_info
+	public final PoolConstant ref_contant;
+
+	public MethodHandlePoolConstant(int idx, int ref_kind, PoolConstant ref_contant) {
+		super(idx);
+		this.ref_kind = ref_kind;
+		this.ref_contant = ref_contant;
+	}
+	public MethodHandlePoolConstant(int idx, ReadContext cont) {
+		super(idx);
+		ref_kind = cont.readByte();
+		switch (ref_kind) {
+		case 1: case 2: case 3: case 4:
+			ref_contant = new FieldPoolConstant(cont.readShort(), null, null);
+			break;
+		case 5: case 6: case 7: case 8:
+			ref_contant = new MethodPoolConstant(cont.readShort(), null, null);
+			break;
+		case 9:
+			ref_contant = new InterfaceMethodPoolConstant(cont.readShort(), null, null);
+			break;
+		}
+		trace(Clazz.traceRead,cont.offset+": ref_kind = "+ref_kind+", ref_contant="+ref_contant);
+	}
+	public int constant_type() { return CONSTANT_METHOD_HANDLE; }
+	public void write(ReadContext cont) {
+		assert(false,"MethodHandlePoolConstant write not implemented");
+	}
+	public int size() { return 1+1+2; }
+}
+
+public final class MethodTypePoolConstant extends PoolConstant {
+
+	public final Utf8PoolConstant	ref_descriptor;
+
+	public MethodTypePoolConstant(int idx, Utf8PoolConstant ref_descriptor) {
+		super(idx);
+		this.ref_descriptor = ref_descriptor;
+	}
+	public MethodTypePoolConstant(int idx, ReadContext cont) {
+		super(idx);
+		this.ref_descriptor = new Utf8PoolConstant(cont.readShort(), "");
+		trace(Clazz.traceRead,cont.offset+": ref_descriptor = "+ref_descriptor);
+	}
+	public int constant_type() { return CONSTANT_METHOD_TYPE; }
+	public void write(ReadContext cont) {
+		assert(false,"MethodTypePoolConstant write not implemented");
+	}
+	public int size() { return 1+2; }
+}
+
+public final class InvokeDynamicPoolConstant extends PoolConstant {
+
+	public final int 						bootstrap_method_attr_index;
+	public final NameAndTypePoolConstant	ref_nametype;
+
+	public InvokeDynamicPoolConstant(int idx, int bootstrap_method_attr_index, NameAndTypePoolConstant ref_nametype) {
+		super(idx);
+		this.bootstrap_method_attr_index = bootstrap_method_attr_index;
+		this.ref_nametype = ref_nametype;
+	}
+	public InvokeDynamicPoolConstant(int idx, ReadContext cont) {
+		super(idx);
+		this.bootstrap_method_attr_index = cont.readShort();
+		this.ref_nametype = new NameAndTypePoolConstant(cont.readShort(),null,null);
+		trace(Clazz.traceRead,cont.offset+": bootstrap_method_attr_index = "+bootstrap_method_attr_index+", ref_nametype="+ref_nametype);
+	}
+	public int constant_type() { return CONSTANT_INVOKE_DYNAMIC; }
+	public void write(ReadContext cont) {
+		assert(false,"InvokeDynamicPoolConstant write not implemented");
+	}
+	public int size() { return 1+2+2; }
+}

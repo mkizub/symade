@@ -977,6 +977,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	private static void autoGenerateIdefault(@forward RStruct self, Env env) {
 		if (!isInterface() || isStructView() || isAnnotation())
 			return;
+		if (Kiev.target >= 8)
+			return;
 		Struct defaults = iface_impl;
 		if (defaults != null)
 			return;

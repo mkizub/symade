@@ -799,6 +799,7 @@ public class Compiler {
 	public static boolean interface_only		= false;
 	public static boolean prefer_source			= false;
 
+	public static int    target					= 0;
 	public static String project_file			= null;
 	public static String output_dir				= "classes";
 	public static String btd_dir				= ".btd";
@@ -1084,6 +1085,16 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-target") ) {
+					args[a] = null;
+					if (onoff && a+1 < args.length) {
+						Compiler.target = Integer.parseInt(args[a+1]);
+						a++;
+						args[a] = null;
+					} else {
+						Compiler.target = 0;
+					}
+				}
 				else if( args[a].equals("-f") || args[a].equals("-fastgen") ) {
 					Compiler.fast_gen = onoff;
 					args[a] = null;
@@ -1304,6 +1315,25 @@ public class Compiler {
 						Kiev.reportError("Error in arguments: "+e);
 					}
 				}
+			}
+			
+			if (Compiler.target == 0) {
+				String jv = System.getProperty("java.specification.version");
+				if ("1.6".equals(jv))
+					Compiler.target = 6;
+				else if ("1.8".equals(jv))
+					Compiler.target = 8;
+				else {
+					Compiler.target = 6;
+					Kiev.reportWarning("Java version '"+jv+"' not known, default: -target 6 (JVM 1.6)");
+				}
+			}
+			
+			switch (Compiler.target) {
+			case 6: case 8:
+				break;
+			default:
+				Kiev.reportError("JVM target version '"+Compiler.target+"' not supported");
 			}
 
 			String[] args1 = new String[0];
