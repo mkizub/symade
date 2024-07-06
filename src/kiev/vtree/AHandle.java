@@ -29,6 +29,7 @@ public abstract class AHandleData {
 	
 	public AHandleData(Context context) {
 		this.context = context;
+		assert(context != null);
 	}
 	
 	public final Context getDataContext() {

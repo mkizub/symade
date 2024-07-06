@@ -65,9 +65,12 @@ public final class Env {
 	private AbstractProcessor[]	beProcessors;
 
 	public static Env getEnv() {
-		WorkerThread wt = (WorkerThread)Thread.currentThread();
-		return wt.theEnv;
-		
+		Thread thr = Thread.currentThread();
+		if (thr instanceof WorkerThread) {
+			WorkerThread wt = (WorkerThread) Thread.currentThread();
+			return wt.theEnv;
+		}
+		return kiev.FrontendThreadGroup.THE_GROUP.getEnv();
 	}
 	public static Project getProject() {
 		WorkerThread wt = (WorkerThread)Thread.currentThread();

@@ -5,4 +5,4 @@
 @if not defined OUT_ROOT set OUT_ROOT=%TEMP%
 @echo OUT_ROOT = %OUT_ROOT%
 
-%JAVA_HOME%\bin\java.exe -server -ea -classpath %OUT_ROOT%\classes-ant;%OUT_ROOT%\classes2;%ANT_HOME%\lib\ant.jar -Xnoclassgc -Xms128M -Xmx128M kiev.Main -d %OUT_ROOT%\classes-ant -verify -enable vnode -enable view -p ant.prj -prop k5x.props -g %*
+"%JAVA_HOME%\bin\java.exe" -server -ea -classpath %OUT_ROOT%\classes-ant;%OUT_ROOT%\classes2;%ANT_HOME%\lib\ant.jar -Xnoclassgc -Xms128M -Xmx128M kiev.Main -d %OUT_ROOT%\classes-ant -verify -enable vnode -enable view -p ant.prj -prop k5x.props -g %*

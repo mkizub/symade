@@ -768,12 +768,12 @@ public class Compiler {
 
 	public static boolean debug					= false;
 	public static boolean debugStatGen			= false;
-	public static boolean debugInstrGen		= false;
-	public static boolean debugBytecodeRead	= false;
+	public static boolean debugInstrGen			= false;
+	public static boolean debugBytecodeRead		= false;
 	public static boolean debugResolve			= false;
 	public static boolean debugOperators		= false;
 	public static boolean debugMembers			= false;
-	public static boolean debugCreation		= false;
+	public static boolean debugCreation			= false;
 	public static boolean debugRules			= false;
 	public static boolean debugMultiMethod		= false;
 	public static boolean debugNodeTypes		= false;
@@ -783,7 +783,7 @@ public class Compiler {
 	public static boolean verbose				= false;
 	public static boolean verify				= true;
 	public static boolean safe					= true;
-	public static boolean fast_gen			= false;
+	public static boolean fast_gen				= false;
 	public static boolean debugOutputA			= false;
 	public static boolean debugOutputT			= false;
 	public static boolean debugOutputC			= false;
@@ -804,7 +804,7 @@ public class Compiler {
 	public static String output_dir				= "classes";
 	public static String btd_dir				= ".btd";
 	public static String dump_src_dir			= null; //".src";
-	public static String compiler_classpath	= null;
+	public static String compiler_classpath		= null;
 	public static boolean javacerrors			= false;
 	public static boolean report_totals			= false;
 	public static boolean nowarn				= false;
@@ -818,7 +818,7 @@ public class Compiler {
 
 	public static int    jobThreads				= 0;
 
-	public static long gc_mem				= (long)(1024*1024);
+	public static long gc_mem					= (long)(1024*1024);
 
 	private static boolean[] command_line_disabled_extensions	= new boolean[KievExt.values().length];
 

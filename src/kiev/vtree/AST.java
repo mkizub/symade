@@ -1350,12 +1350,13 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public ANode parent() {
 		ANode parent = super.parent();
-		if (parent == null)
-			return null;
-		SemContext semantic_context = Kiev.getSemContext();
-		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
-			return nh;
-		return null;
+		return parent;
+//		if (parent == null)
+//			return null;
+//		SemContext semantic_context = Kiev.getSemContext();
+//		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
+//			return nh;
+//		return null;
 	}
 
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }

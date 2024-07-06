@@ -78,7 +78,8 @@ public final class Kiev {
 		Thread thread = Thread.currentThread();
 		if (thread instanceof WorkerThread)
 			return ((WorkerThread)thread).semantic_context;
-		return curSemContext.get();
+		//return curSemContext.get();
+		return FrontendThreadGroup.THE_GROUP.semantic_context;
 	}
 
 	public static void setSemContext(SemContext sc) {
@@ -401,12 +402,12 @@ public final class Kiev {
 	// Global flags and objects
 	public static final boolean debug			= Compiler.debug;
 	public static boolean debugStatGen			= Compiler.debugStatGen;
-	public static boolean debugInstrGen		= Compiler.debugInstrGen;
-	public static boolean debugBytecodeRead	= Compiler.debugBytecodeRead;
+	public static boolean debugInstrGen			= Compiler.debugInstrGen;
+	public static boolean debugBytecodeRead		= Compiler.debugBytecodeRead;
 	public static boolean debugResolve			= Compiler.debugResolve;
 	public static boolean debugOperators		= Compiler.debugOperators;
 	public static boolean debugMembers			= Compiler.debugMembers;
-	public static boolean debugCreation		= Compiler.debugCreation;
+	public static boolean debugCreation			= Compiler.debugCreation;
 	public static boolean debugRules			= Compiler.debugRules;
 	public static boolean debugMultiMethod		= Compiler.debugMultiMethod;
 	public static boolean debugNodeTypes		= Compiler.debugNodeTypes;
@@ -430,9 +431,9 @@ public final class Kiev {
 
 	public static int    target					= Compiler.target;
 	public static String output_dir				= Compiler.output_dir;
-	public static String dump_src_dir		= Compiler.dump_src_dir;
+	public static String dump_src_dir			= Compiler.dump_src_dir;
 	public static String btd_dir				= Compiler.btd_dir;
-	public static String compiler_classpath	= Compiler.compiler_classpath;
+	public static String compiler_classpath		= Compiler.compiler_classpath;
 
 	public static boolean javacerrors			= Compiler.javacerrors;
 	public static boolean nowarn				= Compiler.nowarn;
