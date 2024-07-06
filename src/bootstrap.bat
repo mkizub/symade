@@ -1,4 +1,4 @@
-set JAVA_HOME=C:\Program Files\Java\jdk1.6.0_45
+set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.412.8-hotspot
 @echo JAVA_HOME = %JAVA_HOME%
 set OUT_ROOT=build
 @echo OUT_ROOT = %OUT_ROOT%
@@ -7,9 +7,8 @@ rmdir /s /q %OUT_ROOT%\symade1
 rmdir /s /q %OUT_ROOT%\symade2
 rmdir /s /q %OUT_ROOT%\symade3
 
-"%JAVA_HOME%/bin/java" -ea -verify -Xms256M -Xmx256M -Xfuture -Xnoclassgc -classpath ../bin/symade-05.jar;../bin/xpp3-1.1.4c.jar kiev.Main -classpath ../bin/xpp3-1.1.4c.jar -d %OUT_ROOT%/symade1 -verify -enable vnode -enable view -p k5.prj -prop k5.props -g 
+"%JAVA_HOME%/bin/java" -ea -verify -Xms256M -Xmx256M -Xfuture -Xnoclassgc -classpath ../bin/symade-06.jar;../bin/xpp3-1.1.4c.jar kiev.Main -classpath ../bin/xpp3-1.1.4c.jar -d %OUT_ROOT%/symade1 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g 
 
-set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.412.8-hotspot
 "%JAVA_HOME%/bin/java" -server -ea -classpath %OUT_ROOT%/symade1;../bin/xpp3-1.1.4c.jar -Xnoclassgc -Xms256M -Xmx256M kiev.Main -classpath ../bin/xpp3-1.1.4c.jar -d %OUT_ROOT%/symade2 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g
 
 "%JAVA_HOME%/bin/java" -server -ea -classpath %OUT_ROOT%/symade2;../bin/xpp3-1.1.4c.jar -Xnoclassgc -Xms256M -Xmx256M kiev.Main -classpath ../bin/xpp3-1.1.4c.jar -d %OUT_ROOT%/symade3 -verify -enable vnode -enable view -p k5x.prj -prop k5x.props -g

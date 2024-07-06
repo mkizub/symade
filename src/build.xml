@@ -21,7 +21,7 @@
   <target name="compile1" depends="init" unless="build.notRequired" description="compile the source" >
     <java taskname="kiev" classname="kiev.Main" fork="true" >
 		<classpath>
-			<pathelement location="../bin/symade-05.jar"/>
+			<pathelement location="../bin/symade-06.jar"/>
 			<pathelement location="../bin/xpp3-1.1.4c.jar"/>
 		</classpath>
 		<jvmarg value="-Xmx256M" />
