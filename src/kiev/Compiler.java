@@ -50,6 +50,7 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 	public void cleanEnv() {
 		args = null;
 		super.cleanEnv();
+		this.theEnv = Env.createEnv();
 	}
 
 	public void runTask(CompilerParseInfo[] args) {
@@ -188,7 +189,10 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 							} finally {
 								if (file_reader != null) file_reader.close();
 							}
-							java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
+							int BOM = 0;
+							if (file_chars.length > 0 && file_chars[0] == '\uFEFF')
+								BOM = 1;
+							java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, BOM, file_sz-BOM);
 							diff_time = curr_time = System.currentTimeMillis();
 							Parser p = new Parser(bis, this.getEnv());
 							cpi.fu = p.FileUnit(cpi.fname);
@@ -642,7 +646,7 @@ stop:;
 		}
 		if (Kiev.testError != null) {
 			System.out.println("FAILED: there was no expected error "+Kiev.testError+" at "+Kiev.testErrorLine+":"+Kiev.testErrorOffs);
-			System.exit(1);
+			Kiev.systemExit(1);
 		}
 		this.reportTotals = true;
 	}
@@ -747,7 +751,7 @@ public final class CompilerParseInfo {
 				psi.parser = new ProjectSyntaxFactoryBinDump();
 				return psi;
 			}
-			if (fname.toLowerCase().endsWith(".java")) {
+			if (fname.toLowerCase().endsWith(".java") || fname.toLowerCase().endsWith(".kj")) {
 				ProjectSyntaxInfo psi = new ProjectSyntaxInfo();
 				psi.file_type = "text/java/1.6";
 				return psi;
@@ -764,7 +768,7 @@ public class Compiler {
 	public static PrintStream		system_out = System.out;
 	public static PrintStream		system_err = System.err;
 
-	public static final String version = "SymADE (v 0.5a), (C) UAB MAKSINETA, 1997-2008, http://symade.com";
+	public static final String version = "SymADE (v 0.6), (C) UAB MAKSINETA, 1997-2008, http://symade.com";
 
 	public static boolean debug					= false;
 	public static boolean debugStatGen			= false;
@@ -809,6 +813,11 @@ public class Compiler {
 	public static boolean report_totals			= false;
 	public static boolean nowarn				= false;
 	public static boolean code_nowarn			= true;
+	public static boolean run_from_ide			= false;
+	public static boolean system_exit			= true; // System.exit() or throw exception if disabled
+
+	public static Map<String, Set<String>> sourceToClassMapping = null;
+	public static int errorCount                 = 0;
 
 	public static KievBackend useBackend = KievBackend.Java15;
 
@@ -910,7 +919,7 @@ public class Compiler {
 			System.out.println("Bye.");
 			if( server != null ) server.close();
 			if( socket != null ) socket.close();
-			System.exit(0);
+			Kiev.systemExit(0);
 		}
 		else if( args[0].equals("?") ) {
 			System.out.println(
@@ -929,8 +938,16 @@ public class Compiler {
 		if( args==null ) args = new String[0];
 		int alen = args.length;
 		for(a=0; a < alen ;a++) {
-			if( args[a].equals("-debug"))
+			if (args[a].equals("-debug"))
 				ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+			if (args[a].equals("-no-system-exit")) {
+				System.out.println(Compiler.version);
+				System.out.print("compiler args: ");
+				foreach (String a; args ) {
+					System.out.print(" "+a);
+				}
+				System.out.println();
+			}
 		}
 		try {
 			for(a=0; a < alen ;a++) {
@@ -943,7 +960,7 @@ public class Compiler {
 				if( args[a].equals("-pipe") || args[a].equals("-server") ) {
 					args[a] = null;
 					if( args[a+1].charAt(0) == '-' ) continue;
-					if( args[a+1].endsWith(".java") ) continue;
+					if( args[a+1].endsWith(".java") || args[a+1].endsWith(".kj") ) continue;
 					args[++a] = null;
 					continue;
 				}
@@ -1060,14 +1077,8 @@ public class Compiler {
 						Compiler.debugNodeTypes		= onoff;
 					}
 					Compiler.debug = onoff;
-					continue;
-				}
-				else if( args[a].equals("-trace")) {
-					args[a] = null;
-					String dbg = args[++a];
-					args[a] = null;
-					System.out.println("Tracing: "+onoff);
-					Compiler.debug = onoff;
+					if (onoff)
+						Compiler.verbose = true;
 					continue;
 				}
 				else if( args[a].equals("-verbose") || args[a].equals("-v") ) {
@@ -1228,6 +1239,17 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-ide")) {
+					Compiler.run_from_ide = onoff;
+					Compiler.system_exit = !onoff;
+					args[a] = null;
+					continue;
+				}
+				else if( args[a].equals("-system-exit")) {
+					Compiler.system_exit = onoff;
+					args[a] = null;
+					continue;
+				}
 				else if( args[a].equals("-j") || args[a].equals("-jobs") ) {
 					args[a] = null;
 					if (onoff && a+1 < args.length) {
@@ -1324,8 +1346,8 @@ public class Compiler {
 				else if ("1.8".equals(jv))
 					Compiler.target = 8;
 				else {
-					Compiler.target = 6;
-					Kiev.reportWarning("Java version '"+jv+"' not known, default: -target 6 (JVM 1.6)");
+					Compiler.target = 8;
+					Kiev.reportWarning("Java version '"+jv+"' not known, default: -target 8 (JVM 1.8)");
 				}
 			}
 			
@@ -1350,26 +1372,40 @@ public class Compiler {
 		}
 		return args;
 	}
-	
-	public static void run(String[] args) {
+
+	// returns exit code
+	public static int run(String[] args) {
 		Compiler.interface_only = false;
 
 		try {
 			args = parseArgs(args);
-		} catch( Exception e) {
+		} catch (Exception e) {
 			Kiev.reportError(e);
-			return;
+			return 1;
 		}
-		
+
+		errorCount = 0;
+		FrontendThreadGroup fe_thrg = FrontendThreadGroup.THE_GROUP;
+		if (fe_thrg.theEnv != null && fe_thrg.theEnv.proj != null) {
+			foreach(FileUnit fu; fe_thrg.theEnv.proj.enumerateAllCompilationUnits())
+			fu.generated_files = null;
+		}
+
 		Vector cargs = new Vector();
 		foreach (String arg; args)
 			cargs.add(new CompilerParseInfo(arg, null, true));
-		runFrontEnd((CompilerParseInfo[])cargs.toArray(new CompilerParseInfo[cargs.size()]));
-		if (FrontendThreadGroup.THE_GROUP.errCount > 0)
-			System.exit(1);
+		CompilerParseInfo[] argsArr = (CompilerParseInfo[])cargs.toArray(new CompilerParseInfo[cargs.size()]);
+		runFrontEnd(argsArr);
+		errorCount = fe_thrg.errCount;
+		if (fe_thrg.errCount > 0) {
+			if (Kiev.run_from_ide)
+				return 1;
+			Kiev.systemExit(1);
+		}
 
-		CompilerThreadGroup cmp_thrg = new CompilerThreadGroup(FrontendThreadGroup.THE_GROUP);
-		runFrontEnd(cmp_thrg,  FrontendThreadGroup.THE_GROUP.roots);
+		CompilerThreadGroup cmp_thrg = new CompilerThreadGroup(fe_thrg);
+		runFrontEnd(cmp_thrg, fe_thrg.roots);
+		errorCount = cmp_thrg.errCount;
 
 		if (Kiev.run_gui) {
 			java.lang.reflect.Constructor ctor = Class.forName("kiev.gui.Main").getConstructor(WorkerThreadGroup.class);
@@ -1378,11 +1414,18 @@ public class Compiler {
 		} else {
 			if (cmp_thrg.errCount == 0)
 				runBackEnd(cmp_thrg, Compiler.useBackend);
-			//thrg.cleanEnv();
-			//java.lang.Runtime.getRuntime().gc();
-			//for(;;) Thread.sleep(10*1000);
-			System.exit(cmp_thrg.errCount > 0 ? 1 : 0);
+			errorCount = cmp_thrg.errCount;
+			//if (Kiev.verbose) dumpGeneratedFiles(fe_thrg.theEnv, argsArr);
+			if (Kiev.Kiev.run_from_ide) {
+				generateSourceToClassMapping();
+				fe_thrg.cleanEnv();
+				java.lang.Runtime.getRuntime().gc();
+				//for(;;) Thread.sleep(10*1000);
+				return errorCount > 0 ? 1 : 0;
+			}
+			Kiev.systemExit(cmp_thrg.errCount > 0 ? 1 : 0);
 		}
+		return errorCount > 0 ? 1 : 0;
 	}
 	
 	public static void runFrontEnd(CompilerParseInfo[] args) {
@@ -1401,6 +1444,46 @@ public class Compiler {
 		if( Kiev.verbose ) Kiev.reportInfo("Running back-end "+be,0);
 
 		thrg.runTask();
+	}
+
+	private static void generateSourceToClassMapping() {
+		sourceToClassMapping = new HashMap<String, Set<String>>();
+		FrontendThreadGroup fe_thrg = FrontendThreadGroup.THE_GROUP;
+		if (fe_thrg.theEnv == null || fe_thrg.theEnv.proj == null)
+			return;
+		foreach (FileUnit fu; fe_thrg.theEnv.proj.enumerateAllCompilationUnits()) {
+			Set<String> set = new HashSet<String>();
+			sourceToClassMapping.put(fu.pname(), set);
+			if (fu.generated_files == null || fu.generated_files.length == 0) {
+				continue;
+			} else {
+				set.addAll(java.util.Arrays.asList(fu.generated_files));
+			}
+		}
+	}
+
+	private static void dumpGeneratedFiles(Env env, CompilerParseInfo[] args) {
+		System.out.println("Generated files:");
+		foreach (FileUnit fu; env.proj.enumerateAllCompilationUnits()) {
+			if (fu.generated_files == null || fu.generated_files.length == 0) {
+				System.out.println("    " + fu.pname() + ": none");
+			} else {
+				java.util.Arrays.sort(fu.generated_files);
+				System.out.println("    " + fu.pname() + ": " + fu.generated_files.length);
+				foreach (String f; fu.generated_files)
+				System.out.println("        " + f);
+			}
+		}
+//		foreach (CompilerParseInfo cpi; args) {
+//			FileUnit fu = cpi.fu;
+//			if (fu.generated_files == null || fu.generated_files.length == 0) {
+//				System.out.println("    " + cpi.fname + ": none");
+//			} else {
+//				System.out.println("    " + cpi.fname + ": " + fu.generated_files.length);
+//				foreach (String f; fu.generated_files)
+//					System.out.println("        " + f);
+//			}
+//		}
 	}
 
 	public static void printHelp() {

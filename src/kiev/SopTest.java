@@ -30,7 +30,7 @@ public class SOPTest {
                         start + "/" + children[i]);
             }
         } else {
-            if (dir.getName().endsWith(".java")) {
+            if (dir.getName().endsWith(".java") || dir.getName().endsWith(".kj")) {
                 String fileName=start;
                 System.out.println("="+fileName);
                 try {

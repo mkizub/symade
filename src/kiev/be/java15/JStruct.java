@@ -204,7 +204,7 @@ public class JStruct extends JTypeDecl {
 	}
 
 	public boolean generate(JEnv jenv, long timestamp) {
-		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
+		if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return false;
 		
 		if (timestamp < new File(getFileName(this)).lastModified())
@@ -312,6 +312,8 @@ public class JStruct extends JTypeDecl {
 
 	private static void toBytecode(JEnv jenv, JStruct self, ConstPool constPool) {
 		String out_file = getFileName(self);
+		FileUnit fu = Env.ctxFileUnit(self.vn());
+		fu.addGeneratedFile(out_file);
 		try {
 			DataOutputStream out;
 			JStruct.make_output_dir(out_file);

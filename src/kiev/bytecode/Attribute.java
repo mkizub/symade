@@ -515,13 +515,14 @@ public class LocalVariableTableAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value+", vars="+vars.length+", len="+(2+vars.length*10));
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+vars.length*10);
 		int elen = vars.length;
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
 			VarInfo vi = vars[i];
+			//trace(Clazz.traceWrite,cont.offset+": var["+i+"]: start_pc="+vi.start_pc+", length_pc="+vi.length_pc+", slot="+vi.slot);
 			cont.writeShort(vi.start_pc);
 			cont.writeShort(vi.length_pc);
 			cont.writeShort(vi.cp_varname.idx);

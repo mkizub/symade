@@ -89,6 +89,12 @@ public final class Kiev {
 		curSemContext.set(sc);
 	}
 
+   	public static void systemExit(int code) {
+		if (system_exit && !run_from_ide)
+			System.exit(code);
+		throw new CompilationAbortError();
+	}
+	
    	public static void reportError(Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
@@ -131,18 +137,18 @@ public final class Kiev {
 		if (testError != null) {
 			if !(e instanceof CompilerException) {
 				System.out.println("FAILED: expected CompilerException");
-				System.exit(1);
+				Kiev.systemExit(1);
 			}
 			else if ((pos>>>11) != testErrorLine || (pos&0x3FF) != testErrorOffs) {
 				System.out.println("FAILED: expected position "+(pos>>>11)+":"+(pos&0x3FF));
-				System.exit(1);
+				Kiev.systemExit(1);
 			}
 			else if (((CompilerException)e).err_id != testError) {
 				System.out.println("FAILED: expected error "+testError);
-				System.exit(1);
+				Kiev.systemExit(1);
 			}
 			System.out.println("SUCCESS: found expected error "+testError+" at "+(pos>>>11)+":"+(pos&0x3FF));
-			System.exit(0);
+			Kiev.systemExit(0);
 		}
 	}
 
@@ -248,21 +254,22 @@ public final class Kiev {
 			if( method != null ) method.setBad(true);
 			if( clazz != null ) clazz.setBad(true);
 		}
+		String errMsg = err.toString().toLowerCase()+": "+msg;
 		String cf = null;
 		if (file_unit != null) {
 			cf = file_unit.pname();
 			if (javacerrors) {
 				String fn = new File(cf).getAbsolutePath();
-				System.out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
+				System.out.println(fn+":"+(pos>>>11)+": "+errMsg);
 			}
 			else if (pos > 0) {
-				System.out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+err+": "+msg);
+				System.out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+errMsg);
 			}
 			else {
-				System.out.println(err+": "+msg);
+				System.out.println(errMsg);
 			}
 		} else {
-			System.out.println(err+": "+msg);
+			System.out.println(errMsg);
 		}
 		if (thrg != null) {
 			Env env = thrg.getEnv();
@@ -438,7 +445,9 @@ public final class Kiev {
 	public static boolean javacerrors			= Compiler.javacerrors;
 	public static boolean nowarn				= Compiler.nowarn;
 	public static boolean code_nowarn			= Compiler.code_nowarn;
-	
+	public static boolean run_from_ide          = Compiler.run_from_ide;
+	public static boolean system_exit			= Compiler.system_exit; // System.exit() or throw exception if disabled
+
 	public static CError testError				= Compiler.testError;
 	public static int    testErrorLine			= Compiler.testErrorLine;
 	public static int    testErrorOffs			= Compiler.testErrorOffs;

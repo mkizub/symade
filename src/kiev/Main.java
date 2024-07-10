@@ -37,7 +37,7 @@ public class Main {
 					port = 1966;
 				} else {
 					addr = args[i+1];
-					if( addr.charAt(0) == '-' || addr.endsWith(".java") ) {
+					if( addr.charAt(0) == '-' || addr.endsWith(".java") || addr.endsWith(".kj") ) {
 						addr = "127.0.0.1";
 						port = 1966;
 					} else {

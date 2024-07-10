@@ -78,7 +78,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	
 	public void processSyntax(SyntaxScope:ASTNode ss) {
 		ss.getPackage();
-		if (ss instanceof FileUnit && ss.syntaxes.length == 0 && ss.fname.endsWith(".java")) {
+		if (ss instanceof FileUnit && ss.syntaxes.length == 0 && (ss.fname.endsWith(".java")||ss.fname.endsWith(".kj"))) {
 			ImportSyntax imp = new ImportSyntax();
 			imp.name.qualified = true;
 			imp.name.name = "kiev·stdlib·Syntax";
@@ -933,7 +933,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 				e.printStackTrace();
 			}
 		}
-		if (Kiev.dump_src_dir != null && fu.is_project_file && fu.fname.endsWith(".java")) {
+		if (Kiev.dump_src_dir != null && fu.is_project_file && (fu.fname.endsWith(".java")||fu.fname.endsWith(".kj"))) {
 			try {
 				String fname = Kiev.dump_src_dir + "/" + fu.pname();
 				TextPrinter prt = new DefaultTextProcessor();
@@ -997,6 +997,10 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if (td.isPrivate())
 			return run_backend;
 		File f = new File(output_dir,out_file+".xml");
+		{
+			FileUnit fu = Env.ctxFileUnit(td);
+			fu.addGeneratedFile(f.getPath());
+		}
 		if (timestamp < f.lastModified())
 			return run_backend;
 		try {
@@ -1004,7 +1008,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		} catch (IOException e) {
 			Kiev.reportWarning("Create/write error while API dump: "+e);
 		}
-			return run_backend;
+		return run_backend;
 	}
 	public boolean dumpAPI(KievSyntax td, long timestamp) {
 		String output_dir = Kiev.output_dir;

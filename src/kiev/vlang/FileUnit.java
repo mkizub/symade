@@ -12,6 +12,8 @@ package kiev.vlang;
 import syntax kiev.Syntax;
 
 import java.io.*;
+import java.util.HashSet;
+import java.util.Collections;
 
 /**
  * @author Maxim Kizub
@@ -214,6 +216,8 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 	public int									line_count;		// for text source files
 	@UnVersioned
 	public long								source_timestamp;
+	@UnVersioned
+	public String[]						generated_files;
 
 	public String pname() {
 		if!(parent() instanceof DirUnit)
@@ -248,6 +252,19 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 	private FileUnit(String name, boolean project_file) {
 		this.fname = name;
 		this.is_project_file = project_file;
+	}
+
+	public void addGeneratedFile(String fname) {
+		if (generated_files == null) {
+			generated_files = new String[] {fname};
+			return;
+		}
+		HashSet<String> hset = new HashSet<String>();
+		Collections.addAll(hset, generated_files);
+		if (!hset.contains(fname)) {
+			hset.add(fname);
+			generated_files = hset.toArray(new String[hset.size()]);
+		}
 	}
 
 	public String toString() { return fname; }

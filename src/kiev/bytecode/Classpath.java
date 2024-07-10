@@ -47,8 +47,10 @@ public class Classpath implements BytecodeFileConstants {
 			classpath = bootpath+File.pathSeparator+classpath;
 //			System.out.println("actual CLASSPATH="+classpath);
 //		}
+		if (Kiev.verbose) System.out.println("classpath: "+classpath);
 		File ctSym = new File(ctSymPath);
 		if (ctSym.exists() && ctSym.canRead()) {
+			if (Kiev.verbose) System.out.println("ctSym: "+ctSymPath);
 			symEntries = new SymClasspathEntry(ctSym);
 		}
 		StringTokenizer st = new StringTokenizer(classpath,File.pathSeparator);
