@@ -68,6 +68,7 @@ public final class Code implements JConstants {
 
 	/** PC - current code position - for code generation only */
 	public int				pc;
+	public int				prev_pc;
 
 	/** Labels of code */
 	public CodeLabel[]		labels;
@@ -127,6 +128,7 @@ public final class Code implements JConstants {
 		// Initialize code
 		bcode = new byte[1024];
 		pc = 0;
+		prev_pc = 0;
 
 		// Initialize local var table
 		lvta = new LocalVarTableAttr();
@@ -253,6 +255,7 @@ public final class Code implements JConstants {
 	 */
 	private void add_opcode(int op) {
 		trace(Kiev.debug && Kiev.debugInstrGen,"\tadd opcode "+opcNames[op]);
+		prev_pc = pc;
 		JType[] types = this.jenv.getOpCodeRules().op_input_types[op];	// get argument types
 		for(int i=0,j=types.length-1; i < types.length; i++,j--) {
 			JType t1 = stack_at(j);
@@ -912,7 +915,7 @@ public final class Code implements JConstants {
 			throw new RuntimeException("Var alias "+jalias+" not exists in the code");
 		if (cv.stack_pos != cva.stack_pos)
 			throw new RuntimeException("Removing wrong alias "+jalias+" of var "+jvar);
-		cva.end_pc = pc-1;
+		cva.end_pc = prev_pc; //pc-1;
 		for (int i=cva.vars_pos; i < num_vars; i++)
 			vars[i] = vars[i+1];
 		vars[--num_vars] = null;
@@ -949,7 +952,7 @@ public final class Code implements JConstants {
 		if (cv == null)
 			throw new RuntimeException("Var "+v+" not exists in the code");
 		trace(Kiev.debug && Kiev.debugInstrGen,"Code remove var "+cv+" from bc pos "+pc);
-		cv.end_pc = pc-1;
+		cv.end_pc = prev_pc; //pc-1;
 		JType t = jtenv.getJType(v.vtype);
 		if (t==jtenv.tpLong || t==jtenv.tpDouble) {
 			if (cv.stack_pos != cur_locals-2)

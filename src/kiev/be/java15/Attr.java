@@ -287,6 +287,8 @@ public class InnerClassesAttr extends Attr {
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
 				constPool.addClazzCP(jenv.getJTypeEnv().getJType(inner[i].vn()).java_signature);
+				if !(inner[i].vn() instanceof JavaAnonymouseClass)
+					constPool.addAsciiCP(inner[i].vn().sname);
 			}
 			if( outer[i] != null ) {
 				constPool.addClazzCP(jenv.getJTypeEnv().getJType(outer[i].vn()).java_signature);
@@ -309,8 +311,8 @@ public class InnerClassesAttr extends Attr {
 			if( outer[i] != null ) {
 				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(outer[i].vn()).java_signature).pos];
 			}
-			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(jenv.getJTypeEnv().getJType(inner[i].vn()).java_signature).asc.pos];
+			if( inner[i] != null && !(inner[i].vn() instanceof JavaAnonymouseClass)) {
+				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(inner[i].vn().sname).pos];
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}

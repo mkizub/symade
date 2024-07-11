@@ -193,6 +193,8 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		writeConstantPool(cont);
 
 		assert(cont.data.length-cont.offset > 8, "Write into too small buffer");
+		int flags = this.flags;
+		flags &= ACC_PUBLIC|ACC_FINAL|ACC_SUPER|ACC_INTERFACE|ACC_ABSTRACT|ACC_SYNTHETIC|ACC_ANNOTATION|ACC_ENUM;
 		trace(traceWrite,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
 		cont.writeShort(flags);
 		

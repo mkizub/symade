@@ -567,7 +567,10 @@ public class InnerClassesAttribute extends Attribute {
 		for(int i=0; i < cp_inners.length; i++) {
 			cont.writeShort(cp_inners[i].idx);
 			cont.writeShort(cp_outers[i].idx);
-			cont.writeShort(cp_inner_names[i].idx);
+			if (cp_inner_names[i] != null)
+				cont.writeShort(cp_inner_names[i].idx);
+			else
+				cont.writeShort(0);
 			cont.writeShort(cp_inner_flags[i]);
 		}
 	}
