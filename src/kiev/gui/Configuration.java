@@ -339,7 +339,7 @@ public abstract class Configuration {
 				addFieldAlias("ctrl", "withCtrl").
 				addFieldAlias("alt", "withAlt").
 				addFieldAlias("shift", "withShift"));
-		ImportMarshallingContext context = new ImportMarshallingContext(env, um);
+		ImportMarshallingContext context = new ImportMarshallingContext(um);
 		return context;
 	}
 	

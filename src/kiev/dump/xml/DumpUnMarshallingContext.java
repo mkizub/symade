@@ -10,7 +10,9 @@ import kiev.vlang.Env;
 import kiev.vlang.Language;
 
 public class DumpUnMarshallingContext extends AUnMarshallingContext {
-	
+
+	final Env env;
+
 	public File file;
 	public DNode pkg;
 	public String tdname;
@@ -19,6 +21,10 @@ public class DumpUnMarshallingContext extends AUnMarshallingContext {
 	
 	public final Vector<DelayedTypeInfo> delayed_types = new Vector<DelayedTypeInfo>();
 	public final Hashtable<String,Language> languages = new Hashtable<String,Language>();
+
+	public Env getEnv() {
+		return env;
+	}
 
 	public Language getLanguage(String uri) {
 		Language lng = languages.get(uri);
@@ -39,7 +45,7 @@ public class DumpUnMarshallingContext extends AUnMarshallingContext {
 	}
 	
 	public DumpUnMarshallingContext(Env env) {
-		super(env);
+		this.env = env;
 		this.unmarshallers.push(new ANodeUnMarshaller());
 	}
 }

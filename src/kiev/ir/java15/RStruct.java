@@ -201,7 +201,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// create typeinfo class
 		int flags = this.getFlags() & JAVA_ACC_MASK;
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
-		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
+		flags |= ACC_PUBLIC | ACC_STATIC; // | ACC_SYNTHETIC;
 		typeinfo_clazz = env.newStruct(nameClTypeInfo,this.getStruct(),flags,new JavaClass(),null);
 		typeinfo_clazz.setPublic();
 		if (super_types.length > 0 && super_types[0].getStruct(env).typeinfo_clazz != null)

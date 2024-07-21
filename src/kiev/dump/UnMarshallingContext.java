@@ -16,7 +16,6 @@ import kiev.vlang.Env;
 
 public interface UnMarshallingContext {
 	
-	public Env getEnv();
 	public Object getResult();
 	
 	public Object peekNode();

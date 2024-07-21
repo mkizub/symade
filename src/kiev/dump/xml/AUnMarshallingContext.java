@@ -15,14 +15,12 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 
 	private static final boolean TRACE = false;
 	
-	final Env env;
-	
 	public Object result;
 	
 	final Stack<UnMarshaller>   unmarshallers;
 	//final Stack<Decoder>        decoders;
 	final Stack<StateInfo>      states;
-	
+
 	static class StateInfo {
 		Object node;
 		UnMarshaller unmarshaller;
@@ -38,16 +36,12 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 	Object attr_value;
 	int ignore_count;
 
-	AUnMarshallingContext(Env env) {
-		this.env = env;
+	AUnMarshallingContext() {
 		this.unmarshallers = new Stack<UnMarshaller>();
 		//this.decoders      = new Stack<Decoder>();
 		this.states        = new Stack<StateInfo>();
 	}
 	
-	public Env getEnv() {
-		return env;
-	}
 	public Object getResult() {
 		return result;
 	}
