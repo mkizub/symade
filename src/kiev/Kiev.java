@@ -74,6 +74,13 @@ public final class Kiev {
 		curFile.set(cf);
 	}
 
+	public static File newFile(String path) {
+		File file = new File(path);
+		if (file.isAbsolute())
+			return file;
+		return new File(root_dir, path);
+	}
+
 	public static SemContext getSemContext() {
 		Thread thread = Thread.currentThread();
 		if (thread instanceof WorkerThread)
@@ -259,7 +266,7 @@ public final class Kiev {
 		if (file_unit != null) {
 			cf = file_unit.pname();
 			if (javacerrors) {
-				String fn = new File(cf).getAbsolutePath();
+				String fn = Kiev.newFile(cf).getAbsolutePath();
 				System.out.println(fn+":"+(pos>>>11)+": "+errMsg);
 			}
 			else if (pos > 0) {
@@ -279,7 +286,7 @@ public final class Kiev {
 				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorTextInfo(err,msg,cf,pos>>>11));
 		}
 		if( cf != null && verbose && (pos >>> 11) != 0 ) {
-			File f = new File(cf.toString());
+			File f = Kiev.newFile(cf.toString());
 			if( f.exists() && f.canRead() ) {
 				int lineno = pos>>>11;
 				int colno = pos & 0x3FF;
@@ -437,6 +444,7 @@ public final class Kiev {
 	public static final boolean run_gui_swt		= Compiler.run_gui_swt;
 
 	public static int    target					= Compiler.target;
+	public static String root_dir				= Compiler.root_dir;
 	public static String output_dir				= Compiler.output_dir;
 	public static String dump_src_dir			= Compiler.dump_src_dir;
 	public static String btd_dir				= Compiler.btd_dir;
@@ -454,7 +462,7 @@ public final class Kiev {
 
 	public static boolean interface_only		= Compiler.interface_only;
 
-	public static File project_file				= Compiler.project_file==null? null : new File(Compiler.project_file);
+	public static File project_file				= Compiler.project_file==null? null : Kiev.newFile(Compiler.project_file);
 
 	// Scanning & parsing
 	public static Parser				k;

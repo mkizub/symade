@@ -265,7 +265,7 @@ public final class FileActions implements UIAction {
 			else fu = (FileUnit)Env.ctxFileUnit(this.uiv.getRoot());
 			if (fu == null) return;
 			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.SAVE_TYPE);	    
-			File f = new File(fu.pname());
+			File f = Kiev.newFile(fu.pname());
 			if (f.getParentFile() != null)
 				dialog.setFilterPath(f.getParentFile().getPath());
 			ArrayList<FileFilter> filters = new ArrayList<FileFilter>(); 
@@ -295,12 +295,12 @@ public final class FileActions implements UIAction {
 			FileUnit fu;
 			if (uiv.getRoot() instanceof FileUnit)	fu = (FileUnit)uiv.getRoot();
 			else fu = (FileUnit)Env.ctxFileUnit(uiv.getRoot());
-			File f = new File(fu.pname());
+			File f = Kiev.newFile(fu.pname());
 			ProjectSyntaxFactory stx_factory = fu.getCurrent_syntax();
 			if (stx_factory == null) {
 				IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.SAVE_TYPE);
 				dialog.setFileName(f.getName());
-				f = new File(fu.pname());
+				f = Kiev.newFile(fu.pname());
 				if (f.getParentFile() != null)
 					dialog.setFilterPath(f.getParentFile().getPath());
 				ArrayList<FileFilter> filters = new ArrayList<FileFilter>(); 

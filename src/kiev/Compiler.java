@@ -103,8 +103,8 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 							btdFile = Compiler.btd_dir + "/" + btdFile.substring(0,ext)+".btd";
 						else
 							btdFile = Compiler.btd_dir + "/" + btdFile+".btd";
-						long btd_time = new File(btdFile).lastModified();
-						long cpi_time = new File(cpiFile).lastModified();
+						long btd_time = Kiev.newFile(btdFile).lastModified();
+						long cpi_time = Kiev.newFile(cpiFile).lastModified();
 						if (btd_time > cpi_time)
 							curFile = btdFile;
 					}
@@ -114,8 +114,8 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 						diff_time = curr_time = System.currentTimeMillis();
 						Kiev.setCurFile(cpiFile);
 						if (curFile.toLowerCase().endsWith(".btd")) {
-							String fdir = new File(cpiFile).getParent();
-							File f = new File(curFile);
+							String fdir = Kiev.newFile(cpiFile).getParent();
+							File f = Kiev.newFile(curFile);
 							INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(this.getEnv(), fdir, f, cpi.fdata);
 							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
 								ASTNode root = (ASTNode)roots[0];
@@ -132,7 +132,7 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 							}
 						}
 						else if (psi != null && psi.parser != null) {
-							File f = new File(curFile);
+							File f = Kiev.newFile(curFile);
 							TextParser parser = (TextParser)psi.parser.makeTextProcessor();
 							INode[] roots = parser.parse(f,  this.getEnv());
 							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
@@ -150,7 +150,7 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 							}
 						}
 						else if (curFile.toLowerCase().endsWith(".xml")) {
-							File f = new File(curFile);
+							File f = Kiev.newFile(curFile);
 							INode[] roots = DumpFactory.getXMLDumper().loadFromXmlFile(this.getEnv(), f, cpi.fdata);
 							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
 								ASTNode root = (ASTNode)roots[0];
@@ -196,7 +196,7 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 							diff_time = curr_time = System.currentTimeMillis();
 							Parser p = new Parser(bis, this.getEnv());
 							cpi.fu = p.FileUnit(cpi.fname);
-							cpi.fu.source_timestamp = new File(curFile).lastModified();
+							cpi.fu.source_timestamp = Kiev.newFile(curFile).lastModified();
 							//cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
 							bis.close();
 						}
@@ -229,17 +229,19 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 		}
 
 stop:;
-		executorService.submit(new Runnable() { public void run() {
-				Transaction tr = Transaction.open("Dump projectfile", WorkerThreadGroup.this);
-				try {
-					getEnv().dumpProjectFile();
-				} catch (Throwable t) {
-					t.printStackTrace();
-				} finally {
-					tr.close(WorkerThreadGroup.this);
-				}
-		}}).get();
-		if (this.errCount > 0) {
+		if (this.errCount == 0) {
+			executorService.submit(new Runnable() { public void run() {
+					Transaction tr = Transaction.open("Dump projectfile", WorkerThreadGroup.this);
+					try {
+						getEnv().dumpProjectFile();
+					} catch (Throwable t) {
+						t.printStackTrace();
+					} finally {
+						tr.close(WorkerThreadGroup.this);
+					}
+			}}).get();
+		}
+		else {
 			this.roots = null;
 		}
 		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
@@ -263,7 +265,7 @@ stop:;
 				}
 			}
 			if( Kiev.verbose ) System.out.println("File "+fu.pname());
-			args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(new File(fu.pname()),psi,true));
+			args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(Kiev.newFile(fu.pname()),psi,true));
 		}
 	}
 
@@ -804,6 +806,7 @@ public class Compiler {
 	public static boolean prefer_source			= false;
 
 	public static int    target					= 0;
+	public static String root_dir				= null; // System.getProperty("user.dir")
 	public static String project_file			= null;
 	public static String output_dir				= "classes";
 	public static String btd_dir				= ".btd";
@@ -842,7 +845,7 @@ public class Compiler {
 		return (boolean[])command_line_disabled_extensions.clone();
 	}
 	
-	static void setExtension(boolean enabled, String s) {
+	public static void setExtension(boolean enabled, String s) {
 		KievExt ext;
 		try {
 			ext = KievExt.fromString(s);
@@ -931,6 +934,13 @@ public class Compiler {
 			goto start;
 		}
 		return args;
+	}
+
+	private static String makePath(String path) throws java.io.IOException {
+		File file = new File(path);
+		if (root_dir != null && !file.isAbsolute())
+			file = new File(root_dir, path);
+		return file.getCanonicalPath();
 	}
 
 	private static String[] parseArgs(String[] args) throws Exception {
@@ -1111,10 +1121,21 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-root")) {
+					args[a] = null;
+					if( onoff ) {
+						File f = new File(args[++a]);
+						Compiler.root_dir = f.getCanonicalPath();
+						args[a] = null;
+					} else {
+						Compiler.root_dir = null;
+					}
+					continue;
+				}
 				else if( args[a].equals("-d")) {
 					args[a] = null;
 					if( onoff ) {
-						Compiler.output_dir = args[++a];
+						Compiler.output_dir = makePath(args[++a]);
 						args[a] = null;
 					} else {
 						Compiler.output_dir = null;
@@ -1124,7 +1145,7 @@ public class Compiler {
 				else if( args[a].equals("-ds")) {
 					args[a] = null;
 					if( onoff ) {
-						Compiler.dump_src_dir = args[++a];
+						Compiler.dump_src_dir = makePath(args[++a]);
 						args[a] = null;
 					} else {
 						Compiler.dump_src_dir = null;
@@ -1134,7 +1155,7 @@ public class Compiler {
 				else if( args[a].equals("-btd")) {
 					args[a] = null;
 					if( onoff ) {
-						Compiler.btd_dir = args[++a];
+						Compiler.btd_dir = makePath(args[++a]);
 						args[a] = null;
 					} else {
 						Compiler.btd_dir = null;
@@ -1145,10 +1166,16 @@ public class Compiler {
 				else if( args[a].equals("-p") || args[a].equals("-project") ) {
 					args[a] = null;
 					if( onoff ) {
-						Compiler.project_file = args[++a];
+						Compiler.project_file = makePath(args[++a]);
 						args[a] = null;
 					} else
 						Compiler.project_file = null;
+					continue;
+				}
+				else if( args[a].equals("-makedep") ) {
+					args[a] = null;
+					Compiler.interface_only = onoff;
+					args[a] = null;
 					continue;
 				}
 				else if( args[a].equals("-classpath")) {
@@ -1305,7 +1332,10 @@ public class Compiler {
 					String fname = args[++a];
 					args[a] = null;
 					try {
-						InputStream inp = new FileInputStream(fname);
+						File file = new File(fname);
+						if (!file.isAbsolute() && root_dir != null)
+							file = new File(root_dir, fname);
+						InputStream inp = new FileInputStream(file);
 						//System.getProperties().load(new InputStreamReader(inp, "UTF-8"));
 						System.getProperties().load(inp);
 					} catch( IOException e ) {
@@ -1412,11 +1442,11 @@ public class Compiler {
 			ctor.newInstance(cmp_thrg);
 			for(;;) Thread.sleep(10*1000);
 		} else {
-			if (cmp_thrg.errCount == 0)
+			if (cmp_thrg.errCount == 0 && !Kiev.interface_only)
 				runBackEnd(cmp_thrg, Compiler.useBackend);
 			errorCount = cmp_thrg.errCount;
 			//if (Kiev.verbose) dumpGeneratedFiles(fe_thrg.theEnv, argsArr);
-			if (Kiev.Kiev.run_from_ide) {
+			if (Kiev.run_from_ide) {
 				generateSourceToClassMapping();
 				fe_thrg.cleanEnv();
 				java.lang.Runtime.getRuntime().gc();
@@ -1600,7 +1630,7 @@ public class Compiler {
 	*/
 	static String[] addExpansion(String[] args, int pos) throws IOException {
 		String s = args[pos].replace('/', File.separatorChar).replace('\\', File.separatorChar);
-		File f = new File(s);
+		File f = Kiev.newFile(s);
 		String path = f.getParent();
 		String name = f.getName();
 		if (path == null)

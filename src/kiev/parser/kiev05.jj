@@ -82,9 +82,9 @@ public abstract class kiev050 {
 		else if( token.next==null ) pos = token.getPos();
 		else pos = token.next.getPos();
 		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal error:\n"+e, e);
+			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal parser error:\n"+e, e);
 		} else {
-			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal error");
+			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal parser error: "+e.getMessage());
 		}
 		throw e;
 	}
@@ -1508,6 +1508,8 @@ SymbolRef KeywordAsNameRef() :
 		id.pos = t.getPos();
 		if (t.image.startsWith("#id\""))
 			id.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		else if (t.image.startsWith("`"))
+			id.name = ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1));
 		else
 			id.name = t.image;
 		return id;

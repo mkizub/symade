@@ -298,14 +298,14 @@ public class JStruct extends JTypeDecl {
 	
 	private static String getFileName(JStruct self) {
 		String output_dir = Kiev.output_dir;
-		if( output_dir == null ) output_dir = "classes";
+		if( output_dir == null ) output_dir = Kiev.root_dir + "/classes";
 		String out_file = self.bname().replace('/',File.separatorChar);
 		return output_dir + File.separatorChar + out_file + ".class";
 	}
 
 	private static void make_output_dir(String filename) throws IOException {
-		File dir = new File(filename);
-		dir = new File(dir.getParent());
+		File dir = kiev.Kiev.newFile(filename);
+		dir = dir.getParentFile();
 		dir.mkdirs();
 		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
