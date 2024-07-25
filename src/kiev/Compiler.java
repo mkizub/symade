@@ -508,7 +508,14 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 		else
 			executorService.submit(task).get();
 	}
-	
+
+	public <V> V runTask(Callable<V> task) {
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup)
+			return task.call();
+		else
+			return executorService.submit(task).get();
+	}
+
 	public void runTaskLater(Runnable task) {
 		executorService.submit(task);
 	}

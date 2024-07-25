@@ -280,32 +280,43 @@ public class SymClasspathEntry implements ClasspathEntry {
 		while (e.hasMoreElements()) {
 			ZipEntry ze = (ZipEntry)e.nextElement();
 			String fullName = ze.getName();
-			if (fullName.length() == 0 || !fullName.endsWith("/"))
-				continue;
-			int p1 = fullName.indexOf('/');
-			if (p1 <= 0)
-				continue;
-			if (!fullName.substring(0,p1).contains(ctSymVersion))
-				continue;
-			int p2 = fullName.indexOf('/', p1+1);
-			if (p2 <= 0)
-				continue;
-			if (!fullName.substring(p1+1,p2).startsWith("java."))
-				continue;
-			String pkgName = fullName.substring(p2+1);
-			if (pkgName.isEmpty())
-				continue;
-			java.util.Vector<String> dirs = direntries.get(pkgName);
-			if (dirs == null) {
-				dirs = new java.util.Vector<String>();
-				direntries.put(pkgName.intern(), dirs);
-			}
-			if (dirs.contains(fullName))
-				return;
-			dirs.add(fullName);
-			//System.out.println("DirEntry "+nm);
+			addDirEntries(fullName, ctSymVersion);
 		}
 	}
+
+	private void addDirEntries(String fullName, String ctSymVersion) {
+		if (fullName.length() == 0 || !fullName.endsWith("/"))
+			return;
+		int p1 = fullName.indexOf('/');
+		if (p1 <= 0)
+			return;
+		if (!fullName.substring(0,p1).contains(ctSymVersion))
+			return;
+		int p2 = fullName.indexOf('/', p1+1);
+		if (p2 <= 0)
+			return;
+		if (!fullName.substring(p1+1,p2).startsWith("java."))
+			return;
+		String pkgName = fullName.substring(p2+1);
+		if (pkgName.isEmpty())
+			return;
+		java.util.Vector<String> dirs = direntries.get(pkgName);
+		if (dirs == null) {
+			dirs = new java.util.Vector<String>();
+			direntries.put(pkgName.intern(), dirs);
+		}
+		if (!dirs.contains(fullName)) {
+			dirs.add(fullName);
+			//System.out.println("DirEntry: " + fullName);
+		}
+		int pL = fullName.lastIndexOf('/', fullName.length()-2);
+		if (pL <= 0)
+			return;
+		String parentName = fullName.substring(0,pL+1);
+		//System.out.println("Parent: " + parentName);
+		addDirEntries(parentName, ctSymVersion);
+	}
+
 
 	public boolean exists(String clazz_name) {
 		String name = clazz_name;
