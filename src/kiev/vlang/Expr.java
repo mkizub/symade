@@ -563,6 +563,19 @@ public class StringConcatExpr extends ENode {
 	public void appendArg(ENode expr) {
 		args.append(~expr);
 	}
+
+	public boolean	isConstantExpr(Env env) {
+		foreach (ENode arg; args; !arg.isConstantExpr(env))
+			return false;
+		return true;
+	}
+	public Object getConstValue(Env env) {
+		StringBuilder sb = new StringBuilder();
+		foreach (ENode arg; args) {
+			sb.append(arg.getConstValue(env));
+		}
+		return sb.toString();
+	}
 }
 
 @ThisIsANode(name="Comma", lang=CoreLang)

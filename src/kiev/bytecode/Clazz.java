@@ -65,7 +65,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	}
 
 	public byte[] writeClazz() {
-		byte[] data = new byte[size()];
+		byte[] data = new byte[size(0)];
 		assert(data != null && data.length > 8 ,"Null bytecode");
 		ReadContext cont = new ReadContext();
 		cont.clazz = this;
@@ -76,28 +76,34 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		return data;
 	}
 
-	public int size() {
+	public int size(int offset) {
+		assert(offset == 0);
 		int size = 8;	// magic(int)+magor+minor
 		assert(pool != null ,"Null pool");
-		size += poolSize();
+		size += poolSize(size);
 		assert(cp_interfaces != null ,"Null interfaces");
 		size += 8+cp_interfaces.length*2;	// flags+name+super_name+interfaces.length+interfaces.length*2
-		size += 6;	// fields.length+methods.length+attrs.length
+		size += 2;	// fields.length
 		assert(fields != null ,"Null fields");
 		for(int i=0; i < fields.length; i++) {
 			assert(fields[i] != null ,"Null field "+i);
-			size += fields[i].size();
+			fields[i].start_pos = size;
+			size += fields[i].size(size);
 		}
+		size += 2;	// methods.length
 		assert(methods != null ,"Null methods");
 		for(int i=0; i < methods.length; i++) {
 			assert(methods[i] != null ,"Null method "+i);
-			size += methods[i].size();
+			methods[i].start_pos = size;
+			size += methods[i].size(size);
 		}
+		size += 2;	// attrs.length
 		assert(attrs != null ,"Null attrs");
 		for(int i=0; i < attrs.length; i++) {
 			assert(attrs[i] != null ,"Null attribute "+i);
+			attrs[i].start_pos = size;
 //			assert(attrs[i].data != null ,"Null data in attribute "+i+": "+attrs[i].getName(this));
-			size += attrs[i].size();
+			size += attrs[i].size(size);
 		}
 		return size;
 	}
@@ -241,12 +247,14 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		PoolConstant.writeConstantPool(cont,pool);
 	}
 
-	public int poolSize() {
+	public int poolSize(int offset) {
+		assert (offset == 8);
 		int size = 2;
 		int len = pool.length;
 		for(int i=1; i < len; i++) {
 			assert( pool[i] != null, "PoolConstant "+i+" is null" );
-			size += pool[i].size();
+			pool[i].start_pos = size + offset; // pool starts at offset 8: magic(int)+magor+minor
+			size += pool[i].size(offset+size);
 		}
 		return size;
 	}
@@ -254,7 +262,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 }
 
 public interface BytecodeElement {
-	public int				size();
+	public int			size(int offset);
 	public void			read(ReadContext cont);
 	public void			write(ReadContext cont);
 }
@@ -270,7 +278,7 @@ public class ReadContext {
 			char ch = str.charAt(i);
 			if (ch == 0) len += 2;
 			else if (ch <= 0x7F) len += 1;
-			else if (ch <= 0x3FF) len += 2;
+			else if (ch <= 0x7FF) len += 2;
 			else len += 3;
 		}
 		return len;
@@ -324,17 +332,17 @@ public class ReadContext {
 		StringBuffer sb = new StringBuffer();
 		while (offset < len) {
 			int ch = data[offset++] & 0xFF;
-			if (ch >= 0xE0) {
+			if ((ch & 0x80) == 0)
+				ch &= 0x7F;
+			else if ((ch & 0xE0) == 0xC0) {
+				ch = (ch & 0x1F) << 6;
+				ch = ch | (data[offset++] & 0x3F);
+			}
+			else {
                 ch = (ch & 0x0F) << 12;
                 ch = ch | (data[offset++] & 0x3F) << 6;
                 ch = ch | (data[offset++] & 0x3F);
 			}
-			else if (ch >= 0xC0) {
-                ch = (ch & 0x1F) << 6;
-                ch = ch | (data[offset++] & 0x3F);
-			}
-			if (ch == 0xC080)
-				ch = 0;
 			sb.append((char)ch);
 		}
 		assert (offset == len, "UTF-8 string encoding error ");
@@ -389,17 +397,17 @@ public class ReadContext {
 				data[offset++] = (byte)(0xC0);
 				data[offset++] = (byte)(0x80);
 			}
-			else if (ch < 0x7F) {
+			else if (ch <= 0x7F) {
 				data[offset++] = (byte)ch;
 			}
-			else if (ch < 0x3FF) {
-				data[offset++] = (byte)(0xC0 | (ch >> 6));
-				data[offset++] = (byte)(0x80 | (ch & 0x3F));
+			else if (ch <= 0x7FF) {
+				data[offset++] = (byte)(0xC0 | ((ch >> 6) & 0x1F));
+				data[offset++] = (byte)(0x80 | (ch        & 0x3F));
 			}
 			else {
-				data[offset++] = (byte)(0xE0 | (ch >>> 12));
-				data[offset++] = (byte)(0x80 | ((ch>>6) & 0x3F));
-				data[offset++] = (byte)(0x80 | (ch & 0x3F));
+				data[offset++] = (byte)(0xE0 | ((ch >>> 12) & 0xF));
+				data[offset++] = (byte)(0x80 | ((ch >>   6) & 0x3F));
+				data[offset++] = (byte)(0x80 | (ch          & 0x3F));
 			}
 		}
 	}

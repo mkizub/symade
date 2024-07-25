@@ -25,6 +25,7 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 	public Utf8PoolConstant		cp_name;
 	public Utf8PoolConstant		cp_type;
 	public Attribute[]			attrs;
+	public int					start_pos;
 
 	public String getName(Clazz clazz) {
 		return cp_name.value;
@@ -40,11 +41,12 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 		return null;
 	}
 
-	public int size() {
+	public int size(int offset) {
 		int size = 8;	// flags+name+type+attrs.length
 		for(int i=0; i < attrs.length; i++) {
 			assert( attrs[i] != null, "Attribute "+i+" is null");
-			size += attrs[i].size();
+			attrs[i].start_pos = size+offset;
+			size += attrs[i].size(size+offset);
 		}
 		return size;
 	}
@@ -71,6 +73,7 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 		trace(Clazz.traceWrite,cont.offset+": field flags=0x"+Integer.toHexString(flags)
 			+" ref_name="+cp_name.idx+", name="+cp_name.value
 			+" ref_type="+cp_type.idx+", signature="+cp_type.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(flags);
 		cont.writeShort(cp_name.idx);
 		cont.writeShort(cp_type.idx);

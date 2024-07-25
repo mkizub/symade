@@ -59,11 +59,12 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 
 	public Utf8PoolConstant		cp_name;
 	public byte[]				data;
+	public int					start_pos;
 
 	public String getName(Clazz clazz) {
 		return cp_name.value;
 	}
-	public int size() {
+	public int size(int offset) {
 		assert( data != null, "Null data in attribute "+getClass());
 		return 6+data.length;	// name+size(int)+data.length
 	}
@@ -80,6 +81,7 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 		trace(Clazz.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value
 			+" len="+data.length);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(data.length);
 		cont.write(data);
@@ -130,7 +132,7 @@ public class SourceFileAttribute extends Attribute {
 
 	public Utf8PoolConstant		cp_filename;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -144,6 +146,7 @@ public class SourceFileAttribute extends Attribute {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_filename.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2);
 		cont.writeShort(cp_filename.idx);
@@ -164,6 +167,7 @@ public class SourceDebugExtensionAttribute extends Attribute {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		trace(Clazz.traceWrite,cont.offset+": smap is "+new String(data,"UTF-8"));
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(data.length);
 		cont.write(data);
@@ -177,7 +181,7 @@ public class GenericsSignatureAttribute extends Attribute {
 
 	public Utf8PoolConstant		cp_signature;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -191,6 +195,7 @@ public class GenericsSignatureAttribute extends Attribute {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_signature.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2);
 		cont.writeShort(cp_signature.idx);
@@ -204,7 +209,7 @@ public class ConstantValueAttribute extends Attribute {
 
 	public PoolConstant		cp_value;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -216,6 +221,7 @@ public class ConstantValueAttribute extends Attribute {
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2);
 		cont.writeShort(cp_value.idx);
@@ -234,7 +240,7 @@ public class ExceptionsAttribute extends Attribute {
 
 	public ClazzPoolConstant[]		cp_exceptions;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+2*cp_exceptions.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -248,6 +254,7 @@ public class ExceptionsAttribute extends Attribute {
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+cp_exceptions.length*2);
 		cont.writeShort(cp_exceptions.length);
@@ -275,10 +282,12 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 	public CatchInfo[]			catchers;
 	public Attribute[]			attrs;
 
-	public int size() {
+	public int size(int offset) {
 		int len = 6+2+2+4+code.length+2+catchers.length*8+2;
-		for(int i=0; i < attrs.length; i++)
-			len += attrs[i].size();
+		for(int i=0; i < attrs.length; i++) {
+			if (offset > 0) attrs[i].start_pos = len+offset;
+			len += attrs[i].size(len+offset);
+		}
 		return len;
 	}
 	public void read(ReadContext cont) {
@@ -312,8 +321,9 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
-		cont.writeInt(size()-6);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
 		trace(Clazz.traceWrite,cont.offset+": max_stack is "+max_stack);
 		cont.writeShort(max_stack);
 		trace(Clazz.traceWrite,cont.offset+": max_locals is "+max_locals);
@@ -491,7 +501,7 @@ public class LocalVariableTableAttribute extends Attribute {
 	}
 	public VarInfo[] vars;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+10*vars.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -516,6 +526,7 @@ public class LocalVariableTableAttribute extends Attribute {
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value+", vars="+vars.length+", len="+(2+vars.length*10));
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+vars.length*10);
 		int elen = vars.length;
@@ -539,7 +550,7 @@ public class InnerClassesAttribute extends Attribute {
 	public Utf8PoolConstant[]		cp_inner_names;
 	public int[]					cp_inner_flags;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+8*cp_inners.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -561,6 +572,7 @@ public class InnerClassesAttribute extends Attribute {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+8*cp_inners.length);
 		cont.writeShort(cp_inners.length);
@@ -587,7 +599,7 @@ public class LineNumberTableAttribute extends Attribute {
 	public int[]					start_pc;
 	public int[]					lineno;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+4*start_pc.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -605,6 +617,7 @@ public class LineNumberTableAttribute extends Attribute {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+start_pc.length*4);
 		int elen = start_pc.length;
@@ -624,7 +637,7 @@ public class KievClassArgumentsAttribute extends Attribute {
 	public int[]					cp_supername;
 	public int[]					argno;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+argno.length*6;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -659,7 +672,7 @@ public class KievFlagsAttribute extends Attribute {
 
 	public int					flags;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+4;				// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -681,7 +694,7 @@ public class KievImportAttribute extends Attribute {
 
 	public int					cp_ref;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2;				// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -719,7 +732,7 @@ public class KievAliasAttribute extends Attribute {
 
 	public int[]				cp_alias;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2*cp_alias.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -750,7 +763,7 @@ public class KievTypedefAttribute extends Attribute {
 	public int					cp_type;
 	public int					cp_tpnm;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+4;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -780,7 +793,7 @@ public class KievOperatorAttribute extends Attribute {
 	public int					cp_optype;
 	public int					cp_image;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+6;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -814,7 +827,7 @@ public class KievCaseAttribute extends Attribute {
 	public int					caseno;
 	public int[]				cp_casefields;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+4+cp_casefields.length*2;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -844,7 +857,7 @@ public class KievEnumAttribute extends Attribute {
 	public int[]					fields;
 	public int[]					values;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+6*fields.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -885,10 +898,12 @@ public class KievContractAttribute extends Attribute {
 	public byte[]				code;
 	public Attribute[]			attrs;
 
-	public int size() {
+	public int size(int offset) {
 		int len = 6+2+2+4+code.length+2+2;
-		for(int i=0; i < attrs.length; i++)
-			len += attrs[i].size();
+		for(int i=0; i < attrs.length; i++) {
+			if (offset > 0) attrs[i].start_pos = len+offset;
+			len += attrs[i].size(len + offset);
+		}
 		return len;
 	}
 	public void read(ReadContext cont) {
@@ -909,8 +924,9 @@ public class KievContractAttribute extends Attribute {
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
-		cont.writeInt(size()-6);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
 		cont.writeShort(max_stack);
 		cont.writeShort(max_locals);
 		cont.writeInt(code.length);
@@ -926,7 +942,7 @@ public class KievCheckFieldsAttribute extends Attribute {
 
 	public int[]					fields;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+2*fields.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -968,7 +984,7 @@ public class KievGenerationsAttribute extends Attribute {
 
 	public int[]					gens;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+2*gens.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -1007,7 +1023,7 @@ public class KievPackedFieldsAttribute extends Attribute {
 	public int[]					sizes;
 	public int[]					offsets;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+2+8*fields.length;	// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -1064,7 +1080,7 @@ public class KievPackerFieldAttribute extends Attribute {
 
 	public int					size;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+4;				// name+size(int)+data.length
 	}
 	public void read(ReadContext cont) {
@@ -1259,7 +1275,7 @@ public abstract class Annotation extends Attribute {
 public abstract class Annotations extends Annotation {
 	public Annotation.annotation[]	annotations;
 	
-	public int size() {
+	public int size(int offset) {
 		int sz = 6+2;
 		foreach (Annotation.annotation a; annotations)
 			sz += a.size();
@@ -1279,14 +1295,13 @@ public abstract class Annotations extends Annotation {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		trace(Clazz.traceWrite,cont.offset+": count "+annotations.length);
-		int start = cont.offset;
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
-		cont.writeInt(size()-6);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
 		cont.writeShort(annotations.length);
 		for(int i=0; i < annotations.length; i++) {
 			annotations[i].write(cont);
 		}
-		assert(cont.offset-start == size());
 	}
 }
 public class RVAnnotations extends Annotations {
@@ -1298,7 +1313,7 @@ public class RIAnnotations extends Annotations {
 public abstract class ParAnnotations extends Annotation {
 	public Annotation.annotation[][]	annotations;
 	
-	public int size() {
+	public int size(int offset) {
 		int sz = 6+1;
 		foreach (Annotation.annotation[] aa; annotations) {
 			foreach (Annotation.annotation a; aa) {
@@ -1325,9 +1340,9 @@ public abstract class ParAnnotations extends Annotation {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		trace(Clazz.traceWrite,cont.offset+": par count "+annotations.length);
-		int start = cont.offset;
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
-		cont.writeInt(size()-6);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
 		cont.writeByte(annotations.length);
 		for(int p=0; p < annotations.length; p++) {
 			trace(Clazz.traceWrite,cont.offset+": par "+p+" annotations count "+annotations[p].length);
@@ -1336,7 +1351,6 @@ public abstract class ParAnnotations extends Annotation {
 				annotations[p][i].write(cont);
 			}
 		}
-		assert(cont.offset-start == size());
 	}
 }
 
@@ -1349,7 +1363,7 @@ public class RIParAnnotations extends ParAnnotations {
 public class AnnotationDefault extends Annotation {
 	public element_value value;
 
-	public int size() {
+	public int size(int offset) {
 		return 6+value.size();
 	}
 	public void read(ReadContext cont) {
@@ -1361,12 +1375,11 @@ public class AnnotationDefault extends Annotation {
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		trace(Clazz.traceWrite,cont.offset+": tag is "+((char)value.tag));
-		int start = cont.offset;
+		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
-		cont.writeInt(size()-6);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
 		cont.writeByte(value.tag);
 		value.write(cont);
-		assert(cont.offset-start == size());
 	}
 }
 

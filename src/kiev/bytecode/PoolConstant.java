@@ -21,9 +21,10 @@ import syntax kiev.Syntax;
 public abstract class PoolConstant implements BytecodeFileConstants, BytecodeElement {
 
 	public int				idx;
+	public int				start_pos;
 
 	public abstract void	write(ReadContext cont);
-	public abstract int		size();
+	public abstract int		size(int offset);
 	public abstract int		constant_type();
 	public boolean			double_slot() { return false; }
 	public final void		read(ReadContext cont) { /* actual reading is done by readConstantPool */ }
@@ -189,8 +190,9 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 		trace(Clazz.traceWrite,cont.offset+": Pool containce "+len+" constants");
 		cont.writeShort(pool.length);
 		for(int i=1; i < len; i++) {
-			assert(cont.data.length-cont.offset >= pool[i].size(),"Too short buffer to write pool constant "+i);
+			assert(cont.data.length-cont.offset >= pool[i].size(Integer.MIN_VALUE),"Too short buffer to write pool constant "+i);
 			trace(Clazz.traceWrite,cont.offset+": constant "+i);
+			assert(pool[i].start_pos == 0 || pool[i].start_pos == cont.offset);
 			pool[i].write(cont);
 		}
 	}
@@ -200,8 +202,9 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 		trace(Clazz.traceWrite,cont.offset+": Pool containce "+len+" constants, starting from "+pool_offset);
 		cont.writeShort(pool.length);
 		for(int i=pool_offset; i < len; i++) {
-			assert(cont.data.length-cont.offset >= pool[i].size(),"Too short buffer to write pool constant "+i);
+			assert(cont.data.length-cont.offset >= pool[i].size(Integer.MIN_VALUE),"Too short buffer to write pool constant "+i);
 			trace(Clazz.traceWrite,cont.offset+": constant "+i);
+			assert(pool[i].start_pos == 0 || pool[i].start_pos == cont.offset);
 			pool[i].write(cont);
 		}
 	}
@@ -212,10 +215,10 @@ public final class VoidPoolConstant extends PoolConstant {
 	public VoidPoolConstant(int idx) { super(idx); }
 
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": void constant ");
+		trace(Clazz.traceWrite,cont.offset+": void constant (long/double slot)");
 	}
 	public int constant_type() { return 0; }
-	public int size()	{ return 0; }
+	public int size(int offset)	{ return 0; }
 }
 
 public final class Utf8PoolConstant extends PoolConstant {
@@ -242,7 +245,7 @@ public final class Utf8PoolConstant extends PoolConstant {
 		cont.writeUtf8(value);
 	}
 	public int constant_type() { return CONSTANT_UTF8; }
-	public int size()	{ return 1+2+ReadContext.utf8Length(value); }
+	public int size(int offset)	{ return 1+2+ReadContext.utf8Length(value); }
 }
 
 public final class UnicodePoolConstant extends PoolConstant {
@@ -258,7 +261,7 @@ public final class UnicodePoolConstant extends PoolConstant {
 		assert(false,"UnicodePoolConstant read");
 	}
 	public int constant_type() { return CONSTANT_UNICODE; }
-	public int size()	{ return 0; }
+	public int size(int offset)	{ return 0; }
 }
 
 public abstract class NumberPoolConstant extends PoolConstant {
@@ -286,7 +289,7 @@ public final class IntegerPoolConstant extends NumberPoolConstant {
 		cont.writeByte(CONSTANT_INTEGER);
 		cont.writeInt(value);
 	}
-	public int size()	{ return 1+4; }
+	public int size(int offset)	{ return 1+4; }
 	public int constant_type() { return CONSTANT_INTEGER; }
 	public Number getValue() { return Integer.valueOf(value); }
 }
@@ -309,7 +312,7 @@ public final class FloatPoolConstant extends NumberPoolConstant {
 		cont.writeByte(CONSTANT_FLOAT);
 		cont.writeFloat(value);
 	}
-	public int size()	{ return 1+4; }
+	public int size(int offset)	{ return 1+4; }
 	public int constant_type() { return CONSTANT_FLOAT; }
 	public Number getValue() { return Float.valueOf(value); }
 }
@@ -332,7 +335,7 @@ public final class LongPoolConstant extends NumberPoolConstant {
 		cont.writeByte(CONSTANT_LONG);
 		cont.writeLong(value);
 	}
-	public int size()	{ return 1+8; }
+	public int size(int offset)	{ return 1+8; }
 	public int constant_type() { return CONSTANT_LONG; }
 	public boolean double_slot() { return true; }
 	public Number getValue() { return Long.valueOf(value); }
@@ -356,7 +359,7 @@ public class DoublePoolConstant extends NumberPoolConstant {
 		cont.writeByte(CONSTANT_DOUBLE);
 		cont.writeDouble(value);
 	}
-	public int size()	{ return 1+8; }
+	public int size(int offset)	{ return 1+8; }
 	public int constant_type() { return CONSTANT_DOUBLE; }
 	public boolean double_slot() { return true; }
 	public Number getValue() { return Double.valueOf(value); }
@@ -382,7 +385,7 @@ public abstract class RefPoolConstant extends PoolConstant {
 		trace(Clazz.traceWrite,cont.offset+": constant "+(constant_type()==CONSTANT_CLASS?"CONSTANT_CLASS":"CONSTANT_STRING")+" ref="+ref.idx+", value="+ref.value);
 		cont.writeShort(ref.idx);
 	}
-	public int size()	{ return 1+2; }
+	public int size(int offset)	{ return 1+2; }
 }
 
 public final class ClazzPoolConstant extends RefPoolConstant {
@@ -437,7 +440,7 @@ public final class NameAndTypePoolConstant extends PoolConstant {
 			+" ref_type="+ref_type.idx+", signature="+ref_type.value);
 		cont.writeShort(ref_type.idx);
 	}
-	public int size()	{ return 1+4; }
+	public int size(int offset)	{ return 1+4; }
 	public int constant_type() { return CONSTANT_NAMEANDTYPE; }
 }
 
@@ -471,7 +474,7 @@ public abstract class ClazzNameTypePoolConstant extends PoolConstant {
 			+", signature="+ref_nametype.ref_type.value);
 		cont.writeShort(ref_nametype.idx);
 	}
-	public int size()	{ return 1+4; }
+	public int size(int offset)	{ return 1+4; }
 }
 
 public final class FieldPoolConstant extends ClazzNameTypePoolConstant {
@@ -555,7 +558,7 @@ public final class MethodHandlePoolConstant extends PoolConstant {
 	public void write(ReadContext cont) {
 		assert(false,"MethodHandlePoolConstant write not implemented");
 	}
-	public int size() { return 1+1+2; }
+	public int size(int offset) { return 1+1+2; }
 }
 
 public final class MethodTypePoolConstant extends PoolConstant {
@@ -575,7 +578,7 @@ public final class MethodTypePoolConstant extends PoolConstant {
 	public void write(ReadContext cont) {
 		assert(false,"MethodTypePoolConstant write not implemented");
 	}
-	public int size() { return 1+2; }
+	public int size(int offset) { return 1+2; }
 }
 
 public final class InvokeDynamicPoolConstant extends PoolConstant {
@@ -598,5 +601,5 @@ public final class InvokeDynamicPoolConstant extends PoolConstant {
 	public void write(ReadContext cont) {
 		assert(false,"InvokeDynamicPoolConstant write not implemented");
 	}
-	public int size() { return 1+2+2; }
+	public int size(int offset) { return 1+2+2; }
 }
