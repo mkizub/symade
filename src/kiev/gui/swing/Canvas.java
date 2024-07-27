@@ -196,8 +196,10 @@ implements ICanvas, ComponentListener, KeyListener, MouseListener, MouseWheelLis
 	/**
 	 * Visible lines of text graphic coordinates.
 	 */
-	private DrawLayoutInfo	first_visible, last_visible, prev_visible;
-	
+	private DrawLayoutInfo	first_visible;
+	private DrawLayoutInfo	last_visible;
+	private DrawLayoutInfo	prev_visible;
+
 	/**
 	 * Current background
 	 */
@@ -1012,12 +1014,12 @@ implements ICanvas, ComponentListener, KeyListener, MouseListener, MouseWheelLis
 		int x0=0, y0=0, x1=0, y1=0;
 		for (PathIterator pi = caret.getPathIterator(null); !pi.isDone(); pi.next()) {
 			float[] coords = new float[6];
-			int type = pi.currentSegment(coords);
-			if (type == PathIterator.SEG_MOVETO) {
+			int stype = pi.currentSegment(coords);
+			if (stype == PathIterator.SEG_MOVETO) {
 				x0 = (int)coords[0];
 				y0 = (int)coords[1];
 			}
-			else if (type == PathIterator.SEG_LINETO) {
+			else if (stype == PathIterator.SEG_LINETO) {
 				x1 = (int)coords[0];
 				y1 = (int)coords[1]-1;
 				break;

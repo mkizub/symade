@@ -92,42 +92,42 @@ public abstract class DNode extends ASTNode implements ISymbol {
 
 	public int						nodeflags;		// presistent flags of the node
 
-	public @packed:3,nodeflags, 0 int     mflags_access;
+	public @packed(3,nodeflags, 0) int     mflags_access;
 
-	public @packed:1,nodeflags, 3 boolean mflags_is_static;
-	public @packed:1,nodeflags, 4 boolean mflags_is_final;
-	public @packed:1,nodeflags, 5 boolean mflags_is_mth_synchronized;	// method
-	public @packed:1,nodeflags, 5 boolean mflags_is_struct_super;		// struct
-	public @packed:1,nodeflags, 6 boolean mflags_is_fld_volatile;		// field
-	public @packed:1,nodeflags, 6 boolean mflags_is_mth_bridge;			// method
-	public @packed:1,nodeflags, 7 boolean mflags_is_fld_transient;		// field
-	public @packed:1,nodeflags, 7 boolean mflags_is_mth_varargs;			// method
-	public @packed:1,nodeflags, 8 boolean mflags_is_native;				// native method, backend operation/field/struct
-	public @packed:1,nodeflags, 9 boolean mflags_is_struct_interface;
-	public @packed:1,nodeflags,10 boolean mflags_is_abstract;
-	public @packed:1,nodeflags,11 boolean mflags_is_math_strict;			// strict math
-	public @packed:1,nodeflags,12 boolean mflags_is_synthetic;			// any decl that was generated (not in sources)
-	public @packed:1,nodeflags,13 boolean mflags_is_struct_annotation;
-	public @packed:1,nodeflags,14 boolean mflags_is_enum;				// struct/decl group/fields
+	public @packed(1,nodeflags, 3) boolean mflags_is_static;
+	public @packed(1,nodeflags, 4) boolean mflags_is_final;
+	public @packed(1,nodeflags, 5) boolean mflags_is_mth_synchronized;	// method
+	public @packed(1,nodeflags, 5) boolean mflags_is_struct_super;		// struct
+	public @packed(1,nodeflags, 6) boolean mflags_is_fld_volatile;		// field
+	public @packed(1,nodeflags, 6) boolean mflags_is_mth_bridge;			// method
+	public @packed(1,nodeflags, 7) boolean mflags_is_fld_transient;		// field
+	public @packed(1,nodeflags, 7) boolean mflags_is_mth_varargs;			// method
+	public @packed(1,nodeflags, 8) boolean mflags_is_native;				// native method, backend operation/field/struct
+	public @packed(1,nodeflags, 9) boolean mflags_is_struct_interface;
+	public @packed(1,nodeflags,10) boolean mflags_is_abstract;
+	public @packed(1,nodeflags,11) boolean mflags_is_math_strict;			// strict math
+	public @packed(1,nodeflags,12) boolean mflags_is_synthetic;			// any decl that was generated (not in sources)
+	public @packed(1,nodeflags,13) boolean mflags_is_struct_annotation;
+	public @packed(1,nodeflags,14) boolean mflags_is_enum;				// struct/decl group/fields
 		
 	// Flags temporary used with java flags
-	public @packed:1,nodeflags,16 boolean mflags_is_forward;				// var/field/method, type is wrapper
-	public @packed:1,nodeflags,17 boolean mflags_is_virtual;				// var/field, method is 'static virtual', struct is 'view'
-	public @packed:1,nodeflags,18 boolean mflags_is_type_unerasable;		// typedecl, method/struct as parent of typedef
-	public @packed:1,nodeflags,19 boolean mflags_is_macro;				// macro-declarations for fields, methods, etc
+	public @packed(1,nodeflags,16) boolean mflags_is_forward;				// var/field/method, type is wrapper
+	public @packed(1,nodeflags,17) boolean mflags_is_virtual;				// var/field, method is 'static virtual', struct is 'view'
+	public @packed(1,nodeflags,18) boolean mflags_is_type_unerasable;		// typedecl, method/struct as parent of typedef
+	public @packed(1,nodeflags,19) boolean mflags_is_macro;				// macro-declarations for fields, methods, etc
 
 	// General flags
-	public @packed:1,nodeflags,23 boolean is_interface_only;		// only node's interface was scanned/loded; no implementation
+	public @packed(1,nodeflags,23) boolean is_interface_only;		// only node's interface was scanned/loded; no implementation
 
 	// Structures
-	public @packed:1,nodeflags,24 boolean is_struct_fe_passed;
-	public @packed:1,nodeflags,25 boolean is_struct_has_pizza_cases;
-	public @packed:1,nodeflags,26 boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode) 
+	public @packed(1,nodeflags,24) boolean is_struct_fe_passed;
+	public @packed(1,nodeflags,25) boolean is_struct_has_pizza_cases;
+	public @packed(1,nodeflags,26) boolean is_tdecl_not_loaded;	// TypeDecl was fully loaded (from src or bytecode)
 	// Method flags
-	public @packed:1,nodeflags,24 boolean is_mth_virtual_static;
-	public @packed:1,nodeflags,25 boolean is_mth_invariant;
+	public @packed(1,nodeflags,24) boolean is_mth_virtual_static;
+	public @packed(1,nodeflags,25) boolean is_mth_invariant;
 	// Var/Field
-	public @packed:7,nodeflags,24 int     mflags_var_kind;				// var/field kind
+	public @packed(7,nodeflags,24) int     mflags_var_kind;				// var/field kind
 
 
 	public Class[] getMetaFlags() { return DNode.$meta_flags; }

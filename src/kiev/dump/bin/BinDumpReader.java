@@ -74,7 +74,7 @@ public final class BinDumpReader {
 		for (TypeElem te : TypeElem.SPACIAL_TYPES) {
 			te.saddr = -1;
 			te.eaddr = -1;
-			typeTable.put(new Integer(te.id), te);
+			typeTable.put(Integer.valueOf(te.id), te);
 		}
 
 		readTables(tbl_addr);

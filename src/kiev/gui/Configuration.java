@@ -208,7 +208,7 @@ public abstract class Configuration {
 					break;
 				}
 			}
-			if (af == null) af = (UIActionFactory)clazz.newInstance();
+			if (af == null) af = (UIActionFactory)clazz.getDeclaredConstructor().newInstance();
 		} catch (Exception e){
 			e.printStackTrace();
 		}

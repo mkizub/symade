@@ -40,7 +40,7 @@ public class FileDialog implements IFileDialog {
 	 * The dialog type. 
 	 */
 	@SuppressWarnings("unused")
-	private final int type;
+	private final int dlgType;
 	
 	/**
 	 * The <code>File</code> object returned via this dialog.
@@ -60,15 +60,15 @@ public class FileDialog implements IFileDialog {
 	/**
 	 * The constructor.
 	 * @param window the window
-	 * @param type the type
+	 * @param dlgType the type
 	 */
-	public FileDialog(IWindow window, int type){
+	public FileDialog(IWindow window, int dlgType){
 		this.window = (Window)window;
-		this.type = type;
+		this.dlgType = dlgType;
 		shell = Window.getShell();
-		if (type == OPEN_TYPE){
+		if (dlgType == OPEN_TYPE){
 			dialog = new org.eclipse.swt.widgets.FileDialog(shell, SWT.OPEN);
-		} else if (type == SAVE_TYPE){
+		} else if (dlgType == SAVE_TYPE){
 			dialog = new org.eclipse.swt.widgets.FileDialog(shell, SWT.SAVE);			
 		} else throw new RuntimeException(Window.resources.getString("FileDialog_Exception_unsupported_type"));
 	}

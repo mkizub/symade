@@ -20,7 +20,6 @@ import kiev.fmt.common.Draw_SyntaxAttr;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ASpaceAttrSlot;
 import kiev.vtree.INode;
-import kiev.vtree.SpaceAttrSlot;
 
 /**
  * Action Point.

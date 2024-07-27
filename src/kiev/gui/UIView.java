@@ -227,7 +227,7 @@ public class UIView implements IUIView, ElementChangeListener, ChangeListener {
 			if (tlsyntax.root_projection != null && tlsyntax.root_projection.length() > 0) {
 				final INode xroot = root;
 				try {
-					proj = (NodeProjectorFactory)Class.forName(tlsyntax.root_projection).newInstance();
+					proj = (NodeProjectorFactory)Class.forName(tlsyntax.root_projection).getDeclaredConstructor().newInstance();
 					RootNodeProjector rnp = proj.getRootProjector(xroot, null);
 					rnp.project();
 					the_root = rnp.getDstNode();

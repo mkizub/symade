@@ -131,8 +131,10 @@ implements ICanvas, KeyListener, MouseListener, SelectionListener, ControlListen
 	/**
 	 * Visible lines of text graphic coordinates.
 	 */
-	private DrawLayoutInfo	first_visible, last_visible, prev_visible;
-	
+	private DrawLayoutInfo	first_visible;
+	private DrawLayoutInfo	last_visible;
+	private DrawLayoutInfo	prev_visible;
+
 	/**
 	 * Black color.
 	 */

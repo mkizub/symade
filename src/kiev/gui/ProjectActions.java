@@ -30,13 +30,13 @@ public class ProjectActions implements UIAction, IPopupMenuListener  {
 	private final java.util.Vector<IMenuItem> actions = new java.util.Vector<IMenuItem>();
 
 	
-	private final ProjectView view;
+	private final ProjectView projectView;
 
 	/**
 	 * The singleton.
 	 */
-	public ProjectActions(ProjectView view){
-		this.view = view;
+	public ProjectActions(ProjectView projectView){
+		this.projectView = projectView;
 	}
 
 	/**
@@ -58,14 +58,14 @@ public class ProjectActions implements UIAction, IPopupMenuListener  {
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
 		public UIAction getAction(UIActionViewContext context) {
-			ProjectView view = (ProjectView)context.ui;
+			ProjectView projectView = (ProjectView)context.ui;
 			Drawable dr = context.dt;
-			if (view == null || dr == null) return null;
-			ProjectActions pa = new ProjectActions(view);
+			if (projectView == null || dr == null) return null;
+			ProjectActions pa = new ProjectActions(projectView);
 			for (UIActionFactory af: UIManager.getUIActions(context.ui).getAllActions()) {
 				if(af.isForPopupMenu()) {
 					try {
-						UIAction action = af.getAction(new UIActionViewContext(view.window, null, view));
+						UIAction action = af.getAction(new UIActionViewContext(projectView.window, null, projectView));
 						if (action != null) pa.actions.add(pa.new RunMenuAction(af.getDescr(), action));
 					} catch (Throwable t) {}
 				}
@@ -119,12 +119,12 @@ public class ProjectActions implements UIAction, IPopupMenuListener  {
 	 * @see kiev.gui.UIAction#run()
 	 */
 	public void exec() {
-		menu = view.getViewPeer().getPopupMenu(this, null);
+		menu = projectView.getViewPeer().getPopupMenu(this, null);
 		for (IMenuItem act: actions) menu.addItem(act);
-		DrawLayoutInfo cur_dtli = view.getViewPeer().getCurrent().getGfxFmtInfo();
+		DrawLayoutInfo cur_dtli = projectView.getViewPeer().getCurrent().getGfxFmtInfo();
 		int x = cur_dtli.getX();
 		int h = cur_dtli.height;
-		int y = cur_dtli.getY() + h - view.getViewPeer().getVertOffset();
+		int y = cur_dtli.getY() + h - projectView.getViewPeer().getVertOffset();
 		menu.showAt(x, y);
 	}
 
@@ -141,7 +141,7 @@ public class ProjectActions implements UIAction, IPopupMenuListener  {
 	public void popupMenuExecuted(IMenuItem item) {
 		final UIAction action = (UIAction)item;
 		menu.remove();
-		view.getWindow().getEditorThreadGroup().runTaskLater(new Runnable() {
+		projectView.getWindow().getEditorThreadGroup().runTaskLater(new Runnable() {
 			public void run() {
 				action.exec();
 			}

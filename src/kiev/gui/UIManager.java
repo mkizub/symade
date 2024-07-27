@@ -118,9 +118,9 @@ public class UIManager {
 	 * @param type the type
 	 * @return IFileDialog
 	 */
-	public static IFileDialog newFileDialog(IWindow window, int type){
-		if (SWT) return new kiev.gui.swt.FileDialog(window, type);
-		return new kiev.gui.swing.FileDialog(window, type);
+	public static IFileDialog newFileDialog(IWindow window, int dlgType){
+		if (SWT) return new kiev.gui.swt.FileDialog(window, dlgType);
+		return new kiev.gui.swing.FileDialog(window, dlgType);
 	}
 	
 }

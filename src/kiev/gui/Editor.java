@@ -38,7 +38,6 @@ import kiev.vtree.AttrSlot;
 import kiev.vtree.AutoCompleteResult;
 import kiev.vtree.ASpaceAttrSlot;
 import kiev.vtree.INode;
-import kiev.vtree.SpaceAttrSlot;
 import kiev.vtree.Symbol;
 import kiev.vtree.SymbolRef;
 import kiev.vtree.ITreeWalker;
@@ -367,7 +366,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 								Draw_FuncEval fe = (Draw_FuncEval)f;
 								UIAction action = null;
 								try {
-									action = ((UIActionFactory)Class.forName(fe.act).newInstance()).getAction(avc);
+									action = ((UIActionFactory)Class.forName(fe.act).getDeclaredConstructor().newInstance()).getAction(avc);
 								} catch (Exception e) {
 									e.printStackTrace();
 								}

@@ -22,7 +22,7 @@ public class LocalObjectTransfer extends ByteArrayTransfer {
 	/**
 	 * The transfer type name. This could check up expected types.
 	 */
-	private static final String TYPE_NAME = "local-object-transfer-format" + (new Long(System.currentTimeMillis())).toString();
+	private static final String TYPE_NAME = "local-object-transfer-format" + System.currentTimeMillis();
 	
 	/**
 	 * Type ID. Gets it via registering type name. 

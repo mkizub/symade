@@ -34,7 +34,7 @@ public class FileDialog implements IFileDialog {
 	/**
 	 * The type.
 	 */
-	private final int type;
+	private final int dlgType;
 	
 	/**
 	 * The name.
@@ -92,11 +92,11 @@ public class FileDialog implements IFileDialog {
 	/**
 	 * The constructor.
 	 * @param window the window
-	 * @param type the type
+	 * @param dlgType the type
 	 */
-	public FileDialog(IWindow window, int type){
+	public FileDialog(IWindow window, int dlgType){
 		this.window = (Window)window;
-		this.type = type;
+		this.dlgType = dlgType;
 	}
 	
 	/* (non-Javadoc)
@@ -160,10 +160,10 @@ public class FileDialog implements IFileDialog {
 		if (name != null)
 			dialog.setSelectedFile(new File(name));
 		applyFilters();
-		if (type == OPEN_TYPE){
+		if (dlgType == OPEN_TYPE){
 			if (JFileChooser.APPROVE_OPTION != dialog.showOpenDialog(null))
 				return CANCEL;
-		} else if (type == SAVE_TYPE){
+		} else if (dlgType == SAVE_TYPE){
 			if (JFileChooser.APPROVE_OPTION != dialog.showSaveDialog(null))
 				return CANCEL;
 		}

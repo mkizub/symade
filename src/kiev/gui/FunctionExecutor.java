@@ -122,7 +122,7 @@ public final class FunctionExecutor implements IPopupMenuListener, UIAction {
 							continue;
 						try {
 							Class<?> c = Class.forName(sf.act);
-							UIActionFactory af = (UIActionFactory)c.newInstance();
+							UIActionFactory af = (UIActionFactory)c.getDeclaredConstructor().newInstance();
 							if (! af.isForPopupMenu()) continue;
 							UIAction action = af.getAction(new UIActionViewContext(editor.window, null, editor));
 							if (action != null) fe.actions.add(fe.new RunFuncAction(sf.title, action));

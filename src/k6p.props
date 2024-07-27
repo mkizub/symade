@@ -1,0 +1,15 @@
+symade.transf.vnode.genUnversioned = false
+symade.transf.vnode.mnNode = kiev\u00b7vtree\u00b7ThisIsANode
+symade.transf.vnode.mnAtt = kiev\u00b7vtree\u00b7nodeAttr
+symade.transf.vnode.mnRef = kiev\u00b7vtree\u00b7nodeData
+symade.transf.vnode.mnUnVersioned = kiev\u00b7vtree\u00b7UnVersioned
+symade.transf.vnode.nameINode = kiev\u00b7vtree\u00b7INode
+symade.transf.vnode.nameANode = kiev\u00b7vtree\u00b7ANode
+symade.transf.vnode.nameNode = kiev\u00b7vtree\u00b7ASTNode
+symade.transf.vnode.nameNodeSpace = kiev\u00b7vtree\u00b7NodeSpace
+symade.transf.vnode.nameAttrSlot = kiev\u00b7vtree\u00b7AttrSlot
+symade.transf.vnode.nameScalarAttrSlot = kiev\u00b7vtree\u00b7ScalarAttrSlot
+symade.transf.vnode.nameExtAttrSlot = kiev\u00b7vtree\u00b7ExtAttrSlot
+symade.transf.vnode.nameSpaceAttrSlot = kiev\u00b7vtree\u00b7SpaceAttrSlot
+symade.transf.vnode.nameParentAttrSlot = kiev\u00b7vtree\u00b7ParentAttrSlot
+symade.transf.vnode.nameCopyContext = kiev\u00b7vtree\u00b7CopyContext

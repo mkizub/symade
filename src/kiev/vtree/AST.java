@@ -1223,40 +1223,40 @@ public abstract class ASTNode extends ANode implements Constants {
 	public final void compflagsClearAndLock() { compileflags = (compileflags & 0xFFF0000) | 3; }
 
 	// Structures
-	public @packed:1,compileflags,6  boolean is_struct_type_resolved; // KievFE_Pass2
-	public @packed:1,compileflags,7  boolean is_struct_args_resolved; // KievFE_Pass2
-	public @packed:1,compileflags,8  boolean is_struct_members_generated; // KievFE_Pass2
-	public @packed:1,compileflags,9  boolean is_struct_pre_generated; // KievME_PreGenartion
+	public @packed(1,compileflags,6)  boolean is_struct_type_resolved; // KievFE_Pass2
+	public @packed(1,compileflags,7)  boolean is_struct_args_resolved; // KievFE_Pass2
+	public @packed(1,compileflags,8)  boolean is_struct_members_generated; // KievFE_Pass2
+	public @packed(1,compileflags,9)  boolean is_struct_pre_generated; // KievME_PreGenartion
 
 	// Expression/statement flags
-	public @packed:1,compileflags,6  boolean is_expr_gen_void;
-	public @packed:1,compileflags,7  boolean is_expr_for_wrapper;
-	public @packed:1,compileflags,8  boolean is_expr_cast_call;
-	public @packed:1,compileflags,9  boolean is_expr_as_field;
-	public @packed:1,compileflags,10 boolean is_expr_primary;
+	public @packed(1,compileflags,6)  boolean is_expr_gen_void;
+	public @packed(1,compileflags,7)  boolean is_expr_for_wrapper;
+	public @packed(1,compileflags,8)  boolean is_expr_cast_call;
+	public @packed(1,compileflags,9)  boolean is_expr_as_field;
+	public @packed(1,compileflags,10) boolean is_expr_primary;
 
 	// Statement flags
-	public @packed:1,compileflags,11 boolean is_stat_abrupted;
-	public @packed:1,compileflags,12 boolean is_stat_breaked;
-	public @packed:1,compileflags,13 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-	public @packed:1,compileflags,14 boolean is_stat_auto_returnable;
-	public @packed:1,compileflags,15 boolean is_direct_flow_reachable; // reachable by direct control flow (with no jumps)
+	public @packed(1,compileflags,11) boolean is_stat_abrupted;
+	public @packed(1,compileflags,12) boolean is_stat_breaked;
+	public @packed(1,compileflags,13) boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+	public @packed(1,compileflags,14) boolean is_stat_auto_returnable;
+	public @packed(1,compileflags,15) boolean is_direct_flow_reachable; // reachable by direct control flow (with no jumps)
 
 	// Method flags
-	public @packed:1,compileflags,6  boolean is_mth_need_fields_init;
-	public @packed:1,compileflags,7  boolean is_mth_dispatcher;
+	public @packed(1,compileflags,6)  boolean is_mth_need_fields_init;
+	public @packed(1,compileflags,7)  boolean is_mth_dispatcher;
 
 	// Var/field
-	public @packed:1,compileflags,6  boolean is_need_proxy;
-	public @packed:1,compileflags,7  boolean is_init_wrapper;
-	public @packed:1,compileflags,8  boolean is_fld_added_to_init;
+	public @packed(1,compileflags,6)  boolean is_need_proxy;
+	public @packed(1,compileflags,7)  boolean is_init_wrapper;
+	public @packed(1,compileflags,8)  boolean is_fld_added_to_init;
 
 	// General flags
-	public @packed:1,compileflags,4 boolean is_auto_generated;
-	public @packed:1,compileflags,3 boolean is_resolved;
-	public @packed:1,compileflags,2 boolean is_bad;
-	public @packed:1,compileflags,1 boolean versioned;
-	public @packed:1,compileflags,0 boolean locked;
+	public @packed(1,compileflags,4) boolean is_auto_generated;
+	public @packed(1,compileflags,3) boolean is_resolved;
+	public @packed(1,compileflags,2) boolean is_bad;
+	public @packed(1,compileflags,1) boolean versioned;
+	public @packed(1,compileflags,0) boolean locked;
 
 	public AttrSlot[] values() {
 		return ASTNode.$values;
