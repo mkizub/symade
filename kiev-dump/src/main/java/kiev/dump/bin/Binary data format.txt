@@ -1,0 +1,116 @@
+SymADE binary data format is designed to be
+
+a) simple;
+b) fail-safe;
+c) suitable for generic tree/graph dump/restore.
+
+File format:
+
+Signature - 8 bytes
+Flags - 8 bytes
+	- big/little endian
+	- big/small attribute IDs (4 or 2 bytes)
+	- big/small type IDs (4 or 2 bytes)
+	- big/small object IDs (4 or 2 bytes)
+Meta-Information
+	Generation timestamp - YYYY.MM.DD HH:SS.MSS
+	Author(s)
+	Company
+	Copyright
+	License
+	Comment
+	Referred files
+Section start
+	Array of root nodes
+	Table of attributes
+	Table of types
+	Table of symbol referencies
+	Table of objects
+	Central table (table of tables)
+Section end
+Incremental update sections.
+
+Node format:
+Node start
+	Node Type Ref (provides ordered array of attributes)
+	( // Values (in the order provided by the type):
+	  Value tag,  [optional value data]
+	)*
+Node end
+
+Symbol format:
+	Symbol ID
+	UUID 16 bytes
+	Qualified name (string)
+	Target node ID
+
+Type format:
+Type start
+	Type ID
+	Flags
+	Super-types*
+	Attributes*
+Type end
+
+Attribute format
+Attribute start
+	Attribute ID
+	Flags
+	TypeRef where the attribute is defined (for intype attributes)
+	TypeRef of the attribute desired type (for child nodes)
+	Attribute name (string)
+Attribute end
+
+Attribute flags:
+	required/optional
+	scalar/space
+	intype/external
+	copyable or ignored on node copy
+	primitive data / child node / parent reference / symbol reference / local cross-reference (one-to-one or one-to-many)
+
+Attribute types:
+	boolean
+	enum (encoded as string name)
+	int
+	float
+	char
+	string
+	string_encoded_value
+	octet_serialized_value
+	child (sub-node)
+	parent (reference to parent)
+	symref (reference to symbol)
+
+Value types:
+	null	- null value
+	void	- void value (value for the attribute is not provided)
+	boolean_true (also int/float value 1)
+	boolean_false (also int/float value 0)
+	int_byte
+	int_short
+	int_int
+	int_long
+	int_big
+	float_float
+	float_double
+	float_big
+	char_byte (ascii and spaces: <tab>, <cr>, <lf>, 32-126, no <del>)
+	char_unicode
+	string_utf8_z (except control and special unicode characters)
+	string_utf16_z (except control and special unicode characters)
+	string_utf8_length_z
+	string-utf16_length_z
+	octet_stream_length
+	attr_start
+	attr_end
+	type_start
+	type_end
+	obj_start
+	obj_end
+	obj_ref
+	symbol_start
+	symbol_end
+	attr_ref
+	type_ref
+	symbol_ref
+	comment

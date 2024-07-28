@@ -1,0 +1,671 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2008 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<core:FileUnit name='syntax-for-evt.xml' xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:syntax='sop://languages/syntax?class=kiev.fmt.SyntaxLang'>
+ <srpkg>
+  <core:SymbolRef full='true' name='stx-fmt' />
+ </srpkg>
+ <members>
+  <core:ImportImpl all='true'>
+   <name>
+    <core:SymbolRef full='true' name='kiev·fmt' />
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl all='true'>
+   <name>
+    <core:SymbolRef full='true' name='kiev·fmt·evt' />
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl>
+   <name>
+    <core:SymbolRef full='true' name='kiev·vtree·SymbolRef‣c5507fc0-f5ca-42b8-8eb2-3102a62f7efc' />
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl>
+   <name>
+    <core:SymbolRef full='true' name='kiev·vlang·Import‣802f4ca3-1291-48d9-8bfb-a9e7801af873' />
+   </name>
+  </core:ImportImpl>
+  <core:ImportImpl>
+   <name>
+    <core:SymbolRef full='true' name='kiev·vlang·FileUnit‣45571c51-9eaa-4fbf-9901-3d07fb1caf57' />
+   </name>
+  </core:ImportImpl>
+  <syntax:TopLevelTextSyntax uuid='7b955e84-7774-4947-b112-ee134fb6f85f' name='syntax-for-evt'>
+   <style_sheet>
+    <core:SymbolRef name='style-sheet-default‣59857a48-3b20-4182-9681-e8d52ee317c9' />
+   </style_sheet>
+   <members>
+    <syntax:SyntaxElemDecl uuid='b780ca77-99be-4d91-81e9-720570acb846' name='stx-action'>
+     <rnode>
+      <core:SymbolRef name='Action‣15e700bd-e46a-4a77-ae1f-47ba6067a1b7' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>action:</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>class:</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>actionClass</name>
+         <format>
+          <syntax:SyntaxStrAttr />
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>forPopupMenu:</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>isForPopupMenu</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>description:</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>description</name>
+         <format>
+          <syntax:SyntaxStrAttr />
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='d7b2756d-da8e-4583-8957-b74212641f0b' name='stx-keyboard-event'>
+     <rnode>
+      <core:SymbolRef name='KeyboardEvent‣f69a2c48-c046-48f9-a9ee-e8488b180b2c' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxFolder>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxToken>
+           <text>[</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+          <syntax:SyntaxAttr>
+           <name>text</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>]</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+         </elements>
+        </syntax:SyntaxSet>
+       </folded>
+       <unfolded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxToken>
+           <text>[ key</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+          <syntax:SyntaxAttr>
+           <name>keyCode</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>withCtrl</name>
+           <format>
+            <syntax:SyntaxEnumChoice>
+             <elements>
+              <syntax:SyntaxToken>
+               <text>Ctrl</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+              <syntax:SyntaxToken>
+               <text>Ctrl</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+             </elements>
+            </syntax:SyntaxEnumChoice>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>withAlt</name>
+           <format>
+            <syntax:SyntaxEnumChoice>
+             <elements>
+              <syntax:SyntaxToken>
+               <text>Alt</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+              <syntax:SyntaxToken>
+               <text>Alt</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+             </elements>
+            </syntax:SyntaxEnumChoice>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>withShift</name>
+           <format>
+            <syntax:SyntaxEnumChoice>
+             <elements>
+              <syntax:SyntaxToken>
+               <text>Shift</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+              <syntax:SyntaxToken>
+               <text>Shift</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+             </elements>
+            </syntax:SyntaxEnumChoice>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>]</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+         </elements>
+        </syntax:SyntaxSet>
+       </unfolded>
+      </syntax:SyntaxFolder>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='2dc28ef6-143c-4264-8169-7635b8989a72' name='stx-mouse-event'>
+     <rnode>
+      <core:SymbolRef name='MouseEvent‣4fb62c94-6154-48d2-8904-85ce6b5ec19c' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxFolder>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxToken>
+           <text>[</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+          <syntax:SyntaxAttr>
+           <name>text</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>]</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+         </elements>
+        </syntax:SyntaxSet>
+       </folded>
+       <unfolded>
+        <syntax:SyntaxSet>
+         <elements>
+          <syntax:SyntaxToken>
+           <text>[ button</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+          <syntax:SyntaxAttr>
+           <name>button</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>cnt:</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+          <syntax:SyntaxAttr>
+           <name>count</name>
+           <format>
+            <syntax:SyntaxSubAttr />
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>withCtrl</name>
+           <format>
+            <syntax:SyntaxEnumChoice>
+             <elements>
+              <syntax:SyntaxToken>
+               <text>Ctrl</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+              <syntax:SyntaxToken>
+               <text>Ctrl</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+             </elements>
+            </syntax:SyntaxEnumChoice>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>withAlt</name>
+           <format>
+            <syntax:SyntaxEnumChoice>
+             <elements>
+              <syntax:SyntaxToken>
+               <text>Alt</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+              <syntax:SyntaxToken>
+               <text>Alt</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+             </elements>
+            </syntax:SyntaxEnumChoice>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxAttr>
+           <name>withShift</name>
+           <format>
+            <syntax:SyntaxEnumChoice>
+             <elements>
+              <syntax:SyntaxToken>
+               <text>Shift</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+              <syntax:SyntaxToken>
+               <text>Shift</text>
+               <fmt>
+                <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+               </fmt>
+              </syntax:SyntaxToken>
+             </elements>
+            </syntax:SyntaxEnumChoice>
+           </format>
+          </syntax:SyntaxAttr>
+          <syntax:SyntaxToken>
+           <text>]</text>
+           <fmt>
+            <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+           </fmt>
+          </syntax:SyntaxToken>
+         </elements>
+        </syntax:SyntaxSet>
+       </unfolded>
+      </syntax:SyntaxFolder>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='438959dd-c7fe-4cfc-ab66-18661bd62ba1' name='stx-binding'>
+     <rnode>
+      <core:SymbolRef name='Binding‣8830fa49-6608-45ea-bb35-d65e14c72d99' />
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef‣c5507fc0-f5ca-42b8-8eb2-3102a62f7efc' />
+       </expected_types>
+       <title>Make new node at action</title>
+       <attr>action</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='KeyboardEvent‣f69a2c48-c046-48f9-a9ee-e8488b180b2c' />
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='MouseEvent‣4fb62c94-6154-48d2-8904-85ce6b5ec19c' />
+       </expected_types>
+       <title>Make new node at events</title>
+       <attr>events</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>bind action:</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>action</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name='ident-template‣a463bedd-34fb-429e-9409-6321b513f7df' />
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>events</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>{</text>
+          </syntax:SyntaxToken>
+         </prefix>
+         <sufix>
+          <syntax:SyntaxToken>
+           <text>}</text>
+          </syntax:SyntaxToken>
+         </sufix>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <sufix>
+              <syntax:SyntaxToken>
+               <text>||</text>
+              </syntax:SyntaxToken>
+             </sufix>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='d1e32a07-691a-4b5f-b017-6dd4b6b470c6' name='stx-binding-set'>
+     <rnode>
+      <core:SymbolRef name='BindingSet‣6741f839-fe9f-493b-a77b-4243efde4d20' />
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef‣c5507fc0-f5ca-42b8-8eb2-3102a62f7efc' />
+       </expected_types>
+       <title>Make new node at parent_set</title>
+       <attr>parent_set</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='Action‣15e700bd-e46a-4a77-ae1f-47ba6067a1b7' />
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='Binding‣8830fa49-6608-45ea-bb35-d65e14c72d99' />
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='Import‣802f4ca3-1291-48d9-8bfb-a9e7801af873' />
+       </expected_types>
+       <title>Make new node at members</title>
+       <attr>members</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>binding set:</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>sname</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name='ident-template‣a463bedd-34fb-429e-9409-6321b513f7df' />
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxToken>
+         <text>extends:</text>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>parent_set</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name='ident-template‣a463bedd-34fb-429e-9409-6321b513f7df' />
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <prefix>
+          <syntax:SyntaxToken>
+           <text>{</text>
+          </syntax:SyntaxToken>
+         </prefix>
+         <sufix>
+          <syntax:SyntaxToken>
+           <text>}</text>
+          </syntax:SyntaxToken>
+         </sufix>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name='fmt-nl-nl‣f20d2bbf-e038-489f-aaf6-0ea9e16a4c76' />
+             </fmt>
+             <par>
+              <core:SymbolRef name='par-horiz‣4ec87250-7a1c-485d-bc36-58f64c002d72' />
+             </par>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-nl‣9c02ab50-fb1e-408c-8ed0-2a48dc9ff8ba' />
+         </fmt>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='3440d779-60a8-40d3-8f4f-e916ad9f75cf' name='stx-file-unit'>
+     <rnode>
+      <core:SymbolRef name='FileUnit‣45571c51-9eaa-4fbf-9901-3d07fb1caf57' />
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='SymbolRef‣c5507fc0-f5ca-42b8-8eb2-3102a62f7efc' />
+       </expected_types>
+       <title>Make new node at srpkg</title>
+       <attr>srpkg</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+      <syntax:SyntaxFuncNewByTemplate>
+       <expected_types>
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='Action‣15e700bd-e46a-4a77-ae1f-47ba6067a1b7' />
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='Binding‣8830fa49-6608-45ea-bb35-d65e14c72d99' />
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='Import‣802f4ca3-1291-48d9-8bfb-a9e7801af873' />
+        <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.DNode;»' name='BindingSet‣6741f839-fe9f-493b-a77b-4243efde4d20' />
+       </expected_types>
+       <title>Make new node at members</title>
+       <attr>members</attr>
+      </syntax:SyntaxFuncNewByTemplate>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>namespace</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>srpkg</name>
+         <format>
+          <syntax:SyntaxSubAttr />
+         </format>
+         <fmt>
+          <core:SymbolRef name='fmt-nl2‣d7a15e10-9fae-48b2-866d-e20f835275e7' />
+         </fmt>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>members</name>
+         <empty>
+          <syntax:SyntaxPlaceHolder>
+           <text>&lt;members></text>
+          </syntax:SyntaxPlaceHolder>
+         </empty>
+         <format>
+          <syntax:SyntaxList>
+           <element>
+            <syntax:SyntaxNode>
+             <fmt>
+              <core:SymbolRef name='fmt-nl‣9c02ab50-fb1e-408c-8ed0-2a48dc9ff8ba' />
+             </fmt>
+            </syntax:SyntaxNode>
+           </element>
+          </syntax:SyntaxList>
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='cb58f513-395f-44a6-94f2-85759d75f9c5' name='stx-import'>
+     <rnode>
+      <core:SymbolRef name='Import‣802f4ca3-1291-48d9-8bfb-a9e7801af873' />
+     </rnode>
+     <funcs>
+      <syntax:SyntaxFuncEval>
+       <act>kiev.gui.ChooseItemEditor</act>
+       <title>Import All</title>
+       <attr>star</attr>
+      </syntax:SyntaxFuncEval>
+     </funcs>
+     <elem>
+      <syntax:SyntaxSet>
+       <elements>
+        <syntax:SyntaxToken>
+         <text>import</text>
+         <fmt>
+          <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+         </fmt>
+        </syntax:SyntaxToken>
+        <syntax:SyntaxAttr>
+         <name>star</name>
+         <format>
+          <syntax:SyntaxEnumChoice>
+           <elements>
+            <syntax:SyntaxToken>
+             <text>just</text>
+             <fmt>
+              <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+             </fmt>
+            </syntax:SyntaxToken>
+            <syntax:SyntaxToken>
+             <text>all</text>
+             <fmt>
+              <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+             </fmt>
+            </syntax:SyntaxToken>
+           </elements>
+          </syntax:SyntaxEnumChoice>
+         </format>
+        </syntax:SyntaxAttr>
+        <syntax:SyntaxAttr>
+         <name>name</name>
+         <format>
+          <syntax:SyntaxIdentAttr>
+           <decl>
+            <core:SymbolRef name='' />
+           </decl>
+          </syntax:SyntaxIdentAttr>
+         </format>
+        </syntax:SyntaxAttr>
+       </elements>
+       <fmt>
+        <core:SymbolRef name='fmt-nl-import‣f45e17a6-2914-4a44-969a-36d00c08122a' />
+       </fmt>
+      </syntax:SyntaxSet>
+     </elem>
+    </syntax:SyntaxElemDecl>
+    <syntax:SyntaxElemDecl uuid='facc46f3-663c-4f58-a48f-a2dbc264a830' name='stx-symbol-ref'>
+     <rnode>
+      <core:SymbolRef name='SymbolRef‣c5507fc0-f5ca-42b8-8eb2-3102a62f7efc' />
+     </rnode>
+     <elem>
+      <syntax:SyntaxAttr>
+       <name>ident_or_symbol_or_type</name>
+       <format>
+        <syntax:SyntaxIdentAttr>
+         <decl>
+          <core:SymbolRef name='' />
+         </decl>
+        </syntax:SyntaxIdentAttr>
+       </format>
+       <fmt>
+        <core:SymbolRef name='fmt-default‣ac76c9eb-db59-4ee6-960e-4a7ab0535763' />
+       </fmt>
+      </syntax:SyntaxAttr>
+     </elem>
+    </syntax:SyntaxElemDecl>
+   </members>
+  </syntax:TopLevelTextSyntax>
+ </members>
+</core:FileUnit>

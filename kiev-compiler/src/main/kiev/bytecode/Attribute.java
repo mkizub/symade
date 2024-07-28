@@ -1,0 +1,1386 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.bytecode;
+
+import syntax kiev.Syntax;
+
+/**
+ * @author Maxim Kizub
+ * @version $Revision: 247 $
+ *
+ */
+
+public class Attribute implements BytecodeElement,BytecodeFileConstants,BytecodeAttributeNames {
+
+	public static final Attribute[]	emptyArray = new Attribute[0];
+
+	public static Hashtable<String,Class>	attrMap;
+	static {
+		attrMap = new Hashtable<String,Class>();
+		attrMap.put(attrCode,			Class.forName("kiev.bytecode.CodeAttribute"));
+		attrMap.put(attrSourceFile,		Class.forName("kiev.bytecode.SourceFileAttribute"));
+		attrMap.put(attrSourceDebugExtension, Class.forName("kiev.bytecode.SourceDebugExtensionAttribute"));
+		attrMap.put(attrSignature,		Class.forName("kiev.bytecode.GenericsSignatureAttribute"));
+		attrMap.put(attrLocalVarTable,	Class.forName("kiev.bytecode.LocalVariableTableAttribute"));
+		attrMap.put(attrLinenoTable,	Class.forName("kiev.bytecode.LineNumberTableAttribute"));
+		attrMap.put(attrExceptions,		Class.forName("kiev.bytecode.ExceptionsAttribute"));
+		attrMap.put(attrInnerClasses,	Class.forName("kiev.bytecode.InnerClassesAttribute"));
+		attrMap.put(attrConstantValue,	Class.forName("kiev.bytecode.ConstantValueAttribute"));
+//		attrMap.put(attrClassArguments,	Class.forName("kiev.bytecode.KievClassArgumentsAttribute"));
+//		attrMap.put(attrPizzaCase,		Class.forName("kiev.bytecode.KievCaseAttribute"));
+//		attrMap.put(attrKiev,			null /*Class.forName("kiev.bytecode.KievAttribute")*/);
+//		attrMap.put(attrFlags,			Class.forName("kiev.bytecode.KievFlagsAttribute"));
+//		attrMap.put(attrAlias,			Class.forName("kiev.bytecode.KievAliasAttribute"));
+//		attrMap.put(attrTypedef,		Class.forName("kiev.bytecode.KievTypedefAttribute"));
+//		attrMap.put(attrOperator,		Class.forName("kiev.bytecode.KievOperatorAttribute"));
+//		attrMap.put(attrImport,			Class.forName("kiev.bytecode.KievImportAttribute"));
+//		attrMap.put(attrEnum,			Class.forName("kiev.bytecode.KievEnumAttribute"));
+		attrMap.put(attrRequire,		Class.forName("kiev.bytecode.KievContractAttribute"));
+		attrMap.put(attrEnsure,			Class.forName("kiev.bytecode.KievContractAttribute"));
+//		attrMap.put(attrCheckFields,	Class.forName("kiev.bytecode.KievCheckFieldsAttribute"));
+//		attrMap.put(attrGenerations,	Class.forName("kiev.bytecode.KievGenerationsAttribute"));
+//		attrMap.put(attrPackedFields,	Class.forName("kiev.bytecode.KievPackedFieldsAttribute"));
+//		attrMap.put(attrPackerField,	Class.forName("kiev.bytecode.KievPackerFieldAttribute"));
+
+		attrMap.put(attrRVAnnotations,		Class.forName("kiev.bytecode.RVAnnotations"));
+		attrMap.put(attrRIAnnotations,		Class.forName("kiev.bytecode.RIAnnotations"));
+		attrMap.put(attrRVParAnnotations,	Class.forName("kiev.bytecode.RVParAnnotations"));
+		attrMap.put(attrRIParAnnotations,	Class.forName("kiev.bytecode.RIParAnnotations"));
+		attrMap.put(attrAnnotationDefault,	Class.forName("kiev.bytecode.AnnotationDefault"));
+	}
+
+	public Utf8PoolConstant		cp_name;
+	public byte[]				data;
+	public int					start_pos;
+
+	public String getName(Clazz clazz) {
+		return cp_name.value;
+	}
+	public int size(int offset) {
+		assert( data != null, "Null data in attribute "+getClass());
+		return 6+data.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		// Name must already be read
+		int len = cont.readInt();
+		assert(cont.data.length-cont.offset >= len,"Too big length "+len+" specified for attribute");
+		trace(Clazz.traceRead,cont.offset+": attribute length is "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cont.offset += len;
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name.idx+", name="+cp_name.value
+			+" len="+data.length);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(data.length);
+		cont.write(data);
+	}
+
+	public static Attribute[] readAttributes(ReadContext cont) {
+		int num = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": number of attributes is "+num);
+		if( num == 0 ) return Attribute.emptyArray;
+		Attribute[] attrs = new Attribute[num];
+		for(int i=0; i < num; i++) {
+			int cp_name = cont.readShort();
+			assert(cp_name > 0 && cp_name < cont.clazz.pool.length ,"Attribute name index "+cp_name+" out of range");
+			assert(cont.clazz.pool[cp_name].constant_type() == CONSTANT_UTF8 ,"Attribute name index dos not points to CONSTANT_UTF8");
+			trace(Clazz.traceRead,cont.offset+": attribute name "+cp_name+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+			Class aclass = attrMap.get( ((Utf8PoolConstant)cont.clazz.pool[cp_name]).value );
+			Attribute attr;
+			if( aclass == null )
+				attr = new Attribute();
+			else
+				attr = (Attribute)aclass.newInstance();
+			attr.cp_name = (Utf8PoolConstant)cont.clazz.pool[cp_name];
+			attr.read(cont);
+			attrs[i] = attr;
+		}
+		return attrs;
+	}
+
+	protected final Utf8PoolConstant readUtf8Ref(ReadContext cont, boolean allow_null) {
+		int idx = cont.readShort();
+		if (allow_null && idx == 0)
+			return null;
+		assert(idx > 0 && idx < cont.clazz.pool.length ,"Attribute name index "+idx+" out of range");
+		assert(cont.clazz.pool[idx].constant_type() == CONSTANT_UTF8 ,"Attribute name index dos not points to CONSTANT_UTF8");
+		return (Utf8PoolConstant)cont.clazz.pool[idx];
+	}
+	protected final ClazzPoolConstant readClazzRef(ReadContext cont, boolean allow_null) {
+		int idx = cont.readShort();
+		if (allow_null && idx == 0)
+			return null;
+		assert(idx > 0 && idx < cont.clazz.pool.length ,"Attribute name index "+idx+" out of range");
+		assert(cont.clazz.pool[idx].constant_type() == CONSTANT_CLASS ,"Attribute name index dos not points to CONSTANT_CLASS");
+		return (ClazzPoolConstant)cont.clazz.pool[idx];
+	}
+}
+
+public class SourceFileAttribute extends Attribute {
+
+	public Utf8PoolConstant		cp_filename;
+
+	public int size(int offset) {
+		return 6+2;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 2,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cp_filename = readUtf8Ref(cont,false);
+		trace(Clazz.traceRead,cont.offset+": filename is "+cp_filename.value);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_filename.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2);
+		cont.writeShort(cp_filename.idx);
+	}
+	public String getFileName(Clazz clazz) {
+		return cp_filename.value;
+	}
+}
+
+public class SourceDebugExtensionAttribute extends Attribute {
+
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		cont.read(data);
+		trace(Clazz.traceRead,cont.offset+": smap is "+ new String(data,"UTF-8"));
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": smap is "+new String(data,"UTF-8"));
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(data.length);
+		cont.write(data);
+	}
+	public String getSMAP(Clazz clazz) {
+		return new String(data,"UTF-8");
+	}
+}
+
+public class GenericsSignatureAttribute extends Attribute {
+
+	public Utf8PoolConstant		cp_signature;
+
+	public int size(int offset) {
+		return 6+2;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 2,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cp_signature = readUtf8Ref(cont,false);
+		trace(Clazz.traceRead,cont.offset+": filename is "+cp_signature.value);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_signature.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2);
+		cont.writeShort(cp_signature.idx);
+	}
+	public String getSignature(Clazz clazz) {
+		return cp_signature.value;
+	}
+}
+
+public class ConstantValueAttribute extends Attribute {
+
+	public PoolConstant		cp_value;
+
+	public int size(int offset) {
+		return 6+2;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 2,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cp_value = cont.clazz.pool[cont.readShort()];
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2);
+		cont.writeShort(cp_value.idx);
+	}
+	public Object getValue(Clazz clazz) {
+		if (cp_value instanceof NumberPoolConstant)
+			return ((NumberPoolConstant)cp_value).getValue();
+		else if (cp_value instanceof StringPoolConstant)
+			return ((StringPoolConstant)cp_value).ref.value;
+		else
+			throw new RuntimeException("Bad ConstantValue attribute: "+cp_value.getClass());
+	}
+}
+
+public class ExceptionsAttribute extends Attribute {
+
+	public ClazzPoolConstant[]		cp_exceptions;
+
+	public int size(int offset) {
+		return 6+2+2*cp_exceptions.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		cp_exceptions = new ClazzPoolConstant[elen];
+		for(int i=0; i < elen; i++)
+			cp_exceptions[i] = readClazzRef(cont,false);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2+cp_exceptions.length*2);
+		cont.writeShort(cp_exceptions.length);
+		for(int i=0; i < cp_exceptions.length; i++) {
+			cont.writeShort(cp_exceptions[i].idx);
+		}
+	}
+	public String getException(int i, Clazz clazz) {
+		return cp_exceptions[i].ref.value;
+	}
+}
+
+public class CodeAttribute extends Attribute implements JavaOpcodes {
+
+	public static class CatchInfo {
+		public int					start_pc;
+		public int					end_pc;
+		public int					handler_pc;
+		public ClazzPoolConstant	cp_signature;
+	}
+	
+	public int					max_stack;
+	public int					max_locals;
+	public byte[]				code;
+	public CatchInfo[]			catchers;
+	public Attribute[]			attrs;
+
+	public int size(int offset) {
+		int len = 6+2+2+4+code.length+2+catchers.length*8+2;
+		for(int i=0; i < attrs.length; i++) {
+			if (offset > 0) attrs[i].start_pos = len+offset;
+			len += attrs[i].size(len+offset);
+		}
+		return len;
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		max_stack = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": max_stack is "+max_stack);
+		max_locals = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": max_locals is "+max_locals);
+		int codelen = cont.readInt();
+		trace(Clazz.traceRead,cont.offset+": code length "+codelen);
+		code = new byte[codelen];
+		cont.read(code);
+		int catchlen = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": there is "+catchlen+" catchers here");
+		catchers = new CatchInfo[catchlen];
+		for(int i=0; i < catchlen; i++) {
+			CatchInfo ci = new CatchInfo();
+			ci.start_pc = cont.readUShort();
+			ci.end_pc = cont.readUShort();
+			ci.handler_pc = cont.readUShort();
+			ci.cp_signature = readClazzRef(cont,true);
+			trace(Clazz.traceRead,cont.offset+": catcher "+i+":"+
+				ci.start_pc+"-"+ci.end_pc+" -> "+ci.handler_pc+
+				" for "+(ci.cp_signature==null ? "<any>" : ci.cp_signature.ref.value) );
+			catchers[i] = ci;
+		}
+		attrs = Attribute.readAttributes(cont);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
+		trace(Clazz.traceWrite,cont.offset+": max_stack is "+max_stack);
+		cont.writeShort(max_stack);
+		trace(Clazz.traceWrite,cont.offset+": max_locals is "+max_locals);
+		cont.writeShort(max_locals);
+		trace(Clazz.traceWrite,cont.offset+": code length "+code.length);
+		cont.writeInt(code.length);
+		if(Clazz.traceWrite) trace_code(cont);
+		cont.write(code);
+		trace(Clazz.traceWrite,"\ttotal "+catchers.length+" catchers");
+		cont.writeShort(catchers.length);
+		for(int i=0; i < catchers.length; i++) {
+			CatchInfo ci = catchers[i];
+			trace(Clazz.traceWrite,"\t"+ci.start_pc+" - "
+				+ci.end_pc+" -> "+ci.handler_pc+" "
+				+(ci.cp_signature==null?" finally":ci.cp_signature.ref.value));
+			cont.writeShort(ci.start_pc);
+			cont.writeShort(ci.end_pc);
+			cont.writeShort(ci.handler_pc);
+			cont.writeShort(ci.cp_signature == null ? 0 : ci.cp_signature.idx);
+		}
+		cont.writeShort(attrs.length);
+		for(int i=0; i < attrs.length; i++)
+			attrs[i].write(cont);
+	}
+	public void trace_code(ReadContext cont) {
+		int pc = 0;
+		int cp;
+		int l;
+		while(pc < code.length) {
+			int instr = 0xFF & code[pc];
+			System.out.print(pc+":\t"+kiev.be.java15.JConstants.opcNames[instr]);
+			switch(instr) {
+			default:
+				break;
+			case opc_ldc:
+				cp = 0xFF & code[pc+1];
+				System.out.print(" "+cont.clazz.pool[cp]);
+				break;
+			case opc_ldc_w:
+			case opc_ldc2_w:
+				cp = ((0xFF & code[pc+1]) << 8)+ (0xFF & code[pc+2]);
+				System.out.print(" "+cont.clazz.pool[cp]);
+				break;
+			case opc_new:
+			case opc_anewarray:
+			case opc_multianewrray:
+			case opc_checkcast:
+			case opc_instanceof:
+			case opc_invokemethodref:
+				cp = ((0xFF & code[pc+1]) << 8)+ (0xFF & code[pc+2]);
+				System.out.print(" "+refname(cont,cp));
+				break;
+			case opc_newmethodref:
+			case opc_getstatic:
+			case opc_putstatic:
+			case opc_getfield:
+			case opc_putfield:
+			case opc_invokevirtual:
+			case opc_invokespecial:
+			case opc_invokestatic:
+			case opc_invokeinterface:
+				cp = ((0xFF & code[pc+1]) << 8)+ (0xFF & code[pc+2]);
+				System.out.print(" "+clnametype(cont,cp));
+				break;
+			case opc_ifeq:
+			case opc_ifne:
+			case opc_iflt:
+			case opc_ifge:
+			case opc_ifgt:
+			case opc_ifle:
+			case opc_if_icmpeq:
+			case opc_if_icmpne:
+			case opc_if_icmplt:
+			case opc_if_icmpge:
+			case opc_if_icmpgt:
+			case opc_if_icmple:
+			case opc_if_acmpeq:
+			case opc_if_acmpne:
+			case opc_goto:
+			case opc_jsr:
+				l = ((0xFF & code[pc+1]) << 8)+ (0xFF & code[pc+2]);
+				System.out.print(" "+(l+pc));
+				break;
+			case opc_tableswitch:
+				{
+					int sw_pc = pc;
+					pc++;
+					while( (pc % 4) != 0 ) pc++;
+					int def = ((0xFF & code[pc+3]))+
+						((0xFF & code[pc+2]) << 8)+
+						((0xFF & code[pc+1]) << 16)+
+						((0xFF & code[pc]));
+					pc += 4;
+					int low = ((0xFF & code[pc+3]))+
+						((0xFF & code[pc+2]) << 8)+
+						((0xFF & code[pc+1]) << 16)+
+						((0xFF & code[pc]));
+					pc += 4;
+					int high = ((0xFF & code[pc+3]))+
+						((0xFF & code[pc+2]) << 8)+
+						((0xFF & code[pc+1]) << 16)+
+						((0xFF & code[pc]));
+					pc += 4;
+					System.out.println("");
+					System.out.println("\t\tdefault:\t"+(def+sw_pc));
+					for(int i=low; i <= high; i++) {
+						int label = ((0xFF & code[pc+3]))+
+							((0xFF & code[pc+2]) << 8)+
+							((0xFF & code[pc+1]) << 16)+
+							((0xFF & code[pc]));
+						pc += 4;
+						System.out.println("\t\tvalue "+i+":\t"+(label+sw_pc));
+					}
+				}
+				continue;
+			case opc_lookupswitch:
+				{
+					int sw_pc = pc;
+					pc++;
+					while( (pc % 4) != 0 ) pc++;
+					int def = ((0xFF & code[pc+3]))+
+						((0xFF & code[pc+2]) << 8)+
+						((0xFF & code[pc+1]) << 16)+
+						((0xFF & code[pc]));
+					pc += 4;
+					int size = ((0xFF & code[pc+3]))+
+						((0xFF & code[pc+2]) << 8)+
+						((0xFF & code[pc+1]) << 16)+
+						((0xFF & code[pc]));
+					pc += 4;
+					System.out.println("");
+					System.out.println("\t\tdefault:\t"+(def+sw_pc));
+					for(int i=0; i < size; i++) {
+						int val = ((0xFF & code[pc+3]))+
+							((0xFF & code[pc+2]) << 8)+
+							((0xFF & code[pc+1]) << 16)+
+							((0xFF & code[pc]));
+						pc += 4;
+						int label = ((0xFF & code[pc+3]))+
+							((0xFF & code[pc+2]) << 8)+
+							((0xFF & code[pc+1]) << 16)+
+							((0xFF & code[pc]));
+						pc += 4;
+						System.out.println("\t\tvalue "+val+":\t"+(label+sw_pc));
+					}
+				}
+				continue;
+			}
+			System.out.println("");
+			pc += kiev.be.java15.JConstants.opcLengths[instr];
+		}
+	}
+	private Object utf8(ReadContext cont, int pos) {
+		return ((Utf8PoolConstant)cont.clazz.pool[pos]).value;
+	}
+	private Object refname(ReadContext cont, int pos) {
+		RefPoolConstant obj = (RefPoolConstant)cont.clazz.pool[pos];
+		return obj.ref.value;
+	}
+	private Object clnametype(ReadContext cont, int pos) {
+		ClazzNameTypePoolConstant obj = (ClazzNameTypePoolConstant)cont.clazz.pool[pos];
+		NameAndTypePoolConstant nt = obj.ref_nametype;
+		return obj.ref_clazz.ref.value+": "+nt.ref_name.value+": "+nt.ref_type.value;
+	}
+}
+
+public class LocalVariableTableAttribute extends Attribute {
+
+	public static class VarInfo {
+		public int					start_pc;
+		public int					length_pc;
+		public Utf8PoolConstant		cp_varname;
+		public Utf8PoolConstant		cp_signature;
+		public int					slot;
+	}
+	public VarInfo[] vars;
+
+	public int size(int offset) {
+		return 6+2+10*vars.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": there is "+elen+" vars in table");
+		vars = new VarInfo[elen];
+		for(int i=0; i < elen; i++) {
+			VarInfo vi = new VarInfo();
+			vi.start_pc = cont.readShort();
+			vi.length_pc = cont.readShort();
+			vi.cp_varname = readUtf8Ref(cont,false);
+			vi.cp_signature = readUtf8Ref(cont,false);
+			vi.slot = cont.readShort();
+			trace(Clazz.traceRead,cont.offset+": var "+i+":"+
+				vi.start_pc+"-"+(vi.start_pc+vi.length_pc)+" in "+vi.slot+" slot "+
+				" for "+vi.cp_varname.value+" of type "+vi.cp_signature.value);
+			vars[i] = vi;
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value+", vars="+vars.length+", len="+(2+vars.length*10));
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2+vars.length*10);
+		int elen = vars.length;
+		cont.writeShort(elen);
+		for(int i=0; i < elen; i++) {
+			VarInfo vi = vars[i];
+			//trace(Clazz.traceWrite,cont.offset+": var["+i+"]: start_pc="+vi.start_pc+", length_pc="+vi.length_pc+", slot="+vi.slot);
+			cont.writeShort(vi.start_pc);
+			cont.writeShort(vi.length_pc);
+			cont.writeShort(vi.cp_varname.idx);
+			cont.writeShort(vi.cp_signature.idx);
+			cont.writeShort(vi.slot);
+		}
+	}
+}
+
+public class InnerClassesAttribute extends Attribute {
+
+	public ClazzPoolConstant[]		cp_inners;
+	public ClazzPoolConstant[]		cp_outers;
+	public Utf8PoolConstant[]		cp_inner_names;
+	public int[]					cp_inner_flags;
+
+	public int size(int offset) {
+		return 6+2+8*cp_inners.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		cp_inners = new ClazzPoolConstant[elen];
+		cp_outers = new ClazzPoolConstant[elen];
+		cp_inner_names = new Utf8PoolConstant[elen];
+		cp_inner_flags = new int[elen];
+		for(int i=0; i < elen; i++) {
+			cp_inners[i]		= readClazzRef(cont,true);
+			cp_outers[i]		= readClazzRef(cont,true);
+			cp_inner_names[i]	= readUtf8Ref(cont,true);
+			cp_inner_flags[i]	= cont.readShort();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2+8*cp_inners.length);
+		cont.writeShort(cp_inners.length);
+		for(int i=0; i < cp_inners.length; i++) {
+			cont.writeShort(cp_inners[i].idx);
+			cont.writeShort(cp_outers[i].idx);
+			if (cp_inner_names[i] != null)
+				cont.writeShort(cp_inner_names[i].idx);
+			else
+				cont.writeShort(0);
+			cont.writeShort(cp_inner_flags[i]);
+		}
+	}
+	public String getInnerName(int i, Clazz clazz) {
+		return cp_inners[i].ref.value;
+	}
+	public String getOuterName(int i, Clazz clazz) {
+		return cp_outers[i].ref.value;
+	}
+}
+
+public class LineNumberTableAttribute extends Attribute {
+
+	public int[]					start_pc;
+	public int[]					lineno;
+
+	public int size(int offset) {
+		return 6+2+4*start_pc.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		start_pc = new int[elen];
+		lineno = new int[elen];
+		for(int i=0; i < elen; i++) {
+			start_pc[i] = cont.readShort();
+			lineno[i] = cont.readShort();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(2+start_pc.length*4);
+		int elen = start_pc.length;
+		trace(Clazz.traceWrite,cont.offset+": total "+start_pc.length+" lines in the table");
+		cont.writeShort(elen);
+		for(int i=0; i < elen; i++) {
+			trace(Clazz.traceWrite,cont.offset+": pc: "+start_pc[i]+" for line "+lineno[i]);
+			cont.writeShort(start_pc[i]);
+			cont.writeShort(lineno[i]);
+		}
+	}
+}
+/*
+public class KievClassArgumentsAttribute extends Attribute {
+
+	public int[]					cp_argname;
+	public int[]					cp_supername;
+	public int[]					argno;
+
+	public int size(int offset) {
+		return 6+2+argno.length*6;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		cp_argname = new int[elen];
+		cp_supername = new int[elen];
+		argno = new int[elen];
+		for(int i=0; i < elen; i++) {
+			cp_argname[i] = cont.readShort();
+			cp_supername[i] = cont.readShort();
+			argno[i] = cont.readShort();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(2+argno.length*6);
+		cont.writeShort(argno.length);
+		for(int i=0; i < argno.length; i++) {
+			cont.writeShort(cp_argname[i]);
+			cont.writeShort(cp_supername[i]);
+			cont.writeShort(argno[i]);
+		}
+	}
+}
+
+public class KievFlagsAttribute extends Attribute {
+
+	public int					flags;
+
+	public int size(int offset) {
+		return 6+4;				// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 4,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		flags = cont.readInt();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute = 0x"+Integer.toHexString(flags));
+		cont.writeShort(cp_name);
+		cont.writeInt(4);
+		cont.writeInt(flags);
+	}
+}
+
+public class KievImportAttribute extends Attribute {
+
+	public int					cp_ref;
+
+	public int size(int offset) {
+		return 6+2;				// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 2,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cp_ref = cont.readShort();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute clazz="+getClazzName(cont.clazz)
+			+" name="+getNodeName(cont.clazz)+" sign="+getSignature(cont.clazz));
+		cont.writeShort(cp_name);
+		cont.writeInt(2);
+		cont.writeShort(cp_ref);
+	}
+	public String getClazzName(Clazz clazz) {
+		ClazzNameTypePoolConstant cpc = (ClazzNameTypePoolConstant)clazz.pool[cp_ref];
+		ClazzPoolConstant clpc = cpc.ref_clazz;
+		return clpc.ref.value;
+	}
+	public String getNodeName(Clazz clazz) {
+		ClazzNameTypePoolConstant cpc = (ClazzNameTypePoolConstant)clazz.pool[cp_ref];
+		NameAndTypePoolConstant ntpc = (NameAndTypePoolConstant)cpc.ref_nametype;
+		return ntpc.ref_name.value;
+	}
+	public String getSignature(Clazz clazz) {
+		ClazzNameTypePoolConstant cpc = (ClazzNameTypePoolConstant)clazz.pool[cp_ref];
+		NameAndTypePoolConstant ntpc = (NameAndTypePoolConstant)cpc.ref_nametype;
+		return ntpc.ref_type.value;
+	}
+}
+
+public class KievAliasAttribute extends Attribute {
+
+	public int[]				cp_alias;
+
+	public int size(int offset) {
+		return 6+2*cp_alias.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		cp_alias = new int[len/2];
+		for(int i=0; i < cp_alias.length; i++)
+			cp_alias[i] = cont.readShort();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(cp_alias.length*2);
+		for(int i=0; i < cp_alias.length; i++) {
+			trace(Clazz.traceWrite,cont.offset+": alias "+getAlias(i,cont.clazz));
+			cont.writeShort(cp_alias[i]);
+		}
+	}
+	public String getAlias(int i, Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_alias[i]]).value;
+	}
+}
+
+public class KievTypedefAttribute extends Attribute {
+
+	public int					cp_type;
+	public int					cp_tpnm;
+
+	public int size(int offset) {
+		return 6+4;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		cp_type = cont.readShort();
+		cp_tpnm = cont.readShort();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(4);
+		cont.writeShort(cp_type);
+		cont.writeShort(cp_tpnm);
+	}
+	public String getType(Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_type]).value;
+	}
+	public String getTypeName(Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_tpnm]).value;
+	}
+}
+
+public class KievOperatorAttribute extends Attribute {
+
+	public int					priority;
+	public int					cp_optype;
+	public int					cp_image;
+
+	public int size(int offset) {
+		return 6+6;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 6,"Wrong attribute length "+len);
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		priority = cont.readShort();
+		cp_optype = cont.readShort();
+		cp_image = cont.readShort();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(6);
+		cont.writeShort(priority);
+		cont.writeShort(cp_optype);
+		cont.writeShort(cp_image);
+	}
+	public String getOpType(Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_optype]).value;
+	}
+	public String getImage(Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_image]).value;
+	}
+}
+
+public class KievCaseAttribute extends Attribute {
+
+	public int					caseno;
+	public int[]				cp_casefields;
+
+	public int size(int offset) {
+		return 6+4+cp_casefields.length*2;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		caseno = cont.readShort();
+		int cflen = cont.readShort();
+		cp_casefields = new int[cflen];
+		for(int i=0; i < cflen; i++)
+			cp_casefields[i] = cont.readShort();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(2+cp_casefields.length*2);
+		cont.writeShort(caseno);
+		cont.writeShort(cp_casefields.length);
+		for(int i=0; i < cp_casefields.length; i++)
+			cont.writeShort(cp_casefields[i]);
+	}
+}
+
+public class KievEnumAttribute extends Attribute {
+
+	public int[]					fields;
+	public int[]					values;
+
+	public int size(int offset) {
+		return 6+2+6*fields.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		fields = new int[elen];
+		values = new int[elen];
+		for(int i=0; i < elen; i++) {
+			fields[i] = cont.readShort();
+			values[i] = cont.readInt();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(2+fields.length*6);
+		int elen = fields.length;
+		trace(Clazz.traceWrite,cont.offset+": total "+elen+" enum fields");
+		cont.writeShort(elen);
+		for(int i=0; i < elen; i++) {
+			trace(Clazz.traceWrite,cont.offset+": field "+getFieldName(i,cont.clazz)+" has value "+values[i]);
+			cont.writeShort(fields[i]);
+			cont.writeInt(values[i]);
+		}
+	}
+	public String getFieldName(int i, Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[fields[i]]).value;
+	}
+}
+*/
+public class KievContractAttribute extends Attribute {
+
+	public int					max_stack;
+	public int					max_locals;
+	public byte[]				code;
+	public Attribute[]			attrs;
+
+	public int size(int offset) {
+		int len = 6+2+2+4+code.length+2+2;
+		for(int i=0; i < attrs.length; i++) {
+			if (offset > 0) attrs[i].start_pos = len+offset;
+			len += attrs[i].size(len + offset);
+		}
+		return len;
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		max_stack = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": max_stack is "+max_stack);
+		max_locals = cont.readShort();
+		trace(Clazz.traceRead,cont.offset+": max_locals is "+max_locals);
+		int codelen = cont.readInt();
+		trace(Clazz.traceRead,cont.offset+": code length "+codelen);
+		code = new byte[codelen];
+		cont.read(code);
+		int catchlen = cont.readShort();
+		assert( catchlen == 0 , "Contract attribute catchers length != 0");
+		attrs = Attribute.readAttributes(cont);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
+		cont.writeShort(max_stack);
+		cont.writeShort(max_locals);
+		cont.writeInt(code.length);
+		cont.write(code);
+		cont.writeShort(0);
+		cont.writeShort(attrs.length);
+		for(int i=0; i < attrs.length; i++)
+			attrs[i].write(cont);
+	}
+}
+/*
+public class KievCheckFieldsAttribute extends Attribute {
+
+	public int[]					fields;
+
+	public int size(int offset) {
+		return 6+2+2*fields.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		fields = new int[elen];
+		for(int i=0; i < elen; i++) {
+			fields[i] = cont.readShort();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(2+fields.length*2);
+		int elen = fields.length;
+		trace(Clazz.traceWrite,cont.offset+": total "+elen+" checked fields");
+		cont.writeShort(elen);
+		for(int i=0; i < elen; i++) {
+			trace(Clazz.traceWrite,cont.offset+": field "+getFieldName(i,cont.clazz));
+			cont.writeShort(fields[i]);
+		}
+	}
+	public String getFieldName(int i, Clazz clazz) {
+		FieldPoolConstant fpc = (FieldPoolConstant)clazz.pool[fields[i]];
+		NameAndTypePoolConstant ntpc = fpc.ref_nametype;
+		return ntpc.ref_name.value;
+	}
+	public String getFieldClass(int i, Clazz clazz) {
+		FieldPoolConstant fpc = (FieldPoolConstant)clazz.pool[fields[i]];
+		ClazzPoolConstant cpc = fpc.ref_clazz;
+		return cpc.ref.value;
+	}
+}
+
+public class KievGenerationsAttribute extends Attribute {
+
+	public int[]					gens;
+
+	public int size(int offset) {
+		return 6+2+2*gens.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		gens = new int[elen];
+		for(int i=0; i < elen; i++) {
+			gens[i] = cont.readShort();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(2+gens.length*2);
+		int elen = gens.length;
+		trace(Clazz.traceWrite,cont.offset+": total "+elen+" generated types");
+		cont.writeShort(elen);
+		for(int i=0; i < elen; i++) {
+			trace(Clazz.traceWrite,cont.offset+": gen.class "+getGenName(i,cont.clazz));
+			cont.writeShort(gens[i]);
+		}
+	}
+	public String getGenName(int i, Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[gens[i]]).value;
+	}
+}
+
+public class KievPackedFieldsAttribute extends Attribute {
+
+	public int[]					fields;
+	public int[]					signatures;
+	public int[]					packers;
+	public int[]					sizes;
+	public int[]					offsets;
+
+	public int size(int offset) {
+		return 6+2+8*fields.length;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		fields = new int[elen];
+		signatures = new int[elen];
+		packers = new int[elen];
+		sizes = new int[elen];
+		offsets = new int[elen];
+		for(int i=0; i < elen; i++) {
+			fields[i] = cont.readShort();
+			signatures[i] = cont.readShort();
+			packers[i] = cont.readShort();
+			sizes[i] = cont.readByte();
+			offsets[i] = cont.readByte();
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(2+8*fields.length);
+		int elen = fields.length;
+		trace(Clazz.traceWrite,cont.offset+": total "+elen+" packed fields");
+		cont.writeShort(elen);
+		for(int i=0; i < elen; i++) {
+			trace(Clazz.traceWrite,cont.offset+": name="+getFieldName(i,cont.clazz)
+				+" sig="+getSignature(i,cont.clazz)
+				+" packer="+getPackerName(i,cont.clazz)
+				+" size="+sizes[i]+" offset="+offsets[i]
+				);
+			cont.writeShort(fields[i]);
+			cont.writeShort(signatures[i]);
+			cont.writeShort(packers[i]);
+			cont.writeByte(sizes[i]);
+			cont.writeByte(offsets[i]);
+		}
+	}
+	public String getFieldName(int i, Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[fields[i]]).value;
+	}
+	public String getSignature(int i, Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[signatures[i]]).value;
+	}
+	public String getPackerName(int i, Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[packers[i]]).value;
+	}
+}
+
+public class KievPackerFieldAttribute extends Attribute {
+
+	public int					size;
+
+	public int size(int offset) {
+		return 6+4;				// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		assert(len == 4,"Wrong attribute length "+len);
+		size = cont.readInt();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": size = 0x"+Integer.toHexString(size));
+		cont.writeShort(cp_name);
+		cont.writeInt(4);
+		cont.writeInt(size);
+	}
+}
+*/
+public abstract class Annotation extends Attribute {
+
+	public static abstract class element_value {
+		// 'B', 'C', 'D', 'F', 'I', 'J', 'S', and 'Z' indicate a primitive type.
+		// 's' String
+		// 'e' java enum
+		// 'c' java class
+		// '@' annotation type
+		// '[' array
+		public byte tag;
+		public abstract int size();
+		public abstract void read(ReadContext cont);
+		public abstract void write(ReadContext cont);
+		
+		public static element_value Read(ReadContext cont) {
+			byte tag  = cont.readByte();
+			element_value v;
+			switch (tag) {
+			case 'B': case 'C': case 'D': case 'F':
+			case 'I': case 'J': case 'S': case 'Z': case 's':
+				v = new element_value_const();
+				break;
+			case 'e': v = new element_value_enum_const(); break;
+			case 'c': v = new element_value_class_info(); break;
+			case '@': v = new element_value_annotation(); break;
+			case '[': v = new element_value_array();      break;
+			default:
+				throw new ClassFormatError("unknow annotation value tag: "+(char)tag);
+			}
+			v.tag = tag;
+			v.read(cont);
+			return v;
+		}
+		
+	}
+	public static class element_value_const extends element_value {
+		public int  const_value_index;
+		public int size() { return 1+2; }
+		public void read(ReadContext cont) {
+			const_value_index = cont.readShort();
+		}
+		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": value idx "+const_value_index);
+			cont.writeShort(const_value_index);
+		}
+		public Object getValue(Clazz clazz) {
+			PoolConstant cp_value = clazz.pool[const_value_index];
+			if (cp_value instanceof NumberPoolConstant)
+				return ((NumberPoolConstant)cp_value).getValue();
+			else if (cp_value instanceof StringPoolConstant)
+				return ((StringPoolConstant)cp_value).ref.value;
+			else if (cp_value instanceof Utf8PoolConstant)
+				return ((Utf8PoolConstant)cp_value).value;
+			else
+				throw new RuntimeException("Bad element_value_const: "+cp_value.getClass());
+		}
+	}
+	public static class element_value_enum_const extends element_value {
+		public int  type_name_index;
+		public int  const_name_index;
+		public int size() { return 1+2+2; }
+		public void read(ReadContext cont) {
+			type_name_index = cont.readShort();
+			const_name_index = cont.readShort();
+		}
+		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": type idx "+type_name_index);
+			trace(Clazz.traceWrite,cont.offset+": name idx "+const_name_index);
+			cont.writeShort(type_name_index);
+			cont.writeShort(const_name_index);
+		}
+		public String getSignature(Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[type_name_index]).value;
+		}
+		public String getFieldName(Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[const_name_index]).value;
+		}
+	}
+	public static class element_value_class_info extends element_value {
+		public int  class_info_index;
+		public int size() { return 1+2; }
+		public void read(ReadContext cont) {
+			class_info_index = cont.readShort();
+		}
+		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": class idx "+class_info_index);
+			cont.writeShort(class_info_index);
+		}
+		public String getSignature(Clazz clazz) {
+			PoolConstant cp_value = clazz.pool[class_info_index];
+			if (cp_value instanceof ClazzPoolConstant)
+				return ((ClazzPoolConstant)cp_value).ref.value;
+			else if (cp_value instanceof Utf8PoolConstant)
+				return ((Utf8PoolConstant)cp_value).value;
+			else
+				throw new RuntimeException("Bad element_value_class_info: "+cp_value.getClass());
+		}
+	}
+	public static class element_value_annotation extends element_value {
+		public annotation annotation_value;
+		public int size() { return 1+annotation_value.size(); }
+		public void read(ReadContext cont) {
+			annotation_value = new annotation();
+			annotation_value.read(cont);
+		}
+		public void write(ReadContext cont) {
+			annotation_value.write(cont);
+		}
+	}
+	public static class element_value_array extends element_value {
+		public element_value[] values;
+		public int size() {
+			int sz = 1+2;
+			foreach (element_value p; values)
+				sz += p.size(); 
+			return sz;
+		}
+		public void read(ReadContext cont) {
+			int elen = cont.readShort();
+			values = new element_value[elen];
+			for(int i=0; i < elen; i++)
+				values[i] = element_value.Read(cont);
+		}
+		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": count "+values.length);
+			cont.writeShort(values.length);
+			for(int i=0; i < values.length; i++) {
+				trace(Clazz.traceWrite,cont.offset+": "+i+": tag "+values[i].tag);
+				cont.writeByte(values[i].tag);
+				values[i].write(cont);
+			}
+		}
+	}
+	public static class annotation {
+		public int             type_index;
+		public int[]           names;
+		public element_value[] values;
+		public int size() {
+			int sz = 4;
+			foreach (element_value p; values)
+				sz += 2+p.size(); 
+			return sz;
+		}
+		public void read(ReadContext cont) {
+			type_index = cont.readShort();
+			int elen = cont.readShort();
+			names  = new int[elen];
+			values = new element_value[elen];
+			for(int i=0; i < elen; i++) {
+				names[i]  = cont.readShort();
+				values[i] = element_value.Read(cont);
+			}
+		}
+		public void write(ReadContext cont) {
+			trace(Clazz.traceWrite,cont.offset+": type idx "+type_index);
+			trace(Clazz.traceWrite,cont.offset+": names count "+names.length);
+			cont.writeShort(type_index);
+			cont.writeShort(names.length);
+			for(int i=0; i < names.length; i++) {
+				trace(Clazz.traceWrite,cont.offset+": "+i+": name idx "+names[i]);
+				trace(Clazz.traceWrite,cont.offset+": "+i+": tag "+((char)values[i].tag));
+				cont.writeShort(names[i]);
+				cont.writeByte(values[i].tag);
+				values[i].write(cont);
+			}
+		}
+		public String getSignature(Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[type_index]).value;
+		}
+		public String getName(int i, Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[names[i]]).value;
+		}
+	}
+
+}
+
+public abstract class Annotations extends Annotation {
+	public Annotation.annotation[]	annotations;
+	
+	public int size(int offset) {
+		int sz = 6+2;
+		foreach (Annotation.annotation a; annotations)
+			sz += a.size();
+		return sz;
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int elen = cont.readShort();
+		annotations = new Annotation.annotation[elen];
+		for(int i=0; i < elen; i++) {
+			annotations[i] = new Annotation.annotation();
+			annotations[i].read(cont);
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": count "+annotations.length);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
+		cont.writeShort(annotations.length);
+		for(int i=0; i < annotations.length; i++) {
+			annotations[i].write(cont);
+		}
+	}
+}
+public class RVAnnotations extends Annotations {
+}
+
+public class RIAnnotations extends Annotations {
+}
+
+public abstract class ParAnnotations extends Annotation {
+	public Annotation.annotation[][]	annotations;
+	
+	public int size(int offset) {
+		int sz = 6+1;
+		foreach (Annotation.annotation[] aa; annotations) {
+			foreach (Annotation.annotation a; aa) {
+				sz += 2+a.size();
+			}
+		}
+		return sz;
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		int npar = cont.readByte();
+		annotations = new Annotation.annotation[npar][];
+		for(int p=0; p < npar; p++) {
+			int elen = cont.readShort();
+			annotations[p] = new Annotation.annotation[elen];
+			for(int i=0; i < elen; i++) {
+				annotations[p][i] = new Annotation.annotation();
+				annotations[p][i].read(cont);
+			}
+		}
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": par count "+annotations.length);
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
+		cont.writeByte(annotations.length);
+		for(int p=0; p < annotations.length; p++) {
+			trace(Clazz.traceWrite,cont.offset+": par "+p+" annotations count "+annotations[p].length);
+			for(int i=0; i < annotations[p].length; i++) {
+				cont.writeShort(annotations[p].length);
+				annotations[p][i].write(cont);
+			}
+		}
+	}
+}
+
+public class RVParAnnotations extends ParAnnotations {
+}
+
+public class RIParAnnotations extends ParAnnotations {
+}
+
+public class AnnotationDefault extends Annotation {
+	public element_value value;
+
+	public int size(int offset) {
+		return 6+value.size();
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		data = new byte[len];
+		System.arraycopy(cont.data,cont.offset,data,0,len);
+		value = element_value.Read(cont);
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(Clazz.traceWrite,cont.offset+": tag is "+((char)value.tag));
+		assert(start_pos == 0 || start_pos == cont.offset);
+		cont.writeShort(cp_name.idx);
+		cont.writeInt(size(Integer.MIN_VALUE)-6);
+		cont.writeByte(value.tag);
+		value.write(cont);
+	}
+}
+
+

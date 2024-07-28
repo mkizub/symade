@@ -1,0 +1,825 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<core:FileUnit xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'>
+ <srpkg>
+  <core:SymbolRef name='kiev·gui·swt' full='true' />
+ </srpkg>
+ <members>
+  <sop:kiev.fmt.evt.BindingSet name='bindings-base' uuid='80c11f72-4dd0-4f38-825d-4bf0cb277053'>
+   <members>
+    <sop:kiev.fmt.evt.Action name='Edit' uuid='01d06f45-64a1-4845-bd96-3fa89727a5c5'>
+     <description>Edit current item</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.EditActions$ChooseItemEditor</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='Select' uuid='340eb5c9-f425-4f3d-bd34-decf4c1679ac'>
+     <description>Select drawable</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.MouseActions$Select</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='PopupContextMenu' uuid='44a03738-cc92-4117-96fc-9e3a5aaffc7d'>
+     <description>Popup context menu</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.MouseActions$PopupContextMenu</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='LineUp' uuid='49d5c47e-56b8-4883-94d1-11d8a0f286e3'>
+     <description>Scroll the view one line up</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateView$LineUp</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='LineDn' uuid='965b30e9-e79b-4f3b-a2bd-9e7d0d352f92'>
+     <description>Scroll the view one line down</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateView$LineDn</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='PageUp' uuid='02da1d72-02d2-4790-b0bc-da300ad316d2'>
+     <description>Scroll the view one page up</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateView$PageUp</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='PageDn' uuid='6cca5e18-771d-4b4d-a0f5-e6a672fe7880'>
+     <description>Scroll the view one page down</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateView$PageDn</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoPrev' uuid='d724acd5-5150-4c7e-8e4b-ccc205b765c7'>
+     <description>Go to the previous element</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoPrev</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoNext' uuid='db2b6137-e3a9-4a42-b9c9-7617ded9dfe4'>
+     <description>Go to the next element</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoNext</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoLineUp' uuid='f6c656e8-70a7-47cf-80ff-4479dee10935'>
+     <description>Go to the element above</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoLineUp</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoLineDn' uuid='99cbe0d0-c8fe-4eeb-a0c9-eadc79a182f2'>
+     <description>Go to the element below</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoLineDn</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoLineHome' uuid='ee93f6b7-3c2f-4733-a478-7a955ef6eb9f'>
+     <description>Go to the first element of the line</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoLineHome</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoLineEnd' uuid='11a2ff9b-5981-45cb-af57-d40ecef5f086'>
+     <description>Go to the last element of the line</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoLineEnd</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoPageUp' uuid='8cf0e68d-e8ab-4043-86e5-399e19a21b79'>
+     <description>Go one page up</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoPageUp</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='GoPageDn' uuid='41a9ee49-304a-4fa5-b09a-420667a841a6'>
+     <description>Go one page down</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.NavigateEditor$GoPageDn</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='Undo' uuid='2ea9e476-0099-4418-bee5-8fcc3df73241'>
+     <description>Undo last change</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.EditActions$Undo</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='Copy' uuid='ac6f1b25-741f-44f8-91f9-f278306fa351'>
+     <description>Copy current element</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.EditActions$Copy</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='Cut' uuid='b2fcd1f6-625b-4501-add7-203964a8f345'>
+     <description>Cut current element</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.EditActions$Cut</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='Del' uuid='c78873c9-b2c3-4072-bd4a-750e6793f5a3'>
+     <description>Delete current element</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.EditActions$Del</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='FunctionExecutor' uuid='c289d133-7f1a-4a59-9299-73fc952c1a83'>
+     <description>Popup list of functions for current element</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.FunctionExecutor$Factory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='ToggleFolder' uuid='54f0a8ba-9a5e-4bed-b18b-b6b7a188bd9e'>
+     <description>Toggle folder</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.FolderTrigger$Factory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='NewElemHere' uuid='b3f5b952-db6f-4901-ae57-a81f4c6c16e2'>
+     <description>Create new element at this position</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.NewElemHere$Factory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='NewElemNext' uuid='d1c44da4-f266-4378-8b3c-c1416c84e4c7'>
+     <description>Create new element at the next position</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.NewElemNext$Factory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='PasteHere' uuid='2c81d174-78ee-4de6-b695-8b9836ada94f'>
+     <description>Paste the element at this position</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.ClipboardActions$PasteHereFactory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='PasteNext' uuid='bdbcd104-a837-415e-88e6-d1aadb0c2634'>
+     <description>Paste the element at the next position</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.ClipboardActions$PasteNextFactory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='EditText' uuid='3be6cc1f-f84c-417e-8f12-2a08c10c4be0'>
+     <description>Edit attribute as text</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.swt.TextEditor$Factory</actionClass>
+    </sop:kiev.fmt.evt.Action>
+   </members>
+  </sop:kiev.fmt.evt.BindingSet>
+  <sop:kiev.fmt.evt.BindingSet name='bindings-editor' uuid='f1468a59-0a1d-4345-b33d-f3515ad3ef45'>
+   <parent_set>
+    <core:SymbolRef name='bindings-base' />
+   </parent_set>
+   <members>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>101</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+E</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Edit' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>1</button>
+       <count>1</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>button #1/1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Select' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>3</button>
+       <count>1</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Button3 # 1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PopupContextMenu' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777217</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='LineUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777218</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='LineDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777221</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+Page Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PageUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777222</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+Page Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PageDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777219</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Left</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoPrev' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777220</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Right</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoNext' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777217</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoLineUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777218</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoLineDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777223</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Home</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoLineHome' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777224</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>End</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoLineEnd' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777221</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Page Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoPageUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777222</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Page Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='GoPageDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>122</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+Z</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Undo' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>99</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+C</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Copy' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>120</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+X</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Cut' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>127</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Delete</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Del' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>102</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+F</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='FunctionExecutor' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>102</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>F</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='FunctionExecutor' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>111</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+o</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='ToggleFolder' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>110</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+N</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='NewElemHere' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>97</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+A</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='NewElemNext' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>118</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+V</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PasteHere' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>98</keyCode>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+B</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PasteNext' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>101</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>E</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='EditText' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>101</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>E</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Edit' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>111</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>o</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='ToggleFolder' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>110</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>N</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='NewElemHere' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>97</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>A</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='NewElemNext' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+   </members>
+  </sop:kiev.fmt.evt.BindingSet>
+  <sop:kiev.fmt.evt.BindingSet name='bindings-info' uuid='349477df-065b-41a7-b436-5899ddebb6b6'>
+   <parent_set>
+    <core:SymbolRef name='bindings-base' />
+   </parent_set>
+   <members>
+    <sop:kiev.fmt.evt.Action name='RequestFocus' uuid='b362840a-eb0c-476a-a3f4-150f69b556c9'>
+     <description>Request focus</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.MouseActions$RequestFocus</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>1</button>
+       <count>1</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Button1 # 1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='RequestFocus' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>3</button>
+       <count>1</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Button3 # 1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='RequestFocus' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777217</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='LineUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777218</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='LineDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777221</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Page Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PageUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777222</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Page Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PageDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+   </members>
+  </sop:kiev.fmt.evt.BindingSet>
+  <sop:kiev.fmt.evt.BindingSet name='bindings-project' uuid='0494da10-a838-4cf2-82a4-6d9eb2543d3d'>
+   <parent_set>
+    <core:SymbolRef name='bindings-base' />
+   </parent_set>
+   <members>
+    <sop:kiev.fmt.evt.Action name='Select' uuid='56e0bbf1-7ba7-4c12-b93d-ba2e95d69f95'>
+     <description>Select current item</description>
+     <isForPopupMenu>false</isForPopupMenu>
+     <actionClass>kiev.gui.MouseActions$Select</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='Toggle' uuid='a4732f51-453d-49c1-8f6b-fca1b182db07'>
+     <description>Toggle open-close state</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.MouseActions$TreeToggle</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Action name='AddFile' uuid='69215fbd-e109-46f8-98a9-c2a3adca8ac8'>
+     <description>Add file to the current project</description>
+     <isForPopupMenu>true</isForPopupMenu>
+     <actionClass>kiev.gui.FileActions$AddFile</actionClass>
+    </sop:kiev.fmt.evt.Action>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>3</button>
+       <count>1</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>button #3/1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PopupContextMenu' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>1</button>
+       <count>1</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>button #1/1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Select' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>1</button>
+       <count>1</count>
+       <withCtrl>true</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Ctrl+Button1 # 1</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+      <sop:kiev.fmt.evt.MouseEvent>
+       <button>1</button>
+       <count>2</count>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Button1 # 2</text>
+      </sop:kiev.fmt.evt.MouseEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='Toggle' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777217</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='LineUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777218</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='LineDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777221</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Page Up</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PageUp' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+    <sop:kiev.fmt.evt.Binding>
+     <events>
+      <sop:kiev.fmt.evt.KeyboardEvent>
+       <keyCode>16777222</keyCode>
+       <withCtrl>false</withCtrl>
+       <withAlt>false</withAlt>
+       <withShift>false</withShift>
+       <text>Page Down</text>
+      </sop:kiev.fmt.evt.KeyboardEvent>
+     </events>
+     <action>
+      <core:SymbolRef name='PageDn' />
+     </action>
+    </sop:kiev.fmt.evt.Binding>
+   </members>
+  </sop:kiev.fmt.evt.BindingSet>
+ </members>
+</core:FileUnit>

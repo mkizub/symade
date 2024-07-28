@@ -9,6 +9,12 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/kiev-compiler" />
+            <option value="$PROJECT_DIR$/kiev-core" />
+            <option value="$PROJECT_DIR$/kiev-dump" />
+            <option value="$PROJECT_DIR$/kiev-stdlib" />
+            <option value="$PROJECT_DIR$/symade-fmt" />
+            <option value="$PROJECT_DIR$/symade-gui" />
           </set>
         </option>
       </GradleProjectSettings>

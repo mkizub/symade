@@ -1,0 +1,667 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev;
+import syntax kiev.Syntax;
+
+import java.io.*;
+
+/**
+ * @author Maxim Kizub
+ *
+ */
+
+	
+// Backends
+static public enum KievBackend {
+	Generic					: "generic",
+	Java15					: "java15",
+	VSrc					: "vsrc"
+}
+
+static public enum KievExt {
+	JavaOnly				: "java-only"		,
+	DumpAPI					: "dump-api"		,
+	Rewrite					: "rewrite"			,
+	GotoCase				: "goto-case"		,
+	Goto					: "goto"			,
+	With					: "with"			,
+	Closures				: "closures"		,
+	VirtualFields			: "virtual-fields"	,
+	PackedFields			: "packed-fields"	,
+	VarArgs					: "varargs"			,
+	Forward					: "forward"			,
+	Logic					: "logic"			,
+	Alias					: "alias"			,
+	Operator				: "operators"		,
+	Typedef					: "typedef"			,
+	Enum					: "enum"			,
+	View					: "view"			,
+	PizzaCase				: "pizza-case"		,
+	Contract				: "contract"		,
+	Generics				: "generics"		,
+	Templates				: "templates"		,
+	Wrappers				: "wrappers"		,
+	Access					: "access"			,
+	VNode					: "vnode"			,
+	DFlow					: "dflow"			,
+	XPath					: "xpath"
+}
+
+public final class Kiev {
+
+	private static final ThreadLocal<String> curFile = new ThreadLocal<String>();
+	private static final ThreadLocal<SemContext> curSemContext = new ThreadLocal<SemContext>();
+
+	private Kiev() {}
+	
+	static class CompilationAbortError extends java.lang.Error {
+		CompilationAbortError() { super("Compilation terminated"); }
+	}
+	
+	public static String getCurFile() {
+		return curFile.get();
+	}
+	
+	public static void setCurFile(String cf) {
+		curFile.set(cf);
+	}
+
+	public static File newFile(String path) {
+		File file = new File(path);
+		if (file.isAbsolute())
+			return file;
+		return new File(root_dir, path);
+	}
+
+	public static SemContext getSemContext() {
+		Thread thread = Thread.currentThread();
+		if (thread instanceof WorkerThread)
+			return ((WorkerThread)thread).semantic_context;
+		//return curSemContext.get();
+		return FrontendThreadGroup.THE_GROUP.semantic_context;
+	}
+
+	public static void setSemContext(SemContext sc) {
+		Thread thread = Thread.currentThread();
+		if (thread instanceof WorkerThread)
+			reportError("Semantic Context in worker thread must be used from ThreadGroup");
+		curSemContext.set(sc);
+	}
+
+   	public static void systemExit(int code) {
+		if (system_exit && !run_from_ide)
+			System.exit(code);
+		throw new CompilationAbortError();
+	}
+	
+   	public static void reportError(Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		ASTNode dummy = null;
+		reportError(dummy, e);
+	}
+	
+   	public static void reportError(INode from, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		if (e instanceof CompilerException) {
+			if (e.from != null)
+				from = e.from;
+		}
+		if( debug ) e.printStackTrace(System.out);
+		int pos = 0;
+		if (from != null && from.isAttached()) {
+			pos = from.asANode().pos;
+			INode f = from;
+			FileUnit fu = null;
+			TypeDecl clazz = null;
+			Method method = null;
+			try {
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
+					pos = f.asANode().pos;
+				method = Env.ctxMethod(from.asANode());
+				clazz = Env.ctxTDecl(from.asANode());
+				fu = Env.ctxFileUnit(from.asANode());
+			} catch (Exception e) { /*ignore*/}
+			if( e.getMessage() == null )
+				report(from,pos,fu,clazz,method,SeverError.Error,e.getClass().getName());
+			else
+				report(from,pos,fu,clazz,method,SeverError.Error,e.getMessage());
+		} else {
+			if( e.getMessage() == null )
+				report(from,0,null,null,null,SeverError.Error,e.getClass().getName());
+			else
+				report(from,0,null,null,null,SeverError.Error,e.getMessage());
+		}
+		if (testError != null) {
+			if !(e instanceof CompilerException) {
+				System.out.println("FAILED: expected CompilerException");
+				Kiev.systemExit(1);
+			}
+			else if ((pos>>>11) != testErrorLine || (pos&0x3FF) != testErrorOffs) {
+				System.out.println("FAILED: expected position "+(pos>>>11)+":"+(pos&0x3FF));
+				Kiev.systemExit(1);
+			}
+			else if (((CompilerException)e).err_id != testError) {
+				System.out.println("FAILED: expected error "+testError);
+				Kiev.systemExit(1);
+			}
+			System.out.println("SUCCESS: found expected error "+testError+" at "+(pos>>>11)+":"+(pos&0x3FF));
+			Kiev.systemExit(0);
+		}
+	}
+
+   	public static void reportParserError(FileUnit fu, int pos, String msg) {
+        errorPrompt = false;
+		if( debug ) new Exception().printStackTrace(System.out);
+		report(null, pos, fu, null, null, SeverError.Error, msg);
+	}
+
+   	public static void reportParserError(FileUnit fu, int pos, String msg, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		if (e instanceof ParseException) {
+			if (e.currentToken == null)
+				;
+			else if (e.currentToken.next == null)
+				pos = e.currentToken.getPos();
+			else
+				pos = e.currentToken.next.getPos();
+		}
+        errorPrompt = false;
+		if( debug ) e.printStackTrace(System.out);
+		report(null, pos, fu, null, null, SeverError.Error, msg + ": " + e);
+	}
+
+   	public static void reportParserError(FileUnit fu, int pos, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		if (e instanceof ParseException) {
+			if (e.currentToken == null)
+				pos = 0;
+			else if (e.currentToken.next == null)
+				pos = e.currentToken.getPos();
+			else
+				pos = e.currentToken.next.getPos();
+		}
+        errorPrompt = false;
+		if( debug ) e.printStackTrace(System.out);
+		if( e.getMessage() == null )
+			report(null, pos, fu, null, null, SeverError.Error,e.getClass().getName());
+		else
+			report(null, pos, fu, null, null, SeverError.Error,e.getMessage());
+	}
+
+   	public static void reportError(String msg) {
+		ASTNode dummy = null;
+		reportError(dummy, msg);
+	}
+	
+	public static void reportError(ASTNode from, String msg) {
+		if( debug ) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			FileUnit fu = null;
+			TypeDecl clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+					pos = f.pos;
+				method = Env.ctxMethod(from);
+				clazz = Env.ctxTDecl(from);
+				fu = Env.ctxFileUnit(from);
+			} catch (Exception e) { /*ignore*/}
+			report(from,pos,fu,clazz,method,SeverError.Error,msg);
+		} else {
+			report(from,0,null,null,null,SeverError.Error,msg);
+		}
+	}
+
+	public static void reportAs(SeverError sever, ASTNode from, String msg) {
+		if( debug ) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			FileUnit fu = null;
+			TypeDecl clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+					pos = f.pos;
+				method = Env.ctxMethod(from);
+				clazz = Env.ctxTDecl(from);
+				fu = Env.ctxFileUnit(from);
+			} catch (Exception e) { /*ignore*/}
+			report(from,pos,fu,clazz,method,sever,msg);
+		} else {
+			report(from,0,null,null,null,sever,msg);
+		}
+	}
+
+	private static void report(INode from, int pos, FileUnit file_unit, TypeDecl clazz, Method method, SeverError err, String msg) {
+		WorkerThreadGroup thrg = null;
+		if (Thread.currentThread().getThreadGroup() instanceof WorkerThreadGroup) {
+			thrg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+		}
+		if (err == SeverError.Warning) {
+			if (thrg != null)
+				thrg.warnCount++;
+		} else {
+			if (thrg != null)
+				thrg.errCount++;
+			if( method != null ) method.setBad(true);
+			if( clazz != null ) clazz.setBad(true);
+		}
+		String errMsg = err.toString().toLowerCase()+": "+msg;
+		String cf = null;
+		if (file_unit != null) {
+			cf = file_unit.pname();
+			if (javacerrors) {
+				String fn = Kiev.newFile(cf).getAbsolutePath();
+				System.out.println(fn+":"+(pos>>>11)+": "+errMsg);
+			}
+			else if (pos > 0) {
+				System.out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+errMsg);
+			}
+			else {
+				System.out.println(errMsg);
+			}
+		} else {
+			System.out.println(errMsg);
+		}
+		if (thrg != null) {
+			Env env = thrg.getEnv();
+			if (from != null)
+				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorNodeInfo(err,msg,from.asANode()));
+			else
+				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorTextInfo(err,msg,cf,pos>>>11));
+		}
+		if( cf != null && verbose && (pos >>> 11) != 0 ) {
+			File f = Kiev.newFile(cf.toString());
+			if( f.exists() && f.canRead() ) {
+				int lineno = pos>>>11;
+				int colno = pos & 0x3FF;
+				String ln = null;
+				try {
+					LineNumberReader rd = new LineNumberReader(new InputStreamReader(new FileInputStream(cf.toString()), "UTF-8"));
+					while( rd.getLineNumber() != lineno ) ln = rd.readLine();
+					rd.close();
+//					ln = ln.replace('\t',' ');
+					System.out.println(ln);
+					StringBuffer sb = new StringBuffer(colno+5);
+					for(int i=0; i < colno-1; i++) sb.append(' ');
+					sb.append('^');
+					System.out.println(sb.toString());
+				} catch (IOException e){}
+			}
+		}
+		if( errorPrompt && !err.equals("Warning") ) {
+			System.out.println("R)esume, C)ontinue, A)bort:");
+			int ch;
+			while( true ) {
+				try {
+					ch=System.in.read();
+				} catch( java.io.IOException e ) {
+					ch = -1;
+				}
+				switch(ch) {
+				case 'C':
+				case 'c':
+					errorPrompt = false;
+					return;
+				case 'R':
+				case 'r':
+					return;
+				case -1:
+				case 'a':
+				case 'A':
+					throw new CompilationAbortError();
+				case ' ': case '\t': case '\r': case '\n':
+					continue;
+				}
+				System.out.println("respond with 'r' or 'a'");
+				System.out.println("R)esume, A)bort:");
+			}
+		}
+	}
+
+	public static void reportCodeWarning(int last_lineno, FileUnit fu, TypeDecl clazz, Method method, String msg) {
+		if (Kiev.code_nowarn)
+			return;
+		if (Kiev.debug && Kiev.verbose) new Exception().printStackTrace(System.out);
+		report(null,last_lineno<<11, fu, clazz, method, SeverError.Warning, msg);
+	}
+	
+	public static void reportWarning(String msg) {
+		reportWarning(null, msg);
+	}
+	
+	public static void reportWarning(ASTNode from, String msg) {
+		if (nowarn)
+			return;
+		if( debug && verbose) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			int pos = from.pos;
+			FileUnit fu = null;
+			TypeDecl clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+					pos = f.pos;
+				method = Env.ctxMethod(from);
+				clazz = Env.ctxTDecl(from);
+				fu = Env.ctxFileUnit(from);
+			} catch (Exception e) { /*ignore*/}
+			report(from,pos,fu,clazz,method,SeverError.Warning,msg);
+		} else {
+			report(from,0,null,null,null,SeverError.Warning,msg);
+		}
+	}
+
+    private static char[] emptyString = new char[80];
+    static { for(int i=0; i < 80; i++) emptyString[i] = ' '; }
+	public static void reportInfo(String msg, long diff_time) {
+		String thread_idx = "?";
+		if (Thread.currentThread() instanceof WorkerThread)
+			thread_idx = String.valueOf(((WorkerThread)Thread.currentThread()).worker_id);
+		while (thread_idx.length() < 2)
+			thread_idx = " "+thread_idx;
+    	StringBuffer sb = new StringBuffer(79);
+        sb.append("[").append(thread_idx).append(": ");
+        sb.append(msg);
+        String tm = String.valueOf(diff_time);
+        int i = 70 - msg.length() - tm.length();
+        while( i < 0 ) i+=80;
+        sb.append(emptyString,0,i);
+        sb.append(tm).append("ms ]");
+		System./*err*/out.println(sb.toString());
+		System./*err*/out.flush();
+	}
+
+/** sort (int) arrays of keys and values
+ */
+    static void qsort2(int[] keys, Object[] values, int lo, int hi) {
+        int i = lo;
+        int j = hi;
+        int pivot = keys[(i+j)/2];
+        do {
+            while (keys[i] < pivot) i++;
+            while (pivot < keys[j]) j--;
+            if (i <= j) {
+                int temp1 = keys[i];
+                keys[i] = keys[j];
+                keys[j] = temp1;
+                Object temp2 = values[i];
+                values[i] = values[j];
+                values[j] = temp2;
+                i++;
+                j--;
+            }
+        } while (i <= j);
+        if (lo < j) qsort2(keys, values, lo, j);
+        if (i < hi) qsort2(keys, values, i, hi);
+    }
+
+	// Global flags and objects
+	public static final boolean debug			= Compiler.debug;
+	public static boolean debugStatGen			= Compiler.debugStatGen;
+	public static boolean debugInstrGen			= Compiler.debugInstrGen;
+	public static boolean debugBytecodeRead		= Compiler.debugBytecodeRead;
+	public static boolean debugResolve			= Compiler.debugResolve;
+	public static boolean debugOperators		= Compiler.debugOperators;
+	public static boolean debugMembers			= Compiler.debugMembers;
+	public static boolean debugCreation			= Compiler.debugCreation;
+	public static boolean debugRules			= Compiler.debugRules;
+	public static boolean debugMultiMethod		= Compiler.debugMultiMethod;
+	public static boolean debugNodeTypes		= Compiler.debugNodeTypes;
+
+	public static boolean verbose				= Compiler.verbose;
+	public static boolean verify				= Compiler.verify;
+	public static boolean safe					= Compiler.safe;
+	public static boolean fast_gen				= Compiler.fast_gen;
+	public static boolean debugOutputA			= Compiler.debugOutputA;
+	public static boolean debugOutputT			= Compiler.debugOutputT;
+	public static boolean debugOutputC			= Compiler.debugOutputC;
+	public static boolean debugOutputL			= Compiler.debugOutputL;
+	public static boolean debugOutputV			= Compiler.debugOutputV;
+	public static boolean debugOutputR			= Compiler.debugOutputR;
+
+	public static boolean errorPrompt			= Compiler.errorPrompt;
+
+	public static final boolean run_gui			= Compiler.run_gui;
+	public static final boolean run_gui_swing	= Compiler.run_gui_swing;
+	public static final boolean run_gui_swt		= Compiler.run_gui_swt;
+
+	public static int    target					= Compiler.target;
+	public static String root_dir				= Compiler.root_dir;
+	public static String output_dir				= Compiler.output_dir;
+	public static String dump_src_dir			= Compiler.dump_src_dir;
+	public static String btd_dir				= Compiler.btd_dir;
+	public static String compiler_classpath		= Compiler.compiler_classpath;
+
+	public static boolean javacerrors			= Compiler.javacerrors;
+	public static boolean nowarn				= Compiler.nowarn;
+	public static boolean code_nowarn			= Compiler.code_nowarn;
+	public static boolean run_from_ide          = Compiler.run_from_ide;
+	public static boolean system_exit			= Compiler.system_exit; // System.exit() or throw exception if disabled
+
+	public static CError testError				= Compiler.testError;
+	public static int    testErrorLine			= Compiler.testErrorLine;
+	public static int    testErrorOffs			= Compiler.testErrorOffs;
+
+	public static boolean interface_only		= Compiler.interface_only;
+
+	public static File project_file				= Compiler.project_file==null? null : Kiev.newFile(Compiler.project_file);
+
+	// Scanning & parsing
+	public static Parser				k;
+
+	public  static KievBackend useBackend = Compiler.useBackend;
+	private static int					fe_pass_no;
+	private static int					me_pass_no;
+
+	private static boolean[] disabled_extensions = Compiler.getCmdLineExtSet();
+	
+	public static void resetFrontEndPass() {
+		fe_pass_no = 0;
+		me_pass_no = 0;
+	}
+	public static boolean nextFrontEndPass(Env env) {
+		fe_pass_no += 1;
+		return fe_pass_no < env.getFEProcessors().length;
+	}
+	public static void resetMidEndPass() {
+		me_pass_no = 0;
+	}
+	public static boolean nextMidEndPass(Env env) {
+		me_pass_no += 1;
+		return me_pass_no < env.getMEProcessors().length;
+	}
+	
+	public static boolean disabled(KievExt ext) {
+		int idx = (int)ext;
+		return disabled_extensions[idx];
+	}
+	
+	public static boolean enabled(KievExt ext) {
+		int idx = (int)ext;
+		return !disabled_extensions[idx];
+	}
+	
+	public static boolean[] getExtSet() {
+		return (boolean[])disabled_extensions.clone();
+	}
+	
+	public static void setExtSet(boolean[] set) {
+		disabled_extensions = set;
+	}
+	
+	public static void enable(KievExt ext) {
+		disabled_extensions[((int)ext)] = false;
+	}
+	
+	public static void lockNodeTree(INode node) {
+		if (ASTNode.EXECUTE_UNVERSIONED)
+			return;
+		node.walkTree(null, null, new ITreeWalker() {
+			public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
+				if (n instanceof ASTNode) {
+					ASTNode astn = (ASTNode)n;
+					astn.compflagsClearAndLock();
+				}
+				return true;
+			}
+		});
+	}
+	
+	private static String swapCurFile(ASTNode node) {
+		String old_file = Kiev.getCurFile();
+		if (node instanceof FileUnit) {
+			Kiev.setCurFile(node.pname());
+		} else {
+			FileUnit fu = Env.ctxFileUnit(node);
+			if (fu != null)
+				Kiev.setCurFile(fu.pname());
+			else
+				Kiev.setCurFile(null);
+		}
+		return old_file;
+	}
+	
+	public static String runCurrentFrontEndProcessor(Env env, INode root) {
+		if !(root instanceof ASTNode)
+			return null;
+		AbstractProcessor tp = env.getFEProcessors()[fe_pass_no];
+		if (!tp.isEnabled())
+			return null;
+		if (root == env.root) {
+			foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits())
+				runCurrentFEP(tp, cu);
+		} else {
+			runCurrentFEP(tp, (ASTNode)root);
+		}
+		return tp.getDescr();
+	}
+
+	private static void runCurrentFEP(AbstractProcessor tp, ASTNode root) {
+		String old_file = Kiev.swapCurFile(root);
+		try {
+			tp.process(root,Transaction.get());
+		} catch (Exception e) {
+			Kiev.reportError(root,e);
+		} finally {
+			Kiev.setCurFile(old_file);
+		}
+	}
+
+	public static void runVerifyProcessors(Env env, INode root) {
+		Transaction tr = Transaction.enter(Transaction.get(),"Verification");
+		try {
+			root.walkTree(root.parent(), root.pslot(), new ITreeWalker() {
+				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
+					if !(n instanceof ASTNode)
+						return false;
+					ASTNode astn = (ASTNode)n;
+					foreach (AbstractProcessor vp; env.getVFProcessors(); vp.isEnabled())
+						vp.process(astn, tr);
+					return n.preVerify(env, parent, slot);
+				}
+				public void post_exec(INode n, INode parent, AttrSlot slot) {
+					if (n instanceof ASTNode)
+						n.postVerify(env, parent, slot);
+				}
+			});
+		} finally { tr.leave(); }
+	}
+
+	public static String runCurrentMidEndProcessor(Env env) {
+		AbstractProcessor bp = env.getMEProcessors()[me_pass_no];
+		if (!bp.isEnabled())
+			return null;
+		foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits()) {
+			String old_file = Kiev.swapCurFile(cu);
+			try {
+				bp.process(cu,Transaction.get());
+			} catch (Exception e) {
+				Kiev.reportError(cu,e);
+			} finally {
+				Kiev.setCurFile(old_file);
+			}
+		}
+		return bp.getDescr();
+	}
+
+	public static void runFrontEndProcessorsOn(ASTNode node) {
+		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+		Env env = wthg.getEnv();
+		AbstractProcessor[] feProcessors = env.getFEProcessors();
+		for (int i=fe_pass_no; i < feProcessors.length; i++) {
+			AbstractProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node,Transaction.get());
+		}
+	}
+
+	public static void runProcessorsOn(ASTNode node) {
+		runProcessorsOn(node, false);
+	}
+	public static void runProcessorsOn(ASTNode node, boolean with_current) {
+		WorkerThread wth = (WorkerThread)Thread.currentThread();
+		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+		Env env = wthg.getEnv();
+		AbstractProcessor[] feProcessors = env.getFEProcessors();
+		int N = fe_pass_no;
+		if (with_current && N < feProcessors.length) N += 1;
+		for (int i=0; i < N; i++) {
+			AbstractProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node,Transaction.get());
+		}
+		if (N < feProcessors.length)
+			return;
+		Transaction tr = Transaction.enter(Transaction.get(),"Kiev.java:runProcessorsOn()");
+		try {
+			AbstractProcessor[] meProcessors = env.getMEProcessors();
+			N = me_pass_no;
+			if (with_current && N < meProcessors.length) N += 1;
+			for (int i=0; i < N; i++) {
+				AbstractProcessor mp = meProcessors[i];
+				if (mp.isEnabled())
+					mp.process(node,tr);
+			}
+			if (N < meProcessors.length)
+				return;
+			AbstractProcessor[] beProcessors = env.getBEProcessors();
+			N = wth.be_pass_no;
+			if (with_current && N < beProcessors.length) N += 1;
+			for (int i=0; i < N; i++) {
+				AbstractProcessor bp = beProcessors[i];
+				if (bp.isEnabled())
+					bp.process(node,tr);
+			}
+		} finally { tr.leave(); }
+	}
+
+	public static void runProcessorsWithRewalk(ASTNode node) {
+		assert(node.isAttached());
+		try {
+			Kiev.runProcessorsOn(node);
+		} catch (ReWalkNodeException e) {
+			runProcessorsWithRewalk((ASTNode)e.replacer);
+			return;
+		}
+	}
+
+}
+

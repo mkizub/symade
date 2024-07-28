@@ -1,4 +1,5 @@
 package org.symade.kiev.language.parser;
+import syntax kiev.Syntax;
 
 import kiev.Kiev;
 import kiev.vlang.Env;
@@ -48,4 +49,8 @@ public final class Parser {
             return fu;
         }
     }
+
+	private boolean FileUnit_PackageOrSyntax() {
+		get
+	}
 }

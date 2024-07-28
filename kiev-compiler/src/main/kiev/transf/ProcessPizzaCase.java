@@ -1,0 +1,151 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.transf;
+
+import syntax kiev.Syntax;
+
+/**
+ * @author Maxim Kizub
+ *
+ */
+
+public final class PizzaPlugin implements PluginFactory {
+	public PluginDescr getPluginDescr(String name) {
+		PluginDescr pd = null;
+		if (name.equals("pizza")) {
+			pd = new PluginDescr("pizza").depends("kiev");
+			pd.proc(new ProcessorDescr("pass3", "fe", 100, PizzaFE_Pass3.class).after("kiev:fe:pass3").before("kiev:fe:pre-resolve"));
+			pd.proc(new ProcessorDescr("pre-generate", "me", 0, PizzaME_PreGenerate.class));
+		}
+		return pd;
+	}
+}
+
+public final class PizzaFE_Pass3 extends TransfProcessor {
+	public PizzaFE_Pass3(Env env, int id) { super(env,id,KievExt.PizzaCase); }
+	public String getDescr() { "Pizza case members" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"PizzaFE_Pass3");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+		}
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+
+	public void doProcess(SyntaxScope:ASTNode ss) {
+		foreach (ASTNode dn; ss.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(Struct:ASTNode clazz) {
+		if !(clazz.isPizzaCase()) {
+			foreach (Struct dn; clazz.members)
+				this.doProcess(dn);
+			return;
+		}
+		if (clazz.isSingleton())
+			return;
+		PizzaCase pcase = (PizzaCase)clazz;
+		// Create constructor for pizza case
+		Constructor init = new Constructor(ACC_PUBLIC|ACC_SYNTHETIC);
+		foreach (Field f; pcase.case_fields)
+			init.params.add(new LVar(f.pos,f.sname,f.getType(env),Var.VAR_LOCAL,0));
+		init.body = new Block(clazz.pos);
+		int p = 0;
+		foreach (Field f; pcase.case_fields) {
+			Var v = null;
+			foreach (Var fp; init.params; fp.sname == f.sname) {
+				init.block.stats.insert(
+					p++,
+					new ExprStat(
+						new AssignExpr(f.pos,
+							new IFldExpr(f.pos,new ThisExpr(f.pos),f),
+							new LVarExpr(f.pos,fp)
+						)
+					)
+				);
+				break;
+			}
+		}
+		init.pos = clazz.pos;
+		foreach (Constructor ctor; clazz.members; ctor.isSynthetic()) {
+			ctor.replaceWithNode(init,clazz,Struct.nodeattr$members);
+			return;
+		}
+		clazz.addMethod(init);
+	}
+}
+
+public final class PizzaME_PreGenerate extends BackendProcessor {
+	public PizzaME_PreGenerate(Env env, int id) { super(env,id,KievBackend.Java15); }
+	public String getDescr() { "Pizza case pre-generation" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			tr = Transaction.enter(tr,"PizzaME_PreGenerate");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+		}
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void doProcess(SyntaxScope:ASTNode ss) {
+		foreach (ASTNode dn; ss.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(Struct:ASTNode clazz) {
+		foreach (Struct dn; clazz.members)
+			this.doProcess(dn);
+		StdTypes tenv = this.env.getTypeEnv();
+		if( clazz.isPizzaCase() ) {
+			PizzaCase pcase = (PizzaCase)clazz;
+			Field ftag = clazz.addField(new Field(
+				nameCaseTag,tenv.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
+			ftag.init = new ConstIntExpr(pcase.tag);
+
+			Method gettag = new MethodImpl(nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
+			gettag.body = new Block(gettag.pos);
+			gettag.block.stats.add(
+				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
+			);
+			clazz.addMethod(gettag);
+		}
+		else if( clazz.isHasCases() ) {
+			// Add get$case$tag() method to itself
+			Method gettag = new MethodImpl(Constants.nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
+			gettag.body = new Block(gettag.pos);
+			gettag.block.stats.add(
+				new ReturnStat(gettag.pos,new ConstIntExpr(0))
+			);
+			clazz.addMethod(gettag);
+		}
+
+	}
+}
+

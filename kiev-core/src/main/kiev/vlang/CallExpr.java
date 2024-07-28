@@ -1,0 +1,636 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.vlang;
+
+import syntax kiev.Syntax;
+
+/**
+ * @author Maxim Kizub
+ *
+ */
+@ThisIsANode(name="Call", lang=CoreLang)
+public class CallExpr extends ENode {
+	
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		obj;
+	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
+	}
+	
+	@nodeAttr					public ENode				obj;
+	@nodeAttr					public TypeRef∅				targs;
+	@nodeAttr					public ENode∅				args;
+	@nodeAttr(ext_data=true)	public ArgExpr⋈				hargs; // hidden args
+
+	@virtual @abstract
+	public Method		func;
+
+	@getter public Method get$func() {
+		DNode dn = this.dnode;
+		if (dn instanceof Method)
+			return (Method)dn;
+		return null;
+	}
+	@setter public void set$func(Method m) {
+		this.symbol = m.symbol;
+		assert (!(m instanceof CoreOperation));
+	}
+
+	public CallExpr() {}
+
+	public CallExpr(int pos, ENode obj, SymbolRef<Method> ident, TypeRef[] targs, ENode[] args) {
+		this.pos = pos;
+		if (ident.symbol != null)
+			this.symbol = ident.symbol;
+		else
+			this.ident = ident.name;
+		this.obj = obj;
+		this.targs.addAll(targs);
+		this.args.addAll(args);
+	}
+
+	public CallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
+		this.pos = pos;
+		this.symbol = func.symbol;
+		this.obj = obj;
+		this.targs.addAll(targs);
+		this.args.addAll(args);
+	}
+
+	public CallExpr(int pos, ENode obj, ISymbol func, ENode[] args) {
+		this(pos, obj, func.symbol, null, args);
+	}
+
+	public ENode[] getEArgs() {
+		if (func == null || func.isStatic())
+			return this.args;
+		ENode[] args = new ENode[this.args.length+1];
+		args[0] = obj;
+		for (int i=0; i < this.args.length; i++)
+			args[i+1] = this.args[i];
+		return args;
+	}
+
+	public int getPriority(Env env) { return Constants.opCallPriority; }
+
+	public Type getType(Env env) {
+		Method m = this.func;
+		if (m == null)
+			return env.tenv.tpVoid;
+		Type ret = m.mtype.ret();
+		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
+		return getCallType(env).ret();
+	}
+
+	public CallType getCallType(Env env) {
+		Method m = this.func;
+		if (m == null)
+			return new CallType(null,null,null,env.tenv.tpVoid,false);
+		return this.func.makeType(this.targs, this.getEArgs());
+	}
+
+	public Type[] getAccessTypes(Env env) {
+		if (obj == null || func == null || func.isStatic())
+			return new Type[]{getType(env)};
+		Type[] objTypes = obj.getAccessTypes(env);
+		Type[] retTypes = new Type[objTypes.length];
+		Type[] mt = new Type[args.length];
+		for (int i=0; i < objTypes.length; i++) {
+			for (int j=0; j < mt.length; j++)
+				mt[j] = args[i].getType(env);
+			retTypes[i] = func.makeType(this.targs, objTypes[i], mt).ret();
+		}
+		return retTypes;
+	}
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		if (func != null) {
+			if (obj == null) {
+				assert (func.isStatic() || func instanceof Constructor);
+				obj = new TypeRef(Env.ctxTDecl(func).getType(env));
+			}
+			if (Env.hasSameRoot(func, this)) {
+				//if (obj instanceof SuperExpr && !this.isSuperExpr())
+				//	this.setSuperExpr(true);
+				return;
+			}
+			this.ident = func.sname;
+		}
+		
+		// constructor call "this(args)" or "super(args)"
+		if (ident == nameThis || ident == nameSuper) {
+			CtorCallExpr cce;
+			if (ident == nameThis)
+				cce = new CtorCallExpr(pos, new ThisExpr(), args.delToArray());
+			else
+				cce = new CtorCallExpr(pos, new SuperExpr(), args.delToArray());
+			if (isPrimaryExpr())
+				cce.setPrimaryExpr(true);
+			this.replaceWithNodeReWalk(cce,parent,slot);
+			return;
+		}
+
+		Type tp = Env.ctxTDecl(this).getType(env);
+		CallType mt = null;
+
+		Type[] ata = new Type[targs.length];
+		for (int i=0; i < ata.length; i++)
+			ata[i] = targs[i].getType(env);
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType(env);
+
+		// super-call "super.func(args)"
+		if (obj instanceof SuperExpr) {
+			Type tp = Env.ctxTDecl(this).super_types[0].getType(env);
+			ResInfo<Method> info = new ResInfo<Method>(env,this,this.ident);
+			info.enterForward(obj);
+			info.enterSuper();
+			mt = new CallType(tp,ata,ta,env.tenv.tpAny,false);
+			try {
+				if (!PassInfo.resolveBestMethodR(tp,info,mt))
+					throw new CompilerException(obj,"Unresolved method "+Method.toString(this.ident,args,null));
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+			info.leaveSuper();
+			info.leaveForward(obj);
+			if( info.isEmpty() ) {
+				this.symbol = info.resolvedSymbol();
+				//this.setSuperExpr(true);
+				return;
+			}
+			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
+		}
+		
+		int cnt = 0;
+		UnresCallExpr[] res;
+		Type[] tps;
+		if (obj == null) {
+			tps = new Type[]{tp};
+			res = new UnresCallExpr[1];
+		}
+		else if( obj instanceof TypeRef ) {
+			Type otp = ((TypeRef)obj).getType(env);
+			tps = new Type[]{otp};
+			res = new UnresCallExpr[1];
+			goto try_static;
+		} else {
+			tps = obj.getAccessTypes(env);
+			res = new UnresCallExpr[tps.length];
+		}
+
+		if (cnt == 0) {
+			// try virtual call first
+			for (int si=0; si < tps.length; si++) {
+				tp = tps[si];
+				ResInfo<Method> info = new ResInfo<Method>(env,this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
+				mt = new CallType(tp,ata,ta,env.tenv.tpAny,false);
+				if (obj == null && Env.ctxMethod(this) != null) {
+					if (PassInfo.resolveMethodR((ASTNode)this,info,mt)) {
+						res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+						cnt += 1;
+					}
+				} else {
+					if (PassInfo.resolveBestMethodR(tp,info,mt)) {
+						if (obj != null)
+							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+						else
+							res[si] = info.buildCall((ASTNode)this, new ThisExpr(), targs, args);
+						cnt += 1;
+					}
+				}
+			}
+		}
+
+		if (cnt == 0) {
+			// try closure var or an instance fiels
+			for (int si=0; si < tps.length; si++) {
+				tp = tps[si];
+				ResInfo info = new ResInfo(env,this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
+				if (obj == null) {
+					if (PassInfo.resolveNameR((ASTNode)this,info)) {
+						DNode closure = info.resolvedDNode();
+						if ((closure instanceof Var || closure instanceof Field)
+							&& Type.getRealType(tp,closure.getType(env)) instanceof CallType
+						) {
+							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+							cnt += 1;
+						}
+					}
+				} else {
+					if (tp.resolveNameAccessR(info)) { 
+						DNode closure = info.resolvedDNode();
+						if ((closure instanceof Var || closure instanceof Field)
+							&& Type.getRealType(tp,closure.getType(env)) instanceof CallType
+						) {
+							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+							cnt += 1;
+						}
+					}
+				}
+			}
+		}
+
+	try_static:;
+		if (cnt == 0) {
+			// try static call
+			for (int si=0; si < tps.length; si++) {
+				tp = tps[si];
+				ResInfo<Method> info = new ResInfo<Method>(env,this, this.ident);
+				mt = new CallType(null,ata,ta,env.tenv.tpAny,false);
+				if (obj == null) {
+					if (PassInfo.resolveMethodR((ASTNode)this,info,mt)) {
+						res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+						cnt += 1;
+					}
+				} else {
+					if (PassInfo.resolveBestMethodR(tp,info,mt)) {
+						res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+						cnt += 1;
+					}
+				}
+			}
+		}
+		
+		if (cnt == 0) {
+			// try closure static field
+			for (int si=0; si < tps.length; si++) {
+				tp = tps[si];
+				ResInfo info = new ResInfo(env,this, this.ident, ResInfo.noSyntaxContext);
+				if (obj == null) {
+					if (PassInfo.resolveNameR((ASTNode)this,info)) { 
+						DNode closure = info.resolvedDNode();
+						if (closure instanceof Field && Type.getRealType(tp,closure.getType(env)) instanceof CallType) {
+							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+							cnt += 1;
+						}
+					}
+				} else {
+					if (tp.meta_type.tdecl.resolveNameR(info)) { 
+						DNode closure = info.resolvedDNode();
+						if (closure instanceof Field && Type.getRealType(tp,closure.getType(env)) instanceof CallType) {
+							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
+							cnt += 1;
+						}
+					}
+				}
+			}
+		}
+
+		// remove duplicated entries
+		for(int i=0; i < res.length; i++) {
+			if (res[i] == null) continue;
+			for(int j=i+1; j < res.length; j++) {
+				if (res[j] == null) continue;
+				if (res[i].func.dnode == res[j].func.dnode) {
+					res[j] = null;
+					cnt -= 1;
+					continue;
+				}
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous methods:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		else if (cnt == 0) {
+			if (Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
+				return;
+			StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(this.ident,args)+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		
+		for (int si=0; si < res.length; si++) {
+			ENode e = res[si];
+			if (e != null) {
+				if (e instanceof UnresCallExpr && e.obj == this.obj /*&& !e.func.dnode.isMacro()*/) {
+					this.symbol = e.func.symbol;
+					return;
+				}
+				e = e.closeBuild();
+				if (isPrimaryExpr())
+					e.setPrimaryExpr(true);
+				this.replaceWithNodeReWalk(e,parent,slot);
+			}
+		}
+	}
+
+	// verify resolved call
+	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+		Method func = this.func;
+		if (func == null && Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
+			return true;
+		if (func == null)
+			Kiev.reportError(this, "Un-resolved method for "+this);
+		if (func.isStatic() && !func.isVirtualStatic() && !(obj instanceof TypeRef))
+			obj = new TypeRef(Env.ctxTDecl(func).getType(env));
+		return true;
+	}
+	
+	// set hidden argument
+	public void setHiddenArg(ArgExpr ae) {
+		foreach (ArgExpr ha; this.hargs; ha.var == ae.var) {
+			if (ha != ae)
+				ha.replaceWithNode(ae,this,nodeattr$hargs);
+			return;
+		}
+		this.hargs.append(ae);
+	}
+
+	// get hidden argument
+	public ArgExpr getHiddenArg(Var var) {
+		foreach (ArgExpr ha; this.hargs; ha.var == var)
+			return ha;
+		return null;
+	}
+
+	// get hidden argument
+	public ArgExpr getHiddenArg(int kind) {
+		foreach (ArgExpr ha; this.hargs; ha.var.kind == kind)
+			return ha;
+		return null;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		if (obj != null) {
+			if( obj.getPriority(Env.getEnv()) > opAccessPriority )
+				sb.append('(').append(obj).append(").");
+			else
+				sb.append(obj).append('.');
+		}
+		sb.append(ident).append('(');
+		for(int i=0; i < args.length; i++) {
+			sb.append(args[i]);
+			if( i < args.length-1 )
+				sb.append(',');
+		}
+		sb.append(')');
+		return sb.toString();
+	}
+
+
+	public INode doRewrite(RewriteContext ctx) {
+		if (func == null || func.body == null || !func.isMacro())
+			return super.doRewrite(ctx);
+		int idx = 0;
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		foreach (Var fp; func.params; fp.kind == Var.VAR_LOCAL) {
+			if (fp.getType(ctx.env).getErasedType() instanceof ASTNodeType)
+				args.put(fp.sname, this.args[idx++].doRewrite(ctx));
+			else
+				args.put(fp.sname, this.args[idx++]);
+		}
+		ASTNode rewriter = func.body;
+		if (rewriter instanceof RewriteMatch)
+			rewriter = rewriter.matchCase(this);
+		return rewriter.doRewrite(new RewriteContext(ctx.env, this, args));
+	}
+}
+
+@ThisIsANode(name="CtorCall", lang=CoreLang)
+public class CtorCallExpr extends ENode {
+	
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		obj;
+	@DataFlowDefinition(in="obj")					ENode		tpinfo;
+	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
+	}
+	
+	@nodeAttr					public ENode				obj;
+	@nodeAttr(ext_data=true)	public ENode				tpinfo;
+	@nodeAttr					public ENode∅				args;
+	@nodeAttr(ext_data=true)	public ArgExpr⋈				hargs; // hidden args
+
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeAttr(copyable=false)
+	abstract
+	public String		this_or_super;
+
+	@virtual @abstract
+	public Method		func;
+
+	@getter public String get$this_or_super() {
+		if (obj instanceof ThisExpr)
+			return "this";
+		else
+			return "super";
+	}
+	@setter public void set$this_or_super(String value) {
+		if ("this".equals(value)) {
+			if!(obj instanceof ThisExpr)
+				obj = new ThisExpr();
+		}
+		else if ("super".equals(value)) {
+			if!(obj instanceof SuperExpr)
+				obj = new SuperExpr();
+		}
+	}
+
+	@getter public Method get$func() {
+		DNode dn = this.dnode;
+		if (dn instanceof Method)
+			return (Method)dn;
+		return null;
+	}
+	@setter public void set$func(Method m) {
+		this.symbol = m.symbol;
+	}
+
+	public CtorCallExpr() {}
+
+	public CtorCallExpr(int pos, ENode obj, ENode[] args) {
+		this.pos = pos;
+		this.obj = obj;
+		this.args.addAll(args);
+	}
+
+	public ENode[] getEArgs() {
+		return this.args;
+	}
+
+	public int getPriority(Env env) { return Constants.opCallPriority; }
+
+	public Type getType(Env env) {
+		return env.tenv.tpVoid;
+	}
+
+	public CallType getCallType(Env env) {
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType(env);
+		return new CallType(Env.ctxTDecl(this).getType(env),null,ta,env.tenv.tpVoid,false);
+	}
+
+	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+		if (func != null) {
+			assert (func instanceof Constructor);
+			if (Env.hasSameRoot(func, this))
+				return;
+		}
+		
+		Type tp = Env.ctxTDecl(this).getType(env);
+
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType(env);
+		CallType mt = new CallType(tp,null,ta,env.tenv.tpVoid,false);
+
+		if (obj == null && symbol == null) {
+			if (ident == "super")
+				obj = new SuperExpr();
+			if (ident == "this")
+				obj = new ThisExpr();
+		}
+		// constructor call "this(args)"
+		if (obj instanceof ThisExpr) {
+			ResInfo<Constructor> info = new ResInfo<Constructor>(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+			if (!PassInfo.resolveBestMethodR(tp,info,mt))
+				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
+			this.symbol = info.resolvedSymbol();
+			return;
+		}
+		// constructor call "super(args)"
+		if (obj instanceof SuperExpr) {
+			mt = new CallType(tp,null,ta,env.tenv.tpVoid,false);
+			ResInfo<Constructor> info = new ResInfo<Constructor>(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+			if (!PassInfo.resolveBestMethodR(Env.ctxTDecl(this).super_types[0].getType(env),info,mt))
+				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
+			this.symbol = info.resolvedSymbol();
+			return;
+		}
+		throw new CompilerException(this, "Constructor call may only be 'super' or 'this'");
+	}
+
+	// set hidden argument
+	public void setHiddenArg(ArgExpr ae) {
+		foreach (ArgExpr ha; this.hargs; ha.var == ae.var) {
+			if (ha != ae)
+				ha.replaceWithNode(ae,this,nodeattr$hargs);
+			return;
+		}
+		this.hargs.append(ae);
+	}
+
+	// get hidden argument
+	public ArgExpr getHiddenArg(Var var) {
+		foreach (ArgExpr ha; this.hargs; ha.var == var)
+			return ha;
+		return null;
+	}
+
+	// get hidden argument
+	public ArgExpr getHiddenArg(int kind) {
+		foreach (ArgExpr ha; this.hargs; ha.var.kind == kind)
+			return ha;
+		return null;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(obj).append('(');
+		for(int i=0; i < args.length; i++) {
+			sb.append(args[i]);
+			if( i < args.length-1 )
+				sb.append(',');
+		}
+		sb.append(')');
+		return sb.toString();
+	}
+}
+
+public enum ClosureCallKind {
+	AUTO, CALL, CURRY
+}
+
+@ThisIsANode(name="CallClosure", lang=CoreLang)
+public class ClosureCallExpr extends ENode {
+	
+	@DataFlowDefinition(out="args") private static class DFI {
+	@DataFlowDefinition(in="this:in")				ENode		expr;
+	@DataFlowDefinition(in="expr", seq="true")		ENode[]		args;
+	}
+	
+	@nodeAttr public ENode					expr;
+	@nodeAttr public ENode∅					args;
+	@nodeAttr public ClosureCallKind		kind;
+
+	public ClosureCallExpr() {}
+
+	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
+		this.pos = pos;
+		this.expr = expr;
+		this.args.addAll(args);
+	}
+
+	public boolean isKindAuto() {
+		ClosureCallKind k = this.kind;
+		return k == null || kind ==  ClosureCallKind.AUTO;
+	}
+	public boolean isACall() {
+		ClosureCallKind k = this.kind;
+		if (k == ClosureCallKind.CALL)
+			return true;
+		if (k == ClosureCallKind.CURRY)
+			return false;
+		CallType t = (CallType)expr.getType(Env.getEnv());
+		return t.arity == args.length;
+	}
+
+	public int getPriority(Env env) { return Constants.opCallPriority; }
+
+	public Type getType(Env env) {
+		CallType t = (CallType)expr.getType(env);
+		if (isACall())
+			return t.ret();
+		Type[] types = new Type[t.arity - args.length];
+		for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
+		t = new CallType(null,null,types,t.ret(),true);
+		return t;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(expr).append('(');
+		for(int i=0; i < args.length; i++) {
+			sb.append(args[i]);
+			if( i < args.length-1 )
+				sb.append(',');
+		}
+		sb.append(')');
+		return sb.toString();
+	}
+
+	public Method getCallIt(CallType tp, Env env) {
+		String call_it_name;
+		Type ret;
+		if( tp.ret().isReference() ) {
+			call_it_name = "call_Object";
+			ret = env.tenv.tpObject;
+		} else {
+			call_it_name = ("call_"+tp.ret()).intern();
+			ret = tp.ret();
+		}
+		return env.tenv.tpClosure.getStruct().resolveMethod(env, call_it_name, ret);
+	}
+}
+

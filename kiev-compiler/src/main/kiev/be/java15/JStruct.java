@@ -1,0 +1,374 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.be.java15;
+import syntax kiev.Syntax;
+
+import java.io.*;
+
+import kiev.ir.java15.RStruct;
+
+/**
+ * @author Maxim Kizub
+ * @version $Revision: 254 $
+ *
+ */
+
+public class JStruct extends JTypeDecl {
+
+	@virtual typedef VT  ≤ Struct;
+
+	@abstract
+	public:ro	JNode[]				members;
+
+	public static JStruct attachJStruct(Struct impl)
+		operator "new T"
+		operator "( T ) V"
+	{
+		if (impl == null)
+			return null;
+		JNode jn = getJData(impl);
+		if (jn != null)
+			return (JStruct)jn;
+		if (impl instanceof JavaEnum)
+			return new JEnum((JavaEnum)impl);
+		else if (impl instanceof PizzaCase)
+			return new JPizzaClass((PizzaCase)impl);
+		else
+			return new JStruct(impl);
+	}
+	
+	protected JStruct(Struct impl) {
+		super(impl);
+	}
+	
+	@getter public final JNode[] get$members() {
+		return JNode.toJArray<JNode>(vn().members);
+	}
+
+	public final String bname() {
+		if (vn().bytecode_name == null) {
+			if (isTypeDeclNotLoaded())
+				return vn().qname().replace('·', '/');
+			throw new RuntimeException("Bytecode name is not generated for "+this);
+		}
+		return vn().bytecode_name;
+	}
+
+	public JField resolveField(JEnv jenv, String name) {
+		return resolveField(jenv,name,true);
+	}
+
+	public JField resolveField(JEnv jenv, String name, boolean fatal) {
+		checkResolved(jenv.env);
+		foreach (JField f; this.members; f.sname == name)
+			return f;
+		foreach (TypeRef t; this.super_types) {
+			JField f = jenv.getJTypeEnv().getJType(t.getType(jenv.env)).getJStruct().resolveField(jenv, name, false);
+			if (f != null)
+				return f;
+		}
+		if (fatal)
+			throw new RuntimeException("Unresolved field "+name+" in class "+this);
+		return null;
+	}
+
+
+	public JMethod resolveMethod(JEnv jenv, String name, String sign) {
+		return resolveMethod(this,jenv,name,sign,this,true);
+	}
+
+	public JMethod resolveMethod(JEnv jenv, String name, String sign, boolean fatal) {
+		return resolveMethod(this,jenv,name,sign,this,fatal);
+	}
+
+	private static JMethod resolveMethod(@forward JStruct self, JEnv jenv, String name, String sign, JStruct where, boolean fatal) {
+		self.checkResolved(jenv.env);
+		JTypeEnv jtenv = jenv.getJTypeEnv();
+		foreach (JMethod m; members) {
+			if( m.hasName(name) && jtenv.getJType(m.mtype).java_signature.equals(sign))
+				return m;
+		}
+		//if( isInterface() ) {
+		//	JStruct defaults = self.iface_impl;
+		//	if( defaults != null ) {
+		//		foreach (JMethod m; defaults.members) {
+		//			if( m.hasName(name) && jtenv.getJType(m.mtype).java_signature.equals(sign))
+		//				return m;
+		//		}
+		//	}
+		//}
+		trace(Kiev.debug && Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+self);
+		JMethod m = null;
+		foreach (TypeRef jst; super_types) {
+			m = resolveMethod(jenv.getJTypeEnv().getJType(jst.getType(jenv.env)).getJStruct(),jenv,name,sign,where,fatal);
+			if( m != null ) return m;
+		}
+		if (fatal)
+			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
+		return null;
+	}
+	
+	public void generateField(JEnv jenv, ConstPool constPool, JField f) {
+		constPool.addAsciiCP(f.sname);
+		constPool.addAsciiCP(jenv.getJTypeEnv().getJType(f.vtype).java_signature);
+
+		if (f.hasRuntimeVisibleMetas())
+			f.addAttr(new RVMetaAttr(jenv,f.vn()));
+		if (f.hasRuntimeInvisibleMetas())
+			f.addAttr(new RIMetaAttr(jenv,f.vn()));
+		if (f.isStatic() && f.init != null && f.init.isConstantExpr(jenv.env)) {
+			Object co = f.init.getConstValue(jenv.env);
+			if (co != null)
+				f.addAttr(new ConstantValueAttr(co));
+		}
+
+		Attr[] jattrs = f.getJAttrs();
+		if (jattrs != null) {
+			foreach (Attr a; jattrs)
+				a.generate(constPool);
+		}
+	}
+
+	public void generateFields(JEnv jenv, ConstPool constPool) {
+		foreach (JField f; this.members)
+			generateField(jenv, constPool, f);
+	}
+
+	public void generateMethod(JEnv jenv, ConstPool constPool, JMethod m) {
+		if (m.isConstructor()) {
+			if (m.isStatic())
+				constPool.addAsciiCP(nameClassInit);
+			else
+				constPool.addAsciiCP(nameInit);
+		} else {
+			constPool.addAsciiCP(m.sname);
+		}
+		constPool.addAsciiCP(jenv.getJTypeEnv().getJType(m.mtype).java_signature);
+		if( m.etype != null )
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(m.etype).java_signature);
+
+		try {
+			m.generate(jenv,constPool);
+
+			foreach (WBCCondition cond; m.conditions; cond.definer == m.vn().symbol) {
+				m.addAttr(((JWBCCondition)cond).getCodeAttr());
+			}
+
+			if (m.hasRuntimeVisibleMetas())
+				m.addAttr(new RVMetaAttr(jenv,m.vn()));
+			if (m.hasRuntimeInvisibleMetas())
+				m.addAttr(new RIMetaAttr(jenv,m.vn()));
+			boolean has_vis_pmeta = false;
+			boolean has_invis_pmeta = false;
+			foreach (Var p; m.vn().params; p.hasRuntimeVisibleMetas()) {
+				m.addAttr(new RVParMetaAttr(jenv,m.vn().params));
+				break;
+			}
+			foreach (Var p; m.vn().params; p.hasRuntimeInvisibleMetas()) {
+				m.addAttr(new RIParMetaAttr(jenv,m.vn().params));
+				break;
+			}
+			if (isAnnotation() && m.body != null) {
+				ENode mbody = m.body.vn();
+				if (mbody instanceof MetaValue)
+					m.addAttr(new DefaultMetaAttr(jenv,(MetaValue)mbody));
+			}
+
+			Attr[] jattrs = m.getJAttrs();
+			if (jattrs != null) {
+				foreach (Attr a; jattrs)
+					a.generate(constPool);
+			}
+		} catch(Exception e ) {
+			Kiev.reportError(m.vn(),"Compilation error: "+e);
+			m.generate(jenv,constPool);
+			Attr[] jattrs = m.getJAttrs();
+			if (jattrs != null) {
+				foreach (Attr a; jattrs)
+					a.generate(constPool);
+			}
+		}
+	}
+	
+	public void generateMethods(JEnv jenv, ConstPool constPool) {
+		foreach (JMethod m; members)
+			generateMethod(jenv, constPool, m);
+	}
+
+	public boolean generate(JEnv jenv, long timestamp) {
+		if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
+		if( Kiev.safe && isBad() ) return false;
+		
+		if (timestamp < new File(getFileName(this)).lastModified())
+			return false;
+		
+		InnerStructInfo inner_info = this.vn().inner_info;
+		JNode[] members = this.members;
+		
+		if (inner_info != null) {
+			foreach (Struct sub; inner_info.inners)
+				((JStruct)sub).generate(jenv, timestamp);
+		}
+
+		ConstPool constPool = new ConstPool();
+		constPool.addClazzCP(jenv.getJTypeEnv().getJType(this.getType()).java_signature);
+		foreach (TypeRef jst; super_types)
+			constPool.addClazzCP(jenv.getJTypeEnv().getJType(jst.getType(jenv.env)).java_signature);
+		if (inner_info != null) {
+			foreach (Struct sub; inner_info.inners)
+				constPool.addClazzCP(jenv.getJTypeEnv().getJType(sub.getType(jenv.env)).java_signature);
+		}
+		
+		{
+			FileUnit fu = Env.ctxFileUnit(this.vn());
+			String fname = fu.fname;
+			SourceFileAttr sfa = new SourceFileAttr(fname);
+			this.addAttr(sfa);
+			int line_count = fu.line_count;
+			if (line_count > 0) {
+				String smap = "SMAP\n"+fname+"\nKiev\n*S Kiev\n*F\n1 "+fname+"\n*L\n1#1,"+line_count+":1\n"+"*E";
+				SourceDebugExtensionAttr sda = new SourceDebugExtensionAttr(smap.toString());
+				this.addAttr(sda);
+			}
+		}
+		
+		if (inner_info != null) {
+			int count = 0;
+			DNode[] inners = inner_info.inners;
+			foreach (Struct s; inners)
+				count ++;
+			if (count > 0) {
+				InnerClassesAttr a = new InnerClassesAttr(jenv);
+				JStruct[] inner = new JStruct[count];
+				JStruct[] outer = new JStruct[count];
+				short[] inner_access = new short[count];
+				for(int i=0, j=0; j < inners.length; j++) {
+					if (inners[j] instanceof Struct) {
+						Struct inn = (Struct)inners[j];
+						inner[i] = (JStruct)inn;
+						outer[i] = this;
+						inner_access[i] = inn.getJavaFlags();
+						constPool.addClazzCP(jenv.getJTypeEnv().getJType(inn.getType(jenv.env)).java_signature);
+						i++;
+					}
+				}
+				a.inner = inner;
+				a.outer = outer;
+				a.acc = inner_access;
+				addAttr(a);
+			}
+		}
+
+		if (hasRuntimeVisibleMetas())
+			this.addAttr(new RVMetaAttr(jenv,this.vn()));
+		if (hasRuntimeInvisibleMetas())
+			this.addAttr(new RIMetaAttr(jenv,this.vn()));
+		
+		Attr[] jattrs = getJAttrs();
+		for(int i=0; jattrs!=null && i < jattrs.length; i++)
+			jattrs[i].generate(constPool);
+		generateFields(jenv, constPool);
+		if (Kiev.safe && isBad())
+			return false;
+		generateMethods(jenv, constPool);
+		if (Kiev.safe && isBad())
+			return false;
+		constPool.generate(jenv);
+		foreach (JMethod m; members) {
+			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
+			if( ca != null ) {
+				trace(Kiev.debug && Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
+				Code.patchCodeConstants(ca);
+			}
+		}
+		if (Kiev.safe && isBad())
+			return false;
+		if (!isMacro())
+			toBytecode(jenv, this, constPool);
+		return true;
+	}
+	
+	private static String getFileName(JStruct self) {
+		String output_dir = Kiev.output_dir;
+		if( output_dir == null ) output_dir = Kiev.root_dir + "/classes";
+		String out_file = self.bname().replace('/',File.separatorChar);
+		return output_dir + File.separatorChar + out_file + ".class";
+	}
+
+	private static void make_output_dir(String filename) throws IOException {
+		File dir = kiev.Kiev.newFile(filename);
+		dir = dir.getParentFile();
+		dir.mkdirs();
+		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
+	}
+
+	private static void toBytecode(JEnv jenv, JStruct self, ConstPool constPool) {
+		String out_file = getFileName(self);
+		FileUnit fu = Env.ctxFileUnit(self.vn());
+		fu.addGeneratedFile(out_file);
+		try {
+			DataOutputStream out;
+			JStruct.make_output_dir(out_file);
+			try {
+				out = new DataOutputStream(new FileOutputStream(new File(out_file)));
+			} catch( java.io.FileNotFoundException e ) {
+				System.gc();
+				System.runFinalization();
+				System.gc();
+				System.runFinalization();
+				out = new DataOutputStream(new FileOutputStream(new File(out_file)));
+			}
+			byte[] dump = new Bytecoder(jenv,self.vn(),null,constPool).writeClazz();
+			out.write(dump);
+			out.close();
+//			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+self.name+"]");
+		} catch( IOException e ) {
+			System.out.println("Create/write error while Kiev-to-JavaBytecode exporting: "+e);
+		}
+	}
+}
+
+
+public final class JEnum extends JStruct {
+
+	public JField[] enum_fields;
+
+	public JEnum(JavaEnum impl) {
+		super(impl);
+		enum_fields = JNode.toJArray<JField>(impl.enum_fields);
+	}
+
+	public void generateFields(JEnv jenv, ConstPool constPool) {
+		foreach (JField f; this.enum_fields)
+			generateField(jenv, constPool, f);
+		foreach (JField f; this.members)
+			generateField(jenv, constPool, f);
+	}
+
+}
+
+public final class JPizzaClass extends JStruct {
+
+	public JField[] case_fields;
+
+	public JPizzaClass(PizzaCase impl) {
+		super(impl);
+		case_fields = JNode.toJArray<JField>(impl.case_fields);
+	}
+
+	public void generateFields(JEnv jenv, ConstPool constPool) {
+		foreach (JField f; this.case_fields)
+			generateField(jenv, constPool, f);
+		foreach (JField f; this.members)
+			generateField(jenv, constPool, f);
+	}
+
+}

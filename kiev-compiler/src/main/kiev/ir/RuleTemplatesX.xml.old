@@ -1,0 +1,2185 @@
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<core:FileUnit xmlns:sop='sop://sop/'
+  xmlns:core='sop://languages/core?class=kiev.vlang.CoreLang'
+  xmlns:macro='sop://languages/macro?class=kiev.vlang.MacroLang'>
+ <syntaxes>
+  <core:ImportSyntax>
+   <name>
+    <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·stdlib·Syntax' full='true' />
+   </name>
+  </core:ImportSyntax>
+ </syntaxes>
+ <srpkg>
+  <core:SymbolRef name='kiev·ir' full='true' />
+ </srpkg>
+ <members>
+  <core:Import all='true' methods='false'>
+   <name>
+    <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·vlang' full='true' />
+   </name>
+   <mode>IMPORT_CLASS</mode>
+  </core:Import>
+  <core:Import all='false' methods='false'>
+   <name>
+    <core:SymbolRef sop:ti='kiev.vlang.SymbolRef«kiev.vlang.DNode;»' name='kiev·vlang·RuleIsoneofExpr·IsoneofMode' full='true' />
+   </name>
+   <mode>IMPORT_CLASS</mode>
+  </core:Import>
+  <core:MetaTypeDecl name='RuleTemplates' uuid='cf8c91c2-5e14-4df4-abe3-ee93f6b040fc'>
+   <members>
+    <core:Method name='mkRuleBlock' uuid='77f251ff-b064-4652-b6b0-fa8bba7caf4e'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='bt_states' uuid='0fcae501-f0f5-4ad3-8eb1-0c12d4e15972'>
+       <vtype>
+        <core:TypeNameRef ident='int' />
+       </vtype>
+      </core:LVar>
+      <core:LVar name='localvars' uuid='f9384871-b54b-4e2e-a83f-870e34ad56a2'>
+       <vtype>
+        <core:TypeExpr ident='_array_'>
+         <arg>
+          <core:TypeExpr ident='_astnode_'>
+           <arg>
+            <core:TypeNameRef ident='Var' />
+           </arg>
+           <op_name>T #</op_name>
+          </core:TypeExpr>
+         </arg>
+         <op_name>T []</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env$' uuid='319a51ab-8fa0-4d64-b4db-cf2ee96462ec'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:Label name='enter$1' uuid='94b9683b-a287-4f81-8823-a75cfc598639'>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:Label>
+        <core:JavaClass name='frame$$' uuid='d75d5f59-d2ee-4315-a089-f298a224094a'>
+         <members>
+          <core:Ctor uuid='d88c6333-cb3f-42e2-9173-0ae18c5bba3e'>
+           <type_ret>
+            <core:TypeNameRef ident='void' />
+           </type_ret>
+           <body>
+            <core:Block />
+           </body>
+          </core:Ctor>
+          <core:Field name='bt$' uuid='530ebddf-2f91-4179-b227-aae5ec5e6c60'>
+           <vtype>
+            <core:TypeNameRef ident='int' />
+           </vtype>
+          </core:Field>
+          <macro:ForEachRewr>
+           <var>
+            <core:LVar name='var' uuid='afa555f9-6734-406e-9366-d0ecd4cb17bc'>
+             <vtype>
+              <core:TypeNameRef ident='int' />
+             </vtype>
+            </core:LVar>
+           </var>
+           <container>
+            <macro:MacroListIntExpr>
+             <start>
+              <core:ConstIntExpr value='0' />
+             </start>
+             <end>
+              <core:LVarExpr ident='bt_states' />
+             </end>
+            </macro:MacroListIntExpr>
+           </container>
+           <body>
+            <core:Field name='bt${var}' uuid='f1d59745-7a64-4d03-9ab4-c626f407fb51'>
+             <vtype>
+              <core:TypeNameRef ident='int' />
+             </vtype>
+            </core:Field>
+           </body>
+          </macro:ForEachRewr>
+          <macro:ForEachRewr>
+           <var>
+            <core:LVar name='lvar' uuid='d70c5837-33e0-463a-861b-aaa5cfbda41c'>
+             <vtype>
+              <core:TypeExpr ident='_astnode_'>
+               <arg>
+                <core:TypeNameRef ident='Var' />
+               </arg>
+               <op_name>T #</op_name>
+              </core:TypeExpr>
+             </vtype>
+            </core:LVar>
+           </var>
+           <container>
+            <core:LVarExpr ident='localvars' />
+           </container>
+           <body>
+            <core:Field name='{lvar>sname}' uuid='00b83064-0271-492b-ab84-f0b0678b9152'>
+             <vtype>
+              <macro:MacroSubstTypeRef>
+               <mtype>
+                <macro:MacroAccess ident='vtype'>
+                 <obj>
+                  <core:LVarExpr ident='lvar' />
+                 </obj>
+                </macro:MacroAccess>
+               </mtype>
+              </macro:MacroSubstTypeRef>
+             </vtype>
+            </core:Field>
+           </body>
+          </macro:ForEachRewr>
+         </members>
+         <super_types>
+          <core:TypeNameRef ident='rule' />
+         </super_types>
+         <metas>
+          <core:MetaStatic />
+         </metas>
+        </core:JavaClass>
+        <core:LVar name='$env' uuid='af8eb65c-d3e0-432b-a5cc-ec572f1e39d1'>
+         <vtype>
+          <core:TypeNameRef ident='frame$$' />
+         </vtype>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='4970b6e1-d12e-4d42-a998-bcd2edff6b7c'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+        </core:LVar>
+        <core:If>
+         <cond>
+          <core:Cmp op='V == V' ident='ref_eq'>
+           <expr1>
+            <core:LVarExpr ident='$env$' />
+           </expr1>
+           <expr2>
+            <core:ConstNullExpr />
+           </expr2>
+          </core:Cmp>
+         </cond>
+         <thenSt>
+          <core:Block>
+           <stats>
+            <core:ExprSt>
+             <expr>
+              <core:Set op='V = V' ident='ref_assign'>
+               <lval>
+                <core:LVarExpr ident='$env' />
+               </lval>
+               <value>
+                <core:New>
+                 <ntype>
+                  <core:TypeNameRef ident='frame$$' />
+                 </ntype>
+                </core:New>
+               </value>
+              </core:Set>
+             </expr>
+            </core:ExprSt>
+            <core:ExprSt>
+             <expr>
+              <core:Set op='V = V' ident='assign'>
+               <lval>
+                <core:LVarExpr ident='bt$' />
+               </lval>
+               <value>
+                <core:ConstIntExpr value='0' />
+               </value>
+              </core:Set>
+             </expr>
+            </core:ExprSt>
+            <core:Goto ident='enter$1' />
+           </stats>
+          </core:Block>
+         </thenSt>
+         <elseSt>
+          <core:Block>
+           <stats>
+            <core:ExprSt>
+             <expr>
+              <core:Set op='V = V' ident='ref_assign'>
+               <lval>
+                <core:LVarExpr ident='$env' />
+               </lval>
+               <value>
+                <core:Cast>
+                 <ctype>
+                  <core:TypeNameRef ident='frame$$' />
+                 </ctype>
+                 <expr>
+                  <core:LVarExpr ident='$env$' />
+                 </expr>
+                </core:Cast>
+               </value>
+              </core:Set>
+             </expr>
+            </core:ExprSt>
+            <core:ExprSt>
+             <expr>
+              <core:Set op='V = V' ident='assign'>
+               <lval>
+                <core:LVarExpr ident='bt$' />
+               </lval>
+               <value>
+                <core:IFld ident='bt$'>
+                 <obj>
+                  <core:LVarExpr ident='$env' />
+                 </obj>
+                </core:IFld>
+               </value>
+              </core:Set>
+             </expr>
+            </core:ExprSt>
+           </stats>
+          </core:Block>
+         </elseSt>
+        </core:If>
+        <core:Switch>
+         <sel>
+          <core:LVarExpr ident='bt$' />
+         </sel>
+         <lblcnt>
+          <core:Label uuid='d183afcc-1d32-45d8-a865-f42017d74767' />
+         </lblcnt>
+         <stats>
+          <core:Case>
+           <val>
+            <core:ConstIntExpr value='0' />
+           </val>
+          </core:Case>
+          <core:Return>
+           <expr>
+            <core:ConstNullExpr />
+           </expr>
+          </core:Return>
+         </stats>
+         <lblbrk>
+          <core:Label uuid='5b45df2c-7952-4eee-9c17-1deb57e6ab92' />
+         </lblbrk>
+        </core:Switch>
+        <core:Return>
+         <expr>
+          <core:ConstNullExpr />
+         </expr>
+        </core:Return>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+     </metas>
+    </core:Method>
+    <core:Method name='createCodeBacktrack' uuid='c44a65c7-0eeb-4d2d-b91d-d19970f24ba5'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='c16a2581-e88c-4768-9a01-eaa0e87d0581'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='ASTRuleNode' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+      <core:LVar name='load' uuid='fc90b4ed-ce9d-4803-8685-8217404ac407'>
+       <vtype>
+        <core:TypeNameRef ident='boolean' />
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='ccbcbce3-97f3-433d-ba21-025f19de8ad6'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='3daea147-300c-4670-8795-6991aa49be68'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:Label name='enter${node>next_back>idx}' uuid='fcc93345-57f8-4768-8b2d-9a18e0945cd9'>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:Label>
+        <macro:IfElseRewr>
+         <cond>
+          <core:UnaryOp op='! V'>
+           <expr>
+            <macro:MacroAccess ident='more_back'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr>
+          </core:UnaryOp>
+         </cond>
+         <thenSt>
+          <core:Return>
+           <expr>
+            <core:ConstNullExpr />
+           </expr>
+          </core:Return>
+         </thenSt>
+         <elseSt>
+          <macro:IfElseRewr>
+           <cond>
+            <macro:MacroAccess ident='jump_to_back'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </cond>
+           <thenSt>
+            <macro:IfElseRewr>
+             <cond>
+              <core:LVarExpr ident='load' />
+             </cond>
+             <thenSt>
+              <macro:BlockRewr>
+               <stats>
+                <core:ExprSt>
+                 <expr>
+                  <core:BinOp op='V = V'>
+                   <expr1>
+                    <core:LVarExpr ident='bt$' />
+                   </expr1>
+                   <expr2>
+                    <core:Access ident='bt${node>depth}' full='true'>
+                     <obj>
+                      <core:LVarExpr ident='$env' />
+                     </obj>
+                    </core:Access>
+                   </expr2>
+                  </core:BinOp>
+                 </expr>
+                </core:ExprSt>
+                <core:Goto ident='enter${node>next_back>idx}' full='true' />
+               </stats>
+              </macro:BlockRewr>
+             </thenSt>
+             <elseSt>
+              <core:Goto ident='enter${node>next_back>idx}' full='true' />
+             </elseSt>
+            </macro:IfElseRewr>
+           </thenSt>
+           <elseSt>
+            <macro:IfElseRewr>
+             <cond>
+              <core:LVarExpr ident='load' />
+             </cond>
+             <thenSt>
+              <macro:BlockRewr>
+               <stats>
+                <core:ExprSt>
+                 <expr>
+                  <core:BinOp op='V = V'>
+                   <expr1>
+                    <core:LVarExpr ident='bt$' />
+                   </expr1>
+                   <expr2>
+                    <core:Access ident='bt${node>depth}' full='true'>
+                     <obj>
+                      <core:LVarExpr ident='$env' />
+                     </obj>
+                    </core:Access>
+                   </expr2>
+                  </core:BinOp>
+                 </expr>
+                </core:ExprSt>
+                <core:GotoCase>
+                 <expr>
+                  <core:LVarExpr ident='bt$' />
+                 </expr>
+                </core:GotoCase>
+               </stats>
+              </macro:BlockRewr>
+             </thenSt>
+             <elseSt>
+              <core:GotoCase>
+               <expr>
+                <core:LVarExpr ident='bt$' />
+               </expr>
+              </core:GotoCase>
+             </elseSt>
+            </macro:IfElseRewr>
+           </elseSt>
+          </macro:IfElseRewr>
+         </elseSt>
+        </macro:IfElseRewr>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaStatic />
+      <core:MetaMacro />
+     </metas>
+    </core:Method>
+    <core:Method name='createCodeMoreCheck' uuid='4876cf9f-f3b0-41dd-a10e-23bcfa9655ce'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='ce0012ff-c5a6-46d8-808c-8fed02babf90'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='ASTRuleNode' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+      <core:LVar name='force' uuid='60c8efcd-72f0-46e3-948e-8e18e2184329'>
+       <vtype>
+        <core:TypeNameRef ident='boolean' />
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='834fac1a-b4db-4d2f-870e-de08436d6a1d'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='5a49fcf2-51ec-470a-ba03-98eec43c11ad'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:Label name='enter${node>next_check>idx}' uuid='f41b8d59-4da1-4814-8704-799738eabc4b'>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:Label>
+        <macro:IfElseRewr>
+         <cond>
+          <core:Not ident='bool_not'>
+           <expr>
+            <macro:MacroAccess ident='more_check'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr>
+          </core:Not>
+         </cond>
+         <thenSt>
+          <macro:BlockRewr>
+           <stats>
+            <core:ExprSt>
+             <expr>
+              <core:BinOp op='V = V'>
+               <expr1>
+                <core:Access ident='bt$'>
+                 <obj>
+                  <core:LVarExpr ident='$env' />
+                 </obj>
+                </core:Access>
+               </expr1>
+               <expr2>
+                <core:LVarExpr ident='bt$' />
+               </expr2>
+              </core:BinOp>
+             </expr>
+            </core:ExprSt>
+            <core:Return>
+             <expr>
+              <core:LVarExpr ident='$env' />
+             </expr>
+            </core:Return>
+           </stats>
+          </macro:BlockRewr>
+         </thenSt>
+         <elseSt>
+          <macro:IfElseRewr>
+           <cond>
+            <core:Or ident='bool_or'>
+             <expr1>
+              <core:LVarExpr ident='force' />
+             </expr1>
+             <expr2>
+              <core:Cmp op='V != V' ident='ref_neq'>
+               <expr1>
+                <macro:MacroAccess ident='idx'>
+                 <obj>
+                  <macro:MacroAccess ident='next_check'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </obj>
+                </macro:MacroAccess>
+               </expr1>
+               <expr2>
+                <core:BinOp op='V + V'>
+                 <expr1>
+                  <macro:MacroAccess ident='idx'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </expr1>
+                 <expr2>
+                  <core:ConstIntExpr value='1' />
+                 </expr2>
+                </core:BinOp>
+               </expr2>
+              </core:Cmp>
+             </expr2>
+            </core:Or>
+           </cond>
+           <thenSt>
+            <core:Goto ident='enter${node>next_check>idx}' />
+           </thenSt>
+           <elseSt>
+            <macro:RewriteNodeFactory ident='NoOp' />
+           </elseSt>
+          </macro:IfElseRewr>
+         </elseSt>
+        </macro:IfElseRewr>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaStatic />
+      <core:MetaMacro />
+     </metas>
+    </core:Method>
+    <core:Method name='mkRuleIstheExpr' uuid='9395d76c-d858-4732-8327-0cbcbb13028f'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='4eef9b5a-fa01-4b8c-b007-66379ec5fa94'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleIstheExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='de53e9c6-0c04-49f4-9f17-c3b69b3f017a'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='6f391b73-685c-469b-ae50-e92010b48acf'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='enter${node>idx}' uuid='99fb9eb5-46f8-43b1-a014-d1fe5c9769c0' />
+         </lbl>
+         <stat>
+          <core:If>
+           <cond>
+            <core:Access ident='$is_bound'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+            </core:Access>
+           </cond>
+           <thenSt>
+            <core:Goto ident='bound${node>idx}' />
+           </thenSt>
+          </core:If>
+         </stat>
+        </core:LblSt>
+        <core:If>
+         <cond>
+          <core:UnaryOp op='! V'>
+           <expr>
+            <core:Call ident='$bind_chk'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+             <args>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='expr'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </args>
+            </core:Call>
+           </expr>
+          </core:UnaryOp>
+         </cond>
+         <thenSt>
+          <core:Call ident='createCodeBacktrack'>
+           <obj>
+            <core:TypeNameRef ident='RuleTemplates' />
+           </obj>
+           <args>
+            <core:LVarExpr ident='node' />
+            <core:ConstBoolExpr value='false' />
+           </args>
+          </core:Call>
+         </thenSt>
+        </core:If>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:Access ident='bt${node>depth}'>
+             <obj>
+              <core:LVarExpr ident='$env' />
+             </obj>
+            </core:Access>
+           </expr1>
+           <expr2>
+            <core:LVarExpr ident='bt$' />
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:LVarExpr ident='bt$' />
+           </expr1>
+           <expr2>
+            <macro:MacroAccess ident='base'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:Call ident='createCodeMoreCheck'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='true' />
+         </args>
+        </core:Call>
+        <core:Case>
+         <val>
+          <macro:MacroAccess ident='base'>
+           <obj>
+            <core:LVarExpr ident='node' />
+           </obj>
+          </macro:MacroAccess>
+         </val>
+        </core:Case>
+        <core:ExprSt>
+         <expr>
+          <core:Call ident='$unbind'>
+           <obj>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='var'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+           </obj>
+          </core:Call>
+         </expr>
+        </core:ExprSt>
+        <core:Call ident='createCodeBacktrack'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='true' />
+         </args>
+        </core:Call>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='bound${node>idx}' uuid='c5f9b8e8-dc81-4ef0-bc03-684b63408559' />
+         </lbl>
+         <stat>
+          <core:If>
+           <cond>
+            <core:UnaryOp op='! V'>
+             <expr>
+              <core:Call ident='equals'>
+               <obj>
+                <macro:MacroSubstExpr>
+                 <expr>
+                  <macro:MacroAccess ident='var'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </expr>
+                </macro:MacroSubstExpr>
+               </obj>
+               <args>
+                <macro:MacroSubstExpr>
+                 <expr>
+                  <macro:MacroAccess ident='expr'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </expr>
+                </macro:MacroSubstExpr>
+               </args>
+              </core:Call>
+             </expr>
+            </core:UnaryOp>
+           </cond>
+           <thenSt>
+            <core:Call ident='createCodeBacktrack'>
+             <obj>
+              <core:TypeNameRef ident='RuleTemplates' />
+             </obj>
+             <args>
+              <core:LVarExpr ident='node' />
+              <core:ConstBoolExpr value='false' />
+             </args>
+            </core:Call>
+           </thenSt>
+          </core:If>
+         </stat>
+        </core:LblSt>
+        <core:Call ident='createCodeMoreCheck'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='false' />
+         </args>
+        </core:Call>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+    <core:Method name='createCodeContains' uuid='ed704240-71ad-4e79-9a6d-a2fd6219e58f'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='605f38d5-1c45-486a-a82b-00d330701528'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleIsoneofExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <macro:SwitchRewr>
+         <sel>
+          <macro:MacroAccess ident='mode'>
+           <obj>
+            <core:LVarExpr ident='node' />
+           </obj>
+          </macro:MacroAccess>
+         </sel>
+         <stats>
+          <core:Case>
+           <val>
+            <core:SFld ident='ARRAY'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:Call ident='contains'>
+           <obj>
+            <core:TypeNameRef ident='kiev·stdlib·ArrayEnumerator' full='true' />
+           </obj>
+           <args>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='expr'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+            <core:Access ident='$var'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+            </core:Access>
+           </args>
+          </core:Call>
+          <core:Case>
+           <val>
+            <core:SFld ident='KENUM'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:Call ident='contains'>
+           <obj>
+            <core:TypeNameRef ident='kiev·stdlib·rule' full='true' />
+           </obj>
+           <args>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='expr'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+            <core:Access ident='$var'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+            </core:Access>
+           </args>
+          </core:Call>
+          <core:Case>
+           <val>
+            <core:SFld ident='JENUM'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:Call ident='jcontains'>
+           <obj>
+            <core:TypeNameRef ident='kiev·stdlib·rule' full='true' />
+           </obj>
+           <args>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='expr'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+            <core:Access ident='$var'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+            </core:Access>
+           </args>
+          </core:Call>
+          <core:Case>
+           <val>
+            <core:SFld ident='ELEMS'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:Call ident='contains'>
+           <obj>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='expr'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+           </obj>
+           <args>
+            <core:Access ident='$var'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+            </core:Access>
+           </args>
+          </core:Call>
+         </stats>
+        </macro:SwitchRewr>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+    <core:Method name='mkRuleIsoneofExpr' uuid='1e8aae91-ec65-403c-8487-67d40056de37'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='884eea0e-f5bd-40e9-a1bd-b120b57f0fa8'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleIsoneofExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='7a536d95-9213-45ee-8b56-cc0b77752e9b'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='8b65a94a-58e3-4e84-b261-16d5a45cbab6'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='enter${node>idx}' uuid='9893686f-028f-41d2-9ab6-2e8920c18275' />
+         </lbl>
+         <stat>
+          <core:If>
+           <cond>
+            <core:Access ident='$is_bound'>
+             <obj>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='var'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </obj>
+            </core:Access>
+           </cond>
+           <thenSt>
+            <core:Goto ident='bound${node>idx}' />
+           </thenSt>
+          </core:If>
+         </stat>
+        </core:LblSt>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:Access ident='bt${node>depth}'>
+             <obj>
+              <core:LVarExpr ident='$env' />
+             </obj>
+            </core:Access>
+           </expr1>
+           <expr2>
+            <core:LVarExpr ident='bt$' />
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:LVarExpr ident='bt$' />
+           </expr1>
+           <expr2>
+            <macro:MacroAccess ident='base'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <macro:SwitchRewr>
+         <sel>
+          <macro:MacroAccess ident='mode'>
+           <obj>
+            <core:LVarExpr ident='node' />
+           </obj>
+          </macro:MacroAccess>
+         </sel>
+         <stats>
+          <core:Case>
+           <val>
+            <core:SFld ident='ARRAY'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='$iter${node>iter_var}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <core:New>
+               <ntype>
+                <macro:MacroSubstTypeRef>
+                 <mtype>
+                  <macro:MacroAccess ident='itype'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </mtype>
+                </macro:MacroSubstTypeRef>
+               </ntype>
+               <args>
+                <macro:MacroSubstExpr>
+                 <expr>
+                  <macro:MacroAccess ident='expr'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </expr>
+                </macro:MacroSubstExpr>
+               </args>
+              </core:New>
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+          <core:Case>
+           <val>
+            <core:SFld ident='KENUM'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='$iter${node>iter_var}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='expr'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+          <core:Case>
+           <val>
+            <core:SFld ident='JENUM'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='$iter${node>iter_var}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='expr'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+          <core:Case>
+           <val>
+            <core:SFld ident='ELEMS'>
+             <obj>
+              <core:TypeNameRef ident='IsoneofMode' />
+             </obj>
+            </core:SFld>
+           </val>
+          </core:Case>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='$iter${node>iter_var}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <core:Call ident='elements'>
+               <obj>
+                <macro:MacroSubstExpr>
+                 <expr>
+                  <macro:MacroAccess ident='expr'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </expr>
+                </macro:MacroSubstExpr>
+               </obj>
+              </core:Call>
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+         </stats>
+        </macro:SwitchRewr>
+        <core:Case>
+         <val>
+          <macro:MacroAccess ident='base'>
+           <obj>
+            <core:LVarExpr ident='node' />
+           </obj>
+          </macro:MacroAccess>
+         </val>
+        </core:Case>
+        <core:While>
+         <cond>
+          <core:Call ident='hasMoreElements'>
+           <obj>
+            <core:Access ident='$iter${node>iter_var}'>
+             <obj>
+              <core:LVarExpr ident='$env' />
+             </obj>
+            </core:Access>
+           </obj>
+          </core:Call>
+         </cond>
+         <body>
+          <core:Block>
+           <stats>
+            <core:If>
+             <cond>
+              <core:UnaryOp op='! V'>
+               <expr>
+                <core:Call ident='$rebind_chk'>
+                 <obj>
+                  <macro:MacroSubstExpr>
+                   <expr>
+                    <macro:MacroAccess ident='var'>
+                     <obj>
+                      <core:LVarExpr ident='node' />
+                     </obj>
+                    </macro:MacroAccess>
+                   </expr>
+                  </macro:MacroSubstExpr>
+                 </obj>
+                 <args>
+                  <core:Call ident='nextElement'>
+                   <obj>
+                    <core:Access ident='$iter${node>iter_var}'>
+                     <obj>
+                      <core:LVarExpr ident='$env' />
+                     </obj>
+                    </core:Access>
+                   </obj>
+                  </core:Call>
+                 </args>
+                </core:Call>
+               </expr>
+              </core:UnaryOp>
+             </cond>
+             <thenSt>
+              <core:Continue ident='' />
+             </thenSt>
+            </core:If>
+            <core:Call ident='createCodeMoreCheck'>
+             <obj>
+              <core:TypeNameRef ident='RuleTemplates' />
+             </obj>
+             <args>
+              <core:LVarExpr ident='node' />
+              <core:ConstBoolExpr value='true' />
+             </args>
+            </core:Call>
+           </stats>
+          </core:Block>
+         </body>
+         <lblcnt>
+          <core:Label uuid='258ab9fb-75bd-4aa4-8d69-15592bf68b30' />
+         </lblcnt>
+         <lblbrk>
+          <core:Label uuid='0f411f9a-3363-4f7c-82b6-aa5565cd3eaf' />
+         </lblbrk>
+        </core:While>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:Access ident='$iter${node>iter_var}'>
+             <obj>
+              <core:LVarExpr ident='$env' />
+             </obj>
+            </core:Access>
+           </expr1>
+           <expr2>
+            <core:ConstNullExpr />
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:ExprSt>
+         <expr>
+          <core:Call ident='$unbind'>
+           <obj>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='var'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+           </obj>
+          </core:Call>
+         </expr>
+        </core:ExprSt>
+        <core:Call ident='createCodeBacktrack'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='true' />
+         </args>
+        </core:Call>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='bound${node>idx}' uuid='82480cdd-fdd1-4cae-8f2e-5f0b4ec1b780' />
+         </lbl>
+         <stat>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='bt${node>depth}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <core:LVarExpr ident='bt$' />
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+         </stat>
+        </core:LblSt>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:LVarExpr ident='bt$' />
+           </expr1>
+           <expr2>
+            <core:BinOp op='V + V'>
+             <expr1>
+              <macro:MacroAccess ident='base'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr1>
+             <expr2>
+              <core:ConstIntExpr value='1' />
+             </expr2>
+            </core:BinOp>
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:If>
+         <cond>
+          <core:Call ident='createCodeContains'>
+           <obj>
+            <core:TypeNameRef ident='RuleTemplates' />
+           </obj>
+           <args>
+            <core:LVarExpr ident='node' />
+           </args>
+          </core:Call>
+         </cond>
+         <thenSt>
+          <core:Call ident='createCodeMoreCheck'>
+           <obj>
+            <core:TypeNameRef ident='RuleTemplates' />
+           </obj>
+           <args>
+            <core:LVarExpr ident='node' />
+            <core:ConstBoolExpr value='true' />
+           </args>
+          </core:Call>
+         </thenSt>
+        </core:If>
+        <core:Case>
+         <val>
+          <core:BinOp op='V + V'>
+           <expr1>
+            <macro:MacroAccess ident='base'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr1>
+           <expr2>
+            <core:ConstIntExpr value='1' />
+           </expr2>
+          </core:BinOp>
+         </val>
+        </core:Case>
+        <core:Call ident='createCodeBacktrack'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='true' />
+         </args>
+        </core:Call>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+    <core:Method name='mkRuleCutExpr' uuid='bbed036d-bfd1-4664-b849-0f767c1d7546'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='99bea2ea-ba71-4bf3-a90e-b6f3a27e3ce6'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleCutExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='bt$' uuid='d9abcb88-5bf1-45e5-b694-c31335c677cf'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='enter${node>idx}' uuid='cd8a37f0-1c0d-4e62-afea-09e21b849158' />
+         </lbl>
+         <stat>
+          <core:ExprSt>
+           <expr>
+            <core:Set op='V = V' ident='assign'>
+             <lval>
+              <core:LVarExpr ident='bt$' />
+             </lval>
+             <value>
+              <core:ConstIntExpr value='0' />
+             </value>
+            </core:Set>
+           </expr>
+          </core:ExprSt>
+         </stat>
+        </core:LblSt>
+        <core:Call ident='createCodeMoreCheck'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='false' />
+         </args>
+        </core:Call>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+    <core:Method name='mkRuleCallExpr' uuid='3f85d183-7818-4e23-8450-0dc95cbc7eed'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='b329072c-1236-4258-9881-69668b8d3151'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleCallExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+      <core:LVar name='is_super' uuid='1bf2aaea-344a-46f9-8d2d-1ccb220479f6'>
+       <vtype>
+        <core:TypeNameRef ident='boolean' />
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='45f29b6e-8eed-450e-ab88-54e8dfaf896a'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='a6153b44-bab3-480e-9307-388578cf1d87'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='enter${node>idx}' uuid='3b197b3b-cb07-49f6-a08a-af3060753f0e' />
+         </lbl>
+         <stat>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='bt${node>depth}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <core:LVarExpr ident='bt$' />
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+         </stat>
+        </core:LblSt>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:LVarExpr ident='bt$' />
+           </expr1>
+           <expr2>
+            <macro:MacroAccess ident='base'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:Case>
+         <val>
+          <macro:MacroAccess ident='base'>
+           <obj>
+            <core:LVarExpr ident='node' />
+           </obj>
+          </macro:MacroAccess>
+         </val>
+        </core:Case>
+        <core:If>
+         <cond>
+          <core:UnaryOp op='! V'>
+           <expr>
+            <macro:IfElseRewr>
+             <cond>
+              <core:LVarExpr ident='is_super' />
+             </cond>
+             <thenSt>
+              <core:BinOp op='V = V'>
+               <expr1>
+                <core:Access ident='$rc$frame${node>env_var}'>
+                 <obj>
+                  <core:LVarExpr ident='$env' />
+                 </obj>
+                </core:Access>
+               </expr1>
+               <expr2>
+                <core:Call ident='{node>ident}'>
+                 <obj>
+                  <macro:MacroSubstExpr>
+                   <expr>
+                    <core:Super super='true' />
+                   </expr>
+                  </macro:MacroSubstExpr>
+                 </obj>
+                 <args>
+                  <macro:MacroAccess ident='args'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </args>
+                </core:Call>
+               </expr2>
+              </core:BinOp>
+             </thenSt>
+             <elseSt>
+              <core:BinOp op='V = V'>
+               <expr1>
+                <core:Access ident='$rc$frame${node>env_var}'>
+                 <obj>
+                  <core:LVarExpr ident='$env' />
+                 </obj>
+                </core:Access>
+               </expr1>
+               <expr2>
+                <core:Call ident='{node>ident}'>
+                 <obj>
+                  <macro:MacroSubstExpr>
+                   <expr>
+                    <core:IFld ident='obj'>
+                     <obj>
+                      <core:LVarExpr ident='node' />
+                     </obj>
+                    </core:IFld>
+                   </expr>
+                  </macro:MacroSubstExpr>
+                 </obj>
+                 <args>
+                  <macro:MacroAccess ident='args'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </args>
+                </core:Call>
+               </expr2>
+              </core:BinOp>
+             </elseSt>
+            </macro:IfElseRewr>
+           </expr>
+          </core:UnaryOp>
+         </cond>
+         <thenSt>
+          <core:Call ident='createCodeBacktrack'>
+           <obj>
+            <core:TypeNameRef ident='RuleTemplates' />
+           </obj>
+           <args>
+            <core:LVarExpr ident='node' />
+            <core:ConstBoolExpr value='true' />
+           </args>
+          </core:Call>
+         </thenSt>
+        </core:If>
+        <core:Call ident='createCodeMoreCheck'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='false' />
+         </args>
+        </core:Call>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+    <core:Method name='mkRuleExpr' uuid='dc136168-e99b-49ff-ad92-df0c2e4971e9'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='389ff1f6-8b2f-4225-864c-c5a7155369bf'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+      <core:LVar name='has_bt_expr' uuid='49537996-8c98-4c4f-b2e6-f771ee1e813f'>
+       <vtype>
+        <core:TypeNameRef ident='boolean' />
+       </vtype>
+      </core:LVar>
+      <core:LVar name='is_boolean' uuid='01b732c3-2c05-4610-b5e6-bf79488f29ac'>
+       <vtype>
+        <core:TypeNameRef ident='boolean' />
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='9ace1aa6-3ca0-4d99-8a83-85d3cd7525dc'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='6a9d20d6-6dbd-4525-bb88-2220c0a85bcd'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='enter${node>idx}' uuid='905ef4bb-6cda-4d3e-8e11-9dd5ccde79a1' />
+         </lbl>
+         <stat>
+          <macro:IfElseRewr>
+           <cond>
+            <core:LVarExpr ident='is_boolean' />
+           </cond>
+           <thenSt>
+            <core:Block>
+             <stats>
+              <core:If>
+               <cond>
+                <core:UnaryOp op='! V'>
+                 <expr>
+                  <macro:MacroAccess ident='expr'>
+                   <obj>
+                    <core:LVarExpr ident='node' />
+                   </obj>
+                  </macro:MacroAccess>
+                 </expr>
+                </core:UnaryOp>
+               </cond>
+               <thenSt>
+                <core:Call ident='createCodeBacktrack'>
+                 <obj>
+                  <core:TypeNameRef ident='RuleTemplates' />
+                 </obj>
+                 <args>
+                  <core:LVarExpr ident='node' />
+                  <core:ConstBoolExpr value='false' />
+                 </args>
+                </core:Call>
+               </thenSt>
+              </core:If>
+              <core:Call ident='createCodeMoreCheck'>
+               <obj>
+                <core:TypeNameRef ident='RuleTemplates' />
+               </obj>
+               <args>
+                <core:LVarExpr ident='node' />
+                <core:ConstBoolExpr value='false' />
+               </args>
+              </core:Call>
+             </stats>
+            </core:Block>
+           </thenSt>
+           <elseSt>
+            <macro:IfElseRewr>
+             <cond>
+              <core:Not ident='bool_not'>
+               <expr>
+                <core:LVarExpr ident='has_bt_expr' />
+               </expr>
+              </core:Not>
+             </cond>
+             <thenSt>
+              <core:Block>
+               <stats>
+                <core:ExprSt>
+                 <expr>
+                  <macro:MacroSubstExpr>
+                   <expr>
+                    <macro:MacroAccess ident='expr'>
+                     <obj>
+                      <core:LVarExpr ident='node' />
+                     </obj>
+                    </macro:MacroAccess>
+                   </expr>
+                  </macro:MacroSubstExpr>
+                 </expr>
+                </core:ExprSt>
+                <core:Call ident='createCodeMoreCheck'>
+                 <obj>
+                  <core:TypeNameRef ident='RuleTemplates' />
+                 </obj>
+                 <args>
+                  <core:LVarExpr ident='node' />
+                  <core:ConstBoolExpr value='false' />
+                 </args>
+                </core:Call>
+               </stats>
+              </core:Block>
+             </thenSt>
+             <elseSt>
+              <core:Block>
+               <stats>
+                <core:ExprSt>
+                 <expr>
+                  <core:BinOp op='V = V'>
+                   <expr1>
+                    <core:Access ident='bt${node>depth}'>
+                     <obj>
+                      <core:LVarExpr ident='$env' />
+                     </obj>
+                    </core:Access>
+                   </expr1>
+                   <expr2>
+                    <core:LVarExpr ident='bt$' />
+                   </expr2>
+                  </core:BinOp>
+                 </expr>
+                </core:ExprSt>
+                <core:ExprSt>
+                 <expr>
+                  <core:BinOp op='V = V'>
+                   <expr1>
+                    <core:LVarExpr ident='bt$' />
+                   </expr1>
+                   <expr2>
+                    <macro:MacroAccess ident='base'>
+                     <obj>
+                      <core:LVarExpr ident='node' />
+                     </obj>
+                    </macro:MacroAccess>
+                   </expr2>
+                  </core:BinOp>
+                 </expr>
+                </core:ExprSt>
+                <core:ExprSt>
+                 <expr>
+                  <macro:MacroSubstExpr>
+                   <expr>
+                    <macro:MacroAccess ident='expr'>
+                     <obj>
+                      <core:LVarExpr ident='node' />
+                     </obj>
+                    </macro:MacroAccess>
+                   </expr>
+                  </macro:MacroSubstExpr>
+                 </expr>
+                </core:ExprSt>
+                <core:Call ident='createCodeMoreCheck'>
+                 <obj>
+                  <core:TypeNameRef ident='RuleTemplates' />
+                 </obj>
+                 <args>
+                  <core:LVarExpr ident='node' />
+                  <core:ConstBoolExpr value='true' />
+                 </args>
+                </core:Call>
+               </stats>
+              </core:Block>
+             </elseSt>
+            </macro:IfElseRewr>
+           </elseSt>
+          </macro:IfElseRewr>
+         </stat>
+        </core:LblSt>
+        <macro:IfElseRewr>
+         <cond>
+          <core:LVarExpr ident='has_bt_expr' />
+         </cond>
+         <thenSt>
+          <core:Case>
+           <val>
+            <macro:MacroAccess ident='base'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </val>
+          </core:Case>
+         </thenSt>
+         <elseSt>
+          <macro:RewriteNodeFactory ident='NoOp' />
+         </elseSt>
+        </macro:IfElseRewr>
+        <macro:IfElseRewr>
+         <cond>
+          <core:LVarExpr ident='has_bt_expr' />
+         </cond>
+         <thenSt>
+          <core:Block>
+           <stats>
+            <core:ExprSt>
+             <expr>
+              <macro:MacroSubstExpr>
+               <expr>
+                <macro:MacroAccess ident='bt_expr'>
+                 <obj>
+                  <core:LVarExpr ident='node' />
+                 </obj>
+                </macro:MacroAccess>
+               </expr>
+              </macro:MacroSubstExpr>
+             </expr>
+            </core:ExprSt>
+            <core:Call ident='createCodeBacktrack'>
+             <obj>
+              <core:TypeNameRef ident='RuleTemplates' />
+             </obj>
+             <args>
+              <core:LVarExpr ident='node' />
+              <core:ConstBoolExpr value='true' />
+             </args>
+            </core:Call>
+           </stats>
+          </core:Block>
+         </thenSt>
+         <elseSt>
+          <macro:RewriteNodeFactory ident='NoOp' />
+         </elseSt>
+        </macro:IfElseRewr>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+    <core:Method name='mkRuleWhile' uuid='ec34fb50-083c-4357-94cb-b868a94ecf22'>
+     <type_ret>
+      <core:TypeRef ident='void' />
+     </type_ret>
+     <params>
+      <core:LVar name='node' uuid='e0a24a68-f4c8-43d1-a7dd-dd9712d5e6cc'>
+       <vtype>
+        <core:TypeExpr ident='_astnode_'>
+         <arg>
+          <core:TypeNameRef ident='RuleWhileExpr' />
+         </arg>
+         <op_name>T #</op_name>
+        </core:TypeExpr>
+       </vtype>
+      </core:LVar>
+      <core:LVar name='has_bt_expr' uuid='0875ee59-1267-4780-8cc5-4f395fd4695c'>
+       <vtype>
+        <core:TypeNameRef ident='boolean' />
+       </vtype>
+      </core:LVar>
+     </params>
+     <body>
+      <macro:BlockRewr>
+       <stats>
+        <core:LVar name='$env' uuid='8e3bca96-c0e0-4fbd-806e-20fb5fee2ae3'>
+         <vtype>
+          <core:TypeNameRef ident='rule' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LVar name='bt$' uuid='c077f6f6-9f28-45fa-ac55-ae15ddad7854'>
+         <vtype>
+          <core:TypeNameRef ident='int' />
+         </vtype>
+         <metas>
+          <core:UserMeta name='kiev·stdlib·meta·extern‣4c904721-e48a-48fb-bd88-394a06c80000' />
+         </metas>
+        </core:LVar>
+        <core:LblSt>
+         <lbl>
+          <core:Label name='enter${node>idx}' uuid='85715fac-bc41-4108-922e-525241e54517' />
+         </lbl>
+         <stat>
+          <core:ExprSt>
+           <expr>
+            <core:BinOp op='V = V'>
+             <expr1>
+              <core:Access ident='bt${node>depth}'>
+               <obj>
+                <core:LVarExpr ident='$env' />
+               </obj>
+              </core:Access>
+             </expr1>
+             <expr2>
+              <core:LVarExpr ident='bt$' />
+             </expr2>
+            </core:BinOp>
+           </expr>
+          </core:ExprSt>
+         </stat>
+        </core:LblSt>
+        <core:ExprSt>
+         <expr>
+          <core:BinOp op='V = V'>
+           <expr1>
+            <core:LVarExpr ident='bt$' />
+           </expr1>
+           <expr2>
+            <macro:MacroAccess ident='base'>
+             <obj>
+              <core:LVarExpr ident='node' />
+             </obj>
+            </macro:MacroAccess>
+           </expr2>
+          </core:BinOp>
+         </expr>
+        </core:ExprSt>
+        <core:Case>
+         <val>
+          <macro:MacroAccess ident='base'>
+           <obj>
+            <core:LVarExpr ident='node' />
+           </obj>
+          </macro:MacroAccess>
+         </val>
+        </core:Case>
+        <macro:IfElseRewr>
+         <cond>
+          <core:LVarExpr ident='has_bt_expr' />
+         </cond>
+         <thenSt>
+          <core:ExprSt>
+           <expr>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='bt_expr'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+           </expr>
+          </core:ExprSt>
+         </thenSt>
+         <elseSt>
+          <macro:RewriteNodeFactory ident='NoOp' />
+         </elseSt>
+        </macro:IfElseRewr>
+        <core:If>
+         <cond>
+          <core:UnaryOp op='! V'>
+           <expr>
+            <macro:MacroSubstExpr>
+             <expr>
+              <macro:MacroAccess ident='expr'>
+               <obj>
+                <core:LVarExpr ident='node' />
+               </obj>
+              </macro:MacroAccess>
+             </expr>
+            </macro:MacroSubstExpr>
+           </expr>
+          </core:UnaryOp>
+         </cond>
+         <thenSt>
+          <core:Call ident='createCodeBacktrack'>
+           <obj>
+            <core:TypeNameRef ident='RuleTemplates' />
+           </obj>
+           <args>
+            <core:LVarExpr ident='node' />
+            <core:ConstBoolExpr value='true' />
+           </args>
+          </core:Call>
+         </thenSt>
+        </core:If>
+        <core:Call ident='createCodeMoreCheck'>
+         <obj>
+          <core:TypeNameRef ident='RuleTemplates' />
+         </obj>
+         <args>
+          <core:LVarExpr ident='node' />
+          <core:ConstBoolExpr value='false' />
+         </args>
+        </core:Call>
+       </stats>
+      </macro:BlockRewr>
+     </body>
+     <metas>
+      <core:MetaMacro />
+      <core:MetaStatic />
+     </metas>
+    </core:Method>
+   </members>
+   <super_types>
+    <core:TypeNameRef ident='any' />
+   </super_types>
+   <metas>
+    <core:MetaStatic />
+   </metas>
+  </core:MetaTypeDecl>
+ </members>
+</core:FileUnit>
