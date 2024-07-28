@@ -14,7 +14,7 @@ import javax.xml.namespace.QName;
 
 import kiev.dump.AttributeSet;
 
-import org.xmlpull.v1.*;
+// import org.xmlpull.v1.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -27,57 +27,57 @@ public interface XMLDumpReader {
 	public void addText(String value);
 }
 
-final class PullHandler {
-	XMLDumpReader deserializer;
-	
-	PullHandler(XMLDumpReader deserializer) {
-		this.deserializer = deserializer;
-	}
+// final class PullHandler {
+// 	XMLDumpReader deserializer;
+//
+// 	PullHandler(XMLDumpReader deserializer) {
+// 		this.deserializer = deserializer;
+// 	}
+//
+// 	public void processDocument(final XmlPullParser xpp) throws Exception
+// 	{
+// 		AttributeSet attrs = new AttributeSet() {
+// 			public int getCount() { return xpp.getAttributeCount(); }
+// 			public String getURI(int i) { return xpp.getAttributeNamespace(i); }
+// 			public String getPrefix(int i) { return xpp.getAttributePrefix(i); }
+// 			public String getName(int i) { return xpp.getAttributeName(i); }
+// 			public String getValue(int i) { return xpp.getAttributeValue(i); }
+// 		};
+// 		int eventType = xpp.getEventType();
+// 		for (;;) {
+// 			if(eventType == XmlPullParser.START_DOCUMENT)
+// 				deserializer.startDocument();
+// 			else if(eventType == XmlPullParser.END_DOCUMENT) {
+// 				deserializer.endDocument();
+// 				return;
+// 			}
+// 			else if(eventType == XmlPullParser.START_TAG) {
+// 				String uri = xpp.getNamespace();
+// 				String name = xpp.getName();
+// 				String prefix = xpp.getPrefix();
+// 				if (prefix == null)
+// 					deserializer.startElement(new QName(uri, name), attrs);
+// 				else
+// 					deserializer.startElement(new QName(uri, name, prefix), attrs);
+// 			}
+// 			else if(eventType == XmlPullParser.END_TAG) {
+// 				String uri = xpp.getNamespace();
+// 				String name = xpp.getName();
+// 				String prefix = xpp.getPrefix();
+// 				if (prefix == null)
+// 					deserializer.endElement(new QName(uri, name));
+// 				else
+// 					deserializer.endElement(new QName(uri, name, prefix));
+// 			}
+// 			else if(eventType == XmlPullParser.TEXT)
+// 				deserializer.addText(xpp.getText());
+// 			eventType = xpp.next();
+// 		}
+// 	}
+// }
 
-	public void processDocument(final XmlPullParser xpp) throws Exception
-	{
-		AttributeSet attrs = new AttributeSet() {
-			public int getCount() { return xpp.getAttributeCount(); }
-			public String getURI(int i) { return xpp.getAttributeNamespace(i); }
-			public String getPrefix(int i) { return xpp.getAttributePrefix(i); }
-			public String getName(int i) { return xpp.getAttributeName(i); }
-			public String getValue(int i) { return xpp.getAttributeValue(i); }
-		};
-		int eventType = xpp.getEventType();
-		for (;;) {
-			if(eventType == XmlPullParser.START_DOCUMENT)
-				deserializer.startDocument();
-			else if(eventType == XmlPullParser.END_DOCUMENT) {
-				deserializer.endDocument();
-				return;
-			}
-			else if(eventType == XmlPullParser.START_TAG) {
-				String uri = xpp.getNamespace();
-				String name = xpp.getName();
-				String prefix = xpp.getPrefix();
-				if (prefix == null)
-					deserializer.startElement(new QName(uri, name), attrs);
-				else
-					deserializer.startElement(new QName(uri, name, prefix), attrs);
-			}
-			else if(eventType == XmlPullParser.END_TAG) {
-				String uri = xpp.getNamespace();
-				String name = xpp.getName();
-				String prefix = xpp.getPrefix();
-				if (prefix == null)
-					deserializer.endElement(new QName(uri, name));
-				else
-					deserializer.endElement(new QName(uri, name, prefix));
-			}
-			else if(eventType == XmlPullParser.TEXT)
-				deserializer.addText(xpp.getText());
-			eventType = xpp.next();
-		}
-	}
-}
-	
 final class SAXHandler extends DefaultHandler {
-	
+
 	final static String XML_URI = "http://www.w3.org/XML/1998/namespace";
 	final static String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
 	static class NsMap {
@@ -88,12 +88,12 @@ final class SAXHandler extends DefaultHandler {
 			this.uri = uri;
 		}
 	}
-	
+
 	XMLDumpReader deserializer;
 	private String[] ns_prefix;
 	private String[] ns_uri;
 	private int ns_size;
-	
+
 	SAXHandler(XMLDumpReader deserializer) {
 		this.deserializer = deserializer;
 		this.ns_prefix = new String[64];
@@ -158,7 +158,7 @@ final class SAXHandler extends DefaultHandler {
 		ns_uri[ns_size] = uri;
 		ns_size += 1;
 	}
-	
+
 	public void characters(char[] ch, int start, int length) {
 		deserializer.addText(new String(ch, start, length));
 	}

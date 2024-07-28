@@ -15,47 +15,47 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import javax.xml.parsers.*;
-import org.xmlpull.v1.*;
+// import org.xmlpull.v1.*;
 
 public final class XMLDumpFactory {
-	
+
 	private XMLDumpFactory() {}
-	
+
 	public static XMLNamespaceMap getNamespaceMap() {
 		return new NamespaceMapImpl();
 	}
-	
+
 	public static XMLDumpWriter getWriter(OutputStream out_stream, XMLNamespaceMap nsmap) {
-		try {
-			return new PullXMLDumpWriter(out_stream, nsmap);
-		} catch (Throwable e) {}
+// 		try {
+// 			return new PullXMLDumpWriter(out_stream, nsmap);
+// 		} catch (Throwable e) {}
 		try {
 			return new StreamXMLDumpWriter(out_stream, nsmap);
 		} catch (Throwable e) {}
 		throw new Error("No XML writer found");
 	}
-	
+
 	public static XMLDumpWriter getWriter(Writer out_writer, XMLNamespaceMap nsmap) {
-		try {
-			return new PullXMLDumpWriter(out_writer, nsmap);
-		} catch (Throwable e) {}
+// 		try {
+// 			return new PullXMLDumpWriter(out_writer, nsmap);
+// 		} catch (Throwable e) {}
 		try {
 			return new StreamXMLDumpWriter(out_writer, nsmap);
 		} catch (Throwable e) {}
 		throw new Error("No XML writer found");
 	}
-	
+
 	public static void parse(InputStream in_stream, XMLDumpReader reader) throws Exception {
-		try {
-			XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
-			factory.setNamespaceAware(true);
-			XmlPullParser xpp = factory.newPullParser();
-			xpp.setInput(in_stream, "UTF-8");
-			xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
-			xpp.setFeature(XmlPullParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES, true);
-			new PullHandler(reader).processDocument(xpp);
-			return;
-		} catch (Throwable e) {}
+// 		try {
+// 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+// 			factory.setNamespaceAware(true);
+// 			XmlPullParser xpp = factory.newPullParser();
+// 			xpp.setInput(in_stream, "UTF-8");
+// 			xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+// 			xpp.setFeature(XmlPullParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES, true);
+// 			new PullHandler(reader).processDocument(xpp);
+// 			return;
+// 		} catch (Throwable e) {}
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(true);
@@ -67,16 +67,16 @@ public final class XMLDumpFactory {
 	}
 
 	public static void parse(Reader in_reader, XMLDumpReader reader) throws Exception {
-		try {
-			XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
-			factory.setNamespaceAware(true);
-			XmlPullParser xpp = factory.newPullParser();
-			xpp.setInput(in_reader);
-			xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
-			xpp.setFeature(XmlPullParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES, true);
-			new PullHandler(reader).processDocument(xpp);
-			return;
-		} catch (Throwable e) {}
+// 		try {
+// 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+// 			factory.setNamespaceAware(true);
+// 			XmlPullParser xpp = factory.newPullParser();
+// 			xpp.setInput(in_reader);
+// 			xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+// 			xpp.setFeature(XmlPullParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES, true);
+// 			new PullHandler(reader).processDocument(xpp);
+// 			return;
+// 		} catch (Throwable e) {}
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(true);

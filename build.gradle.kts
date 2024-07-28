@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("idea")
 }
 
 group = "org.symade.kiev"
@@ -7,7 +8,6 @@ version = "0.6.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 //sourceSets {
@@ -41,8 +41,6 @@ repositories {
 //        classpath = files(p.dir("kclasses${stage - 1}"), p.dir("jclasses${stage - 1}"))
 //        kievClasspath = files(p.dir("kclasses${stage - 1}"))
 //    }
-//    classpath += files("bin/xpp3-1.1.4c.jar")
-//    kievClasspath += files("bin/xpp3-1.1.4c.jar")
 //    if (stage > 1)
 //        dependsOn(tasks["symadeStage_${stage-1}"])
 //}
@@ -75,7 +73,7 @@ repositories {
 //
 //tasks.compileKiev {
 //    options.compilerArgs.addAll(arrayOf("-verify","-enable","vnode","-enable","view"))
-//    kievClasspath = files("bin/symade-06.jar", "bin/xpp3-1.1.4c.jar")
+//    kievClasspath = files("bin/symade-06.jar")
 //}
 //
 //tasks.compileJava {
@@ -85,13 +83,13 @@ repositories {
 dependencies {
 //    testImplementation(platform("org.junit:junit-bom:5.9.1"))
 //    testImplementation("org.junit.jupiter:junit-jupiter")
-    implementation(project(":kiev-stdlib"))
-    implementation(project(":kiev-core"))
-    implementation(project(":kiev-dump"))
-    implementation(project(":kiev-compiler"))
-    implementation(project(":symade-fmt"))
-    implementation(project(":symade-gui"))
-    implementation(files("src/symade-core.jar", "bin/xpp3-1.1.4c.jar", "bin/swt-win.jar"))
+//    implementation(project(":kiev-stdlib"))
+//    implementation(project(":kiev-core"))
+//    implementation(project(":kiev-dump"))
+//    implementation(project(":kiev-compiler"))
+//    implementation(project(":symade-fmt"))
+//    implementation(project(":symade-gui"))
+//    implementation(files("src/symade-core.jar", "bin/swt-win.jar"))
 }
 
 //tasks.test {

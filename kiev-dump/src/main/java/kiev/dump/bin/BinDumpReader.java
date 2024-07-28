@@ -25,7 +25,7 @@ public final class BinDumpReader {
 	private int[] root_ids;
 	private INode[] roots;
 	int indent;
-	
+
 	final HashMap<Integer,SymbElem> symbTable = new HashMap<Integer,SymbElem>();
 	final HashMap<Integer,NodeElem> nodeTable = new HashMap<Integer,NodeElem>();
 	final HashMap<Integer,ConstElem> constTable = new HashMap<Integer,ConstElem>();
@@ -34,7 +34,7 @@ public final class BinDumpReader {
 	final HashMap<Integer,CommentElem> commentTable = new HashMap<Integer,CommentElem>();
 	final HashMap<Integer,Elem> addrTable = new HashMap<Integer,Elem>();
 	final ArrayList<DelayedTypeInfo> delayed_types = new ArrayList<DelayedTypeInfo>();
-	
+
 	public BinDumpReader(Env env, String dir, DecoderFactory dfactory, InputStream inp) throws DumpException, IOException {
 		this.env = env;
 		this.cur_dir = dir;
@@ -47,7 +47,7 @@ public final class BinDumpReader {
 		buf = out.toByteArray();
 		this.buf = ByteBuffer.wrap(buf);
 	}
-	
+
 	private void checkHeader() throws Exception {
 		int sz = buf.capacity();
 		if (sz < 32)
@@ -79,7 +79,7 @@ public final class BinDumpReader {
 
 		readTables(tbl_addr);
 	}
-	
+
 	public INode[] loadDocument() throws Exception {
 		checkHeader();
 		readDocument();
@@ -87,7 +87,7 @@ public final class BinDumpReader {
 		//	dti.applay(env);
 		return roots;
 	}
-	
+
 	public void scanDocument() throws Exception {
 		checkHeader();
 		buf.position(doc_addr);
@@ -95,7 +95,7 @@ public final class BinDumpReader {
 			readTagAndVal(true);
 		}
 	}
-	
+
 	private void readTables(int start_addr) throws DumpException {
 		int save_pos = start_addr;
 		buf.position(start_addr);
@@ -115,55 +115,55 @@ public final class BinDumpReader {
 					int addr = buf.getInt();
 					checkElemStart(tag, addr, id);
 					AttrElem el = new AttrElem(id, addr);
-					if (attrTable.get(new Integer(id)) == null)
-						attrTable.put(new Integer(id), el);
-					if (attrTable.get(new Integer(id)).saddr != addr)
-						throw new DumpException("Corrupted dump file: different addressed for attr ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(attrTable.get(new Integer(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
-					addrTable.put(new Integer(addr), el);
+					if (attrTable.get(Integer.valueOf(id)) == null)
+						attrTable.put(Integer.valueOf(id), el);
+					if (attrTable.get(Integer.valueOf(id)).saddr != addr)
+						throw new DumpException("Corrupted dump file: different addressed for attr ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(attrTable.get(Integer.valueOf(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
+					addrTable.put(Integer.valueOf(addr), el);
 				}
 				else if (tag == Signature.TAG_TYPE_SIGN) {
 					int id = buf.getShort() & 0xFFFF;
 					int addr = buf.getInt();
 					checkElemStart(tag, addr, id);
 					TypeElem el = new TypeElem(id, addr);
-					if (typeTable.get(new Integer(id)) == null)
-						typeTable.put(new Integer(id), el);
-					if (typeTable.get(new Integer(id)).saddr != addr)
-						throw new DumpException("Corrupted dump file: different addressed for type ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(typeTable.get(new Integer(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
-					addrTable.put(new Integer(addr), el);
+					if (typeTable.get(Integer.valueOf(id)) == null)
+						typeTable.put(Integer.valueOf(id), el);
+					if (typeTable.get(Integer.valueOf(id)).saddr != addr)
+						throw new DumpException("Corrupted dump file: different addressed for type ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(typeTable.get(Integer.valueOf(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
+					addrTable.put(Integer.valueOf(addr), el);
 				}
 				else if (tag == Signature.TAG_SYMB_SIGN) {
 					int id = buf.getShort() & 0xFFFF;
 					int addr = buf.getInt();
 					checkElemStart(tag, addr, id);
 					SymbElem el = new SymbElem(id, addr);
-					if (symbTable.get(new Integer(id)) == null)
-						symbTable.put(new Integer(id), el);
-					if (symbTable.get(new Integer(id)).saddr != addr)
-						throw new DumpException("Corrupted dump file: different addressed for symbol ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(symbTable.get(new Integer(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
-					addrTable.put(new Integer(addr), el);
+					if (symbTable.get(Integer.valueOf(id)) == null)
+						symbTable.put(Integer.valueOf(id), el);
+					if (symbTable.get(Integer.valueOf(id)).saddr != addr)
+						throw new DumpException("Corrupted dump file: different addressed for symbol ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(symbTable.get(Integer.valueOf(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
+					addrTable.put(Integer.valueOf(addr), el);
 				}
 				else if (tag == Signature.TAG_CONST_SIGN) {
 					int id = buf.getShort() & 0xFFFF;
 					int addr = buf.getInt();
 					checkElemStart(tag, addr, id);
 					ConstElem el = new ConstElem(id, addr);
-					if (constTable.get(new Integer(id)) == null)
-						constTable.put(new Integer(id), el);
-					if (constTable.get(new Integer(id)).saddr != addr)
-						throw new DumpException("Corrupted dump file: different addressed for enum ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(constTable.get(new Integer(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
-					addrTable.put(new Integer(addr), el);
+					if (constTable.get(Integer.valueOf(id)) == null)
+						constTable.put(Integer.valueOf(id), el);
+					if (constTable.get(Integer.valueOf(id)).saddr != addr)
+						throw new DumpException("Corrupted dump file: different addressed for enum ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(constTable.get(Integer.valueOf(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
+					addrTable.put(Integer.valueOf(addr), el);
 				}
 				else if (tag == Signature.TAG_NODE_SIGN) {
 					int id = buf.getShort() & 0xFFFF;
 					int addr = buf.getInt();
 					checkElemStart(tag, addr, id);
 					NodeElem el = new NodeElem(id, addr);
-					if (nodeTable.get(new Integer(id)) == null)
-						nodeTable.put(new Integer(id), el);
-					if (nodeTable.get(new Integer(id)).saddr != addr)
-						throw new DumpException("Corrupted dump file: different addressed for node ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(nodeTable.get(new Integer(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
-					addrTable.put(new Integer(addr), el);
+					if (nodeTable.get(Integer.valueOf(id)) == null)
+						nodeTable.put(Integer.valueOf(id), el);
+					if (nodeTable.get(Integer.valueOf(id)).saddr != addr)
+						throw new DumpException("Corrupted dump file: different addressed for node ID 0x"+Integer.toHexString(id)+": old 0x"+Integer.toHexString(nodeTable.get(Integer.valueOf(id)).saddr)+" and new 0x"+Integer.toHexString(addr)+" at "+(buf.position()-7));
+					addrTable.put(Integer.valueOf(addr), el);
 				}
 				else if (tag == Signature.TAG_ROOT_SIGN) {
 					int id = buf.getShort() & 0xFFFF;
@@ -186,10 +186,10 @@ public final class BinDumpReader {
 				throw new DumpException("Corrupted dump file: root node ID is not specified");
 			this.roots = new INode[root_ids.length];
 			for (int root_id : root_ids) {
-				if (nodeTable.get(new Integer(root_id)) == null)
+				if (nodeTable.get(Integer.valueOf(root_id)) == null)
 					throw new DumpException("Corrupted dump file: address for root node ID 0x"+Integer.toHexString(root_id)+" is not specified");
 			}
-			
+
 		} finally {
 			buf.position(save_pos);
 		}
@@ -198,13 +198,13 @@ public final class BinDumpReader {
 	private void readDocument() throws DumpException {
 		for (int i=0; i < root_ids.length; i++) {
 			int root_id = root_ids[i];
-			int addr = nodeTable.get(new Integer(root_id)).saddr;
+			int addr = nodeTable.get(Integer.valueOf(root_id)).saddr;
 			checkElemStart(Signature.TAG_NODE_SIGN, addr, root_id);
 			NodeElem ne_root = (NodeElem)dfactory.makeDecoder(Signature.TAG_NODE_SIGN, this).readElem(root_id, addr);
 			this.roots[i] = ne_root.node;
 		}
 	}
-	
+
 	TagAndVal readTagAndVal(boolean autodecode) throws DumpException {
 		boolean far = false;
 		Signature tag = readNextTag(true);
@@ -237,19 +237,19 @@ public final class BinDumpReader {
 			int id;
 			if (far)		id = buf.getInt();
 			else			id = buf.getShort() & 0xFFFF;
-			return new TagAndVal(pos, tag, new Integer(id));
+			return new TagAndVal(pos, tag, Integer.valueOf(id));
 		}
 		if (tag == Signature.TAG_FLAG) {
 			int flags;
 			if (far)		flags = buf.getInt();
 			else			flags = buf.get() & 0xFF;
-			return new TagAndVal(pos, tag, new Integer(flags));
+			return new TagAndVal(pos, tag, Integer.valueOf(flags));
 		}
 		if (tag == Signature.TAG_LINENO) {
 			int lineno;
 			if (far)		lineno = buf.getInt();
 			else			lineno = buf.getShort() & 0xFFFF;
-			return new TagAndVal(pos, tag, new Integer(lineno));
+			return new TagAndVal(pos, tag, Integer.valueOf(lineno));
 		}
 		if (tag == Signature.TAG_TYPE_SIGN) {
 			int id;
@@ -310,14 +310,14 @@ public final class BinDumpReader {
 			int id;
 			if (far)		id = buf.getInt();
 			else			id = buf.getShort() & 0xFFFF;
-			NodeElem ne = nodeTable.get(new Integer(id));
+			NodeElem ne = nodeTable.get(Integer.valueOf(id));
 			return new TagAndVal(pos, tag, ne);
 		}
 		if (tag == Signature.TAG_ROOT_SIGN) {
 			int id;
 			if (far)		id = buf.getInt();
 			else			id = buf.getShort() & 0xFFFF;
-			NodeElem ne = nodeTable.get(new Integer(id));
+			NodeElem ne = nodeTable.get(Integer.valueOf(id));
 			return new TagAndVal(pos, tag, ne);
 		}
 		if (tag == Signature.TAG_TABLE_SIGN) {
@@ -328,33 +328,33 @@ public final class BinDumpReader {
 		}
 		if (tag == Signature.TAG_INT8) {
 			int val = buf.get();
-			return new TagAndVal(pos, tag, new Integer(val));
+			return new TagAndVal(pos, tag, Integer.valueOf(val));
 		}
 		if (tag == Signature.TAG_INT16) {
 			int val = buf.getShort();
-			return new TagAndVal(pos, tag, new Integer(val));
+			return new TagAndVal(pos, tag, Integer.valueOf(val));
 		}
 		if (tag == Signature.TAG_INT32) {
 			int val = buf.getInt();
-			return new TagAndVal(pos, tag, new Integer(val));
+			return new TagAndVal(pos, tag, Integer.valueOf(val));
 		}
 		if (tag == Signature.TAG_INT64) {
 			long val = buf.getLong();
-			return new TagAndVal(pos, tag, new Long(val));
+			return new TagAndVal(pos, tag, Long.valueOf(val));
 		}
 		if (tag == Signature.TAG_FALSE) {
-			return new TagAndVal(pos, tag, new Integer(0));
+			return new TagAndVal(pos, tag, Integer.valueOf(0));
 		}
 		if (tag == Signature.TAG_TRUE) {
-			return new TagAndVal(pos, tag, new Integer(1));
+			return new TagAndVal(pos, tag, Integer.valueOf(1));
 		}
 		if (tag == Signature.TAG_FLOAT) {
 			long val = buf.getLong();
-			return new TagAndVal(pos, tag, new Double(Double.longBitsToDouble(val)));
+			return new TagAndVal(pos, tag, Double.valueOf(Double.longBitsToDouble(val)));
 		}
 		if (tag == Signature.TAG_CHAR_8) {
 			char ch = readUtf8Char();
-			return new TagAndVal(pos, tag, new Character(ch));
+			return new TagAndVal(pos, tag, Character.valueOf(ch));
 		}
 		if (tag == Signature.TAG_STRZ_8 || tag == Signature.TAG_STRZ_16) {
 			String str = readStr(far, tag);
@@ -372,7 +372,7 @@ public final class BinDumpReader {
 		}
 		throw new DumpException("Corrupted dump file: unknown tag '"+tag.sign+"' at "+pos);
 	}
-	
+
 	private char readUtf8Char() {
 		int b = buf.get() & 0xFF;
 		if (b >= 0xE0) {
@@ -386,7 +386,7 @@ public final class BinDumpReader {
 		}
 		return (char)b;
 	}
-	
+
 	private String readStr(boolean far, Signature tag) throws DumpException {
 		int start_pos = buf.position() - 1;
 		StringBuffer sb = new StringBuffer();
@@ -428,7 +428,7 @@ public final class BinDumpReader {
 		}
 		return sb.toString();
 	}
-	
+
 	Signature readNextTag(boolean ws) throws DumpException {
 		char ch;
 		do {
@@ -464,13 +464,13 @@ public final class BinDumpReader {
 		}
 		throw new DumpException("Corrupted dump file: expected to have ID tag at pos "+(addr+2));
 	}
-	
+
 	int pushBufPos(int new_addr) {
 		int old_addr = buf.position();
 		buf.position(new_addr);
 		return old_addr;
 	}
-	
+
 	void popBufPos(int old_addr) {
 		buf.position(old_addr);
 	}

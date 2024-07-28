@@ -8,7 +8,6 @@ version = "0.6.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 sourceSets {
@@ -21,8 +20,8 @@ sourceSets {
 
 tasks.compileKiev {
     options.compilerArgs.addAll(arrayOf("-verify","-enable","vnode","-enable","view"))
-    classpath = files("${project.rootDir}/symade-core.jar", "${project.rootDir}/bin/xpp3-1.1.4c.jar")
-    kievClasspath = files("${project.rootDir}/symade-core.jar", "${project.rootDir}/bin/xpp3-1.1.4c.jar")
+    classpath = files("${project.rootDir}/symade-core.jar")
+    kievClasspath = files("${project.rootDir}/symade-core.jar")
 }
 
 dependencies {

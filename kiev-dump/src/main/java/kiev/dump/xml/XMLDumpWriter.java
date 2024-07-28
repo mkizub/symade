@@ -30,76 +30,76 @@ public interface XMLDumpWriter extends DumpWriter {
 	public void addComment(String value, boolean nl) throws Exception ;
 }
 
-final class PullXMLDumpWriter implements XMLDumpWriter {
-	
-	private org.xmlpull.mxp1_serializer.MXSerializer out;
-	private XMLNamespaceMap nsmap;
-	private boolean atStart;
-	
-	
-	PullXMLDumpWriter(OutputStream out_stream, XMLNamespaceMap nsmap) throws IOException {
-		this.out = new org.xmlpull.mxp1_serializer.MXSerializer();
-		this.nsmap = nsmap;
-		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#serializer-attvalue-use-apostrophe", true);
-		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#names-interned", false);
-		this.out.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-indentation", " ");
-		this.out.setOutput(out_stream, "UTF-8");
-	}
-
-	PullXMLDumpWriter(Writer out_writer, XMLNamespaceMap nsmap) {
-		this.out = new org.xmlpull.mxp1_serializer.MXSerializer();
-		this.nsmap = nsmap;
-		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#serializer-attvalue-use-apostrophe", true);
-		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#names-interned", false);
-		this.out.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-indentation", " ");
-		this.out.setOutput(out_writer);
-	}
-
-	public void startDocument() throws IOException {
-		out.startDocument("1.0", "UTF-8", Boolean.TRUE);
-		atStart = true;
-	}
-
-	public void endDocument() throws IOException {
-		atStart = false;
-		out.ignorableWhitespace("\n");
-		out.endDocument();
-		out.flush();
-		out.getWriter().close();
-	}
-
-	public void startElement(QName qn) throws IOException {
-		if (atStart) {
-			atStart = false;
-			for (String prefix : nsmap.getAllPrefixes())
-				out.setPrefix(prefix, nsmap.prefix2uri(prefix));
-		}
-		out.startTag(qn.getNamespaceURI(), qn.getLocalPart());
-	}
-
-	public void endElement(QName qn) throws IOException {
-		out.endTag(qn.getNamespaceURI(), qn.getLocalPart());
-	}
-
-	public void addAttribute(QName qn, String value) throws IOException {
-		out.attribute(qn.getNamespaceURI(), qn.getLocalPart(), value);
-	}
-
-	public void addText(String value) throws IOException {
-		out.text(value);
-	}
-	
-	public void addComment(String comment, boolean nl) throws IOException {
-		if (nl)
-			out.ignorableWhitespace("\n");
-		out.comment(comment);
-		if (nl)
-			out.ignorableWhitespace("\n");
-	}
-}
+// final class PullXMLDumpWriter implements XMLDumpWriter {
+//
+// 	//private org.xmlpull.mxp1_serializer.MXSerializer out;
+// 	private XMLNamespaceMap nsmap;
+// 	private boolean atStart;
+//
+//
+// 	PullXMLDumpWriter(OutputStream out_stream, XMLNamespaceMap nsmap) throws IOException {
+// 		this.out = new org.xmlpull.mxp1_serializer.MXSerializer();
+// 		this.nsmap = nsmap;
+// 		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#serializer-attvalue-use-apostrophe", true);
+// 		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#names-interned", false);
+// 		this.out.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-indentation", " ");
+// 		this.out.setOutput(out_stream, "UTF-8");
+// 	}
+//
+// 	PullXMLDumpWriter(Writer out_writer, XMLNamespaceMap nsmap) {
+// 		this.out = new org.xmlpull.mxp1_serializer.MXSerializer();
+// 		this.nsmap = nsmap;
+// 		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#serializer-attvalue-use-apostrophe", true);
+// 		this.out.setFeature("http://xmlpull.org/v1/doc/features.html#names-interned", false);
+// 		this.out.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-indentation", " ");
+// 		this.out.setOutput(out_writer);
+// 	}
+//
+// 	public void startDocument() throws IOException {
+// 		out.startDocument("1.0", "UTF-8", Boolean.TRUE);
+// 		atStart = true;
+// 	}
+//
+// 	public void endDocument() throws IOException {
+// 		atStart = false;
+// 		out.ignorableWhitespace("\n");
+// 		out.endDocument();
+// 		out.flush();
+// 		out.getWriter().close();
+// 	}
+//
+// 	public void startElement(QName qn) throws IOException {
+// 		if (atStart) {
+// 			atStart = false;
+// 			for (String prefix : nsmap.getAllPrefixes())
+// 				out.setPrefix(prefix, nsmap.prefix2uri(prefix));
+// 		}
+// 		out.startTag(qn.getNamespaceURI(), qn.getLocalPart());
+// 	}
+//
+// 	public void endElement(QName qn) throws IOException {
+// 		out.endTag(qn.getNamespaceURI(), qn.getLocalPart());
+// 	}
+//
+// 	public void addAttribute(QName qn, String value) throws IOException {
+// 		out.attribute(qn.getNamespaceURI(), qn.getLocalPart(), value);
+// 	}
+//
+// 	public void addText(String value) throws IOException {
+// 		out.text(value);
+// 	}
+//
+// 	public void addComment(String comment, boolean nl) throws IOException {
+// 		if (nl)
+// 			out.ignorableWhitespace("\n");
+// 		out.comment(comment);
+// 		if (nl)
+// 			out.ignorableWhitespace("\n");
+// 	}
+// }
 
 final class StreamXMLDumpWriter implements XMLDumpWriter {
-	
+
 	static class PendingElement {
 		QName qn;
 		QName[] attrs;
@@ -117,14 +117,14 @@ final class StreamXMLDumpWriter implements XMLDumpWriter {
 			}
 		}
 	}
-	
+
 	private XMLStreamWriter out;
 	private XMLNamespaceMap nsmap;
 	private boolean atStart;
 	private boolean hasText;
 	private int depth;
 	private PendingElement pendingElement;
-	
+
 	StreamXMLDumpWriter(OutputStream out_stream, XMLNamespaceMap nsmap) throws XMLStreamException {
 		XMLOutputFactory outf = XMLOutputFactory.newInstance();
 		this.out = outf.createXMLStreamWriter(out_stream, "UTF-8");
@@ -230,7 +230,7 @@ final class StreamXMLDumpWriter implements XMLDumpWriter {
 		hasText = true;
 		out.writeCharacters(value);
 	}
-	
+
 	public void addComment(String comment, boolean nl) throws XMLStreamException {
 		writePendingElement(false);
 		if (nl)

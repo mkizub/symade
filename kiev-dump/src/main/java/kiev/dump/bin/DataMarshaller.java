@@ -76,7 +76,7 @@ public class DataMarshaller implements Marshaller {
     	if (data instanceof Float || data instanceof Double) {
     		double val = ((Number)data).doubleValue();
     		if (val == ((int)val)) {
-    			marshal(new Integer((int)val), out, context);
+    			marshal(Integer.valueOf((int)val), out, context);
     			return;
     		}
 			out.writeValueTag(Signature.TAG_FLOAT);

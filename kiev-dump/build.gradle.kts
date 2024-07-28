@@ -5,10 +5,6 @@ plugins {
 group = "org.symade.kiev"
 version = "0.6.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
 sourceSets {
     main {
         java {
@@ -17,10 +13,14 @@ sourceSets {
     }
 }
 
+tasks.compileJava {
+    options.isDeprecation = true
+}
+
 dependencies {
 //    testImplementation(platform("org.junit:junit-bom:5.9.1"))
 //    testImplementation("org.junit.jupiter:junit-jupiter")
-    implementation(files("${project.rootDir}/symade-core.jar", "${project.rootDir}/bin/xpp3-1.1.4c.jar"))
+    implementation(files("${project.rootDir}/symade-core.jar"))
     implementation(project(":kiev-stdlib"))
     implementation(project(":kiev-core"))
 }

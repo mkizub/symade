@@ -6,11 +6,6 @@ plugins {
 group = "org.symade.kiev"
 version = "0.6.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-}
-
 sourceSets {
     main {
         kiev {
@@ -20,7 +15,7 @@ sourceSets {
 }
 
 tasks.compileKiev {
-    classpath = files("${project.rootDir}/symade-core.jar", "${project.rootDir}/bin/xpp3-1.1.4c.jar")
+    classpath = files("${project.rootDir}/symade-core.jar")
     kievClasspath = files("${project.rootDir}/symade-core.jar")
     options.compilerArgs.addAll(arrayOf("-verify","-enable","vnode","-enable","view"))
 }
