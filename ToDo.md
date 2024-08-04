@@ -33,3 +33,5 @@
 - rewriteByMacro(env, "kiev·ir·RuleTemplates", "mkRuleBlock", ...)
   - load rewrite templates as resource, if not in classpath
 - compiler depends on import kiev.fmt.common.TextParser;
+- fix AHandle's public <T extends ANode> void cleanupIf((AHandleData, T)->boolean needToCleanup, T arg)
+  - should compile with <T>

@@ -32,8 +32,12 @@ public class JNode extends AHandleData implements JConstants {
 
 	public VT vn() {
 		SemContext semantic_context = ((JNodeContext)getDataContext()).semantic_context;
-		foreach (ASTNode nh; p_handle_.getHandleData(); semantic_context.inherits(nh.getDataContext()))
-			return (VT)nh;
+		//foreach (ASTNode nh; p_handle_.getHandleData(); semantic_context.inherits(nh.getDataContext()))
+		//	return (VT)nh;
+		for (AHandleData nh = p_handle_.getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
+			if (semantic_context.inherits(nh.getDataContext()))
+				return (VT)nh;
+		}
 		return null;
 	}
 
@@ -54,8 +58,12 @@ public class JNode extends AHandleData implements JConstants {
 		if !(n instanceof ASTNode)
 			return null;
 		Context bend_context = ((WorkerThread)Thread.currentThread()).bend_context;
-		foreach (JNode nh; n.handle().getHandleData(); bend_context == nh.getDataContext())
-			return nh;
+		//foreach (JNode nh; n.handle().getHandleData(); bend_context == nh.getDataContext())
+		//	return nh;
+		for (AHandleData nh = n.handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
+			if (bend_context == nh.getDataContext() && nh instanceof JNode)
+				return (JNode)nh;
+		}
 		return null;
 	}
 

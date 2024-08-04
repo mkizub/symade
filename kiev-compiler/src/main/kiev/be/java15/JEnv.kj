@@ -49,12 +49,17 @@ public final class JEnv implements BEndEnv {
 	}
 
 	public void backendCleanup(ANode node) {
+		final (AHandleData)->void cleaner = fun (AHandleData data)->void {
+			if (data instanceof JNode)
+				data.backendCleanup();
+		};
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
-				foreach (JNode nh; n.handle().getHandleData()) {
-					nh.backendCleanup();
-					return true;
-				}
+				n.handle().applyToAll(cleaner);
+				//foreach (JNode nh; n.handle().getHandleData()) {
+				//	nh.backendCleanup();
+				//	return true;
+				//}
 				return true;
 			}
 		});

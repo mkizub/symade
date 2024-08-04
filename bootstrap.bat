@@ -5,10 +5,13 @@ set OUT_ROOT=buildBootstrap
 rmdir /s /q %OUT_ROOT%
 
 "%JAVA_HOME%\bin\java" -ea -verify -Xfuture -classpath  bin\symade-06.jar kiev.Main -d %OUT_ROOT%\symade1 -verify -enable vnode -enable view -p k6.prj -prop k6.props -g -target 8 -no-btd
+@if %errorlevel% NEQ 0 (exit /b %errorlevel%)
 
 "%JAVA_HOME%\bin\java" -ea -verify -Xfuture -classpath %OUT_ROOT%\symade1 kiev.Main -d %OUT_ROOT%\symade2 -verify -enable vnode -enable view -p k6.prj -prop k6.props -g -target 8 -no-btd
+@if %errorlevel% NEQ 0 (exit /b %errorlevel%)
 
 "%JAVA_HOME%\bin\java" -ea -verify -Xfuture -classpath %OUT_ROOT%\symade2 kiev.Main -d %OUT_ROOT%\symade3 -verify -enable vnode -enable view -p k6.prj -prop k6.props -g -target 8 -no-btd
+@if %errorlevel% NEQ 0 (exit /b %errorlevel%)
 
 "%JAVA_HOME%\bin\jar" cf symade-core.jar -C %OUT_ROOT%\symade3 .
 "%JAVA_HOME%\bin\jar" cf symade-core-sources.jar -C kiev-stdlib\src\main .

@@ -29,20 +29,24 @@ public abstract class Drawable extends ANode {
 	// block layout info
 	@UnVersioned
 	public       DrawLayoutInfo         dr_dli;
-	
+
 	public Drawable(INode node, Formatter fmt, Draw_SyntaxElem syntax) {
 		super(node.handle(), fmt.formatter_context);
 		this.drnode = node;
 		this.syntax = syntax;
 	}
-	
+
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.ct == ChangeType.THIS_DETACHED) {
 			handle().delData(this);
 		}
 		else if (info.ct == ChangeType.THIS_ATTACHED) {
-			foreach (AHandleData nh; handle().getHandleData(); nh == this)
-				goto call_super;
+			//foreach (AHandleData nh; handle().getHandleData(); nh == this)
+			//	goto call_super;
+			for (AHandleData nh = handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
+				if (nh == this)
+					goto call_super;
+			}
 			handle().addData(this);
 		}
 	call_super:
@@ -97,7 +101,7 @@ public abstract class Drawable extends ANode {
 
 	public boolean isUnvisible() {
 		return false;
-	}  
+	}
 
 	public final DrawTerm getFirstLeaf() {
 		if (this.isUnvisible())

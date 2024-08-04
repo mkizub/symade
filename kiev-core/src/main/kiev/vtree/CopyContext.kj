@@ -2,18 +2,20 @@ package kiev.vtree;
 
 import syntax kiev.Syntax;
 
+import java.util.IdentityHashMap;
+
 public interface CopyContext {
 	public <N extends INode> N copyRoot(N node);
 	public <N extends INode> N copyFull(N node);
 	public void addCopyInfo(INode nold, INode nnew);
-	public INode getCopyOf(long uid);
+	public INode getCopyOf(AHandle handle);
 	public void updateLinks();
 }
 
 public class Copier implements CopyContext {
-	
-	private final Hashtable<Long,INode> map = new Hashtable<Long,INode>();
-	
+
+	private final IdentityHashMap<AHandle,INode> map = new IdentityHashMap<AHandle,INode>();
+
 	public <N extends INode> N copyRoot(N node) {
 		N t = (N)node.copy(this);
 		return t;
@@ -27,21 +29,21 @@ public class Copier implements CopyContext {
 
 	public void addCopyInfo(INode nold, INode nnew) {
 		if (nold != nnew)
-			map.put(Long.valueOf(nold.getUID()),nnew);
+			map.put(nold.handle(),nnew);
 	}
 
-	public INode getCopyOf(long uid) {
-		return map.get(Long.valueOf(uid));
+	public INode getCopyOf(AHandle handle) {
+		return map.get(handle);
 	}
 
 	public void updateLinks() {
-		foreach (INode node; map) {
+		foreach (INode node; map.values()) {
 			foreach (AttrSlot attr; node.values(); !attr.isChild()) {
 				if (attr instanceof SpaceAttrSlot) {
 					INode[] arr = attr.getArray(node);
 					for (int i=0; i < arr.length; i++) {
 						INode nold = arr[i];
-						INode nnew = map.get(Long.valueOf(nold.getUID()));
+						INode nnew = map.get(nold.handle());
 						if (nnew != null && nold != nnew)
 							arr[i] = nnew;
 					}
@@ -49,7 +51,7 @@ public class Copier implements CopyContext {
 				else if (attr instanceof ScalarAttrSlot) {
 					Object nold = attr.get(node);
 					if (nold instanceof INode) {
-						INode nnew = map.get(Long.valueOf(nold.getUID()));
+						INode nnew = map.get(nold.handle());
 						if (nnew != null && nold != nnew)
 							attr.set(node,nnew);
 					}
@@ -62,7 +64,7 @@ public class Copier implements CopyContext {
 					DataAttachInfo dai = (DataAttachInfo)dat;
 					if (dai.p_data instanceof INode) {
 						INode nold = (INode)dai.p_data;
-						INode nnew = map.get(Long.valueOf(nold.getUID()));
+						INode nnew = map.get(nold.handle());
 						if (nnew != null && nold != nnew)
 							node.setVal(dai.p_slot,nnew);
 					}

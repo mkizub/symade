@@ -465,10 +465,14 @@ public abstract class Struct extends ComplexTypeDecl {
 	}
 
 	public void postVerify(Env env, INode parent, AttrSlot slot) {
+		final (AHandleData,ANode)->boolean predicate = fun (AHandleData nh, ANode node)->boolean {
+			return nh instanceof DataFlowInfo && nh.node_impl == node;
+		};
 		this.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
-				foreach (DataFlowInfo nh; n.handle().getHandleData(); nh.node_impl == n)
-					n.handle().delData(nh);
+				//foreach (DataFlowInfo nh; n.handle().getHandleData(); nh.node_impl == n)
+				//	n.handle().delData(nh);
+				n.handle().cleanupIf(predicate, n);
 				return true;
 			}
 			public void post_exec(ANode n) {}

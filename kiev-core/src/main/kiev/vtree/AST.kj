@@ -22,7 +22,7 @@ public interface INode {
 	public static final INode[] emptyArray = new INode[0];
 
 	public AHandle		handle();
-	public long			getUID();
+	//public long			getUID();
 	public ANode		asANode();
 
 	public INode        parent();
@@ -342,8 +342,8 @@ public abstract class ANode extends AHandleData implements INode {
 	final
 	public AHandle handle() { return p_handle_; }
 
-	final
-	public long getUID() { return p_handle_.h_uid; }
+	//final
+	//public long getUID() { return p_handle_.h_uid; }
 
 	final
 	public ANode asANode() { return this; }
@@ -977,7 +977,7 @@ public abstract class ANode extends AHandleData implements INode {
 	}
 
 	public Object copy(CopyContext cc) {
-		INode obj = cc.getCopyOf(this.getUID());
+		INode obj = cc.getCopyOf(this.handle());
 		if (obj != null)
 			return obj;
 		if (this instanceof TypeInfoInterface)
@@ -1387,8 +1387,12 @@ public abstract class ASTNode extends ANode implements Constants {
 		if (node == null)
 			return null;
 		SemContext semantic_context = Kiev.getSemContext();
-		foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
-			return nh;
+		//foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
+		//	return nh;
+		for (AHandleData nh = node.handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
+			if (semantic_context.inherits(nh.getDataContext()) && nh instanceof ASTNode)
+				return (ASTNode)nh;
+		}
 		return null;
 	}
 

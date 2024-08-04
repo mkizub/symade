@@ -21,7 +21,7 @@ public class JMethod extends JDNode {
 	@virtual typedef VT  ≤ Method;
 
 	public final JWBCCondition[] conditions;
-	
+
 	@abstract
 	public:ro	JVar[]					params;
 	@abstract
@@ -48,7 +48,7 @@ public class JMethod extends JDNode {
 			return (JMethod)jn;
 		return new JMethod(impl);
 	}
-	
+
 	JMethod(Method impl) {
 		super(impl);
 		Vector<JWBCCondition> conds = new Vector<JWBCCondition>();
@@ -65,9 +65,9 @@ public class JMethod extends JDNode {
 	}
 
 	public MetaThrows getMetaThrows() { vn().getMetaThrows() }
-	
+
 	public JVar	getRetVar() { return (JVar)this.vn().getRetVar(); }
-	
+
 	@getter public final JVar[] get$params() {
 		return JNode.toJArray<JVar>(vn().params);
 	}
@@ -100,7 +100,7 @@ public class JMethod extends JDNode {
 	public JVar getOuterThisParam() { return (JVar) this.vn().getOuterThisParam(); }
 	public JVar getClassTypeInfoParam() { return (JVar) this.vn().getClassTypeInfoParam(); }
 	public JVar getVarArgParam() { return (JVar) this.vn().getVarArgParam(); }
-	
+
 	public JLabel getBrkLabel() {
 		return block.getBrkLabel();
 	}
@@ -161,14 +161,19 @@ public class JMethod extends JDNode {
 				code.generateCode();
 				ENode bl = vn().body;
 				if (bl != null) {
+					final (AHandleData,ANode)->boolean predicate = fun (AHandleData nh, ANode node)->boolean {
+						return  nh instanceof JNode ||
+								nh instanceof DataFlowInfo && nh.node_impl == node;
+					};
 					bl.walkTree(new TreeWalker() {
 						public boolean pre_exec(ANode n) {
-							foreach (AHandleData nh; n.handle().getHandleData()) {
-								if (nh instanceof DataFlowInfo && nh.node_impl == n)
-									n.handle().delData(nh);
-								else if (nh instanceof JNode)
-									n.handle().delData(nh);
-							}
+							n.handle().cleanupIf(predicate, n);
+							//foreach (AHandleData nh; n.handle().getHandleData()) {
+							//	if (nh instanceof DataFlowInfo && nh.node_impl == n)
+							//		n.handle().delData(nh);
+							//	else if (nh instanceof JNode)
+							//		n.handle().delData(nh);
+							//}
 							return true;
 						}
 					});
@@ -215,7 +220,7 @@ public class JInitializer extends JDNode {
 			return (JInitializer)jn;
 		return new JInitializer(impl);
 	}
-	
+
 	protected JInitializer(Initializer impl) {
 		super(impl);
 	}
@@ -233,7 +238,7 @@ public class JInitializer extends JDNode {
 }
 
 public class JWBCCondition extends JDNode {
-	
+
 	@virtual typedef VT  ≤ WBCCondition;
 
 	public static final JWBCCondition[] emptyArray = new JWBCCondition[0];
@@ -258,7 +263,7 @@ public class JWBCCondition extends JDNode {
 		case WBCType.CondEnsure:    return new JWBCConditionEnsure(impl);
 		}
 	}
-	
+
 	protected JWBCCondition(WBCCondition impl) {
 		super(impl);
 		cond = impl.cond;
@@ -270,16 +275,16 @@ public class JWBCCondition extends JDNode {
 	}
 
 	public JMethod getImplMethod() { return null; }
-	
+
 	public CodeAttr getCodeAttr() { return codeAttr; }
 	public void setCodeAttr(CodeAttr ca) { codeAttr = ca; }
-	
+
 	public void generateEntryCall(JEnv jenv, Code code, boolean for_constructor) {
 	}
-	
+
 	public void generateLeaveCall(JEnv jenv, Code code) {
 	}
-	
+
 	public void generate(JEnv jenv, ConstPool constPool, Type reqType) {
 		Code code = new Code(jenv,(JStruct)jctx_tdecl, jctx_method, constPool);
 		code.generation = true;
@@ -338,12 +343,12 @@ public class JWBCConditionEnsure extends JWBCCondition {
 	public void generateLeaveCall(JEnv jenv, Code code) {
 		code.importCode(this.getCodeAttr());
 	}
-	
+
 }
 
 public class JWBCConditionInvariant extends JWBCCondition {
 	JMethod impl_method;
-	
+
 	public JWBCConditionInvariant(WBCCondition impl) {
 		super(impl);
 		impl_method = (JMethod)(Method)impl.parent();
@@ -358,13 +363,13 @@ public class JWBCConditionInvariant extends JWBCCondition {
 			code.addInstr(Instr.op_call,impl_method,false);
 		}
 	}
-	
+
 	public void generateLeaveCall(JEnv jenv, Code code) {
 		if( !impl_method.isStatic() )
 			code.addInstrLoadThis();
 		code.addInstr(Instr.op_call,impl_method,false);
 	}
-	
+
 }
 
 
