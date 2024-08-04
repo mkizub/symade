@@ -24,7 +24,7 @@
  <members>
   <core:KievSyntax uuid='cb34045b-c7b5-4ba6-9a3f-fb9ce06f3c65' name='Syntax'>
    <super_syntax>
-    <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.KievSyntax;»' name='Syntax‣823ab44f-c543-44b7-a26f-40eb3ae8c9d3' />
+    <core:SymbolRef sop:ti='kiev.vtree.SymbolRef«kiev.vlang.KievSyntax;»' full='true' name='kiev·stdlib·Syntax‣823ab44f-c543-44b7-a26f-40eb3ae8c9d3' />
    </super_syntax>
    <members>
     <core:ImportImpl all='true'>

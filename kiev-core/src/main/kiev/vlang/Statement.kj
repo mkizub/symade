@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public class InlineMethodStat extends ENode implements ScopeOfNames {
-	
+
 	@DataFlowDefinition(in="root()", out="this:out()") private static class DFI {}
 
 	@nodeAttr public Method					dispatched;
@@ -29,7 +29,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 
 	public InlineMethodStat() {}
 
-	public InlineMethodStat(int pos, Method dispatched, Method dispatcher) {
+	public InlineMethodStat(long pos, Method dispatched, Method dispatcher) {
 		this.pos = pos;
 		this.dispatched = dispatched;
 		this.dispatcher = dispatcher;
@@ -48,7 +48,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		//path ?= getNewVar((Var)sr.dnode)
 		path ?= (Var)sr.dnode
 	}
-	
+
 	private Var getNewVar(Var old) {
 		for (int i=0; i < old_vars.length; i++) {
 			if (old_vars[i].dnode == old)
@@ -60,7 +60,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	static class InlineMethodStatDFFuncIn extends DFFunc {
 		final int res_idx;
 		InlineMethodStatDFFuncIn(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -83,7 +83,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	static class InlineMethodStatDFFuncOut extends DFFunc {
 		final int res_idx;
 		InlineMethodStatDFFuncOut(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -102,7 +102,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 
 @ThisIsANode(name="ExprSt", lang=CoreLang)
 public class ExprStat extends ENode {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
@@ -117,7 +117,7 @@ public class ExprStat extends ENode {
 			this.pos = expr.pos;
 	}
 
-	public ExprStat(int pos, ENode expr) {
+	public ExprStat(long pos, ENode expr) {
 		this.pos = pos;
 		this.expr = expr;
 	}
@@ -132,7 +132,7 @@ public class ExprStat extends ENode {
 
 @ThisIsANode(name="Return", lang=CoreLang)
 public class ReturnStat extends ENode {
-	
+
 	@DataFlowDefinition(jmp="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
@@ -141,7 +141,7 @@ public class ReturnStat extends ENode {
 
 	public ReturnStat() {}
 
-	public ReturnStat(int pos, ENode expr) {
+	public ReturnStat(long pos, ENode expr) {
 		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
@@ -150,7 +150,7 @@ public class ReturnStat extends ENode {
 
 @ThisIsANode(name="Throw", lang=CoreLang)
 public class ThrowStat extends ENode {
-	
+
 	@DataFlowDefinition(jmp="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
@@ -159,7 +159,7 @@ public class ThrowStat extends ENode {
 
 	public ThrowStat() {}
 
-	public ThrowStat(int pos, ENode expr) {
+	public ThrowStat(long pos, ENode expr) {
 		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
@@ -168,7 +168,7 @@ public class ThrowStat extends ENode {
 
 @ThisIsANode(name="If", lang=CoreLang)
 public class IfElseStat extends ENode {
-	
+
 	@DataFlowDefinition(out="join thenSt elseSt") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		cond;
 	@DataFlowDefinition(in="cond:true")	ENode		thenSt;
@@ -180,14 +180,14 @@ public class IfElseStat extends ENode {
 	@nodeAttr public ENode			elseSt;
 
 	public IfElseStat() {}
-	
-	public IfElseStat(int pos, ENode cond, ENode thenSt, ENode elseSt) {
+
+	public IfElseStat(long pos, ENode cond, ENode thenSt, ENode elseSt) {
 		this.pos = pos;
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
 	}
-	
+
 	public Type getType(Env env) {
 		if (thenSt == null || elseSt == null)
 			return env.tenv.tpVoid;
@@ -211,7 +211,7 @@ public class IfElseStat extends ENode {
 
 @ThisIsANode(name="CondSt", lang=CoreLang)
 public class CondStat extends ENode {
-	
+
 	@DataFlowDefinition(out="cond:true") private static class DFI {
 	@DataFlowDefinition(in="this:in")		ENode		cond;
 	@DataFlowDefinition(in="cond:false")		ENode		message;
@@ -223,7 +223,7 @@ public class CondStat extends ENode {
 
 	public CondStat() {}
 
-	public CondStat(int pos, ENode cond, ENode message) {
+	public CondStat(long pos, ENode cond, ENode message) {
 		this.pos = pos;
 		this.cond = cond;
 		this.message = message;
@@ -232,7 +232,7 @@ public class CondStat extends ENode {
 
 @ThisIsANode(name="LblSt", lang=CoreLang)
 public class LabeledStat extends ENode {
-	
+
 	@DataFlowDefinition(out="stat") private static class DFI {
 	@DataFlowDefinition(in="this:in")	Label			lbl;
 	@DataFlowDefinition(in="lbl")		ENode			stat;
@@ -250,7 +250,7 @@ public class LabeledStat extends ENode {
 
 @ThisIsANode(name="Break", lang=CoreLang)
 public class BreakStat extends ENode {
-	
+
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@AttrBinDumpInfo(ignore=true)
@@ -320,7 +320,7 @@ public class BreakStat extends ENode {
 
 @ThisIsANode(name="Continue", lang=CoreLang)
 public class ContinueStat extends ENode {
-	
+
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@AttrBinDumpInfo(ignore=true)
@@ -390,7 +390,7 @@ public class ContinueStat extends ENode {
 
 @ThisIsANode(name="Goto", lang=CoreLang)
 public class GotoStat extends ENode {
-	
+
 	@DataFlowDefinition(jmp="this:in") private static class DFI {}
 
 	@AttrBinDumpInfo(ignore=true)
@@ -407,7 +407,7 @@ public class GotoStat extends ENode {
 	public GotoStat() {
 		this.ident = "";
 	}
-	
+
 	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
 		if (dest != null) {
 			dest.delLink((GotoStat)this);
@@ -448,7 +448,7 @@ public class GotoStat extends ENode {
 
 @ThisIsANode(name="GotoCase", lang=CoreLang)
 public class GotoCaseStat extends ENode {
-	
+
 	@DataFlowDefinition(jmp="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}

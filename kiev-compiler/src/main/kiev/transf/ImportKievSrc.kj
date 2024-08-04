@@ -54,11 +54,11 @@ public final class KievPlugin implements PluginFactory {
 //		   PASS 1 - process file syntax				//
 //													//
 /////////////////////////////////////////////////////
-	
+
 public final class KievFE_Pass1 extends TransfProcessor {
 	public KievFE_Pass1(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Syntax" }
-	
+
 	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
@@ -71,11 +71,11 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	public void processSyntax(ASTNode:ASTNode node) {
 		return;
 	}
-	
+
 	public void processSyntax(SyntaxScope:ASTNode ss) {
 		ss.getPackage();
 		if (ss instanceof FileUnit && ss.syntaxes.length == 0 && (ss.fname.endsWith(".java")||ss.fname.endsWith(".kj"))) {
@@ -96,7 +96,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			} catch(Exception e ) { Kiev.reportError(n,e); }
 		}
 	}
-	
+
 	public void processSyntax(ComplexTypeDecl:ASTNode node) {
 		foreach (ASTNode n; node.members) {
 			try {
@@ -181,7 +181,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	
+
 	public void processSyntax(Opdef:ASTNode astn) {
 		int prior = astn.prior;
 		String decl = astn.sname;
@@ -269,7 +269,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			foreach (TypeDef a; me.args)
 				a.setTypeUnerasable(true);
 		}
-		
+
 		foreach (ASTNode n; me.members) {
 			try {
 				processSyntax(n);
@@ -300,11 +300,11 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
-	
+
 	public void doProcess(SyntaxScope:ASTNode astn) {
 		foreach (ASTNode n; astn.members) {
 			try {
@@ -351,7 +351,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			tdecl.setArgsResolved(true);
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
-	
+
 	public void doProcess(ComplexTypeDecl:ASTNode astn) {
 		try {
 			ComplexTypeDecl td = astn;
@@ -364,18 +364,18 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				doProcess(s);
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
-	
+
 	private Type getStructType(ComplexTypeDecl tdecl, Stack<TypeDecl> path) {
 		tdecl = tdecl.checkResolved(env);
 		if (tdecl.isTypeResolved())
 			return tdecl.getType(env);
 		path.push(tdecl);
-		
+
 		tdecl.setTypeResolved(true);
-		
+
 		for (ComplexTypeDecl p = Env.ctxTDecl(tdecl); p != null; p = Env.ctxTDecl(p))
 			getStructType(p, path);
-		
+
 		StdTypes tenv = this.env.getTypeEnv();
 
 		if (tdecl instanceof Struct) {
@@ -461,7 +461,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 					getStructType(s, path);
 			}
 		}
-		
+
 		env.tenv.callbackTypeVersionChanged(tdecl);
 		if (tdecl instanceof Struct) {
 			Struct clazz = (Struct)tdecl;
@@ -481,7 +481,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 
 		tdecl.setArgsResolved(true);
 		path.pop();
-		
+
 		return tdecl.getType(env);
 	}
 }
@@ -497,7 +497,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 	public String getDescr() { "Class members" }
 
 	private boolean stdTypesAreChecked;
-	
+
 	private void checkStdTypes() {
 		if (stdTypesAreChecked)
 			return;
@@ -563,7 +563,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	public void doProcess(ASTNode:ASTNode astn) {
 	}
 
@@ -573,7 +573,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 	}
 
 	public void doProcess(ComplexTypeDecl:ASTNode astn) {
-		int pos = astn.pos;
+		long pos = astn.pos;
 		TypeDecl me = astn;
 		trace(Kiev.debug && Kiev.debugResolve,"Pass 3 for class "+me);
 		// Process members
@@ -696,7 +696,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 			}
 			// Inner classes and cases after all methods and fields, skip now
 		}
-		
+
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(env, nameInstance, false) == null) {
@@ -704,7 +704,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				inst.pos = me.pos;
 				inst.init = new NewExpr(me.pos, me.getType(env), ENode.emptyArray);
 				me.members += inst;
-				
+
 				Method get = new MethodImpl("getInstance", me.getType(env), ACC_STATIC|ACC_PUBLIC /*|ACC_SYNTHETIC*/);
 				get.pos = me.pos;
 				get.body = new Block(me.pos, new ENode[]{
@@ -740,7 +740,7 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	public void doProcess(ASTNode:ASTNode node) {
 	}
 	public void doProcess(SyntaxScope:ASTNode node) {
@@ -799,7 +799,7 @@ public final class KievFE_MetaDefaults extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	public void doProcess(ASTNode:ASTNode node) {
 	}
 
@@ -908,7 +908,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
 		if (wthg.setProcessorRun(fu,this))
 			return;
-		
+
 		tr = Transaction.enter(tr,"KievME_DumpAPI");
 		try {
 			dumpAPI(fu);
@@ -950,7 +950,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if (Kiev.fast_gen)
 			timestamp = fu.source_timestamp;
 		boolean run_backend = false;
-		
+
 		foreach (ASTNode n; fu.members) {
 			if (n instanceof ComplexTypeDecl)
 				run_backend |= dumpAPI((ComplexTypeDecl)n, timestamp);
@@ -965,7 +965,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 			if (n instanceof ExportXMLDump)
 				dumpAPI((ExportXMLDump)n, timestamp);
 		}
-		
+
 		if (Kiev.fast_gen)
 			fu.dont_run_backend = !run_backend;
 		else

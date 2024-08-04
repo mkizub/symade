@@ -38,7 +38,7 @@ public final class Symbol extends ASTNode implements ISymbol {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final Symbol[] emptyArray = new Symbol[0];
-	
+
 	public static final ParentAttrSlot nodeattr$namespace_parent =
 			new ParentAttrSlot("namespace_parent", true, TypeInfo.newTypeInfo(Symbol.class,null));
 
@@ -52,23 +52,23 @@ public final class Symbol extends ASTNode implements ISymbol {
 	public Symbol∅				sub_symbols;
 
 	public DNode getTargetDNode() { return dnode; }
-	
+
 	public Symbol getNameSpaceSymbol() {
 		return (Symbol)Symbol.nodeattr$namespace_parent.get(this);
 	}
-	
+
 	public boolean isGlobalSymbol() {
 		if (parent() instanceof KievRoot)
 			return true;
 		Symbol ns = getNameSpaceSymbol();
 		return ns != null && ns.isGlobalSymbol();
 	}
-	
+
 	public Symbol makeGlobalSubSymbol(String name) {
 		assert (this.isGlobalSymbol());
 		return makeSubSymbol(name);
 	}
-	
+
 	public Symbol makeSubSymbol(String name) {
 		if (name != null) {
 			name = name.intern();
@@ -79,7 +79,7 @@ public final class Symbol extends ASTNode implements ISymbol {
 		this.sub_symbols += sym;
 		return sym;
 	}
-	
+
 	@getter public DNode get$dnode() {
 		ANode p = parent();
 		if (p instanceof DNode)
@@ -88,15 +88,15 @@ public final class Symbol extends ASTNode implements ISymbol {
 			return ((Alias)p).symref.dnode;
 		return null;
 	}
-	
+
 	@getter public Symbol get$symbol() {
 		return this;
 	}
-	
+
 	public SymUUID suuid() {
 		return (SymUUID)getUnVersionedData(SymUUID.class);
 	}
-	
+
 	final public SymUUID getUUID(Env env) {
 		if (this.suuid() != null)
 			return this.suuid();
@@ -126,7 +126,7 @@ public final class Symbol extends ASTNode implements ISymbol {
 			setUnVersionedData(suuid);
 		}
 	}
-	
+
 	public String qname() {
 		if (sname == null)
 			return null;
@@ -140,12 +140,12 @@ public final class Symbol extends ASTNode implements ISymbol {
 	}
 
 	public void callbackChanged(NodeChangeInfo info) {
-		if (info.ct == ChangeType.THIS_DETACHED) {
+		if (info.ct == ChangeType.THIS_DETACHED && info.slot.isSemantic()) {
 			Symbol ns = getNameSpaceSymbol();
 			if (ns != null)
 				ns.sub_symbols.detach(this);
 		}
-		else if (info.ct == ChangeType.THIS_ATTACHED) {
+		else if (info.ct == ChangeType.THIS_ATTACHED && info.slot.isSemantic()) {
 			if (info.parent instanceof DNode) {
 				DNode dn = (DNode)info.parent;
 				ANode p = dn.parent();
@@ -162,18 +162,18 @@ public final class Symbol extends ASTNode implements ISymbol {
 	public Symbol(String sname) {
 		this.sname = sname;
 	}
-	public Symbol(int pos, String sname) {
+	public Symbol(long pos, String sname) {
 		this.pos = pos;
 		this.sname = sname;
 	}
-	
+
 	@getter public final String get$sname() {
 		return sname;
 	}
 	@setter public final void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
-	
+
 	public boolean equals(Object:Object nm) {
 		return false;
 	}
@@ -196,7 +196,7 @@ public final class Symbol extends ASTNode implements ISymbol {
 	public String toString() {
 		return sname;
 	}
-	
+
 	public String makeSignature(Env env) {
 		if (sname == null)
 			return "‣" + getUUID(env); // UUID separator is \u2023
@@ -213,7 +213,7 @@ public class Alias extends ASTNode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public static final Alias[] emptyArray = new Alias[0];
-	
+
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr
 	public Symbol				symbol;
@@ -238,7 +238,7 @@ public class Alias extends ASTNode {
 		if (m != null)
 			this.symref.symbol = m.symbol;
 	}
-	
+
 	@getter public String get$name() { return symbol.sname; }
 	@setter public void   set$name(String value) { symbol.sname = value; }
 
@@ -254,14 +254,14 @@ public class Alias extends ASTNode {
 
 @ThisIsANode(lang=CoreLang)
 public final class OperatorAlias extends Alias {
-	
+
 	public OperatorAlias() {
 		super("operator ???", null);
 	}
 	public OperatorAlias(String opname, Method m) {
 		super(opname, m);
 	}
-	
+
 	public void pass2(KievSyntax stx) {
 		Method m = (Method)parent();
 		// resolve in the path of scopes
@@ -274,7 +274,7 @@ public final class OperatorAlias extends Alias {
 		if (opdef != null)
 			opdef.addMethod(m);
 	}
-	
+
 	public String toString() {
 		return "operator \""+symbol.sname+'"';
 	}
@@ -293,7 +293,7 @@ public final class NameAndUUID {
 		this.uuid_low = suuid.low;
 	}
 }
-	
+
 @unerasable
 @ThisIsANode(lang=CoreLang)
 public final class SymbolRef<D extends DNode> extends ASTNode {
@@ -310,7 +310,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@nodeSRef
 	@nodeAttr
 	public					Object		ident_or_symbol_or_type;
-	
+
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeData
 	@abstract public		String		name; // unresolved name
@@ -318,24 +318,24 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@nodeData
 	@abstract public		Symbol		symbol; // resolved symbol
 	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
-		 
+
 	public SymbolRef() {}
 
 	public SymbolRef(String name) {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, String name) {
+	public SymbolRef(long pos, String name) {
 		this.pos = pos;
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, Symbol symbol) {
+	public SymbolRef(long pos, Symbol symbol) {
 		this.pos = pos;
 		this.symbol = symbol.symbol;
 	}
 
-	public SymbolRef(int pos, D symbol) {
+	public SymbolRef(long pos, D symbol) {
 		this.pos = pos;
 		this.symbol = symbol.symbol;
 	}
@@ -396,7 +396,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		return null;
 	}
-	
+
 	@getter public final D get$dnode() {
 		Object id = ident_or_symbol_or_type;
 		if (id instanceof Symbol)
@@ -413,25 +413,25 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		return null;
 	}
-	
+
 	@setter public final void set$ident_or_symbol_or_type(Object val) {
 		if (val instanceof String)
 			val = ((String)val).intern();
 		ident_or_symbol_or_type = val;
 	}
-	
+
 	@setter public final void set$name(String val) {
 		ident_or_symbol_or_type = val;
 	}
-	
+
 	@setter public final void set$symbol(Symbol val) {
 		ident_or_symbol_or_type = val;
 	}
-	
+
 	public String toString() { return name; }
 
 	public Symbol getTargetSymbol() { return symbol; }
-	
+
 	public String makeSignature(Env env) {
 		return this.makeSignature(env, true);
 	}
@@ -481,11 +481,11 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		return super.resolveAutoComplete(str,slot);
 	}
-	
+
 	public final boolean checkSymbolMatch(DNode dn) {
 		return dn instanceof D;
 	}
-	
+
 	public AutoCompleteResult autoCompleteSymbol(String str) {
 		return autoCompleteSymbol(this, str, this.pslot(), fun (DNode dn)->boolean {
 			return checkSymbolMatch(dn);
@@ -558,14 +558,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		}
 		return result;
 	}
-	
+
 	private static final Class[] defaultScopesForAutoResolve = { GlobalDNodeContainer.class };
 	private static Class[] scopesForAutoResolve(AttrSlot for_slot) {
 		if (for_slot == null || for_slot.auto_complete_scopes == null)
 			return defaultScopesForAutoResolve;
 		return for_slot.auto_complete_scopes;
 	}
-	
+
 	private static AutoCompleteResult autoCompleteSymbolFromRoot(ANode resolve_in, GlobalDNodeContainer scope, String tail, AttrSlot for_slot, (DNode)->boolean check) {
 		// check if the scope is a valid node path prefix
 		boolean valid_scope = false;

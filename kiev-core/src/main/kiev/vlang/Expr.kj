@@ -21,16 +21,16 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(name="Shadow", lang=CoreLang)
 public class Shadow extends ENode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-	
+
 	@nodeData public ASTNode	rnode;
 
 	public Shadow() {}
 	public Shadow(ASTNode node) {
 		this.rnode = node;
 	}
-	
+
 	public int getPriority(Env env) {
 		if (rnode instanceof ENode)
 			return ((ENode)rnode).getPriority(env);
@@ -38,7 +38,7 @@ public class Shadow extends ENode {
 	}
 
 	public Type getType(Env env) { return rnode.getType(env); }
-	
+
 	public String toString() {
 		return "(shadow of) "+rnode;
 	}
@@ -46,14 +46,14 @@ public class Shadow extends ENode {
 
 @ThisIsANode(lang=CoreLang)
 public class TypeClassExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-	
+
 	@nodeAttr public TypeRef		ttype;
 
 	public TypeClassExpr() {}
 
-	public TypeClassExpr(int pos, TypeRef ttype) {
+	public TypeClassExpr(long pos, TypeRef ttype) {
 		this.pos = pos;
 		this.ttype = ttype;
 	}
@@ -73,16 +73,16 @@ public class TypeClassExpr extends ENode {
 
 @ThisIsANode(lang=CoreLang)
 public class TypeInfoExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-	
+
 	@nodeAttr public TypeRef				ttype;
 	@nodeAttr public ENode					cl_expr;
 	@nodeAttr public ENode∅				cl_args;
 
 	public TypeInfoExpr() {}
 
-	public TypeInfoExpr(int pos, TypeRef ttype) {
+	public TypeInfoExpr(long pos, TypeRef ttype) {
 		this.pos = pos;
 		this.ttype = ttype;
 	}
@@ -114,9 +114,9 @@ public class TypeInfoExpr extends ENode {
 
 @ThisIsANode(name="AssertEnabled", lang=CoreLang)
 public class AssertEnabledExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-	
+
 	public AssertEnabledExpr() {}
 
 	public Type getType(Env env) {
@@ -133,18 +133,18 @@ public class AssertEnabledExpr extends ENode {
 
 @ThisIsANode(name="Set", lang=CoreLang)
 public class AssignExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:out()") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			lval;
 	@DataFlowDefinition(in="lval")		ENode			value;
 	}
-	
+
 	@nodeAttr public ENode			lval;
 	@nodeAttr public ENode			value;
 
 	public AssignExpr() {}
 
-	public AssignExpr(int pos, ENode lval, ENode value) {
+	public AssignExpr(long pos, ENode lval, ENode value) {
 		this.pos = pos;
 		this.symbol = getOperation(Env.getEnv()).symbol;
 		this.lval = lval;
@@ -157,7 +157,7 @@ public class AssignExpr extends ENode {
 		this.lval = args[0];
 		this.value = args[1];
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fObjectAssign.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{lval,value}; }
@@ -208,7 +208,7 @@ public class AssignExpr extends ENode {
 		final int res_idx;
 		AssignExprDFFunc(DataFlowInfo dfi) {
 			f = new DFFunc.DFFuncChildOut(dfi.getSocket("value"));
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -221,7 +221,7 @@ public class AssignExpr extends ENode {
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
 		return new AssignExprDFFunc(dfi);
 	}
-	
+
 	DFState addNodeTypeInfo(DFState dfs) {
 		if (value instanceof TypeRef)
 			return dfs;
@@ -247,18 +247,18 @@ public class AssignExpr extends ENode {
 
 @ThisIsANode(name="Modify", lang=CoreLang)
 public class ModifyExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:out()") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			lval;
 	@DataFlowDefinition(in="lval")		ENode			value;
 	}
-	
+
 	@nodeAttr public ENode			lval;
 	@nodeAttr public ENode			value;
 
 	public ModifyExpr() {}
 
-	public ModifyExpr(int pos, Operator op, ENode lval, ENode value) {
+	public ModifyExpr(long pos, Operator op, ENode lval, ENode value) {
 		this.pos = pos;
 		this.ident = op.name;
 		this.lval = lval;
@@ -271,7 +271,7 @@ public class ModifyExpr extends ENode {
 		this.lval = args[0];
 		this.value = args[1];
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{lval,value}; }
 
 	public Type getType(Env env) { return lval.getType(env); }
@@ -305,7 +305,7 @@ public class ModifyExpr extends ENode {
 		final int res_idx;
 		ModifyExprDFFunc(DataFlowInfo dfi) {
 			f = new DFFunc.DFFuncChildOut(dfi.getSocket("value"));
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -318,7 +318,7 @@ public class ModifyExpr extends ENode {
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
 		return new ModifyExprDFFunc(dfi);
 	}
-	
+
 	DFState addNodeTypeInfo(DFState dfs) {
 		if (value instanceof TypeRef)
 			return dfs;
@@ -344,25 +344,25 @@ public class ModifyExpr extends ENode {
 
 @ThisIsANode(name="BinOp", lang=CoreLang)
 public class BinaryExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="expr2") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode				expr1;
 	@DataFlowDefinition(in="expr1")		ENode				expr2;
 	}
-	
+
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
 	public BinaryExpr() {}
 
-	public BinaryExpr(int pos, Operator op, ENode expr1, ENode expr2) {
+	public BinaryExpr(long pos, Operator op, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.ident = op.name;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
 
-	public BinaryExpr(int pos, CoreFunc op, ENode expr1, ENode expr2) {
+	public BinaryExpr(long pos, CoreFunc op, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.symbol = op.operation.symbol;
 		this.expr1 = expr1;
@@ -375,7 +375,7 @@ public class BinaryExpr extends ENode {
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() { toStringByOpdef() }
@@ -439,7 +439,7 @@ public class BinaryExpr extends ENode {
 
 @ThisIsANode(name="UnaryOp", lang=CoreLang)
 public class UnaryExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(out="this:in")			ENode		expr;
 	}
@@ -453,7 +453,7 @@ public class UnaryExpr extends ENode {
 		this.symbol = sym;
 		this.expr = args[0];
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{expr}; }
 
 	public String toString() { toStringByOpdef() }
@@ -518,7 +518,7 @@ public class UnaryExpr extends ENode {
 
 @ThisIsANode(name="StrConcat", lang=CoreLang)
 public class StringConcatExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]	args;
 	}
@@ -527,7 +527,7 @@ public class StringConcatExpr extends ENode {
 
 	public StringConcatExpr() {}
 
-	public StringConcatExpr(int pos) {
+	public StringConcatExpr(long pos) {
 		this.pos = pos;
 	}
 
@@ -545,7 +545,7 @@ public class StringConcatExpr extends ENode {
 		else
 			this.args.add(arg2);
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fStringConcatSS.operation }
 
 	public Type getType(Env env) { return env.tenv.tpString; }
@@ -580,7 +580,7 @@ public class StringConcatExpr extends ENode {
 
 @ThisIsANode(name="Comma", lang=CoreLang)
 public class CommaExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="exprs") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]	exprs;
 	}
@@ -611,7 +611,7 @@ public class CommaExpr extends ENode {
 
 @ThisIsANode(name="Block", lang=CoreLang)
 public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
-	
+
 	@DataFlowDefinition(out="this:out()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		stats;
 	}
@@ -623,11 +623,11 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	public Block() {}
 
-	public Block(int pos) {
+	public Block(long pos) {
 		this.pos = pos;
 	}
 
-	public Block(int pos, ASTNode[] sts) {
+	public Block(long pos, ASTNode[] sts) {
 		this.pos = pos;
 		this.stats.addAll(sts);
 	}
@@ -694,7 +694,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		final int res_idx;
 		BlockDFFunc(DataFlowInfo dfi) {
 			f = new DFFunc.DFFuncChildOut(dfi.getSocket("stats"));
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -718,7 +718,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
 		return new BlockDFFunc(dfi);
 	}
-	
+
 	public String toString() {
 		return "{...}";
 	}
@@ -727,7 +727,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 @ThisIsANode(name="IncrOp", lang=CoreLang)
 public class IncrementExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="lval") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			lval;
 	}
@@ -736,7 +736,7 @@ public class IncrementExpr extends ENode {
 
 	public IncrementExpr() {}
 
-	public IncrementExpr(int pos, CoreFunc op, ENode lval) {
+	public IncrementExpr(long pos, CoreFunc op, ENode lval) {
 		this.pos = pos;
 		this.symbol = op.operation.symbol;
 		this.lval = lval;
@@ -747,7 +747,7 @@ public class IncrementExpr extends ENode {
 		this.symbol = sym;
 		this.lval = args[0];
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{lval}; }
 
 	public Type getType(Env env) {
@@ -768,7 +768,7 @@ public class IncrementExpr extends ENode {
 
 @ThisIsANode(name="IfOp", lang=CoreLang)
 public class ConditionalExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="join expr1 expr2") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		cond;
 	@DataFlowDefinition(in="cond:true")	ENode		expr1;
@@ -781,7 +781,7 @@ public class ConditionalExpr extends ENode {
 
 	public ConditionalExpr() {}
 
-	public ConditionalExpr(int pos, ENode cond, ENode expr1, ENode expr2) {
+	public ConditionalExpr(long pos, ENode cond, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.cond = cond;
 		this.expr1 = expr1;
@@ -823,13 +823,13 @@ public class CastExpr extends ENode {
 
 	public CastExpr() {}
 
-	public CastExpr(int pos, Type ctype, ENode expr) {
+	public CastExpr(long pos, Type ctype, ENode expr) {
 		this.pos = pos;
 		this.ctype = new TypeRef(ctype);
 		this.expr = expr;
 	}
 
-	public CastExpr(int pos, TypeRef ctype, ENode expr) {
+	public CastExpr(long pos, TypeRef ctype, ENode expr) {
 		this.pos = pos;
 		this.ctype = ctype;
 		this.expr = expr;

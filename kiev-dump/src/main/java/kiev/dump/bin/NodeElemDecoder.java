@@ -60,7 +60,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 			}
 		}
 		if (tav.tag == Signature.TAG_LINENO) {
-			ne.node.asANode().setPosLine(tav.intVal());
+			ne.node.asANode().setLineNo(tav.intVal());
 			return true;
 		}
 		if (tav.tag == Signature.TAG_VOID) {
@@ -139,7 +139,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 		attr_pos += 1;
 		return true;
 	}
-	
+
 	private AttrSlot getAttrSlot() {
 		return el.tp.attrs[attr_pos].getAttrSlot();
 	}
@@ -150,7 +150,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 		if (attr_pos >= te.attrs.length)
 			throw new DumpException("Corrupted dump file: unexpected value tag '"+tag.sign+"' for attr index "+attr_pos+" in type"+te.name+" at "+(reader.buf.position()-1));
 	}
-	
+
 	private boolean checkMakeNode() throws DumpException {
 		TypeElem te = el.tp;
 		if (attr_pos >= te.leading_attrs) {
@@ -180,7 +180,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 		}
 		return false;
 	}
-	
+
 	private void setValue(NodeElem ne, INode node, AttrElem ae, TagAndVal tav) throws DumpException {
 		if (tav.tag == Signature.TAG_NULL) {
 			if (ae.vtype == TypeElem.teSYMREF) {
@@ -273,7 +273,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 		}
 		throw new DumpException("Corrupted dump file: unexpected signature '"+tav.tag.sign+"' at "+tav.pos);
 	}
-	
+
 	@SuppressWarnings({"unchecked"})
 	private void setNodeValue(NodeElem ne, INode node, AttrElem ae, TagAndVal tav) {
 		ScalarAttrSlot attr = (ScalarAttrSlot)ae.getAttrSlot();
@@ -346,5 +346,5 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 		else
 			System.out.println("Attribute '"+attr.name+"' of "+node.getClass()+" uses unsupported "+clazz);
 	}
-	
+
 }

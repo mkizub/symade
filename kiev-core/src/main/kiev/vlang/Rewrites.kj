@@ -431,7 +431,7 @@ public class IfElseRewr extends ENode {
 
 	public IfElseRewr() {}
 
-	public IfElseRewr(int pos, ENode cond, ENode thenSt, ENode elseSt) {
+	public IfElseRewr(long pos, ENode cond, ENode thenSt, ENode elseSt) {
 		this.pos = pos;
 		this.cond = cond;
 		this.thenSt = thenSt;

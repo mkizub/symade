@@ -11,11 +11,11 @@ rmdir /s /q %OUT_ROOT%
 "%JAVA_HOME%\bin\java" -ea -verify -Xfuture -classpath %OUT_ROOT%\symade2 kiev.Main -d %OUT_ROOT%\symade3 -verify -enable vnode -enable view -p k6.prj -prop k6.props -g -target 8 -no-btd
 
 "%JAVA_HOME%\bin\jar" cf symade-core.jar -C %OUT_ROOT%\symade3 .
-"%JAVA_HOME%\bin\jar" cf symade-core-sources.jar -C %OUT_ROOT%\symade3 .
-"%JAVA_HOME%\bin\jar" uf symade-core-sources.jar -C kiev-stdlib\src\main .
+"%JAVA_HOME%\bin\jar" cf symade-core-sources.jar -C kiev-stdlib\src\main .
 "%JAVA_HOME%\bin\jar" uf symade-core-sources.jar -C kiev-core\src\main .
 "%JAVA_HOME%\bin\jar" uf symade-core-sources.jar -C kiev-compiler\src\main .
 "%JAVA_HOME%\bin\jar" uf symade-core-sources.jar -C kiev-dump\src\main\java .
 "%JAVA_HOME%\bin\jar" uf symade-core-sources.jar -C symade-fmt\src\main .
 
+set OUT_ROOT=
 @rem rmdir /s /q %OUT_ROOT%

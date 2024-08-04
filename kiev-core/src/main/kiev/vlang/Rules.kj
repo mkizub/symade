@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=LogicLang)
 public class RuleMethod extends Method {
-	
+
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in")	Var[]			localvars;
 	@DataFlowDefinition(in="this:in")	Block			body;
@@ -117,7 +117,7 @@ public class RuleMethod extends Method {
 	static class RuleMethodDFFunc extends DFFunc {
 		final int res_idx;
 		RuleMethodDFFunc(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -222,7 +222,7 @@ public abstract class ASTRuleNode extends ENode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleBlock extends ENode {
-	
+
 	@DataFlowDefinition(out="rnode") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ASTRuleNode		rnode;
 	}
@@ -231,7 +231,7 @@ public final class RuleBlock extends ENode {
 
 	public RuleBlock() {}
 
-	public RuleBlock(int pos, ASTRuleNode n) {
+	public RuleBlock(long pos, ASTRuleNode n) {
 		this.pos = pos;
 		rnode = n;
 	}
@@ -268,7 +268,7 @@ public final class RuleBlock extends ENode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleOrExpr extends ASTRuleNode {
-	
+
 	@DataFlowDefinition(out="rules") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	ASTRuleNode[]	rules;
 	}
@@ -284,7 +284,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 		this.rules.add(first);
 	}
 
-	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
+	public RuleOrExpr(long pos, ASTRuleNode[] rules) {
 		this.pos = pos;
 		this.rules.addAll(rules);
 	}
@@ -328,7 +328,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleAndExpr extends ASTRuleNode {
-	
+
 	@DataFlowDefinition(out="rules") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ASTRuleNode[]	rules;
 	}
@@ -344,7 +344,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 		this.rules.add(first);
 	}
 
-	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
+	public RuleAndExpr(long pos, ASTRuleNode[] rules) {
 		this.pos = pos;
 		this.rules.addAll(rules);
 	}
@@ -409,7 +409,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleIstheExpr extends ASTRuleNode {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
@@ -419,12 +419,12 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 	public RuleIstheExpr() {}
 
-	public RuleIstheExpr(int pos, LVarExpr var, ENode expr) {
+	public RuleIstheExpr(long pos, LVarExpr var, ENode expr) {
 		this.pos = pos;
 		this.var = var;
 		this.expr = expr;
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fRuleIsThe.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{var,expr}; }
@@ -435,7 +435,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		this.var = (LVarExpr)args[0];
 		this.expr = args[1];
 	}
-	
+
 	public void rnResolve(Env env, INode parent, AttrSlot pslot) {}
 
 	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
@@ -455,7 +455,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleIsoneofExpr extends ASTRuleNode {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode	expr;
 	}
@@ -470,7 +470,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public RuleIsoneofExpr() {}
 
-	public RuleIsoneofExpr(int pos, LVarExpr var, ENode expr) {
+	public RuleIsoneofExpr(long pos, LVarExpr var, ENode expr) {
 		this.pos = pos;
 		this.var = var;
 		this.expr = expr;
@@ -486,7 +486,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		this.var = (LVarExpr)args[0];
 		this.expr = args[1];
 	}
-	
+
 	public void rnResolve(Env env, INode parent, AttrSlot pslot) {}
 
 	public void resolve1(Env env, ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
@@ -545,12 +545,12 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleCutExpr extends ASTRuleNode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public RuleCutExpr() {}
 
-	public RuleCutExpr(int pos) {
+	public RuleCutExpr(long pos) {
 		this.pos = pos;
 	}
 
@@ -571,12 +571,12 @@ public final class RuleCutExpr extends ASTRuleNode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleCallExpr extends ASTRuleNode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		obj;
 	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
-	
+
 	@nodeAttr public ENode				obj;
 	@nodeAttr public ENode∅			args;
 	@nodeAttr public int				env_var;
@@ -665,12 +665,12 @@ public abstract class RuleExprBase extends ASTRuleNode {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleWhileExpr extends RuleExprBase {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	@DataFlowDefinition(in="this:in")	ENode		bt_expr;
 	}
-	
+
 	public RuleWhileExpr() {}
 
 	public RuleWhileExpr(ENode expr) {
@@ -705,7 +705,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 
 @ThisIsANode(lang=LogicLang)
 public final class RuleExpr extends RuleExprBase {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	@DataFlowDefinition(in="this:in")	ENode		bt_expr;

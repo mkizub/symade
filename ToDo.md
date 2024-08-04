@@ -8,4 +8,25 @@
   - run for kiev batch compilation
   - run for symade ide compilation
   - run for intellij idea stub/light and gui compilation
-
+  - separate AST tree from VTree
+- add signature generation to .class files for classes, methods, fields and vars
+  - plus generate debug info with signatures
+  - plus generate verification info (stack state) for code
+  - plus remove jsr/ret opcodes for throw/finally
+- add node context for every node, this context provides info about
+  - node Env (actually - project)
+  - node Tree (source tree, semantic tree, projection, etc.)
+  - node FileUnit (if any)
+  - every node must have constructor with the only one parameter - the context
+- move kiev.vlang.Env and kiev.vlang.FileUnit to kiev.vtree
+  - after changing to use source code, instead of xml files
+- remove dependency
+  - of kiev-compiler module on symade-fmt (kiev.fmt.common.TextParser)
+  - of symade-gui on kiev-parser
+- make Namespace/Symbol and AST tree independent of VNode tree
+  - DNode's has no symbol attribute, but a reference to Symbol
+  - Symbol's parent is Namespace/Symbol, and Symbol has a reference to DNode
+  - remove ParentAttrSlot nodeattr$namespace_parent
+  - remove ParentAttrSlot nodeattr$syntax_parent
+  - generate VNode from AST tree (expressions are already generated from ASTExpression)
+  - migrate to new AST tree with new handwritten parser

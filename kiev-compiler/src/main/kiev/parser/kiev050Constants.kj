@@ -14,139 +14,131 @@ package kiev.parser;
 public interface kiev050Constants {
 
   int EOF = 0;
-  int SINGLE_LINE_COMMENT = 11;
-  int FORMAL_COMMENT = 12;
-  int MULTI_LINE_COMMENT = 13;
-  int ABSTRACT = 15;
-  int BREAK = 16;
-  int CASE = 17;
-  int CATCH = 18;
-  int CLASS = 19;
-  int CONTINUE = 20;
-  int _DEFAULT = 21;
-  int DO = 22;
-  int ELSE = 23;
-  int EXTENDS = 24;
-  int FINAL = 25;
-  int FINALLY = 26;
-  int FOR = 27;
-  int FOREACH = 28;
-  int GOTO = 29;
-  int IF = 30;
-  int IF_REWR = 31;
-  int IMPLEMENTS = 32;
-  int IMPORT = 33;
-  int INTERFACE = 34;
-  int NATIVE = 35;
-  int PACKAGE = 36;
-  int RETURN = 37;
-  int STATIC = 38;
-  int SWITCH = 39;
-  int SYNCHRONIZED = 40;
-  int WITH = 41;
-  int THROW = 42;
-  int THROWS = 43;
-  int TRANSIENT = 44;
-  int TRY = 45;
-  int VOLATILE = 46;
-  int VIEW = 47;
-  int WHILE = 48;
-  int VARARGS = 49;
-  int PCUT = 50;
-  int ALIAS = 51;
-  int TYPE = 52;
-  int TYPEDEF = 53;
-  int ENUM = 54;
-  int REQUIRE = 55;
-  int ENSURE = 56;
-  int INVARIANT = 57;
-  int META_INTERFACE = 58;
-  int META_SINGLETON = 59;
-  int META_MIXIN = 60;
-  int META_FORWARD = 61;
-  int META_UNERASABLE = 62;
-  int META_VIRTUAL = 63;
-  int META_PACKED = 64;
-  int META_MACRO = 65;
-  int META_STATIC = 66;
-  int META_ABSTRACT = 67;
-  int META_FINAL = 68;
-  int META_NATIVE = 69;
-  int META_SYNCHRONIZED = 70;
-  int META_TRANSIENT = 71;
-  int META_VOLATILE = 72;
-  int META_THROWS = 73;
-  int META_UUID = 74;
-  int META_GETTER = 75;
-  int META_SETTER = 76;
-  int META_ACCESS1 = 77;
-  int META_PUBLIC = 78;
-  int PUBLIC = 79;
-  int META_PROTECTED = 80;
-  int PROTECTED = 81;
-  int META_PRIVATE = 82;
-  int PRIVATE = 83;
-  int READ_ONLY = 84;
-  int WRITE_ONLY = 85;
-  int READ_WRITE = 86;
-  int NO_READ_WRITE = 87;
-  int COMMA1 = 88;
-  int COLON1 = 89;
-  int OPEN_ACCESS = 90;
-  int CLOSE_ACCESS = 91;
-  int PRAGMA = 97;
-  int PRAGMA_ENABLE = 98;
-  int PRAGMA_DISABLE = 99;
-  int FUNCTION = 100;
-  int NEW = 101;
-  int OPERATOR_ID = 102;
-  int INTEGER_LITERAL = 103;
-  int LONG_INTEGER_LITERAL = 104;
-  int DECIMAL_LITERAL = 105;
-  int HEX_LITERAL = 106;
-  int OCTAL_LITERAL = 107;
-  int FLOATING_POINT_LITERAL = 108;
-  int DOUBLE_POINT_LITERAL = 109;
-  int EXPONENT = 110;
-  int CHARACTER_LITERAL = 111;
-  int STRING_LITERAL = 112;
-  int IDENTIFIER = 113;
-  int LETTER = 114;
-  int DIGIT = 115;
-  int ID_STRING_LITERAL = 116;
-  int LPAREN = 117;
-  int RPAREN = 118;
-  int LBRACE = 119;
-  int RBRACE = 120;
-  int LBRACKET = 121;
-  int RBRACKET = 122;
-  int SEMICOLON = 123;
-  int COLON = 124;
-  int DOT = 125;
-  int COMMA = 126;
-  int LT = 127;
-  int GT = 128;
-  int LANGLE = 129;
-  int RANGLE = 130;
-  int ASSIGN = 131;
-  int IS_THE = 132;
-  int IS_ONE_OF = 133;
-  int ARROW = 134;
-  int OPERATOR_AT = 135;
-  int OPERATOR_SHARP = 136;
-  int OPERATOR_LRBRACKETS = 137;
-  int OPERATOR_SUPERSCRIPT_PLUS = 138;
-  int OPERATOR_SUPERSCRIPT_MINUS = 139;
-  int OPERATOR_UPPER_BOUND = 140;
-  int OPERATOR_LOWER_BOUND = 141;
-  int OPERATOR = 142;
-
-  int DEFAULT = 0;
-  int IN_PRAGMA = 1;
-  int IN_SINGLE_LINE_COMMENT = 2;
-  int IN_FORMAL_COMMENT = 3;
-  int IN_MULTI_LINE_COMMENT = 4;
-  int IN_ACCESS = 5;
+  int SPECIAL_COMMENT = 6;
+  int SINGLE_LINE_COMMENT = 10;
+  int FORMAL_COMMENT = 11;
+  int MULTI_LINE_COMMENT = 12;
+  int KW_ABSTRACT = 14;
+  int KW_BREAK = 15;
+  int KW_CASE = 16;
+  int KW_CATCH = 17;
+  int KW_CLASS = 18;
+  int KW_CONTINUE = 19;
+  int KW_DEFAULT = 20;
+  int KW_DO = 21;
+  int KW_ELSE = 22;
+  int KW_EXTENDS = 23;
+  int KW_FINAL = 24;
+  int KW_FINALLY = 25;
+  int KW_FOR = 26;
+  int KW_FOREACH = 27;
+  int KW_GOTO = 28;
+  int KW_IF = 29;
+  int KW_IMPLEMENTS = 30;
+  int KW_IMPORT = 31;
+  int KW_INTERFACE = 32;
+  int KW_NATIVE = 33;
+  int KW_PACKAGE = 34;
+  int KW_RETURN = 35;
+  int KW_STATIC = 36;
+  int KW_SWITCH = 37;
+  int KW_SYNCHRONIZED = 38;
+  int KW_WITH = 39;
+  int KW_THROW = 40;
+  int KW_THROWS = 41;
+  int KW_TRANSIENT = 42;
+  int KW_TRY = 43;
+  int KW_VOLATILE = 44;
+  int KW_WHILE = 45;
+  int KW_PCUT = 46;
+  int KW_ALIAS = 47;
+  int KW_TYPE = 48;
+  int KW_TYPEDEF = 49;
+  int KW_ENUM = 50;
+  int KW_REQUIRE = 51;
+  int KW_ENSURE = 52;
+  int KW_INVARIANT = 53;
+  int META_INTERFACE = 54;
+  int META_SINGLETON = 55;
+  int META_MIXIN = 56;
+  int META_FORWARD = 57;
+  int META_UNERASABLE = 58;
+  int META_VIRTUAL = 59;
+  int META_PACKED = 60;
+  int META_MACRO = 61;
+  int META_STATIC = 62;
+  int META_ABSTRACT = 63;
+  int META_FINAL = 64;
+  int META_NATIVE = 65;
+  int META_SYNCHRONIZED = 66;
+  int META_TRANSIENT = 67;
+  int META_VOLATILE = 68;
+  int META_THROWS = 69;
+  int META_UUID = 70;
+  int META_GETTER = 71;
+  int META_SETTER = 72;
+  int META_ACCESS1 = 73;
+  int META_PUBLIC = 74;
+  int KW_PUBLIC = 75;
+  int META_PROTECTED = 76;
+  int KW_PROTECTED = 77;
+  int META_PRIVATE = 78;
+  int KW_PRIVATE = 79;
+  int KW_ACC_RO = 80;
+  int KW_ACC_WO = 81;
+  int KW_ACC_RW = 82;
+  int KW_ACC_NO = 83;
+  int OP_COMMA = 84;
+  int OP_COLON = 85;
+  int OP_LPAREN = 86;
+  int OP_RPAREN = 87;
+  int KW_PRAGMA = 93;
+  int KW_PRAGMA_ENABLE = 94;
+  int KW_PRAGMA_DISABLE = 95;
+  int KW_FUNCTION = 96;
+  int KW_NEW = 97;
+  int KW_OPERATOR = 98;
+  int INTEGER_LITERAL = 99;
+  int LONG_INTEGER_LITERAL = 100;
+  int DECIMAL_LITERAL = 101;
+  int HEX_LITERAL = 102;
+  int OCTAL_LITERAL = 103;
+  int FLOATING_POINT_LITERAL = 104;
+  int DOUBLE_POINT_LITERAL = 105;
+  int EXPONENT = 106;
+  int CHARACTER_LITERAL = 107;
+  int STRING_LITERAL = 108;
+  int IDENTIFIER = 109;
+  int ESC_IDENTIFIER = 110;
+  int HID_IDENTIFIER = 111;
+  int LETTER = 112;
+  int DIGIT = 113;
+  int ID_STRING_LITERAL = 114;
+  int OP_LBRACE = 115;
+  int OP_RBRACE = 116;
+  int OP_LBRACKET = 117;
+  int OP_RBRACKET = 118;
+  int OP_SEMICOLON = 119;
+  int OP_DOT = 120;
+  int OP_LT = 121;
+  int OP_GT = 122;
+  int OP_LANGLE = 123;
+  int OP_RANGLE = 124;
+  int OP_ASSIGN = 125;
+  int OP_IS_THE = 126;
+  int OP_IS_ONE_OF = 127;
+  int OP_ARROW = 128;
+  int OP_VARARGS = 129;
+  int OP_AT = 130;
+  int OP_SHARP = 131;
+  int OP_LRBRACKETS = 132;
+  int OP_SUPERSCRIPT_PLUS = 133;
+  int OP_SUPERSCRIPT_MINUS = 134;
+  int OP_UPPER_BOUND = 135;
+  int OP_LOWER_BOUND = 136;
+  int OPERATOR = 137;
+  int LANGLE = 138;
+  int RANGLE = 139;
 
   String[] tokenImage = {
     "<EOF>",
@@ -155,15 +147,14 @@ public interface kiev050Constants {
     "\"\\n\"",
     "\"\\r\"",
     "\"\\f\"",
-    "\"/*{\"",
-    "\"}*/\"",
+    "<SPECIAL_COMMENT>",
     "\"//\"",
-    "<token of kind 9>",
+    "<token of kind 8>",
     "\"/*\"",
     "<SINGLE_LINE_COMMENT>",
     "\"*/\"",
     "\"*/\"",
-    "<token of kind 14>",
+    "<token of kind 13>",
     "\"abstract\"",
     "\"break\"",
     "\"case\"",
@@ -180,7 +171,6 @@ public interface kiev050Constants {
     "\"foreach\"",
     "\"goto\"",
     "\"if\"",
-    "\"if#\"",
     "\"implements\"",
     "\"import\"",
     "\"interface\"",
@@ -196,9 +186,7 @@ public interface kiev050Constants {
     "\"transient\"",
     "\"try\"",
     "\"volatile\"",
-    "\"view\"",
     "\"while\"",
-    "\"...\"",
     "\"$cut\"",
     "\"alias\"",
     "\"type\"",
@@ -233,10 +221,10 @@ public interface kiev050Constants {
     "\"protected\"",
     "\"@private\"",
     "\"private\"",
-    "<READ_ONLY>",
-    "<WRITE_ONLY>",
+    "\"ro\"",
+    "\"wo\"",
     "\"rw\"",
-    "<NO_READ_WRITE>",
+    "\"no\"",
     "\",\"",
     "\":\"",
     "\"(\"",
@@ -263,19 +251,17 @@ public interface kiev050Constants {
     "<CHARACTER_LITERAL>",
     "<STRING_LITERAL>",
     "<IDENTIFIER>",
+    "<ESC_IDENTIFIER>",
+    "<HID_IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
     "<ID_STRING_LITERAL>",
-    "\"(\"",
-    "\")\"",
     "\"{\"",
     "\"}\"",
     "\"[\"",
     "\"]\"",
     "\";\"",
-    "\":\"",
     "\".\"",
-    "\",\"",
     "\"<\"",
     "\">\"",
     "\"<\\u0335\"",
@@ -284,14 +270,17 @@ public interface kiev050Constants {
     "\"?=\"",
     "\"@=\"",
     "\"->\"",
+    "\"...\"",
     "\"@\"",
     "\"#\"",
-    "<OPERATOR_LRBRACKETS>",
+    "<OP_LRBRACKETS>",
     "\"\\u207a\"",
     "\"\\u207b\"",
     "\"\\u2264\"",
     "\"\\u2265\"",
     "<OPERATOR>",
+    "<LANGLE>",
+    "<RANGLE>",
   };
 
 }

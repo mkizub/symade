@@ -22,6 +22,7 @@ import kiev.vlang.*;
 import kiev.vlang.types.Type;
 
 import java.io.File;
+import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
 
 import static kiev.stdlib.Asserts.*;
@@ -29,9 +30,9 @@ import static kiev.stdlib.Asserts.*;
 public class ANodeUnMarshaller implements UnMarshaller {
 
 	public static final String SOP_URI = "sop://sop/";
-	
+
 	INode root;
-	
+
 	private String getTypeInfoSign(AttributeSet attributes) {
 		int n = attributes.getCount();
 		for (int i=0; i < n; i++) {
@@ -41,7 +42,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 		}
 		return null;
 	}
-	
+
 	private String getUUID(AttributeSet attributes) {
 		int n = attributes.getCount();
 		for (int i=0; i < n; i++) {
@@ -51,7 +52,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 		}
 		return null;
 	}
-	
+
 	private AttrSlot getAttrFromQName(INode node, QName qname) {
 		String uri = qname.getNamespaceURI();
 		if (uri != null && uri.length() > 0)
@@ -67,7 +68,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 		}
 		return null;
 	}
-	
+
     public boolean canUnMarshal(QName qname, AttributeSet attrs, UnMarshallingContext context) {
 		String uri = qname.getNamespaceURI();
 		if (uri.length() == 0)
@@ -84,7 +85,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 			return new AcceptInfo(true, qname);
 		return null;
 	}
-	
+
 	public Object exit(Object self, UnMarshallingContext context) {
 		return self;
 	}
@@ -238,14 +239,14 @@ public class ANodeUnMarshaller implements UnMarshaller {
 			}
 			result = n;
 		}
-		
+
 		return result;
     	} catch (Exception e) {
 			if (e instanceof RuntimeException) throw (RuntimeException)e;
     		throw new RuntimeException(e);
     	}
 	}
-	
+
 	public void accept(Object self, QName qname, Object target, UnMarshallingContext ucontext) {
 		DumpUnMarshallingContext context = (DumpUnMarshallingContext)ucontext;
 		String uri = qname.getNamespaceURI();
@@ -325,6 +326,48 @@ public class ANodeUnMarshaller implements UnMarshaller {
 				}
 				else if (node instanceof MetaUUID)
 					node.setVal(node.getAttrSlot("value"), attributes.getValue(i));
+				continue;
+			}
+			if (nm.equals("p")) {
+				StringTokenizer st = new StringTokenizer(attributes.getValue(i), ":", true);
+				int lineNo = 0;
+				int linePos = 0;
+				long filePos = 0;
+				String fileName = null;
+				do {
+					if (st.hasMoreTokens()) {
+						String lnStr = st.nextToken();
+						if (!lnStr.equals(":"))
+							lineNo = Integer.parseInt(lnStr);
+						if (!st.hasMoreTokens() || !st.nextToken().equals(":"))
+							break;
+					}
+					if (st.hasMoreTokens()) {
+						String lnStr = st.nextToken();
+						if (!lnStr.equals(":"))
+							linePos = Integer.parseInt(lnStr);
+						if (!st.hasMoreTokens() || !st.nextToken().equals(":"))
+							break;
+					}
+					if (st.hasMoreTokens()) {
+						String lnStr = st.nextToken();
+						if (!lnStr.equals(":"))
+							filePos = Long.parseLong(lnStr);
+						if (!st.hasMoreTokens() || !st.nextToken().equals(":"))
+							break;
+					}
+					if (st.hasMoreTokens()) {
+						fileName = st.nextToken();
+						// just in case of file names with ':' character
+						while (st.hasMoreTokens())
+							fileName += st.nextToken();
+					}
+				} while (false);
+				long pos = (filePos << 32) | (lineNo << 12) | (linePos & 0xFFF);
+				if (pos != 0 && node instanceof ANode)
+					((ANode)node).pos = pos;
+				if (fileName != null && !fileName.isEmpty())
+					((ANode)node).setFileName(fileName);
 				continue;
 			}
 			for (AttrSlot attr : node.values()) {
@@ -449,7 +492,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 		if (text.charAt(text.length()-1) == 'L' || text.charAt(text.length()-1) == 'l') {
 			text = text.substring(0,text.length()-1);
 			if (text.length() == 0)
-				return 0L; // 0L 
+				return 0L; // 0L
 		}
 		long l = ConstExpr.parseLong(text,radix);
 		return l;

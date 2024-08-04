@@ -246,14 +246,14 @@ public class LVar extends Var {
 
 	public LVar() { super(VAR_LOCAL); }
 
-	public LVar(int pos, String name, Type tp, int kind, int flags)
+	public LVar(long pos, String name, Type tp, int kind, int flags)
 		require tp != null;
 	{
 		super(name,new TypeRef(tp),kind,flags);
 		this.pos = pos;
 	}
 
-	public LVar(int pos, String name, TypeRef vtype, int kind, int flags)
+	public LVar(long pos, String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
 		super(name,vtype,kind,flags);

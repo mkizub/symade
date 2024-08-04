@@ -22,11 +22,35 @@ import kiev.vlang.*;
 
 public class ANodeDumpMarshaller implements Marshaller {
 	public static final String SOP_URI = "sop://sop/";
-	
+
+	private FileUnit fileUnit;
+
 	public ANodeDumpMarshaller() {}
-	
+
     public boolean canMarshal(Object data, MarshallingContext context) {
 		return data instanceof INode;
+	}
+
+	private String getNodeFilePos(ANode node) {
+ 		long pos = node.pos;
+		boolean force = false;
+ 		if (fileUnit == null) {
+ 			fileUnit = Env.ctxFileUnit(node);
+ 			if (fileUnit == null)
+ 				return null;
+			force = true;
+ 		}
+ 		int filePos = node.getFilePos();
+ 		int lineNo = node.getLineNo();
+ 		int linePos = node.getLinePos();
+		if (force || node instanceof ComplexTypeDecl) {
+			if (pos == 0)
+				return ":::" + fileUnit.fname;
+			return lineNo + ":" + linePos + ":" + filePos + ":" + fileUnit.fname;
+		}
+		if (pos == 0)
+			return null;
+		return lineNo + ":" + linePos + ":" + filePos;
 	}
 
     public void marshal(Object data, DumpWriter _out, MarshallingContext _context) throws Exception {
@@ -41,7 +65,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 		else
 			qnElem = new QName(SOP_URI,node.getClass().getName(),"sop");
 		out.startElement(qnElem);
-		
+
 		if (node instanceof TypeInfoInterface && ((TypeInfoInterface)node).getTypeInfoField().getTopArgs().length > 0)
 			out.addAttribute(new QName(SOP_URI, "ti", "sop"), ((TypeInfoInterface)node).getTypeInfoField().toString());
 
@@ -49,19 +73,22 @@ public class ANodeDumpMarshaller implements Marshaller {
 			SymUUID suuid = ((Symbol)node.getVal(node.getAttrSlot("symbol"))).getUUID(context.getEnv());
 			if (suuid != SymUUID.Empty)
 				context.attributeData(new QName("uuid"), suuid.toString());
+			String pos = getNodeFilePos((ANode)node);
+			if (pos != null)
+				context.attributeData(new QName("p"), pos);
 		}
 		if (node instanceof Symbol && ((Symbol)node).suuid() != null) {
 			SymUUID suuid = ((Symbol)node).suuid();
 			if (suuid != SymUUID.Empty)
 				context.attributeData(new QName("uuid"), suuid.toString());
 		}
-		
+
 		boolean popDumpMode = false;
 		if (node instanceof DNode && ((DNode)node).isMacro() || node instanceof TypeDecl && ((TypeDecl)node).isMixin()) {
 			context.pushDumpMode("full");
 			popDumpMode = true;
 		}
-		
+
 		for (AttrSlot attr : node.values()) {
 			if (!(attr instanceof ScalarAttrSlot && attr.isXmlAttr()))
 				continue;

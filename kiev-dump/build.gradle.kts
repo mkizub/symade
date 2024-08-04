@@ -15,6 +15,7 @@ sourceSets {
 
 tasks.compileJava {
     options.isDeprecation = true
+    //options.isDebug = true
 }
 
 dependencies {

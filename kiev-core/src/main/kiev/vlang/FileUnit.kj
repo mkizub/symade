@@ -22,7 +22,7 @@ import java.util.Collections;
  */
 
 @ThisIsANode(lang=CoreLang)
-public class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
+public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
 	@nodeAttr @final
 	public KievPackage⇑			srpkg;
 	@nodeAttr
@@ -36,30 +36,8 @@ public class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
 		this.srpkg.symbol = Env.getEnv().root.symbol;
 		this.srpkg.qualified = true;
 	}
-	
-	public KievPackage getPackage() {
-		KievPackage td = srpkg.dnode;
-		if (td != null)
-			return td;
-		if (srpkg.name == "") {
-			td = Env.getEnv().root;
-			srpkg.symbol = td.symbol;
-		} else {
-			SyntaxScope ss = Env.ctxSyntaxScope(parent());
-			if (ss != null)
-				td = ss.getPackage();
-			if (td == null || td instanceof KievRoot) {
-				td = Env.getEnv().newPackage(srpkg.name);
-				srpkg.symbol = td.symbol;
-				srpkg.qualified = true;
-			} else {
-				td = Env.getEnv().newPackage(td.qname() + "·" + srpkg.name);
-				srpkg.symbol = td.symbol;
-				srpkg.qualified = false;
-			}
-		}
-		return td;
-	}
+
+	public abstract KievPackage getPackage();
 
 	public rule resolveNameR(ResInfo path)
 		ASTNode@ syn;
@@ -168,7 +146,7 @@ public class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
 		}
 		return false;
 	}
-	
+
 	public COpdef[] getAllOpdefs() {
 		if (all_opdefs != null)
 			return all_opdefs;
@@ -182,7 +160,7 @@ public class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
 		return all_opdefs;
 		//return opdefs.toArray();
 	}
-	
+
 }
 
 // FileUnit is a node for a compilation unit stored in a file.
@@ -203,7 +181,7 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 	@AttrBinDumpInfo(ignore=true)
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeData public ProjectSyntaxFactory		current_syntax;
-	
+
 	@UnVersioned
 	public boolean							scanned_for_interface_only;
 	@UnVersioned
@@ -224,7 +202,7 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 			return fname;
 		return ((DirUnit)parent()).pname() + '/' + fname;
 	}
-	
+
 	public boolean isInterfaceOnly() { scanned_for_interface_only }
 	public boolean isLodedFromBinaryDump() { loded_from_binary_dump }
 
@@ -254,6 +232,21 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 		this.is_project_file = project_file;
 	}
 
+	public KievPackage getPackage() {
+		KievPackage td = srpkg.dnode;
+		if (td != null)
+			return td;
+		if (srpkg.name == "") {
+			td = Env.getEnv().root;
+			srpkg.symbol = td.symbol;
+		} else {
+			td = Env.getEnv().newPackage(srpkg.name);
+			srpkg.symbol = td.symbol;
+			srpkg.qualified = true;
+		}
+		return td;
+	}
+
 	public void addGeneratedFile(String fname) {
 		if (generated_files == null) {
 			generated_files = new String[] {fname};
@@ -274,6 +267,32 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 
 @ThisIsANode(name="NameSpace", lang=CoreLang)
 public class NameSpace extends SyntaxScope {
+
+	public KievPackage getPackage() {
+		KievPackage td = srpkg.dnode;
+		if (td != null)
+			return td;
+		Kiev.reportError(this, "Namespaces not implemented / not tested");
+		SyntaxScope ss = Env.ctxSyntaxScope(parent());
+		if (ss != null)
+			td = ss.getPackage();
+		if (srpkg.name == "") {
+			if (td == null)
+				td = Env.getEnv().root;
+			srpkg.symbol = new Symbol(); // anonymous namespace
+		} else {
+			if (td == null || td instanceof KievRoot) {
+				td = Env.getEnv().newPackage(srpkg.name);
+				srpkg.symbol = td.symbol;
+				srpkg.qualified = true;
+			} else {
+				td = Env.getEnv().newPackage(td.qname() + "·" + srpkg.name);
+				srpkg.symbol = td.symbol;
+				srpkg.qualified = false;
+			}
+		}
+		return td;
+	}
 
 	public String toString() { return "namespace "+srpkg.name; }
 }

@@ -11,6 +11,7 @@
 package kiev.be.java15;
 import syntax kiev.Syntax;
 
+import kiev.bytecode.ExceptionsAttribute;
 import static kiev.be.java15.Instr.*;
 
 /**
@@ -94,7 +95,7 @@ public class Bytecoder implements JConstants {
 		cl.setFrontEndPassed();
 
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
-		
+
 		// This class's superclass name (load if not loaded)
 		if (bcclazz.getSuperClazzName() != null) {
 			assert(cl.super_types.length == 0);
@@ -250,8 +251,13 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < bcm.attrs.length; i++) {
 			Attr at = readAttr(bcm.attrs[i],bcclazz,m);
 			if( at == null ) continue;
-			if( at.name.equals(attrExceptions) ) {
-				((JMethod)m).addAttr(at);
+			if( at.name.equals(attrExceptions) && at instanceof ExceptionsAttribute ) {
+				ExceptionsAttribute eat = (ExceptionsAttribute)at;
+				MetaThrows mthr = new MetaThrows();
+				for (int j=0; j < eat.cp_exceptions.length; j++) {
+					String exceptionName = eat.getException(j, bcclazz);
+					mthr.add(new TypeNameRef(exceptionName));
+				}
 			}
 			else if( at.name.equals(attrRequire) || at.name.equals(attrEnsure) ) {
 				WBCCondition wbc = new WBCCondition();
@@ -515,7 +521,7 @@ public class Bytecoder implements JConstants {
 		}
 		return a;
 	}
-	
+
 	UserMeta readAnnotation(kiev.bytecode.Clazz clazz, kiev.bytecode.Annotation.annotation ann) {
 		String sign = ann.getSignature(clazz).toString();
 		assert (sign.charAt(0) == 'L' && sign.charAt(sign.length()-1) == ';');
@@ -527,7 +533,7 @@ public class Bytecoder implements JConstants {
 			MetaValue val = readAnnotationValue(clazz,ann.values[i],nm);
 			um.set(val);
 		}
-		return um; 
+		return um;
 	}
 
 	MetaValue readAnnotationValue(kiev.bytecode.Clazz clazz, kiev.bytecode.Annotation.element_value eval, String nm) {

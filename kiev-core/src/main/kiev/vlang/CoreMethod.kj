@@ -21,10 +21,10 @@ public interface BEndOperation {
 
 @ThisIsANode(lang=CoreLang, copyable=false)
 public final class CoreOperation extends Method {
-	
+
 	public final CoreFunc		core_func;
 	public BEndOperation		bend_func;
-	
+
 	public CoreOperation(Env env, String sname, CallType otype, CoreFunc core_func) {
 		this.sname = sname;
 		this.core_func = core_func;
@@ -34,14 +34,14 @@ public final class CoreOperation extends Method {
 		this.setMacro(true);
 		this.type_ret = new TypeRef(otype.ret());
 		for (int i=0; i < otype.arity; i++)
-			this.params += new LVar(0,"arg"+i,otype.arg(i),Var.VAR_LOCAL,0);
+			this.params += new LVar(0L,"arg"+i,otype.arg(i),Var.VAR_LOCAL,0);
 		env.root.pkg_members += this;
 	}
-	
+
 	public ConstExpr calc(ENode expr) {
 		return core_func.calc(expr);
 	}
-	
+
 	public Operator getOperator() {
 		return core_func.getOperator();
 	}
@@ -65,21 +65,21 @@ public final class CoreOperation extends Method {
 
 @ThisIsANode(lang=CoreLang)
 public final class CoreExpr extends ENode {
-	
+
 	public CoreExpr() {}
-	
+
 	public CoreOperation getCoreOperation(Env env) {
 		CoreFunc cf = env.coreFuncs.get(ident);
 		if (cf == null)
 			return null;
 		return cf.operation;
 	}
-	
+
 }
 
 public final class CoreFuncs {
 	public final Hashtable<String,CoreFunc> coreFuncs;
-	
+
 	public final CoreFunc fAnyInstanceOf;
 	public final CoreFunc fObjectAssign;
 	public final CoreFunc fObjectBoolEQ;
@@ -103,7 +103,7 @@ public final class CoreFuncs {
 	public final CoreFunc fShortAssign;
 	public final CoreFunc fShortPOS;
 	public final CoreFunc fShortNEG;
-	
+
 	public final CoreFunc fIntAssign;
 	public final CoreFunc fIntAssignBitOR;
 	public final CoreFunc fIntAssignBitXOR;
@@ -177,7 +177,7 @@ public final class CoreFuncs {
 	public final CoreFunc fLongPreDECR;
 	public final CoreFunc fLongPostINCR;
 	public final CoreFunc fLongPostDECR;
-	
+
 	public final CoreFunc fFloatAssign;
 	public final CoreFunc fFloatAssignADD;
 	public final CoreFunc fFloatAssignSUB;
@@ -197,7 +197,7 @@ public final class CoreFuncs {
 	public final CoreFunc fFloatMOD;
 	public final CoreFunc fFloatPOS;
 	public final CoreFunc fFloatNEG;
-	
+
 	public final CoreFunc fDoubleAssign;
 	public final CoreFunc fDoubleAssignADD;
 	public final CoreFunc fDoubleAssignSUB;
@@ -217,7 +217,7 @@ public final class CoreFuncs {
 	public final CoreFunc fDoubleMOD;
 	public final CoreFunc fDoublePOS;
 	public final CoreFunc fDoubleNEG;
-	
+
 	public final CoreFunc fStringConcatSS;
 	public final CoreFunc fStringConcatAS;
 	public final CoreFunc fStringConcatSA;
@@ -234,7 +234,7 @@ public final class CoreFuncs {
 	public final CoreFunc fRuleIsThe;
 	public final CoreFunc fRuleIsOneOf;
 	public final CoreFunc fPathTypeAccess;
-	
+
 	public CoreFuncs(Env env) {
 		coreFuncs = new Hashtable<String,CoreFunc>(1024);
 
@@ -258,15 +258,15 @@ public final class CoreFuncs {
 		fBoolBoolNOT = new CoreFunc.BoolBoolNOT(env);				coreFuncs.put("kiev.stdlib.boolean:bool_not",       fBoolBoolNOT);
 
 		fCharAssign = new CoreFunc.CharAssign(env);					coreFuncs.put("kiev.stdlib.char:assign",            fCharAssign);
-		
+
 		fByteAssign = new CoreFunc.ByteAssign(env);					coreFuncs.put("kiev.stdlib.byte:assign",            fByteAssign);
 		fBytePOS = new CoreFunc.BytePOS(env);						coreFuncs.put("kiev.stdlib.byte:positive",          fBytePOS);
 		fByteNEG = new CoreFunc.ByteNEG(env);						coreFuncs.put("kiev.stdlib.byte:negative",          fByteNEG);
-		
+
 		fShortAssign = new CoreFunc.ShortAssign(env);				coreFuncs.put("kiev.stdlib.short:assign",           fShortAssign);
 		fShortPOS = new CoreFunc.ShortPOS(env);						coreFuncs.put("kiev.stdlib.short:positive",         fShortPOS);
 		fShortNEG = new CoreFunc.ShortNEG(env);						coreFuncs.put("kiev.stdlib.short:negative",         fShortNEG);
-		
+
 		fIntAssign = new CoreFunc.IntAssign(env);					coreFuncs.put("kiev.stdlib.int:assign",             fIntAssign);
 		fIntAssignBitOR = new CoreFunc.IntAssignBitOR(env);			coreFuncs.put("kiev.stdlib.int:assign_bit_or",      fIntAssignBitOR);
 		fIntAssignBitXOR = new CoreFunc.IntAssignBitXOR(env);		coreFuncs.put("kiev.stdlib.int:assign_bit_xor",     fIntAssignBitXOR);
@@ -303,7 +303,7 @@ public final class CoreFuncs {
 		fIntPreDECR = new CoreFunc.IntPreDECR(env);					coreFuncs.put("kiev.stdlib.int:pre_decr",           fIntPreDECR);
 		fIntPostINCR = new CoreFunc.IntPostINCR(env);				coreFuncs.put("kiev.stdlib.int:post_incr",          fIntPostINCR);
 		fIntPostDECR = new CoreFunc.IntPostDECR(env);				coreFuncs.put("kiev.stdlib.int:post_decr",          fIntPostDECR);
-		
+
 		fLongAssign = new CoreFunc.LongAssign(env);					coreFuncs.put("kiev.stdlib.long:assign",            fLongAssign);
 		fLongAssignBitOR = new CoreFunc.LongAssignBitOR(env);		coreFuncs.put("kiev.stdlib.long:assign_bit_or",     fLongAssignBitOR);
 		fLongAssignBitXOR = new CoreFunc.LongAssignBitXOR(env);		coreFuncs.put("kiev.stdlib.long:assign_bit_xor",    fLongAssignBitXOR);
@@ -340,7 +340,7 @@ public final class CoreFuncs {
 		fLongPreDECR = new CoreFunc.LongPreDECR(env);				coreFuncs.put("kiev.stdlib.long:pre_decr",          fLongPreDECR);
 		fLongPostINCR = new CoreFunc.LongPostINCR(env);				coreFuncs.put("kiev.stdlib.long:post_incr",         fLongPostINCR);
 		fLongPostDECR = new CoreFunc.LongPostDECR(env);				coreFuncs.put("kiev.stdlib.long:post_decr",         fLongPostDECR);
-		
+
 		fFloatAssign = new CoreFunc.FloatAssign(env);				coreFuncs.put("kiev.stdlib.float:assign",           fFloatAssign);
 		fFloatAssignADD = new CoreFunc.FloatAssignADD(env);			coreFuncs.put("kiev.stdlib.float:assign_add",       fFloatAssignADD);
 		fFloatAssignSUB = new CoreFunc.FloatAssignSUB(env);			coreFuncs.put("kiev.stdlib.float:assign_sub",       fFloatAssignSUB);
@@ -360,7 +360,7 @@ public final class CoreFuncs {
 		fFloatMOD = new CoreFunc.FloatMOD(env);						coreFuncs.put("kiev.stdlib.float:mod",              fFloatMOD);
 		fFloatPOS = new CoreFunc.FloatPOS(env);						coreFuncs.put("kiev.stdlib.float:positive",         fFloatPOS);
 		fFloatNEG = new CoreFunc.FloatNEG(env);						coreFuncs.put("kiev.stdlib.float:negative",         fFloatNEG);
-		
+
 		fDoubleAssign = new CoreFunc.DoubleAssign(env);				coreFuncs.put("kiev.stdlib.double:assign",          fDoubleAssign);
 		fDoubleAssignADD = new CoreFunc.DoubleAssignADD(env);		coreFuncs.put("kiev.stdlib.double:assign_add",      fDoubleAssignADD);
 		fDoubleAssignSUB = new CoreFunc.DoubleAssignSUB(env);		coreFuncs.put("kiev.stdlib.double:assign_sub",      fDoubleAssignSUB);
@@ -406,27 +406,27 @@ public final class CoreFuncs {
 		fASTNodeEQ = new CoreFunc.ASTNodeEQ(env);					coreFuncs.put("kiev.vlang.Globals:node_ref_eq_null",  fASTNodeEQ);
 		fASTNodeNE = new CoreFunc.ASTNodeNE(env);					coreFuncs.put("kiev.vlang.Globals:node_ref_neq_null", fASTNodeNE);
 	}
-	
+
 	public CoreFunc get(String key) {
 		return coreFuncs.get(key);
 	}
-	
+
 }
 
 public abstract class CoreFunc {
-	
+
 	static CallType mkType(Type ret, Type... args) {
 		return new CallType(null, null, args, ret, false);
 	}
-	
+
 	public final CoreOperation	operation;
 	public final Class			node_clazz;
-	
+
 	CoreFunc(Env env, String opname, Class node_clazz, CallType otype) {
 		this.operation = new CoreOperation(env, opname, otype, this);
 		this.node_clazz = node_clazz;
 	}
-	
+
 	public abstract void normilizeExpr(ENode expr, INode parent, AttrSlot slot);
 	public abstract ConstExpr calc(ENode expr);
 	public Operator getOperator() { return null; }
@@ -436,7 +436,7 @@ public static abstract class BinaryFunc extends CoreFunc {
 	BinaryFunc(Env env, String opname, Class node_clazz, CallType otype) {
 		super(env, opname, node_clazz, otype);
 	}
-	
+
 	public void normilizeExpr(ENode expr, INode parent, AttrSlot slot) {
 		Symbol symbol = this.operation.symbol;
 		if (expr.getClass() == this.node_clazz) {
@@ -469,7 +469,7 @@ public static abstract class UnaryFunc extends CoreFunc {
 	UnaryFunc(Env env, String opname, Class node_clazz, CallType otype) {
 		super(env, opname, node_clazz, otype);
 	}
-	
+
 	public void normilizeExpr(ENode expr, INode parent, AttrSlot slot) {
 		Symbol symbol = this.operation.symbol;
 		if (expr.getClass() == this.node_clazz) {
@@ -1349,7 +1349,7 @@ public static abstract class StringConcat extends BinaryFunc {
 	StringConcat(Env env, String opname, Class node_clazz, CallType otype) {
 		super(env, opname, node_clazz, otype);
 	}
-	
+
 	protected ConstExpr doCalc(Object arg1, Object arg2) { new ConstStringExpr(String.valueOf(arg1) + String.valueOf(arg2)) }
 	public Operator getOperator() { Operator.Add }
 }

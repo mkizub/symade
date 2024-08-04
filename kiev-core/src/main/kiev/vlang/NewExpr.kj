@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(name="New", lang=CoreLang)
 public final class NewExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		outer;
 	@DataFlowDefinition(in="outer")					TypeRef		ntype;
@@ -49,24 +49,24 @@ public final class NewExpr extends ENode {
 
 	public NewExpr() {}
 
-	public NewExpr(int pos, Type ntype, ENode[] args) {
+	public NewExpr(long pos, Type ntype, ENode[] args) {
 		this.pos = pos;
 		this.ntype = new TypeRef(ntype);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
-	public NewExpr(int pos, TypeRef ntype, ENode[] args) {
+	public NewExpr(long pos, TypeRef ntype, ENode[] args) {
 		this.pos = pos;
 		this.ntype = ntype;
 		foreach (ENode e; args) this.args.append(e);
 	}
 
-	public NewExpr(int pos, Type ntype, ENode[] args, ENode outer) {
+	public NewExpr(long pos, Type ntype, ENode[] args, ENode outer) {
 		this(pos,ntype,args);
 		this.outer = outer;
 	}
 
-	public NewExpr(int pos, TypeRef ntype, ENode[] args, ENode outer) {
+	public NewExpr(long pos, TypeRef ntype, ENode[] args, ENode outer) {
 		this(pos,ntype,args);
 		this.outer = outer;
 	}
@@ -110,7 +110,7 @@ public final class NewExpr extends ENode {
 		Kiev.runProcessorsOn(clazz);
 		return true;
 	}
-	
+
 	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		if (ntype instanceof MacroSubstTypeRef)
 			return;
@@ -142,7 +142,7 @@ public final class NewExpr extends ENode {
 			vs.append(ntype);
 			ntype = ntype.make(vs);
 		}
-		
+
 		if (this.clazz != null)
 			return;	// don't lookup constructor for anonymouse class
 
@@ -197,7 +197,7 @@ public final class NewExpr extends ENode {
 
 @ThisIsANode(name="NewEnum", lang=CoreLang)
 public final class NewEnumExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
@@ -262,7 +262,7 @@ public final class NewEnumExpr extends ENode {
 
 @ThisIsANode(name="NewArr", lang=CoreLang)
 public final class NewArrayExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
@@ -273,7 +273,7 @@ public final class NewArrayExpr extends ENode {
 
 	public NewArrayExpr() {}
 
-	public NewArrayExpr(int pos, TypeRef ntype, ENode[] args) {
+	public NewArrayExpr(long pos, TypeRef ntype, ENode[] args) {
 		this.pos = pos;
 		this.ntype = ntype;
 		foreach (ENode e; args) this.args.append(e);
@@ -309,7 +309,7 @@ public final class NewArrayExpr extends ENode {
 
 @ThisIsANode(name="NewArrInitialized", lang=CoreLang)
 public final class NewInitializedArrayExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]		args;
 	}
@@ -319,7 +319,7 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	public NewInitializedArrayExpr() {}
 
-	public NewInitializedArrayExpr(int pos, TypeExpr ntype, ENode[] args) {
+	public NewInitializedArrayExpr(long pos, TypeExpr ntype, ENode[] args) {
 		this.pos = pos;
 		this.ntype = ntype;
 		if (args != null)
@@ -329,7 +329,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	public int		getPriority(Env env) { return Constants.opAccessPriority; }
 
 	public Type getType(Env env) { return ntype.getType(env); }
-	
+
 	public void setType(ArrayType reqType) {
 		assert (this.ntype == null);
 		Type art = reqType;
@@ -379,7 +379,7 @@ public final class NewInitializedArrayExpr extends ENode {
 
 @ThisIsANode(name="NewClosure", lang=CoreLang)
 public final class NewClosure extends ENode implements ScopeOfNames {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		body;
 	}
@@ -392,7 +392,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 	public NewClosure() {}
 
-	public NewClosure(int pos) {
+	public NewClosure(long pos) {
 		this.pos = pos;
 	}
 

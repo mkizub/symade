@@ -26,7 +26,7 @@ public abstract class LvalueExpr extends ENode {
 
 @ThisIsANode(name="Access", lang=CoreLang)
 public final class AccessExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="obj") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
@@ -35,11 +35,11 @@ public final class AccessExpr extends LvalueExpr {
 
 	public AccessExpr() {}
 
-	public AccessExpr(int pos) {
+	public AccessExpr(long pos) {
 		this.pos = pos;
 	}
-	
-	public AccessExpr(int pos, ENode obj, SymbolRef<DNode> ident) {
+
+	public AccessExpr(long pos, ENode obj, SymbolRef<DNode> ident) {
 		this.pos = pos;
 		this.obj = obj;
 		if (ident.symbol != null)
@@ -48,7 +48,7 @@ public final class AccessExpr extends LvalueExpr {
 			this.ident = ident.name;
 	}
 
-	public AccessExpr(int pos, ENode obj, String ident) {
+	public AccessExpr(long pos, ENode obj, String ident) {
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
@@ -71,7 +71,7 @@ public final class AccessExpr extends LvalueExpr {
 			throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
 		}
 	}
-	
+
 	public String toString() {
     	return obj+"."+ident;
 	}
@@ -168,7 +168,7 @@ public final class AccessExpr extends LvalueExpr {
 
 @ThisIsANode(name="IFld", lang=CoreLang)
 public final class IFldExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="obj") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			obj;
 	}
@@ -187,21 +187,21 @@ public final class IFldExpr extends LvalueExpr {
 
 	public IFldExpr() {}
 
-	public IFldExpr(int pos, ENode obj, SymbolRef<DNode> ident, Field var) {
+	public IFldExpr(long pos, ENode obj, SymbolRef<DNode> ident, Field var) {
 		this.pos = pos;
 		this.obj = obj;
 		this.symbol = var.symbol;
 		assert(obj != null && var != null);
 	}
 
-	public IFldExpr(int pos, ENode obj, Field var) {
+	public IFldExpr(long pos, ENode obj, Field var) {
 		this.pos = pos;
 		this.obj = obj;
 		this.symbol = var.symbol;
 		assert(obj != null && var != null);
 	}
 
-	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
+	public IFldExpr(long pos, ENode obj, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = obj;
 		this.symbol = var.symbol;
@@ -372,7 +372,7 @@ public final class IFldExpr extends LvalueExpr {
 
 @ThisIsANode(name="SetAccess", lang=CoreLang)
 public final class ContainerAccessExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="index") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		obj;
 	@DataFlowDefinition(in="obj")		ENode		index;
@@ -383,7 +383,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 	public ContainerAccessExpr() {}
 
-	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
+	public ContainerAccessExpr(long pos, ENode obj, ENode index) {
 		this.pos = pos;
 		this.obj = obj;
 		this.index = index;
@@ -433,11 +433,11 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 @ThisIsANode(name="This", lang=CoreLang)
 public final class ThisExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public ThisExpr() {}
-	public ThisExpr(int pos) {
+	public ThisExpr(long pos) {
 		this.pos = pos;
 	}
 
@@ -462,12 +462,12 @@ public final class ThisExpr extends LvalueExpr {
 
 @ThisIsANode(name="Super", lang=CoreLang)
 public final class SuperExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public SuperExpr() {
 	}
-	public SuperExpr(int pos) {
+	public SuperExpr(long pos) {
 		this.pos = pos;
 	}
 
@@ -489,7 +489,7 @@ public final class SuperExpr extends ENode {
 
 @ThisIsANode(name="LVarExpr", lang=CoreLang)
 public final class LVarExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@virtual @abstract
@@ -503,11 +503,11 @@ public final class LVarExpr extends LvalueExpr {
 	}
 
 	public LVarExpr() {}
-	public LVarExpr(int pos, Var var) {
+	public LVarExpr(long pos, Var var) {
 		this.pos = pos;
 		this.symbol = var.symbol;
 	}
-	public LVarExpr(int pos, String name) {
+	public LVarExpr(long pos, String name) {
 		this.pos = pos;
 		this.ident = name;
 	}
@@ -564,7 +564,7 @@ public final class LVarExpr extends LvalueExpr {
 			return new Type[]{var.getType(env)};
 		return (Type[])sni.getTypes().clone();
 	}
-	
+
 	public INode doRewrite(RewriteContext ctx) {
 		if (ctx.args.containsKey(ident))
 			return ctx.toINode(ctx.args.get(ident));
@@ -574,7 +574,7 @@ public final class LVarExpr extends LvalueExpr {
 
 @ThisIsANode(name="SFld", lang=CoreLang)
 public final class SFldExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeRef			obj;
@@ -598,11 +598,11 @@ public final class SFldExpr extends LvalueExpr {
 
 	public SFldExpr() {}
 
-	public SFldExpr(int pos, Field var) {
+	public SFldExpr(long pos, Field var) {
 		this(pos, null, var);
 	}
 
-	public SFldExpr(int pos, TypeRef obj, Field var) {
+	public SFldExpr(long pos, TypeRef obj, Field var) {
 		this.pos = pos;
 		if (obj != null) {
 			this.obj = obj;
@@ -685,10 +685,10 @@ public final class SFldExpr extends LvalueExpr {
 			}
 			return;
 		}
-		
+
 		if (this.obj == null)
 			this.obj = new TypeRef(env.tenv.tpVoid);
-		
+
 		Type tp = this.obj.getType(env);
 		ScopeOfNames scope = tp.meta_type.tdecl;
 		if (tp ≡ env.tenv.tpVoid)
@@ -730,7 +730,7 @@ public final class SFldExpr extends LvalueExpr {
 
 @ThisIsANode(name="OuterThis", lang=CoreLang)
 public final class OuterThisAccessExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeRef			outer;
@@ -739,7 +739,7 @@ public final class OuterThisAccessExpr extends ENode {
 
 	public OuterThisAccessExpr() {}
 
-	public OuterThisAccessExpr(int pos, TypeRef outer) {
+	public OuterThisAccessExpr(long pos, TypeRef outer) {
 		this.pos = pos;
 		this.outer = outer;
 		this.ident = nameThis;
@@ -774,7 +774,7 @@ public final class OuterThisAccessExpr extends ENode {
 		}
 		return null;
 	}
-	
+
 	public void setupOuterFields() {
 		this.outer_refs.delAll();
 		Env env = Env.getEnv();
@@ -795,7 +795,7 @@ public final class OuterThisAccessExpr extends ENode {
 
 @ThisIsANode(name="Reinterp", lang=CoreLang)
 public final class ReinterpExpr extends LvalueExpr {
-	
+
 	@DataFlowDefinition(out="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	}
@@ -805,13 +805,13 @@ public final class ReinterpExpr extends LvalueExpr {
 
 	public ReinterpExpr() {}
 
-	public ReinterpExpr(int pos, Type ctype, ENode expr) {
+	public ReinterpExpr(long pos, Type ctype, ENode expr) {
 		this.pos = pos;
 		this.ctype = new TypeRef(ctype);
 		this.expr = expr;
 	}
 
-	public ReinterpExpr(int pos, TypeRef ctype, ENode expr) {
+	public ReinterpExpr(long pos, TypeRef ctype, ENode expr) {
 		this.pos = pos;
 		this.ctype = ctype;
 		this.expr = expr;

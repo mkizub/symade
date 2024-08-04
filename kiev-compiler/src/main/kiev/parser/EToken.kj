@@ -46,10 +46,10 @@ public static enum ETokenKind {
 	EXPR_NUMBER,
 	EXPR_STRING,
 	EXPR_CHAR;
-	
+
 	public boolean isExplicit() { return ordinal() >= 3; }
 };
-	
+
 @ThisIsANode(name="EToken", lang=CoreLang)
 public final class EToken extends ENode implements ASTToken {
 
@@ -57,7 +57,7 @@ public final class EToken extends ENode implements ASTToken {
 
 	public static final Pattern patternIdent = Pattern.compile("[\\p{Alpha}_$][\\p{Alnum}_$]*");
 	public static final Pattern patternOper = Pattern.compile("[\\!\\#\\%-\\/\\:\\;\\<\\=\\>\\?\\[\\\\\\]\\^\\{\\|\\}\\~\\u2190-\\u22F1]+");
-	
+
 	@nodeAttr public ETokenKind base_kind;
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData public ANode      value;
@@ -69,8 +69,8 @@ public final class EToken extends ENode implements ASTToken {
 	public final ETokenKind getKind() { base_kind }
 	// for GUI
 	public final void setKind(ETokenKind val) { base_kind = val; }
-	
-	
+
+
 	public EToken() {
 		this.base_kind = ETokenKind.UNKNOWN;
 	}
@@ -78,7 +78,7 @@ public final class EToken extends ENode implements ASTToken {
 		this.base_kind = kind;
 		set(t);
 	}
-	public EToken(int pos, String ident, ETokenKind kind) {
+	public EToken(long pos, String ident, ETokenKind kind) {
 		this.base_kind = kind;
 		this.pos = pos;
 		this.ident = ident;
@@ -107,7 +107,7 @@ public final class EToken extends ENode implements ASTToken {
 		}
 		this.value = ce;
 	}
-	
+
 	public String toString() {
 		return this.ident;
 	}
@@ -123,13 +123,13 @@ public final class EToken extends ENode implements ASTToken {
 			this.ident = t.image;
 		}
 	}
-	
+
 	public void setText(String text) {
-		this.value = null; 
+		this.value = null;
 		this.ident = text;
 		this.guessKind();
 	}
-	
+
 	public boolean isIdentifier() {
 		if (base_kind == ETokenKind.UNKNOWN)
 			guessKind();
@@ -155,7 +155,7 @@ public final class EToken extends ENode implements ASTToken {
 			return new TypeNameRef(pos, ident, ((TypeDecl)value).getType(env));
 		return null;
 	}
-	
+
 	public DNode asScope(Env env) {
 		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
@@ -163,7 +163,7 @@ public final class EToken extends ENode implements ASTToken {
 			return (DNode)value;
 		return null;
 	}
-	
+
 	public ENode asExpr(Env env) {
 		return this;
 	}
@@ -190,7 +190,7 @@ public final class EToken extends ENode implements ASTToken {
 			this.base_kind = ETokenKind.MAYBE_IDENTIFIER;
 		else if (patternOper.matcher(ident).matches())
 			this.base_kind = ETokenKind.MAYBE_OPERATOR;
-		
+
 		// resolve in the path of scopes
 		ResInfo info = new ResInfo(Env.getEnv(),this,ident);
 		if (PassInfo.resolveNameR(this,info)) {
@@ -208,7 +208,7 @@ public final class EToken extends ENode implements ASTToken {
 			}
 		}
 	}
-	
+
 	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		String ident = this.ident;
 		if (ident == null || ident == "")

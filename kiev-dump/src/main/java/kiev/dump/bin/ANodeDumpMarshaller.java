@@ -44,7 +44,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 		out.writeElemID(nelem);
 		out.writeElemFlags(nelem);
 		out.writeTypeRef(nelem.tp);
-		
+
 		for (AttrElem ae : nelem.tp.attrs) {
 			AttrSlot attr = ae.getAttrSlot();
 			if (context.filter.ignoreAttr(node, attr)) {
@@ -67,7 +67,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 				out.writeSpaceEnd();
 			}
 		}
-		
+
 		//ExtSpaceIterator en = node.asANode().getExtSpaceIterator(null);
 		//if (en.hasMoreElements()) {
 		//	out.writeExtDataStart();
@@ -84,7 +84,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 		//	}
 		//	out.writeExtDataEnd();
 		//}
-		int lineno = node.asANode().getPosLine();
+		int lineno = node.asANode().getLineNo();
 		if (lineno > 0) {
 			if (lineno > 0xFFFF) {
 				out.writeValueTag(Signature.TAG_LONG);
@@ -98,7 +98,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 		out.endBlock(Signature.TAG_NODE_SIGN);
 		nelem.eaddr = context.writer.getStreamPos();
     }
-    
+
     private void marshal_attr(AttrElem ae, Object obj, BinDumpWriter out, DumpMarshallingContext context) throws Exception {
 		if (obj == null) {
 			out.writeNull();

@@ -31,7 +31,7 @@ public final class JNewExpr extends JENode {
 			return (JNewExpr)jn;
 		return new JNewExpr(impl);
 	}
-	
+
 	protected JNewExpr(NewExpr impl) {
 		super(impl);
 		this.func = (JMethod)impl.func;
@@ -62,7 +62,7 @@ public final class JNewExpr extends JENode {
 					if (ntype ≈ ((Struct)code.clazz).args[i].getAType(code.env)) break;
 				if( i >= ((Struct)code.clazz).args.length )
 					throw new CompilerException(vn,"Can't create an instance of argument type "+ntype);
-				int pos = vn.pos;
+				long pos = vn.pos;
 				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(code.env,nameTypeInfo));
 				ENode e = new CastExpr(pos,ntype,
 					new CallExpr(pos,tie,
@@ -139,7 +139,7 @@ public final class JNewEnumExpr extends JENode {
 			return (JNewEnumExpr)jn;
 		return new JNewEnumExpr(impl);
 	}
-	
+
 	protected JNewEnumExpr(NewEnumExpr impl) {
 		super(impl);
 		this.func = (JMethod)impl.func;
@@ -188,7 +188,7 @@ public final class JNewArrayExpr extends JENode {
 			return (JNewArrayExpr)jn;
 		return new JNewArrayExpr(impl);
 	}
-	
+
 	protected JNewArrayExpr(NewArrayExpr impl) {
 		super(impl);
 		this.ntype = impl.ntype.getType(Env.getEnv());
@@ -236,7 +236,7 @@ public final class JNewInitializedArrayExpr extends JENode {
 			return (JNewInitializedArrayExpr)jn;
 		return new JNewInitializedArrayExpr(impl);
 	}
-	
+
 	protected JNewInitializedArrayExpr(NewInitializedArrayExpr impl) {
 		super(impl);
 		this.ntype = impl.ntype.getType(Env.getEnv());
@@ -277,7 +277,7 @@ public final class JNewClosure extends JENode {
 			return (JNewClosure)jn;
 		return new JNewClosure(impl);
 	}
-	
+
 	protected JNewClosure(NewClosure impl) {
 		super(impl);
 		this.clazz = (JStruct)impl.clazz;
@@ -286,7 +286,7 @@ public final class JNewClosure extends JENode {
 	@getter public final CallType getCallType(Env env)	{
 		return (CallType) vn().getType(env);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
 		CallType ctype = this.getCallType(code.env);

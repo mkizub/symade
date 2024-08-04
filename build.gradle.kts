@@ -83,12 +83,12 @@ repositories {
 dependencies {
 //    testImplementation(platform("org.junit:junit-bom:5.9.1"))
 //    testImplementation("org.junit.jupiter:junit-jupiter")
-//    implementation(project(":kiev-stdlib"))
-//    implementation(project(":kiev-core"))
-//    implementation(project(":kiev-dump"))
-//    implementation(project(":kiev-compiler"))
-//    implementation(project(":symade-fmt"))
-//    implementation(project(":symade-gui"))
+    implementation(project(":kiev-stdlib"))
+    implementation(project(":kiev-core"))
+    implementation(project(":kiev-dump"))
+    implementation(project(":kiev-compiler"))
+    implementation(project(":symade-fmt"))
+    implementation(project(":symade-gui"))
 //    implementation(files("src/symade-core.jar", "bin/swt-win.jar"))
 }
 

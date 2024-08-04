@@ -29,7 +29,7 @@ public abstract class BoolExpr extends ENode {
 			resolveOpdef(env);
 		return true;
 	}
-	
+
 	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		resolveMethodAndNormalize(env,parent,slot);
 	}
@@ -43,7 +43,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@DataFlowDefinition(in="this:in")			ENode			expr1;
 	@DataFlowDefinition(in="expr1:false")		ENode			expr2;
 	}
-	
+
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
@@ -51,7 +51,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
+	public BinaryBooleanOrExpr(long pos, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -64,7 +64,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fBoolBoolOR.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
@@ -115,7 +115,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@DataFlowDefinition(in="this:in")		ENode			expr1;
 	@DataFlowDefinition(in="expr1:true")		ENode			expr2;
 	}
-	
+
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
@@ -123,7 +123,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
+	public BinaryBooleanAndExpr(long pos, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -136,7 +136,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fBoolBoolAND.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
@@ -181,18 +181,18 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 @ThisIsANode(name="Cmp", lang=CoreLang)
 public class BinaryBoolExpr extends BoolExpr {
-	
+
 	@DataFlowDefinition(out="expr2") private static class DFI {
 	@DataFlowDefinition(in="this:in")		ENode			expr1;
 	@DataFlowDefinition(in="expr1")			ENode			expr2;
 	}
-	
+
 	@nodeAttr public ENode			expr1;
 	@nodeAttr public ENode			expr2;
 
 	public BinaryBoolExpr() {}
 
-	public BinaryBoolExpr(int pos, CoreFunc op, ENode expr1, ENode expr2) {
+	public BinaryBoolExpr(long pos, CoreFunc op, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.symbol = op.operation.symbol;
 		this.expr1 = expr1;
@@ -205,7 +205,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() { toStringByOpdef() }
@@ -251,7 +251,7 @@ public class InstanceofExpr extends BoolExpr {
 	@DataFlowDefinition(tru="this:tru()", fls="expr") private static class DFI {
 	@DataFlowDefinition(in="this:in")		ENode			expr;
 	}
-	
+
 	@nodeAttr public ENode			expr;
 	@nodeAttr public TypeRef		itype;
 
@@ -259,14 +259,14 @@ public class InstanceofExpr extends BoolExpr {
 		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public InstanceofExpr(int pos, ENode expr, TypeRef itype) {
+	public InstanceofExpr(long pos, ENode expr, TypeRef itype) {
 		this.pos = pos;
 		this.expr = expr;
 		this.itype = itype;
 		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public InstanceofExpr(int pos, ENode expr, Type itype) {
+	public InstanceofExpr(long pos, ENode expr, Type itype) {
 		this.pos = pos;
 		this.expr = expr;
 		this.itype = new TypeRef(itype);
@@ -279,7 +279,7 @@ public class InstanceofExpr extends BoolExpr {
 		this.expr = args[0];
 		this.itype = (TypeRef)args[1];
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fAnyInstanceOf.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr,itype}; }
@@ -291,7 +291,7 @@ public class InstanceofExpr extends BoolExpr {
 		final int res_idx;
 		InstanceofExprDFFunc(DataFlowInfo dfi) {
 			f = new DFFunc.DFFuncChildOut(dfi.getSocket("expr"));
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -332,18 +332,18 @@ public class InstanceofExpr extends BoolExpr {
 
 @ThisIsANode(name="Not", lang=CoreLang)
 public class BooleanNotExpr extends BoolExpr {
-	
+
 	@DataFlowDefinition(fls="expr:true", tru="expr:false") private static class DFI {
 	@DataFlowDefinition(in="this:in")		ENode			expr;
 	}
-	
+
 	@nodeAttr public ENode		expr;
 
 	public BooleanNotExpr() {
 		this.symbol = getOperation(Env.getEnv()).symbol;
 	}
 
-	public BooleanNotExpr(int pos, ENode expr) {
+	public BooleanNotExpr(long pos, ENode expr) {
 		this.pos = pos;
 		this.expr = expr;
 		this.symbol = getOperation(Env.getEnv()).symbol;
@@ -354,7 +354,7 @@ public class BooleanNotExpr extends BoolExpr {
 		this.symbol = sym;
 		this.expr = args[0];
 	}
-	
+
 	public CoreOperation getOperation(Env env) { env.coreFuncs.fBoolBoolNOT.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{expr}; }

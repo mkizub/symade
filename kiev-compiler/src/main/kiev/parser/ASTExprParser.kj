@@ -73,12 +73,12 @@ public final class ASTExprParser {
 			}
 		}
 	}
-	
+
 	final Env env;
 	final COpdef[] opdefs;
 	final ANode[]  nodes;
 	int cur_pos;
-	
+
 	public ASTExprParser(Env env, COpdef[] opdefs, ANode[] nodes) {
 		this.env = env;
 		this.opdefs = opdefs;
@@ -101,7 +101,7 @@ public final class ASTExprParser {
 	ANode nextNode() { this.nodes[this.cur_pos+1] }
 	ANode push() { this.nodes[this.cur_pos++] }
 	void pop() { this.cur_pos -= 1; }
-	
+
 	Enumeration<COpdef> iterateFirst(int priority, boolean tp_op) {
 		return new OpdefEnumerator(opdefs, priority, tp_op, restLength(), true);
 	}
@@ -166,7 +166,7 @@ public final class ASTExprParser {
 		},
 		resolveExprNext(ret, expr, priority)
 	}
-	
+
 	private rule resolveExprNext(ANode@ ret, ANode prev, int priority)
 		ANode@			expr;
 		COpdef@			opd;
@@ -185,7 +185,7 @@ public final class ASTExprParser {
 		trace( Kiev.debug && Kiev.debugOperators, "resolveExprNext: 2 res "+prev),
 		ret ?= prev
 	}
-	
+
 	private rule resolveType(ANode@ ret)
 		ANode@			expr;
 		COpdef@			opd;
@@ -210,7 +210,7 @@ public final class ASTExprParser {
 		},
 		resolveTypeNext(ret, expr)
 	}
-	
+
 	private rule resolveTypeNext(ANode@ ret, ANode prev)
 		ANode@			expr;
 		COpdef@			opd;
@@ -229,7 +229,7 @@ public final class ASTExprParser {
 		ret ?= asType(prev),
 		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 2 res "+prev)
 	}
-	
+
 	private rule resolveOpArg(COpArgument[] args, int pos, ANode[] result)
 		ANode@ expr;
 		ANode[] opArgs;
@@ -277,7 +277,7 @@ public final class ASTExprParser {
 		result[pos] = new UnresSeqs(args[pos],seq_res.exprs),
 		resolveOpArg(args, pos+1, result)
 	}
-	
+
 	class SeqRes {
 		ANode[]	exprs;
 		int save_cur_pos;
@@ -451,10 +451,10 @@ public final class ASTExprParser {
 	private ANode makeExpr(ANode e, COpArgOPER oper) {
 		if (oper.clazz != null)
 			return (ANode) oper.clazz.newInstance();
-		return e;	
+		return e;
 	}
 	private ENode makeExpr(COpdef opd, ANode[] result) {
-		int pos = 0;
+		long pos = 0;
 		foreach (ASTNode e; result; e.pos != 0) {
 			pos = e.pos;
 			if (pos != 0 && isDefinitelyOper(e))

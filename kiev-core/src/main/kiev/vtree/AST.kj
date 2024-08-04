@@ -26,12 +26,13 @@ public interface INode {
 	public ANode		asANode();
 
 	public INode        parent();
+	public INode		parentBy(AttrSlot slot);
 	public AttrSlot     pslot();
 	public AttrSlot[]   values();
 	public NodeTypeInfo getNodeTypeInfo();
 
 	public AttrSlot getAttrSlot(String name);
-	
+
 	public Object getVal(AttrSlot attr);
 	public void   setVal(AttrSlot attr, Object data);
 	public Object getVal(AttrSlot attr, int idx);
@@ -45,7 +46,7 @@ public interface INode {
 
 	public boolean isAttached();
 	public boolean isAttachedBy(AttrSlot attr_slot);
-	
+
 	public void walkTree(INode parent, AttrSlot slot, ITreeWalker walker);
 }
 
@@ -124,7 +125,7 @@ public class AutoCompleteOption {
 	}
 }
 public final class AutoCompleteResult {
-	
+
 	public final boolean strict;
 	private Vector<AutoCompleteOption> options;
 	public AutoCompleteResult(boolean strict) {
@@ -149,10 +150,10 @@ public final class AutoCompleteResult {
 
 public final class SpaceIterator<+N extends INode> implements Enumeration<N> {
 	public  final INode            parent;
-	public  final ASpaceAttrSlot   attr; 
+	public  final ASpaceAttrSlot   attr;
 	public  final N[]              array;
 	private       int              next_pos;
-	
+
 	SpaceIterator(INode parent, ASpaceAttrSlot attr, N[] array) {
 		this.parent = parent;
 		this.attr = attr;
@@ -184,7 +185,7 @@ public final class ExtSpaceIterator<+N extends INode> implements Enumeration<N> 
 	private       int              ext_pos;
 	private       int              next_pos;
 	private       boolean          scan_flags;
-	
+
 	ExtSpaceIterator(ANode parent, ExtSpaceAttrSlot attr, Object[] ext_data) {
 		this.parent = parent;
 		this.attr = attr;
@@ -238,7 +239,7 @@ public final class ExtSpaceIterator<+N extends INode> implements Enumeration<N> 
 			return null;
 		return (INode[])((DataAttachInfo)ext_data[ext_pos]).p_data;
 	}
-	
+
 	private void setNextPos() {
 		if (!scan_flags && ext_data != null) {
 			for (ext_pos++; ext_pos < ext_data.length; ext_pos++) {
@@ -281,9 +282,9 @@ public final class ExtSpaceIterator<+N extends INode> implements Enumeration<N> 
 public abstract class ANode extends AHandleData implements INode {
 	public static final ANode[] emptyArray = new ANode[0];
 	public static final Object[] emptyExtData = new Object[0];
-	
+
 	public static abstract class UnVersionedData {}
-	
+
 	static final class ChangeListenerEntry extends UnVersionedData {
 		final ChangeListener listener;
 		ChangeListenerEntry(ChangeListener listener) {
@@ -291,8 +292,12 @@ public abstract class ANode extends AHandleData implements INode {
 		}
 	}
 	static final class TextSourcePosition extends UnVersionedData {
-		int						pos;
-		TextSourcePosition(int pos) { this.pos = pos; }
+		long			pos;
+		TextSourcePosition(long pos) { this.pos = pos; }
+	}
+	static final class TextSourceFilename extends UnVersionedData {
+		String			fileName;
+		TextSourceFilename(String fileName) { this.fileName = fileName; }
 	}
 
 	@AttrBinDumpInfo(ignore=true)
@@ -311,21 +316,23 @@ public abstract class ANode extends AHandleData implements INode {
 			new ParentAttrSlot("syntax_parent", true, TypeInfo.newTypeInfo(ANode.class,null));
 
 	private static final AttrSlot[] $values = {};
-	
+
 	private static final NodeTypeInfo $node_type_info = new NodeTypeInfo("kiev·vtree·ANode", CoreLang, "Node", new NodeTypeInfo[0], ANode.$values);
-	
+
 	final
 	public  AHandle					p_handle_;
 	private ANode					p_parent_;
 	private Object					p_ext_data_;
-	
+
 	@virtual @abstract
 	public:ro ANode					parent;
 
-	@UnVersioned
+	//@UnVersioned
+	//@abstract @virtual
+	public long					pos;
 	@abstract @virtual
-	public int						pos;
-	
+	public String				file_name;
+
 	public ANode(AHandle handle, Context context) {
 		super(context);
 		p_handle_ = handle;
@@ -357,7 +364,7 @@ public abstract class ANode extends AHandleData implements INode {
 	public NodeTypeInfo getNodeTypeInfo() {
 		return ANode.$node_type_info;
 	}
-	
+
 	@getter @nodeData final public ANode get$parent() {
 		return parent();
 	}
@@ -370,7 +377,7 @@ public abstract class ANode extends AHandleData implements INode {
 			return (Object[])p_ext_data;
 		return new Object[]{p_ext_data};
 	}
-	
+
 	private void delExtElem(Object[] arr, int idx, Object value) {
 		assert (idx >= 0 && idx < arr.length);
 		if (arr.length == 1) {
@@ -398,7 +405,7 @@ public abstract class ANode extends AHandleData implements INode {
 			tmp[i] = arr[i+1];
 		this.p_ext_data_ = tmp;
 	}
-	
+
 	private void insExtElem(Object[] arr, int idx, Object value) {
 		assert (idx >= 0 && idx <= arr.length);
 		if (arr.length == 0) {
@@ -414,7 +421,7 @@ public abstract class ANode extends AHandleData implements INode {
 			tmp[i+1] = arr[i];
 		this.p_ext_data_ = tmp;
 	}
-	
+
 	private void setExtElem(Object[] arr, int idx, Object value) {
 		assert (arr.length > 0 && idx >= 0 && idx < arr.length);
 		if (arr.length == 1) {
@@ -425,7 +432,7 @@ public abstract class ANode extends AHandleData implements INode {
 		tmp[idx] = value;
 		this.p_ext_data_ = tmp;
 	}
-	
+
 	public final UnVersionedData getUnVersionedData(Class clazz) {
 		foreach (UnVersionedData uvd; getExtData(); uvd.getClass() == clazz)
 			return uvd;
@@ -477,31 +484,56 @@ public abstract class ANode extends AHandleData implements INode {
 		insExtElem(arr,arr.length,new ChangeListenerEntry(listener));
 	}
 
-	public final int getPosLine() { return pos >>> 11; }
-	public final void setPosLine(int lineno) { pos = lineno << 11; }
-	
-	@getter public final int get$pos() {
-		TextSourcePosition tsp = (TextSourcePosition)getUnVersionedData(TextSourcePosition.class);
+	public final int getFilePos() { return (int)(pos >>> 32); }
+	public final int getLineNo() { return ((int)pos) >>> 12; }
+	public final int getLinePos() { return ((int)pos) & 0xFFF; }
+	public final void setLineNo(int lineno) { pos = lineno << 12; }
+	public final void setFileName(String fileName) { file_name = fileName; }
+
+	@getter public final String get$file_name() {
+		TextSourceFilename tsp = (TextSourceFilename)getUnVersionedData(TextSourceFilename.class);
 		if (tsp == null)
-			return 0;
-		return tsp.pos;
+			return null;
+		return tsp.fileName;
 	}
 
-	@setter public final synchronized void set$pos(int value) {
+	@setter public final synchronized void set$file_name(String value) {
 		Object[] arr = getExtData();
 		for (int i=0; i < arr.length; i++) {
 			Object ext = arr[i];
-			if (ext instanceof TextSourcePosition) {
-				if (value == 0)
+			if (ext instanceof TextSourceFilename) {
+				if (value == null || value.isEmpty())
 					delExtElem(arr,i,ext);
 				else
-					ext.pos = value;
+					ext.fileName = value;
 				return;
 			}
 		}
-		if (value != 0)
-			insExtElem(arr,arr.length,new TextSourcePosition(value));
+		if (value != null)
+			insExtElem(arr,arr.length,new TextSourceFilename(value));
 	}
+//	@getter public final int get$pos() {
+//		TextSourcePosition tsp = (TextSourcePosition)getUnVersionedData(TextSourcePosition.class);
+//		if (tsp == null)
+//			return 0;
+//		return tsp.pos;
+//	}
+//
+//	@setter public final synchronized void set$pos(int value) {
+//		Object[] arr = getExtData();
+//		for (int i=0; i < arr.length; i++) {
+//			Object ext = arr[i];
+//			if (ext instanceof TextSourcePosition) {
+//				if (value == 0)
+//					delExtElem(arr,i,ext);
+//				else
+//					ext.pos = value;
+//				return;
+//			}
+//		}
+//		if (value != 0)
+//			insExtElem(arr,arr.length,new TextSourcePosition(value));
+//	}
 
 	public final boolean isAttached() {
 		return p_parent_ != null;
@@ -516,7 +548,7 @@ public abstract class ANode extends AHandleData implements INode {
 			return true;
 		return false;
 	}
-	
+
 	public void callbackChanged(NodeChangeInfo info) {
 		if (ASTNode.EXECUTE_UNVERSIONED)
 			return;
@@ -593,7 +625,7 @@ public abstract class ANode extends AHandleData implements INode {
 			insExtElem(arr,arr.length,new ParentInfo(parent,slot));
 		}
 	}
-	
+
 	private void callbackDetached(ANode parent, AttrSlot slot, int idx) {
 		assert (slot.isAttr());
 		assert ((slot instanceof ScalarAttrSlot && idx < 0) || idx >= 0);
@@ -621,7 +653,18 @@ public abstract class ANode extends AHandleData implements INode {
 	public ANode parent() {
 		return p_parent_;
 	}
-	
+
+	public ANode parentBy(AttrSlot slot) {
+		if (!slot.isAttr())
+			return null;
+		ParentAttrSlot p_attr = slot.parent_attr_slot;
+		if (p_attr == ANode.nodeattr$parent)
+			return p_parent_;
+		foreach (ParentInfo pi; getExtData(); pi.p_slot.parent_attr_slot == p_attr)
+			return pi.p_parent;
+		return null;
+	}
+
 	public final AttrSlot pslot() {
 		ANode parent = this.parent();
 		if (parent == null)
@@ -653,7 +696,7 @@ public abstract class ANode extends AHandleData implements INode {
 	public AttrSlot[] values() {
 		return ANode.$values;
 	}
-	
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (val instanceof SymbolRef && val.name == null)
 			return false;
@@ -667,7 +710,7 @@ public abstract class ANode extends AHandleData implements INode {
 	public final <N extends INode> ExtSpaceIterator<N> getExtSpaceIterator(ExtSpaceAttrSlot attr) {
 		return new ExtSpaceIterator<N>(this, attr, getExtData());
 	}
-	
+
 	public AttrSlot getAttrSlot(String name) {
 		if (name == "this")
 			return nodeattr$this;
@@ -679,7 +722,7 @@ public abstract class ANode extends AHandleData implements INode {
 			return dat.p_slot;
 		throw new RuntimeException("No @nodeAttr value \"" + name + "\" in "+getClass().getName());
 	}
-	
+
 	public final Object getVal(AttrSlot attr) {
 		if (attr instanceof ParentAttrSlot) {
 			if (attr == ANode.nodeattr$parent)
@@ -694,7 +737,7 @@ public abstract class ANode extends AHandleData implements INode {
 			return attr.getArray(this);
 		return null;
 	}
-	
+
 	public final void setVal(AttrSlot attr, Object data) {
 		if (attr instanceof ParentAttrSlot) {
 			if (data == null)
@@ -717,7 +760,7 @@ public abstract class ANode extends AHandleData implements INode {
 				attr.add(this, (INode)data);
 		}
 	}
-	
+
 	public final Object getVal(AttrSlot attr, int idx) {
 		Object val = getVal(attr);
 		if (val instanceof INode[])
@@ -726,7 +769,7 @@ public abstract class ANode extends AHandleData implements INode {
 			return val;
 		throw new ArrayIndexOutOfBoundsException(idx);
 	}
-	
+
 	public final void setVal(AttrSlot attr, int idx, Object data) {
 		if (attr instanceof ASpaceAttrSlot)
 			spaceSlotSet((ASpaceAttrSlot)attr, idx, (INode)data);
@@ -735,41 +778,41 @@ public abstract class ANode extends AHandleData implements INode {
 		else
 			throw new ArrayIndexOutOfBoundsException(idx);
 	}
-	
+
 	public final void addVal(AttrSlot attr, Object data) {
 		if (attr instanceof ASpaceAttrSlot)
 			spaceSlotAppend((ASpaceAttrSlot)attr, (INode)data);
 		else
 			throw new ArrayIndexOutOfBoundsException(0);
 	}
-	
+
 	public final void delVal(AttrSlot attr, int idx) {
 		if (attr instanceof ASpaceAttrSlot)
 			spaceSlotDelete((ASpaceAttrSlot)attr, idx);
 		else
 			throw new ArrayIndexOutOfBoundsException(0);
 	}
-	
+
 	public final void insVal(AttrSlot attr, int idx, Object data) {
 		if (attr instanceof ASpaceAttrSlot)
 			spaceSlotInsert((ASpaceAttrSlot)attr, idx, (INode)data);
 		else
 			throw new ArrayIndexOutOfBoundsException(0);
 	}
-	
+
 	private Object getExtData(AttrSlot attr) {
 		foreach (DataAttachInfo dat; getExtData(); dat.p_slot == attr)
 			return dat.p_data;
 		return null;
 	}
-	
+
 	private INode getExtParent(AttrSlot attr) {
 		assert (((ParentAttrSlot)attr).is_unique);
 		foreach (ParentInfo pi; getExtData(); pi.p_slot.parent_attr_slot == attr)
 			return pi.p_parent;
 		return null;
 	}
-	
+
 	private void setExtData(AttrSlot attr, Object d) {
 		assert (attr instanceof ScalarAttrSlot);
 		if (d == null) {
@@ -841,7 +884,7 @@ public abstract class ANode extends AHandleData implements INode {
 			}
 		}
 	}
-	
+
 	private void spaceSlotSet(ASpaceAttrSlot slot, int idx, INode node) {
 		INode[] narr = (INode[])slot.getArray(this).clone();
 		INode old = narr[idx];
@@ -975,7 +1018,7 @@ public abstract class ANode extends AHandleData implements INode {
 		}
 		return node;
 	}
-	
+
 	public final this.type detach(INode parent, AttrSlot slot)
 	{
 		//assert (parent == parent());
@@ -988,13 +1031,13 @@ public abstract class ANode extends AHandleData implements INode {
 			pi.p_slot.detach(pi.p_parent, this);
 		return this;
 	}
-	
+
 	public final this.type detach()
 		operator "~ V"
 	{
 		return detach(parent(), pslot());
 	}
-	
+
 	public final <N extends INode> N replaceWithNode(N node, INode parent, AttrSlot pslot) {
 		//assert(isAttached());
 		if (node == null) {
@@ -1017,7 +1060,7 @@ public abstract class ANode extends AHandleData implements INode {
 			((ASTNode)node).pos = ((ASTNode)this).pos;
 		return node;
 	}
-	
+
 	public INode doRewrite(RewriteContext ctx) {
 		if !(this instanceof ASTNode)
 			return new Copier().copyFull(this);
@@ -1066,7 +1109,7 @@ public abstract class ANode extends AHandleData implements INode {
 		//}
 		return rn;
 	}
-	
+
 	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.isAutoComplete()) {
 			foreach (AttrSlot attr; values(); attr == slot) {
@@ -1088,13 +1131,13 @@ public abstract class ANode extends AHandleData implements INode {
 		if (!slot.isChild()) {
 			if (slot.typeinfo.clazz == Boolean.TYPE) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
-				result.append("false", "boolean", null, Boolean.FALSE); 
+				result.append("false", "boolean", null, Boolean.FALSE);
 				result.append("true", "boolean", null, Boolean.TRUE);
 				return result;
 			}
 			if (slot.typeinfo.clazz == Boolean.class) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
-				result.append("false", "Boolean", null, Boolean.FALSE); 
+				result.append("false", "Boolean", null, Boolean.FALSE);
 				result.append("true", "Boolean", null, Boolean.TRUE);
 				result.append("null", "null", null, null);
 				return result;
@@ -1102,7 +1145,7 @@ public abstract class ANode extends AHandleData implements INode {
 			if (Enum.class.isAssignableFrom(slot.typeinfo.clazz) && Enum.class != slot.typeinfo.clazz) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
 				foreach (Enum e; (Enum[])slot.typeinfo.clazz.getDeclaredMethod(Constants.nameEnumValues).invoke(null)) {
-					result.append(e.toString(), e.getClass().getName(), null, e); 
+					result.append(e.toString(), e.getClass().getName(), null, e);
 				}
 				result.append("null", "null", null, null);
 				return result;
@@ -1206,7 +1249,7 @@ public final class SemContext extends Context {
 public abstract class ASTNode extends ANode implements Constants {
 
 	public static final boolean EXECUTE_UNVERSIONED = Boolean.valueOf(System.getProperty("symade.unversioned","true")).booleanValue();
-	
+
 	public static final ASTNode[] emptyArray = new ASTNode[0];
 
 	private static final AttrSlot[] $values = {}; // {/*ANode.nodeattr$this,*/ ANode.nodeattr$parent};
@@ -1216,7 +1259,7 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public Language getCompilerLang() { return null; }
 	public String getCompilerNodeName() { return null; }
-	
+
 	public final void compflagsLock() { compileflags |= 3; }
 	public final void compflagsClear() { compileflags &= 0xFFF0003; }
 	public final void compflagsClearUnLock() { compileflags &= 0xFFF0000; }
@@ -1338,8 +1381,9 @@ public abstract class ASTNode extends ANode implements Constants {
 	public ASTNode(AHandle handle, SemContext context) {
 		super(handle, context);
 	}
-	
+
 	public static ASTNode getActual(ASTNode node) {
+		//return node;
 		if (node == null)
 			return null;
 		SemContext semantic_context = Kiev.getSemContext();

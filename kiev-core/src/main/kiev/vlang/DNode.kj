@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
 public abstract class DNode extends ASTNode implements ISymbol {
 
 	public static final DNode[] emptyArray = new DNode[0];
-	
+
 	public static final int MASK_ACC_DEFAULT   = 0;
 	public static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
 	public static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
@@ -34,7 +34,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		null,                null,              null,               null,
 		null,                null,              null,               null
 	};
-	
+
 	public static final class NodeAttr_metas extends ExtSpaceAttrSlot<MNode> {
 		NodeAttr_metas() { super("metas", ANode.nodeattr$parent, TypeInfo.newTypeInfo(MNode.class, null)); }
 		public final Enumeration<MNode> iterate(INode parent) {
@@ -109,7 +109,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public @packed(1,nodeflags,12) boolean mflags_is_synthetic;			// any decl that was generated (not in sources)
 	public @packed(1,nodeflags,13) boolean mflags_is_struct_annotation;
 	public @packed(1,nodeflags,14) boolean mflags_is_enum;				// struct/decl group/fields
-		
+
 	// Flags temporary used with java flags
 	public @packed(1,nodeflags,16) boolean mflags_is_forward;				// var/field/method, type is wrapper
 	public @packed(1,nodeflags,17) boolean mflags_is_virtual;				// var/field, method is 'static virtual', struct is 'view'
@@ -167,7 +167,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		else
 			symbol.sname = value;
 	}
-	
+
 	public final boolean isPublic()			{ return this.mflags_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.mflags_access == MASK_ACC_PRIVATE; }
 	public final boolean isProtected()			{ return this.mflags_access == MASK_ACC_PROTECTED; }
@@ -188,7 +188,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isMacro()				{ return this.mflags_is_macro; }
 	public final boolean isVirtual()			{ return this.mflags_is_virtual; }
 	public final boolean isForward()			{ return this.mflags_is_forward; }
-	
+
 	public final boolean isStructView()		{ return this instanceof KievView; }
 	public final boolean isTypeUnerasable()	{ return this.mflags_is_type_unerasable; }
 	public final boolean isStructInner()		{ return !(this.parent() instanceof KievPackage); }
@@ -392,7 +392,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 			return m;
 		return null;
 	}
-	
+
 	public final MNode setMeta(MNode meta)
 		operator "V += V"
 		alias add
@@ -429,7 +429,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 			}
 		}
 	}
-	
+
 }
 
 public interface GlobalDNode {
@@ -444,7 +444,7 @@ public interface GlobalDNodeContainer extends GlobalDNode, ScopeOfNames {
 public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
-	
+
 	@nodeAttr
 	public TypeRef∅						super_types;
 
@@ -464,7 +464,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return this.mflags_is_enum;
 	}
 
-	// a pizza case	
+	// a pizza case
 	public final boolean isPizzaCase() {
 		return this instanceof PizzaCase;
 	}
@@ -478,11 +478,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 	}
 
-	// a structure with the only one instance (singleton)	
+	// a structure with the only one instance (singleton)
 	public final boolean isSingleton() {
 		return this.getMeta("kiev·stdlib·meta·singleton") != null;
 	}
-	// an interface with methdos and fields (mixin)	
+	// an interface with methdos and fields (mixin)
 	public final boolean isMixin() {
 		return this.getMeta("kiev·stdlib·meta·mixin") != null;
 	}
@@ -517,7 +517,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public TypeDecl(AHandle handle, Symbol symbol) {
 		super(handle, symbol);
 	}
-	
+
 	public String qname() { sname }
 
 	public void cleanupOnReload() {
@@ -545,7 +545,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 		return this;
 	}
-	
+
 	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
 		setFrontEndPassed();
 		return true;
@@ -634,7 +634,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		info.enterSuper() : info.leaveSuper(),
 		supref.getType(info.env).meta_type.tdecl.resolveMethodR(info,mt)
 	}
-	
+
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -651,14 +651,14 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData(ext_data=true, copyable=false) public String			bytecode_name; // used by backend for anonymouse and inner declarations
 	@nodeData(ext_data=true, copyable=false) public TypeAssign		ometa_tdef;
-	
+
 
 	public ASTNode[] getContainerMembers() { this.members }
-	
+
 	public ComplexTypeDecl(AHandle handle, Symbol symbol) {
 		super(handle, symbol);
 	}
-	
+
 	public void callbackChanged(NodeChangeInfo info) {
 		//if (info.content_change) {
 		//	if (info.slot.name == "sname")
@@ -671,13 +671,13 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		}
 		super.callbackChanged(info);
 	}
-	
+
 	private void resetNames() {
 		q_name = null;
 		foreach (ComplexTypeDecl s; members)
 			s.resetNames();
 	}
-	
+
 	public Object copy(CopyContext cc) {
 		ComplexTypeDecl obj = (ComplexTypeDecl)super.copy(cc);
 		if (this == obj)
@@ -725,7 +725,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 	static class TypeDeclDFFunc extends DFFunc {
 		final int res_idx;
 		TypeDeclDFFunc(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -800,7 +800,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;
 	}
-	
+
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -818,29 +818,29 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 	public MetaTypeDecl(AHandle handle, Symbol symbol) {
 		super(handle, symbol);
 	}
-	
+
 	public MetaType getMetaType(Env env) {
-		synchronized (env.tenv) { 
+		synchronized (env.tenv) {
 			MetaType mt = env.tenv.getExistingMetaType(this.symbol);
 			if (mt != null)
 				return mt;
 			return new XMetaType(env.tenv, this, 0);
 		}
 	}
-	
+
 }
 
 @ThisIsANode(lang=CoreLang, copyable=false)
 public class KievPackage extends DNode implements GlobalDNodeContainer {
 
 	@nodeAttr public DNode∅						pkg_members;
-	
+
 	public KievPackage(Symbol symbol) {
 		super(new AHandle(), symbol);
 		assert (symbol.isGlobalSymbol());
 		symbol.setUUID(null, "");
 	}
-	
+
 	public final ASTNode[] getContainerMembers() { this.pkg_members }
 
 	public void callbackChanged(NodeChangeInfo info) {
@@ -900,7 +900,7 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;
 	}
-	
+
 }
 
 @ThisIsANode(lang=CoreLang, copyable=false)

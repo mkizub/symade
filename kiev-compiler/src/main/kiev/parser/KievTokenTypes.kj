@@ -1,0 +1,155 @@
+package kiev.parser;
+
+public interface TokenConstants extends kiev050Constants {
+
+	int BAD_CHARACTER         = -2;
+	int WHITE_SPACE           = -1;
+}
+
+public interface KievTokenTypes {
+
+    // Generic
+    KievTokenType EOF                   = new KievTokenType("EOF", TokenConstants.EOF, true);
+    KievTokenType BAD_CHARACTER         = new KievTokenType("BAD_CHARACTER", TokenConstants.BAD_CHARACTER, true);
+    KievTokenType WHITE_SPACE           = new KievTokenType("WHITE_SPACE", TokenConstants.WHITE_SPACE, true);
+
+    // Comments
+    KievTokenType DOC_COMMENT           = new KievTokenType("DOC_COMMENT", TokenConstants.FORMAL_COMMENT, true);
+    KievTokenType BLOCK_COMMENT         = new KievTokenType("BLOCK_COMMENT", TokenConstants.MULTI_LINE_COMMENT, true);
+    KievTokenType LINE_COMMENT          = new KievTokenType("LINE_COMMENT", TokenConstants.SINGLE_LINE_COMMENT, true);
+	KievTokenType SPECIAL_COMMENT       = new KievTokenType("SPECIAL_COMMENT", TokenConstants.SPECIAL_COMMENT, true);
+
+    // Literals
+    KievTokenType CHARACTER_LITERAL     = new KievTokenType("CHARACTER_LITERAL", TokenConstants.CHARACTER_LITERAL, true);
+    KievTokenType STRING_LITERAL        = new KievTokenType("STRING_LITERAL", TokenConstants.STRING_LITERAL, true);
+    KievTokenType INTEGER_LITERAL       = new KievTokenType("INTEGER_LITERAL", TokenConstants.INTEGER_LITERAL, true);
+    KievTokenType LONG_LITERAL          = new KievTokenType("LONG_LITERAL", TokenConstants.LONG_INTEGER_LITERAL, true);
+    KievTokenType FLOAT_LITERAL         = new KievTokenType("FLOAT_LITERAL", TokenConstants.FLOATING_POINT_LITERAL, true);
+    KievTokenType DOUBLE_LITERAL        = new KievTokenType("DOUBLE_LITERAL", TokenConstants.DOUBLE_POINT_LITERAL, true);
+
+    // Access keywords
+    KievTokenType META_ACCESS           = new KievTokenType("@access", TokenConstants.META_ACCESS1);
+    KievTokenType META_PUBLIC           = new KievTokenType("@public", TokenConstants.META_PUBLIC);
+    KievTokenType META_PROTECTED        = new KievTokenType("@protected", TokenConstants.META_PROTECTED);
+    KievTokenType META_PRIVATE          = new KievTokenType("@private", TokenConstants.KW_PRIVATE);
+    KievTokenType KW_PUBLIC             = new KievTokenType("public", TokenConstants.KW_PUBLIC);
+    KievTokenType KW_PROTECTED          = new KievTokenType("protected", TokenConstants.KW_PROTECTED);
+    KievTokenType KW_PRIVATE            = new KievTokenType("private", TokenConstants.KW_PRIVATE);
+    KievTokenType KW_ACC_RO             = new KievTokenType("ro", TokenConstants.KW_ACC_RO);
+    KievTokenType KW_ACC_WO             = new KievTokenType("wo", TokenConstants.KW_ACC_WO);
+    KievTokenType KW_ACC_RW             = new KievTokenType("rw", TokenConstants.KW_ACC_RW);
+    KievTokenType KW_ACC_NO             = new KievTokenType("no", TokenConstants.KW_ACC_NO);
+
+	KievTokenType META_INTERFACE        = new KievTokenType("@interface", TokenConstants.META_INTERFACE);
+	KievTokenType META_SINGLETON        = new KievTokenType("@singleton", TokenConstants.META_SINGLETON);
+
+	KievTokenType META_MIXIN            = new KievTokenType("@mixin", TokenConstants.META_MIXIN);
+	KievTokenType META_FORWARD          = new KievTokenType("@forward", TokenConstants.META_FORWARD);
+	KievTokenType META_UNERASABLE       = new KievTokenType("@unerasable", TokenConstants.META_UNERASABLE);
+	KievTokenType META_VIRTUAL          = new KievTokenType("@virtual", TokenConstants.META_VIRTUAL);
+	KievTokenType META_PACKED           = new KievTokenType("@packed", TokenConstants.META_PACKED);
+	KievTokenType META_MACRO            = new KievTokenType("@macro", TokenConstants.META_MACRO);
+	KievTokenType META_STATIC           = new KievTokenType("@static", TokenConstants.META_STATIC);
+	KievTokenType META_ABSTRACT         = new KievTokenType("@abstract", TokenConstants.META_ABSTRACT);
+	KievTokenType META_FINAL            = new KievTokenType("@final", TokenConstants.META_FINAL);
+	KievTokenType META_NATIVE           = new KievTokenType("@native", TokenConstants.META_NATIVE);
+	KievTokenType META_SYNCHRONIZED     = new KievTokenType("@synchronized", TokenConstants.META_SYNCHRONIZED);
+	KievTokenType META_TRANSIENT        = new KievTokenType("@transient", TokenConstants.META_TRANSIENT);
+	KievTokenType META_VOLATILE         = new KievTokenType("@volatile", TokenConstants.META_VOLATILE);
+	KievTokenType META_THROWS           = new KievTokenType("@throws", TokenConstants.META_THROWS);
+	KievTokenType META_UUID             = new KievTokenType("@uuid", TokenConstants.META_UUID);
+	KievTokenType META_GETTER           = new KievTokenType("@getter", TokenConstants.META_GETTER);
+	KievTokenType META_SETTER           = new KievTokenType("@setter", TokenConstants.META_SETTER);
+
+    // Soft keywords
+    //KievTokenType KW_SYNTAX             = new KievTokenType("syntax", TokenConstants.KW_SYNTAX);
+
+    // Identifier keywords
+    //KievTokenType KW_THIS               = new KievTokenType("this", TokenConstants.KW_THIS);
+    //KievTokenType KW_SUPER              = new KievTokenType("super", TokenConstants.KW_SUPER);
+    //KievTokenType KW_TRUE               = new KievTokenType("true", TokenConstants.KW_TRUE);
+    //KievTokenType KW_FALSE              = new KievTokenType("false", TokenConstants.KW_FALSE);
+    //KievTokenType KW_NULL               = new KievTokenType("false", TokenConstants.KW_NULL);
+
+    // Regexp tokens
+	KievTokenType HID_IDENTIFIER        = new KievTokenType("HID_IDENTIFIER", TokenConstants.HID_IDENTIFIER, true);
+    KievTokenType ESC_IDENTIFIER        = new KievTokenType("ESC_IDENTIFIER", TokenConstants.ESC_IDENTIFIER, true);
+    KievTokenType IDENTIFIER            = new KievTokenType("IDENTIFIER",     TokenConstants.IDENTIFIER, true);
+    KievTokenType OPERATOR              = new KievTokenType("OPERATOR",       TokenConstants.OPERATOR, true);
+
+    // keywords
+    KievTokenType KW_ABSTRACT           = new KievTokenType("abstract", TokenConstants.KW_ABSTRACT);
+    KievTokenType KW_ALIAS              = new KievTokenType("alias", TokenConstants.KW_ALIAS);
+    KievTokenType KW_BREAK              = new KievTokenType("break", TokenConstants.KW_BREAK);
+    KievTokenType KW_CASE               = new KievTokenType("case", TokenConstants.KW_CASE);
+    KievTokenType KW_CATCH              = new KievTokenType("catch", TokenConstants.KW_CATCH);
+    KievTokenType KW_CLASS              = new KievTokenType("class", TokenConstants.KW_CLASS);
+    KievTokenType KW_CONTINUE           = new KievTokenType("continue", TokenConstants.KW_CONTINUE);
+    KievTokenType KW_DEFAULT            = new KievTokenType("default", TokenConstants.KW_DEFAULT);
+    KievTokenType KW_DO                 = new KievTokenType("do", TokenConstants.KW_DO);
+    KievTokenType KW_ELSE               = new KievTokenType("else", TokenConstants.KW_ELSE);
+    KievTokenType KW_ENSURE             = new KievTokenType("ensure", TokenConstants.KW_ENSURE);
+    KievTokenType KW_ENUM               = new KievTokenType("enum", TokenConstants.KW_ENUM);
+    KievTokenType KW_EXTENDS            = new KievTokenType("extends", TokenConstants.KW_EXTENDS);
+    KievTokenType KW_FINAL              = new KievTokenType("final", TokenConstants.KW_FINAL);
+    KievTokenType KW_FINALLY            = new KievTokenType("finally", TokenConstants.KW_FINALLY);
+    KievTokenType KW_FOR                = new KievTokenType("for", TokenConstants.KW_FOR);
+    KievTokenType KW_FOREACH            = new KievTokenType("foreach", TokenConstants.KW_FOREACH);
+    KievTokenType KW_FUN                = new KievTokenType("fun", TokenConstants.KW_FUNCTION);
+    KievTokenType KW_GOTO               = new KievTokenType("goto", TokenConstants.KW_GOTO);
+    KievTokenType KW_IF                 = new KievTokenType("if", TokenConstants.KW_IF);
+    KievTokenType KW_IMPLEMENTS         = new KievTokenType("implements", TokenConstants.KW_IMPLEMENTS);
+    KievTokenType KW_IMPORT             = new KievTokenType("import", TokenConstants.KW_IMPORT);
+    KievTokenType KW_INTERFACE          = new KievTokenType("interface", TokenConstants.KW_INTERFACE);
+    KievTokenType KW_INVARIANT          = new KievTokenType("invariant", TokenConstants.KW_INVARIANT);
+    KievTokenType KW_NATIVE             = new KievTokenType("native", TokenConstants.KW_NATIVE);
+    KievTokenType KW_NEW                = new KievTokenType("new", TokenConstants.KW_NEW);
+    KievTokenType KW_OPERATOR           = new KievTokenType("operator", TokenConstants.KW_OPERATOR);
+    KievTokenType KW_PACKAGE            = new KievTokenType("package", TokenConstants.KW_PACKAGE);
+    KievTokenType KW_PCUT               = new KievTokenType("$cut", TokenConstants.KW_PCUT);
+    KievTokenType KW_PRAGMA             = new KievTokenType("pragma", TokenConstants.KW_PRAGMA);
+    KievTokenType KW_REQUIRE            = new KievTokenType("require", TokenConstants.KW_REQUIRE);
+    KievTokenType KW_RETURN             = new KievTokenType("return", TokenConstants.KW_RETURN);
+    KievTokenType KW_STATIC             = new KievTokenType("static", TokenConstants.KW_STATIC);
+    KievTokenType KW_SWITCH             = new KievTokenType("switch", TokenConstants.KW_SWITCH);
+    KievTokenType KW_SYNCHRONIZED       = new KievTokenType("synchornized", TokenConstants.KW_SYNCHRONIZED);
+    KievTokenType KW_THROW              = new KievTokenType("throw", TokenConstants.KW_THROW);
+    KievTokenType KW_THROWS             = new KievTokenType("throws", TokenConstants.KW_THROWS);
+    KievTokenType KW_TRANSIENT          = new KievTokenType("transient", TokenConstants.KW_TRANSIENT);
+    KievTokenType KW_TRY                = new KievTokenType("try", TokenConstants.KW_TRY);
+    KievTokenType KW_TYPE               = new KievTokenType("type", TokenConstants.KW_TYPE);
+    KievTokenType KW_TYPEDEF            = new KievTokenType("typedef", TokenConstants.KW_TYPEDEF);
+//	KievTokenType KW_VIEW               = new KievTokenType("view", TokenConstants.KW_VIEW);
+    KievTokenType KW_VOLATILE           = new KievTokenType("volatile", TokenConstants.KW_VOLATILE);
+    KievTokenType KW_WHILE              = new KievTokenType("while", TokenConstants.KW_WHILE);
+    KievTokenType KW_WITH               = new KievTokenType("with", TokenConstants.KW_WITH);
+
+    // operators, delimiters, separators
+    KievTokenType OP_ARROW              = new KievTokenType("->", TokenConstants.OP_ARROW);
+    KievTokenType OP_ASSIGN             = new KievTokenType("=",  TokenConstants.OP_ASSIGN);
+    KievTokenType OP_AT                 = new KievTokenType("@",  TokenConstants.OP_AT);
+    KievTokenType OP_COLON              = new KievTokenType(":",  TokenConstants.OP_COLON);
+    KievTokenType OP_COMMA              = new KievTokenType(",",  TokenConstants.OP_COMMA);
+    KievTokenType OP_DOT                = new KievTokenType(".",  TokenConstants.OP_DOT);
+//  KievTokenType OP_GE                 = new KievTokenType(">=", TokenConstants.OP_GE);
+    KievTokenType OP_GT                 = new KievTokenType(">",  TokenConstants.OP_GT);
+    KievTokenType OP_IS_ONE_OF          = new KievTokenType("@=", TokenConstants.OP_IS_ONE_OF);
+    KievTokenType OP_IS_THE             = new KievTokenType("?=", TokenConstants.OP_IS_THE);
+    KievTokenType OP_LBRACE             = new KievTokenType("{",  TokenConstants.OP_LBRACE);
+    KievTokenType OP_LBRACKET           = new KievTokenType("[",  TokenConstants.OP_LBRACKET);
+//  KievTokenType OP_LE                 = new KievTokenType("<=", TokenConstants.OP_LE);
+    KievTokenType OP_LOWER_BOUND        = new KievTokenType("≥",  TokenConstants.OP_LOWER_BOUND);
+    KievTokenType OP_LPAREN             = new KievTokenType("(",  TokenConstants.OP_LPAREN);
+    KievTokenType OP_LRBRACKETS         = new KievTokenType("[]", TokenConstants.OP_LRBRACKETS);
+    KievTokenType OP_LT                 = new KievTokenType("<",  TokenConstants.OP_LT);
+//  KievTokenType OP_QUESTION           = new KievTokenType("?",  TokenConstants.OP_QUESTION);
+    KievTokenType OP_RBRACE             = new KievTokenType("}",  TokenConstants.OP_RBRACE);
+    KievTokenType OP_RBRACKET           = new KievTokenType("]",  TokenConstants.OP_RBRACKET);
+    KievTokenType OP_RPAREN             = new KievTokenType(")",  TokenConstants.OP_RPAREN);
+    KievTokenType OP_SEMICOLON          = new KievTokenType(";",  TokenConstants.OP_SEMICOLON);
+    KievTokenType OP_SHARP              = new KievTokenType("#",  TokenConstants.OP_SHARP);
+    KievTokenType OP_SUPERSCRIPT_MINUS  = new KievTokenType("⁻",  TokenConstants.OP_SUPERSCRIPT_MINUS);
+    KievTokenType OP_SUPERSCRIPT_PLUS   = new KievTokenType("⁺",  TokenConstants.OP_SUPERSCRIPT_PLUS);
+    KievTokenType OP_UPPER_BOUND        = new KievTokenType("≤",  TokenConstants.OP_UPPER_BOUND);
+    KievTokenType OP_VARARGS            = new KievTokenType("...",TokenConstants.OP_VARARGS);
+}

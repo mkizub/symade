@@ -41,6 +41,7 @@ public class Token implements ParserConstants {
   public int beginColumn;
   public int endLine;
   public int endColumn;
+  public int beginFileOffset;
 
   /**
    * The string image of the token.
@@ -97,12 +98,14 @@ public class Token implements ParserConstants {
 		return t;
 	}
 
-    public int getPos() {
-    	return (beginLine <<11) | (beginColumn & 0x3FF);
+    public long getPos() {
+		long pos = ((long)beginFileOffset) << 32;
+		pos |= (beginLine << 12) | (beginColumn & 0xFFF);
+		return pos;
     }
-    public static int getPos(int beginLine, int beginColumn) {
-    	return (beginLine <<11) | (beginColumn & 0x3FF);
-    }
+    //public static long getPos(int beginLine, int beginColumn) {
+    // 	return (beginLine << 12) | (beginColumn & 0xFFF);
+    //}
     public int getLinePos() {
     	return beginLine;
     }

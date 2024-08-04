@@ -30,13 +30,13 @@ public abstract class DrawTerm extends Drawable {
 	public DrawTerm(INode node, Formatter fmt, Draw_SyntaxElem syntax) {
 		super(node, fmt, syntax);
 	}
-	
+
 	public DrawLayoutInfo getGfxFmtInfo() { return dr_dli; }
-	
+
 	public boolean isUnvisible() {
 		return is_hidden;
-	}  
-	
+	}
+
 	public Drawable[] getChildren() { return Drawable.emptyArray; }
 	public abstract boolean isTextual();
 	public abstract Object getTermObj();
@@ -117,7 +117,7 @@ public final class DrawPlaceHolder extends DrawTerm {
 public class DrawErrorTerm extends DrawTerm {
 
 	private final String error;
-	
+
 	public DrawErrorTerm(INode node, Formatter fmt, Draw_SyntaxElem syntax, String error) {
 		super(node, fmt, syntax);
 		this.error = error;
@@ -413,7 +413,7 @@ public class DrawTokenTerm extends DrawValueTerm {
 	public DrawTokenTerm(INode node, Formatter fmt, Draw_SyntaxTokenAttr syntax, ScalarAttrSlot attr_slot) {
 		super(node, fmt, syntax, attr_slot);
 	}
-	
+
 	private UIDrawPath makePathToNext() {
 		INode node = this.drnode;
 		INode parent = node.parent();
@@ -501,7 +501,7 @@ public class DrawTokenTerm extends DrawValueTerm {
 		}
 		return makePathToNode(this, pos+1);
 	}
-	
+
 	public UIDrawPath delChar(int pos, boolean backspace) {
 		String text;
 		Object obj = getTermObj();
@@ -545,7 +545,7 @@ public class DrawTokenTerm extends DrawValueTerm {
 		}
 		return path;
 	}
-	
+
 	public void setValue(Object value) {
 		boolean ok = false;
 		try {
@@ -568,7 +568,7 @@ public class DrawTokenTerm extends DrawValueTerm {
 
 @ThisIsANode(copyable=false)
 public class DrawIdent extends DrawValueTerm {
-	
+
 	public DrawIdent(INode node, Formatter fmt, Draw_SyntaxIdentAttr syntax, ScalarAttrSlot attr_slot) {
 		super(node, fmt, syntax, attr_slot);
 	}

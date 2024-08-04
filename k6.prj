@@ -103,14 +103,16 @@
               <core:FileUnit name="ASTExprParser.kj"/>
               <core:FileUnit name="ASTModifiers.kj"/>
               <core:FileUnit name="EToken.kj"/>
+              <core:FileUnit name="JFlexToJavaCCAdapter.kj"/>
               <core:FileUnit name="kiev050.kj"/>
               <core:FileUnit name="kiev050Constants.kj"/>
-              <core:FileUnit name="kiev050TokenManager.kj"/>
+              <core:FileUnit name="KievLexer.kj"/>
+              <core:FileUnit name="KievTokenType.kj"/>
+              <core:FileUnit name="KievTokenTypes.kj"/>
               <core:FileUnit name="Opdef.kj"/>
               <core:FileUnit name="ParseError.kj"/>
               <core:FileUnit name="ParseException.kj"/>
               <core:FileUnit name="SimpleCharStream.kj"/>
-              <core:FileUnit name="TempExpr.kj"/>
               <core:FileUnit name="Token.kj"/>
               <core:FileUnit name="TokenManager.kj"/>
               <core:FileUnit name="TokenMgrError.kj"/>
@@ -158,6 +160,11 @@
          <members>
           <sop:kiev.vlang.DirUnit name="kiev">
            <members>
+            <sop:kiev.vlang.DirUnit name="parser">
+             <members>
+              <core:FileUnit name="TempExpr.kj"/>
+             </members>
+            </sop:kiev.vlang.DirUnit>
             <sop:kiev.vlang.DirUnit name="vlang">
              <members>
               <sop:kiev.vlang.DirUnit name="types">

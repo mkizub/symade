@@ -18,12 +18,12 @@ import syntax kiev.Syntax;
  */
 @ThisIsANode(name="Call", lang=CoreLang)
 public class CallExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		obj;
 	@DataFlowDefinition(in="obj", seq="true")		ENode[]		args;
 	}
-	
+
 	@nodeAttr					public ENode				obj;
 	@nodeAttr					public TypeRef∅				targs;
 	@nodeAttr					public ENode∅				args;
@@ -45,7 +45,7 @@ public class CallExpr extends ENode {
 
 	public CallExpr() {}
 
-	public CallExpr(int pos, ENode obj, SymbolRef<Method> ident, TypeRef[] targs, ENode[] args) {
+	public CallExpr(long pos, ENode obj, SymbolRef<Method> ident, TypeRef[] targs, ENode[] args) {
 		this.pos = pos;
 		if (ident.symbol != null)
 			this.symbol = ident.symbol;
@@ -56,7 +56,7 @@ public class CallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public CallExpr(int pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
+	public CallExpr(long pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
 		this.pos = pos;
 		this.symbol = func.symbol;
 		this.obj = obj;
@@ -64,7 +64,7 @@ public class CallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public CallExpr(int pos, ENode obj, ISymbol func, ENode[] args) {
+	public CallExpr(long pos, ENode obj, ISymbol func, ENode[] args) {
 		this(pos, obj, func.symbol, null, args);
 	}
 
@@ -123,7 +123,7 @@ public class CallExpr extends ENode {
 			}
 			this.ident = func.sname;
 		}
-		
+
 		// constructor call "this(args)" or "super(args)"
 		if (ident == nameThis || ident == nameSuper) {
 			CtorCallExpr cce;
@@ -167,7 +167,7 @@ public class CallExpr extends ENode {
 			}
 			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 		}
-		
+
 		int cnt = 0;
 		UnresCallExpr[] res;
 		Type[] tps;
@@ -224,7 +224,7 @@ public class CallExpr extends ENode {
 						}
 					}
 				} else {
-					if (tp.resolveNameAccessR(info)) { 
+					if (tp.resolveNameAccessR(info)) {
 						DNode closure = info.resolvedDNode();
 						if ((closure instanceof Var || closure instanceof Field)
 							&& Type.getRealType(tp,closure.getType(env)) instanceof CallType
@@ -257,14 +257,14 @@ public class CallExpr extends ENode {
 				}
 			}
 		}
-		
+
 		if (cnt == 0) {
 			// try closure static field
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				ResInfo info = new ResInfo(env,this, this.ident, ResInfo.noSyntaxContext);
 				if (obj == null) {
-					if (PassInfo.resolveNameR((ASTNode)this,info)) { 
+					if (PassInfo.resolveNameR((ASTNode)this,info)) {
 						DNode closure = info.resolvedDNode();
 						if (closure instanceof Field && Type.getRealType(tp,closure.getType(env)) instanceof CallType) {
 							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
@@ -272,7 +272,7 @@ public class CallExpr extends ENode {
 						}
 					}
 				} else {
-					if (tp.meta_type.tdecl.resolveNameR(info)) { 
+					if (tp.meta_type.tdecl.resolveNameR(info)) {
 						DNode closure = info.resolvedDNode();
 						if (closure instanceof Field && Type.getRealType(tp,closure.getType(env)) instanceof CallType) {
 							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
@@ -317,7 +317,7 @@ public class CallExpr extends ENode {
 			msg.append("while resolving ").append(this);
 			throw new CompilerException(this, msg.toString());
 		}
-		
+
 		for (int si=0; si < res.length; si++) {
 			ENode e = res[si];
 			if (e != null) {
@@ -344,7 +344,7 @@ public class CallExpr extends ENode {
 			obj = new TypeRef(Env.ctxTDecl(func).getType(env));
 		return true;
 	}
-	
+
 	// set hidden argument
 	public void setHiddenArg(ArgExpr ae) {
 		foreach (ArgExpr ha; this.hargs; ha.var == ae.var) {
@@ -408,13 +408,13 @@ public class CallExpr extends ENode {
 
 @ThisIsANode(name="CtorCall", lang=CoreLang)
 public class CtorCallExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		obj;
 	@DataFlowDefinition(in="obj")					ENode		tpinfo;
 	@DataFlowDefinition(in="tpinfo", seq="true")	ENode[]		args;
 	}
-	
+
 	@nodeAttr					public ENode				obj;
 	@nodeAttr(ext_data=true)	public ENode				tpinfo;
 	@nodeAttr					public ENode∅				args;
@@ -458,7 +458,7 @@ public class CtorCallExpr extends ENode {
 
 	public CtorCallExpr() {}
 
-	public CtorCallExpr(int pos, ENode obj, ENode[] args) {
+	public CtorCallExpr(long pos, ENode obj, ENode[] args) {
 		this.pos = pos;
 		this.obj = obj;
 		this.args.addAll(args);
@@ -487,7 +487,7 @@ public class CtorCallExpr extends ENode {
 			if (Env.hasSameRoot(func, this))
 				return;
 		}
-		
+
 		Type tp = Env.ctxTDecl(this).getType(env);
 
 		Type[] ta = new Type[args.length];
@@ -564,19 +564,19 @@ public enum ClosureCallKind {
 
 @ThisIsANode(name="CallClosure", lang=CoreLang)
 public class ClosureCallExpr extends ENode {
-	
+
 	@DataFlowDefinition(out="args") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode		expr;
 	@DataFlowDefinition(in="expr", seq="true")		ENode[]		args;
 	}
-	
+
 	@nodeAttr public ENode					expr;
 	@nodeAttr public ENode∅					args;
 	@nodeAttr public ClosureCallKind		kind;
 
 	public ClosureCallExpr() {}
 
-	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
+	public ClosureCallExpr(long pos, ENode expr, ENode[] args) {
 		this.pos = pos;
 		this.expr = expr;
 		this.args.addAll(args);

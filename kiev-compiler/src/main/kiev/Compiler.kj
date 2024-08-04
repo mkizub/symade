@@ -192,13 +192,13 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 							int BOM = 0;
 							if (file_chars.length > 0 && file_chars[0] == '\uFEFF')
 								BOM = 1;
-							java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, BOM, file_sz-BOM);
+							//java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, BOM, file_sz-BOM);
 							diff_time = curr_time = System.currentTimeMillis();
-							Parser p = new Parser(bis, this.getEnv());
+							Parser p = new Parser(this.getEnv(), file_chars, BOM, file_sz-BOM);
 							cpi.fu = p.FileUnit(cpi.fname);
 							cpi.fu.source_timestamp = Kiev.newFile(curFile).lastModified();
 							//cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
-							bis.close();
+							//bis.close();
 						}
 						diff_time = System.currentTimeMillis() - curr_time;
 						Kiev.setCurFile(null);
@@ -455,6 +455,10 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 	public void cleanEnv() {
 		theEnv = null;
 		roots = null;
+		cleanRunInfo();
+	}
+
+	public void cleanRunInfo() {
 		processorRunInfoMap.clear();
 	}
 

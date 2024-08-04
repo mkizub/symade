@@ -20,16 +20,16 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true)
 public final view RStruct of Struct extends RComplexTypeDecl {
 
-	//static final ExtSpaceAttrSlot TI_ATTR = new ExtSpaceAttrSlot<TypeInfoExpr>("rstruct ti field temp expr",ANode.nodeattr$parent,true,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
+	//static final ExtSpaceAttrSlot TI_ATTR = new ExtSpaceAttrSlot<TypeInfoExpr>("rstruct ti field temp expr",ANode.nodeattr$parent,true,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));
 
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
 
 	public final Struct getStruct() { return (Struct)this; }
 
-	// a pizza case	
+	// a pizza case
 	public final boolean isPizzaCase();
-	// a structure with the only one instance (singleton)	
+	// a structure with the only one instance (singleton)
 	public final boolean isSingleton();
 	// has pizza cases
 	public final boolean isHasCases();
@@ -120,7 +120,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	//	if ((Env.ctxMethod(from) == null || Env.ctxMethod(from) instanceof Constructor && Env.ctxMethod(from).isStatic()) && Env.ctxTDecl(from).isInterface()) {
 	//		return new TypeInfoExpr(from.pos, new TypeRef(t));
 	//	}
-	//	
+	//
 	//	// Lookup and create if need as $typeinfo$N
 	//	foreach(Field f; this.members; f.isStatic()) {
 	//		if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
@@ -180,7 +180,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			lb.append(tv.var);
 		return lb.toArray();
 	}
-	
+
 	public boolean extendsTypeInfoClass(Env env) {
 		foreach (TypeRef sup; super_types) {
 			TypeDecl td = sup.getTypeDecl(env);
@@ -235,10 +235,10 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					)
 				));
 			}
-	
+
 			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
-			
+
 			// and add super-constructor call
 			init.setNeedFieldInits(true);
 			CtorCallExpr call_super = new CtorCallExpr(pos, new SuperExpr(), ENode.emptyArray);
@@ -301,7 +301,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			});
 			init.block.addSymbol(h);
 			Method mget = env.tenv.tpTypeInfo.tdecl.resolveMethod(env,"get",env.tenv.tpTypeInfo,env.tenv.tpInt,env.tenv.tpClass,new ArrayType(env.tenv.tpTypeInfo));
-			v.init = new CastExpr(pos, typeinfo_clazz.getType(env), 
+			v.init = new CastExpr(pos, typeinfo_clazz.getType(env),
 				new CallExpr(pos,null,mget,new ENode[]{
 					new LVarExpr(pos,h),
 					new LVarExpr(pos,init.params[0]),
@@ -362,7 +362,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				new NewInitializedArrayExpr(pos,new TypeExpr(env.tenv.tpTypeInfo,Operator.PostTypeArray,new ArrayType(env.tenv.tpTypeInfo)),targs.toArray())
 				));
 		}
-		
+
 		// create equals function:
 		// public boolean eq(Clazz clazz, TypeInfo... args) {
 		// 	if (this.clazz != clazz) return false;
@@ -399,7 +399,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			}
 			meq.block.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
 		}
-		
+
 		// create assignableFrom function
 		// public boolean $assignableFrom(TypeInfo ti) {
 		// 	if!(this.clazz.isAssignableFrom(ti.clazz)) return false;
@@ -515,7 +515,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 		Kiev.runProcessorsOn(typeinfo_clazz)
 	}
-	
+
 	public void autoGenerateConstructor(Env env) {
 		if (!isInterface()) {
 			// Default <init> method, if no one is declared
@@ -573,7 +573,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		getStruct().getType(env).checkResolved();
 		if (isMembersPreGenerated()) return true;
 		setMembersPreGenerated(true);
-		
+
 		// first, pre-generate super-types
 		foreach (TypeRef sup; this.super_types)
 			((RTypeDecl)sup.getTypeDecl(env)).preGenerate(env);
@@ -588,10 +588,10 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		autoFixSuperTypes(this, env);
 		// generate default constrctor if needed
 		autoGenerateConstructor(env);
-		
+
 		if (this.isInterfaceOnly())
 			return true;
-		
+
 		// build vtable
 		List<Struct> processed = List.Nil;
 		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
@@ -606,7 +606,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					trace("        "+Env.ctxTDecl(m)+"."+m.sname+m.mtype);
 			}
 		}
-		
+
 		if (isClazz()) {
 			// forward default implementation to interfaces
 			autoCopyMixinMembers(this,vtable,env);
@@ -620,7 +620,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			foreach (VTableEntry vte; vtable)
 				checkUnimplementedMethod(this,vte);
 		}
-		
+
 		combineMethods(this, env);
 
 		return true;
@@ -641,7 +641,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			methods = new List.Cons<Method>(m, methods);
 		}
 	}
-	
+
 	public final void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed, Env env) {
 		if (processed.contains(this.getStruct()))
 			return;
@@ -649,7 +649,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// take vtable from super-types
 		foreach (TypeRef sup; super_types)
 			((RStruct)sup.getType(env).getStruct()).buildVTable(vtable, processed, env);
-		
+
 		// process override
 		foreach (Method m; members; !(m instanceof Constructor)) {
 			if (m.isStatic() && !m.isVirtualStatic())
@@ -669,7 +669,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			if (is_new)
 				vtable.append(new VTableEntry(name, etype));
 		}
-		
+
 		// process overload
 		foreach (VTableEntry vte; vtable) {
 			CallType et = vte.etype.toCallTypeRetAny();
@@ -694,7 +694,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 			}
 		}
-		
+
 		// mark overloaded entries in vtable
 		foreach (VTableEntry vte1; vtable; vte1.overloader == null) {
 			foreach (VTableEntry vte2; vtable; vte1 != vte2 && vte1.name == vte2.name && vte2.overloader == null) {
@@ -832,7 +832,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			vte.add(bridge);
 		}
 	}
-	
+
 	private static void checkUnimplementedMethod(@forward RStruct self, VTableEntry vte) {
 		if (self.isAbstract())
 			return;
@@ -1268,8 +1268,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 		return dsp;
 	}
-	
-	private static ENode makeMMDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
+
+	private static ENode makeMMDispatchCall(@forward RStruct self, long pos, Method dispatcher, Method dispatched) {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
 		if (Env.ctxTDecl(dispatched) == self.getStruct()) {
@@ -1280,7 +1280,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		}
 	}
 
-	private static ENode makeDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
+	private static ENode makeDispatchCall(@forward RStruct self, long pos, Method dispatcher, Method dispatched) {
 		//return new InlineMethodStat(pos,dispatched,dispatcher)
 		ENode obj = null;
 		if (!dispatched.isStatic() && !dispatcher.isStatic()) {
@@ -1366,7 +1366,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 
 	}
 
-	static class AutoGenInfo {	
+	static class AutoGenInfo {
 		Constructor class_init;
 		Initializer instance_init;
 		int static_pos = -1;
@@ -1476,7 +1476,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if( m.isStatic() ) continue;
 
 				Block initbody = m.block;
-				
+
 				if (initbody == null)
 					continue; // API class loaded?
 
@@ -1597,7 +1597,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		else if (node instanceof SNode)
 			resolveDNode(node,env);
 	}
-	
+
 	public void resolveDecl(Env env) {
 		if( isResolved() ) return;
 		long curr_time;
@@ -1648,7 +1648,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			autoGenerateStatements(env);
 			foreach (Constructor c; members; !c.isResolved())
 				resolveDNode(c,env);
-			
+
 			// Autogenerate hidden args for initializers of local class
 			{
 				Field[] proxy_fields = Field.emptyArray;
@@ -1683,6 +1683,6 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		//diff_time = System.currentTimeMillis() - curr_time;
 		//if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
 	}
-	
+
 }
 

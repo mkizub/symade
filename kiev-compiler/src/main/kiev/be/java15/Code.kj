@@ -20,25 +20,25 @@ import static kiev.be.java15.Instr.*;
  */
 
 public final class Code implements JConstants {
-	
+
 	/** Current backend environment we are generating for */
 	public final JEnv         jenv;
 	public final JTypeEnv     jtenv;
 	public final Env          env;
 	public final StdTypes     tenv;
-	
+
 	/** Current class we are generating */
 	public final JStruct      clazz;
-	
+
 	/** Current method we are generating */
 	public final JMethod      method;
-	
+
 	/** Current ConstPool of the class we are generating */
 	public final ConstPool    constPool;
-	
+
 	/** Current position (for error reporting) from setLinePos */
 	public int				last_lineno;
-	
+
 	/** Max stack deepness */
 	public int				max_stack;
 
@@ -102,7 +102,7 @@ public final class Code implements JConstants {
 	public boolean			generation;
 
 	public boolean			cond_generation;
-	
+
 	public boolean			need_to_gen_post_cond;
 
 	public Code(JEnv je, JStruct s, JMethod m, ConstPool cp) {
@@ -157,15 +157,15 @@ public final class Code implements JConstants {
 			return;
 		Kiev.reportCodeWarning(last_lineno, Env.ctxFileUnit(this.clazz.vn()), this.clazz.vn(), this.method.vn(), msg);
 	}
-	
+
 	public void pushStackPos() {};
 
 	public void popStackPos() {};
 
 	public void setLinePos(JNode nv) {
-		this.setLinePos(nv.getPosLine());
+		this.setLinePos(nv.getLinePos());
 	}
-	
+
 	public void setLinePos(int lineno) {
 		if( !generation ) return;
 		if( lineno <= 0 || lineno > 0xFFFF) return;
@@ -870,13 +870,13 @@ public final class Code implements JConstants {
 			else if( from.isIntegerInCode() )	add_opcode(opc_i2d);
 		}
 	}
-	
+
 	private static boolean var_eq(JVar v1, JVar v2) {
 		if (v1 == null || v2 == null)
 			return false;
 		return v1.vn() == v2.vn();
 	}
-	
+
 	public CodeVar lookupCodeVar(JVar jv) {
 		for (int i=num_vars-1; i >= 0; i--) {
 			CodeVar cv = vars[i];

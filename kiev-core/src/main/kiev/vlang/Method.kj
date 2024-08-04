@@ -29,8 +29,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		null,                null,                     null,               null,
 		null,                null,                     null,               null
 	};
-	
-	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
+
+	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));
 
 	@nodeAttr public TypeConstr∅			targs;
 	@nodeAttr public TypeRef				type_ret;
@@ -107,7 +107,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public Class[] getMetaFlags() { return Method.$meta_flags; }
-	
+
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)getMeta("kiev·stdlib·meta·throws");
 	}
@@ -122,7 +122,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (!isStatic()) this.setStatic(true);
 		}
 	}
-	// method with variable number of arguments	
+	// method with variable number of arguments
 	public final boolean isVarArgs() {
 		return this.mflags_is_mth_varargs;
 	}
@@ -135,7 +135,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public final boolean isRuleMethod() {
 		return this instanceof RuleMethod;
 	}
-	// need fields initialization	
+	// need fields initialization
 	public final boolean isNeedFieldInits() {
 		return this.is_mth_need_fields_init;
 	}
@@ -144,7 +144,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			this.is_mth_need_fields_init = on;
 		}
 	}
-	// a method generated as invariant	
+	// a method generated as invariant
 	public final boolean isInvariantMethod() {
 		return this.is_mth_invariant;
 	}
@@ -153,7 +153,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			this.is_mth_invariant = on;
 		}
 	}
-	// a dispatcher (for multimethods)	
+	// a dispatcher (for multimethods)
 	public final boolean isDispatcherMethod() {
 		return this.is_mth_dispatcher;
 	}
@@ -162,7 +162,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			this.is_mth_dispatcher = on;
 		}
 	}
-	// a methood inlined bt dispatcher (for multimethods)	
+	// a methood inlined bt dispatcher (for multimethods)
 	public final boolean isInlinedByDispatcherMethod() {
 		return this.parent() instanceof InlineMethodStat;
 	}
@@ -240,7 +240,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			tp_ret = type_ret.getType(env);
 		if (tp_ret == null)
 			tp_ret = env.tenv.tpVoid;
-		
+
 		this._mtype = new CallType(this, args.toArray(), tp_ret);
 		this._dtype = new CallType(this, dargs.toArray(), tp_ret);
 	}
@@ -253,7 +253,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		this.type_ret = type_ret;
 		this.nodeflags |= flags;
 	}
-	
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "body") {
 			if (this.isMacro() || Env.ctxTDecl(this).isMixin()) // save for macroses and trait/mixin
@@ -288,34 +288,34 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			return fp;
 		return null;
 	}
-	
+
 	public Var getOuterThisParam() {
 		Type t = this.mtype; // rebuildTypes()
 		foreach (Var fp; params; fp.kind == Var.PARAM_OUTER_THIS)
 			return fp;
 		return null;
 	}
-	
+
 	public Var getClassTypeInfoParam() {
 		foreach (Var fp; params; fp.kind == Var.PARAM_CLASS_TYPEINFO)
 			return fp;
 		return null;
 	}
-	
+
 	public Var getMethodTypeInfoParam(String name) {
 		name = (nameTypeInfo+"$"+name).intern();
 		foreach (Var fp; params; fp.kind == Var.PARAM_METHOD_TYPEINFO && fp.sname == name)
 			return fp;
 		return null;
 	}
-	
+
 	public Var getVarArgParam() {
 		Type t = this.mtype; // rebuildTypes()
 		foreach (Var fp; params; fp.getType(Env.getEnv()) instanceof VarargType)
 			return fp;
 		return null;
 	}
-	
+
 	public void addViolatedField(Field f) {
 /*		if (!Env.ctxTDecl(this).instanceOf(Env.ctxTDecl(f)))
 			return;
@@ -470,9 +470,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		trace(Kiev.debug && Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		CallType rt = (CallType)this.mtype.applay(tp);
-		
+
 		Env env = info.env;
-		
+
 		if ((mt.getArgsLength() - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
 			for (int i=0; i < this.targs.length; i++) {
@@ -489,7 +489,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (set.getArgsLength() > 0)
 				rt = (CallType)rt.applay(set);
 		}
-		
+
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 			if (mt.arg(i).getAutoCastTo(rt.arg(i)) == null) {
 				trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -525,21 +525,21 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			Type val = rt.resolveArg(i);
 			if (!var.checkBindings(rt, val)) {
 				trace(Kiev.debug && Kiev.debugResolve,"Incorrect bindings for var "+var+" with value "+val+" in type "+rt);
-				return null; 
+				return null;
 			}
 		}
-		
+
 		if (mt.ret() ≢ env.tenv.tpAny && rt.ret().getAutoCastTo(mt.ret()) == null) {
 			trace(Kiev.debug && Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
 			return null;
 		}
-		
+
 		trace(Kiev.debug && Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+" match as "+rt);
 		info.resolved_type = rt;
 		return sym;
 	}
-	
+
 	public CallType makeType(ENode expr) {
 		return makeType(null, expr.getEArgs());
 	}
@@ -774,11 +774,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			((MetaValue)body).resolveFrontEnd(t);
 		}
 	}
-	
+
 	static class MethodDFFunc extends DFFunc {
 		final int res_idx;
 		MethodDFFunc(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -849,7 +849,7 @@ public final class MethodImpl extends Method {
 	@DataFlowDefinition(in="this:in")	Block		body;
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
-	
+
 	public MethodImpl() {}
 
 	public MethodImpl(String name, Type ret) {
@@ -869,7 +869,7 @@ public final class MethodGetter extends Method {
 	@DataFlowDefinition(in="this:in")	Block		body;
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
-	
+
 	public MethodGetter() {}
 
 	public MethodGetter(Field f) {
@@ -884,7 +884,7 @@ public final class MethodSetter extends Method {
 	@DataFlowDefinition(in="this:in")	Block		body;
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
-	
+
 	public MethodSetter() {}
 
 	public MethodSetter(Field f) {
@@ -896,7 +896,7 @@ public final class MethodSetter extends Method {
 
 @ThisIsANode(name="Ctor", lang=CoreLang)
 public final class Constructor extends Method {
-	
+
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="true")	ENode[]			addstats;
 	@DataFlowDefinition(in="this:in")				Block			body;
@@ -910,7 +910,7 @@ public final class Constructor extends Method {
 	public Constructor(int fl) {
 		super(null, new TypeRef(Env.getEnv().tenv.tpVoid), fl);
 	}
-	
+
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.content_change && info.slot.name == "sname") {
 			assert(this.sname == null);
@@ -943,7 +943,7 @@ public final class Constructor extends Method {
 
 @ThisIsANode(name="InitBlock", lang=CoreLang)
 public final class Initializer extends DNode {
-	
+
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")		ENode		body;
 	}
@@ -971,11 +971,11 @@ public enum WBCType {
 
 @ThisIsANode(lang=CoreLang)
 public final class WBCCondition extends DNode {
-	
+
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode		body;
 	}
-	
+
 	public static final WBCCondition[]	emptyArray = new WBCCondition[0];
 
 	@nodeAttr public WBCType				cond;
@@ -984,7 +984,7 @@ public final class WBCCondition extends DNode {
 
 	public WBCCondition() {}
 
-	public WBCCondition(int pos, WBCType cond, String name, ENode body) {
+	public WBCCondition(long pos, WBCType cond, String name, ENode body) {
 		this.pos = pos;
 		this.sname = name;
 		this.cond = cond;

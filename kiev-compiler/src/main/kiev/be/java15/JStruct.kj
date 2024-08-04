@@ -44,11 +44,11 @@ public class JStruct extends JTypeDecl {
 		else
 			return new JStruct(impl);
 	}
-	
+
 	protected JStruct(Struct impl) {
 		super(impl);
 	}
-	
+
 	@getter public final JNode[] get$members() {
 		return JNode.toJArray<JNode>(vn().members);
 	}
@@ -115,7 +115,7 @@ public class JStruct extends JTypeDecl {
 			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
 		return null;
 	}
-	
+
 	public void generateField(JEnv jenv, ConstPool constPool, JField f) {
 		constPool.addAsciiCP(f.sname);
 		constPool.addAsciiCP(jenv.getJTypeEnv().getJType(f.vtype).java_signature);
@@ -197,7 +197,7 @@ public class JStruct extends JTypeDecl {
 			}
 		}
 	}
-	
+
 	public void generateMethods(JEnv jenv, ConstPool constPool) {
 		foreach (JMethod m; members)
 			generateMethod(jenv, constPool, m);
@@ -206,13 +206,13 @@ public class JStruct extends JTypeDecl {
 	public boolean generate(JEnv jenv, long timestamp) {
 		if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return false;
-		
+
 		if (timestamp < new File(getFileName(this)).lastModified())
 			return false;
-		
+
 		InnerStructInfo inner_info = this.vn().inner_info;
 		JNode[] members = this.members;
-		
+
 		if (inner_info != null) {
 			foreach (Struct sub; inner_info.inners)
 				((JStruct)sub).generate(jenv, timestamp);
@@ -226,20 +226,28 @@ public class JStruct extends JTypeDecl {
 			foreach (Struct sub; inner_info.inners)
 				constPool.addClazzCP(jenv.getJTypeEnv().getJType(sub.getType(jenv.env)).java_signature);
 		}
-		
+
 		{
 			FileUnit fu = Env.ctxFileUnit(this.vn());
 			String fname = fu.fname;
+			String fpath = fu.pname();
 			SourceFileAttr sfa = new SourceFileAttr(fname);
 			this.addAttr(sfa);
 			int line_count = fu.line_count;
 			if (line_count > 0) {
-				String smap = "SMAP\n"+fname+"\nKiev\n*S Kiev\n*F\n1 "+fname+"\n*L\n1#1,"+line_count+":1\n"+"*E";
+				//String smap = "SMAP\n"+fname+"\nKiev\n*S Kiev\n*F\n+ 1 "+fname+"\n"+fpath+"\n*L\n1#1,"+line_count+":1\n"+"*E\n";
+				String header = "SMAP\n"+fname+"\nKiev\n";
+				String kiev_stratum = "*S Kiev\n";
+				String kiev_file = "*F\n1 "+fname+"\n*L\n1#1,"+line_count+":1\n";
+				String java_stratum = "*S Java\n";
+				String java_file = "*F\n1 "+fname+"\n*L\n1#1,"+line_count+":1\n";
+				String end_section = "*E\n";
+				String smap = header + kiev_stratum + kiev_file + java_stratum + java_file + end_section;
 				SourceDebugExtensionAttr sda = new SourceDebugExtensionAttr(smap.toString());
 				this.addAttr(sda);
 			}
 		}
-		
+
 		if (inner_info != null) {
 			int count = 0;
 			DNode[] inners = inner_info.inners;
@@ -271,7 +279,7 @@ public class JStruct extends JTypeDecl {
 			this.addAttr(new RVMetaAttr(jenv,this.vn()));
 		if (hasRuntimeInvisibleMetas())
 			this.addAttr(new RIMetaAttr(jenv,this.vn()));
-		
+
 		Attr[] jattrs = getJAttrs();
 		for(int i=0; jattrs!=null && i < jattrs.length; i++)
 			jattrs[i].generate(constPool);
@@ -295,7 +303,7 @@ public class JStruct extends JTypeDecl {
 			toBytecode(jenv, this, constPool);
 		return true;
 	}
-	
+
 	private static String getFileName(JStruct self) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.root_dir + "/classes";

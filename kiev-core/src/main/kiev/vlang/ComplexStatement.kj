@@ -20,12 +20,12 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(name="Case", lang=CoreLang)
 public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
-	
+
 	@DataFlowDefinition(in="this:in()", out="pattern") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode		val;
 	@DataFlowDefinition(in="val", seq="true")	Var[]		pattern;
 	}
-	
+
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
 	@nodeAttr public ENode			val;
@@ -34,7 +34,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	public CaseLabel() {}
 
-	public CaseLabel(int pos, ENode val) {
+	public CaseLabel(long pos, ENode val) {
 		this.pos = pos;
 		this.val = val;
 	}
@@ -42,7 +42,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	static class CaseLabelDFFuncIn extends DFFunc {
 		final int res_idx;
 		CaseLabelDFFuncIn(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
+			res_idx = dfi.allocResult();
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
@@ -107,14 +107,14 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 @ThisIsANode(name="Switch", lang=CoreLang)
 public class SwitchStat extends Block {
-	
+
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode			sel;
 	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
 	@DataFlowDefinition(in="stats")			Label			lblcnt;
 	@DataFlowDefinition(in="stats")			Label			lblbrk;
 	}
-	
+
 	@nodeAttr public ENode                 sel;
 	@nodeData public CaseLabel∅            cases;
 	@nodeData public CaseLabel             defCase;
@@ -124,7 +124,7 @@ public class SwitchStat extends Block {
 
 	public SwitchStat() {}
 
-	public SwitchStat(int pos, ENode sel) {
+	public SwitchStat(long pos, ENode sel) {
 		this();
 		this.pos = pos;
 		this.sel = sel;
@@ -135,7 +135,7 @@ public class SwitchStat extends Block {
 	}
 
 	public String toString() { return "switch("+sel+")"; }
-	
+
 	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
 		Vector<CaseLabel> labels = new Vector<CaseLabel>();
 		CaseLabel dflt = null;
@@ -161,7 +161,7 @@ public class SwitchStat extends Block {
 		foreach (CaseLabel l; labels)
 			cases += l;
 	}
-	
+
 	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		Type tp = sel.getType(env);
 		if (tp.meta_type.tdecl.isEnum()) {
@@ -193,23 +193,23 @@ public class SwitchStat extends Block {
 
 @ThisIsANode(name="SwitchEnum", lang=CoreLang)
 public class SwitchEnumStat extends SwitchStat {
-	
+
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode			sel;
 	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
 	@DataFlowDefinition(in="stats")				Label			lblcnt;
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
-	
+
 	public SwitchEnumStat() {
 	}
 
-	public SwitchEnumStat(int pos, ENode sel) {
+	public SwitchEnumStat(long pos, ENode sel) {
 		this(pos, sel);
 	}
 
 	public String toString() { return "switch-enum("+sel+")"; }
-	
+
 	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		Type tp = sel.getType(env);
 		if (!tp.meta_type.tdecl.isEnum())
@@ -220,19 +220,19 @@ public class SwitchEnumStat extends SwitchStat {
 
 @ThisIsANode(name="SwitchType", lang=CoreLang)
 public class SwitchTypeStat extends SwitchStat {
-	
+
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode			sel;
 	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
 	@DataFlowDefinition(in="stats")				Label			lblcnt;
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
-	
+
 	public SwitchTypeStat() {
 	}
 
 	public String toString() { return "switch-type("+sel+")"; }
-	
+
 	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		Type tp = sel.getType(env);
 		if (!tp.isReference())
@@ -243,21 +243,21 @@ public class SwitchTypeStat extends SwitchStat {
 
 @ThisIsANode(name="Match", lang=CoreLang)
 public class MatchStat extends SwitchStat {
-	
+
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
 	@DataFlowDefinition(in="this:in")			ENode			sel;
 	@DataFlowDefinition(in="sel", seq="true")	ENode[]			stats;
 	@DataFlowDefinition(in="stats")				Label			lblcnt;
 	@DataFlowDefinition(in="stats")				Label			lblbrk;
 	}
-	
+
 	@nodeAttr public Var					tmp_var;
 
 	public MatchStat() {
 	}
 
 	public String toString() { return "match("+sel+")"; }
-	
+
 	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
 		Type tp = sel.getType(env);
 		if (!tp.isReference() || !tp.meta_type.tdecl.isHasCases())
@@ -268,12 +268,12 @@ public class MatchStat extends SwitchStat {
 
 @ThisIsANode(name="Catch", lang=CoreLang)
 public class CatchInfo extends ENode implements ScopeOfNames {
-	
+
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")	Var				arg;
 	@DataFlowDefinition(in="arg")		ENode			body;
 	}
-	
+
 	public static final CatchInfo[] emptyArray = new CatchInfo[0];
 
 	@nodeAttr public Var			arg;
@@ -293,11 +293,11 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 
 @ThisIsANode(name="Finally", lang=CoreLang)
 public class FinallyInfo extends ENode {
-	
+
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode			body;
 	}
-	
+
 	@nodeAttr public ENode			body;
 	@nodeAttr public Var			ret_arg;
 
@@ -308,13 +308,13 @@ public class FinallyInfo extends ENode {
 
 @ThisIsANode(name="Try", lang=CoreLang)
 public class TryStat extends ENode {
-	
+
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")				ENode			body;
 	@DataFlowDefinition(in="this:in", seq="false")	CatchInfo[]		catchers;
 	@DataFlowDefinition(in="this:in")				FinallyInfo		finally_catcher;
 	}
-	
+
 	@nodeAttr public ENode				body;
 	@nodeAttr public CatchInfo∅		catchers;
 	@nodeAttr public FinallyInfo		finally_catcher;
@@ -325,12 +325,12 @@ public class TryStat extends ENode {
 
 @ThisIsANode(name="Synchronized", lang=CoreLang)
 public class SynchronizedStat extends ENode {
-	
+
 	@DataFlowDefinition(out="body") private static class DFI {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	@DataFlowDefinition(in="expr")		ENode		body;
 	}
-	
+
 	@nodeAttr public ENode			expr;
 	@nodeAttr public Var				expr_var;
 	@nodeAttr public ENode			body;
@@ -346,7 +346,7 @@ public class WithStat extends ENode {
 	@DataFlowDefinition(in="this:in")	ENode		expr;
 	@DataFlowDefinition(in="expr")		ENode		body;
 	}
-	
+
 	@nodeAttr public ENode		expr;
 	@nodeAttr public ENode		body;
 	@AttrBinDumpInfo(ignore=true)
