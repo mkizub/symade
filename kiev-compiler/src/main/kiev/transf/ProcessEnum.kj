@@ -32,7 +32,7 @@ public final class EnumFE_GenMembers extends TransfProcessor {
 	public EnumFE_GenMembers(Env env, int id) { super(env,id,KievExt.Enum); }
 	public String getDescr() { "Enum members generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -45,16 +45,16 @@ public final class EnumFE_GenMembers extends TransfProcessor {
 		}
 	}
 
-	public void doProcess(ASTNode:ASTNode node) {
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
 
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
 
-	public void doProcess(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ANode clazz) {
 		if !( clazz.isEnum() ) {
 			foreach (Struct dn; clazz.members)
 				this.doProcess(dn);

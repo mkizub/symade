@@ -146,7 +146,7 @@ public final class Symbol extends ASTNode implements ISymbol {
 				ns.sub_symbols.detach(this);
 		}
 		else if (info.ct == ChangeType.THIS_ATTACHED && info.slot.isSemantic()) {
-			if (info.parent instanceof DNode) {
+			if (info.parent instanceof DNode && getNameSpaceSymbol() == null) {
 				DNode dn = (DNode)info.parent;
 				ANode p = dn.parent();
 				if (p instanceof GlobalDNode) {

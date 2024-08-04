@@ -36,7 +36,7 @@ public final class RewriteME_Rewrite extends BackendProcessor {
 		return Kiev.enabled(KievExt.Rewrite);
 	}
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof FileUnit && node.scanned_for_interface_only)
 			return;
 		node.walkTree(node.parent(), node.pslot(), new ITreeWalker() {
@@ -47,12 +47,12 @@ public final class RewriteME_Rewrite extends BackendProcessor {
 	boolean rewrite(INode:INode node, INode parent, AttrSlot slot) {
 		return true;
 	}
-	
+
 	boolean rewrite(DNode:INode dn, INode parent, AttrSlot slot) {
 		if (dn.isMacro())
 			return false;
 		return true;
-	}	
+	}
 
 	boolean rewrite(AssignExpr:INode ae, INode parent, AttrSlot slot) {
 		DNode m = ae.dnode;

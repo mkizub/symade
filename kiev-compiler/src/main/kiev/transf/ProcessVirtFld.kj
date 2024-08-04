@@ -33,9 +33,9 @@ public final class VirtFldPlugin implements PluginFactory {
 public final class VirtFldFE_GenMembers extends TransfProcessor {
 
 	private static final String PROP_BASE	= "symade.transf.virtfld";
-	public final String nameMetaGetter		= getPropS(PROP_BASE,"nameMetaGetter","kiev·stdlib·meta·getter"); 
-	public final String nameMetaSetter		= getPropS(PROP_BASE,"nameMetaSetter","kiev·stdlib·meta·setter"); 
-	
+	public final String nameMetaGetter		= getPropS(PROP_BASE,"nameMetaGetter","kiev·stdlib·meta·getter");
+	public final String nameMetaSetter		= getPropS(PROP_BASE,"nameMetaSetter","kiev·stdlib·meta·setter");
+
 	public VirtFldFE_GenMembers(Env env, int id) { super(env,id,KievExt.VirtualFields); }
 	public String getDescr() { "Virtual fields members generation" }
 
@@ -43,7 +43,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	//	   PASS - autoGenerateMembers                 //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -63,7 +63,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	public void addAbstractFields(ComplexTypeDecl s) {
 		foreach(Method m; s.members; m.sname != null) {
 			if (m.sname.startsWith(nameSet))
@@ -76,7 +76,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 				addGetterForAbstractField(s, a.symbol.sname.substring(nameGet.length()), m);
 		}
 	}
-	
+
 	private void addSetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
 		Field f = s.resolveField(env, name, false );
@@ -150,7 +150,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		MetaAccess.verifyDecl(f);
 	}
-	
+
 	private void addGetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
 		Field f = s.resolveField(env, name, false );
@@ -235,7 +235,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 	public VirtFldME_PreGenerate(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Virtual fields pre-generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -255,7 +255,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	private void doProcess(ComplexTypeDecl s) {
 		foreach(Field f; s.members)
 			addMethodsForVirtualField(s, f);
@@ -292,7 +292,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 			}
 		}
 	}
-	
+
 	private void addMethodsForVirtualField(ComplexTypeDecl s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
 			Kiev.reportError(f,"Static fields can't be virtual");
@@ -313,7 +313,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 			set_found = true;
 		if (f.getGetterMethod() != null)
 			get_found = true;
-		
+
 		foreach(Method m; s.members) {
 			if (set_found && get_found)
 				break;
@@ -375,7 +375,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 			f.setPkgPrivateKeepAccess();
 	}
 }
-	
+
 ////////////////////////////////////////////////////
 //	   PASS - rewrite code                        //
 ////////////////////////////////////////////////////
@@ -385,7 +385,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 	public VirtFldBE_Rewrite(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Virtual fields rewrite" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		boolean need_run = false;
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
@@ -406,7 +406,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 			});
 		} finally { tr.leave(); }
 	}
-	
+
 	boolean rewrite(ASTNode:ASTNode o, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
 		return true;
@@ -442,7 +442,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 		fa.replaceWithNodeReWalk(ce,parent,slot);
 		throw new Error();
 	}
-	
+
 	boolean rewrite(AssignExpr:ASTNode ae, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
 		if (ae.lval instanceof IFldExpr) {
@@ -507,7 +507,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 		}
 		return true;
 	}
-	
+
 	boolean rewrite(ModifyExpr:ASTNode ae, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
 		if (ae.lval instanceof IFldExpr) {
@@ -517,7 +517,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 				return true;
 			if (debug_msg != "")
 				System.out.println("Unexpected virtual field rewrite");
-	
+
 			// Rewrite by set$ method
 			Method getter = f.getGetterMethod();
 			Method setter = f.getSetterMethod();
@@ -580,7 +580,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 		}
 		return true;
 	}
-	
+
 	boolean rewrite(IncrementExpr:ASTNode ie, String debug_msg, INode parent, AttrSlot slot) {
 		//System.out.println("ProcessVirtFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
 		if (ie.lval instanceof IFldExpr) {
@@ -663,7 +663,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 		}
 		return true;
 	}
-	
+
 	private ENode mkAccess(Object o) {
 		if (o instanceof Var) return new LVarExpr(0,(Var)o);
 		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVarSafe());

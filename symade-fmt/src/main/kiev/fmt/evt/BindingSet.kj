@@ -15,20 +15,20 @@ import kiev.dump.*;
 
 @ThisIsANode
 public class BindingSet extends DNode implements GlobalDNodeContainer, ExportXMLDump {
-	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve 
+	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public BindingSet⇑			parent_set;
 	@nodeAttr
 	public ASTNode∅				members;
-	
+
 	public BindingSet() {}
 
 	public final ASTNode[] getContainerMembers() { this.members }
-	
+
 	public String toString() { return "bindings: "+qname(); }
 
 	public String exportFactory() {
-		return "kiev.dump.xml.GUIBindingsExportFactory";
+		return "kiev.gui.GUIBindingsExportFactory";
 	}
 
 	public String qname() {
@@ -51,7 +51,7 @@ public class BindingSet extends DNode implements GlobalDNodeContainer, ExportXML
 		path.enterSuper() : path.leaveSuper(),
 		parent_set.dnode.resolveNameR(path)
 	}
-	
+
 }
 
 

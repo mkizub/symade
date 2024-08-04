@@ -30,3 +30,6 @@
   - remove ParentAttrSlot nodeattr$syntax_parent
   - generate VNode from AST tree (expressions are already generated from ASTExpression)
   - migrate to new AST tree with new handwritten parser
+- rewriteByMacro(env, "kiev·ir·RuleTemplates", "mkRuleBlock", ...)
+  - load rewrite templates as resource, if not in classpath
+- compiler depends on import kiev.fmt.common.TextParser;

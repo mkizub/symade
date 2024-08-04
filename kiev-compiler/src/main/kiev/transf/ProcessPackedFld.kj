@@ -34,7 +34,7 @@ public final class PackedFldFE_Verify extends VerifyProcessor {
 
 	public String getDescr() { "Packed fields verification" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof Field && !node.isInterfaceOnly())
 			verifyField((Field)node);
 	}
@@ -80,7 +80,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -92,17 +92,17 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
-	
-	public void doProcess(Struct:ASTNode s) {
+
+	public void doProcess(Struct:ANode s) {
 		StdTypes tenv = this.env.getTypeEnv();
 		// Setup packed/packer fields
 		MetaPacked mp;
@@ -157,7 +157,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 				if (!f.isInterfaceOnly()) {
 					Block body = new Block(f.pos);
 					set_var.body = body;
-	
+
 					Field mpfld = (Field)mp.fld.dnode;
 					Var fval = new LVar(0,"tmp$fldval",tenv.tpInt,Var.VAR_LOCAL,0);
 					if (mpfld.isStatic())
@@ -171,7 +171,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 					else
 						tmp.init = new LVarExpr(f.pos,value);
 					body.addSymbol(tmp);
-	
+
 					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 					ENode expr_l = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,tmp), mexpr);
 					if (mp.offset > 0) {
@@ -202,7 +202,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 				if (!f.isInterfaceOnly()) {
 					Block body = new Block(f.pos);
 					get_var.body = body;
-					
+
 					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 					Field mpfld = (Field)mp.fld.dnode;
 					ENode expr;
@@ -223,10 +223,10 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 						expr = new ReinterpExpr(f.pos, tenv.tpChar, expr);
 					else if( mp.size == 1 && f.getType(env) ≡ tenv.tpBoolean )
 						expr = new ReinterpExpr(f.pos, tenv.tpBoolean, expr);
-					
+
 					body.stats.add(new ReturnStat(f.pos,expr));
 				}
-				
+
 				f.getter = new SymbolRef<Method>(get_var);
 				Kiev.runProcessorsOn(get_var);
 			}
@@ -242,7 +242,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 	}
 
 	private rule locatePackerField(Field@ f, int size, Struct s)
-		ASTNode@ n;
+		ANode@ n;
 		Field ff;
 	{
 		s.super_types.length > 0,

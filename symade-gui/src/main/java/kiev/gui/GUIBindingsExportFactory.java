@@ -1,7 +1,8 @@
-package kiev.dump.xml;
+package kiev.gui;
 
 import kiev.dump.ExportFactory;
 import kiev.dump.MarshallingContext;
+import kiev.dump.xml.*;
 import kiev.vtree.ExportXMLDump;
 
 import kiev.fmt.evt.*;

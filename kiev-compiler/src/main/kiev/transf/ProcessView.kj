@@ -45,7 +45,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 		return ((KievView)clazz).getViewImpl();
 	}
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -57,34 +57,34 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
-	
-	public void doProcess(Struct:ASTNode clazz) {
+
+	public void doProcess(Struct:ANode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members) {
 				this.doProcess(dn);
 			}
 			return;
 		}
-		
+
 		if (clazz.isForward() || clazz.isMembersGenerated())
 			return;
-		
+
 		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev·stdlib·meta·ViewOf");
 
 		if (view_meta != null && view_meta.getZ("iface"))
 			clazz.mflags_is_struct_interface = true; //clazz.setInterface();
-		
+
 		// generate constructor
 		{
 			boolean ctor_found = false;
@@ -153,7 +153,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				clazz.addMethod(cast);
 			}
 		}
-		
+
 		clazz.setMembersGenerated(true);
 	}
 }
@@ -178,7 +178,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -190,26 +190,26 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			} finally { tr.leave(); }
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
-	
-	public void doProcess(Struct:ASTNode clazz) {
+
+	public void doProcess(Struct:ANode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members)
 				this.doProcess(dn);
 			return;
 		}
-		
+
 		foreach (TypeRef st; clazz.super_types)
 			doProcess(st.getStruct(env));
-			
+
 		if (clazz.isForward())
 			return;
 		Struct impl = getViewImpl(clazz);
@@ -217,7 +217,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			foreach (Constructor ctor; impl.members; ctor.body != null && (ctor.body instanceof NopExpr || ctor.block.stats.length > 0))
 				return;
 		}
-		
+
 		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
 		Struct super_view_impl = null;
@@ -244,7 +244,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			else
 				impl.super_types += new TypeRef(this.env.getTypeEnv().tpObject);
 			impl.super_types += new TypeRef(clazz.getType(env));
-			
+
 			if (clazz.super_types[0].getType(env) ≉ this.env.getTypeEnv().tpObject)
 				clazz.super_types.insert(0, new TypeRef(this.env.getTypeEnv().tpObject));
 			clazz.members.append(~impl);
@@ -289,7 +289,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			if (super_view_impl != null && super_view_impl != clazz.super_types[0].getStruct(env))
 				impl.super_types.insert(0, new TypeRef(super_view_impl.getType(env)));
 		}
-		
+
 		// generate a field for the object this view represents
 		Field fview = impl.resolveField(env, nameImpl, false);
 		if (fview == null)
@@ -358,7 +358,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			else
 				m.block.stats.add(new ExprStat(m.pos, ce));
 		}
-		
+
 		// generate getter/setter methods
 		foreach (Field f; impl.members; f != fview) {
 			Method mv_set = f.getSetterMethod();
@@ -409,7 +409,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 				get_var.setAbstract(false);
 			}
 		}
-		
+
 		// implement the cast from clazz.view_of to this view
 		assert (!view_of.getStruct(env).isResolved());
 		foreach (Method dn; view_of.getStruct(env).members; !dn.isStatic()) {
@@ -452,5 +452,5 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 
 		Kiev.runProcessorsOn(impl);
 	}
-	
+
 }

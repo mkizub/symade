@@ -1,0 +1,341 @@
+package kiev.parser;
+
+import syntax kiev.Syntax;
+
+public final class Parser extends kiev050 {
+	public Parser(Env env, char[] file_chars, int start, int length) {
+		super(new JFlexToJavaCCAdapter(file_chars, start, length));
+		this.curEnv = env;
+	}
+
+}
+
+public interface ParserConstants extends kiev050Constants {
+}
+
+public abstract class ParserBase {
+
+	public Env				curEnv;
+	public FileUnit			curFileUnit;
+	public boolean			interface_only = false;
+
+	public boolean			declMode = true;
+
+	public abstract Token getToken(int index);
+
+	/** Report Parser Error (Exception) */
+	final void rpe(String msg, ParseError e) {
+		int pos;
+		Token token = getToken(0);
+		if( token==null ) pos = 0;
+		else if( token.next==null ) pos = (int)token.getPos();
+		else pos = (int)token.next.getPos();
+		if( kiev.Kiev.debug ) {
+			kiev.Kiev.reportParserError(curFileUnit, pos, msg, e);
+		} else {
+			kiev.Kiev.reportParserError(curFileUnit, pos, msg);
+		}
+	}
+
+	/** Report other Error (Exception) */
+	final void rperr(Throwable e) throws Throwable {
+		int pos;
+		Token token = getToken(0);
+		if( token==null ) pos = 0;
+		else if( token.next==null ) pos = (int)token.getPos();
+		else pos = (int)token.next.getPos();
+		if( kiev.Kiev.debug ) {
+			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal parser error:\n"+e, e);
+		} else {
+			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal parser error: "+e.getMessage());
+		}
+		throw e;
+	}
+
+	final void reportError(ASTNode from, String message) throws Throwable {
+		kiev.Kiev.reportError(from, message);
+	}
+
+	final Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ASTNode parent) {
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		Struct clazz;
+		if (parent instanceof SyntaxScope) {
+			clazz = curEnv.newStruct(name.sname,parent.getPackage(),flags,variant,uuid);
+		}
+		else if (parent instanceof Struct) {
+			clazz = curEnv.newStruct(name.sname,(Struct)parent,flags,variant,uuid);
+		}
+		else if (name != null) {
+				clazz = curEnv.newStruct(name.sname,null,flags,variant,uuid);
+			}
+			else {
+				clazz = curEnv.newStruct(null,null,flags,variant,uuid);
+			}
+		if (name != null)
+			clazz.pos  = name.pos;
+		else
+			clazz.pos  = parent.pos;
+		clazz.setTypeDeclNotLoaded(false);
+		modifiers.moveToNode(clazz);
+
+		return clazz;
+	}
+
+	final TypeAssign mkTypeAssign(long pos, String name, ASTModifiers modifiers, DNode parent) {
+		Symbol sym = null;
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		if (uuid != null)
+			sym = curEnv.getSymbolByUUID(uuid);
+		if (sym == null && parent instanceof TypeDecl) {
+			if (parent.symbol.isGlobalSymbol())
+				sym = parent.symbol.makeGlobalSubSymbol(name);
+		}
+		if (sym == null)
+			sym = new Symbol(name);
+		TypeAssign arg = new TypeAssign(sym);
+		arg.pos = pos;
+		if (modifiers != null)
+			modifiers.moveToNode(arg);
+		return arg;
+	}
+
+	final TypeConstr mkTypeConstr(long pos, String name, ASTModifiers modifiers, DNode parent) {
+		Symbol sym = null;
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		if (uuid != null)
+			sym = curEnv.getSymbolByUUID(uuid);
+		if (sym == null && parent instanceof TypeDecl) {
+			if (parent.symbol.isGlobalSymbol())
+				sym = parent.symbol.makeGlobalSubSymbol(name);
+		}
+		if (sym == null)
+			sym = new Symbol(name);
+		TypeConstr arg = new TypeConstr(sym);
+		arg.pos = pos;
+		if (modifiers != null)
+			modifiers.moveToNode(arg);
+		return arg;
+	}
+
+	final Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
+		Constructor meth = new Constructor(0);
+		meth.pos = id.pos;
+		modifiers.moveToNode(meth);
+		return meth;
+	}
+
+	final Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
+		Method meth;
+		if (modifiers.isGetter()) {
+			meth = new MethodGetter();
+			meth.sname = id.sname;
+			meth.type_ret = ret;
+		}
+		else if (modifiers.isSetter()) {
+			meth = new MethodSetter();
+			meth.sname = id.sname;
+			meth.type_ret = ret;
+		}
+		else {
+			meth = new MethodImpl(id.sname, ret, 0);
+		}
+		meth.pos = id.pos;
+		modifiers.moveToNode(meth);
+		return meth;
+	}
+
+	final RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
+		RuleMethod meth = new RuleMethod(id.sname, 0);
+		meth.pos = id.pos;
+		modifiers.moveToNode(meth);
+		return meth;
+	}
+
+	final Field mkField(Symbol id, ASTModifiers modifiers, TypeRef tp, ENode init) {
+		if (tp == null)
+			tp = new TypeDeclRef();
+		Field f = new Field(id.sname, tp, 0);
+		f.pos = id.pos;
+		modifiers.copyToNode(f);
+		f.init = init;
+		return f;
+	}
+
+	final Field mkEnumField(Symbol id, ASTModifiers modifiers) {
+		Field f = new Field(id.sname,new TypeDeclRef(),0);
+		f.mflags_is_enum = true;
+		f.pos = id.pos;
+		modifiers.moveToNode(f);
+		f.setPublic();
+		f.setStatic(true);
+		f.setFinal(true);
+		return f;
+	}
+
+	final Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		Field f = new Field(id.sname,tp,0|AccessFlags.ACC_PUBLIC);
+		f.pos = id.pos;
+		modifiers.moveToNode(f);
+		return f;
+	}
+
+	final LVar mkVar(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		if (tp == null)
+			tp = new TypeDeclRef();
+		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
+		modifiers.copyToNode(v);
+		return v;
+	}
+
+	final LVar mkRuleVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+		if (!first)
+			tp = new Copier().copyFull(tp);
+		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
+		modifiers.copyToNode(v);
+		return v;
+	}
+
+	final LVar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
+		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, 0);
+		if (st != null)
+			v.stype = st;
+		modifiers.moveToNode(v);
+		return v;
+	}
+
+	final LVar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
+		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, AccessFlags.ACC_FINAL);
+		modifiers.moveToNode(v);
+		return v;
+	}
+
+	final	Initializer mkInitializer(long pos, ASTModifiers modifiers) {
+		Initializer init = new Initializer();
+		init.pos = pos;
+		modifiers.moveToNode(init);
+		return init;
+	}
+
+
+	final ENode mkNotExpr(EToken not, ENode cond) {
+		cond.setPrimaryExpr(true);
+		ASTExpression e = new ASTExpression();
+		e.pos = cond.pos;
+		e.nodes.append(not);
+		e.nodes.append(~cond);
+		return e;
+	}
+
+	final void expandExpr(ASTExpression e, ENode n) {
+		if (n instanceof ASTExpression) {
+			foreach (ANode x; n.nodes.delToArray())
+				e.nodes += x;
+		} else {
+			e.nodes += n;
+		}
+	}
+
+	static ConstExpr sourceToConst(Token t) throws ParseException {
+		ConstExpr ce = null;
+		try
+		{
+			switch(t.kind) {
+			case ParserConstants.INTEGER_LITERAL:
+				{
+					String image;
+					int radix;
+					if( t.image.startsWith("0x") || t.image.startsWith("0X") ) { image = t.image.substring(2); radix = 16; }
+					else if( t.image.startsWith("0") && t.image.length() > 1 ) { image = t.image.substring(1); radix = 8; }
+					else { image = t.image; radix = 10; }
+					long i = ConstExpr.parseLong(image,radix);
+					ce = new ConstIntExpr((int)i);
+					switch (radix) {
+					case 16: ce.radix = IntRadix.RADIX_HEX; break;
+					case  8: ce.radix = IntRadix.RADIX_OCT; break;
+					default: ce.radix = IntRadix.RADIX_DEC; break;
+					}
+					break;
+				}
+			case ParserConstants.LONG_INTEGER_LITERAL:
+				{
+					String image;
+					int radix;
+					if( t.image.startsWith("0x") || t.image.startsWith("0X") ) { image = t.image.substring(2,t.image.length()-1); radix = 16; }
+					else if( t.image.startsWith("0") && !t.image.equals("0") && !t.image.equals("0L") ) { image = t.image.substring(1,t.image.length()-1); radix = 8; }
+					else { image = t.image.substring(0,t.image.length()-1); radix = 10; }
+					long l = ConstExpr.parseLong(image,radix);
+					ce = new ConstLongExpr(l);
+					switch (radix) {
+					case 16: ce.radix = IntRadix.RADIX_HEX; break;
+					case  8: ce.radix = IntRadix.RADIX_OCT; break;
+					default: ce.radix = IntRadix.RADIX_DEC; break;
+					}
+					break;
+				}
+			case ParserConstants.FLOATING_POINT_LITERAL:
+				{
+					String image;
+					if( t.image.endsWith("f") || t.image.endsWith("F") ) image = t.image.substring(0,t.image.length()-1);
+					else image = t.image;
+					float f = Float.valueOf(image).floatValue();
+					ce = new ConstFloatExpr(f);
+					break;
+				}
+			case ParserConstants.DOUBLE_POINT_LITERAL:
+				{
+					String image;
+					if( t.image.endsWith("d") || t.image.endsWith("D") ) image = t.image.substring(0,t.image.length()-1);
+					else image = t.image;
+					double d = Double.valueOf(t.image).doubleValue();
+					ce = new ConstDoubleExpr(d);
+					break;
+				}
+			case ParserConstants.CHARACTER_LITERAL:
+				{
+					char c;
+					if( t.image.length() == 3 )
+						c = t.image.charAt(1);
+					else
+						c = ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1)).charAt(0);
+					ce = new ConstCharExpr(c);
+					break;
+				}
+			case ParserConstants.STRING_LITERAL:
+				ce = new ConstStringExpr(ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1)));
+				break;
+				//case ParserConstants.TRUE:
+				//	ce = new ConstBoolExpr(true);
+				//	break;
+				//case ParserConstants.FALSE:
+				//	ce = new ConstBoolExpr(false);
+				//	break;
+				//case ParserConstants.NULL:
+				//	ce = new ConstNullExpr();
+				//	break;
+			}
+		} catch( NumberFormatException e ) {
+			throw new ParseException(t.image);
+		}
+		if (ce == null) {
+			kiev.Kiev.reportParserError(null, (int)t.getPos(), "Unknown term "+t.image);
+			ce = new ConstNullExpr();
+		}
+		ce.pos = t.getPos();
+		return ce;
+	}
+
+	final TypeRef makeTypeExpr(TypeRef arg, Token op) {
+		if (op.kind == ParserConstants.OP_SHARP)
+			return new TypeASTNodeRef(arg.ident, null);
+		TypeExpr te = new TypeExpr();
+		te.arg = arg;
+		if (op.kind == ParserConstants.OP_LRBRACKETS) {
+			te.op_name = "T []";
+		} else {
+			te.op_name = ("T "+op.image).intern();
+		}
+		te.pos = op.getPos();
+		return te;
+	}
+}
+

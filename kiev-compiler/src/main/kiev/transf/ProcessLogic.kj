@@ -34,7 +34,7 @@ public final class KievME_RuleGenartion extends BackendProcessor {
 	public KievME_RuleGenartion(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Kiev rule-generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if!(node instanceof CompilationUnit)
 			return;
 		//FileUnit fu = (FileUnit)node;
@@ -43,7 +43,7 @@ public final class KievME_RuleGenartion extends BackendProcessor {
 		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
 		if (wthg.setProcessorRun((CompilationUnit)node,this))
 			return;
-		
+
 		tr = Transaction.enter(tr,"KievME_RuleGenartion");
 		try {
 			node.walkTree(new TreeWalker() {

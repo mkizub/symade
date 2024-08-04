@@ -21,9 +21,9 @@ tasks.compileJava {
 dependencies {
 //    testImplementation(platform("org.junit:junit-bom:5.9.1"))
 //    testImplementation("org.junit.jupiter:junit-jupiter")
-    implementation(files("${project.rootDir}/symade-core.jar"))
     implementation(project(":kiev-stdlib"))
     implementation(project(":kiev-core"))
+    implementation(files("${project.rootDir}/symade-core.jar"))
 }
 
 //tasks.test {

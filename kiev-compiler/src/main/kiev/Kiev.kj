@@ -105,7 +105,7 @@ public final class Kiev {
    	public static void reportError(Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
-		ASTNode dummy = null;
+		ANode dummy = null;
 		reportError(dummy, e);
 	}
 
@@ -201,11 +201,11 @@ public final class Kiev {
 	}
 
    	public static void reportError(String msg) {
-		ASTNode dummy = null;
+		ANode dummy = null;
 		reportError(dummy, msg);
 	}
 
-	public static void reportError(ASTNode from, String msg) {
+	public static void reportError(ANode from, String msg) {
 		if( debug ) new Exception().printStackTrace(System.out);
 		if (from != null) {
 			int pos = (int)from.pos;
@@ -213,8 +213,8 @@ public final class Kiev {
 			TypeDecl clazz = null;
 			Method method = null;
 			try {
-				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+				ANode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = (int)f.pos;
 				method = Env.ctxMethod(from);
 				clazz = Env.ctxTDecl(from);
@@ -226,7 +226,7 @@ public final class Kiev {
 		}
 	}
 
-	public static void reportAs(SeverError sever, ASTNode from, String msg) {
+	public static void reportAs(SeverError sever, ANode from, String msg) {
 		if( debug ) new Exception().printStackTrace(System.out);
 		if (from != null) {
 			int pos = (int)from.pos;
@@ -234,8 +234,8 @@ public final class Kiev {
 			TypeDecl clazz = null;
 			Method method = null;
 			try {
-				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+				ANode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = (int)f.pos;
 				method = Env.ctxMethod(from);
 				clazz = Env.ctxTDecl(from);
@@ -345,7 +345,7 @@ public final class Kiev {
 		reportWarning(null, msg);
 	}
 
-	public static void reportWarning(ASTNode from, String msg) {
+	public static void reportWarning(ANode from, String msg) {
 		if (nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
@@ -355,8 +355,8 @@ public final class Kiev {
 			TypeDecl clazz = null;
 			Method method = null;
 			try {
-				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
+				ANode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = (int)f.pos;
 				method = Env.ctxMethod(from);
 				clazz = Env.ctxTDecl(from);
@@ -524,7 +524,7 @@ public final class Kiev {
 		});
 	}
 
-	private static String swapCurFile(ASTNode node) {
+	private static String swapCurFile(ANode node) {
 		String old_file = Kiev.getCurFile();
 		if (node instanceof FileUnit) {
 			Kiev.setCurFile(node.pname());
@@ -539,7 +539,7 @@ public final class Kiev {
 	}
 
 	public static String runCurrentFrontEndProcessor(Env env, INode root) {
-		if !(root instanceof ASTNode)
+		if !(root instanceof ANode)
 			return null;
 		AbstractProcessor tp = env.getFEProcessors()[fe_pass_no];
 		if (!tp.isEnabled())
@@ -548,12 +548,12 @@ public final class Kiev {
 			foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits())
 				runCurrentFEP(tp, cu);
 		} else {
-			runCurrentFEP(tp, (ASTNode)root);
+			runCurrentFEP(tp, root.asANode());
 		}
 		return tp.getDescr();
 	}
 
-	private static void runCurrentFEP(AbstractProcessor tp, ASTNode root) {
+	private static void runCurrentFEP(AbstractProcessor tp, ANode root) {
 		String old_file = Kiev.swapCurFile(root);
 		try {
 			tp.process(root,Transaction.get());
@@ -601,7 +601,7 @@ public final class Kiev {
 		return bp.getDescr();
 	}
 
-	public static void runFrontEndProcessorsOn(ASTNode node) {
+	public static void runFrontEndProcessorsOn(ANode node) {
 		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
 		Env env = wthg.getEnv();
 		AbstractProcessor[] feProcessors = env.getFEProcessors();
@@ -612,10 +612,10 @@ public final class Kiev {
 		}
 	}
 
-	public static void runProcessorsOn(ASTNode node) {
+	public static void runProcessorsOn(ANode node) {
 		runProcessorsOn(node, false);
 	}
-	public static void runProcessorsOn(ASTNode node, boolean with_current) {
+	public static void runProcessorsOn(ANode node, boolean with_current) {
 		WorkerThread wth = (WorkerThread)Thread.currentThread();
 		WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
 		Env env = wthg.getEnv();
@@ -652,7 +652,7 @@ public final class Kiev {
 		} finally { tr.leave(); }
 	}
 
-	public static void runProcessorsWithRewalk(ASTNode node) {
+	public static void runProcessorsWithRewalk(ANode node) {
 		assert(node.isAttached());
 		try {
 			Kiev.runProcessorsOn(node);

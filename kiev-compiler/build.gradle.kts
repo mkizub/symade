@@ -16,8 +16,7 @@ sourceSets {
 
 tasks.compileKiev {
     options.compilerArgs.addAll(arrayOf("-verify","-enable","vnode","-enable","view"))
-    //classpath = files()
-    kievClasspath = files("${project.rootDir}/symade-core.jar")
+//    kievClasspath = files("${project.rootDir}/symade-core.jar")
 }
 
 dependencies {
@@ -26,6 +25,7 @@ dependencies {
     implementation(project(":kiev-stdlib"))
     implementation(project(":kiev-core"))
     implementation(project(":kiev-dump"))
+    implementation(files("${project.rootDir}/symade-core.jar"))
 }
 
 //tasks.test {

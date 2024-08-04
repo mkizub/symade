@@ -59,7 +59,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	public KievFE_Pass1(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Syntax" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -72,11 +72,11 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	public void processSyntax(ASTNode:ASTNode node) {
+	public void processSyntax(ANode:ANode node) {
 		return;
 	}
 
-	public void processSyntax(SyntaxScope:ASTNode ss) {
+	public void processSyntax(SyntaxScope:ANode ss) {
 		ss.getPackage();
 		if (ss instanceof FileUnit && ss.syntaxes.length == 0 && (ss.fname.endsWith(".java")||ss.fname.endsWith(".kj"))) {
 			ImportSyntax imp = new ImportSyntax();
@@ -97,7 +97,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	public void processSyntax(ComplexTypeDecl:ASTNode node) {
+	public void processSyntax(ComplexTypeDecl:ANode node) {
 		foreach (ASTNode n; node.members) {
 			try {
 				processSyntax(n);
@@ -105,7 +105,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	public void processSyntax(Import:ASTNode astn) {
+	public void processSyntax(Import:ANode astn) {
 		if (!Env.needResolving(astn.name))
 			return;
 		if (!astn.name.qualified)
@@ -146,7 +146,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	public void processSyntax(ImportSyntax:ASTNode astn) {
+	public void processSyntax(ImportSyntax:ANode astn) {
 		if (!Env.needResolving(astn.name))
 			return;
 		if (!astn.name.qualified)
@@ -182,7 +182,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	}
 
 
-	public void processSyntax(Opdef:ASTNode astn) {
+	public void processSyntax(Opdef:ANode astn) {
 		int prior = astn.prior;
 		String decl = astn.sname;
 		Operator op = Operator.getOperatorByName(decl);
@@ -193,7 +193,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		return;
 	}
 
-	public void processSyntax(KievSyntax:ASTNode astn) {
+	public void processSyntax(KievSyntax:ANode astn) {
 	next_super_syntax:
 		foreach(SymbolRef sr; astn.super_syntax; Env.needResolving(sr)) {
 			String name = sr.name;
@@ -225,7 +225,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	public void processSyntax(Struct:ASTNode astn) {
+	public void processSyntax(Struct:ANode astn) {
 		Struct me = astn;
 		if (me.parent() == null) {
 			SyntaxScope ss = Env.ctxSyntaxScope(me);
@@ -288,7 +288,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 	public KievFE_Pass2(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Class types" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -301,11 +301,11 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		}
 	}
 
-	public void doProcess(ASTNode:ASTNode node) {
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
 
-	public void doProcess(SyntaxScope:ASTNode astn) {
+	public void doProcess(SyntaxScope:ANode astn) {
 		foreach (ASTNode n; astn.members) {
 			try {
 				if (n instanceof TypeDef)
@@ -321,7 +321,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			doProcess(n);
 	}
 
-	public void doProcess(KievSyntax:ASTNode astn) {
+	public void doProcess(KievSyntax:ANode astn) {
 		KievSyntax stx = astn;
 		foreach(ImportOperators impo; stx.members) {
 			DNode dn = impo.name.dnode;
@@ -336,7 +336,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		}
 	}
 
-	public void doProcess(TypeDecl:ASTNode astn) {
+	public void doProcess(TypeDecl:ANode astn) {
 		try {
 			TypeDecl tdecl = astn;
 			tdecl.verifyMetas();
@@ -352,7 +352,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 
-	public void doProcess(ComplexTypeDecl:ASTNode astn) {
+	public void doProcess(ComplexTypeDecl:ANode astn) {
 		try {
 			ComplexTypeDecl td = astn;
 			// Verify meta-data to the new structure
@@ -550,7 +550,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 		stdTypesAreChecked = true;
 	}
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -564,15 +564,15 @@ public final class KievFE_Pass3 extends TransfProcessor {
 		}
 	}
 
-	public void doProcess(ASTNode:ASTNode astn) {
+	public void doProcess(ANode:ANode astn) {
 	}
 
-	public void doProcess(SyntaxScope:ASTNode astn) {
+	public void doProcess(SyntaxScope:ANode astn) {
 		foreach (ASTNode n; astn.members)
 			doProcess(n);
 	}
 
-	public void doProcess(ComplexTypeDecl:ASTNode astn) {
+	public void doProcess(ComplexTypeDecl:ANode astn) {
 		long pos = astn.pos;
 		TypeDecl me = astn;
 		trace(Kiev.debug && Kiev.debugResolve,"Pass 3 for class "+me);
@@ -728,7 +728,7 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 	public KievFE_MetaDecls(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Annotation's declaration" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -741,17 +741,17 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 		}
 	}
 
-	public void doProcess(ASTNode:ASTNode node) {
+	public void doProcess(ANode:ANode node) {
 	}
-	public void doProcess(SyntaxScope:ASTNode node) {
+	public void doProcess(SyntaxScope:ANode node) {
 		foreach(ASTNode n; node.members)
 			doProcess(n);
 	}
-	public void doProcess(Struct:ASTNode node) {
+	public void doProcess(Struct:ANode node) {
 		foreach (Struct sub; node.members)
 			doProcess(sub);
 	}
-	public void doProcess(JavaAnnotation:ASTNode clazz) {
+	public void doProcess(JavaAnnotation:ANode clazz) {
 		foreach(ASTNode n; clazz.members) {
 			if( n instanceof Method ) {
 				Method m = (Method)n;
@@ -787,7 +787,7 @@ public final class KievFE_MetaDefaults extends TransfProcessor {
 	public KievFE_MetaDefaults(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Annotation's defaults" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -800,15 +800,15 @@ public final class KievFE_MetaDefaults extends TransfProcessor {
 		}
 	}
 
-	public void doProcess(ASTNode:ASTNode node) {
+	public void doProcess(ANode:ANode node) {
 	}
 
-	public void doProcess(SyntaxScope:ASTNode fu) {
+	public void doProcess(SyntaxScope:ANode fu) {
 		foreach(ASTNode n; fu.members)
 			doProcess(n);
 	}
 
-	public void doProcess(ComplexTypeDecl:ASTNode clazz) {
+	public void doProcess(ComplexTypeDecl:ANode clazz) {
 		if (clazz instanceof JavaAnnotation)
 			clazz.resolveMetaDefaults(env);
 		foreach(ASTNode n; clazz.members)
@@ -824,7 +824,7 @@ public final class KievFE_MetaValues extends TransfProcessor {
 	public KievFE_MetaValues(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Annotation values" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -854,7 +854,7 @@ public final class KievFE_PreResolve extends TransfProcessor {
 	public KievFE_PreResolve(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Kiev pre-resolve" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		tr = Transaction.enter(tr,"KievFE_PreResolve");
 		try {
 			node.walkTree(node.parent(), node.pslot(), new ITreeWalker() {
@@ -874,7 +874,7 @@ public final class KievFE_MainResolve extends TransfProcessor {
 	public KievFE_MainResolve(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Kiev main-resolve" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		tr = Transaction.enter(tr,"KievFE_MainResolve");
 		try {
 			node.walkTree(node.parent(), node.pslot(), new ITreeWalker() {
@@ -899,7 +899,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		return Kiev.enabled(KievExt.DumpAPI);
 	}
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if!(node instanceof FileUnit)
 			return;
 		FileUnit fu = (FileUnit)node;
@@ -1086,7 +1086,7 @@ public final class KievME_PreGenartion extends BackendProcessor {
 	public KievME_PreGenartion(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Kiev pre-generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -1117,7 +1117,7 @@ public final class KievBE_Resolve extends BackendProcessor {
 	public KievBE_Resolve(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Kiev resolve" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		tr = Transaction.enter(tr,"KievBE_Resolve");
 		try {
 			if (node instanceof ENode)
@@ -1138,7 +1138,7 @@ public final class KievBE_Generate extends BackendProcessor {
 	public KievBE_Generate(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Class generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof FileUnit) {
 			FileUnit fu = (FileUnit)node;
 			if (fu.scanned_for_interface_only)
@@ -1164,7 +1164,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 	public ExportBE_Generate(Env env, int id) { super(env,id,KievBackend.VSrc); }
 	public String getDescr() { "Source generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof FileUnit) {
 			FileUnit fu = (FileUnit)node;
 			if (fu.scanned_for_interface_only)
@@ -1203,7 +1203,7 @@ public final class KievBE_Cleanup extends BackendProcessor {
 	public KievBE_Cleanup(Env env, int id) { super(env,id,KievBackend.Generic); }
 	public String getDescr() { "Kiev cleanup after backend" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		tr = Transaction.enter(tr,"KievBE_Cleanup");
 		try {
 			try {

@@ -112,6 +112,7 @@
               <core:FileUnit name="Opdef.kj"/>
               <core:FileUnit name="ParseError.kj"/>
               <core:FileUnit name="ParseException.kj"/>
+              <core:FileUnit name="Parser.kj"/>
               <core:FileUnit name="SimpleCharStream.kj"/>
               <core:FileUnit name="Token.kj"/>
               <core:FileUnit name="TokenManager.kj"/>
@@ -311,7 +312,6 @@
                   <core:FileUnit name="ExportInlineAlias.java"/>
                   <core:FileUnit name="ExportMarshallingContext.java"/>
                   <core:FileUnit name="ExportTypeAlias.java"/>
-                  <core:FileUnit name="GUIBindingsExportFactory.java"/>
                   <core:FileUnit name="ImportMarshallingContext.java"/>
                   <core:FileUnit name="ImportTypeAlias.java"/>
                   <core:FileUnit name="ImportUnMarshaller.java"/>

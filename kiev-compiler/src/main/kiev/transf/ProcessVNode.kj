@@ -35,32 +35,32 @@ public final class VNodePlugin implements PluginFactory {
 public final class VNodeUtils {
 	private static final String PROP_BASE		= "symade.transf.vnode";
 	public static final boolean GEN_VERSIONED	= TransfProcessor.getPropS(PROP_BASE,"genUnversioned","false") != "true";
-	public static final String mnNode			= TransfProcessor.getPropS(PROP_BASE,"mnNode","kiev·vtree·ThisIsANode"); 
-	public static final String mnAtt			= TransfProcessor.getPropS(PROP_BASE,"mnAtt","kiev·vtree·nodeAttr"); 
-	public static final String mnRef			= TransfProcessor.getPropS(PROP_BASE,"mnRef","kiev·vtree·nodeData"); 
-	public final String mnUnVersioned			= TransfProcessor.getPropS(PROP_BASE,"mnUnVersioned","kiev·vtree·UnVersioned"); 
+	public static final String mnNode			= TransfProcessor.getPropS(PROP_BASE,"mnNode","kiev·vtree·ThisIsANode");
+	public static final String mnAtt			= TransfProcessor.getPropS(PROP_BASE,"mnAtt","kiev·vtree·nodeAttr");
+	public static final String mnRef			= TransfProcessor.getPropS(PROP_BASE,"mnRef","kiev·vtree·nodeData");
+	public final String mnUnVersioned			= TransfProcessor.getPropS(PROP_BASE,"mnUnVersioned","kiev·vtree·UnVersioned");
 	public final String nameINode				= TransfProcessor.getPropS(PROP_BASE,"nameINode","kiev·vtree·INode");
 	public final String nameANode				= TransfProcessor.getPropS(PROP_BASE,"nameANode","kiev·vtree·ANode");
-	public final String nameNode				= TransfProcessor.getPropS(PROP_BASE,"nameNode","kiev·vtree·ASTNode"); 
+	public final String nameNode				= TransfProcessor.getPropS(PROP_BASE,"nameNode","kiev·vtree·ASTNode");
 	public final String nameNodeTypeInfo		= TransfProcessor.getPropS(PROP_BASE,"nameNodeTypeInfo","kiev·vtree·NodeTypeInfo");
-	public final String nameNodeSpace			= TransfProcessor.getPropS(PROP_BASE,"nameNodeSpace","kiev·vtree·NodeSpace"); 
+	public final String nameNodeSpace			= TransfProcessor.getPropS(PROP_BASE,"nameNodeSpace","kiev·vtree·NodeSpace");
 	public final String nameNodeExtSpace		= TransfProcessor.getPropS(PROP_BASE,"nameNodeExtSpace","kiev·vtree·NodeExtSpace");
 	public final String nameNodeSymbolRef		= TransfProcessor.getPropS(PROP_BASE,"nameNodeSymbolRef","kiev·vtree·NodeSymbolRef");
-	public final String nameTreeWalker			= TransfProcessor.getPropS(PROP_BASE,"TreeWalker","kiev·vtree·TreeWalker"); 
-	public final String nameAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameAttrSlot","kiev·vtree·AttrSlot"); 
-	public final String nameScalarAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameScalarAttrSlot","kiev·vtree·ScalarAttrSlot"); 
-	public final String nameExtAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameExtAttrSlot","kiev·vtree·ExtAttrSlot"); 
-	public final String nameSpaceAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev·vtree·SpaceAttrSlot"); 
-	public final String nameExtSpaceAttrSlot	= TransfProcessor.getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev·vtree·ExtSpaceAttrSlot"); 
-	public final String nameParentAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameParentAttrSlot","kiev·vtree·ParentAttrSlot"); 
-	public final String nameLanguageIface		= TransfProcessor.getPropS(PROP_BASE,"nameLanguageIface","kiev·vlang·Language"); 
-	public final String nameCopyContext			= TransfProcessor.getPropS(PROP_BASE,"nameCopyContext","kiev·vtree·CopyContext"); 
+	public final String nameTreeWalker			= TransfProcessor.getPropS(PROP_BASE,"TreeWalker","kiev·vtree·TreeWalker");
+	public final String nameAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameAttrSlot","kiev·vtree·AttrSlot");
+	public final String nameScalarAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameScalarAttrSlot","kiev·vtree·ScalarAttrSlot");
+	public final String nameExtAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameExtAttrSlot","kiev·vtree·ExtAttrSlot");
+	public final String nameSpaceAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev·vtree·SpaceAttrSlot");
+	public final String nameExtSpaceAttrSlot	= TransfProcessor.getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev·vtree·ExtSpaceAttrSlot");
+	public final String nameParentAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameParentAttrSlot","kiev·vtree·ParentAttrSlot");
+	public final String nameLanguageIface		= TransfProcessor.getPropS(PROP_BASE,"nameLanguageIface","kiev·vlang·Language");
+	public final String nameCopyContext			= TransfProcessor.getPropS(PROP_BASE,"nameCopyContext","kiev·vtree·CopyContext");
 	public final String nameCopyable			= TransfProcessor.getPropS(PROP_BASE,"nameCopyable","copyable");
 	public final String nameExtData				= TransfProcessor.getPropS(PROP_BASE,"nameExtData","ext_data");
 	public final String nameNodeName			= TransfProcessor.getPropS(PROP_BASE,"nameNodeName","name");
 	public final String nameLangName			= TransfProcessor.getPropS(PROP_BASE,"nameLangName","lang");
 	public final String nameCallbackDataSet		= TransfProcessor.getPropS(PROP_BASE,"nameCallbackDataSet","callbackDataSet");
-	
+
 	public final String operatorPostTypeSpace		= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeSpace","T ∅");		// \u2205
 	public final String operatorPostTypeExtSpace	= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeExtSpace","T ⋈");		// \u22c8
 	public final String operatorPostTypeSymbolRef	= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeSymbolRef","T ⇑");	// \u21d1
@@ -82,7 +82,7 @@ public final class VNodeUtils {
 	Type tpParentAttrSlot;
 	Type tpLanguageIface;
 	Type tpCopyContext;
-	
+
 	Operator PostTypeSpace;
 	Operator PostTypeExtSpace;
 	Operator PostTypeSymbolRef;
@@ -98,7 +98,7 @@ public final class VNodeUtils {
 			return isNodeKind(t.getStruct());
 		return false;
 	}
-	
+
 	VNodeUtils(Env env) {
 		tpINode = env.loadTypeDecl(nameINode, true).getType(env);
 		tpANode = env.loadTypeDecl(nameANode, true).getType(env);
@@ -132,12 +132,12 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 
 	@forward
 	private VNodeUtils utils;
-	
+
 	public VNodeFE_Pass3(Env env, int id) { super(env,id,KievExt.VNode); }
 
 	public String getDescr() { "VNode members creation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -151,16 +151,16 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode n; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode n; ss.members)
 			doProcess(n);
 	}
-	
-	public void doProcess(Struct:ASTNode s) {
+
+	public void doProcess(Struct:ANode s) {
 		foreach (Struct sub; s.members)
 			doProcess(sub);
 		if (VNodeUtils.isNodeKind(s)) {
@@ -171,7 +171,7 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 				doProcess(n);
 			return;
 		}
-		
+
 		// Check fields to not have @nodeAttr and @nodeData
 		foreach (Field f; s.members) {
 			UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
@@ -181,8 +181,8 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 			}
 		}
 	}
-	
-	public void doProcess(Field:ASTNode f) {
+
+	public void doProcess(Field:ANode f) {
 		UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 		UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 		//if (fmatt != null || fmref != null) {
@@ -241,7 +241,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 	@forward
 	private VNodeUtils utils;
 	private Vector<Struct> processed;
-	
+
 	private Type makeNodeAttrClass(Struct snode, Field f) {
 		UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 		UserMeta fmref = (UserMeta)f.getMeta(mnRef);
@@ -407,15 +407,15 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		Kiev.runProcessorsOn(s);
 		return s.getType(env);
 	}
-	
+
 	private void makeNodeDecl(SymadeNode sn) {
 		if (sn.node_decl != null)
 			return;
-		
+
 		StdTypes tenv = this.env.getTypeEnv();
 		NodeDecl nd = new NodeDecl();
 		sn.node_decl = nd;
-		
+
 		foreach (TypeRef st; sn.super_types; st.getTypeDecl(env) instanceof SymadeNode) {
 			SymadeNode supsn = (SymadeNode)st.getTypeDecl(env);
 			makeNodeDecl(supsn);
@@ -463,8 +463,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			nd.attrs += na;
 		}
 	}
-	
-	public void process(ASTNode node, Transaction tr) {
+
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -480,17 +480,17 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			processed = null;
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
-	
-	private void doProcess(Struct:ASTNode s) {
+
+	private void doProcess(Struct:ANode s) {
 		if (processed == null)
 			processed = new Vector<Struct>();
 		processed.append(s);
@@ -547,7 +547,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			}
 		}
 		s.addField(new Field(nameEnumValuesFld, new ArrayType(tpAttrSlot), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
-		
+
 		// node type info
 		ENode node_defined_slots;
 		{
@@ -566,7 +566,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			node_defined_slots
 		});
 		s.addField(fld_nti);
-		
+
 
 	}
 }
@@ -579,12 +579,12 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 
 	@forward
 	private VNodeUtils utils;
-	
+
 	private Hashtable<String,LangDecl> allLangs = new Hashtable<String,LangDecl>();
 	private Hashtable<String,NodeDecl> allNodeDecls = new Hashtable<String,NodeDecl>();
 
 	public VNodeFE_Verify(Env env, int id) { super(env,id,KievExt.VNode); }
-	
+
 	public String getDescr() { "VNode verification" }
 
 	private LangDecl getLangDecl(TypeDecl s) {
@@ -607,7 +607,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 		return nd;
 	}
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -636,7 +636,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 			*/
 		}
 	}
-	
+
 	private void verifyStruct(Struct s) {
 		UserMeta m = (UserMeta)s.getMeta(mnNode);
 		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
@@ -716,7 +716,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 		}
 		*/
 	}
-	
+
 }
 
 public final class VNodeME_PreGenerate extends BackendProcessor {
@@ -733,7 +733,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -745,16 +745,16 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
-	
+
 	final Struct getIFaceOfImpl(Struct impl) {
 		if (impl.parent() instanceof Struct) {
 			Struct iface = (Struct)impl.parent();
@@ -763,7 +763,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		return null;
 	}
-	
+
 	final boolean isNodeKind(Struct s) {
 		return isNodeIface(s) || isNodeImpl(s);
 	}
@@ -790,7 +790,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		return _codeSet;
 	}
-	
+
 	public Method getCodeGet() {
 		if (_codeGet == null) {
 			TypeDecl td = (TypeDecl)this.env.loadTypeDecl("kiev·transf·TemplateVNode", true);
@@ -798,8 +798,8 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		return _codeGet;
 	}
-	
-	public void doProcess(Struct:ASTNode s) {
+
+	public void doProcess(Struct:ANode s) {
 		if (s.isInterface() && !s.isMixin() || !isNodeImpl(s)) {
 			foreach(Struct sub; s.members)
 				doProcess(sub);
@@ -834,7 +834,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 				throw new CompilerException(s,"Auto-generated field with name "+nameEnumValuesFld+" is not found");
 			if (vals.init != null || nameNode.equals(iface.qname()) || nameANode.equals(iface.qname()))
 				return; // already generated
-	
+
 			aflds = new Vector<Field>();
 			collectAllAttrFields(aflds, iface);
 			ENode[] vals_init = new ENode[aflds.size()];
@@ -994,7 +994,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 						}
 						else if (f.isFinal()) {
 							if (isNode) {
-								copyV.block.stats.append( 
+								copyV.block.stats.append(
 									new ExprStat(0,
 										new CallExpr(0,
 											new IFldExpr(0,new ThisExpr(),f),
@@ -1011,7 +1011,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 								new SymbolRef<Method>("copy"),
 								null,
 								new ENode[]{new LVarExpr(0,cc)});
-							copyV.block.stats.append( 
+							copyV.block.stats.append(
 								new IfElseStat(0,
 									new BinaryBoolExpr(0, env.coreFuncs.fObjectBoolNE,
 										new IFldExpr(0,new ThisExpr(),f),
@@ -1029,7 +1029,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 						}
 					} else {
 						if (!f.isFinal()) {
-							copyV.block.stats.append( 
+							copyV.block.stats.append(
 								new ExprStat(0,
 									new AssignExpr(0,
 										new IFldExpr(0,new LVarExpr(0,v),f),
@@ -1073,7 +1073,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			}
 		}
 	}
-	
+
 	private Struct makeNodeValuesClass(Struct iface, Struct impl) {
 		foreach (Struct s; iface.members; s.sname == "VVV")
 			return s; // already generated or manually specified
@@ -1104,7 +1104,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		Kiev.runProcessorsOn(s);
 		return s;
 	}
-	
+
 	private void collectAllAttrFields(Vector<Field> aflds, Struct iface) {
 		if (iface == null)
 			return;
@@ -1130,17 +1130,17 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			return f;
 		throw new CompilerException(s,"Auto-generated field with name "+name+" is not found");
 	}
-	
+
 	private boolean hasMethod(Struct s, String name) {
 		s = s.checkResolved(env);
 		foreach (Method m; s.members; m.hasName(name)) return true;
 		return false;
 	}
-	
+
 	private void fixGetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
 		boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
-		
+
 		if (isSet)
 			return;
 
@@ -1167,7 +1167,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		if (get_var.isSynthetic())
 			get_var.setFinal(true);
-		
+
 		if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && GEN_VERSIONED) {
 			get_var.body.walkTree(null, null, new ITreeWalker() {
 				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
@@ -1188,7 +1188,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		boolean isAtt = (fmatt != null);
 		boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
 		boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
-		
+
 		if (isSet)
 			return;
 
@@ -1265,7 +1265,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		else
 			set_var.setMeta(new UserMeta(mnRef)).resolve(env, null);
 	}
-	
+
 	boolean fixAccessInGetter(Field f, IFldExpr fe, INode parent, AttrSlot slot) {
 		if!(fe.obj instanceof ThisExpr && fe.var == f && !fe.var.isFinal())
 			return true;
@@ -1274,12 +1274,12 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if (!fe.getType(env).isInstanceOf(tpNode))
 			return true;
 		Method csm = getCodeGet();
-		ASTNode rewriter = csm.body;
+		ANode rewriter = csm.body;
 		if (rewriter instanceof RewriteMatch)
 			rewriter = rewriter.matchCase(fe);
 		Hashtable<String,Object> args = new Hashtable<String,Object>();
 		RewriteContext rctx = new RewriteContext(env, fe, args);
-		ASTNode rn = (ASTNode)rewriter.doRewrite(rctx);
+		ANode rn = (ANode)rewriter.doRewrite(rctx);
 		rn = fe.replaceWithNode(~rn, parent, slot);
 		Kiev.runProcessorsOn(rn);
 		return false;
@@ -1288,12 +1288,12 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if!(ae.lval instanceof IFldExpr && ((IFldExpr)ae.lval).obj instanceof ThisExpr && ((IFldExpr)ae.lval).var == f)
 			return true;
 		Method csm = getCodeSet();
-		ASTNode rewriter = csm.body;
+		ANode rewriter = csm.body;
 		if (rewriter instanceof RewriteMatch)
 			rewriter = rewriter.matchCase(ae);
 		Hashtable<String,Object> args = new Hashtable<String,Object>();
 		RewriteContext rctx = new RewriteContext(env, ae, args);
-		ASTNode rn = (ASTNode)rewriter.doRewrite(rctx);
+		ANode rn = (ANode)rewriter.doRewrite(rctx);
 		rn = ae.replaceWithNode(~rn,parent,slot);
 		Kiev.runProcessorsOn(rn);
 		return false;
@@ -1313,7 +1313,7 @@ public final class VNodeBE_FixResolve extends BackendProcessor {
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -1325,16 +1325,16 @@ public final class VNodeBE_FixResolve extends BackendProcessor {
 			} finally { tr.leave(); }
 		}
 	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
+
+	public void doProcess(ANode:ANode node) {
 		return;
 	}
-	
-	public void doProcess(SyntaxScope:ASTNode ss) {
-		foreach (ASTNode dn; ss.members)
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
 			this.doProcess(dn);
 	}
-	
+
 	final Struct getIFaceOfImpl(Struct impl) {
 		if (impl.parent() instanceof Struct) {
 			Struct iface = (Struct)impl.parent();
@@ -1343,7 +1343,7 @@ public final class VNodeBE_FixResolve extends BackendProcessor {
 		}
 		return null;
 	}
-	
+
 	final boolean isNodeImpl(Struct s) {
 		if (s.isClazz() && s.getMeta(mnNode) != null)
 			return true;
@@ -1353,7 +1353,7 @@ public final class VNodeBE_FixResolve extends BackendProcessor {
 		return false;
 	}
 
-	public void doProcess(Struct:ASTNode s) {
+	public void doProcess(Struct:ANode s) {
 		if (s.isInterface() && !s.isMixin() || !isNodeImpl(s)) {
 			foreach(Struct sub; s.members)
 				doProcess(sub);

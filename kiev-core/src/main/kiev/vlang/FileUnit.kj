@@ -203,6 +203,10 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 		return ((DirUnit)parent()).pname() + '/' + fname;
 	}
 
+	public String getFileName() {
+		return fname;
+	}
+
 	public boolean isInterfaceOnly() { scanned_for_interface_only }
 	public boolean isLodedFromBinaryDump() { loded_from_binary_dump }
 

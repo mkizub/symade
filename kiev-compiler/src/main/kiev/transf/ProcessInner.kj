@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-	
+
 ////////////////////////////////////////////////////
 //	   PASS - rewrite code                        //
 ////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public final class InnerBE_PreGenartion extends BackendProcessor implements Cons
 	public InnerBE_PreGenartion(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Inner classes pre-generation" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -62,7 +62,7 @@ public final class InnerBE_PreGenartion extends BackendProcessor implements Cons
 		cleanupMixins(s);
 		return true;
 	}
-	
+
 	private GlobalDNode getOuterStruct(Struct s) {
 		ANode n = s.parent();
 		while (n != null && !(n instanceof SyntaxScope || n instanceof KievPackage || n instanceof ComplexTypeDecl))
@@ -75,7 +75,7 @@ public final class InnerBE_PreGenartion extends BackendProcessor implements Cons
 			return n.getPackage();
 		return (ComplexTypeDecl)n;
 	}
-	
+
 	private void addToOuter(Struct s) {
 		GlobalDNode outer = getOuterStruct(s);
 		if (outer instanceof KievPackage || !(outer instanceof Struct)) {
@@ -111,7 +111,7 @@ public final class InnerBE_PreGenartion extends BackendProcessor implements Cons
 		s.bytecode_name = pkg_name + '$' + bc_name;
 		inf.inners.append(s);
 	}
-	
+
 	private void addSuperIfaces(Type tp, Struct s) {
 		TypeDecl td = tp.meta_type.tdecl;
 		if (td instanceof Struct && td.isInterface()) {
@@ -130,7 +130,7 @@ public final class InnerBE_PreGenartion extends BackendProcessor implements Cons
 		foreach (Type sup; tp.getMetaSupers())
 			addSuperIfaces(sup, s);
 	}
-	
+
 	private void cleanupMixins(Struct s) {
 		if (!s.isInterface() || s.isAnnotation())
 			return;
@@ -176,7 +176,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 	public InnerBE_Rewrite(Env env, int id) { super(env,id,KievBackend.Java15); }
 	public String getDescr() { "Inner classes access rewrite" }
 
-	public void process(ASTNode node, Transaction tr) {
+	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
 			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
@@ -194,7 +194,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 			} finally { tr.leave(); }
 		}
 	}
-	
+
 	boolean rewrite(ASTNode:ASTNode o, INode parent, AttrSlot slot) {
 		return true;
 	}
@@ -214,7 +214,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		fa.replaceWithNodeReWalk(ce,parent,slot);
 		throw new Error();
 	}
-	
+
 	boolean rewrite(SFldExpr:ASTNode fa, INode parent, AttrSlot slot) {
 		Field f = fa.var;
 		if (!MetaAccess.accessedFromInner(fa,f))
@@ -224,7 +224,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		fa.replaceWithNodeReWalk(ce,parent,slot);
 		throw new Error();
 	}
-	
+
 	boolean rewrite(CallExpr:ASTNode ce, INode parent, AttrSlot slot) {
 		Method func = ce.func;
 		if (func == null || !MetaAccess.accessedFromInner(ce,func))
@@ -237,7 +237,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		}
 		return true;
 	}
-	
+
 	boolean rewrite(NewExpr:ASTNode ne, INode parent, AttrSlot slot) {
 		Method func = ne.func;
 		if (func == null || !MetaAccess.accessedFromInner(ne,func))
@@ -248,7 +248,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		ne.replaceWithNodeReWalk(ce,parent,slot);
 		return true;
 	}
-	
+
 	boolean rewrite(ModifyExpr:ASTNode ae, INode parent, AttrSlot slot) {
 		StdTypes tenv = this.env.getTypeEnv();
 		if (ae.lval instanceof IFldExpr) {
@@ -334,7 +334,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		}
 		return true;
 	}
-	
+
 	boolean rewrite(AssignExpr:ASTNode ae, INode parent, AttrSlot slot) {
 		StdTypes tenv = this.env.getTypeEnv();
 		if (ae.lval instanceof IFldExpr) {
@@ -404,7 +404,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		}
 		return true;
 	}
-	
+
 	boolean rewrite(IncrementExpr:ASTNode ie, INode parent, AttrSlot slot) {
 		StdTypes tenv = this.env.getTypeEnv();
 		if (ie.lval instanceof IFldExpr) {
@@ -508,7 +508,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 		}
 		return true;
 	}
-	
+
 	private ENode mkAccess(Object o) {
 		if (o instanceof Var) return new LVarExpr(0,(Var)o);
 		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVarSafe());

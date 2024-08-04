@@ -26,13 +26,13 @@ public class JEnvFactory implements BEndEnvFactory {
 }
 
 public final class JEnv implements BEndEnv {
-	
+
 	public final Env env;
 	public final StdTypes vtypes;
 
 	private JTypeEnv jtypes;
 	private OpCodeRules opcodeRules;
-	
+
 	private Field arr_length;
 	private Struct clazzStringBuffer;
 	private Method clazzStringBufferToString;
@@ -47,8 +47,8 @@ public final class JEnv implements BEndEnv {
 	public void generateFile(FileUnit fu) {
 		((JFileUnit)fu).generate(this);
 	}
-	
-	public void backendCleanup(ASTNode node) {
+
+	public void backendCleanup(ANode node) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
 				foreach (JNode nh; n.handle().getHandleData()) {
@@ -59,19 +59,19 @@ public final class JEnv implements BEndEnv {
 			}
 		});
 	}
-	
+
 	public JTypeEnv getJTypeEnv() {
 		if (jtypes == null)
 			jtypes = new JTypeEnv(this);
 		return jtypes;
 	}
-	
+
 	public OpCodeRules getOpCodeRules() {
 		if (opcodeRules == null)
 			opcodeRules = new OpCodeRules(getJTypeEnv());
 		return opcodeRules;
 	}
-	
+
 	public Field getFldArrLength() {
 		if (this.arr_length == null)
 			this.arr_length = vtypes.tpArrayOfAny.resolveField("length");
@@ -92,7 +92,7 @@ public final class JEnv implements BEndEnv {
 			this.clazzStringBufferInit = getClsStringBuffer().resolveMethod(this.env,null,vtypes.tpVoid);
 		return this.clazzStringBufferInit;
 	}
-	
+
 
 	public DNode loadDecl(ClazzName name) {
 		if (name.name.length() == 0) return this.env.root;
@@ -174,7 +174,7 @@ public final class JEnv implements BEndEnv {
 		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing .class data for clazz "+name);
 			clazz = new kiev.bytecode.Clazz();
-			clazz.readClazz(data);                                                                                    
+			clazz.readClazz(data);
 		}
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)

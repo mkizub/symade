@@ -18,10 +18,10 @@ import syntax kiev.Syntax;
  */
 
 public abstract class AbstractProcessor implements Constants {
-	
+
 	public final Env env;
 	public final int id;
-	
+
 	public AbstractProcessor(Env env, int id) {
 		this.env = env;
 		this.id = id;
@@ -29,8 +29,8 @@ public abstract class AbstractProcessor implements Constants {
 	public abstract boolean isEnabled();
 	public abstract boolean isDisabled();
 	public abstract String getDescr();
-	public abstract void process(ASTNode node, Transaction tr);
-	
+	public abstract void process(ANode node, Transaction tr);
+
 	public static String getPropS(String base, String name, String dflt) {
 		String fname = base+"."+name;
 		String val = System.getProperty(fname,dflt);

@@ -45,8 +45,8 @@ public class ANodeDumpMarshaller implements Marshaller {
  		int linePos = node.getLinePos();
 		if (force || node instanceof ComplexTypeDecl) {
 			if (pos == 0)
-				return ":::" + fileUnit.fname;
-			return lineNo + ":" + linePos + ":" + filePos + ":" + fileUnit.fname;
+				return ":::" + fileUnit.getFileName();
+			return lineNo + ":" + linePos + ":" + filePos + ":" + fileUnit.getFileName();
 		}
 		if (pos == 0)
 			return null;
