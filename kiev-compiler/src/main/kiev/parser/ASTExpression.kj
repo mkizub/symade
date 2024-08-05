@@ -27,7 +27,7 @@ public class ASTExpression extends ENode {
 	@nodeAttr public ANode∅	nodes;
 
 	public ASTExpression() {}
-	
+
 	public int getPriority(Env env) { return 256; }
 
 	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
@@ -73,7 +73,7 @@ public class ASTExpression extends ENode {
 		}
 		return true;
 	}
-	
+
 	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
 		ENode e = parseExpr(env);
 		if (e != null) {
@@ -95,7 +95,7 @@ public class ASTExpression extends ENode {
 		ASTExprParser pst = new ASTExprParser(env, Env.ctxSyntaxScope(this).getAllOpdefs(), this.nodes);
 		List<ENode> results = pst.parseExpr();
 		if (results.length() == 0) {
-			StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
+			StringBuffer msg = new StringBuffer("Expression: '"+this+"' cannot be resolved using defined operators");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
 			Kiev.reportError(this, msg.toString());

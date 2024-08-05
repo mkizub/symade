@@ -528,7 +528,7 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 		if (tasks.size() == 0)
 			return;
 		if (pooled && Compiler.jobThreads > 1) {
-			Collection<Callable<String>⁺> x = tasks;
+			Collection<? extends Callable<String>> x = tasks;
 			executorService.invokeAll<String>(x);
 		} else {
 			Callable<String>[] arr = tasks.toArray(new Callable<String>[tasks.size()]);

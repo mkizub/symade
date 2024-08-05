@@ -15,7 +15,7 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-public @interface throws {
+public @interface #id"throws"# {
 	public Class[] value();
 }
 

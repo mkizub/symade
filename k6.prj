@@ -113,7 +113,6 @@
               <core:FileUnit name="ParseError.kj"/>
               <core:FileUnit name="ParseException.kj"/>
               <core:FileUnit name="Parser.kj"/>
-              <core:FileUnit name="SimpleCharStream.kj"/>
               <core:FileUnit name="Token.kj"/>
               <core:FileUnit name="TokenManager.kj"/>
               <core:FileUnit name="TokenMgrError.kj"/>

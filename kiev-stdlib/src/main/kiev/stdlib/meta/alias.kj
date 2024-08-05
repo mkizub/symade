@@ -14,7 +14,7 @@ import syntax kiev.stdlib.Syntax;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.CLASS)
-public @interface alias {
+public @interface #id"alias"# {
 	public String[] value();
 }
 

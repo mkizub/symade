@@ -4,8 +4,9 @@ options {
 //  DEBUG_TOKEN_MANAGER = true;
 //  BUILD_PARSER = false;
 //  JAVA_UNICODE_ESCAPE = true;
+  LOOKAHEAD = 1;
   STATIC = false;
-  ERROR_REPORTING = false;
+  ERROR_REPORTING = true;
   CACHE_TOKENS = true;
   USER_TOKEN_MANAGER = true;
   //UNICODE_INPUT = true;     // ignored since USER_TOKEN_MANAGER = true
@@ -31,6 +32,18 @@ import syntax kiev.Syntax;
 }*/
 
 public abstract class kiev050 extends ParserBase {
+
+	public Token consume(int kind) throws ParseException {
+	    return jj_consume_token(kind);
+	}
+
+	public final boolean expect(int kind) throws ParseException {
+		Token t = jj_nt;
+		if (t.kind != kind)
+			return false;
+		jj_consume_token(kind);
+		return true;
+	}
 
 	private boolean operatorLA() {
 		Token t0 = getToken(0);
@@ -551,6 +564,7 @@ FileUnit FileUnit(String filename) :
 			LOOKAHEAD({ getToken(1).kind==KW_IMPORT && getToken(2).kind==IDENTIFIER && getToken(2).image.equals("syntax") })
 			fu.syntaxes += ImportSyntax()
 		|
+		    LOOKAHEAD("package")
 			pkg = Package()
 			{
 				if (fu.srpkg.name == null) {
@@ -582,7 +596,8 @@ NameSpace NameSpaceDeclaration(ASTModifiers modifiers, SyntaxScope parent) :
 		<IDENTIFIER>	// "namespace"
 		(	LOOKAHEAD({ parent.getPackage() instanceof KievRoot })
 			sr = QName()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
-		|	sr = NameRef()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
+		|   LOOKAHEAD({ identLA() })
+			sr = NameRef()		{ ns.srpkg.name = sr.name; ns.srpkg.pos = sr.pos; }
 		)
 		{ parent.members += ns; }
 		"{"
@@ -600,7 +615,7 @@ NameSpace NameSpaceDeclaration(ASTModifiers modifiers, SyntaxScope parent) :
 void TopLevelDeclarations(SyntaxScope ss) :
 { ASTModifiers modifiers; SpacePtr ss_members = Env.getSpacePtr(ss, "members"); }
 {
-	(	LOOKAHEAD({ getToken(1).kind != OP_RBRACE && getToken(1).kind != EOF })
+	(	LOOKAHEAD({ !oneOfLA(OP_RBRACE, EOF) })
 		{ comments_alone(ss_members); }
 		modifiers = Modifiers()
 		(
@@ -620,43 +635,10 @@ ASTModifiers Modifiers() :
 	(
 		SpecialAnnotation(n)
 	|	Access(n)			// TODO: remove, use @access and views
-	|	LOOKAHEAD({ getToken(1).kind==OP_AT })
+	|	LOOKAHEAD({ oneOfLA(OP_AT) })
 		n += Annotation()
 	)*
 	{ return n; }
-}
-
-void InBlockModifiersLA() :
-{}
-{
-		"@"
-
-	|	"@access"
-	|	"@public"
-	|	"@protected"
-	|	"@private"
-
-	| "@singleton"
-	| "@mixin"
-	| "@forward"
-	| "@unerasable"
-	| "@virtual"
-	| "@macro"
-	| "static"
-	| "@static"
-	| "abstract"
-	| "@abstract"
-	| "final"
-	| "@final"
-	| "@native"
-	| "@synchronized"
-	| "@transient"
-	| "@volatile"
-	| "@packed"
-	| "@throws"
-	| "@uuid"
-	| "@getter"
-	| "@setter"
 }
 
 SymbolRef Package() :
@@ -787,9 +769,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			( "," clazz.super_types += Type()	)*
 		]
 	|	"@interface"
-		(	name = Name()
-		|	name = KeywordAsName()
-		)
+		name = Name()
 		{
 			clazz = mkStruct(name, new JavaAnnotation(), AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
 		}
@@ -842,10 +822,10 @@ void TypeBodyDeclaration(ComplexTypeDecl clazz) :
 		[ ";" ]
 	)?
 	(
-		LOOKAHEAD({ getToken(1).kind != OP_RBRACE })
+		LOOKAHEAD({ !oneOfLA(OP_RBRACE) })
 		{ comments_alone(clazz_members); }
 		modifiers = Modifiers()
-		(	LOOKAHEAD({ getToken(1).kind == OP_LBRACE })
+		(	LOOKAHEAD({ oneOfLA(OP_LBRACE) })
 			clazz.members += Initializer(modifiers)
 		|	LOOKAHEAD(1)
 			clazz.members += InvariantDeclaration(modifiers)
@@ -888,6 +868,7 @@ DNode FieldOrMethodDecl(ASTModifiers modifiers, ComplexTypeDecl clazz) :
 		LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == OP_LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
 		res = ConstructorDeclaration(modifiers, null, clazz)
 	|
+	    LOOKAHEAD(0)
 		dtype = Type()
 		(
 			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == OP_LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
@@ -912,7 +893,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 	|
 		"("
 			{ ne = new NewEnumExpr(); f.init = ne; }
-			[	LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+			[	LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 				ne.args += ExpressionColon()
 				(	"," ne.args += ExpressionColon()	)*
 			]
@@ -937,7 +918,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 	(
 		"("
 			(
-				LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+				LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 				modifiers = Modifiers()
 				clazz.case_fields += CaseTypeField(modifiers)
 				(
@@ -1166,49 +1147,16 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 	| "@setter"		{ modifiers += new MetaSetter(); }
 }
 
-SymbolRef KeywordAsNameRef() :
-{ Token t; SymbolRef id; }
-{
-	(
-		t="alias"
-	|	t="throws"
-	)
-	{
-		id = new SymbolRef();
-		id.pos = t.getPos();
-		id.name = t.image;
-		return id;
-	}
-}
-
-Symbol KeywordAsName() :
-{ Token t; Symbol id; }
-{
-	(
-		t="alias"
-	|	t="throws"
-	)
-	{
-		id = new Symbol();
-		id.pos = t.getPos();
-		id.sname = t.image;
-		return id;
-	}
-}
-
 UserMeta Annotation() :
 { SymbolRef id; MetaValue v; }
 {
 	{ UserMeta n = new UserMeta(); }
 	"@"
-	(
-		id = QName()
-	|	id = KeywordAsNameRef()
-	)
+	id = QName()
 	{	n.pos = id.pos;	 n.decl.name = id.name; }
-	[	LOOKAHEAD({ getToken(1).kind == OP_LPAREN })
+	[	LOOKAHEAD({ oneOfLA(OP_LPAREN) })
 		"("
-		[	LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+		[	LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 			(
 				LOOKAHEAD( <IDENTIFIER> "=" )
 				AnnotationValues(n)
@@ -1275,7 +1223,7 @@ MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
 {
 	{ v = new MetaValueArray(id); }
 	"{"
-	[	LOOKAHEAD({ getToken(1).kind != OP_RBRACE })
+	[	LOOKAHEAD({ !oneOfLA(OP_RBRACE) })
 		n = AnnotationValueScalar(null) { v.values.add(~n.value); }
 		(	","
 			n = AnnotationValueScalar(null) { v.values.add(~n.value); }
@@ -1305,7 +1253,7 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef dtype) :
 	} finally { declMode = old_declMode; }
 }
 
-void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
+void RuleLocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
 { TypeRef dtype; }
 {
 	dtype = Type()
@@ -1400,13 +1348,14 @@ Field CaseTypeField(ASTModifiers modifiers) :
 	}
 }
 
-Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
+Var PatternParameter(ASTModifiers modifiers) :
 { Token t; TypeRef tp; Symbol id; }
 {
 	(
 		LOOKAHEAD({ getToken(1).image.equals("_") })
 		id = Name() { tp = new TypeRef(curEnv.tenv.tpVoid); tp.pos = id.pos; }
 	|
+	    LOOKAHEAD({ paramDeclLA() })
 		tp = Type()
 		id = Name()
 	)
@@ -1508,7 +1457,7 @@ Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret)
 	}
 	"("
 		(
-			LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+			LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 			modifiers = Modifiers()
 			ptype = Type()
 			(	m.params += MethodFormalParameter(modifiers,ptype)
@@ -1527,12 +1476,13 @@ Method MethodDeclaration(ASTModifiers modifiers, TypeConstr[] args, TypeRef ret)
 		)?
 	")"
 	(
-		m.aliases += MethodAlias(m)
-	)*
-	[	thr = Throws()	{ m.setMeta(thr); } ]
-	(
-		m.conditions += RequareDeclaration()
-	|	m.conditions += EnsureDeclaration()
+	    LOOKAHEAD({ oneOfLA(KW_ALIAS, KW_OPERATOR, KW_THROWS, KW_REQUIRE, KW_ENSURE) })
+	    (
+		    m.aliases += MethodAlias(m)
+        |	thr = Throws()	{ m.setMeta(thr); }
+	    |   m.conditions += RequareDeclaration()
+	    |	m.conditions += EnsureDeclaration()
+	    )
 	)*
 	(
 		LOOKAHEAD({ getToken(1).kind == OP_LBRACE && interface_only })
@@ -1558,7 +1508,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args, Co
 	}
 	"("
 		(
-			LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+			LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 			modifiers = Modifiers()
 			ptype = Type()
 			(	m.params += MethodFormalParameter(modifiers,ptype)
@@ -1577,17 +1527,18 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args, Co
 		)?
 	")"
 	(
-		m.aliases += MethodAlias(m)
+	    LOOKAHEAD({ oneOfLA(KW_ALIAS, KW_OPERATOR, KW_THROWS, KW_REQUIRE, KW_ENSURE) })
+	    (
+		    m.aliases += MethodAlias(m)
+        |	thr = Throws()	{ m.setMeta(thr); }
+	    |   m.conditions += RequareDeclaration()
+	    |	m.conditions += EnsureDeclaration()
+	    )
 	)*
-	[	thr = Throws()	{ m.setMeta(thr); } ]
 	(
-		m.conditions += RequareDeclaration()
-	|	m.conditions += EnsureDeclaration()
-	)*
-	(
-		LOOKAHEAD({ getToken(1).kind == OP_LBRACE && interface_only })
+		LOOKAHEAD({ oneOfLA(OP_LBRACE) && interface_only })
 		SkipBlock() [ ";" ]
-	|	LOOKAHEAD({ getToken(1).kind == OP_LBRACE })
+	|	LOOKAHEAD({ oneOfLA(OP_LBRACE) })
 		m.body = Block() [ ";" ]
 	|	";"
 	)
@@ -1665,14 +1616,14 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 }
 
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
-{ RuleBlock bl; RuleMethod m; Symbol id; TypeRef ptype; }
+{ RuleBlock bl; RuleMethod m; Symbol id; TypeRef ptype; MetaThrows thr; }
 {
 	<IDENTIFIER> // "rule"
 	id = Name()
 	{ m = mkRuleMethod(id, modifiers, new TypeRef(curEnv.tenv.tpRule)); }
 	"("
 		(
-			LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+			LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 			modifiers = Modifiers()
 			ptype = Type()
 			m.params += FormalParameter(modifiers,ptype)
@@ -1685,21 +1636,22 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 		)?
 	")"
 	(
-		m.aliases += MethodAlias(m)
+	    LOOKAHEAD({ oneOfLA(KW_ALIAS, KW_OPERATOR, KW_THROWS, KW_REQUIRE, KW_ENSURE) || modifiersLA() || varDeclsLA() })
+	    (
+            m.aliases    += MethodAlias(m)
+        |   m.conditions += RequareDeclaration()
+        |   m.conditions += EnsureDeclaration()
+    	|   thr           = Throws() { m.setMeta(thr); }
+        |   LOOKAHEAD(0)
+            modifiers = Modifiers()
+            RuleLocalVarDecls(modifiers,m)
+		)
 	)*
 	(
-		modifiers = Modifiers()
-		LocalVarDecls(modifiers,m)
-	)*
-	(
-		m.conditions += RequareDeclaration()
-	|	m.conditions += EnsureDeclaration()
-	)*
-	(
-		LOOKAHEAD({ getToken(1).kind == OP_LBRACE && interface_only })
+		LOOKAHEAD({ oneOfLA(OP_LBRACE) && interface_only })
 		SkipBlock() [ ";" ]
 	|
-		LOOKAHEAD({ getToken(1).kind == OP_LBRACE })
+		LOOKAHEAD({ oneOfLA(OP_LBRACE) })
 		m.body = RuleBlock() [ ";" ]
 	|
 		";"
@@ -1713,7 +1665,7 @@ Initializer Initializer(ASTModifiers modifiers) :
 }
 {
 	(
-		LOOKAHEAD({ getToken(1).kind == OP_LBRACE && interface_only })
+		LOOKAHEAD({ oneOfLA(OP_LBRACE) && interface_only })
 		SkipBlock() [ ";" ]
 	|
 		LOOKAHEAD(0)
@@ -1733,12 +1685,14 @@ TypeRef Type() :
 { TypeRef res; }
 {
 	(
-		LOOKAHEAD ( (<IDENTIFIER> ".")+ "type" )
+	    LOOKAHEAD ({ closureTypeLA() })
+		res = ClosureType()
+	|
+		LOOKAHEAD ({ pathTypeLA() })
 		res = PathType()
 	|
+	    LOOKAHEAD (0)
 		res = TypeExpr()
-	|
-		res = ClosureType()
 	)
 	{ return res; }
 }
@@ -1808,8 +1762,9 @@ TypeRef TypeWithWildcard() :
 TypeRef TypeWithArgs() :
 { SymbolRef qname; TypeRef res; TypeRef arg; }
 {
+    LOOKAHEAD(0)
 	qname = QName()
-	(	LOOKAHEAD({ getToken(1).kind == OP_LT || getToken(1).kind == OP_LANGLE })
+	(	LOOKAHEAD({ oneOfLA(OP_LT, OP_LANGLE) })
 		("<" | <OP_LANGLE>)
 			{ res = new TypeNameArgsRef(qname.name); }
 			(
@@ -1832,7 +1787,7 @@ TypeRef TypeWithArgs() :
 				res.args += Type()
 			)
 
-			(	LOOKAHEAD({ getToken(1).kind == OP_COMMA })
+			(	LOOKAHEAD(1)
 				","
 				res.args += Type()
 			)*
@@ -1843,7 +1798,7 @@ TypeRef TypeWithArgs() :
 			{ res = new TypeInnerNameRef(res, qname.name); }
 			("<" | <OP_LANGLE>)
 				res.args += Type()
-				(	LOOKAHEAD({ getToken(1).kind == OP_COMMA })
+				(	LOOKAHEAD(1)
 					","
 					res.args += Type()
 				)*
@@ -1875,6 +1830,7 @@ TypeRef ClosureType() :
 {
 	t="(" { n.pos = t.getPos(); }
 	[
+	    LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 		n.args += Type()
 		( "," n.args += Type() )*
 	]
@@ -1934,61 +1890,22 @@ Symbol Name() :
 	}
 }
 
-SymbolRef NameRef() :
-{ Token t; SymbolRef id; }
-{
-	t=<IDENTIFIER>
-	{
-		id = new SymbolRef();
-		id.pos = t.getPos();
-		id.name = t.image;
-		return id;
-	}
-|	t=<ESC_IDENTIFIER>
-	{
-		id = new SymbolRef();
-		id.name = ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1));
-		return id;
-	}
-|	t=<HID_IDENTIFIER>
-	{
-		id = new SymbolRef();
-		id.pos = t.getPos();
-		id.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
-		return id;
-	}
+JAVACODE
+SymbolRef NameRef() {
+    return parseSymbolRef();
 }
 
-SymbolRef QName() :
-{ SymbolRef id; SymbolRef id2; }
-{
-	id = NameRef()
-	(
-		LOOKAHEAD(2)
-		"."
-		id2 = NameRef()
-		{ id.name = id.name+'\u00b7'+id2.name; }
-	)*
-	{
-		return id;
-	}
+JAVACODE
+SymbolRef QName() {
+    return parseQualifiedSymbolRef();
 }
 
 EToken Identifier() :
 { Token t; }
 {
-	t=<IDENTIFIER>
-	{
-		return new EToken(t,ETokenKind.MAYBE_IDENTIFIER);
-	}
-|	t=<ESC_IDENTIFIER>
-	{
-		return new EToken(t,ETokenKind.MAYBE_IDENTIFIER);
-	}
-|	t=<HID_IDENTIFIER>
-	{
-		return new EToken(t,ETokenKind.MAYBE_IDENTIFIER);
-	}
+	t=<IDENTIFIER>     { return new EToken(t,ETokenKind.MAYBE_IDENTIFIER); }
+|	t=<ESC_IDENTIFIER> { return new EToken(t,ETokenKind.MAYBE_IDENTIFIER); }
+|	t=<HID_IDENTIFIER> { return new EToken(t,ETokenKind.MAYBE_IDENTIFIER); }
 }
 
 /*
@@ -2047,13 +1964,18 @@ ASTRuleNode RuleExpression() :
 		})
 		r = RuleIsoneofExpression()
 	|
-		LOOKAHEAD({getToken(1).kind == KW_PCUT})
+		LOOKAHEAD(1)
 		r = RuleCutExpression()
 	|
-		LOOKAHEAD({getToken(1).kind == OP_LBRACE})
-		"{" r = RuleOrExpression() "}"
+		LOOKAHEAD(1)
+		"{"
+		    (   LOOKAHEAD({ !oneOfLA(OP_RBRACE) })
+		        r = RuleOrExpression()
+		    |   { r = new RuleExpr(); }
+		    )
+		"}"
 	|
-		LOOKAHEAD({getToken(1).kind == KW_WHILE})
+		LOOKAHEAD(1)
 		"while"
 		{ r = new RuleWhileExpr(); }
 		r.expr = Expression() 
@@ -2064,11 +1986,15 @@ ASTRuleNode RuleExpression() :
 	|
 		LOOKAHEAD(0)
 		{ r = new RuleExpr(); }
-		r.expr = Expression()
-		[
-			":"
-			r.bt_expr = Expression()
-		]
+		(
+		    LOOKAHEAD({ oneOfLA(OP_RBRACE) })
+		    {}
+        |   r.expr = Expression()
+            [
+                ":"
+                r.bt_expr = Expression()
+            ]
+        )
 	)
 	{ return r; }
 }
@@ -2321,14 +2247,14 @@ void NewAny(ASTExpression e) :
 			n = ExpressionColonComma() { expandExpr(e,n); }
 		]
 		t=")"	{ e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR); }
-		(
-			LOOKAHEAD({ getToken(1).kind == OP_LBRACE })
+		[
+			LOOKAHEAD({ oneOfLA(OP_LBRACE) })
 			{
 				clazz = mkStruct(null, new JavaAnonymouseClass(), AccessFlags.ACC_FINAL, new ASTModifiers(), e);
 				e.nodes += clazz;
 			}
 			TypeBodyDeclaration(clazz)
-		)?
+		]
 	)
 }
 
@@ -2337,7 +2263,7 @@ NewClosure AnonymouseClosure() :
 {
 	"fun" "("
 		(
-			LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
+			LOOKAHEAD({ !oneOfLA(OP_RPAREN) })
 			modifiers = Modifiers()
 			ptype = Type()
 			nc.params += FormalParameter(modifiers,ptype)
@@ -2468,6 +2394,7 @@ Block Block() :
 	}
 	try {
     	(
+    	    LOOKAHEAD({ !oneOfLA(OP_RBRACE) })
 			BlockStatement(Env.getSpacePtr(bl, "stats"))
 		)*
 	} finally { declMode = old_declMode; }
@@ -2516,25 +2443,23 @@ void BlockStatement(SpacePtr stats) :
 {
 	{ comments_alone(stats); }
 	(
-		LOOKAHEAD(InBlockModifiersLA())
-		(
-			modifiers = Modifiers()
-			(
-				{ old_declMode = declMode; declMode = true; }
-				try {
-					stats += TypeDeclaration(modifiers, (ASTNode)stats.node)
-				} finally { declMode = old_declMode; }
-			|	LOOKAHEAD(0)
-				VarDecls(modifiers, stats)
-			)
-		)
+		LOOKAHEAD({ modifiersLA() })
+        modifiers = Modifiers()
+        (
+            { old_declMode = declMode; declMode = true; }
+            try {
+                stats += TypeDeclaration(modifiers, (ASTNode)stats.node)
+            } finally { declMode = old_declMode; }
+        |	LOOKAHEAD(0)
+            VarDecls(modifiers, stats)
+        )
 	|
 		{ old_declMode = declMode; declMode = true; }
 		try {
 			stats += TypeDeclaration(new ASTModifiers(), (ASTNode)stats.node)
 		} finally { declMode = old_declMode; }
 	|
-		LOOKAHEAD( Type() Name() )
+		LOOKAHEAD({ varDeclsLA() })
 		VarDecls(new ASTModifiers(), stats)
 		";"
 	|
@@ -2576,7 +2501,7 @@ ENode StatementExpression() :
 	(
 		";" { st = new ExprStat(getToken(0).getPos(), null); } 
 	|	st = ExpressionColonComma()
-		[	LOOKAHEAD({ getToken(1).kind == OP_SEMICOLON })
+		[	LOOKAHEAD(1)
 			";" { st = new ExprStat(st.pos, st); }
 		]
 	)
@@ -2602,7 +2527,7 @@ CaseLabel CaseStatements(SwitchStat sw) :
 { CaseLabel st; }
 {
 	(
-		LOOKAHEAD("case" QName() "(" )
+		LOOKAHEAD({ patternCaseLA() })
 		st = PizzaCase(sw)
 	|
 		st = NormalCase(sw)
@@ -2622,6 +2547,7 @@ CaseLabel NormalCase(SwitchStat sw) :
 		":"
 	)
 	(
+	    LOOKAHEAD({ !oneOfLA(KW_CASE, KW_DEFAULT, OP_RBRACE) })
 		BlockStatement(Env.getSpacePtr(sw, "stats"))
 	)*
 	{ return c; }
@@ -2635,15 +2561,16 @@ CaseLabel PizzaCase(SwitchStat sw) :
 	"("
 	(	LOOKAHEAD({ getToken(1).kind != OP_RPAREN })
 		modifiers = Modifiers()
-		c.pattern += PizzaCaseFormalParameter(modifiers)
+		c.pattern += PatternParameter(modifiers)
 		(
 			","
 			modifiers = Modifiers()
-			c.pattern += PizzaCaseFormalParameter(modifiers)
+			c.pattern += PatternParameter(modifiers)
 		)*
 	)?
 	")" ":"
 	(
+	    LOOKAHEAD({ !oneOfLA(KW_CASE, KW_DEFAULT, OP_RBRACE) })
 		BlockStatement(Env.getSpacePtr(sw, "stats"))
 	)*
 	{ return c; }
@@ -2711,24 +2638,26 @@ LoopStat ForStatement() :
 	"for"
 	{ fs.pos = getToken(0).getPos(); }
 	"("
-		(	LOOKAHEAD( InBlockModifiersLA())
+	    LOOKAHEAD(0)
+		(
+    		LOOKAHEAD({ modifiersLA() || varDeclsLA() })
 			modifiers = Modifiers()
 			VarDecls(modifiers, Env.getSpacePtr(fs, "inits"))
 		|
-			LOOKAHEAD( Type() Name() )
-			VarDecls(new ASTModifiers(), Env.getSpacePtr(fs, "inits"))
-		|
+    		LOOKAHEAD({ !oneOfLA(OP_COLON, OP_SEMICOLON) })
 			fs.inits += Expression()
 			(
 				","
 				fs.inits += Expression()
 			)*
-		)?
+		|
+		    {}
+		)
 	(
 		":"
 		{
 			if (fs.inits.length != 1 || !(fs.inits[0] instanceof Var))
-				rpe("Bad for(:) deflaration",null);
+				rpe("Bad for(:) declaration",null);
 			ForEachStat fe = new ForEachStat();
 			fe.pos = fs.pos;
 			fe.var = (Var)fs.inits[0].detach();
@@ -2759,12 +2688,19 @@ ForEachStat ForEachStatement() :
 	"foreach"
 	{ st.pos = getToken(0).getPos(); }
 	"("
-		[
-			LOOKAHEAD( InBlockModifiersLA() | PizzaCaseFormalParameter() )
+	    LOOKAHEAD(0)
+		(
+    		LOOKAHEAD({ modifiersLA() || paramDeclLA() })
 			modifiers = Modifiers()
-			st.var = PizzaCaseFormalParameter(modifiers)
+			st.var = PatternParameter(modifiers)
 			";"
-		]
+		|
+            LOOKAHEAD({ getToken(1).image.equals("_") })
+			st.var = PatternParameter(null)
+			";"
+		|
+		    {}
+		)
 		st.container = Expression()
 		[
 			";"
@@ -2810,7 +2746,10 @@ BreakStat BreakStatement() :
 {
 	"break"
 	{ st.pos = getToken(0).getPos(); }
-    [ id = NameRef() { st.ident = id.name; } ] ";"
+    [
+        LOOKAHEAD({ identLA() })
+        id = NameRef() { st.ident = id.name; }
+    ] ";"
 	{ return st; }
 }
 
@@ -2819,7 +2758,10 @@ ContinueStat ContinueStatement() :
 {
 	"continue"
 	{ st.pos = getToken(0).getPos(); }
-    [ id = NameRef() { st.ident = id.name; } ] ";"
+    [
+        LOOKAHEAD({ identLA() })
+        id = NameRef() { st.ident = id.name; }
+    ] ";"
 	{ return st; }
 }
 
@@ -2882,8 +2824,9 @@ CatchInfo CatchInfo() :
 	"catch"
 	{ st.pos = getToken(0).getPos(); }
 	"("
+	    LOOKAHEAD(0)
 		modifiers = Modifiers()
-		st.arg = PizzaCaseFormalParameter(modifiers)
+		st.arg = PatternParameter(modifiers)
 	")"
 	st.body = Block()
 	{ return st; }

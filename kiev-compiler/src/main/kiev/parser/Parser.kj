@@ -22,6 +22,11 @@ public abstract class ParserBase {
 	public boolean			declMode = true;
 
 	public abstract Token getToken(int index);
+	public abstract Token getNextToken();
+	public abstract Token consume(int kind) throws ParseException;
+	public abstract boolean expect(int kind) throws ParseException;
+
+	private int laIndex = 0;
 
 	/** Report Parser Error (Exception) */
 	final void rpe(String msg, ParseError e) {
@@ -30,11 +35,11 @@ public abstract class ParserBase {
 		if( token==null ) pos = 0;
 		else if( token.next==null ) pos = (int)token.getPos();
 		else pos = (int)token.next.getPos();
-		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(curFileUnit, pos, msg, e);
-		} else {
+		//if( kiev.Kiev.debug ) {
+		//	kiev.Kiev.reportParserError(curFileUnit, pos, msg, e);
+		//} else {
 			kiev.Kiev.reportParserError(curFileUnit, pos, msg);
-		}
+		//}
 	}
 
 	/** Report other Error (Exception) */
@@ -76,7 +81,8 @@ public abstract class ParserBase {
 		else
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
-		modifiers.moveToNode(clazz);
+		if (modifiers != null)
+			modifiers.moveToNode(clazz);
 
 		return clazz;
 	}
@@ -120,18 +126,19 @@ public abstract class ParserBase {
 	final Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
 		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
-		modifiers.moveToNode(meth);
+		if (modifiers != null)
+			modifiers.moveToNode(meth);
 		return meth;
 	}
 
 	final Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		Method meth;
-		if (modifiers.isGetter()) {
+		if (modifiers != null && modifiers.isGetter()) {
 			meth = new MethodGetter();
 			meth.sname = id.sname;
 			meth.type_ret = ret;
 		}
-		else if (modifiers.isSetter()) {
+		else if (modifiers != null && modifiers.isSetter()) {
 			meth = new MethodSetter();
 			meth.sname = id.sname;
 			meth.type_ret = ret;
@@ -140,14 +147,16 @@ public abstract class ParserBase {
 			meth = new MethodImpl(id.sname, ret, 0);
 		}
 		meth.pos = id.pos;
-		modifiers.moveToNode(meth);
+		if (modifiers != null)
+			modifiers.moveToNode(meth);
 		return meth;
 	}
 
 	final RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		RuleMethod meth = new RuleMethod(id.sname, 0);
 		meth.pos = id.pos;
-		modifiers.moveToNode(meth);
+		if (modifiers != null)
+			modifiers.moveToNode(meth);
 		return meth;
 	}
 
@@ -156,7 +165,8 @@ public abstract class ParserBase {
 			tp = new TypeDeclRef();
 		Field f = new Field(id.sname, tp, 0);
 		f.pos = id.pos;
-		modifiers.copyToNode(f);
+		if (modifiers != null)
+			modifiers.copyToNode(f);
 		f.init = init;
 		return f;
 	}
@@ -165,7 +175,8 @@ public abstract class ParserBase {
 		Field f = new Field(id.sname,new TypeDeclRef(),0);
 		f.mflags_is_enum = true;
 		f.pos = id.pos;
-		modifiers.moveToNode(f);
+		if (modifiers != null)
+			modifiers.moveToNode(f);
 		f.setPublic();
 		f.setStatic(true);
 		f.setFinal(true);
@@ -175,7 +186,8 @@ public abstract class ParserBase {
 	final Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		Field f = new Field(id.sname,tp,0|AccessFlags.ACC_PUBLIC);
 		f.pos = id.pos;
-		modifiers.moveToNode(f);
+		if (modifiers != null)
+			modifiers.moveToNode(f);
 		return f;
 	}
 
@@ -183,7 +195,8 @@ public abstract class ParserBase {
 		if (tp == null)
 			tp = new TypeDeclRef();
 		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
-		modifiers.copyToNode(v);
+		if (modifiers != null)
+			modifiers.copyToNode(v);
 		return v;
 	}
 
@@ -191,7 +204,8 @@ public abstract class ParserBase {
 		if (!first)
 			tp = new Copier().copyFull(tp);
 		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
-		modifiers.copyToNode(v);
+		if (modifiers != null)
+			modifiers.copyToNode(v);
 		return v;
 	}
 
@@ -199,20 +213,23 @@ public abstract class ParserBase {
 		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, 0);
 		if (st != null)
 			v.stype = st;
-		modifiers.moveToNode(v);
+		if (modifiers != null)
+			modifiers.moveToNode(v);
 		return v;
 	}
 
 	final LVar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
 		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, AccessFlags.ACC_FINAL);
-		modifiers.moveToNode(v);
+		if (modifiers != null)
+			modifiers.moveToNode(v);
 		return v;
 	}
 
 	final	Initializer mkInitializer(long pos, ASTModifiers modifiers) {
 		Initializer init = new Initializer();
 		init.pos = pos;
-		modifiers.moveToNode(init);
+		if (modifiers != null)
+			modifiers.moveToNode(init);
 		return init;
 	}
 
@@ -336,6 +353,330 @@ public abstract class ParserBase {
 		}
 		te.pos = op.getPos();
 		return te;
+	}
+
+	final boolean isIdentifier(Token t) {
+		if (t == null)
+			return false;
+		return t.kind == ParserConstants.IDENTIFIER ||t.kind == ParserConstants.ESC_IDENTIFIER ||t.kind == ParserConstants.HID_IDENTIFIER;
+	}
+
+	final boolean identLA() {
+		Token t = getToken(1);
+		return isIdentifier(t);
+	}
+
+	final boolean patternCaseLA() {
+		laIndex = 0;
+		Token t = getToken(++laIndex);
+		if (t.kind != ParserConstants.KW_CASE)
+			return false;
+		t = getToken(++laIndex);
+		if (!isIdentifier(t))
+			return false;
+		for (;;) {
+			t = getToken(++laIndex);
+			if (t.kind == ParserConstants.OP_LPAREN)
+				return true;
+			if (t.kind != ParserConstants.OP_DOT)
+				return false;
+			t = getToken(++laIndex);
+			if (!isIdentifier(t))
+				return false;
+		}
+		return false;
+	}
+
+	final boolean typeLA() {
+		laIndex = 0;
+		return typeLA(0, false);
+	}
+	private boolean typeLA(int incrIndex, boolean complete) {
+		laIndex += incrIndex;
+		Token t = getToken(++laIndex);
+		if (t.kind == ParserConstants.OP_LPAREN)
+			return closureTypeLA(-1, complete);
+		if (!isIdentifier(t))
+			return false;
+
+		int saveIndex = laIndex;
+		if (pathTypeLA(-1))
+			return true;
+		laIndex = saveIndex;
+
+		for (;;) {
+			t = getToken(++laIndex);
+			switch (t.kind) {
+			case ParserConstants.OP_DOT:
+				t = getToken(++laIndex);
+				if (!isIdentifier(t))
+					return false;
+				continue;
+			case ParserConstants.OP_LT:
+			case ParserConstants.OP_LANGLE:
+				if (!typeArgsLA(-1, true))
+					return false;
+				continue;
+			case ParserConstants.OP_LRBRACKETS:
+			case ParserConstants.OP_AT:
+			case ParserConstants.OP_SHARP:
+			case ParserConstants.OP_SUPERSCRIPT_PLUS:
+			case ParserConstants.OP_SUPERSCRIPT_MINUS:
+			case ParserConstants.OPERATOR:
+				continue;
+			default:
+				laIndex -= 1;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean typeArgsLA(int incrIndex, boolean complete) {
+		laIndex += incrIndex;
+		Token t = getToken(++laIndex);
+		if (!(t.kind == ParserConstants.OP_LT || t.kind == ParserConstants.OP_LANGLE))
+			return false;
+		boolean waitComma = false;
+		for (;;) {
+			t = getToken(++laIndex);
+			if (t.kind == ParserConstants.OP_GT || t.kind == ParserConstants.OP_RANGLE)
+				return true;
+			if (waitComma) {
+				waitComma = false;
+				if (t.kind == ParserConstants.OP_COMMA)
+					continue;
+				return false;
+			} else {
+				if (!typeArgLA(-1, true))
+					return false;
+				waitComma = true;
+			}
+		}
+		return false;
+	}
+
+	private boolean typeArgLA(int incrIndex, boolean complete) {
+		laIndex += incrIndex;
+		Token t = getToken(++laIndex);
+		if (t.kind == ParserConstants.OPERATOR || "?".equals(t.image)) {
+			if (!complete)
+				return true;
+			t = getToken(++laIndex);
+			if (t.kind == ParserConstants.KW_EXTENDS)
+				return typeLA(0, true);
+			if ("super".equals(t.image))
+				return typeLA(0, true);
+			return false;
+		}
+		return typeLA(-1, complete);
+	}
+
+	final boolean pathTypeLA() {
+		laIndex = 0;
+		return pathTypeLA(0);
+	}
+	private boolean pathTypeLA(int incrIndex) {
+		laIndex += incrIndex;
+		Token t = getToken(++laIndex);
+		if (!isIdentifier(t))
+			return false;
+		for (;;) {
+			t = getToken(++laIndex);
+			if (t.kind != ParserConstants.OP_DOT)
+				return false;
+			t = getToken(++laIndex);
+			if (t.kind == ParserConstants.KW_TYPE)
+				return true;
+			if (!isIdentifier(t))
+				return false;
+		}
+		return false;
+	}
+
+	final boolean closureTypeLA() {
+		laIndex = 0;
+		return closureTypeLA(0, false);
+	}
+	private boolean closureTypeLA(int incrIndex, boolean complete) {
+		laIndex += incrIndex;
+		Token t = getToken(++laIndex);
+		if (t.kind != ParserConstants.OP_LPAREN)
+			return false;
+		for (;;) {
+			t = getToken(++laIndex);
+			if (t.kind == ParserConstants.OP_COMMA)
+				continue;
+			if (t.kind == ParserConstants.OP_RPAREN) {
+				t = getToken(++laIndex);
+				if (t.kind != ParserConstants.OP_ARROW)
+					return false;
+				if (!complete)
+					return true;
+				return typeLA(0, complete);
+			}
+			if (!typeLA(-1, true))
+				return false;
+		}
+		return false;
+	}
+
+	final boolean varDeclsLA() {
+		laIndex = 0;
+		if (!typeLA(0, true))
+			return false;
+		if (!nameLA(0))
+			return false;
+		Token t = getToken(++laIndex);
+		switch (t.kind) {
+		case ParserConstants.OP_ASSIGN:
+		case ParserConstants.OP_COMMA:
+		case ParserConstants.OP_COLON:
+		case ParserConstants.OP_SEMICOLON:
+		case ParserConstants.OP_LRBRACKETS:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	final boolean paramDeclLA() {
+		laIndex = 0;
+		if (!typeLA(0, true))
+			return false;
+		if (!nameLA(0))
+			return false;
+		return true;
+	}
+
+	final boolean typeLA() {
+		laIndex = 0;
+		return typeLA(0, false);
+	}
+
+	private boolean nameLA(int incrIndex) {
+		laIndex += incrIndex;
+		Token t = getToken(++laIndex);
+		return isIdentifier(t);
+	}
+
+	final boolean oneOfLA(int kind1) {
+		Token t = getToken(1);
+		return t.kind == kind1;
+	}
+
+	final boolean oneOfLA(int kind1, int kind2) {
+		Token t = getToken(1);
+		return t.kind == kind1 || t.kind == kind2;
+	}
+
+	final boolean oneOfLA(int kind1, int kind2, int kind3) {
+		Token t = getToken(1);
+		return t.kind == kind1 || t.kind == kind2 || t.kind == kind3;
+	}
+
+	final boolean oneOfLA(int kind1, int kind2, int kind3, int kind4) {
+		Token t = getToken(1);
+		return t.kind == kind1 || t.kind == kind2 || t.kind == kind3 || t.kind == kind4;
+	}
+
+	final boolean oneOfLA(int kind1, int kind2, int kind3, int kind4, int kind5) {
+		Token t = getToken(1);
+		return t.kind == kind1 || t.kind == kind2 || t.kind == kind3 || t.kind == kind4 || t.kind == kind5;
+	}
+
+	final boolean oneOfLA(int kind1, int kind2, int kind3, int kind4, int kind5, int kind6) {
+		Token t = getToken(1);
+		return t.kind == kind1 || t.kind == kind2 || t.kind == kind3 || t.kind == kind4 || t.kind == kind5 || t.kind == kind6;
+	}
+
+	final boolean modifiersLA() {
+		Token t = getToken(1);
+		switch (t.kind) {
+		case ParserConstants.OP_AT:
+		case ParserConstants.META_ACCESS1:
+		case ParserConstants.META_PUBLIC:
+		case ParserConstants.META_PROTECTED:
+		case ParserConstants.META_PRIVATE:
+		case ParserConstants.META_SINGLETON:
+		case ParserConstants.META_MIXIN:
+		case ParserConstants.META_FORWARD:
+		case ParserConstants.META_UNERASABLE:
+		case ParserConstants.META_VIRTUAL:
+		case ParserConstants.META_MACRO:
+		case ParserConstants.KW_STATIC:
+		case ParserConstants.META_STATIC:
+		case ParserConstants.KW_ABSTRACT:
+		case ParserConstants.META_ABSTRACT:
+		case ParserConstants.KW_FINAL:
+		case ParserConstants.META_FINAL:
+		case ParserConstants.META_NATIVE:
+		case ParserConstants.META_SYNCHRONIZED:
+		case ParserConstants.META_TRANSIENT:
+		case ParserConstants.META_VOLATILE:
+		case ParserConstants.META_PACKED:
+		case ParserConstants.META_THROWS:
+		case ParserConstants.META_UUID:
+		case ParserConstants.META_GETTER:
+		case ParserConstants.META_SETTER:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	private String getIdentName(Token t) throws ParseException {
+		switch (t.kind) {
+		case ParserConstants.IDENTIFIER:
+			return t.image;
+		case ParserConstants.ESC_IDENTIFIER:
+			return ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1));;
+		case ParserConstants.HID_IDENTIFIER:
+			return ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+		default:
+			throw new ParseException("Token is not an identifier");
+		}
+	}
+
+	final EToken parseIdentifierExpr() throws ParseException {
+		Token t = getNextToken();
+		String name = null;
+		switch (t.kind) {
+		case ParserConstants.IDENTIFIER:
+		case ParserConstants.ESC_IDENTIFIER:
+		case ParserConstants.HID_IDENTIFIER:
+			return new EToken(t.getPos(), getIdentName(t), ETokenKind.MAYBE_IDENTIFIER);
+		default:
+			throw new ParseException("SymbolRef (identifier) expected");
+		}
+	}
+
+	final SymbolRef parseSymbolRef() throws ParseException {
+		Token t = getNextToken();
+		String name = null;
+		switch (t.kind) {
+		case ParserConstants.IDENTIFIER:
+		case ParserConstants.ESC_IDENTIFIER:
+		case ParserConstants.HID_IDENTIFIER:
+			return new SymbolRef(t.getPos(), getIdentName(t));
+		default:
+			throw new ParseException("SymbolRef (identifier) expected");
+		}
+	}
+
+	final SymbolRef parseQualifiedSymbolRef() throws ParseException {
+		SymbolRef id = parseSymbolRef();
+		for (;;) {
+			Token t_dot = getToken(1);
+			if (t_dot.kind != ParserConstants.OP_DOT)
+				return id;
+			Token t_id = getToken(2);
+			if (!isIdentifier(t_id))
+				return id;
+			consume(t_dot.kind);
+			consume(t_id.kind);
+			id.name = id.name + '·' + getIdentName(t_id); // '\u00b7'
+		}
 	}
 }
 
