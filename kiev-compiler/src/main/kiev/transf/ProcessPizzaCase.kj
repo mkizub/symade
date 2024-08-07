@@ -126,7 +126,7 @@ public final class PizzaME_PreGenerate extends BackendProcessor {
 		if( clazz.isPizzaCase() ) {
 			PizzaCase pcase = (PizzaCase)clazz;
 			Field ftag = clazz.addField(new Field(
-				nameCaseTag,tenv.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
+					nameCaseTag,tenv.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
 			ftag.init = new ConstIntExpr(pcase.tag);
 
 			Method gettag = new MethodImpl(nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);

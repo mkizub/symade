@@ -24,8 +24,8 @@ public abstract class LoopStat extends ENode {
 	@nodeAttr(copyable=false)	public Label		lblbrk;
 
 	protected LoopStat() {
-		lblcnt = new Label();
-		lblbrk = new Label();
+		lblcnt = new Label(null, getContext());
+		lblbrk = new Label(null, getContext());
 	}
 
 	public final boolean isBreakTarget() {
@@ -41,6 +41,10 @@ public final class Label extends DNode {
 
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false)	public ASTNode∅		links;
+
+	public Label(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
 	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		verifyMetas();
@@ -108,10 +112,10 @@ public final class Label extends DNode {
 public class WhileStat extends LoopStat {
 
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
-	@DataFlowDefinition(in="this:in", links="body")		Label		lblcnt;
-	@DataFlowDefinition(in="lblcnt")						ENode		cond;
-	@DataFlowDefinition(in="cond:true")					ENode		body;
-	@DataFlowDefinition(in="cond:false")					Label		lblbrk;
+	@DataFlowDefinition(in="this:in", links="body") Label lblcnt;
+	@DataFlowDefinition(in="lblcnt")                ENode cond;
+	@DataFlowDefinition(in="cond:true")             ENode body;
+	@DataFlowDefinition(in="cond:false")            Label lblbrk;
 	}
 
 	@nodeAttr public ENode		cond;
@@ -131,10 +135,10 @@ public class WhileStat extends LoopStat {
 public class DoWhileStat extends LoopStat {
 
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
-	@DataFlowDefinition(in="this:in", links="cond:true")	ENode		body;
-	@DataFlowDefinition(in="body")							Label		lblcnt;
-	@DataFlowDefinition(in="lblcnt")							ENode		cond;
-	@DataFlowDefinition(in="cond:false")						Label		lblbrk;
+	@DataFlowDefinition(in="this:in", links="cond:true") ENode body;
+	@DataFlowDefinition(in="body")                       Label lblcnt;
+	@DataFlowDefinition(in="lblcnt")                     ENode cond;
+	@DataFlowDefinition(in="cond:false")                 Label lblbrk;
 	}
 
 	@nodeAttr public ENode		cond;
@@ -154,12 +158,12 @@ public class DoWhileStat extends LoopStat {
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
-	@DataFlowDefinition(in="this:in", seq="true")		ASTNode[]	inits;
-	@DataFlowDefinition(in="inits", links="iter")		ENode		cond;
-	@DataFlowDefinition(in="cond:true")				ENode		body;
-	@DataFlowDefinition(in="body")						Label		lblcnt;
-	@DataFlowDefinition(in="lblcnt")					ENode		iter;
-	@DataFlowDefinition(in="cond:false")				Label		lblbrk;
+	@DataFlowDefinition(in="this:in", seq="true") ASTNode[]	inits;
+	@DataFlowDefinition(in="inits", links="iter") ENode cond;
+	@DataFlowDefinition(in="cond:true")           ENode body;
+	@DataFlowDefinition(in="body")                Label lblcnt;
+	@DataFlowDefinition(in="lblcnt")              ENode iter;
+	@DataFlowDefinition(in="cond:false")          Label lblbrk;
 	}
 
 	@nodeAttr public ASTNode∅	inits;
@@ -189,18 +193,18 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	@DataFlowDefinition(out="lblbrk") private static class DFI {
-	@DataFlowDefinition(in="this:in")						ENode		container;
-	@DataFlowDefinition(in="this:in")						Var			var;
-	@DataFlowDefinition(in="var")							Var			iter;
-	@DataFlowDefinition(in="iter")							Var			iter_array;
-	@DataFlowDefinition(in="iter_array")						ENode		iter_init;
-	@DataFlowDefinition(in="iter_init", links="iter_incr")	ENode		iter_cond;
-	@DataFlowDefinition(in="iter_cond:true")					ENode		var_init;
-	@DataFlowDefinition(in="var_init")						ENode		cond;
-	@DataFlowDefinition(in="cond:true")						ENode		body;
-	@DataFlowDefinition(in="body", links="cond:false")		Label		lblcnt;
-	@DataFlowDefinition(in="lblcnt")							ENode		iter_incr;
-	@DataFlowDefinition(in="iter_cond:false")				Label		lblbrk;
+	@DataFlowDefinition(in="this:in")                       ENode container;
+	@DataFlowDefinition(in="this:in")                       Var   var;
+	@DataFlowDefinition(in="var")                           Var   iter;
+	@DataFlowDefinition(in="iter")                          Var   iter_array;
+	@DataFlowDefinition(in="iter_array")                    ENode iter_init;
+	@DataFlowDefinition(in="iter_init", links="iter_incr")  ENode iter_cond;
+	@DataFlowDefinition(in="iter_cond:true")                ENode var_init;
+	@DataFlowDefinition(in="var_init")                      ENode cond;
+	@DataFlowDefinition(in="cond:true")                     ENode body;
+	@DataFlowDefinition(in="body", links="cond:false")      Label lblcnt;
+	@DataFlowDefinition(in="lblcnt")                        ENode iter_incr;
+	@DataFlowDefinition(in="iter_cond:false")               Label lblbrk;
 	}
 
 	public static final int	ARRAY = 0;

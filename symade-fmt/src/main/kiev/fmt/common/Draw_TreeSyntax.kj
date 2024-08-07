@@ -10,6 +10,7 @@ import kiev.parser.Opdef;
 import kiev.stdlib.Arrays;
 import kiev.vlang.*;
 import kiev.vtree.*;
+import kiev.WorkerThread;
 
 public class Draw_TreeSyntax extends Draw_ATextSyntax {
 	private static final long serialVersionUID = -6892135597834558696L;
@@ -21,12 +22,13 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 	protected Draw_Paragraph plIndented;
 
 	public Draw_TreeSyntax() {
-		SpaceInfo siSp = new SpaceInfo("sp", SP_SPACE, 1,  4);
-		SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
-		SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
-		SyntaxElemFormatDecl sefdSpNo = new SyntaxElemFormatDecl("fmt-sp-no");
-		SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
-		SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
+		ANodeContext context = ((WorkerThread)Thread.currentThread()).semantic_context;
+		SpaceInfo siSp = new SpaceInfo(null,context, "sp", SP_SPACE, 1,  4);
+		SpaceInfo siNl = new SpaceInfo(null,context, "nl", SP_NEW_LINE, 1,  1);
+		SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl(null,context, "fmt-default");
+		SyntaxElemFormatDecl sefdSpNo = new SyntaxElemFormatDecl(null,context, "fmt-sp-no");
+		SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl(null,context, "fmt-nl-nl");
+		SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl(null,context, "fmt-no-nl");
 
 		sefdSpNo.addVal(sefdSpNo.getAttrSlot("spaces"), new SpaceCmd(siSp, SP_ADD, SP_NOP));
 		sefdNlNl.addVal(sefdNlNl.getAttrSlot("spaces"), new SpaceCmd(siNl, SP_ADD, SP_ADD));

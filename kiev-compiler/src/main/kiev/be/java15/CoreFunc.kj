@@ -38,15 +38,15 @@ public abstract class BEndFunc implements BEndOperation {
 //		coreFuncs.put("kiev.stdlib.boolean:bool_not",       BoolBoolNOT);
 
 		coreFuncs.put("kiev.stdlib.char:assign",            new AssignFunc());
-		
+
 		coreFuncs.put("kiev.stdlib.byte:assign",            new AssignFunc());
 		coreFuncs.put("kiev.stdlib.byte:positive",          new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.byte:negative",          new UnaryOpFunc(Instr.op_ineg));
-		
+
 		coreFuncs.put("kiev.stdlib.short:assign",           new AssignFunc());
 		coreFuncs.put("kiev.stdlib.short:positive",         new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.short:negative",         new UnaryOpFunc(Instr.op_ineg));
-		
+
 		coreFuncs.put("kiev.stdlib.int:assign",             new AssignFunc());
 		coreFuncs.put("kiev.stdlib.int:assign_bit_or",      new AssignWithOpFunc(Instr.op_ior));
 		coreFuncs.put("kiev.stdlib.int:assign_bit_xor",     new AssignWithOpFunc(Instr.op_ixor));
@@ -83,7 +83,7 @@ public abstract class BEndFunc implements BEndOperation {
 		coreFuncs.put("kiev.stdlib.int:pre_decr",           new IntPreIncrFunc(Instr.op_iadd, -1));
 		coreFuncs.put("kiev.stdlib.int:post_incr",          new IntPostIncrFunc(Instr.op_iadd, 1));
 		coreFuncs.put("kiev.stdlib.int:post_decr",          new IntPostIncrFunc(Instr.op_iadd, -1));
-		
+
 		coreFuncs.put("kiev.stdlib.long:assign",            new AssignFunc());
 		coreFuncs.put("kiev.stdlib.long:assign_bit_or",     new AssignWithOpFunc(Instr.op_lor));
 		coreFuncs.put("kiev.stdlib.long:assign_bit_xor",    new AssignWithOpFunc(Instr.op_lxor));
@@ -120,7 +120,7 @@ public abstract class BEndFunc implements BEndOperation {
 		coreFuncs.put("kiev.stdlib.long:pre_decr",          new LongPreIncrFunc(Instr.op_ladd, -1));
 		coreFuncs.put("kiev.stdlib.long:post_incr",         new LongPostIncrFunc(Instr.op_ladd, 1));
 		coreFuncs.put("kiev.stdlib.long:post_decr",         new LongPostIncrFunc(Instr.op_ladd, -1));
-		
+
 		coreFuncs.put("kiev.stdlib.float:assign",           new AssignFunc());
 		coreFuncs.put("kiev.stdlib.float:assign_add",       new AssignWithOpFunc(Instr.op_fadd));
 		coreFuncs.put("kiev.stdlib.float:assign_sub",       new AssignWithOpFunc(Instr.op_fsub));
@@ -140,7 +140,7 @@ public abstract class BEndFunc implements BEndOperation {
 		coreFuncs.put("kiev.stdlib.float:mod",              new BinaryOpFunc(Instr.op_frem));
 		coreFuncs.put("kiev.stdlib.float:positive",         new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.float:negative",         new UnaryOpFunc(Instr.op_fneg));
-		
+
 		coreFuncs.put("kiev.stdlib.double:assign",          new AssignFunc());
 		coreFuncs.put("kiev.stdlib.double:assign_add",      new AssignWithOpFunc(Instr.op_dadd));
 		coreFuncs.put("kiev.stdlib.double:assign_sub",      new AssignWithOpFunc(Instr.op_dsub));
@@ -168,9 +168,11 @@ public abstract class BEndFunc implements BEndOperation {
 		}
 		return coreFuncs.size();
 	}
-	
+
+	final BackendNodeContext beCtx() { ((WorkerThread)Thread.currentThread()).bend_context }
+
 	public abstract void generate(Code code, Type reqType, JENode expr);
-	
+
 	final JENode[] getJArgs(JENode expr) {
 		ENode[] args = expr.vn().getEArgs();
 		JENode[] jargs = new JENode[args.length];
@@ -178,7 +180,7 @@ public abstract class BEndFunc implements BEndOperation {
 			jargs[i] = (JENode)args[i];
 		return jargs;
 	}
-	
+
 
 static final class UnimplementedFunc extends BEndFunc {
 	public void generate(Code code, Type reqType, JENode expr) {

@@ -24,8 +24,15 @@ public class SyntaxExprTemplate extends ASyntaxElemDecl {
 	@nodeAttr public SyntaxToken		r_paren;
 	@nodeAttr public SyntaxToken∅		operators;
 
-	public SyntaxExprTemplate() {
-		super(new SyntaxNode());
+	public SyntaxExprTemplate(AHandle handle, ANodeContext context) {
+		super(handle, context, new SyntaxNode());
+		this.l_paren = new SyntaxToken("(");
+		this.bad_op = new SyntaxToken("\u25d9");
+		this.r_paren = new SyntaxToken(")");
+	}
+
+	public SyntaxExprTemplate(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
 		this.l_paren = new SyntaxToken("(");
 		this.bad_op = new SyntaxToken("\u25d9");
 		this.r_paren = new SyntaxToken(")");

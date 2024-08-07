@@ -592,7 +592,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 		LangDecl ld = allLangs.get(s.qname());
 		if (ld != null)
 			return ld;
-		ld = new LangDecl();
+		ld = new LangDecl(null, s.getContext());
 		ld.sname = "lang"+s.sname;
 		allLangs.put(s.qname(), ld);
 		return ld;

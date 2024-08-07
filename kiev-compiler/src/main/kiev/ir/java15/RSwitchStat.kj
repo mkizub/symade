@@ -128,7 +128,7 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 			Block bl = new Block(cas.pos);
 			foreach (ASTNode n; ((SwitchStat)this).stats.delToArray(); !(n instanceof CaseLabel))
 				bl.stats += n;
-			bl.lblbrk = new Label(); // make a break target
+			bl.lblbrk = new Label(null, bl.getContext()); // make a break target
 			if( cas.val == null ) {
 				bl.stats.insert(0,new ExprStat(sel.pos,~sel));
 				this.replaceWithNodeResolve(env, env.tenv.tpVoid, bl);
@@ -152,7 +152,7 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 		setResolved(true);
 	}
 
-	static void getThrowForMethodAbrupted(SwitchStat sw, Env env) {	
+	static void getThrowForMethodAbrupted(SwitchStat sw, Env env) {
 		if (sw.isMethodAbrupted() && sw.defCase==null) {
 			CaseLabel dflt = new CaseLabel(sw.pos,null);
 			sw.stats.insert(0,dflt);
@@ -164,7 +164,7 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 			resolveENode(thrw,env.tenv.tpVoid,env);
 		}
 	}
-	
+
 }
 
 @ViewOf(vcast=true)

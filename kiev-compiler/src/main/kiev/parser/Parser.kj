@@ -230,13 +230,19 @@ public abstract class ParserBase {
 	}
 
 	final	Initializer mkInitializer(long pos, ASTModifiers modifiers) {
-		Initializer init = new Initializer();
+		Initializer init = new Initializer(null,syntaxContext);
 		init.pos = pos;
 		if (modifiers != null)
 			modifiers.moveToNode(init);
 		return init;
 	}
 
+	final	WBCCondition mkWBCCondition(long pos, WBCType wbcType) {
+		WBCCondition wbc = new WBCCondition(null,syntaxContext);
+		wbc.pos = pos;
+		wbc.cond = WBCType.CondEnsure;
+		return wbc;
+	}
 
 	final ENode mkNotExpr(EToken not, ENode cond) {
 		cond.setPrimaryExpr(true);

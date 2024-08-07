@@ -32,7 +32,7 @@ public final class JCaseLabel extends JENode {
 			return (JCaseLabel)jn;
 		return new JCaseLabel(impl);
 	}
-	
+
 	protected JCaseLabel(CaseLabel impl) {
 		super(impl);
 		if (impl.val != null) {
@@ -44,7 +44,7 @@ public final class JCaseLabel extends JENode {
 				case_value = (int)((Character)v).charValue();
 		}
 	}
-	
+
 	public CodeLabel getLabel(Code code) {
 		if (case_label == null || case_label.code != code)
 			case_label = code.newLabel();
@@ -115,7 +115,7 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 			return JMatchStat.attach((MatchStat)impl);
 		return new JSwitchStat(impl);
 	}
-	
+
 	protected JSwitchStat(SwitchStat impl) {
 		super(impl);
 	}
@@ -125,14 +125,14 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 	//public:ro	JCaseLabel			defCase;
 	//public:ro	JENode				sel_to_int;
 	//public:ro	JLabel				lblcnt;
-	
+
 	CodeSwitch code_switch;
 
 	public JLabel getBrkLabel() {
 		SwitchStat vn = vn();
 		Label lblbrk = vn.lblbrk;
 		if (lblbrk == null)
-			vn.lblbrk = lblbrk = new Label();
+			vn.lblbrk = lblbrk = new Label(null, getContext());
 		return (JLabel)lblbrk;
 	}
 
@@ -140,7 +140,7 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 		SwitchStat vn = vn();
 		Label lblcnt = vn.lblcnt;
 		if (lblcnt == null)
-			vn.lblcnt = lblcnt = new Label();
+			vn.lblcnt = lblcnt = new Label(null, getContext());
 		return (JLabel)lblcnt;
 	}
 
@@ -149,7 +149,7 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 
 		SwitchStat vn = vn();
 		SwitchInfo si = makeSwitchInfo(code, this);
-		
+
 		try {
 			((JENode)vn.sel).generate(code,null);
 			getCntLabel().generate(code,null);
@@ -200,7 +200,7 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 
 		return si;
 	}
-	
+
 	/** sort (int) arrays of keys and values
 	 */
 	static void qsort(int[] keys, int lo, int hi) {
@@ -247,7 +247,7 @@ public final class JSwitchEnumStat extends JSwitchStat {
 			return (JSwitchEnumStat)jn;
 		return new JSwitchEnumStat(impl);
 	}
-	
+
 	protected JSwitchEnumStat(SwitchEnumStat impl) {
 		super(impl);
 	}
@@ -258,7 +258,7 @@ public final class JSwitchEnumStat extends JSwitchStat {
 
 		SwitchEnumStat vn = vn();
 		SwitchInfo si = makeSwitchInfo(code, this);
-		
+
 		((JENode)vn.sel).generate(code,null);
 		getCntLabel().generate(code,null);
 		((JENode)vn.sel_to_int).generate(code,null);
@@ -295,7 +295,7 @@ public final class JSwitchTypeStat extends JSwitchStat {
 			return (JSwitchTypeStat)jn;
 		return new JSwitchTypeStat(impl);
 	}
-	
+
 	protected JSwitchTypeStat(SwitchTypeStat impl) {
 		super(impl);
 	}
@@ -306,7 +306,7 @@ public final class JSwitchTypeStat extends JSwitchStat {
 
 		SwitchStat vn = vn();
 		SwitchInfo si = makeSwitchInfo(code, this);
-		
+
 		try {
 			((JENode)vn.sel).generate(code,null);
 			getCntLabel().generate(code,null);
@@ -342,7 +342,7 @@ public final class JMatchStat extends JSwitchStat {
 			return (JMatchStat)jn;
 		return new JMatchStat(impl);
 	}
-	
+
 	protected JMatchStat(MatchStat impl) {
 		super(impl);
 	}
@@ -354,7 +354,7 @@ public final class JMatchStat extends JSwitchStat {
 
 		MatchStat vn = vn();
 		SwitchInfo si = makeSwitchInfo(code, this);
-		
+
 		try {
 			((JENode)vn.sel).generate(code,null);
 			getCntLabel().generate(code,null);
@@ -405,12 +405,12 @@ public class JCatchInfo extends JENode {
 			return (JCatchInfo)jn;
 		return new JCatchInfo(impl);
 	}
-	
+
 	protected JCatchInfo(CatchInfo impl) {
 		super(impl);
 		arg = (JVar)impl.arg;
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		CatchInfo vn = vn();
 		JENode body = (JENode)vn.body;
@@ -454,7 +454,7 @@ public class JFinallyInfo extends JENode {
 	public CodeLabel handler;
 	public CodeCatchInfo code_catcher;
 	public CodeLabel subr_label;
-	
+
 	public static JFinallyInfo attach(FinallyInfo impl)
 		operator "new T"
 		operator "( T ) V"
@@ -466,12 +466,12 @@ public class JFinallyInfo extends JENode {
 			return (JFinallyInfo)jn;
 		return new JFinallyInfo(impl);
 	}
-	
+
 	protected JFinallyInfo(FinallyInfo impl) {
 		super(impl);
 		ret_arg = (JVar)impl.ret_arg;
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		FinallyInfo vn = vn();
 		JENode body = (JENode)vn.body;
@@ -527,13 +527,13 @@ public final class JTryStat extends JENode {
 			return (JTryStat)jn;
 		return new JTryStat(impl);
 	}
-	
+
 	protected JTryStat(TryStat impl) {
 		super(impl);
 		catchers = JNode.toJArray<JCatchInfo>(impl.catchers);
 		finally_catcher = (JFinallyInfo)impl.finally_catcher;
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		TryStat vn = vn();
 		JENode body = (JENode)vn.body;
@@ -629,12 +629,12 @@ public final class JSynchronizedStat extends JENode {
 			return (JSynchronizedStat)jn;
 		return new JSynchronizedStat(impl);
 	}
-	
+
 	protected JSynchronizedStat(SynchronizedStat impl) {
 		super(impl);
 		expr_var = (JVar)impl.expr_var;
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		SynchronizedStat vn = vn();
 		JENode expr = (JENode)vn.expr;
@@ -703,11 +703,11 @@ public final class JWithStat extends JENode {
 			return (JWithStat)jn;
 		return new JWithStat(impl);
 	}
-	
+
 	protected JWithStat(WithStat impl) {
 		super(impl);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		CodeLabel end_label = code.newLabel();
 		WithStat vn = vn();

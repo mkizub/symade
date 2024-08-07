@@ -134,7 +134,7 @@ public class ImportMethod extends Import implements Constants, ScopeOfMethods {
 			Kiev.reportError(this,"Scope "+dn+" has no methods");
 			return false;
 		}
-		
+
 		int i = 0;
 		Type[] types;
 		if( args.length > 0 && args[0].getType(env) ≡ env.tenv.tpRule) {
@@ -285,11 +285,11 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeRef			dtype;
-	
+
 	@AttrBinDumpInfo(ignore=true)
 	@abstract
 	@nodeData public String				op;
-	
+
 	@getter public String get$op() {
 		String sname = this.sname;
 		if (sname == null || !sname.startsWith("T "))
@@ -302,19 +302,25 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 		else
 			this.sname = "T "+val;
 	}
-	
-	public TypeOpDef() {}
-	
+
+	public TypeOpDef(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	public TypeOpDef(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
 	public Type getType(Env env) { return dtype.getType(env); }
-	
+
 	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return false; }
 
 	public void checkResolved(Env env) { dtype.getType(env).checkResolved(); }
-	
+
 	public Struct getStruct() {
 		return getType(Env.getEnv()).getStruct();
 	}
-	
+
 	public rule resolveNameR(ResInfo path) {
 		path.getPrevNode() == this.dtype,
 		path ?= path.env.tenv.tpTypeOpDefArg.definer

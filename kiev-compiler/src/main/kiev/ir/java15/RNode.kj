@@ -21,13 +21,14 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true)
 public view RNode of ASTNode extends Object implements Constants {
 	public String toString();
-	
+
 	public int			pos;
-	
+
 	public:ro @virtual @abstract ComplexTypeDecl	ctx_tdecl;
 	public:ro @virtual @abstract Method				ctx_method;
 
 	public final ANode parent();
+	public final ANodeContext getContext();
 	public AttrSlot[] values();
 	public final <N extends ANode> N replaceWithNode(N node, INode parent, AttrSlot slot);
 	public final ASTNode replaceWith(()->ASTNode fnode, INode parent, AttrSlot slot);
@@ -49,11 +50,11 @@ public view RNode of ASTNode extends Object implements Constants {
 	public static void resolveSNode(ANode node, Env env) {
 		((RSNode)(SNode)node).resolveDecl(env);
 	}
-	
+
 	public static void resolveDNode(ANode node, Env env) {
 		((RDNode)(DNode)node).resolveDecl(env);
 	}
-	
+
 	public static void resolveENode(ANode node, Type reqType, Env env) {
 		((RENode)(ENode)node).resolveENode(reqType,env);
 	}
@@ -86,7 +87,7 @@ public static view RDNode of DNode extends RNode {
 	public final boolean isAbstract();
 	public final boolean isMathStrict();
 	public final boolean isSynthetic();
-	
+
 	public final boolean isStructView();
 	public final boolean isTypeUnerasable();
 
@@ -111,13 +112,13 @@ public static view RDNode of DNode extends RNode {
 
 	public final boolean isMacro();
 	public final boolean isInterfaceOnly();
-	
+
 	public final int getFlags();
-	
+
 	public final void verifyMetas();
 	public final boolean hasRuntimeVisibleMetas();
 	public final boolean hasRuntimeInvisibleMetas();
-	
+
 	public void resolveDecl(Env env) { /* empty */ }
 }
 
@@ -127,7 +128,7 @@ public static view RENode of ENode extends RNode {
 	public		String			ident;
 	public		Symbol			symbol;
 	public:ro	DNode			dnode;
-	
+
 	//
 	// Expr specific
 	//
@@ -148,7 +149,7 @@ public static view RENode of ENode extends RNode {
 	//
 	// Statement specific flags
 	//
-	
+
 	// abrupted
 	public final boolean isAbrupted();
 	public final void setAbrupted(boolean on);
@@ -191,7 +192,7 @@ public static view RENode of ENode extends RNode {
 		}
 		resolveENode(node, reqType, env);
 	}
-	
+
 	public final void replaceWithNodeResolve(Env env, Type reqType, ENode node) {
 		assert(isAttached());
 		ENode self = (ENode)this;
@@ -225,7 +226,7 @@ public static view RENode of ENode extends RNode {
 		assert(n.isAttached());
 		do_resolve(null,n,env);
 	}
-	
+
 }
 
 @ViewOf(vcast=true)
@@ -242,7 +243,7 @@ public final view RNopExpr of NopExpr extends RENode {
 public final view RArgExpr of ArgExpr extends RENode {
 
 	public ENode			expr;
-	
+
 	public void resolveENode(Type reqType, Env env) {
 		setResolved(true);
 		resolveENode(expr,reqType,env);
@@ -258,7 +259,7 @@ public final view RTypeRef of TypeRef extends RENode {
 		else
 			getType(env); // calls resolving
 	}
-	
+
 	public void toExpr(Type reqType, Env env) {
 		Type st = getType(env);
 		TypeDecl s = st.meta_type.tdecl;

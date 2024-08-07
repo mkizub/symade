@@ -1404,7 +1404,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				RStruct.runResolveOn(init_stat,env);
 			} else {
 				if( agi.instance_init == null ) {
-					agi.instance_init = new Initializer();
+					agi.instance_init = new Initializer(null,getContext());
 					agi.instance_init.pos = f.init.pos;
 					agi.instance_init.body = new Block();
 					((Struct)this).members.add(agi.instance_init);
@@ -1436,7 +1436,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				agi.class_init.block.stats.insert(agi.static_pos++,init_stat);
 			} else {
 				if( agi.instance_init == null ) {
-					agi.instance_init = new Initializer();
+					agi.instance_init = new Initializer(null,getContext());
 					agi.instance_init.pos = init.pos;
 					agi.instance_init.body = new Block();
 					((Struct)this).members.add(agi.instance_init);

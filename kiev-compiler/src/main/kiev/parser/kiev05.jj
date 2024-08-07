@@ -1546,14 +1546,10 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers, TypeConstr[] args, Co
 }
 
 WBCCondition RequareDeclaration() :
-{ Symbol id; }
+{ Token t; Symbol id; }
 {
-	{
-		WBCCondition n = new WBCCondition();
-		//n.modifiers = modifiers;
-		n.cond = WBCType.CondRequire;
-	}
-	"require"
+	t = "require"
+	{ WBCCondition n = mkWBCCondition(t.getPos(), WBCType.CondRequire); }
 	(
 		LOOKAHEAD("[" <IDENTIFIER> "]" )
 		"[" id = Name() { n.sname = id.sname; } "]"
@@ -1571,14 +1567,10 @@ WBCCondition RequareDeclaration() :
 
 
 WBCCondition EnsureDeclaration() :
-{ Symbol id; }
+{ Token t; Symbol id; }
 {
-	{
-		WBCCondition n = new WBCCondition();
-		//n.modifiers = modifiers;
-		n.cond = WBCType.CondEnsure;
-	}
-	"ensure"
+	t = "ensure"
+	{ WBCCondition n = mkWBCCondition(t.getPos(), WBCType.CondEnsure); }
 	(
 		LOOKAHEAD("[" <IDENTIFIER> "]" )
 		"[" id = Name() { n.sname = id.sname; } "]"
@@ -1595,14 +1587,10 @@ WBCCondition EnsureDeclaration() :
 }
 
 WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
-{ Symbol id; }
+{ Token t; Symbol id; }
 {
-	{
-		WBCCondition n = new WBCCondition();
-		//n.modifiers = modifiers;
-		n.cond = WBCType.CondInvariant;
-	}
-	"invariant"
+	t = "invariant"
+	{ WBCCondition n = mkWBCCondition(t.getPos(), WBCType.CondInvariant); }
 	(
 		LOOKAHEAD("[" <IDENTIFIER> "]" )
 		"[" id = Name() { n.sname = id.sname; } "]"

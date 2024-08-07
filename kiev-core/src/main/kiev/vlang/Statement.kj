@@ -244,7 +244,7 @@ public class LabeledStat extends ENode {
 	@nodeAttr public ENode			stat;
 
 	public LabeledStat() {
-		this.lbl = new Label();
+		this.lbl = new Label(null, getContext());
 	}
 }
 

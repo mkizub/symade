@@ -952,6 +952,10 @@ public final class Initializer extends DNode {
 	@virtual @abstract
 	public:ro			Block			block;
 
+	public Initializer(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
 	@getter public final Block get$block()	{ return (Block)this.body; }
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -982,11 +986,15 @@ public final class WBCCondition extends DNode {
 	@nodeAttr public ENode				body;
 	@nodeData public Method				definer;
 
-	public WBCCondition() {}
-
-	public WBCCondition(long pos, WBCType cond, String name, ENode body) {
+	public WBCCondition(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+	public WBCCondition(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+	public WBCCondition(AHandle handle, ANodeContext context, long pos, WBCType cond, String name, ENode body) {
+		super(handle, context, new Symbol(name));
 		this.pos = pos;
-		this.sname = name;
 		this.cond = cond;
 		this.body = body;
 	}

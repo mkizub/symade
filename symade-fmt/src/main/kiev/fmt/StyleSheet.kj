@@ -27,12 +27,19 @@ public class StyleSheet extends DNode implements GlobalDNodeContainer, ExportSer
 
 	@nodeAttr
 	public ASTNode∅			members;
-	
+
 	@UnVersioned
 	protected Draw_StyleSheet compiled;
 
+	public StyleSheet(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+	public StyleSheet(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
 	public final ASTNode[] getContainerMembers() { this.members }
-	
+
 	public Object getDataToSerialize() {
 		return this.getCompiled().init();
 	}
@@ -59,7 +66,7 @@ public class StyleSheet extends DNode implements GlobalDNodeContainer, ExportSer
 		path.enterSuper() : path.leaveSuper(),
 		sup.dnode.resolveNameR(path)
 	}
-	
+
 	public Draw_StyleSheet getCompiled() {
 		if (compiled != null)
 			return compiled;
@@ -89,10 +96,12 @@ public final class DrawColor extends DNode {
 	@nodeAttr
 	public int rgb_color;
 
-	
-	public DrawColor() {}
-	public DrawColor(String name) {
-		this.sname = name;
+	public DrawColor(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	public DrawColor(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
 	}
 
 	public Draw_Color compile() {
@@ -105,10 +114,14 @@ public final class DrawFont extends DNode {
 	@nodeAttr
 	public String font_name;
 
-	public DrawFont() {}
-	public DrawFont(String font_name) {
-		this.sname = font_name;
-		this.font_name = font_name;
+	public DrawFont(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	public DrawFont(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+		if (symbol != null)
+			this.font_name = symbol.sname;
 	}
 
 	public Draw_Font compile() {
@@ -132,12 +145,19 @@ public enum SpaceAction {
 public class SpaceInfo extends DNode {
 	@nodeAttr SpaceKind		kind;
 	@nodeAttr SyntaxSize		size;
-	
-	public SpaceInfo() {
+
+	public SpaceInfo(AHandle handle, ANodeContext context) {
+		super(handle, context);
 		this.size = new SyntaxSize();
 	}
-	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
-		this.sname = name;
+
+	public SpaceInfo(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+		this.size = new SyntaxSize();
+	}
+
+	public SpaceInfo(AHandle handle, ANodeContext context, String name, SpaceKind kind, int text_size, int pixel_size) {
+		super(handle, context, new Symbol(name));
 		this.size = new SyntaxSize();
 		this.kind = kind;
 		this.size.unit = SyntaxSizeUnit.PIXELS;
@@ -161,13 +181,13 @@ public final class SpaceCmd extends ASTNode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public SpaceInfo⇑					si;
-	
+
 	@nodeAttr
 	public SpaceAction					action_before;
-	
+
 	@nodeAttr
 	public SpaceAction					action_after;
-	
+
 	public SpaceCmd() {
 		action_before = SP_NOP;
 		action_after = SP_NOP;
@@ -189,17 +209,25 @@ public final class SpaceCmd extends ASTNode {
 public final class SyntaxStyleDecl extends DNode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	public SyntaxStyleDecl⇑∅		fallback;
-	
+
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public DrawColor⇑				color;
-	
+
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public DrawFont⇑				font;
-	
+
 	@nodeAttr
 	public SpaceCmd∅				spaces;
+
+	public SyntaxStyleDecl(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	public SyntaxStyleDecl(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
 
 	public String[] getNames() {
 		Vector<String> names = new Vector<String>();
@@ -225,7 +253,7 @@ public final class SyntaxStyleDecl extends DNode {
 			style.color = this.color.dnode.compile();
 		if (this.font != null && this.font.dnode != null && this.font.dnode.font_name != null)
 			style.font = this.font.dnode.compile();
-		
+
 		foreach (SpaceCmd sc; spaces) {
 			LayoutSpace ls = new LayoutSpace();
 			SpaceInfo si = (SpaceInfo)sc.si.dnode;
@@ -265,7 +293,7 @@ public final class SyntaxSize extends SNode {
 	@AttrXMLDumpInfo(attr=true, name="g")
 	@nodeAttr public int gfx_size;
 	@AttrXMLDumpInfo(attr=true, name="t")
-	@nodeAttr public int txt_size; 
+	@nodeAttr public int txt_size;
 	public Draw_Size getCompiled() {
 		Draw_Size sz = new Draw_Size();
 		sz.unit = this.unit;
@@ -430,8 +458,14 @@ public final class ParagraphLayout extends DNode {
 	public ParagraphKind			flow;
 	@nodeAttr
 	public ParagraphOption∅		options;
-	
-	public ParagraphLayout() {}
+
+	public ParagraphLayout(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	public ParagraphLayout(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
 
 	public Draw_Paragraph getCompiled() {
 		Draw_Paragraph p = new Draw_Paragraph();

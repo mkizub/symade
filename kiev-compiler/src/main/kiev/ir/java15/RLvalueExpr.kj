@@ -164,7 +164,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 	public:ro	Var[]			outer_refs;
 
 	public void setupOuterFields();
-	
+
 	public void resolveENode(Type reqType, Env env) throws RuntimeException {
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving "+this);
 		setupOuterFields();

@@ -31,7 +31,7 @@ public final class JInlineMethodStat extends JENode {
 			return (JInlineMethodStat)jn;
 		return new JInlineMethodStat(impl);
 	}
-	
+
 	protected JInlineMethodStat(InlineMethodStat impl) {
 		super(impl);
 		this.dispatched = (JMethod)impl.dispatched;
@@ -94,7 +94,7 @@ public final class JExprStat extends JENode {
 			return (JExprStat)jn;
 		return new JExprStat(impl);
 	}
-	
+
 	protected JExprStat(ExprStat impl) {
 		super(impl);
 	}
@@ -128,7 +128,7 @@ public final class JReturnStat extends JENode {
 			return (JReturnStat)jn;
 		return new JReturnStat(impl);
 	}
-	
+
 	protected JReturnStat(ReturnStat impl) {
 		super(impl);
 	}
@@ -210,7 +210,7 @@ public final class JThrowStat extends JENode {
 			return (JThrowStat)jn;
 		return new JThrowStat(impl);
 	}
-	
+
 	protected JThrowStat(ThrowStat impl) {
 		super(impl);
 	}
@@ -244,7 +244,7 @@ public final class JIfElseStat extends JENode {
 			return (JIfElseStat)jn;
 		return new JIfElseStat(impl);
 	}
-	
+
 	protected JIfElseStat(IfElseStat impl) {
 		super(impl);
 	}
@@ -260,7 +260,7 @@ public final class JIfElseStat extends JENode {
 		if( reqType ≡ code.tenv.tpVoid )
 			gen_tp = code.tenv.tpVoid;
 		else
-			gen_tp = this.getType(); 
+			gen_tp = this.getType();
 		try {
 			if( cond.isConstantExpr(code.env) ) {
 				if( ((Boolean)cond.getConstValue(code.env)).booleanValue() ) {
@@ -313,7 +313,7 @@ public final class JCondStat extends JENode {
 			return (JCondStat)jn;
 		return new JCondStat(impl);
 	}
-	
+
 	protected JCondStat(CondStat impl) {
 		super(impl);
 	}
@@ -340,7 +340,7 @@ public final class JCondStat extends JENode {
 			func = code.tenv.tpDebug.tdecl.resolveMethod(code.env,fname,code.tenv.tpVoid,code.tenv.tpString,code.tenv.tpString);
 		return (JMethod)func;
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating CondStat");
 		if (!Kiev.debugOutputA)
@@ -390,7 +390,7 @@ public final class JLabeledStat extends JENode {
 			return (JLabeledStat)jn;
 		return new JLabeledStat(impl);
 	}
-	
+
 	protected JLabeledStat(LabeledStat impl) {
 		super(impl);
 		this.lbl = (JLabel)impl.lbl;
@@ -431,7 +431,7 @@ public final class JBreakStat extends JENode {
 			return (JBreakStat)jn;
 		return new JBreakStat(impl);
 	}
-	
+
 	protected JBreakStat(BreakStat impl) {
 		super(impl);
 		this.dest = (JLabel)impl.dest;
@@ -531,7 +531,7 @@ public final class JContinueStat extends JENode {
 			return (JContinueStat)jn;
 		return new JContinueStat(impl);
 	}
-	
+
 	protected JContinueStat(ContinueStat impl) {
 		super(impl);
 		this.dest = (JLabel)impl.dest;
@@ -616,7 +616,7 @@ public final class JGotoStat extends JENode {
 			return (JGotoStat)jn;
 		return new JGotoStat(impl);
 	}
-	
+
 	protected JGotoStat(GotoStat impl) {
 		super(impl);
 		this.dest = (JLabel)impl.dest;
@@ -643,7 +643,7 @@ public final class JGotoStat extends JENode {
 	}
 
 	public JNode getAsJNode(JNode jn) { return jn; }
-	
+
 	public Object[] resolveLabelStat(Code code, JLabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];
 		Object[] cl2 = new CodeLabel[0];
@@ -704,7 +704,7 @@ public final class JGotoCaseStat extends JENode {
 			return (JGotoCaseStat)jn;
 		return new JGotoCaseStat(impl);
 	}
-	
+
 	protected JGotoCaseStat(GotoCaseStat impl) {
 		super(impl);
 	}

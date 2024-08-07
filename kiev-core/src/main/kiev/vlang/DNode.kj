@@ -310,6 +310,11 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		this(new AHandle(), Kiev.getSemanticContext(), new Symbol());
 	}
 
+	protected DNode(AHandle handle, ANodeContext context) {
+		super(handle, context == null ? Kiev.getSemanticContext() : context);
+		this.symbol = new Symbol();
+	}
+
 	protected DNode(AHandle handle, ANodeContext context, Symbol symbol) {
 		super(handle, context == null ? Kiev.getSemanticContext() : context);
 		this.symbol = symbol;
@@ -809,8 +814,8 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	public MetaTypeDecl() {
-		this(new AHandle(), Kiev.getSemanticContext(), new Symbol());
+	public MetaTypeDecl(AHandle handle, ANodeContext context) {
+		super(handle, context, new Symbol());
 	}
 	public MetaTypeDecl(AHandle handle, ANodeContext context, Symbol symbol) {
 		super(handle, context, symbol);

@@ -38,6 +38,14 @@ public final class LangDecl extends DNode implements GlobalDNodeContainer {
 	@nodeAttr
 	public NodeDecl∅        decls;
 
+	public LangDecl(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	public LangDecl(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
 	public ASTNode[] getContainerMembers() { decls }
 
 	public String qname() {
@@ -58,11 +66,44 @@ public final class LangDecl extends DNode implements GlobalDNodeContainer {
 
 public abstract class LangBase implements Language {
 
-	public static final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
+	protected final Hashtable<Class, NodeCreator> nodeTemplates = new Hashtable<Class, NodeCreator>(128);
+	protected final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
 	protected String defaultEditorSyntaxName;
 	protected String defaultInfoSyntaxName;
 	protected String languageName;
 	protected String langURI;
+
+	class NodeCreator {
+		final Class cl;
+		final java.lang.reflect.Constructor ctor;
+		final boolean deprecatedCtor;
+
+		NodeCreator(Class cl) {
+			this.cl = cl;
+
+			if (TypeInfoInterface.class.isAssignableFrom(cl)) {
+				throw new RuntimeException("Node class '"+cl+"' needs run-time type info");
+			} else {
+				try {
+					this.ctor = cl.getConstructor(AHandle.class, ANodeContext.class);
+				} catch (NoSuchMethodException e) {
+					// warn on deprecated ctor
+					if (DNode.class.isAssignableFrom(cl)) {
+						System.out.println("Node class "+cl+" has no <init>(AHandle,ANodeContext) constructor");
+					}
+					this.deprecatedCtor = true;
+					this.ctor = cl.getConstructor();
+				}
+			}
+		}
+
+		ANode newInstance(AHandle handle, ANodeContext context) {
+			if (deprecatedCtor)
+				return (ANode)ctor.newInstance();
+			return (ANode)ctor.newInstance(handle, context);
+		}
+	}
+
 
 	public LangBase() {
 		if (getClass().getAnnotation(ThisIsALanguage.class) != null)
@@ -76,6 +117,7 @@ public abstract class LangBase implements Language {
 			if (nm == null || nm.length() == 0)
 				nm = c.getSimpleName();
 			allNodesMap.put(nm, c);
+			//nodeTemplates.put(c, new NodeCreator(c));
 		}
 	}
 
@@ -98,12 +140,20 @@ public abstract class LangBase implements Language {
 	}
 
 	public ANode makeNode(Class clazz, AHandle handle, ANodeContext context) {
+		NodeCreator creator = nodeTemplates.get(clazz);
+		if (creator != null) {
+			return creator.newInstance(handle, context);
+		}
 		try {
 			java.lang.reflect.Constructor ctor = clazz.getConstructor(AHandle.class, ANodeContext.class);
 			return (ANode)ctor.newInstance(handle, context);
-		} catch (Exception e) {}
-		java.lang.reflect.Constructor ctor = clazz.getConstructor();
-		return (ANode)ctor.newInstance();
+		} catch (Exception e) {
+			if (DNode.class.isAssignableFrom(clazz)) {
+				//System.out.println("Node class "+clazz+" has no <init>(AHandle,ANodeContext) constructor");
+			}
+			java.lang.reflect.Constructor ctor = clazz.getConstructor();
+			return (ANode)ctor.newInstance();
+		}
 		//throw new RuntimeException("Language "+this.getName()+" cannot instantiona node "+clazz);
 	}
 

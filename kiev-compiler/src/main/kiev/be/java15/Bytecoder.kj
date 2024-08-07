@@ -33,6 +33,8 @@ public class Bytecoder implements JConstants {
 		this.constPool = constPool;
 	}
 
+	private EnvContext envCtx() { jenv.env.getEnvContext() }
+
 	/** Reads class from DataInputStream
 	 */
 	public Struct readClazz(ClazzName clname, DNode outer) {
@@ -262,7 +264,7 @@ public class Bytecoder implements JConstants {
 				}
 			}
 			else if( at.name.equals(attrRequire) || at.name.equals(attrEnsure) ) {
-				WBCCondition wbc = new WBCCondition();
+				WBCCondition wbc = new WBCCondition(null, envCtx());
 				if (at.name.equals(attrRequire))
 					wbc.cond = WBCType.CondRequire;
 				else

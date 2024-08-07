@@ -16,14 +16,19 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 	@SymbolRefAutoComplete(scopes={KievPackage})
 	@nodeAttr public KievSyntax⇑∅		super_syntax;
 	@nodeAttr public ASTNode∅			members;
-	
+
 	private Hash<String> allOperators;
 	private Hashtable<Method,Opdef> mapMethodsToOpdefs;
 
-	public KievSyntax() {}
-	
+	public KievSyntax(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+	public KievSyntax(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
 	public final ASTNode[] getContainerMembers() { this.members }
-	
+
 	public String qname() {
 		if (sname == null || sname == "")
 			return null;
@@ -39,13 +44,13 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 			return "<anonymouse>";
 		return q.replace('·','.');
 	}
-	
+
 	public boolean isOperator(String s) {
 		if (allOperators == null)
 			allOperators = addOperators(new Hash<String>());
 		return allOperators.contains(s);
 	}
-	
+
 	public void getAllOpdefs(Vector<COpdef> opdefs) {
 		foreach (Opdef opd; members) {
 			COpdef[] copdefs = opd.compile();
@@ -55,7 +60,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		foreach (SymbolRef<KievSyntax> stx; super_syntax; stx.dnode != null)
 			stx.dnode.getAllOpdefs(opdefs);
 	}
-	
+
 	private void fillOpdefs(Env env, Hashtable<Method,Opdef> map) {
 		foreach (Opdef opd; members) {
 			foreach (Method⇑ mr; opd.methods; map.get(mr.dnode) == null) {
@@ -76,7 +81,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 				stx.fillOpdefs(env, map);
 		}
 	}
-	
+
 	public Opdef getOpdefForMethod(Env env, Method m) {
 		if (mapMethodsToOpdefs == null) {
 			mapMethodsToOpdefs = new Hashtable<Method,Opdef>();
@@ -84,7 +89,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		}
 		return mapMethodsToOpdefs.get(m);
 	}
-	
+
 	protected Hash<String> addOperators(Hash<String> tbl) {
 		foreach (Opdef opd; members; opd.resolved != null) {
 			foreach (OpArgOPER arg; opd.args)
