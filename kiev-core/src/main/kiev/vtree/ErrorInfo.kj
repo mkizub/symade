@@ -23,21 +23,28 @@ public abstract class ErrorInfo extends ANode {
 	@nodeData public SeverError sever;
 	@nodeData public String message;
 	@nodeData public String text;
-	
-	protected ErrorInfo(SeverError sever, String message, String text) {
-		super(new AHandle(), Context.DEFAULT);
+
+	protected ErrorInfo(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+	protected ErrorInfo(Project proj, SeverError sever, String message, String text) {
+		super(null, proj.getContext());
 		this.sever = sever;
 		this.message = message;
 		this.text = text;
+		proj.errors += this;
 	}
 }
 
 @ThisIsANode(copyable=false)
 public class ErrorNodeInfo extends ErrorInfo {
 	@nodeData public ANode node;
-	
-	public ErrorNodeInfo(SeverError sever, String message, ANode node) {
-		super(sever, message, null);
+
+	public ErrorNodeInfo(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+	public ErrorNodeInfo(Project proj, SeverError sever, String message, ANode node) {
+		super(proj, sever, message, null);
 		this.node = node;
 	}
 }
@@ -46,9 +53,12 @@ public class ErrorNodeInfo extends ErrorInfo {
 public class ErrorTextInfo extends ErrorInfo {
 	@nodeData public String file;
 	@nodeData public int lineno;
-	
-	public ErrorTextInfo(SeverError sever, String message, String file, int lineno) {
-		super(sever, message, null);
+
+	public ErrorTextInfo(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+	public ErrorTextInfo(Project proj, SeverError sever, String message, String file, int lineno) {
+		super(proj, sever, message, null);
 		this.file = file;
 		this.lineno = lineno;
 	}

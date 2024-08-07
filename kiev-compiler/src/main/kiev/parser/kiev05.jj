@@ -735,9 +735,9 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		name = Name()
 		{
 			if (modifiers.isSymadeNode())
-				clazz = mkStruct(name, new SymadeNode(), 0, modifiers, parent);
+				clazz = mkStruct(name, new SymadeNode(null,syntaxContext), 0, modifiers, parent);
 			else
-				clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
+				clazz = mkStruct(name, new JavaClass(null,syntaxContext), 0, modifiers, parent);
 		}
 		[
 			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
@@ -756,9 +756,9 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		name = Name()
 		{
 			if (modifiers.isSymadeNode())
-				clazz = mkStruct(name, new SymadeNode(), AccessFlags.ACC_INTERFACE, modifiers, parent);
+				clazz = mkStruct(name, new SymadeNode(null,syntaxContext), AccessFlags.ACC_INTERFACE, modifiers, parent);
 			else
-				clazz = mkStruct(name, new JavaClass(), AccessFlags.ACC_INTERFACE, modifiers, parent);
+				clazz = mkStruct(name, new JavaClass(null,syntaxContext), AccessFlags.ACC_INTERFACE, modifiers, parent);
 		}
 		[
 			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
@@ -771,18 +771,18 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	|	"@interface"
 		name = Name()
 		{
-			clazz = mkStruct(name, new JavaAnnotation(), AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
+			clazz = mkStruct(name, new JavaAnnotation(null,syntaxContext), AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
 		}
 	|	"enum"
 		name = Name()
 		{
-			clazz = mkStruct(name, new JavaEnum(), AccessFlags.ACC_ENUM|AccessFlags.ACC_STATIC, modifiers, parent);
+			clazz = mkStruct(name, new JavaEnum(null,syntaxContext), AccessFlags.ACC_ENUM|AccessFlags.ACC_STATIC, modifiers, parent);
 		}
 	|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("view") })
 		<IDENTIFIER> // "view"
 		name = Name()
 		{
-			clazz = mkStruct(name, new KievView(), AccessFlags.ACC_VIRTUAL, modifiers, parent);
+			clazz = mkStruct(name, new KievView(null,syntaxContext), AccessFlags.ACC_VIRTUAL, modifiers, parent);
 			KievView kview = (KievView)clazz;
 		}
 		[
@@ -910,7 +910,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 	"case"
 	name = Name()
 	{
-		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), AccessFlags.ACC_STATIC|AccessFlags.ACC_FINAL, modifiers, parent);
+		clazz = (PizzaCase)mkStruct(name, new PizzaCase(null,syntaxContext), AccessFlags.ACC_STATIC|AccessFlags.ACC_FINAL, modifiers, parent);
 	}
 	[
 		args = ClazzArguments(clazz) { clazz.args.addAll(args); }
@@ -2250,7 +2250,7 @@ void NewAny(ASTExpression e) :
 		[
 			LOOKAHEAD({ oneOfLA(OP_LBRACE) })
 			{
-				clazz = mkStruct(null, new JavaAnonymouseClass(), AccessFlags.ACC_FINAL, new ASTModifiers(), e);
+				clazz = mkStruct(null, new JavaAnonymouseClass(null,syntaxContext), AccessFlags.ACC_FINAL, new ASTModifiers(), e);
 				e.nodes += clazz;
 			}
 			TypeBodyDeclaration(clazz)

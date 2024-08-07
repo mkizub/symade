@@ -210,7 +210,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
 	public		TypeRef				ntype;
 	public:ro	ENode[]				args;
-	
+
 	public void resolveENode(Type reqType, Env env) {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -252,7 +252,7 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate(Env env) {
 		if (clazz != null)
 			return true;
-		clazz = env.newStruct(null,null,0,new JavaAnonymouseClass(),null);
+		clazz = env.newStruct(null,null,0,new JavaAnonymouseClass(null,Kiev.getSemanticContext()),null);
 		if (ctx_method==null || ctx_method.isStatic())
 			clazz.setStatic(true);
 		if (env.loadTypeDecl(env.tenv.tpClosure.getStruct()).isTypeDeclNotLoaded())
@@ -311,7 +311,7 @@ public final view RNewClosure of NewClosure extends RENode {
 
 		return true;
 	}
-	
+
 	public void resolveENode(Type reqType, Env env) {
 		resolveDNode(clazz,env);
 		setResolved(true);

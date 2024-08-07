@@ -26,7 +26,9 @@ public final class SymadeNode extends Struct {
 
 	@nodeAttr public NodeDecl		node_decl;
 
-	public SymadeNode() {}
+	public SymadeNode(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
 	@getter public JavaClassMode get$class_mode() {
 		if (this.mflags_is_struct_interface)
@@ -64,6 +66,14 @@ public class JavaClass extends Struct {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
+	public JavaClass(AHandle handle, ANodeContext context) {
+		super(handle, context, new Symbol(), 0);
+	}
+
+	public JavaClass(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol, 0);
+	}
+
 	@getter public JavaClassMode get$class_mode() {
 		if (this.mflags_is_struct_interface)
 			return JavaClassMode.INTERFACE;
@@ -87,6 +97,11 @@ public final class JavaAnonymouseClass extends JavaClass {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
+
+	public JavaAnonymouseClass(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
 	@getter public JavaClassMode get$class_mode() {
 		return JavaClassMode.ANONYMOUSE;
 	}
@@ -105,9 +120,11 @@ public final class KievView extends Struct {
 
 	@nodeAttr public TypeRef						view_of;
 
-	public KievView() {
+	public KievView(AHandle handle, ANodeContext context) {
+		super(handle, context);
 		this.mflags_is_virtual = true;
 	}
+
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
 		this.mflags_is_virtual = true;
@@ -123,10 +140,12 @@ public final class KievView extends Struct {
 
 @ThisIsANode(lang=CoreLang)
 public final class JavaAnnotation extends JavaClass {
-	public JavaAnnotation() {
+	public JavaAnnotation(AHandle handle, ANodeContext context) {
+		super(handle, context);
 		this.mflags_is_struct_interface = true;
 		this.mflags_is_struct_annotation = true;
 	}
+
 	@getter public JavaClassMode get$class_mode() {
 		return JavaClassMode.ANNOTATION;
 	}
@@ -163,7 +182,9 @@ public final class PizzaCase extends Struct {
 
 	public int tag;
 
-	public PizzaCase() {}
+	public PizzaCase(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
 	public Field[] getCaseFields() {
 		return this.case_fields;
@@ -205,7 +226,8 @@ public final class JavaEnum extends JavaClass {
 
 	@nodeAttr public		Field∅			enum_fields;
 
-	public JavaEnum() {
+	public JavaEnum(AHandle handle, ANodeContext context) {
+		super(handle, context);
 		this.mflags_is_enum = true;
 	}
 
@@ -392,11 +414,11 @@ public abstract class Struct extends ComplexTypeDecl {
 		return class_init;
 	}
 
-	public Struct() {
-		super(new AHandle(), new Symbol());
+	protected Struct(AHandle handle, ANodeContext context) {
+		super(handle, context, new Symbol());
 	}
-	public Struct(Symbol symbol, int flags) {
-		super(new AHandle(), symbol);
+	protected Struct(AHandle handle, ANodeContext context, Symbol symbol, int flags) {
+		super(handle, context, symbol);
 		this.nodeflags |= flags;
 	}
 

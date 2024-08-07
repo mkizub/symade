@@ -8,17 +8,19 @@ import kiev.vlang.Constants;
 import kiev.vlang.DNode;
 import kiev.vlang.Env;
 import kiev.vlang.Language;
+import kiev.vtree.ANodeContext;
 
 public class DumpUnMarshallingContext extends AUnMarshallingContext {
 
 	final Env env;
+	final ANodeContext nodeContext;
 
 	public File file;
 	public DNode pkg;
 	public String tdname;
 	public boolean is_interface_only;
 	public boolean is_import;
-	
+
 	public final Vector<DelayedTypeInfo> delayed_types = new Vector<DelayedTypeInfo>();
 	public final Hashtable<String,Language> languages = new Hashtable<String,Language>();
 
@@ -43,9 +45,10 @@ public class DumpUnMarshallingContext extends AUnMarshallingContext {
 			return null;
 		}
 	}
-	
-	public DumpUnMarshallingContext(Env env) {
+
+	public DumpUnMarshallingContext(Env env, ANodeContext nodeContext) {
 		this.env = env;
+		this.nodeContext = nodeContext;
 		this.unmarshallers.push(new ANodeUnMarshaller());
 	}
 }

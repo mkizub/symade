@@ -16,25 +16,82 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // Base context class.
-// Holds only flags about it's lifecycle.
-public class Context {
-	public static final Context DEFAULT = new Context();
+// Holds only Env and flags about it's lifecycle.
+public class ANodeContext {
+
+	// Node environment
+	public final Env theEnv;
 
 	// a flag that says, that data with this context is expired and can be deleted from AHandle
 	public boolean expired;
+
+	public ANodeContext(Env theEnv) {
+		this.theEnv = theEnv;
+	}
 }
 
+// Context for global environment nodes (like standard types).
+public class EnvContext extends ANodeContext {
+	public EnvContext(Env theEnv) {
+		super(theEnv);
+	}
+}
+
+// DataFlow (DFI) AHandleData contexts.
+public final class DataFlowContext extends ANodeContext {
+	public DataFlowContext(Env theEnv) {
+		super(theEnv);
+	}
+}
+
+// Semantic nodes contexts.
+public final class SemanticContext extends ANodeContext {
+	public final SemanticContext prev;
+
+	public SemanticContext(Env theEnv, SemanticContext prev) {
+		super(theEnv);
+		this.prev = prev;
+	}
+	public final boolean inherits(ANodeContext ctx) {
+		for (SemanticContext self = this; self != null; self = self.prev) {
+			if (self == ctx)
+				return true;
+		}
+		if (ctx == ctx.theEnv.getEnvContext())
+			return true;
+		return false;
+	}
+}
+
+// Backend context.
+public class BackendNodeContext extends ANodeContext {
+	public final SemanticContext semantic_context;
+	public BackendNodeContext(SemanticContext semantic_context) {
+		super(semantic_context.theEnv);
+		this.semantic_context = semantic_context;
+	}
+}
+
+
 public abstract class AHandleData {
-	private final Context context;
+	final ANodeContext context;
 	AHandleData h_hext_handle_data;
 
-	public AHandleData(Context context) {
+	public AHandleData(ANodeContext context) {
 		this.context = context;
 		assert(context != null);
 	}
 
-	public final Context getDataContext() {
+	public final ANodeContext getContext() {
 		return this.context;
+	}
+
+	public final Env getEnv() {
+		return this.context.theEnv;
+	}
+
+	public final Project getProject() {
+		return this.context.theEnv.proj;
 	}
 
 	public final AHandleData getNextHandleData() {
@@ -99,7 +156,7 @@ public final class AHandle {
 		AHandleData hd = this.h_nodes;
 		while (hd != null) {
 			AHandleData hd_next = hd.h_hext_handle_data;
-			if (needToCleanup(hd) || hd.getDataContext().expired) {
+			if (needToCleanup(hd) || hd.getContext().expired) {
 				if (hd_prev == null) {
 					this.h_nodes = hd_next;
 				} else {
@@ -118,7 +175,7 @@ public final class AHandle {
 		AHandleData hd = this.h_nodes;
 		while (hd != null) {
 			AHandleData hd_next = hd.h_hext_handle_data;
-			if (needToCleanup(hd, arg) || hd.getDataContext().expired) {
+			if (needToCleanup(hd, arg) || hd.getContext().expired) {
 				if (hd_prev == null) {
 					this.h_nodes = hd_next;
 				} else {

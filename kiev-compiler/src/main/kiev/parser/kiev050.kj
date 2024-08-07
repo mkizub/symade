@@ -490,9 +490,9 @@ ta = mkTypeAssign(id.pos, id.sname, modifiers, null); ta.super_types += tr;
       jj_consume_token(KW_CLASS);
       name = Name();
 if (modifiers.isSymadeNode())
-                                clazz = mkStruct(name, new SymadeNode(), 0, modifiers, parent);
+                                clazz = mkStruct(name, new SymadeNode(null,syntaxContext), 0, modifiers, parent);
                         else
-                                clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
+                                clazz = mkStruct(name, new JavaClass(null,syntaxContext), 0, modifiers, parent);
       switch (jj_nt.kind) {
       case OP_LT:
       case LANGLE:{
@@ -558,9 +558,9 @@ clazz.args.addAll(args);
       jj_consume_token(KW_INTERFACE);
       name = Name();
 if (modifiers.isSymadeNode())
-                                clazz = mkStruct(name, new SymadeNode(), AccessFlags.ACC_INTERFACE, modifiers, parent);
+                                clazz = mkStruct(name, new SymadeNode(null,syntaxContext), AccessFlags.ACC_INTERFACE, modifiers, parent);
                         else
-                                clazz = mkStruct(name, new JavaClass(), AccessFlags.ACC_INTERFACE, modifiers, parent);
+                                clazz = mkStruct(name, new JavaClass(null,syntaxContext), AccessFlags.ACC_INTERFACE, modifiers, parent);
       switch (jj_nt.kind) {
       case OP_LT:
       case LANGLE:{
@@ -601,13 +601,13 @@ clazz.args.addAll(args);
     case META_INTERFACE:{
       jj_consume_token(META_INTERFACE);
       name = Name();
-clazz = mkStruct(name, new JavaAnnotation(), AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
+clazz = mkStruct(name, new JavaAnnotation(null,syntaxContext), AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
       break;
       }
     case KW_ENUM:{
       jj_consume_token(KW_ENUM);
       name = Name();
-clazz = mkStruct(name, new JavaEnum(), AccessFlags.ACC_ENUM|AccessFlags.ACC_STATIC, modifiers, parent);
+clazz = mkStruct(name, new JavaEnum(null,syntaxContext), AccessFlags.ACC_ENUM|AccessFlags.ACC_STATIC, modifiers, parent);
       break;
       }
     default:
@@ -616,7 +616,7 @@ clazz = mkStruct(name, new JavaEnum(), AccessFlags.ACC_ENUM|AccessFlags.ACC_STAT
         jj_consume_token(IDENTIFIER);
         // "view"
                         name = Name();
-clazz = mkStruct(name, new KievView(), AccessFlags.ACC_VIRTUAL, modifiers, parent);
+clazz = mkStruct(name, new KievView(null,syntaxContext), AccessFlags.ACC_VIRTUAL, modifiers, parent);
                         KievView kview = (KievView)clazz;
         switch (jj_nt.kind) {
         case OP_LT:
@@ -878,7 +878,7 @@ ne = new NewEnumExpr(); f.init = ne;
   final public Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) throws ParseException {Symbol name; PizzaCase clazz; TypeConstr[] args;
     jj_consume_token(KW_CASE);
     name = Name();
-clazz = (PizzaCase)mkStruct(name, new PizzaCase(), AccessFlags.ACC_STATIC|AccessFlags.ACC_FINAL, modifiers, parent);
+clazz = (PizzaCase)mkStruct(name, new PizzaCase(null,syntaxContext), AccessFlags.ACC_STATIC|AccessFlags.ACC_FINAL, modifiers, parent);
     switch (jj_nt.kind) {
     case OP_LT:
     case LANGLE:{
@@ -3524,7 +3524,7 @@ expandExpr(e,n);
       t= jj_consume_token(OP_RPAREN);
 e.nodes += new EToken(t, ETokenKind.EXPL_OPERATOR);
       if (oneOfLA(OP_LBRACE)) {
-clazz = mkStruct(null, new JavaAnonymouseClass(), AccessFlags.ACC_FINAL, new ASTModifiers(), e);
+clazz = mkStruct(null, new JavaAnonymouseClass(null,syntaxContext), AccessFlags.ACC_FINAL, new ASTModifiers(), e);
                                 e.nodes += clazz;
         TypeBodyDeclaration(clazz);
       } else {

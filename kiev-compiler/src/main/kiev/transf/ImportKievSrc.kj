@@ -59,6 +59,8 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	public KievFE_Pass1(Env env, int id) { super(env,id,KievExt.JavaOnly); }
 	public String getDescr() { "Syntax" }
 
+	private SemanticContext semCtx = null;
+
 	public void process(ANode node, Transaction tr) {
 		if (node instanceof CompilationUnit) {
 			CompilationUnit cu = (CompilationUnit)node;
@@ -67,8 +69,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				return;
 			tr = Transaction.enter(tr,"KievFE_Pass1");
 			try {
+				semCtx = wthg.semantic_context;
 				processSyntax(node);
-			} finally { tr.leave(); }
+			} finally {
+				semCtx = null;
+				tr.leave();
+			}
 		}
 	}
 
@@ -255,7 +261,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				foreach (Field f; me.members; f.sname == fldName)
 					found = true;
 				if (!found) {
-					TypeAssign td = new TypeAssign(new Symbol("outer$"+n+"$type"), new TypeRef(pkg.getType(env)));
+					TypeAssign td = new TypeAssign(null,semCtx, new Symbol("outer$"+n+"$type"), new TypeRef(pkg.getType(env)));
 					td.setSynthetic(true);
 					me.members.append(td);
 					me.ometa_tdef = td;
@@ -936,7 +942,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if (Kiev.dump_src_dir != null && fu.is_project_file && (fu.fname.endsWith(".java")||fu.fname.endsWith(".kj"))) {
 			try {
 				String fname = Kiev.dump_src_dir + "/" + fu.pname();
-				TextPrinter prt = new DefaultTextProcessor();
+				TextPrinter prt = new DefaultTextProcessor(env.getEnvContext());
 				prt.setProperty("class", "stx-fmt·syntax-for-java");
 				prt.setProperty("current", "true");
 				prt.print(new ANode[]{fu}, new File(fname), env);

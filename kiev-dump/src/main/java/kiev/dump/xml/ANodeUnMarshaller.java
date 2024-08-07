@@ -146,7 +146,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 				if (cl_name.equals("kiev.vlang.KievPackage"))
 					dn = context.getEnv().newPackage(context.tdname, (KievPackage)context.pkg);
 				else if (lng != null)
-					dn = (DNode)lng.makeNode(context.getEnv(), name, ti_sign, dn_uuid);
+					dn = (DNode)lng.makeNode(context.getEnv(), context.nodeContext, name, ti_sign, dn_uuid);
 				else if (ti_sign != null)
 					dn = (DNode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 				else
@@ -183,11 +183,11 @@ public class ANodeUnMarshaller implements UnMarshaller {
 			}
 			else {
 				if (lng != null)
-					root = lng.makeNode(context.getEnv(), name, ti_sign, dn_uuid);
+					root = lng.makeNode(context.getEnv(), context.nodeContext, name, ti_sign, dn_uuid);
 				else if (ti_sign != null)
 					root = (INode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 				else
-					root = (INode)Class.forName(cl_name).newInstance();
+					root = (INode)Class.forName(cl_name).getConstructor(AHandle.class, ANodeContext.class).newInstance(null, context.nodeContext);
 				addAttributes(context, root, attributes);
 				if (root instanceof DNode && context.is_interface_only)
 					((DNode)root).setInterfaceOnly();
@@ -214,7 +214,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 				addAttributes(context, n, attributes);
 			}
 			else if (lng != null) {
-				n = lng.makeNode(context.getEnv(), name, ti_sign, dn_uuid);
+				n = lng.makeNode(context.getEnv(), context.nodeContext, name, ti_sign, dn_uuid);
 				addAttributes(context, n, attributes);
 			}
 			else {

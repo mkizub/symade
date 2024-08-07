@@ -20,17 +20,20 @@ import java.util.IdentityHashMap;
  */
 
 public final class XMLProjectionContext extends ProjectionContext {
+	public XMLProjectionContext(Env env) {
+		super(env);
+	}
 	public XMLNodeProjectorFactory getProjectonFactory() {
 		return (XMLNodeProjectorFactory)npfactory;
 	}
 }
- 
+
 public final class XMLNodeProjectorFactory extends AbstractNodeProjectorFactory {
 
-	public XMLNodeProjectorFactory() {
-		super(new XMLProjectionContext());
+	public XMLNodeProjectorFactory(Env env) {
+		super(new XMLProjectionContext(env));
 	}
-	
+
 	public XMLProjectionContext getProjectionContext() {
 		return (XMLProjectionContext)projection_context;
 	}
@@ -148,7 +151,7 @@ public class XMLNodeProjector extends AbstractNodeProjector {
 			return value.qname;
 		return null;
 	}
-	
+
 	private void initPorts() {
 		if (this.ports == null)
 			return;
@@ -156,7 +159,7 @@ public class XMLNodeProjector extends AbstractNodeProjector {
 		JoinProjection join_attrs = new JoinProjection();
 		SpaceDstPort dst_port_elems = (SpaceDstPort)new SpaceDstPort(XMLANodeElement.nodeattr$elements);
 		JoinProjection join_elems = new JoinProjection();
-		
+
 		Vector<Projection> ports = new Vector<Projection>();
 		ports.append(dst_port_attrs);
 		ports.append(dst_port_elems);
@@ -195,7 +198,7 @@ public class XMLNodeProjector extends AbstractNodeProjector {
 		}
 		this.ports = ports.toArray();
 	}
-	
+
 	public void project() {
 		initPorts();
 		super.project();
@@ -214,7 +217,7 @@ public abstract class XMLNode extends ANode {
 	@nodeAttr
 	final
 	public String				qname;
-	
+
 	public XMLNode(XMLProjectionContext context, String qname) {
 		super(new AHandle(), context);
 		this.qname = qname;
@@ -226,16 +229,16 @@ public abstract class XMLNode extends ANode {
 public class XMLText extends XMLNode {
 	@nodeAttr
 	public String				text;
-	
+
 	public final TypeInfo		typeinfo;
-	
+
 	public XMLText(XMLProjectionContext context, TypeInfo typeinfo) {
 		super(context, "#text");
 		this.typeinfo = typeinfo;
 	}
 
 	public Object copy(CopyContext cc) {
-		XMLText node = new XMLText((XMLProjectionContext)this.getDataContext(), this.typeinfo);
+		XMLText node = new XMLText((XMLProjectionContext)this.getContext(), this.typeinfo);
 		return this.copyTo(node,cc);
 	}
 
@@ -243,13 +246,13 @@ public class XMLText extends XMLNode {
 		if (slot == XMLText.nodeattr$text) {
 			if (this.typeinfo.clazz == Boolean.TYPE) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
-				result.append("false", "boolean", null, Boolean.FALSE); 
+				result.append("false", "boolean", null, Boolean.FALSE);
 				result.append("true", "boolean", null, Boolean.TRUE);
 				return result;
 			}
 			if (this.typeinfo.clazz == Boolean.class) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
-				result.append("false", "Boolean", null, Boolean.FALSE); 
+				result.append("false", "Boolean", null, Boolean.FALSE);
 				result.append("true", "Boolean", null, Boolean.TRUE);
 				result.append("null", "null", null, null);
 				return result;
@@ -257,7 +260,7 @@ public class XMLText extends XMLNode {
 			if (Enum.class.isAssignableFrom(this.typeinfo.clazz) && Enum.class != this.typeinfo.clazz) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
 				foreach (Enum e; (Enum[])this.typeinfo.clazz.getDeclaredMethod(Constants.nameEnumValues).invoke(null)) {
-					result.append(e.toString(), e.getClass().getName(), null, e); 
+					result.append(e.toString(), e.getClass().getName(), null, e);
 				}
 				result.append("null", "null", null, null);
 				return result;
@@ -272,13 +275,13 @@ public class XMLText extends XMLNode {
 public class XMLAttribute extends XMLNode {
 	@nodeAttr
 	public XMLText				text;
-	
+
 	public XMLAttribute(XMLProjectionContext context, String qname) {
 		super(context, qname);
 	}
 
 	public Object copy(CopyContext cc) {
-		XMLAttribute node = new XMLAttribute((XMLProjectionContext)this.getDataContext(), this.qname);
+		XMLAttribute node = new XMLAttribute((XMLProjectionContext)this.getContext(), this.qname);
 		return this.copyTo(node,cc);
 	}
 }
@@ -296,13 +299,13 @@ public abstract class XMLElement extends XMLNode {
 public class XMLTextElement extends XMLElement {
 	@nodeAttr
 	public XMLText				text;
-	
+
 	public XMLTextElement(XMLProjectionContext context, String qname) {
 		super(context, qname);
 	}
 
 	public Object copy(CopyContext cc) {
-		XMLTextElement node = new XMLTextElement((XMLProjectionContext)this.getDataContext(), this.qname);
+		XMLTextElement node = new XMLTextElement((XMLProjectionContext)this.getContext(), this.qname);
 		return this.copyTo(node,cc);
 	}
 }
@@ -312,13 +315,13 @@ public class XMLTextElement extends XMLElement {
 public class XMLScalarAttrElement extends XMLElement {
 	@nodeAttr
 	public XMLANodeElement		node;
-	
+
 	public XMLScalarAttrElement(XMLProjectionContext context, String qname) {
 		super(context, qname);
 	}
 
 	public Object copy(CopyContext cc) {
-		XMLScalarAttrElement node = new XMLScalarAttrElement((XMLProjectionContext)this.getDataContext(), this.qname);
+		XMLScalarAttrElement node = new XMLScalarAttrElement((XMLProjectionContext)this.getContext(), this.qname);
 		return this.copyTo(node,cc);
 	}
 }
@@ -328,13 +331,13 @@ public class XMLScalarAttrElement extends XMLElement {
 public class XMLSpaceAttrElement extends XMLElement {
 	@nodeAttr
 	public XMLANodeElement∅		nodes;
-	
+
 	public XMLSpaceAttrElement(XMLProjectionContext context, String qname) {
 		super(context, qname);
 	}
 
 	public Object copy(CopyContext cc) {
-		XMLSpaceAttrElement node = new XMLSpaceAttrElement((XMLProjectionContext)this.getDataContext(), this.qname);
+		XMLSpaceAttrElement node = new XMLSpaceAttrElement((XMLProjectionContext)this.getContext(), this.qname);
 		return this.copyTo(node,cc);
 	}
 }
@@ -347,14 +350,14 @@ public class XMLANodeElement extends XMLElement {
 	public XMLAttribute∅		attributes;
 	@nodeAttr
 	public XMLElement∅			elements;
-	
+
 	public XMLANodeElement(XMLProjectionContext context, String qname, TypeInfo typeinfo) {
 		super(context, qname);
 		this.typeinfo = typeinfo;
 	}
 
 	public Object copy(CopyContext cc) {
-		XMLANodeElement node = new XMLANodeElement((XMLProjectionContext)this.getDataContext(), this.qname, this.typeinfo);
+		XMLANodeElement node = new XMLANodeElement((XMLProjectionContext)this.getContext(), this.qname, this.typeinfo);
 		return this.copyTo(node,cc);
 	}
 }

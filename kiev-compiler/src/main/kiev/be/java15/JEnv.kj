@@ -162,7 +162,7 @@ public final class JEnv implements BEndEnv {
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
-			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, data, name.src_name.toString(), pkg);
+			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, env.getEnvContext(), data, name.src_name.toString(), pkg);
 			if (roots != null) {
 				foreach (INode root; roots) {
 					if (root instanceof CompilationUnit) {

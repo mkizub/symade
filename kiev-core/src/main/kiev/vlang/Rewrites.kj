@@ -21,6 +21,7 @@ import java.util.StringTokenizer;
 
 public final class RewriteContext {
 	public final Env env;
+	public final ANodeContext context;
 	public final ASTNode root;
 	public final Hashtable<String,Object> args;
 
@@ -71,8 +72,16 @@ public final class RewriteContext {
 		return m.body.doRewrite(rctx);
 	}
 
+	public RewriteContext(Env env, ANodeContext context, ASTNode root, Hashtable<String,Object> args) {
+		this.env = env;
+		this.context = context;
+		this.root = root;
+		this.args = args;
+	}
+
 	public RewriteContext(Env env, ASTNode root, Hashtable<String,Object> args) {
 		this.env = env;
+		this.context = Kiev.getSemanticContext();
 		this.root = root;
 		this.args = args;
 	}

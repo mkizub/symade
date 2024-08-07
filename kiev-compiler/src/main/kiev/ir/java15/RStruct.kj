@@ -202,7 +202,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		int flags = this.getFlags() & JAVA_ACC_MASK;
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC; // | ACC_SYNTHETIC;
-		typeinfo_clazz = env.newStruct(nameClTypeInfo,this.getStruct(),flags,new JavaClass(),null);
+		typeinfo_clazz = env.newStruct(nameClTypeInfo,this.getStruct(),flags,new JavaClass(null,Kiev.getSemanticContext()),null);
 		typeinfo_clazz.setPublic();
 		if (super_types.length > 0 && super_types[0].getStruct(env).typeinfo_clazz != null)
 			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct(env).typeinfo_clazz.getType(env)));
@@ -847,7 +847,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 	private static Struct makeImpl(@forward RStruct self, Env env) {
 		Struct defaults = env.newStruct(nameIFaceImpl,
 			self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC | ACC_ABSTRACT | ACC_FORWARD,
-			new JavaClass(), null
+			new JavaClass(null, Kiev.getSemanticContext()), null
 		);
 		if (!defaults.isAttached())
 			((Struct)self).members.add(defaults);

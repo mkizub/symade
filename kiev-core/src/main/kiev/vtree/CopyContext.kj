@@ -5,6 +5,7 @@ import syntax kiev.Syntax;
 import java.util.IdentityHashMap;
 
 public interface CopyContext {
+	public ANodeContext toNodeContext();
 	public <N extends INode> N copyRoot(N node);
 	public <N extends INode> N copyFull(N node);
 	public void addCopyInfo(INode nold, INode nnew);
@@ -14,7 +15,20 @@ public interface CopyContext {
 
 public class Copier implements CopyContext {
 
+	private final ANodeContext nodeContext;
 	private final IdentityHashMap<AHandle,INode> map = new IdentityHashMap<AHandle,INode>();
+
+	public Copier() {
+		this.nodeContext = Kiev.getSemanticContext();
+	}
+
+	public Copier(ANodeContext nodeContext) {
+		this.nodeContext = nodeContext;
+	}
+
+	public ANodeContext toNodeContext() {
+		return this.nodeContext;
+	}
 
 	public <N extends INode> N copyRoot(N node) {
 		N t = (N)node.copy(this);

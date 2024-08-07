@@ -32,12 +32,13 @@ public final class Project extends SNode {
 	@AttrBinDumpInfo(ignore=true)
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeData public ErrorInfo∅			errors;
-	
 
-	public Project() {
+
+	public Project(AHandle handle, ANodeContext context) {
+		super(handle, context);
 		this.root_dir = new DirUnit(".");
 	}
-	
+
 	@setter public final void set$name(String value) {
 		this.name = (value == null) ? null : value.intern();
 	}
@@ -45,7 +46,7 @@ public final class Project extends SNode {
 	public void addProjectFile(String path) {
 		FileUnit.makeFile(path, this, true);
 	}
-	
+
 	public FileUnit getLoadedFile(File f) {
 		String path = DumpFactory.getRelativePath(f);
 		path = path.replace(File.separatorChar, '/');
@@ -65,17 +66,17 @@ public final class Project extends SNode {
 			return fu;
 		return null;
 	}
-	
+
 	public Enumeration<CompilationUnit> enumerateAllCompilationUnits() {
 		CompilationUnitEnumerator fe = new CompilationUnitEnumerator(false);
 		return fe;
 	}
-	
+
 	public Enumeration<CompilationUnit> enumerateNewCompilationUnits() {
 		CompilationUnitEnumerator fe = new CompilationUnitEnumerator(true);
 		return fe;
 	}
-	
+
 	class CompilationUnitEnumerator implements Enumeration<CompilationUnit> {
 		private int idx;
 		public boolean hasMoreElements() {
@@ -101,11 +102,11 @@ public final class ProjectSyntaxInfo extends SNode {
 	@nodeAttr public String description;
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public String qname;
-	
+
 	@nodeAttr public ProjectSyntaxFactory syntax;
 	@nodeAttr public ProjectSyntaxFactory printer;
 	@nodeAttr public ProjectSyntaxFactory parser;
-	
+
 	@setter public void set$qname(String value) {
 		this.qname = value;
 		if (syntax == null && value != null) {
@@ -126,19 +127,24 @@ public abstract class ProjectSyntaxFactory extends SNode {
 	@nodeAttr public ProjectSyntaxParam∅	params;
 
 	public abstract TextProcessor makeTextProcessor();
-	
+
 	public void addParam(String name, String value) {
 		ProjectSyntaxParam p = new ProjectSyntaxParam();
 		p.name = name;
 		p.value = value;
 		params.append(p);
 	}
+
+	protected TextProcessor makeDefaultTextProcessor() {
+		return (TextProcessor)Class.forName("kiev.fmt.common.DefaultTextProcessor")
+				.getConstructor(ANodeContext.class).newInstance(getEnv().getEnvContext());
+	}
 }
 
 @ThisIsANode(lang=void)
 public final class ProjectSyntaxFactoryXmlDump extends ProjectSyntaxFactory {
 	public TextProcessor makeTextProcessor() {
-		TextProcessor tp = (TextProcessor)Class.forName("kiev.fmt.common.DefaultTextProcessor").newInstance();
+		TextProcessor tp = makeDefaultTextProcessor();
 		tp.setProperty("class", "<xml-dump>");
 		foreach (ProjectSyntaxParam p; params)
 			tp.setProperty(p.name, p.value);
@@ -149,7 +155,7 @@ public final class ProjectSyntaxFactoryXmlDump extends ProjectSyntaxFactory {
 @ThisIsANode(lang=void)
 public final class ProjectSyntaxFactoryBinDump extends ProjectSyntaxFactory {
 	public TextProcessor makeTextProcessor() {
-		TextProcessor tp = (TextProcessor)Class.forName("kiev.fmt.common.DefaultTextProcessor").newInstance();
+		TextProcessor tp = makeDefaultTextProcessor();
 		tp.setProperty("class", "<bin-dump>");
 		foreach (ProjectSyntaxParam p; params)
 			tp.setProperty(p.name, p.value);
@@ -161,7 +167,7 @@ public final class ProjectSyntaxFactoryBinDump extends ProjectSyntaxFactory {
 public final class ProjectSyntaxFactoryAny extends ProjectSyntaxFactory {
 	@AttrXMLDumpInfo(attr=true, name="factory")
 	@nodeAttr public String					factory;
-	
+
 	public TextProcessor makeTextProcessor() {
 		TextProcessor tp = (TextProcessor)Class.forName(factory.replace('·','.')).newInstance();
 		foreach (ProjectSyntaxParam p; params)
@@ -199,17 +205,17 @@ public final class DirUnit extends SNode {
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr public String			name;
 	@nodeAttr public ASTNode∅		members;
-	
+
 	@setter public final void set$name(String value) {
 		this.name = (value == null) ? null : value.intern();
 	}
 
 	public DirUnit() {}
-	
+
 	public DirUnit(String name) {
 		this.name = name;
 	}
-	
+
 	public String pname() {
 		if (parent() instanceof DirUnit) {
 			DirUnit p = (DirUnit)parent();
@@ -219,7 +225,7 @@ public final class DirUnit extends SNode {
 		}
 		return name;
 	}
-	
+
 	public boolean hasProjectFiles() {
 		foreach (FileUnit fu; members; fu.is_project_file)
 			return true;
@@ -298,7 +304,7 @@ public final class DirUnit extends SNode {
 		}
 		return dir;
 	}
-	
+
 	public DirUnit getSubDir(String qname) {
 		qname = qname.replace(File.separatorChar, '/');
 		DirUnit dir = this;
@@ -332,6 +338,6 @@ public final class DirUnit extends SNode {
 		}
 		return dir;
 	}
-	
+
 }
 

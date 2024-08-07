@@ -26,7 +26,9 @@ public interface Language {
 	public String getDefaultInfoSyntax();
 	public String getClassByNodeName(String name);
 	public AttrSlot getExtAttrByName(String name);
-	public ANode makeNode(Env env, String name, String ti_sign, String uuid);
+	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid);
+	public ANode makeNode(String name, AHandle handle, ANodeContext context);
+	public ANode makeNode(Class clazz, AHandle handle, ANodeContext context);
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -55,7 +57,7 @@ public final class LangDecl extends DNode implements GlobalDNodeContainer {
 }
 
 public abstract class LangBase implements Language {
-	
+
 	public static final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
 	protected String defaultEditorSyntaxName;
 	protected String defaultInfoSyntaxName;
@@ -76,21 +78,39 @@ public abstract class LangBase implements Language {
 			allNodesMap.put(nm, c);
 		}
 	}
-	
+
 	public String getName() { return languageName; }
 
 	public final String getURI() { return langURI; }
-	
+
 	public String getClassByNodeName(String name) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
 		return c.getName();
 	}
-	public ANode makeNode(Env env, String name, String ti_sign, String uuid) {
+
+	public ANode makeNode(String name, AHandle handle, ANodeContext context) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
+		return makeNode(c, handle, context);
+	}
+
+	public ANode makeNode(Class clazz, AHandle handle, ANodeContext context) {
+		try {
+			java.lang.reflect.Constructor ctor = clazz.getConstructor(AHandle.class, ANodeContext.class);
+			return (ANode)ctor.newInstance(handle, context);
+		} catch (Exception e) {}
+		java.lang.reflect.Constructor ctor = clazz.getConstructor();
+		return (ANode)ctor.newInstance();
+		//throw new RuntimeException("Language "+this.getName()+" cannot instantiona node "+clazz);
+	}
+
+	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid) {
+		Class c = allNodesMap.get(name);
+		if (c == null)
+			throw new RuntimeException("Language '"+this.getName()+"' has no node '"+name+"'");
 		Symbol symbol = null;
 		if (uuid != null)
 			symbol = env.getSymbolByUUID(uuid);
@@ -98,7 +118,7 @@ public abstract class LangBase implements Language {
 		if (ti_sign != null)
 			node = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 		else
-			node = (ANode)c.newInstance();
+			node = makeNode(c, null, context);
 		if (symbol != null) {
 			if (node instanceof Symbol)
 				node = symbol;
@@ -131,8 +151,8 @@ public final class CoreLang extends LangBase {
 	public String getName() { return "core"; }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	
-	public ANode makeNode(Env env, String name, String ti_sign, String uuid) {
+
+	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid) {
 		if (ti_sign == null && name.equals("SymbolRef"))
 			return new SymbolRef();
 		if (uuid != null) {
@@ -146,7 +166,7 @@ public final class CoreLang extends LangBase {
 				}
 			}
 		}
-		return super.makeNode(env, name, ti_sign, uuid);
+		return super.makeNode(env, context, name, ti_sign, uuid);
 	}
 
 	public AttrSlot getExtAttrByName(String name) {

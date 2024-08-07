@@ -21,12 +21,16 @@ public abstract class SNode extends ASTNode {
 
 	public SNode() {}
 
+	public SNode(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
 }
 
 // base of text elements
 @ThisIsANode(lang=CoreLang)
 public abstract class ATextNode extends SNode {
-	
+
 	public abstract String toText();
 }
 
@@ -34,12 +38,12 @@ public abstract class ATextNode extends SNode {
 @ThisIsANode(name="TextElem", lang=CoreLang)
 public class TextElem extends ATextNode {
 	@nodeAttr public String text;
-	
+
 	public TextElem() {}
 	public TextElem(String text) {
 		this.text = text;
 	}
-	
+
 	public String toText() { return text; }
 }
 
@@ -55,12 +59,12 @@ public final class TextBrk extends ATextNode {
 @ThisIsANode(name="Line", lang=CoreLang)
 public class TextLine extends ATextNode {
 	@nodeAttr public ATextNode∅  elems;
-	
+
 	public TextLine() {}
 	public TextLine(String text) {
 		elems += new TextElem(text);
 	}
-	
+
 	public String toText() {
 		StringBuffer sb = new StringBuffer();
 		foreach (ATextNode t; elems)
@@ -89,7 +93,7 @@ public class Text extends ATextNode {
 }
 
 public enum CommentMode {
-	LINE, EOLINE, FLOW, INLINE, DOCUMENTATION 
+	LINE, EOLINE, FLOW, INLINE, DOCUMENTATION
 }
 
 @ThisIsANode(name="Comment", lang=CoreLang)

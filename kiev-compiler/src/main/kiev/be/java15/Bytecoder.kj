@@ -42,18 +42,19 @@ public class Bytecoder implements JConstants {
 		if (!bcclazz.getClazzName().toString().equals(clname.bytecode_name))
 			throw new RuntimeException("Expected to load class "+clname.bytecode_name+" but class "+bcclazz.getClazzName()+" found");
 
-		Struct variant = new JavaClass();
+		EnvContext envCtx = jenv.env.getEnvContext();
+		Struct variant = new JavaClass(null,envCtx);
 		if ((bcclazz.flags & ACC_ANNOTATION) == ACC_ANNOTATION)
-			variant = new JavaAnnotation();
+			variant = new JavaAnnotation(null,envCtx);
 		else if ((bcclazz.flags & ACC_ENUM) == ACC_ENUM)
-			variant = new JavaEnum();
+			variant = new JavaEnum(null,envCtx);
 		else if ((bcclazz.flags & ACC_INTERFACE) == ACC_INTERFACE)
-			variant = new JavaClass();
+			variant = new JavaClass(null,envCtx);
 		else if !(outer instanceof KievPackage) {
 			// anonymouse classes are classed with bytecode name in form "$[0-9]+"
 			String tail = clname.bytecode_name.substring(((ComplexTypeDecl)outer).qname().length());
 			if (tail.length() > 1 && tail.charAt(0) >= '0' && tail.charAt(0) >= '9')
-				variant = new JavaAnonymouseClass();
+				variant = new JavaAnonymouseClass(null,envCtx);
 		}
 		Symbol cl_sym;
 		if (outer.symbol.isGlobalSymbol())
@@ -134,7 +135,8 @@ public class Bytecoder implements JConstants {
 		if !(outer instanceof KievPackage) {
 			int n = 0;
 			for(ComplexTypeDecl p=((ComplexTypeDecl)outer); p != null && p.isStructInner() && !p.isStatic(); p=Env.ctxTDecl(p)) n++;
-			TypeAssign td = new TypeAssign(new Symbol("outer$"+n+"$type"), new TypeRef(((ComplexTypeDecl)outer).getType(jenv.env)));
+			EnvContext envCtx = jenv.env.getEnvContext();
+			TypeAssign td = new TypeAssign(null,envCtx, new Symbol("outer$"+n+"$type"), new TypeRef(((ComplexTypeDecl)outer).getType(jenv.env)));
 			td.setSynthetic(true);
 			cl.members.append(td);
 			cl.ometa_tdef = td;

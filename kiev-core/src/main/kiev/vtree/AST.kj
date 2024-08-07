@@ -22,7 +22,9 @@ public interface INode {
 	public static final INode[] emptyArray = new INode[0];
 
 	public AHandle		handle();
-	//public long			getUID();
+	public ANodeContext	getContext();
+	public Env			getEnv();
+	public Project		getProject();
 	public ANode		asANode();
 
 	public INode        parent();
@@ -333,17 +335,14 @@ public abstract class ANode extends AHandleData implements INode {
 	@abstract @virtual
 	public String				file_name;
 
-	public ANode(AHandle handle, Context context) {
+	public ANode(AHandle handle, ANodeContext context) {
 		super(context);
-		p_handle_ = handle;
-		handle.addData(this);
+		p_handle_ = handle == null ? new AHandle() : handle;
+		p_handle_.addData(this);
 	}
 
 	final
 	public AHandle handle() { return p_handle_; }
-
-	//final
-	//public long getUID() { return p_handle_.h_uid; }
 
 	final
 	public ANode asANode() { return this; }
@@ -983,7 +982,7 @@ public abstract class ANode extends AHandleData implements INode {
 		if (this instanceof TypeInfoInterface)
 			obj = (INode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
 		else
-			obj = (INode)this.getClass().newInstance();
+			obj = (INode)getEnv().newNode(this.getClass(), null, cc.toNodeContext());
 		cc.addCopyInfo(this,obj);
 		return this.copyTo(obj, cc);
 	}
@@ -1063,12 +1062,12 @@ public abstract class ANode extends AHandleData implements INode {
 
 	public INode doRewrite(RewriteContext ctx) {
 		if !(this instanceof ASTNode)
-			return new Copier().copyFull(this);
+			return new Copier(ctx.context).copyFull(this);
 		ANode rn;
 		if (this instanceof TypeInfoInterface)
 			rn = (ANode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
 		else
-			rn = (ANode)this.getClass().newInstance();
+			rn = getEnv().newNode(this.getClass(), null, ctx.context);
 		if (this instanceof DNode)
 			((DNode)rn).nodeflags = ((DNode)this).nodeflags;
 		foreach (AttrSlot attr; this.values(); attr.isAttr() && !attr.isNotCopyable()) {
@@ -1229,22 +1228,6 @@ class CurrentVersionInfo extends VersionInfo {
 	}
 }
 
-public final class SemContext extends Context {
-	public final SemContext prev;
-	public SemContext(SemContext prev) {
-		this.prev = prev;
-	}
-	public final boolean inherits(Context ctx) {
-		for (SemContext self = this; self != null; self = self.prev) {
-			if (self == ctx)
-				return true;
-		}
-		if (ctx == Context.DEFAULT)
-			return true;
-		return false;
-	}
-}
-
 @ThisIsANode(lang=CoreLang)
 public abstract class ASTNode extends ANode implements Constants {
 
@@ -1373,12 +1356,9 @@ public abstract class ASTNode extends ANode implements Constants {
 	public Type getType(Env env) { return env.tenv.tpVoid; }
 
 	public ASTNode() {
-		this(new AHandle(), Kiev.getSemContext());
+		super(null, Kiev.getSemanticContext());
 	}
-	public ASTNode(AHandle handle) {
-		super(handle, Kiev.getSemContext());
-	}
-	public ASTNode(AHandle handle, SemContext context) {
+	public ASTNode(AHandle handle, ANodeContext context) {
 		super(handle, context);
 	}
 
@@ -1386,11 +1366,11 @@ public abstract class ASTNode extends ANode implements Constants {
 		//return node;
 		if (node == null)
 			return null;
-		SemContext semantic_context = Kiev.getSemContext();
-		//foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
+		SemanticContext semantic_context = Kiev.getSemanticContext();
+		//foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getContext()))
 		//	return nh;
 		for (AHandleData nh = node.handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
-			if (semantic_context.inherits(nh.getDataContext()) && nh instanceof ASTNode)
+			if (semantic_context.inherits(nh.getContext()) && nh instanceof ASTNode)
 				return (ASTNode)nh;
 		}
 		return null;
@@ -1401,8 +1381,8 @@ public abstract class ASTNode extends ANode implements Constants {
 		return parent;
 //		if (parent == null)
 //			return null;
-//		SemContext semantic_context = Kiev.getSemContext();
-//		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
+//		SemanticContext semantic_context = Kiev.getSemanticContext();
+//		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getContext()))
 //			return nh;
 //		return null;
 	}

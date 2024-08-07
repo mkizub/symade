@@ -20,7 +20,7 @@ public final class SyntaxManager {
 	private static Hashtable<Language,Draw_ATextSyntax>	languageEditorSyntaxMap		= new Hashtable<Language,Draw_ATextSyntax>();
 	private static Hashtable<Language,Draw_ATextSyntax>	languageInfoSyntaxMap		= new Hashtable<Language,Draw_ATextSyntax>();
 	private static Hashtable<String,Draw_StyleSheet>	styleSheetMap				= new Hashtable<String,Draw_StyleSheet>();
-	
+
 	private SyntaxManager() {}
 
 	public static Draw_ATextSyntax getDefaultEditorSyntax(Language lng) {
@@ -31,7 +31,7 @@ public final class SyntaxManager {
 		languageEditorSyntaxMap.put(lng, stx);
 		return stx;
 	}
-	
+
 	public static Draw_ATextSyntax getDefaultInfoSyntax(Language lng) {
 		Draw_ATextSyntax stx = languageInfoSyntaxMap.get(lng);
 		if (stx != null)
@@ -40,7 +40,7 @@ public final class SyntaxManager {
 		languageInfoSyntaxMap.put(lng, stx);
 		return stx;
 	}
-	
+
 	public static Draw_ATextSyntax getLanguageSyntax(String name, Env env) {
 		if (env != null) {
 			DNode ts = env.resolveGlobalDNode(name);
@@ -54,7 +54,7 @@ public final class SyntaxManager {
 			return stx;
 		return loadLanguageSyntax(name);
 	}
-	
+
 	public static Draw_ATextSyntax loadLanguageSyntax(String name) {
 		Draw_ATextSyntax dts = null;
 		InputStream inp = null;
@@ -87,7 +87,7 @@ public final class SyntaxManager {
 			return dss;
 		return loadStyleSheet(name);
 	}
-	
+
 	public static Draw_StyleSheet loadStyleSheet(String name) {
 		Draw_StyleSheet dss = null;
 		InputStream inp = null;
@@ -112,7 +112,7 @@ public final class SyntaxManager {
 	{
 		make_output_dir(f);
 		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8"));
-		DefaultTextProcessor tp = new DefaultTextProcessor();
+		DefaultTextProcessor tp = new DefaultTextProcessor(node.getContext());
 		tp.setProperty("class",stx);
 		tp.print(new INode[]{node}, writer, null);
 	}
@@ -124,5 +124,5 @@ public final class SyntaxManager {
 			if( !dir.exists() || !dir.isDirectory() ) throw new IOException("Can't create output dir "+dir);
 		}
 	}
-	
+
 }

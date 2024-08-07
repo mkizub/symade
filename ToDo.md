@@ -35,3 +35,4 @@
 - compiler depends on import kiev.fmt.common.TextParser;
 - fix AHandle's public <T extends ANode> void cleanupIf((AHandleData, T)->boolean needToCleanup, T arg)
   - should compile with <T>
+- move static Kiev.Xxx() methods to Env (virtual)

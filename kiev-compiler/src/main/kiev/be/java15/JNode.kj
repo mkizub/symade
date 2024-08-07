@@ -11,10 +11,9 @@
 package kiev.be.java15;
 import syntax kiev.Syntax;
 
-public class JNodeContext extends Context {
-	SemContext semantic_context;
-	public JNodeContext(SemContext semantic_context) {
-		this.semantic_context = semantic_context;
+public class JNodeContext extends BackendNodeContext {
+	public JNodeContext(SemanticContext semantic_context) {
+		super(semantic_context);
 	}
 }
 
@@ -31,11 +30,11 @@ public class JNode extends AHandleData implements JConstants {
 	}
 
 	public VT vn() {
-		SemContext semantic_context = ((JNodeContext)getDataContext()).semantic_context;
-		//foreach (ASTNode nh; p_handle_.getHandleData(); semantic_context.inherits(nh.getDataContext()))
+		SemanticContext semantic_context = ((JNodeContext)getContext()).semantic_context;
+		//foreach (ASTNode nh; p_handle_.getHandleData(); semantic_context.inherits(nh.getContext()))
 		//	return (VT)nh;
 		for (AHandleData nh = p_handle_.getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
-			if (semantic_context.inherits(nh.getDataContext()))
+			if (semantic_context.inherits(nh.getContext()))
 				return (VT)nh;
 		}
 		return null;
@@ -57,11 +56,11 @@ public class JNode extends AHandleData implements JConstants {
 	protected static JNode getJData(ANode n) {
 		if !(n instanceof ASTNode)
 			return null;
-		Context bend_context = ((WorkerThread)Thread.currentThread()).bend_context;
-		//foreach (JNode nh; n.handle().getHandleData(); bend_context == nh.getDataContext())
+		ANodeContext bend_context = ((WorkerThread)Thread.currentThread()).bend_context;
+		//foreach (JNode nh; n.handle().getHandleData(); bend_context == nh.getContext())
 		//	return nh;
 		for (AHandleData nh = n.handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
-			if (bend_context == nh.getDataContext() && nh instanceof JNode)
+			if (bend_context == nh.getContext() && nh instanceof JNode)
 				return (JNode)nh;
 		}
 		return null;

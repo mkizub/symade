@@ -3,9 +3,11 @@ package kiev.parser;
 import syntax kiev.Syntax;
 
 public final class Parser extends kiev050 {
-	public Parser(Env env, char[] file_chars, int start, int length) {
+	public Parser(Env env, SemanticContext semanticContext, ANodeContext syntaxContext, char[] file_chars, int start, int length) {
 		super(new JFlexToJavaCCAdapter(file_chars, start, length));
 		this.curEnv = env;
+		this.semanticContext = semanticContext;
+		this.syntaxContext = syntaxContext;
 	}
 
 }
@@ -16,6 +18,8 @@ public interface ParserConstants extends kiev050Constants {
 public abstract class ParserBase {
 
 	public Env				curEnv;
+	public SemanticContext	semanticContext;
+	public ANodeContext		syntaxContext;
 	public FileUnit			curFileUnit;
 	public boolean			interface_only = false;
 
@@ -98,7 +102,7 @@ public abstract class ParserBase {
 		}
 		if (sym == null)
 			sym = new Symbol(name);
-		TypeAssign arg = new TypeAssign(sym);
+		TypeAssign arg = new TypeAssign(null, syntaxContext, sym);
 		arg.pos = pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);
@@ -116,7 +120,7 @@ public abstract class ParserBase {
 		}
 		if (sym == null)
 			sym = new Symbol(name);
-		TypeConstr arg = new TypeConstr(sym);
+		TypeConstr arg = new TypeConstr(null, syntaxContext, sym);
 		arg.pos = pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg);

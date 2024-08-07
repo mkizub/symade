@@ -271,7 +271,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 				Kiev.reportWarning(td,"Class "+snode+"."+sname+" already exists and will not be generated");
 			return td.getType(env);
 		}
-		Struct s = this.env.newStruct(sname,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),null);
+		Struct s = this.env.newStruct(sname,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,
+				new JavaClass(null,Kiev.getSemanticContext()),null);
 		if (!s.isAttached())
 			snode.members.add(s);
 		{
@@ -1077,7 +1078,8 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 	private Struct makeNodeValuesClass(Struct iface, Struct impl) {
 		foreach (Struct s; iface.members; s.sname == "VVV")
 			return s; // already generated or manually specified
-		Struct s = this.env.newStruct("VVV",iface,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),null);
+		Struct s = this.env.newStruct("VVV",iface,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC,
+				new JavaClass(null,Kiev.getSemanticContext()),null);
 		if (!s.isAttached())
 			iface.members += s;
 	super_vvv:

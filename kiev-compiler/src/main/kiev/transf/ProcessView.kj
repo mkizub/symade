@@ -225,7 +225,8 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 		// generate implementation
 		UserMeta view_meta = (UserMeta)clazz.getMeta("kiev·stdlib·meta·ViewOf");
 		if (view_meta != null && view_meta.getZ("iface")) {
-			impl = this.env.newStruct(nameIFaceImpl,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),null);
+			impl = this.env.newStruct(nameIFaceImpl,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,
+					new JavaClass(null,Kiev.getSemanticContext()),null);
 			if (clazz.isInterfaceOnly())
 				impl.is_interface_only = true;
 			impl.pos = clazz.pos;

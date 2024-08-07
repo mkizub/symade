@@ -32,23 +32,23 @@ public class KievProjectorFactory extends DefaultNodeProjectorFactory {
 	static final Class[] exprClasses = new Class[] {
 		TypeExpr.class, EToken.class,
 		RuleIsoneofExpr.class, RuleIstheExpr.class,
-		IncrementExpr.class, UnaryExpr.class, BinaryExpr.class, AssignExpr.class, ModifyExpr.class,      
+		IncrementExpr.class, UnaryExpr.class, BinaryExpr.class, AssignExpr.class, ModifyExpr.class,
 		BooleanNotExpr.class, BinaryBoolExpr.class, BinaryBooleanAndExpr.class, BinaryBooleanOrExpr.class,
 		InstanceofExpr.class, CastExpr.class, ReinterpExpr.class, ConditionalExpr.class,
 		AccessExpr.class,IFldExpr.class,SFldExpr.class,ContainerAccessExpr.class,LVarExpr.class,
 		ConstByteExpr.class, ConstShortExpr.class, ConstIntExpr.class, ConstLongExpr.class,
-		ConstFloatExpr.class, ConstDoubleExpr.class, ConstBoolExpr.class, ConstNullExpr.class, 
+		ConstFloatExpr.class, ConstDoubleExpr.class, ConstBoolExpr.class, ConstNullExpr.class,
 		ConstCharExpr.class, ConstStringExpr.class, ConstEnumExpr.class,
 		ThisExpr.class, SuperExpr.class, OuterThisAccessExpr.class,
 		CallExpr.class, CtorCallExpr.class, ClosureCallExpr.class,
-		TypeNameRef.class, TypeNameArgsRef.class, TypeInnerNameRef.class, TypeExpr.class, 
+		TypeNameRef.class, TypeNameArgsRef.class, TypeInnerNameRef.class, TypeExpr.class,
 	};
-	
+
 	public final Env env;
 	public final KievSyntax kiev_stx;
 
 	public KievProjectorFactory(Env env) {
-		super(new ProjectionContext());
+		super(new ProjectionContext(env));
 		this.env = env;
 		this.kiev_stx = (KievSyntax) env.resolveGlobalDNode("kiev·Syntax");
 	}
@@ -79,7 +79,7 @@ public class KievProjectorFactory extends DefaultNodeProjectorFactory {
 }
 
 public class KievExprProjector implements NodeProjector, ChangeListener {
-	
+
 	protected final KievProjectorFactory    npfactory;
 	protected       ENode                   src_node;
 	protected       KievExprNode            dst_node;
@@ -97,7 +97,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 	public void project() {
 		addExpr(src_node);
 	}
-	
+
 	private void addExpr(INode node) {
 		switch (node) {
 		case EToken:
@@ -270,7 +270,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 			}
 			return;
 		}
-		
+
 		if (!Arrays.contains(npfactory.exprClasses, node.getClass())) {
 			dst_node.add(npfactory.projectNode(node));
 			return;
@@ -369,7 +369,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 			dst_node = null;
 		}
 	}
-	
+
 	protected void ignoreSrcCallbackEvent(AttrSlot slot, Object value, int idx) {
 		this.ignore_notification = new IgnoredNodeChangeInfo(src_node, slot, value, idx);
 	}
@@ -387,16 +387,16 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 public class KievExprNode extends ANode {
 	@nodeAttr
 	public ANode∅ nodes;
-	
+
 	public boolean unsaved;
 	public boolean invalid;
-	
+
 	KievExprProjector projector;
-	
+
 	public KievExprNode() {
 		super(new AHandle(), null);
 	}
-	
+
     public String toString() {
     	StringBuffer sb = new StringBuffer();
 		sb.append("expr:");
@@ -404,7 +404,7 @@ public class KievExprNode extends ANode {
 	    	sb.append(' ').append(n);
         return sb.toString();
     }
-	
+
 	public void add(INode node) {
 		if (node instanceof KievExprNode) {
 			foreach (INode n; node.nodes.delToArray())
@@ -459,7 +459,7 @@ public class KievETokenNode extends ANode implements ASTToken {
 	@nodeAttr public String		text;
 	@nodeData public ETokenKind	base_kind;
 	@nodeData public INode      value;
-	
+
 	public KievETokenNode() {
 		super(new AHandle(), null);
 		this.base_kind = ETokenKind.UNKNOWN;
@@ -474,11 +474,11 @@ public class KievETokenNode extends ANode implements ASTToken {
 		this.text = text;
 		this.base_kind = kind;
 	}
-	
+
 	public String toString() {
 		return text;
 	}
-	
+
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.content_change) {
 			if (info.slot.name == "text" || info.slot.name == "base_kind") {
@@ -495,11 +495,11 @@ public class KievETokenNode extends ANode implements ASTToken {
 		this.value = null;
 		this.text = (val == null) ? null : val.intern();
 	}
-	
+
 	public String getTokenText() {
 		return this.text;
 	}
-	
+
 	public boolean isIdentifier() {
 		if (base_kind == ETokenKind.UNKNOWN)
 			guessKind();
@@ -525,7 +525,7 @@ public class KievETokenNode extends ANode implements ASTToken {
 			return new TypeNameRef(pos, text, ((TypeDecl)value).getType(env));
 		return null;
 	}
-	
+
 	public DNode asScope(Env env) {
 		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
@@ -533,7 +533,7 @@ public class KievETokenNode extends ANode implements ASTToken {
 			return (DNode)value;
 		return null;
 	}
-	
+
 	public ENode asExpr(Env env) {
 		guessKind();
 		if (value instanceof ConstExpr)
@@ -612,12 +612,12 @@ public class KievETokenNode extends ANode implements ASTToken {
 				this.value = new ConstDoubleExpr(f);
 			return;
 		}
-		
+
 		if (patternIdent.matcher(text).matches())
 			this.base_kind = ETokenKind.MAYBE_IDENTIFIER;
 		else if (patternOper.matcher(text).matches())
 			this.base_kind = ETokenKind.MAYBE_OPERATOR;
-		
+
 		// resolve in the path of scopes
 		ResInfo info = new ResInfo(Env.getEnv(),this,text);
 		if (PassInfo.resolveNameR(this,info)) {
@@ -635,6 +635,6 @@ public class KievETokenNode extends ANode implements ASTToken {
 			}
 		}
 	}
-	
+
 }
 
