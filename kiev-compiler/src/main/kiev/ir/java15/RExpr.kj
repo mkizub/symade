@@ -174,7 +174,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 				continue;
 			i++;
 		}
-		Field f = new Field(nameTypeInfo+"$"+i,tie.getType(env),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
+		Field f = new Field(null,clz.getContext(), nameTypeInfo+"$"+i,tie.getType(env),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		f.init = new Copier().copyFull(tie);
 		clz.addField(f);
 		resolveDNode(f,env);
@@ -220,7 +220,7 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 			replaceWithNodeResolve(env, reqType, new SFldExpr(pos,f));
 			return;
 		}
-		Field f = new Field("$assertionsEnabled", env.tenv.tpBoolean, ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
+		Field f = new Field(null,getContext(), "$assertionsEnabled", env.tenv.tpBoolean, ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
 		clazz.members.add(f);
 		f.init = new CallExpr(0,
 			new TypeClassExpr(0,new TypeRef(clazz.getType(env))),

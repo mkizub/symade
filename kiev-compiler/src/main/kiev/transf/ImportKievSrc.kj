@@ -265,7 +265,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					td.setSynthetic(true);
 					me.members.append(td);
 					me.ometa_tdef = td;
-					Field f = new Field(fldName,td.getAType(env),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
+					Field f = new Field(null,getContext(), fldName,td.getAType(env),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
 					f.pos = me.pos;
 					me.members.append(f);
 				}
@@ -694,7 +694,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				WBCCondition inv = (WBCCondition)me.members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new MethodImpl(inv.sname,this.env.getTypeEnv().tpVoid,inv.getFlags());
+				Method m = new MethodImpl(null,getContext(), inv.sname,this.env.getTypeEnv().tpVoid,inv.getFlags());
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m,me,Struct.nodeattr$members);
@@ -706,12 +706,12 @@ public final class KievFE_Pass3 extends TransfProcessor {
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(env, nameInstance, false) == null) {
-				Field inst = new Field(nameInstance, me.getType(env), ACC_STATIC|ACC_FINAL|ACC_PUBLIC|ACC_SYNTHETIC);
+				Field inst = new Field(null,getContext(), nameInstance, me.getType(env), ACC_STATIC|ACC_FINAL|ACC_PUBLIC|ACC_SYNTHETIC);
 				inst.pos = me.pos;
 				inst.init = new NewExpr(me.pos, me.getType(env), ENode.emptyArray);
 				me.members += inst;
 
-				Method get = new MethodImpl("getInstance", me.getType(env), ACC_STATIC|ACC_PUBLIC /*|ACC_SYNTHETIC*/);
+				Method get = new MethodImpl(null,getContext(), "getInstance", me.getType(env), ACC_STATIC|ACC_PUBLIC /*|ACC_SYNTHETIC*/);
 				get.pos = me.pos;
 				get.body = new Block(me.pos, new ENode[]{
 					new ReturnStat(me.pos, new SFldExpr(me.pos,inst))

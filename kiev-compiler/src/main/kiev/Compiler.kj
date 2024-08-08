@@ -32,7 +32,7 @@ import java.lang.management.*;
 public class EditorThreadGroup extends WorkerThreadGroup {
 	public EditorThreadGroup(WorkerThreadGroup bthr) {
 		super(bthr, "editor");
-		semantic_context = new SemanticContext(bthr.theEnv, bthr.semantic_context);
+		semantic_context = new SemanticContext(bthr.semantic_context);
 	}
 }
 
@@ -47,7 +47,7 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 	private FrontendThreadGroup() {
 		super(null, "frontend");
 		this.theEnv = Env.createEnv();
-		semantic_context = new SemanticContext(theEnv, null);
+		semantic_context = new SemanticContext(theEnv.getEnvContext());
 		syntax_context = semantic_context;
 	}
 
@@ -279,7 +279,7 @@ stop:;
 public class CompilerThreadGroup extends WorkerThreadGroup {
 	public CompilerThreadGroup(WorkerThreadGroup bthr) {
 		super(bthr, "compiler");
-		semantic_context = new SemanticContext(bthr.theEnv, bthr.semantic_context);
+		semantic_context = new SemanticContext(bthr.semantic_context);
 		bend_context = new kiev.be.java15.JNodeContext(semantic_context);
 	}
 

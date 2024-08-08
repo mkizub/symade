@@ -269,11 +269,11 @@ public class StdTypes {
 			arrayMetaType = new ArrayMetaType(this,tdArray);
 			tpArrayOfAny = ArrayType.newArrayType(tpAny);
 			kiev_stdlib.pkg_members.add(tdArray);
-			Field length = new Field("length", tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
+			Field length = new Field(null,envCtx, "length", tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
 			tdArray.members.add(length);
-			Method get = new MethodImpl("get", tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
-			get.params.add(new LVar(0,"idx",tpInt,Var.VAR_LOCAL,0));
+			Method get = new MethodImpl(null,envCtx, "get", tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
+			get.params.add(new LVar(null,envCtx, 0,"idx",tpInt,Var.VAR_LOCAL,0));
 			get.aliases += new OperatorAlias(Constants.nameArrayGetOp, get);
 			//CoreExpr ce = new CoreExpr();
 			//get.body = ce;

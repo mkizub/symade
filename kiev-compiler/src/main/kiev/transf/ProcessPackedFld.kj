@@ -134,7 +134,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 					mpr.size += mpr.size;
 				} else {
 					// Create
-					Field p = new Field("$pack$"+countPackerFields(s),tenv.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
+					Field p = new Field(null,getContext(), "$pack$"+countPackerFields(s),tenv.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
 					p.setMeta(mpr);
@@ -147,7 +147,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 			f.setVirtual(true);
 			// setter
 			if (!f.isFinal() && MetaAccess.writeable(f)) {
-				Method set_var = new MethodSetter(f);
+				Method set_var = new MethodSetter(null,getContext(), f);
 				set_var.setFinal(true);
 				set_var.setAbstract(false);
 				if (s.isInterface())
@@ -159,13 +159,13 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 					set_var.body = body;
 
 					Field mpfld = (Field)mp.fld.dnode;
-					Var fval = new LVar(0,"tmp$fldval",tenv.tpInt,Var.VAR_LOCAL,0);
+					Var fval = new LVar(null,getContext(), 0,"tmp$fldval",tenv.tpInt,Var.VAR_LOCAL,0);
 					if (mpfld.isStatic())
 						fval.init = new SFldExpr(f.pos,mpfld);
 					else
 						fval.init = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
 					body.addSymbol(fval);
-					Var tmp = new LVar(0,"tmp$val",tenv.tpInt,Var.VAR_LOCAL,0);
+					Var tmp = new LVar(null,getContext(), 0,"tmp$val",tenv.tpInt,Var.VAR_LOCAL,0);
 					if (f.getType(env) ≡ tenv.tpBoolean)
 						tmp.init = new ReinterpExpr(f.pos, tenv.tpInt, new LVarExpr(f.pos,value));
 					else
@@ -193,7 +193,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
-				Method get_var = new MethodGetter(f);
+				Method get_var = new MethodGetter(null,getContext(), f);
 				get_var.setFinal(true);
 				get_var.setAbstract(false);
 				if (s.isInterface())

@@ -211,7 +211,7 @@ public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 		Type tp = sel.getType(env);
 		if (!tp.isReference())
 			throw new CompilerException(this, "Type switch selector must be the reference type");
-		Field typehash = new Field("fld$sel$"+Integer.toHexString(sel.hashCode()),
+		Field typehash = new Field(null,getContext(), "fld$sel$"+Integer.toHexString(sel.hashCode()),
 			env.tenv.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 		ctx_tdecl.members.add(typehash);
 		this.sel_to_int = new CallExpr(pos,
@@ -281,7 +281,7 @@ public static final view RMatchStat of MatchStat extends RSwitchStat {
 				tp.meta_type.tdecl.resolveMethod(env, nameGetCaseTag, env.tenv.tpInt),
 				ENode.emptyArray
 				);
-		tmp_var = new LVar(pos,"$tmp",sel.getType(env),Var.VAR_LOCAL,0);
+		tmp_var = new LVar(null,getContext(), pos,"$tmp",sel.getType(env),Var.VAR_LOCAL,0);
 		int defindex = -1;
 		RBlock.resolveStats(env.tenv.tpVoid, Env.getSpacePtr(this,"stats"),env);
 		for(int i=0; i < cases.length; i++) {

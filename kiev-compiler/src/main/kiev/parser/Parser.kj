@@ -128,7 +128,7 @@ public abstract class ParserBase {
 	}
 
 	final Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
-		Constructor meth = new Constructor(0);
+		Constructor meth = new Constructor(null,syntaxContext, 0);
 		meth.pos = id.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(meth);
@@ -138,17 +138,17 @@ public abstract class ParserBase {
 	final Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		Method meth;
 		if (modifiers != null && modifiers.isGetter()) {
-			meth = new MethodGetter();
+			meth = new MethodGetter(null,syntaxContext);
 			meth.sname = id.sname;
 			meth.type_ret = ret;
 		}
 		else if (modifiers != null && modifiers.isSetter()) {
-			meth = new MethodSetter();
+			meth = new MethodSetter(null,syntaxContext);
 			meth.sname = id.sname;
 			meth.type_ret = ret;
 		}
 		else {
-			meth = new MethodImpl(id.sname, ret, 0);
+			meth = new MethodImpl(null,syntaxContext, id.sname, ret, 0);
 		}
 		meth.pos = id.pos;
 		if (modifiers != null)
@@ -157,7 +157,7 @@ public abstract class ParserBase {
 	}
 
 	final RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		RuleMethod meth = new RuleMethod(id.sname, 0);
+		RuleMethod meth = new RuleMethod(null,syntaxContext, id.sname, 0);
 		meth.pos = id.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(meth);
@@ -167,7 +167,7 @@ public abstract class ParserBase {
 	final Field mkField(Symbol id, ASTModifiers modifiers, TypeRef tp, ENode init) {
 		if (tp == null)
 			tp = new TypeDeclRef();
-		Field f = new Field(id.sname, tp, 0);
+		Field f = new Field(null,syntaxContext, id.sname, tp, 0);
 		f.pos = id.pos;
 		if (modifiers != null)
 			modifiers.copyToNode(f);
@@ -176,7 +176,7 @@ public abstract class ParserBase {
 	}
 
 	final Field mkEnumField(Symbol id, ASTModifiers modifiers) {
-		Field f = new Field(id.sname,new TypeDeclRef(),0);
+		Field f = new Field(null,syntaxContext, id.sname,new TypeDeclRef(),0);
 		f.mflags_is_enum = true;
 		f.pos = id.pos;
 		if (modifiers != null)
@@ -188,7 +188,7 @@ public abstract class ParserBase {
 	}
 
 	final Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
-		Field f = new Field(id.sname,tp,0|AccessFlags.ACC_PUBLIC);
+		Field f = new Field(null,syntaxContext, id.sname,tp,0|AccessFlags.ACC_PUBLIC);
 		f.pos = id.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(f);
@@ -198,7 +198,7 @@ public abstract class ParserBase {
 	final LVar mkVar(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		if (tp == null)
 			tp = new TypeDeclRef();
-		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
+		LVar v = new LVar(null,syntaxContext, id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
 		if (modifiers != null)
 			modifiers.copyToNode(v);
 		return v;
@@ -207,14 +207,14 @@ public abstract class ParserBase {
 	final LVar mkRuleVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
 			tp = new Copier().copyFull(tp);
-		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
+		LVar v = new LVar(null,syntaxContext, id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
 		if (modifiers != null)
 			modifiers.copyToNode(v);
 		return v;
 	}
 
 	final LVar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
-		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, 0);
+		LVar v = new LVar(null,syntaxContext, id.pos, id.sname, vt, LVar.VAR_LOCAL, 0);
 		if (st != null)
 			v.stype = st;
 		if (modifiers != null)
@@ -223,7 +223,7 @@ public abstract class ParserBase {
 	}
 
 	final LVar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
-		LVar v = new LVar(id.pos, id.sname, vt, LVar.VAR_LOCAL, AccessFlags.ACC_FINAL);
+		LVar v = new LVar(null,syntaxContext, id.pos, id.sname, vt, LVar.VAR_LOCAL, AccessFlags.ACC_FINAL);
 		if (modifiers != null)
 			modifiers.moveToNode(v);
 		return v;

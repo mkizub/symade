@@ -132,7 +132,7 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 		SwitchStat vn = vn();
 		Label lblbrk = vn.lblbrk;
 		if (lblbrk == null)
-			vn.lblbrk = lblbrk = new Label(null, getContext());
+			vn.lblbrk = lblbrk = new Label(null, vnContext());
 		return (JLabel)lblbrk;
 	}
 
@@ -140,7 +140,7 @@ public class JSwitchStat extends JBlock implements BreakTarget {
 		SwitchStat vn = vn();
 		Label lblcnt = vn.lblcnt;
 		if (lblcnt == null)
-			vn.lblcnt = lblcnt = new Label(null, getContext());
+			vn.lblcnt = lblcnt = new Label(null, vnContext());
 		return (JLabel)lblcnt;
 	}
 
@@ -475,7 +475,7 @@ public class JFinallyInfo extends JENode {
 	public void generate(Code code, Type reqType) {
 		FinallyInfo vn = vn();
 		JENode body = (JENode)vn.body;
-		JVar arg = (JVar)new LVar(0,"",code.tenv.tpThrowable,Var.VAR_LOCAL,0);
+		JVar arg = (JVar)new LVar(null,vnContext(), 0,"",code.tenv.tpThrowable,Var.VAR_LOCAL,0);
 		try {
 			CodeCatchInfo null_ci = null;
 			// This label must be created by TryStat's generate routine;

@@ -93,8 +93,8 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				break;
 			}
 			if (!ctor_found) {
-				Constructor ctor = new Constructor(ACC_PUBLIC);
-				ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL|ACC_SYNTHETIC));
+				Constructor ctor = new Constructor(null,getContext(), ACC_PUBLIC);
+				ctor.params.append(new LVar(null,getContext(), clazz.pos,nameImpl,view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL|ACC_SYNTHETIC));
 				ctor.body = new Block(clazz.pos);
 				clazz.members.add(ctor);
 			}
@@ -110,7 +110,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", clazz.getType(env), ACC_PUBLIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl(null,getContext(), "$cast", clazz.getType(env), ACC_PUBLIC|ACC_SYNTHETIC);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				if (clazz.isAbstract()) {
 					cast.setAbstract(true);
@@ -130,7 +130,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", view_of.getType(env), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+				Method cast = new MethodImpl(null,getContext(), "$cast", view_of.getType(env), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				clazz.addMethod(cast);
 				if (!clazz.isInterface()) {
@@ -146,9 +146,9 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("makeView", clazz.getType(env), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl(null,getContext(), "makeView", clazz.getType(env), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
-				cast.params.add(new LVar(0,"obj",view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL));
+				cast.params.add(new LVar(null,getContext(), 0,"obj",view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL));
 				cast.body = new Block();
 				clazz.addMethod(cast);
 			}
@@ -294,7 +294,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 		// generate a field for the object this view represents
 		Field fview = impl.resolveField(env, nameImpl, false);
 		if (fview == null)
-			fview = impl.addField(new Field(nameImpl,view_of.getType(env), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+			fview = impl.addField(new Field(null,getContext(), nameImpl,view_of.getType(env), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		foreach (Constructor ctor; impl.members; !ctor.isStatic()) {
 			if (clazz.isInterfaceOnly()) {

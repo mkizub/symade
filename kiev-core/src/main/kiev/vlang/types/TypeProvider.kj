@@ -319,7 +319,7 @@ public final class ASTNodeMetaType extends MetaType {
 					AttrSlot a = values[i];
 					EnvContext context = tenv.env.getEnvContext();
 					types[i] = new TypeAssign(null,context, new Symbol("attr$"+a.name+"$type"), new ASTNodeType(a.typeinfo.clazz));
-					fields[i] = new Field(a.name,new ASTNodeType(a.typeinfo.clazz),ACC_PUBLIC);
+					fields[i] = new Field(null,context, a.name,new ASTNodeType(a.typeinfo.clazz),ACC_PUBLIC);
 				} else {
 					assert(values[i] == ast_sup.values[i-n]);
 					types[i] = ast_sup.types[i-n];

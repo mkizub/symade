@@ -117,7 +117,6 @@ public abstract class LangBase implements Language {
 			if (nm == null || nm.length() == 0)
 				nm = c.getSimpleName();
 			allNodesMap.put(nm, c);
-			//nodeTemplates.put(c, new NodeCreator(c));
 		}
 	}
 
@@ -141,6 +140,10 @@ public abstract class LangBase implements Language {
 
 	public ANode makeNode(Class clazz, AHandle handle, ANodeContext context) {
 		NodeCreator creator = nodeTemplates.get(clazz);
+		if (creator == null) {
+			creator = new NodeCreator(clazz);
+			nodeTemplates.put(clazz, creator);
+		}
 		if (creator != null) {
 			return creator.newInstance(handle, context);
 		}

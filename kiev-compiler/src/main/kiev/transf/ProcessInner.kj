@@ -280,7 +280,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 				acc = ((LVarExpr)fa.obj).getVarSafe();
 			}
 			else {
-				Var var = new LVar(0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
+				Var var = new LVar(null,getContext(), 0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
 				var.init = ~fa.obj;
 				be.stats += var;
 				acc = var;
@@ -359,7 +359,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					Var var = new LVar(null,getContext(), 0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.stats += var;
 					acc = var;
@@ -432,14 +432,14 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					Var var = new LVar(null,getContext(), 0,"tmp$access",fa.obj.getType(env),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}
 				Var res = null;
 				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
+					res = new LVar(null,getContext(), 0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
 					be.addSymbol(res);
 				}
 				ConstExpr ce;
@@ -482,7 +482,7 @@ public final class InnerBE_Rewrite extends BackendProcessor implements Constants
 				Block be = new Block(ie.pos);
 				Var res = null;
 				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
+					res = new LVar(null,getContext(), 0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
 					be.addSymbol(res);
 				}
 				ConstExpr ce;

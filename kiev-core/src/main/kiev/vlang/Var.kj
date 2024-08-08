@@ -103,23 +103,37 @@ public abstract class Var extends DNode {
 
 	public static final Var[]	emptyArray = new Var[0];
 
-	public Var(int kind) {
+	protected Var(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	protected Var(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
+	protected Var(AHandle handle, ANodeContext context, Symbol symbol, int kind) {
+		super(handle, context, symbol);
 		this.mflags_var_kind = kind;
 	}
 
-	public Var(String name, TypeRef vtype, int kind, int flags)
+	protected Var(AHandle handle, ANodeContext context, int kind) {
+		super(handle, context);
+		this.mflags_var_kind = kind;
+	}
+
+	protected Var(AHandle handle, ANodeContext context, String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
-		this.sname = name;
+		super(handle, context, new Symbol(name));
 		this.vtype = vtype;
 		this.nodeflags = flags;
 		this.mflags_var_kind = kind;
 	}
 
-	public Var(String name, TypeRef vtype, int kind)
+	protected Var(AHandle handle, ANodeContext context, String name, TypeRef vtype, int kind)
 		require vtype != null;
 	{
-		this.sname = name;
+		super(handle, context, new Symbol(name));
 		this.vtype = vtype;
 		this.mflags_var_kind = kind;
 	}
@@ -244,26 +258,32 @@ public class LVar extends Var {
 	@DataFlowDefinition(in="this:in")	ENode			init;
 	}
 
-	public LVar() { super(VAR_LOCAL); }
+	public LVar(AHandle handle, ANodeContext context) {
+		super(handle, context, VAR_LOCAL);
+	}
 
-	public LVar(long pos, String name, Type tp, int kind, int flags)
+	public LVar(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol, VAR_LOCAL);
+	}
+
+	public LVar(AHandle handle, ANodeContext context, long pos, String name, Type tp, int kind, int flags)
 		require tp != null;
 	{
-		super(name,new TypeRef(tp),kind,flags);
+		super(handle, context, name, new TypeRef(tp), kind, flags);
 		this.pos = pos;
 	}
 
-	public LVar(long pos, String name, TypeRef vtype, int kind, int flags)
+	public LVar(AHandle handle, ANodeContext context, long pos, String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
-		super(name,vtype,kind,flags);
+		super(handle, context, name, vtype, kind, flags);
 		this.pos = pos;
 	}
 
-	public LVar(String name, Type tp)
+	public LVar(AHandle handle, ANodeContext context, String name, Type tp)
 		require tp != null;
 	{
-		super(name,new TypeRef(tp),VAR_LOCAL,0);
+		super(handle, context, name, new TypeRef(tp), VAR_LOCAL, 0);
 	}
 }
 
@@ -299,16 +319,24 @@ public class Field extends Var implements GlobalDNode {
 	@nodeAttr(ext_data=true)
 	public SymbolRef<Field>			nodeattr_of_attr;
 
-	public Field() { super(FIELD_NORMAL); }
-
-	public Field(int kind) { super(kind); }
-
-	public Field(String name, Type tp, int flags) {
-		super(name, new TypeRef(tp), FIELD_NORMAL, flags);
+	public Field(AHandle handle, ANodeContext context) {
+		super(handle, context, FIELD_NORMAL);
 	}
 
-	public Field(String name, TypeRef vtype, int flags) {
-		super(name, vtype, FIELD_NORMAL, flags);
+	public Field(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol, FIELD_NORMAL);
+	}
+
+	public Field(AHandle handle, ANodeContext context, int kind) {
+		super(handle, context, kind);
+	}
+
+	public Field(AHandle handle, ANodeContext context, String name, Type tp, int flags) {
+		super(handle, context, name, new TypeRef(tp), FIELD_NORMAL, flags);
+	}
+
+	public Field(AHandle handle, ANodeContext context, String name, TypeRef vtype, int flags) {
+		super(handle, context, name, vtype, FIELD_NORMAL, flags);
 	}
 
 	public Class[] getMetaFlags() { return Field.$meta_flags; }
@@ -332,12 +360,12 @@ public class Field extends Var implements GlobalDNode {
 		assert(isPrivate());
 		if (getter_from_inner != null && getter_from_inner.dnode != null)
 			return getter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), this.getType(env), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(null,getContext(), Env.ctxTDecl(this).allocateAccessName(), this.getType(env), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		if (isStatic()) {
 			m.block.stats += new SFldExpr(pos,this);
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
+			Var self = new LVar(null,getContext(), pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
 			m.params += self;
 			m.block.stats += new IFldExpr(pos,new LVarExpr(pos,self),this);
 		}
@@ -351,14 +379,14 @@ public class Field extends Var implements GlobalDNode {
 		assert(isPrivate());
 		if (setter_from_inner != null && setter_from_inner.dnode != null)
 			return setter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), env.tenv.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
-		Var val = new LVar(pos,"value",this.getType(env),Var.VAR_LOCAL,0);
+		MethodImpl m = new MethodImpl(null,getContext(), Env.ctxTDecl(this).allocateAccessName(), env.tenv.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
+		Var val = new LVar(null,getContext(), pos,"value",this.getType(env),Var.VAR_LOCAL,0);
 		m.params += val;
 		m.body = new Block();
 		if (isStatic()) {
 			m.block.stats += new ExprStat(pos,new AssignExpr(pos,new SFldExpr(pos,this),new LVarExpr(pos,val)));
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
+			Var self = new LVar(null,getContext(), pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
 			m.params.insert(0,self);
 			m.block.stats += new ExprStat(pos,new AssignExpr(pos,new IFldExpr(pos,new LVarExpr(pos,self),this),new LVarExpr(pos,val)));
 		}

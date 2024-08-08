@@ -26,7 +26,7 @@ public final view RSynchronizedStat of SynchronizedStat extends RENode {
 	public void resolveENode(Type reqType, Env env) {
 		try {
 			resolveENode(expr,null,env);
-			expr_var = new LVar(pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
+			expr_var = new LVar(null,getContext(), pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 		try {
 			resolveENode(body,env.tenv.tpVoid,env);

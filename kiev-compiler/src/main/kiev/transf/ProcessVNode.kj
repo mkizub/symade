@@ -312,7 +312,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		StdTypes tenv = this.env.getTypeEnv();
 		// make constructor
 		{
-			Constructor ctor = new Constructor(0);
+			Constructor ctor = new Constructor(null,getContext(), 0);
 			s.members.add(ctor);
 			Constructor sctor = (Constructor)s.super_types[0].getStruct(env).resolveMethod(env,null,tenv.tpVoid,tenv.tpString,tpParentAttrSlot,tenv.tpTypeInfo);
 			ENode parent_fld_expr = (parent_attr_slot == null ? new ConstNullExpr() : new SFldExpr(0,parent_attr_slot));
@@ -332,8 +332,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			if (isArr) {
 				// add public N[] get(ASTNode parent)
 				{
-					Method getArr = new MethodImpl("getArray",new ArrayType(tpINode),ACC_PUBLIC | ACC_SYNTHETIC);
-					getArr.params.add(new LVar(0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
+					Method getArr = new MethodImpl(null,getContext(), "getArray",new ArrayType(tpINode),ACC_PUBLIC | ACC_SYNTHETIC);
+					getArr.params.add(new LVar(null,getContext(), 0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
 					s.addMethod(getArr);
 					getArr.body = new Block(0);
 					ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(env), new LVarExpr(0, getArr.params[0]) ), f);
@@ -341,9 +341,9 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 				}
 				// add public void set(ASTNode parent, N[]:Object narr)
 				{
-					Method setArr = new MethodImpl("setArray",tenv.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
-					setArr.params.add(new LVar(0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
-					setArr.params.add(new LVar(0, "narr", tenv.tpObject /*new ArrayType(tpINode)*/, Var.VAR_LOCAL, ACC_FINAL));
+					Method setArr = new MethodImpl(null,getContext(), "setArray",tenv.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+					setArr.params.add(new LVar(null,getContext(), 0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
+					setArr.params.add(new LVar(null,getContext(), 0, "narr", tenv.tpObject /*new ArrayType(tpINode)*/, Var.VAR_LOCAL, ACC_FINAL));
 					s.addMethod(setArr);
 					setArr.body = new Block(0);
 					ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(env), new LVarExpr(0, setArr.params[0]) ), f);
@@ -354,8 +354,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			} else {
 				// add public N[] get(ASTNode parent)
 				{
-					Method getVal = new MethodImpl("get",tenv.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
-					getVal.params.add(new LVar(0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
+					Method getVal = new MethodImpl(null,getContext(), "get",tenv.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+					getVal.params.add(new LVar(null,getContext(), 0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
 					s.addMethod(getVal);
 					Block block = new Block(0);
 					getVal.body = block;
@@ -367,9 +367,9 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 				}
 				// add public void set(ASTNode parent, Object narr)
 				{
-					Method setVal = new MethodImpl("set",tenv.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
-					setVal.params.add(new LVar(0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
-					setVal.params.add(new LVar(0, "val", tenv.tpObject, Var.VAR_LOCAL, ACC_FINAL));
+					Method setVal = new MethodImpl(null,getContext(), "set",tenv.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+					setVal.params.add(new LVar(null,getContext(), 0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
+					setVal.params.add(new LVar(null,getContext(), 0, "val", tenv.tpObject, Var.VAR_LOCAL, ACC_FINAL));
 					s.addMethod(setVal);
 					setVal.body = new Block(0);
 					if (!f.isFinal() && MetaAccess.writeable(f)) {
@@ -397,7 +397,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 				}
 				// add public boolean isWrittable()
 				if (f.isFinal() || !MetaAccess.writeable(f)) {
-					Method isWrittable = new MethodImpl("isWrittable",tenv.tpBoolean,ACC_PUBLIC | ACC_SYNTHETIC);
+					Method isWrittable = new MethodImpl(null,getContext(), "isWrittable",tenv.tpBoolean,ACC_PUBLIC | ACC_SYNTHETIC);
 					s.addMethod(isWrittable);
 					isWrittable.body = new Block(0);
 					isWrittable.block.stats.add(new ReturnStat(f.pos,new ConstBoolExpr(false)));
@@ -534,7 +534,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 					Kiev.reportWarning(f_attr,"Field "+s+"."+fname+" already exists and will not be generated");
 				dnaflds.append(f_attr);
 			} else {
-				Field dnaf = new Field(fname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
+				Field dnaf = new Field(null,getContext(), fname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
 				s.addField(dnaf);
 				dnaflds.append(dnaf);
 				f.nodeattr_of_attr = new SymbolRef<Field>(dnaf);
@@ -547,7 +547,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 				f.setAbstract(true);
 			}
 		}
-		s.addField(new Field(nameEnumValuesFld, new ArrayType(tpAttrSlot), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
+		s.addField(new Field(null,getContext(), nameEnumValuesFld, new ArrayType(tpAttrSlot), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		// node type info
 		ENode node_defined_slots;
@@ -561,7 +561,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		}
 
 
-		Field fld_nti = new Field("$node_type_info", tpNodeTypeInfo, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
+		Field fld_nti = new Field(null,getContext(), "$node_type_info", tpNodeTypeInfo, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
 		fld_nti.init = new NewExpr(0, tpNodeTypeInfo, new ENode[]{
 			new TypeClassExpr(0, new TypeRef(s.getType(env))),
 			node_defined_slots
@@ -863,7 +863,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			if (!s.isInterfaceOnly())
 				Kiev.reportWarning(iface,"Method "+iface+"."+nameEnumValues+" already exists, @node member is not generated");
 		} else {
-			Method elems = new MethodImpl(nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method elems = new MethodImpl(null,getContext(), nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
 			iface.addMethod(elems);
 			if (!s.isInterfaceOnly()) {
 				elems.body = new Block(0);
@@ -886,7 +886,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			if (!s.isInterfaceOnly())
 				Kiev.reportWarning(iface,"Method "+iface+"."+"getNodeTypeInfo"+" already exists, @node member is not generated");
 		} else {
-			Method mnti = new MethodImpl("getNodeTypeInfo",tpNodeTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method mnti = new MethodImpl(null,getContext(), "getNodeTypeInfo",tpNodeTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC);
 			iface.addMethod(mnti);
 			if (!s.isInterfaceOnly()) {
 				mnti.body = new Block(0);
@@ -904,7 +904,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			//if (!s.isInterfaceOnly())
 			//	Kiev.reportWarning(s,"Method "+s+"."+"getCompilerLang already exists, @node member is not generated");
 		} else {
-			Method lng = new MethodImpl("getCompilerLang",tpLanguageIface,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method lng = new MethodImpl(null,getContext(), "getCompilerLang",tpLanguageIface,ACC_PUBLIC | ACC_SYNTHETIC);
 			impl.addMethod(lng);
 			if (!s.isInterfaceOnly()) {
 				lng.body = new Block();
@@ -932,7 +932,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			//if (!s.isInterfaceOnly())
 			//	Kiev.reportWarning(s,"Method "+s+"."+"getCompilerNodeName already exists, @node member is not generated");
 		} else {
-			Method nname = new MethodImpl("getCompilerNodeName",tenv.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method nname = new MethodImpl(null,getContext(), "getCompilerNodeName",tenv.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
 			impl.addMethod(nname);
 			if (!s.isInterfaceOnly()) {
 				nname.body = new Block();
@@ -953,15 +953,15 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			if (!s.isInterfaceOnly())
 				Kiev.reportWarning(impl,"Method "+impl+"."+"copyTo(...) already exists, @node member is not generated");
 		} else {
-			Method copyV = new MethodImpl("copyTo",tenv.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method copyV = new MethodImpl(null,getContext(), "copyTo",tenv.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			Var tn;
 			Var cc;
-			copyV.params.append(tn=new LVar(0,"to$node", tenv.tpObject, Var.VAR_LOCAL, 0));
-			copyV.params.append(cc=new LVar(0,"in$context", tpCopyContext, Var.VAR_LOCAL, 0));
+			copyV.params.append(tn=new LVar(null,getContext(), 0,"to$node", tenv.tpObject, Var.VAR_LOCAL, 0));
+			copyV.params.append(cc=new LVar(null,getContext(), 0,"in$context", tpCopyContext, Var.VAR_LOCAL, 0));
 			impl.addMethod(copyV);
 			if (!s.isInterfaceOnly()) {
 				copyV.body = new Block();
-				Var v = new LVar(0,"node",impl.getType(env),Var.VAR_LOCAL,0);
+				Var v = new LVar(null,getContext(), 0,"node",impl.getType(env),Var.VAR_LOCAL,0);
 				if (isNodeKind(impl.super_types[0].getStruct(env))) {
 					CallExpr cae = new CallExpr(0,new SuperExpr(),
 						new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,tn), new LVarExpr(0,cc)});
@@ -1091,14 +1091,14 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			}
 		}
 
-		Constructor ctor = new Constructor(ACC_PUBLIC);
-		ctor.params += new LVar(0,"node",impl.getType(env),Var.VAR_LOCAL,0);
+		Constructor ctor = new Constructor(null,getContext(), ACC_PUBLIC);
+		ctor.params += new LVar(null,getContext(), 0,"node",impl.getType(env),Var.VAR_LOCAL,0);
 		ctor.body = new Block();
 		ctor.block.stats += new ExprStat(new CtorCallExpr(0,new SuperExpr(),new ENode[]{new LVarExpr(0,ctor.params[0])}));
 		s.members += ctor;
 
 		foreach (Field f; impl.members; !f.isStatic() && !f.isAbstract() && !f.isFinal() && f.getMeta(mnUnVersioned) == null) {
-			Field sf = new Field(f.sname,f.getType(env),ACC_SYNTHETIC);
+			Field sf = new Field(null,getContext(), f.sname,f.getType(env),ACC_SYNTHETIC);
 			s.members += sf;
 			ctor.block.stats += new ExprStat(new AssignExpr(0,new IFldExpr(0,new ThisExpr(),sf),new IFldExpr(0,new LVarExpr(0,ctor.params[0]),f,true)));
 		}
@@ -1242,7 +1242,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		//	});
 		//}
 		if (!isArr && isAtt) {
-			Var old = new LVar(body.pos,"$old",f.getType(env),Var.VAR_LOCAL,ACC_FINAL);
+			Var old = new LVar(null,getContext(), body.pos,"$old",f.getType(env),Var.VAR_LOCAL,ACC_FINAL);
 			old.init = new IFldExpr(0,new ThisExpr(),f);
 			body.stats.insert(0,old);
 			Kiev.runProcessorsOn(old);

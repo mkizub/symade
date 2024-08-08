@@ -115,7 +115,7 @@ public class JMethod extends JDNode {
 			try {
 				JVar thisPar = null;
 				if (!isStatic()) {
-					thisPar = (JVar)new LVar(vn().pos,Constants.nameThis,jctx_tdecl.getType(),Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					thisPar = (JVar)new LVar(null,vnContext(), vn().pos,Constants.nameThis,jctx_tdecl.getType(),Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
 				code.addVars(params);
@@ -301,7 +301,7 @@ public class JWBCCondition extends JDNode {
 			try {
 				JVar thisPar = null;
 				if( !isStatic() ) {
-					thisPar = (JVar)new LVar(m.vn().pos,Constants.nameThis,jctx_tdecl.getType(),Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					thisPar = (JVar)new LVar(null,vnContext(), m.vn().pos,Constants.nameThis,jctx_tdecl.getType(),Var.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params);

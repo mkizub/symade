@@ -34,10 +34,16 @@ public class RuleMethod extends Method {
 	          public int				max_vars;
 	          public int				index;		// index counter for RuleNode.idx
 
-	public RuleMethod() {}
+	public RuleMethod(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
-	public RuleMethod(String name, int fl) {
-		super(name, new TypeRef(Env.getEnv().tenv.tpRule), fl);
+	public RuleMethod(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
+	public RuleMethod(AHandle handle, ANodeContext context, String name, int fl) {
+		super(handle, context, name, new TypeRef(Env.getEnv().tenv.tpRule), fl);
 	}
 
 	public int allocNewBase(int n) {
@@ -539,7 +545,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public void testGenerate(Env env, SpacePtr space, Struct frame) {
 		RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
-		frame.members += new Field("$iter$"+iter_var,itype.getType(env),0);
+		frame.members += new Field(null,getContext(), "$iter$"+iter_var,itype.getType(env),0);
 	}
 }
 
@@ -628,7 +634,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public void testGenerate(Env env, SpacePtr space, Struct frame) {
 		boolean is_super = (this.obj instanceof SuperExpr);
 		Block rn = (Block)RewriteContext.rewriteByMacro(env, space, "kiev·ir·RuleTemplates", "mkRuleCallExpr", this, is_super);
-		frame.members += new Field("$rc$frame$"+env_var,env.tenv.tpRule,0);
+		frame.members += new Field(null,getContext(), "$rc$frame$"+env_var,env.tenv.tpRule,0);
 	}
 }
 

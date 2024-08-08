@@ -207,12 +207,12 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
 		if( itype ≡ env.tenv.tpRule ) {
-			iter = new LVar(pos,"$env",itype,Var.VAR_LOCAL,0);
+			iter = new LVar(null,getContext(), pos,"$env",itype,Var.VAR_LOCAL,0);
 		}
 		else if( var != null ) {
-			iter = new LVar(var.pos,var.sname+"$iter",itype,Var.VAR_LOCAL,0);
+			iter = new LVar(null,getContext(), var.pos,var.sname+"$iter",itype,Var.VAR_LOCAL,0);
 			if (mode == ForEachStat.ARRAY) {
-				iter_array = new LVar(container.pos,var.sname+"$arr",container.getType(env),Var.VAR_LOCAL,0);
+				iter_array = new LVar(null,getContext(), container.pos,var.sname+"$arr",container.getType(env),Var.VAR_LOCAL,0);
 			}
 		}
 		else {
@@ -385,7 +385,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			if (ce.getType(env).isInstanceOf(var.getType(env))) {
 				var_init = new AssignExpr(var.pos,new LVarExpr(var.pos,var),~ce);
 			} else {
-				Var tmp = new LVar(var.pos, "tmp", ce.getType(env), Var.VAR_LOCAL, ACC_FINAL);
+				Var tmp = new LVar(null,getContext(), var.pos, "tmp", ce.getType(env), Var.VAR_LOCAL, ACC_FINAL);
 				tmp.init = ~ce;
 				Block b = new Block();
 				b.addSymbol(tmp);

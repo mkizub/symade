@@ -98,7 +98,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
 			Kiev.reportWarning(m, "Creating @virtuial @abstract field "+name);
-			f = new Field(name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
+			f = new Field(null,getContext(), name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
 			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
@@ -172,7 +172,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
 			Kiev.reportWarning(m, "Creating @virtuial @abstract field "+name);
-			f = new Field(name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
+			f = new Field(null,getContext(), name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
 			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
@@ -323,7 +323,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 				get_found = true;
 		}
 		if( !set_found && !f.isFinal() && MetaAccess.writeable(f) ) {
-			Method set_var = new MethodSetter(f);
+			Method set_var = new MethodSetter(null,getContext(), f);
 			if (s.isInterface())
 				set_var.setFinal(false);
 			else if (f.getMeta(VNodeUtils.mnAtt) != null || f.getMeta(VNodeUtils.mnRef) != null)
@@ -353,7 +353,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 		}
 
 		if( !get_found && MetaAccess.readable(f)) {
-			Method get_var = new MethodGetter(f);
+			Method get_var = new MethodGetter(null,getContext(), f);
 			if (s.isInterface())
 				get_var.setFinal(false);
 			if (f.getMeta(VNodeUtils.mnAtt) != null || f.getMeta(VNodeUtils.mnRef) != null)
@@ -488,7 +488,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					Var var = new LVar(null,getContext(), 0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
@@ -560,7 +560,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 				acc = ((LVarExpr)fa.obj).getVarSafe();
 			}
 			else {
-				Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+				Var var = new LVar(null,getContext(), 0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
 				var.init = ~fa.obj;
 				be.addSymbol(var);
 				acc = var;
@@ -630,14 +630,14 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					Var var = new LVar(null,getContext(), 0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}
 				Var res = null;
 				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
+					res = new LVar(null,getContext(), 0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
 					be.addSymbol(res);
 				}
 				ConstExpr ce;

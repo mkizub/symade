@@ -26,7 +26,7 @@ public final class CoreOperation extends Method {
 	public BEndOperation		bend_func;
 
 	public CoreOperation(Env env, String sname, CallType otype, CoreFunc core_func) {
-		this.sname = sname;
+		super(null, env.getEnvContext(), new Symbol(sname));
 		this.core_func = core_func;
 		this.setPublic();
 		this.setStatic(true);
@@ -34,7 +34,7 @@ public final class CoreOperation extends Method {
 		this.setMacro(true);
 		this.type_ret = new TypeRef(otype.ret());
 		for (int i=0; i < otype.arity; i++)
-			this.params += new LVar(0L,"arg"+i,otype.arg(i),Var.VAR_LOCAL,0);
+			this.params += new LVar(null,env.getEnvContext(), 0L,"arg"+i,otype.arg(i),Var.VAR_LOCAL,0);
 		env.root.pkg_members += this;
 	}
 

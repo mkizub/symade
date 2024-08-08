@@ -165,7 +165,7 @@ public final class JReturnStat extends JENode {
 			else if (node instanceof JTryStat) {
 				if( node.finally_catcher != null ) {
 					if( tmp_var==null && code.method.mtype.ret() ≢ code.tenv.tpVoid ) {
-						tmp_var = (JVar)new LVar(0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
+						tmp_var = (JVar)new LVar(null,from.vnContext(), 0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -174,7 +174,7 @@ public final class JReturnStat extends JENode {
 			}
 			else if (node instanceof JSynchronizedStat) {
 				if( tmp_var==null && code.method.mtype.ret() ≢ code.tenv.tpVoid ) {
-					tmp_var = (JVar)new LVar(0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
+					tmp_var = (JVar)new LVar(null,from.vnContext(), 0,"",code.method.mtype.ret(),Var.VAR_LOCAL,0);
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -731,7 +731,7 @@ public final class JGotoCaseStat extends JENode {
 				if (node instanceof JTryStat) {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr(code.env) ) {
-							tmp_var = (JVar)new LVar(0,"",expr.getType(),Var.VAR_LOCAL,0);
+							tmp_var = (JVar)new LVar(null,vnContext(), 0,"",expr.getType(),Var.VAR_LOCAL,0);
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
 						}

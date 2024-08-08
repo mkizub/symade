@@ -21,19 +21,35 @@ public class ANodeContext {
 
 	// Node environment
 	public final Env theEnv;
+	// Parent context
+	public final ANodeContext prev;
 
 	// a flag that says, that data with this context is expired and can be deleted from AHandle
 	public boolean expired;
 
 	public ANodeContext(Env theEnv) {
 		this.theEnv = theEnv;
+		this.prev = theEnv.getEnvContext();
+	}
+
+	public ANodeContext(Env theEnv, ANodeContext prev) {
+		this.theEnv = theEnv;
+		this.prev = prev;
+	}
+
+	public boolean inherits(ANodeContext ctx) {
+		for (ANodeContext self = this; self != null; self = self.prev) {
+			if (self == ctx)
+				return true;
+		}
+		return false;
 	}
 }
 
 // Context for global environment nodes (like standard types).
 public class EnvContext extends ANodeContext {
 	public EnvContext(Env theEnv) {
-		super(theEnv);
+		super(theEnv, null);
 	}
 }
 
@@ -46,20 +62,8 @@ public final class DataFlowContext extends ANodeContext {
 
 // Semantic nodes contexts.
 public final class SemanticContext extends ANodeContext {
-	public final SemanticContext prev;
-
-	public SemanticContext(Env theEnv, SemanticContext prev) {
-		super(theEnv);
-		this.prev = prev;
-	}
-	public final boolean inherits(ANodeContext ctx) {
-		for (SemanticContext self = this; self != null; self = self.prev) {
-			if (self == ctx)
-				return true;
-		}
-		if (ctx == ctx.theEnv.getEnvContext())
-			return true;
-		return false;
+	public SemanticContext(ANodeContext prev) {
+		super(prev.theEnv, prev);
 	}
 }
 
@@ -67,7 +71,7 @@ public final class SemanticContext extends ANodeContext {
 public class BackendNodeContext extends ANodeContext {
 	public final SemanticContext semantic_context;
 	public BackendNodeContext(SemanticContext semantic_context) {
-		super(semantic_context.theEnv);
+		super(semantic_context.theEnv, semantic_context);
 		this.semantic_context = semantic_context;
 	}
 }

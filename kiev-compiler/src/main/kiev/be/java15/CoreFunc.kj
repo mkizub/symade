@@ -374,7 +374,7 @@ static final class IntPostIncrFunc extends PostIncrFunc {
 	private final int val;
 	IntPostIncrFunc(Instr instr, int val) { super(instr); this.val = val; }
 	void pushProperConstant(Code code) { code.addConst(val); }
-	JVar makeTempVar(Code code) { return (JVar)new LVar(0,"",code.tenv.tpInt,Var.VAR_LOCAL,0); }
+	JVar makeTempVar(Code code) { return (JVar)new LVar(null,code.method.vnContext(), 0,"",code.tenv.tpInt,Var.VAR_LOCAL,0); }
 	public void generate(Code code, Type reqType, JENode expr) {
 		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
 		if( lval instanceof JLVarExpr ) {
@@ -403,7 +403,7 @@ static final class LongPostIncrFunc extends PostIncrFunc {
 	private final long val;
 	LongPostIncrFunc(Instr instr, long val) { super(instr); this.val = val; }
 	void pushProperConstant(Code code) { code.addConst(val); }
-	JVar makeTempVar(Code code) { return (JVar)new LVar(0,"",code.tenv.tpLong,Var.VAR_LOCAL,0); }
+	JVar makeTempVar(Code code) { return (JVar)new LVar(null,code.method.vnContext(), 0,"",code.tenv.tpLong,Var.VAR_LOCAL,0); }
 }
 
 

@@ -100,7 +100,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public Var getRetVar() {
 		Var retvar = this.ret_var;
 		if( retvar == null ) {
-			retvar = new LVar(pos,nameResultVar,type_ret.getType(Env.getEnv()),Var.VAR_LOCAL,ACC_FINAL);
+			retvar = new LVar(null,getContext(), pos,nameResultVar,type_ret.getType(Env.getEnv()),Var.VAR_LOCAL,ACC_FINAL);
 			this.ret_var = retvar;
 		}
 		return retvar;
@@ -247,9 +247,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public static final Method[]	emptyArray = new Method[0];
 
-	public Method() {}
-	public Method(String name, TypeRef type_ret, int flags) {
-		this.sname = name;
+	protected Method(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
+
+	protected Method(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
+	protected Method(AHandle handle, ANodeContext context, String name, TypeRef type_ret, int flags) {
+		super(handle, context, new Symbol(name));
 		this.type_ret = type_ret;
 		this.nodeflags |= flags;
 	}
@@ -724,7 +731,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, env.tenv.tpTypeInfo, Var.PARAM_METHOD_TYPEINFO, ACC_FINAL|ACC_SYNTHETIC);
+				LVar v = new LVar(null,getContext(), td.pos,nameTypeInfo+"$"+td.sname, env.tenv.tpTypeInfo, Var.PARAM_METHOD_TYPEINFO, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}
@@ -802,13 +809,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), type_ret.getType(env), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(null,getContext(), Env.ctxTDecl(this).allocateAccessName(), type_ret.getType(env), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		CallExpr ce;
 		if (isStatic()) {
 			ce = new CallExpr(pos, new TypeRef(Env.ctxTDecl(this).getType(env)), this, ENode.emptyArray);
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
+			Var self = new LVar(null,getContext(), pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
 			m.params += self;
 			ce = new CallExpr(pos, new LVarExpr(pos,self), this, ENode.emptyArray);
 		}
@@ -850,16 +857,22 @@ public final class MethodImpl extends Method {
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	public MethodImpl() {}
+	public MethodImpl(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
-	public MethodImpl(String name, Type ret) {
-		this(name, new TypeRef(ret),0);
+	public MethodImpl(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
 	}
-	public MethodImpl(String name, Type ret, int fl) {
-		this(name, new TypeRef(ret),fl);
+
+	public MethodImpl(AHandle handle, ANodeContext context, String name, Type ret) {
+		this(handle, context, name, new TypeRef(ret),0);
 	}
-	public MethodImpl(String name, TypeRef type_ret, int fl) {
-		super(name, type_ret, fl);
+	public MethodImpl(AHandle handle, ANodeContext context, String name, Type ret, int fl) {
+		this(handle, context, name, new TypeRef(ret),fl);
+	}
+	public MethodImpl(AHandle handle, ANodeContext context, String name, TypeRef type_ret, int fl) {
+		super(handle, context, name, type_ret, fl);
 	}
 }
 
@@ -870,10 +883,16 @@ public final class MethodGetter extends Method {
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	public MethodGetter() {}
+	public MethodGetter(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
-	public MethodGetter(Field f) {
-		super(nameGet+f.sname, new TypeRef(f.getType(Env.getEnv())), f.getJavaFlags());
+	public MethodGetter(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
+	public MethodGetter(AHandle handle, ANodeContext context, Field f) {
+		super(handle, context, nameGet+f.sname, new TypeRef(f.getType(Env.getEnv())), f.getJavaFlags());
 		this.pos = f.pos;
 	}
 }
@@ -885,12 +904,18 @@ public final class MethodSetter extends Method {
 	@DataFlowDefinition(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	public MethodSetter() {}
+	public MethodSetter(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
-	public MethodSetter(Field f) {
-		super(nameSet+f.sname, new TypeRef(Env.getEnv().tenv.tpVoid), f.getJavaFlags());
+	public MethodSetter(AHandle handle, ANodeContext context, Symbol symbol) {
+		super(handle, context, symbol);
+	}
+
+	public MethodSetter(AHandle handle, ANodeContext context, Field f) {
+		super(handle, context, nameSet+f.sname, new TypeRef(Env.getEnv().tenv.tpVoid), f.getJavaFlags());
 		this.pos = f.pos;
-		this.params += new LVar(f.pos,"value",f.getType(Env.getEnv()),Var.VAR_LOCAL,0);
+		this.params += new LVar(null,getContext(), f.pos,"value",f.getType(Env.getEnv()),Var.VAR_LOCAL,0);
 	}
 }
 
@@ -905,10 +930,12 @@ public final class Constructor extends Method {
 
 	@nodeAttr public ENode∅				addstats;
 
-	public Constructor() {}
+	public Constructor(AHandle handle, ANodeContext context) {
+		super(handle, context);
+	}
 
-	public Constructor(int fl) {
-		super(null, new TypeRef(Env.getEnv().tenv.tpVoid), fl);
+	public Constructor(AHandle handle, ANodeContext context, int fl) {
+		super(handle, context, null, new TypeRef(Env.getEnv().tenv.tpVoid), fl);
 	}
 
 	public void callbackChanged(NodeChangeInfo info) {
@@ -924,7 +951,7 @@ public final class Constructor extends Method {
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), Env.ctxTDecl(this).getType(env), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(null,getContext(), Env.ctxTDecl(this).allocateAccessName(), Env.ctxTDecl(this).getType(env), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		NewExpr ne = new NewExpr(pos, new TypeRef(Env.ctxTDecl(this).getType(env)), ENode.emptyArray);
 		foreach (Var v; this.params) {

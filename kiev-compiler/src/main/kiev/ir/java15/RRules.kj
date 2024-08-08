@@ -29,7 +29,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public void ruleGenerate(Env env) {
 		RuleMethod rm = (RuleMethod)this;
 		if (params.length == 0 || params[0].kind != Var.PARAM_RULE_ENV)
-			rm.params.insert(0, new LVar(rm.pos,namePEnvParam,env.tenv.tpRule,Var.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+			rm.params.insert(0, new LVar(null,getContext(), rm.pos,namePEnvParam,env.tenv.tpRule,Var.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 		ENode b = this.body;
 		if (b instanceof RuleBlock) {
 			RuleBlock rb = (RuleBlock)b;

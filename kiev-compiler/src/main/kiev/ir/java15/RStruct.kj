@@ -217,16 +217,16 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 
 		// create constructor method
 		{
-			Constructor init = new Constructor(ACC_PROTECTED);
+			Constructor init = new Constructor(null,getContext(), ACC_PROTECTED);
 			init.body = new Block(pos);
-			init.params.add(new LVar(pos,"hash",env.tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL));
-			init.params.add(new LVar(pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
+			init.params.add(new LVar(null,getContext(), pos,"hash",env.tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL));
+			init.params.add(new LVar(null,getContext(), pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
 			// add in it arguments fields, and prepare for constructor
 			foreach (ArgType at; this.getTypeInfoArgs(env)) {
 				String fname = nameTypeInfo+"$"+at.name;
-				Field f = new Field(fname,env.tenv.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
+				Field f = new Field(null,getContext(), fname,env.tenv.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
-				LVar v = new LVar(pos,at.name.toString(),env.tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL);
+				LVar v = new LVar(null,getContext(), pos,at.name.toString(),env.tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL);
 				init.params.append(v);
 				init.block.stats.append(new ExprStat(pos,
 					new AssignExpr(pos,
@@ -257,9 +257,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 
 			// create method to get typeinfo field
 			if (getTypeInfoArgs(env).length == 0) {
-				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,env.tenv.tpTypeInfo,ACC_PUBLIC));
+				Method tim = getStruct().addMethod(new MethodImpl(null,getContext(), nameGetTypeInfo,env.tenv.tpTypeInfo,ACC_PUBLIC));
 				// add a static field and return it
-				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.getType(env),ACC_PUBLIC|ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC));
+				Field tif = getStruct().addField(new Field(null,getContext(), nameTypeInfo,typeinfo_clazz.getType(env),ACC_PUBLIC|ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC));
 				tif.init = new TypeInfoExpr(0, new TypeRef(getStruct().getType(env)));
 				tim.body = new Block(pos,new ENode[]{
 					new ReturnStat(pos,new SFldExpr(pos,new TypeRef(getStruct().getType(env)),tif))
@@ -269,9 +269,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				// already have a super-type which has getTypeInfo()
 			}
 			else {
-				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,env.tenv.tpTypeInfo,ACC_PUBLIC));
+				Method tim = getStruct().addMethod(new MethodImpl(null,getContext(), nameGetTypeInfo,env.tenv.tpTypeInfo,ACC_PUBLIC));
 				// add a members field and return it
-				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.getType(env),ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+				Field tif = getStruct().addField(new Field(null,getContext(), nameTypeInfo,typeinfo_clazz.getType(env),ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 				tim.body = new Block(pos,new ENode[]{
 					new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
 				});
@@ -288,12 +288,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// }
 		Method mNewTypeInfo = null;
 		{
-			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.getType(env), ACC_STATIC|ACC_PUBLIC);
-			init.params.add(new LVar(pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
-			init.params.add(new LVar(pos,"args",new ArrayType(env.tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
+			Method init = new MethodImpl(null,getContext(), "newTypeInfo", typeinfo_clazz.getType(env), ACC_STATIC|ACC_PUBLIC);
+			init.params.add(new LVar(null,getContext(), pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
+			init.params.add(new LVar(null,getContext(), pos,"args",new ArrayType(env.tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
 			init.body = new Block(pos);
-			Var h = new LVar(pos,"hash",env.tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL);
-			Var v = new LVar(pos,"ti",typeinfo_clazz.getType(env),Var.VAR_LOCAL,0);
+			Var h = new LVar(null,getContext(), pos,"hash",env.tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL);
+			Var v = new LVar(null,getContext(), pos,"ti",typeinfo_clazz.getType(env),Var.VAR_LOCAL,0);
 			Method mhash = env.tenv.tpTypeInfo.tdecl.resolveMethod(env,"hashCode",env.tenv.tpInt,env.tenv.tpClass,new ArrayType(env.tenv.tpTypeInfo));
 			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
@@ -331,7 +331,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return newTypeInfo(<clazz>, <args>);
 		// }
 		{
-			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.getType(env), ACC_STATIC|ACC_PUBLIC);
+			Method init = new MethodImpl(null,getContext(), "newTypeInfo", typeinfo_clazz.getType(env), ACC_STATIC|ACC_PUBLIC);
 			init.body = new Block(pos);
 			CallExpr ce = new CallExpr(pos, null, mNewTypeInfo, ENode.emptyArray);
 			ce.args += new TypeClassExpr(pos, new TypeRef(getStruct().getType(env)));
@@ -350,7 +350,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		//  return new TypeInfo[]{typeinfo$A,typeinfo$B,...);
 		// }
 		{
-			Method mrr = new MethodImpl("getTopArgs", new ArrayType(env.tenv.tpTypeInfo), ACC_PUBLIC);
+			Method mrr = new MethodImpl(null,getContext(), "getTopArgs", new ArrayType(env.tenv.tpTypeInfo), ACC_PUBLIC);
 			typeinfo_clazz.addMethod(mrr);
 			mrr.body = new Block(pos);
 			Vector<ENode> targs = new Vector<ENode>();
@@ -371,9 +371,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method meq = new MethodImpl("eq", env.tenv.tpBoolean, ACC_PUBLIC);
-			meq.params.add(new LVar(pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
-			meq.params.add(new LVar(pos,"args",new VarargType(env.tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
+			Method meq = new MethodImpl(null,getContext(), "eq", env.tenv.tpBoolean, ACC_PUBLIC);
+			meq.params.add(new LVar(null,getContext(), pos,"clazz",env.tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
+			meq.params.add(new LVar(null,getContext(), pos,"args",new VarargType(env.tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(meq);
 			meq.body = new Block(pos);
 			meq.block.stats.add(new IfElseStat(pos,
@@ -409,8 +409,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method misa = new MethodImpl("$assignableFrom", env.tenv.tpBoolean, ACC_PUBLIC);
-			misa.params.add(new LVar(pos,"ti",env.tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL));
+			Method misa = new MethodImpl(null,getContext(), "$assignableFrom", env.tenv.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new LVar(null,getContext(), pos,"ti",env.tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.block.stats.add(new IfElseStat(pos,
@@ -457,8 +457,8 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return this.$assignableFrom(((Outer)obj).$typeinfo));
 		// }
 		{
-			Method misa = new MethodImpl("$instanceof", env.tenv.tpBoolean, ACC_PUBLIC);
-			misa.params.add(new LVar(pos,"obj",env.tenv.tpObject,Var.VAR_LOCAL,ACC_FINAL));
+			Method misa = new MethodImpl(null,getContext(), "$instanceof", env.tenv.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new LVar(null,getContext(), pos,"obj",env.tenv.tpObject,Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.block.stats.add(new IfElseStat(pos,
@@ -505,7 +505,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				break;
 			}
 			if (ctor_exists) {
-				Method mni = new MethodImpl("newInstance", env.tenv.tpObject, ACC_PUBLIC);
+				Method mni = new MethodImpl(null,getContext(), "newInstance", env.tenv.tpObject, ACC_PUBLIC);
 				typeinfo_clazz.addMethod(mni);
 				mni.body = new Block(pos);
 				NewExpr ne = new NewExpr(pos,new TypeRef(this.getType(env)),ENode.emptyArray);
@@ -524,37 +524,37 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			foreach (Constructor m; members; !m.isStatic()) {
 				init_found = true;
 				if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs(env).length > 0 && m.getClassTypeInfoParam() == null)
-					m.params.insert(0,new LVar(m.pos,nameTypeInfo,typeinfo_clazz.getType(env),Var.PARAM_CLASS_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+					m.params.insert(0,new LVar(null,getContext(), m.pos,nameTypeInfo,typeinfo_clazz.getType(env),Var.PARAM_CLASS_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 				if (isStructInner() && !isStatic() && m.getOuterThisParam() == null)
-					m.params.insert(0,new LVar(m.pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+					m.params.insert(0,new LVar(null,getContext(), m.pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 				if (isEnum()) {
 					if (m.params.length < 1 || m.params[0].kind != Var.PARAM_ENUM_NAME)
-						m.params.insert(0,new LVar(pos,"enum$name",env.tenv.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
+						m.params.insert(0,new LVar(null,getContext(), pos,"enum$name",env.tenv.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
 					if (m.params.length < 2 || m.params[1].kind != Var.PARAM_ENUM_ORD)
-						m.params.insert(1,new LVar(pos,"enum$ordinal",env.tenv.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
+						m.params.insert(1,new LVar(null,getContext(), pos,"enum$ordinal",env.tenv.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
 				}
 			}
 			if( !init_found ) {
 				trace(Kiev.debug && Kiev.debugResolve,"Constructor not found in class "+this);
-				Constructor init = new Constructor(ACC_PUBLIC);
+				Constructor init = new Constructor(null,getContext(), ACC_PUBLIC);
 				init.setAutoGenerated(true);
 				if (this.getStruct() != env.tenv.tpClosure.getStruct() && this.instanceOf(env.tenv.tpClosure.getStruct())) {
 					if (isStructInner() && !isStatic()) {
-						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
-						init.params.append(new LVar(pos,"max$args",env.tenv.tpInt,Var.VAR_LOCAL,ACC_SYNTHETIC));
+						init.params.append(new LVar(null,getContext(), pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+						init.params.append(new LVar(null,getContext(), pos,"max$args",env.tenv.tpInt,Var.VAR_LOCAL,ACC_SYNTHETIC));
 					} else {
-						init.params.append(new LVar(pos,"max$args",env.tenv.tpInt,Var.VAR_LOCAL,ACC_SYNTHETIC));
+						init.params.append(new LVar(null,getContext(), pos,"max$args",env.tenv.tpInt,Var.VAR_LOCAL,ACC_SYNTHETIC));
 					}
 				} else {
 					if (isStructInner() && !isStatic()) {
-						init.params.append(new LVar(pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+						init.params.append(new LVar(null,getContext(), pos,nameThisDollar,ctx_tdecl.getType(env),Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 					}
 					if (!isInterface() && isTypeUnerasable() && getTypeInfoArgs(env).length > 0) {
-						init.params.append(new LVar(pos,nameTypeInfo,typeinfo_clazz.getType(env),Var.PARAM_CLASS_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+						init.params.append(new LVar(null,getContext(), pos,nameTypeInfo,typeinfo_clazz.getType(env),Var.PARAM_CLASS_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 					}
 					if (isEnum()) {
-						init.params.insert(0,new LVar(pos,"enum$name",env.tenv.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
-						init.params.insert(1,new LVar(pos,"enum$ordinal",env.tenv.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
+						init.params.insert(0,new LVar(null,getContext(), pos,"enum$name",env.tenv.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
+						init.params.insert(1,new LVar(null,getContext(), pos,"enum$ordinal",env.tenv.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
 					}
 				}
 				init.pos = pos;
@@ -1049,9 +1049,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			{
 				// create dispatch method
 				if (m.isRuleMethod())
-					mmm = new RuleMethod(m.sname, m.getFlags() | ACC_SYNTHETIC);
+					mmm = new RuleMethod(null,getContext(), m.sname, m.getFlags() | ACC_SYNTHETIC);
 				else
-					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.getFlags() | ACC_SYNTHETIC);
+					mmm = new MethodImpl(null,getContext(), m.sname, m.mtype.ret(), m.getFlags() | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				{
 					CopyContext cc = new Copier();
@@ -1061,9 +1061,9 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				foreach (Var fp; m.params) {
 					TypeRef stype = fp.stype;
 					if (stype != null)
-						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(env),fp.kind,fp.getFlags()));
+						mmm.params.add(new LVar(null,getContext(), fp.pos,fp.sname,stype.getType(env),fp.kind,fp.getFlags()));
 					else
-						mmm.params.add(new LVar(fp.pos,fp.sname,fp.getType(env),fp.kind,fp.getFlags()));
+						mmm.params.add(new LVar(null,getContext(), fp.pos,fp.sname,fp.getType(env),fp.kind,fp.getFlags()));
 				}
 				((Struct)self).members.add(mmm);
 			}
@@ -1661,7 +1661,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
 							String nm = proxy_fields[j].sname;
-							m.params.append(new LVar(m.pos,nm,proxy_fields[j].getType(env),Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
+							m.params.append(new LVar(null,getContext(), m.pos,nm,proxy_fields[j].getType(env),Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.block.stats.insert(
 								1,
 								new ExprStat(m.pos,

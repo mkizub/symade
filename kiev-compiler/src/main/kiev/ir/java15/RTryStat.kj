@@ -39,7 +39,7 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 
 	public void resolveENode(Type reqType, Env env) {
 		if (ret_arg == null) {
-			ret_arg = new LVar(pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
+			ret_arg = new LVar(null,getContext(), pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
 		}
 		try {
 			resolveENode(body,env.tenv.tpVoid,env);

@@ -180,10 +180,10 @@ public class Bytecoder implements JConstants {
 			ftype = Signature.getType(this.jenv,f_type);
 		Field f;
 		if ((f_flags & ACC_ENUM)!=0) {
-			f = new Field(f_name.toString(),ftype,f_flags);
+			f = new Field(null,envCtx(), f_name.toString(),ftype,f_flags);
 			f.mflags_is_enum = true;
 		} else {
-			f = new Field(f_name.toString(),ftype,f_flags);
+			f = new Field(null,envCtx(), f_name.toString(),ftype,f_flags);
 		}
 		f.is_interface_only = true;
 		for(int i=0; i < bcf.attrs.length; i++) {
@@ -221,12 +221,12 @@ public class Bytecoder implements JConstants {
 			boolean isEnumCtor = false;
 
 			if (m_name.equals(nameInit) || m_name.equals(nameClassInit)) {
-				m = new Constructor(m_flags);
+				m = new Constructor(null,envCtx(), m_flags);
 				if (cl.isEnum())
 					isEnumCtor = true;
 			}
 			else
-				m = new MethodImpl(m_name.toString(),this.jenv.vtypes.tpVoid,m_flags);
+				m = new MethodImpl(null,envCtx(), m_name.toString(),this.jenv.vtypes.tpVoid,m_flags);
 			m.is_interface_only = true;
 			cl.members.append(m);
 
@@ -241,15 +241,15 @@ public class Bytecoder implements JConstants {
 			m.type_ret = new TypeRef(mtype.ret());
 			for (int i=0; i < mtype.arity; i++) {
 				if (isEnumCtor && i == 0)
-					m.params += new LVar(0,"enum$name",mtype.arg(i),Var.PARAM_ENUM_NAME,0);
+					m.params += new LVar(null,envCtx(), 0,"enum$name",mtype.arg(i),Var.PARAM_ENUM_NAME,0);
 				else if (isEnumCtor && i == 1)
-					m.params += new LVar(0,"enum$ord",mtype.arg(i),Var.PARAM_ENUM_ORD,0);
+					m.params += new LVar(null,envCtx(), 0,"enum$ord",mtype.arg(i),Var.PARAM_ENUM_ORD,0);
 				else if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
 					ArrayType at = (ArrayType)mtype.arg(i);
 					VarargType vt = new VarargType(at.arg);
-					m.params += new LVar(0,"va_arg",vt,Var.VAR_LOCAL,ACC_FINAL);
+					m.params += new LVar(null,envCtx(), 0,"va_arg",vt,Var.VAR_LOCAL,ACC_FINAL);
 				} else
-					m.params += new LVar(0,"arg"+i,mtype.arg(i),Var.VAR_LOCAL,0);
+					m.params += new LVar(null,envCtx(), 0,"arg"+i,mtype.arg(i),Var.VAR_LOCAL,0);
 			}
 		}
 		for(int i=0; i < bcm.attrs.length; i++) {
