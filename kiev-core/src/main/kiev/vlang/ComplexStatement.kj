@@ -94,13 +94,13 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public rule resolveMethodR(ResInfo info, CallType mt)
-		ASTNode@ n;
+		Var@ var;
 	{
 		info.isForwardsAllowed(),
-		n @= pattern,
-		n instanceof Var && ((Var)n).isForward(),
-		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		((Var)n).getType(info.env).resolveCallAccessR(info,mt)
+		var @= pattern,
+		var.isForward(),
+		info.enterForward(var) : info.leaveForward(var),
+		var.getType(info.env).resolveCallAccessR(info,mt)
 	}
 
 }

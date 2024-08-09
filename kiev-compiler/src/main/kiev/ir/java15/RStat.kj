@@ -27,9 +27,10 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 	public void resolveENode(Type reqType, Env env) {
 		Type[] types = new Type[new_vars.length];
 		for (int i=0; i < new_vars.length; i++) {
-			types[i] = new_vars[i].dnode.getType(env);
-			if (((Var)new_vars[i].dnode).vtype.type_lnk != dispatched.params[i].getType(env))
-				((Var)new_vars[i].dnode).vtype.type_lnk = dispatched.params[i].getType(env);
+			Var nv = (Var)new_vars[i].dnode;
+			types[i] = nv.getType(env);
+			if (nv.vtype.type_lnk != dispatched.params[i].getType(env))
+				nv.vtype.type_lnk = dispatched.params[i].getType(env);
 		}
 		try {
 			resolveDNode(dispatched,env);
@@ -37,8 +38,9 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 			if( dispatched.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
 			for (int i=0; i < new_vars.length; i++) {
-				if (((Var)new_vars[i].dnode).vtype.type_lnk != types[i])
-					((Var)new_vars[i].dnode).vtype.type_lnk = types[i];
+				Var nv = (Var)new_vars[i].dnode;
+				if (nv.vtype.type_lnk != types[i])
+					nv.vtype.type_lnk = types[i];
 			}
 		}
 	}
@@ -131,7 +133,7 @@ public final view RIfElseStat of IfElseStat extends RENode {
 		} catch(Exception e ) {
 			Kiev.reportError(cond,e);
 		}
-	
+
 		try {
 			resolveENode(thenSt,env.tenv.tpVoid,env);
 		} catch(Exception e ) {

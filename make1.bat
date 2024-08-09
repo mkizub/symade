@@ -1,3 +1,4 @@
+@setlocal enableextensions
 @echo echo Stage 1
 
 @if not defined JAVA_HOME set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.412.8-hotspot

@@ -40,7 +40,7 @@ public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOf
 	public abstract KievPackage getPackage();
 
 	public rule resolveNameR(ResInfo path)
-		ASTNode@ syn;
+		ANode@ syn;
 		ImportSyntax@ istx;
 	{
 		syn @= members,

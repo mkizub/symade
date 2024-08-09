@@ -160,8 +160,11 @@ public final class RewriteContext {
 		else if (o instanceof SymbolRef && attr.typeinfo.clazz == Symbol.class) {
 			o = ((SymbolRef)o).symbol;
 		}
-		else if (o instanceof ISymbol && attr.typeinfo.clazz == Symbol.class) {
-			o = ((ISymbol)o).symbol;
+		else if (o instanceof Symbol && attr.typeinfo.clazz == Symbol.class) {
+			o = (Symbol)o;
+		}
+		else if (o instanceof ISymbolHost && attr.typeinfo.clazz == Symbol.class) {
+			o = ((ISymbolHost)o).symbol;
 		}
 		else if (o instanceof TypeDecl) {
 			if (attr.typeinfo.clazz == TypeRef.class)

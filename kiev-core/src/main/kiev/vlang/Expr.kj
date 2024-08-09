@@ -650,7 +650,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public rule resolveNameR(ResInfo info)
-		ASTNode@ n;
+		ANode@ n;
 	{
 		n @= new SymbolIterator(this.stats, info.getPrevNode()),
 		{
@@ -667,7 +667,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public rule resolveMethodR(ResInfo info, CallType mt)
-		ASTNode@ n;
+		ANode@ n;
 	{
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.getPrevNode()),

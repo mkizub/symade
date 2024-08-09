@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
 @ThisIsANode(lang=CoreLang)
-public abstract class DNode extends ASTNode implements ISymbol {
+public abstract class DNode extends ASTNode implements ISymbolHost {
 
 	public static final DNode[] emptyArray = new DNode[0];
 
@@ -762,25 +762,24 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 	}
 
 	protected rule resolveNameR_Syntax(ResInfo info)
-		ASTNode@ syn;
+		Import@ syn;
 	{
 		syn @= members,
-		syn instanceof Import && syn instanceof ScopeOfNames,
+		syn instanceof ScopeOfNames,
 		trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+syn),
 		((ScopeOfNames)syn).resolveNameR(info)
 	}
 
 	public rule resolveMethodR(ResInfo info, CallType mt)
-		ASTNode@ member;
+		Method@ method;
 		TypeRef@ supref;
 	{
 		info.isStaticAllowed(),
 		checkResolved(info.env),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
 		{
-			member @= members,
-			member instanceof Method,
-			info ?= ((Method)member).equalsByCast(info.getName(),mt,info.env.tenv.tpVoid,info)
+			method @= members,
+			info ?= method.equalsByCast(info.getName(),mt,info.env.tenv.tpVoid,info)
 		;	info.isSuperAllowed(),
 			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),

@@ -228,56 +228,84 @@ public final class ResInfo implements Cloneable {
 
 	public void $unbind() {
 		this.resolved_symbol = null;
+		this.resolved_dnode = null;
 	}
 
-	public boolean $bind_chk(ASTNode var) {
-		if (var instanceof ISymbol)
-			return $bind_chk((ISymbol)var);
+	public boolean $bind_chk(INode var) {
+		if (var instanceof Symbol)
+			return $bind_chk((Symbol)var);
+		if (var instanceof DNode)
+			return $bind_chk((DNode)var);
 		return false;
 	}
-	public boolean $bind_chk(ISymbol var) {
-		if (var == null)
+	public boolean $bind_chk(ANode var) {
+		if (var instanceof Symbol)
+			return $bind_chk((Symbol)var);
+		if (var instanceof DNode)
+			return $bind_chk((DNode)var);
+		return false;
+	}
+	public boolean $bind_chk(Symbol symbol) {
+		if (symbol == null)
 			return false;
-		DNode d = null;
-		if (var instanceof Symbol) {
-			if (dnode_matcher != null)
-				d = dnode_matcher.matchOwner((Symbol)var);
-			else
-				d = var.getTargetDNode();
-		} else {
-			if (dnode_matcher != null)
-				d = dnode_matcher.matchNode(var);
-			else if (var instanceof DNode)
-				d = (DNode)var;
+		DNode dnode = null;
+		if (dnode_matcher != null)
+			dnode = dnode_matcher.matchOwner(symbol);
+		else
+			dnode = symbol.getTargetDNode();
+		if (dnode == null)
+			return false;
+		if !(checkNodeName(symbol))
+			return false;
+		if !(checkAccess(dnode))
+			return false;
+		this.resolved_dnode = dnode;
+		this.resolved_symbol = symbol;
+		return true;
+	}
+	public boolean $bind_chk(DNode dnode) {
+		if (dnode == null)
+			return false;
+		if (dnode_matcher != null) {
+			dnode = dnode_matcher.matchNode(dnode);
+			if (dnode == null)
+				return false;
 		}
-		if (d == null)
+		if !(checkNodeName(dnode.symbol))
 			return false;
-		if !(checkNodeName(var))
+		if !(checkAccess(dnode))
 			return false;
-		if !(check(d))
-			return false;
-		this.resolved_symbol = var.symbol;
+		this.resolved_symbol = dnode.symbol;
+		this.resolved_dnode = dnode;
 		return true;
 	}
 
-	public boolean $rebind_chk(ASTNode var) {
+	public boolean $rebind_chk(INode var) {
 		$unbind();
 		return $bind_chk(var);
 	}
-	public boolean $rebind_chk(ISymbol var) {
+	public boolean $rebind_chk(ANode var) {
+		$unbind();
+		return $bind_chk(var);
+	}
+	public boolean $rebind_chk(Symbol var) {
+		$unbind();
+		return $bind_chk(var);
+	}
+	public boolean $rebind_chk(DNode var) {
 		$unbind();
 		return $bind_chk(var);
 	}
 
 	// Checks
 
-	private boolean checkNodeName(ISymbol isym) {
-		String sname = isym.sname;
+	private boolean checkNodeName(Symbol symbol) {
+		String sname = symbol.sname;
 		if (!isCmpByEquals())
 			return sname != null && sname.startsWith(name);
 		return sname == name;
 	}
-	private boolean check(DNode n) {
+	private boolean checkAccess(DNode n) {
 		if (n instanceof LVar)
 			return true;
 		else if (n instanceof Field || n instanceof Method) {

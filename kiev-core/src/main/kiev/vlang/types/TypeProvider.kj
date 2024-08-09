@@ -13,7 +13,7 @@ package kiev.vlang.types;
 import syntax kiev.Syntax;
 
 public abstract class MetaType implements Constants {
-	
+
 	@virtual typedef TDecl  ≤ TypeDecl;
 
 	public static final int flReference		= 1 <<  0;
@@ -38,15 +38,15 @@ public abstract class MetaType implements Constants {
 	@getter public TDecl get$tdecl() {
 		return (TDecl)this.tdecl_symbol.dnode;
 	}
-	
+
 	public abstract Type getDefType();
-	
+
 	public String qname() {
 		if (tdecl != null)
 			return tdecl.qname();
 		return "<tdecl>";
 	}
-	
+
 	public MetaType(StdTypes tenv, Symbol tdecl_symbol, int flags) {
 		assert(tenv != null && tdecl_symbol != null);
 		this.tenv = tenv;
@@ -63,7 +63,7 @@ public abstract class MetaType implements Constants {
 	}
 
 	public abstract TemplateTVarSet getTemplBindings();
-	
+
 	protected void callbackTypeVersionChanged() { /* ignore */ }
 
 	public Type[] getMetaSupers(Type tp) {
@@ -105,11 +105,10 @@ public abstract class MetaType implements Constants {
 		}
 	}
 	private rule resolveNameR_1(ResInfo info)
-		ASTNode@ n;
+		Field@ field;
 	{
-		n @= tdecl.getContainerMembers(),
-		n instanceof Field,
-		info ?= n
+		field @= tdecl.getContainerMembers(),
+		info ?= field
 	}
 	private rule resolveNameR_3(Type tp, ResInfo info)
 		TypeRef@ sup;
@@ -120,32 +119,32 @@ public abstract class MetaType implements Constants {
 	}
 
 	private rule resolveNameR_4(Type tp, ResInfo info)
-		ASTNode@ forw;
+		Field@ forw;
 		TypeRef@ sup;
 	{
 		forw @= tdecl.getContainerMembers(),
-		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
+		forw.isForward() && !forw.isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).getType(tenv.env).applay(tp).resolveNameAccessR(info)
+		forw.getType(tenv.env).applay(tp).resolveNameAccessR(info)
 	;	info.isSuperAllowed(),
 		sup @= tdecl.super_types,
 		forw @= sup.getTypeDecl(tenv.env).getContainerMembers(),
-		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
+		forw.isForward() && !forw.isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).getType(tenv.env).applay(tp).resolveNameAccessR(info)
+		forw.getType(tenv.env).applay(tp).resolveNameAccessR(info)
 	}
 
 	public rule resolveCallAccessR(Type tp, ResInfo info, CallType mt)
-		ASTNode@ member;
+		Field@ field;
+		Method@ method;
 		TypeRef@ sup;
 		Field@ forw;
 	{
 		tp.checkResolved(),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving method "+info.getName()+" in "+this),
 		{
-			member @= tdecl.getContainerMembers(),
-			member instanceof Method,
-			info ?= ((Method)member).equalsByCast(info.getName(),mt,tp,info)
+			method @= tdecl.getContainerMembers(),
+			info ?= method.equalsByCast(info.getName(),mt,tp,info)
 		;
 			info.isSuperAllowed(),
 			info.enterSuper(1, ResInfo.noForwards) : info.leaveSuper(),
@@ -153,17 +152,17 @@ public abstract class MetaType implements Constants {
 			sup.getTypeDecl(tenv.env).getMetaType(tenv.env).resolveCallAccessR(tp,info,mt)
 		;
 			info.isForwardsAllowed(),
-			member @= tdecl.getContainerMembers(),
-			member instanceof Field && ((Field)member).isForward(),
-			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).getType(tenv.env).applay(tp).resolveCallAccessR(info,mt)
+			field @= tdecl.getContainerMembers(),
+			field.isForward(),
+			info.enterForward(field) : info.leaveForward(field),
+			field.getType(tenv.env).applay(tp).resolveCallAccessR(info,mt)
 		;
 			info.isForwardsAllowed(),
 			sup @= tdecl.super_types,
-			member @= sup.getTypeDecl(tenv.env).getContainerMembers(),
-			member instanceof Field && ((Field)member).isForward(),
-			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).getType(tenv.env).applay(tp).resolveCallAccessR(info,mt)
+			field @= sup.getTypeDecl(tenv.env).getContainerMembers(),
+			field.isForward(),
+			info.enterForward(field) : info.leaveForward(field),
+			field.getType(tenv.env).applay(tp).resolveCallAccessR(info,mt)
 		}
 	}
 
@@ -174,14 +173,14 @@ public final class CoreMetaType extends MetaType {
 	@virtual typedef TDecl = MetaTypeDecl;
 
 	CoreType core_type;
-	
+
 	private static TypeDecl makeTypeDecl(StdTypes tenv, String name) {
 		MetaTypeDecl tdecl = new MetaTypeDecl(new AHandle(), tenv.env.makeGlobalSymbol("kiev·stdlib·"+name));
 		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tenv.env.newPackage("kiev·stdlib").pkg_members.add(tdecl);
 		return tdecl;
 	}
-	
+
 	CoreMetaType(StdTypes tenv, String name, Type super_type, int flags) {
 		super(tenv, makeTypeDecl(tenv,name), flags);
 		if (super_type != null)
@@ -205,7 +204,7 @@ public final class ASTNodeMetaType extends MetaType {
 	@virtual typedef TDecl = TypeDecl;
 
 	public static final Hashtable<String,Class>	allNodes = new Hashtable<String,Class>(256);
-	
+
 	static void init() {
 		allNodes.put("Any",					Object.class);
 		allNodes.put("Node",				ANode.class);
@@ -259,7 +258,7 @@ public final class ASTNodeMetaType extends MetaType {
 
 	public static ASTNodeMetaType instance(StdTypes tenv, Class clazz) {
 		Symbol sym = tenv.symbolTDeclASTNodeType.makeGlobalSubSymbol("<ast-node-"+clazz.getName()+">");
-		synchronized (tenv) { 
+		synchronized (tenv) {
 			MetaType mt = tenv.getExistingMetaType(sym);
 			if (mt == null)
 				mt = new ASTNodeMetaType(tenv, sym, clazz);
@@ -353,14 +352,14 @@ public final class XMetaType extends MetaType {
 
 	private TemplateTVarSet			templ_bindings;
 	private XType					xtype;
-	
+
 	public XMetaType(StdTypes tenv, MetaTypeDecl clazz, int flags) {
 		super(tenv, clazz, flags);
 		this.xtype = new XType(this, null, null);
 	}
-	
+
 	public XType getDefType() { xtype }
-	
+
 	public Type make(TVarBld set) {
 		if (set == null)
 			return new XType(this, null, null);
@@ -427,7 +426,7 @@ public final class CompaundMetaType extends MetaType {
 		}
 		return td;
 	}
-	
+
 	public static CompaundMetaType newCompaundMetaType(StdTypes tenv, String clazz_name) operator "new T" {
 		synchronized (tenv) {
 			Symbol sym = tenv.env.makeGlobalSymbol(clazz_name);
@@ -437,7 +436,7 @@ public final class CompaundMetaType extends MetaType {
 			return (CompaundMetaType)mt;
 		}
  	}
-	
+
 	public static CompaundMetaType newCompaundMetaType(StdTypes tenv, Struct clazz) operator "new T" {
 		synchronized (tenv) {
 			Symbol sym = clazz.symbol;
@@ -447,19 +446,19 @@ public final class CompaundMetaType extends MetaType {
 			return (CompaundMetaType)mt;
 		}
 	}
-	
+
 	private CompaundMetaType(StdTypes tenv, Symbol clazz_symbol) {
 		super(tenv, clazz_symbol, MetaType.flReference);
 		this.templ_bindings = null; //TemplateTVarSet.emptySet;
 		this.ctype = new CompaundType(this, TemplateTVarSet.emptySet, TVarBld.emptySet);
 	}
-	
+
 	public CompaundType getDefType() { ctype }
-	
+
 	public String qname() {
 		return tdecl_symbol.qname();
 	}
-	
+
 	public Type make(TVarBld set) {
 		if (set == null)
 			return new CompaundType(this, null, null);
@@ -474,7 +473,7 @@ public final class CompaundMetaType extends MetaType {
 			return t;
 		return new CompaundType(this, getTemplBindings(), vs);
 	}
-	
+
 	protected void callbackTypeVersionChanged() {
 		templ_bindings = null;
 	}
@@ -484,7 +483,7 @@ public final class CompaundMetaType extends MetaType {
 			makeTemplBindings();
 		return templ_bindings;
 	}
-	
+
 	private void makeTemplBindings() {
 		TVarBld vs = new TVarBld();
 		foreach (TypeDef ad; tdecl.args)
@@ -528,7 +527,7 @@ public final class ArrayMetaType extends MetaType {
 		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
 	}
-	
+
 }
 
 public final class VarargMetaType extends MetaType {
@@ -552,7 +551,7 @@ public final class VarargMetaType extends MetaType {
 		if( !t.isValAppliable() || bindings.getArgsLength() == 0 ) return t;
 		return VarargType.newVarargType(((VarargType)t).arg.applay(bindings));
 	}
-	
+
 }
 
 public class ArgMetaType extends MetaType {
@@ -560,7 +559,7 @@ public class ArgMetaType extends MetaType {
 	@virtual typedef TDecl = TypeDecl;
 
 	public final ArgType atype;
-	
+
 	public ArgMetaType(StdTypes tenv, TypeDef definer) {
 		super(tenv, definer, MetaType.flReference);
 		atype = new ArgType(this);
@@ -667,11 +666,11 @@ public class WrapperMetaType extends MetaType {
 
 	public final TypeDecl	clazz;
 	public final Field		field;
-	
+
 	public static WrapperMetaType instance(StdTypes tenv, Type tp) {
 		TypeDecl td = tp.meta_type.tdecl;
 		Symbol sym = td.symbol.makeSubSymbol("<wrapper-meta-type>");
-		synchronized (tenv) { 
+		synchronized (tenv) {
 			MetaType mt = tenv.getExistingMetaType(sym);
 			if (mt != null)
 				return (WrapperMetaType)mt;
@@ -727,7 +726,7 @@ public class WrapperMetaType extends MetaType {
 		if( Kiev.verbose ) System.out.println("Class "+td+" is a wrapper for field "+wf);
 		return wf;
 	}
-	
+
 	public rule resolveNameAccessR(Type tp, ResInfo info)
 	{
 		info.isForwardsAllowed(),
@@ -761,7 +760,7 @@ public class WrapperMetaType extends MetaType {
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		((WrapperType)tp).getEnclosedType().resolveCallAccessR(info, mt)
 	}
-	
+
 }
 
 public final class TupleMetaType extends MetaType {
@@ -770,7 +769,7 @@ public final class TupleMetaType extends MetaType {
 
 	private final TemplateTVarSet		templ_bindings;
 	public  final int					arity;
-	
+
 	TupleMetaType(StdTypes tenv, Symbol tdecl_symbol, int arity) {
 		super(tenv, tdecl_symbol, 0);
 		this.arity = arity;
@@ -795,7 +794,7 @@ public final class TupleMetaType extends MetaType {
 			return t;
 		return new TupleType(this, vs);
 	}
-	
+
 	public TemplateTVarSet getTemplBindings() {
 		return templ_bindings;
 	}
@@ -806,9 +805,9 @@ public class CallMetaType extends MetaType {
 	@virtual typedef TDecl = MetaTypeDecl;
 
 	private TemplateTVarSet		templ_bindings;
-	
+
 	@getter public TDecl get$tdecl() { (MetaTypeDecl)tenv.symbolCallTDecl.dnode }
-	
+
 	public static CallMetaType newCallMetaType(StdTypes tenv, boolean is_static, boolean is_closure, ArgType[] targs) {
 		if (targs == null || targs.length == 0) {
 			if (is_static) {
@@ -836,7 +835,7 @@ public class CallMetaType extends MetaType {
 		CallMetaType cmt = new CallMetaType(tenv, new TemplateTVarSet(-1, set), flags);
 		return cmt;
 	}
-	
+
 	CallMetaType(StdTypes tenv, TemplateTVarSet templ_bindings, int flags) {
 		super(tenv, tenv.symbolCallTDecl, flags);
 		this.templ_bindings = templ_bindings;

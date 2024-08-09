@@ -540,56 +540,47 @@ public class Bytecoder implements JConstants {
 		MetaValue mv = null;
 		switch (eval.tag) {
 		case 'B':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstByteExpr((byte)((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
 				);
 			return mv;
 		case 'C':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstCharExpr((char)((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
 				);
 			return mv;
 		case 'D':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstDoubleExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).doubleValue())
 				);
 			return mv;
 		case 'F':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstFloatExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).floatValue())
 				);
 			return mv;
 		case 'I':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstIntExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
 				);
 			return mv;
 		case 'J':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstLongExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).longValue())
 				);
 			return mv;
 		case 'S':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstShortExpr((short)((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
 				);
 			return mv;
 		case 'Z':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstBoolExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue() != 0)
 				);
 			return mv;
 		case 's':
-			mv = new MetaValueScalar(
-				new SymbolRef(nm),
+			mv = new MetaValueScalar(nm,
 				new ConstStringExpr(((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz).toString())
 				);
 			return mv;
@@ -598,17 +589,17 @@ public class Bytecoder implements JConstants {
 			tp.meta_type.tdecl.checkResolved(jenv.env);
 			String fname = ((kiev.bytecode.Annotation.element_value_enum_const)eval).getFieldName(clazz).toString();
 			Field f = tp.meta_type.tdecl.resolveField(jenv.env,fname.toString().intern());
-			mv = new MetaValueScalar(new SymbolRef(nm),new SFldExpr(0,f));
+			mv = new MetaValueScalar(nm, new SFldExpr(0,f));
 			}
 			return mv;
 		case 'c': {
 			Type tp = Signature.getType(this.jenv,((kiev.bytecode.Annotation.element_value_class_info)eval).getSignature(clazz).toString());
-			mv = new MetaValueScalar(new SymbolRef(nm),new TypeRef(tp));
+			mv = new MetaValueScalar(nm, new TypeRef(tp));
 			}
 			break;
 		case '@': {
 			UserMeta um = readAnnotation(clazz,((kiev.bytecode.Annotation.element_value_annotation)eval).annotation_value);
-			mv = new MetaValueScalar(new SymbolRef(nm),um);
+			mv = new MetaValueScalar(nm, um);
 			}
 			break;
 		case '[': {

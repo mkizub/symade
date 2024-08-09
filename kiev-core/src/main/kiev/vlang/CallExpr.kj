@@ -56,7 +56,19 @@ public class CallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public CallExpr(long pos, ENode obj, ISymbol func, TypeRef[] targs, ENode[] args) {
+	public CallExpr(long pos, ENode obj, Symbol func, TypeRef[] targs, ENode[] args) {
+		this.pos = pos;
+		this.symbol = func;
+		this.obj = obj;
+		this.targs.addAll(targs);
+		this.args.addAll(args);
+	}
+
+	public CallExpr(long pos, ENode obj, Symbol func, ENode[] args) {
+		this(pos, obj, func, null, args);
+	}
+
+	public CallExpr(long pos, ENode obj, ISymbolHost func, TypeRef[] targs, ENode[] args) {
 		this.pos = pos;
 		this.symbol = func.symbol;
 		this.obj = obj;
@@ -64,7 +76,7 @@ public class CallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public CallExpr(long pos, ENode obj, ISymbol func, ENode[] args) {
+	public CallExpr(long pos, ENode obj, ISymbolHost func, ENode[] args) {
 		this(pos, obj, func.symbol, null, args);
 	}
 

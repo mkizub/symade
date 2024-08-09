@@ -435,7 +435,11 @@ public abstract class MetaValue extends ENode {
 
 	public MetaValue() {}
 
-	public MetaValue(SymbolRef<DNode> ident) {
+	public MetaValue(String ident) {
+		this.ident = ident;
+	}
+
+	public MetaValue(SymbolRef ident) {
 		if (ident != null) {
 			this.pos = ident.pos;
 			this.ident = ident.name;
@@ -497,11 +501,20 @@ public final class MetaValueScalar extends MetaValue {
 
 	public MetaValueScalar() {}
 
-	public MetaValueScalar(SymbolRef<DNode> ident) {
+	public MetaValueScalar(String ident) {
 		super(ident);
 	}
 
-	public MetaValueScalar(SymbolRef<DNode> ident, ASTNode value) {
+	public MetaValueScalar(String ident, ASTNode value) {
+		super(ident);
+		this.value = value;
+	}
+
+	public MetaValueScalar(SymbolRef ident) {
+		super(ident);
+	}
+
+	public MetaValueScalar(SymbolRef ident, ASTNode value) {
 		super(ident);
 		this.value = value;
 	}
@@ -540,11 +553,20 @@ public final class MetaValueArray extends MetaValue {
 
 	public MetaValueArray() {}
 
-	public MetaValueArray(SymbolRef<DNode> ident) {
+	public MetaValueArray(String ident) {
 		super(ident);
 	}
 
-	public MetaValueArray(SymbolRef<DNode> ident, ASTNode[] values) {
+	public MetaValueArray(String ident, ASTNode[] values) {
+		super(ident);
+		this.values.addAll(values);
+	}
+
+	public MetaValueArray(SymbolRef ident) {
+		super(ident);
+	}
+
+	public MetaValueArray(SymbolRef ident, ASTNode[] values) {
 		super(ident);
 		this.values.addAll(values);
 	}

@@ -19,13 +19,10 @@ import syntax kiev.Syntax;
  */
 
 @ThisIsANode(lang=void)
-public interface ISymbol extends ASTNode {
-	@virtual @abstract
-	public:ro String		sname;
+public interface ISymbolHost extends INode {
 	@virtual @abstract
 	public:ro Symbol		symbol;
 
-	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
 	@getter public Symbol	get$symbol();
 }
 
@@ -50,11 +47,7 @@ public interface ISymbol extends ASTNode {
  */
 
 @ThisIsANode(lang=CoreLang)
-public final class Symbol extends ASTNode implements ISymbol {
-
-	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	public static final Symbol[] emptyArray = new Symbol[0];
+public final class Symbol extends ANode {
 
 	public static final ParentAttrSlot nodeattr$namespace_parent =
 			new ParentAttrSlot("namespace_parent", true, TypeInfo.newTypeInfo(Symbol.class,null));
@@ -102,7 +95,7 @@ public final class Symbol extends ASTNode implements ISymbol {
 		if (p instanceof DNode)
 			return (DNode)p;
 		if (p instanceof Alias)
-			return ((Alias)p).symref.dnode;
+			return p.symref.dnode;
 		return null;
 	}
 
@@ -175,11 +168,15 @@ public final class Symbol extends ASTNode implements ISymbol {
 		super.callbackChanged(info);
 	}
 
-	public Symbol() {}
+	public Symbol() {
+		super(new AHandle(), Kiev.getSemContext());
+	}
 	public Symbol(String sname) {
+		this();
 		this.sname = sname;
 	}
 	public Symbol(long pos, String sname) {
+		this();
 		this.pos = pos;
 		this.sname = sname;
 	}
@@ -225,33 +222,29 @@ public final class Symbol extends ASTNode implements ISymbol {
 }
 
 @ThisIsANode(lang=CoreLang)
-public class Alias extends ASTNode {
-
-	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	public static final Alias[] emptyArray = new Alias[0];
+public class Alias extends ANode {
 
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr
-	public Symbol				symbol;
+	public Symbol                   symbol;
 
 	@AttrBinDumpInfo(ignore=true)
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr @abstract
-	public	String				name;
+	public	String                  name;
 
 	@AttrBinDumpInfo(ignore=true)
 	@AttrXMLDumpInfo(ignore=true)
 	@nodeAttr
-	public final SymbolRef		symref;
+	public final Method⇑            symref;
 
 	public Alias() {
+		super(new AHandle(), Kiev.getSemContext());
 		this.symbol = new Symbol();
-		this.symref = new SymbolRef();
 	}
 	public Alias(String sname, Method m) {
+		super(new AHandle(), Kiev.getSemContext());
 		this.symbol = new Symbol(sname);
-		this.symref = new SymbolRef();
 		if (m != null)
 			this.symref.symbol = m.symbol;
 	}
@@ -313,11 +306,7 @@ public final class NameAndUUID {
 
 @unerasable
 @ThisIsANode(lang=CoreLang)
-public final class SymbolRef<D extends DNode> extends ASTNode {
-
-	@DataFlowDefinition(out="this:in") private static class DFI {}
-
-	public static final SymbolRef[] emptyArray = new SymbolRef[0];
+public final class SymbolRef<D extends ISymbolHost> extends ANode {
 
 	@AttrXMLDumpInfo(attr=true, name="full")
 	@nodeAttr
@@ -336,33 +325,41 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	@abstract public		Symbol		symbol; // resolved symbol
 	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
 
-	public SymbolRef() {}
+	public SymbolRef() {
+		super(new AHandle(), Kiev.getSemContext());
+	}
 
 	public SymbolRef(String name) {
+		this();
 		this.name = name;
 	}
 
 	public SymbolRef(long pos, String name) {
+		this();
 		this.pos = pos;
 		this.name = name;
 	}
 
 	public SymbolRef(long pos, Symbol symbol) {
+		this();
 		this.pos = pos;
-		this.symbol = symbol.symbol;
-	}
-
-	public SymbolRef(long pos, D symbol) {
-		this.pos = pos;
-		this.symbol = symbol.symbol;
-	}
-
-	public SymbolRef(Symbol symbol) {
 		this.symbol = symbol;
 	}
 
-	public SymbolRef(D symbol) {
-		this.symbol = symbol.symbol;
+	public SymbolRef(long pos, D dnode) {
+		this();
+		this.pos = pos;
+		this.symbol = dnode.symbol;
+	}
+
+	public SymbolRef(Symbol symbol) {
+		this();
+		this.symbol = symbol;
+	}
+
+	public SymbolRef(D dnode) {
+		this();
+		this.symbol = dnode.symbol;
 	}
 
 	public boolean equals(Object nm) {
@@ -492,7 +489,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			if (pslot != null && pslot.isAutoComplete())
 				return this.autoCompleteSymbol(str);
 			ANode parent = parent();
-			if (pslot != null && parent instanceof ASTNode)
+			if (pslot != null && parent instanceof ANode)
 				return parent.resolveAutoComplete(str, pslot);
 			return null;
 		}

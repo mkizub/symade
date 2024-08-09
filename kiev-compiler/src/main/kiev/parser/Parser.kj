@@ -57,11 +57,11 @@ public abstract class ParserBase {
 		throw e;
 	}
 
-	final void reportError(ASTNode from, String message) throws Throwable {
+	final void reportError(ANode from, String message) throws Throwable {
 		kiev.Kiev.reportError(from, message);
 	}
 
-	final Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ASTNode parent) {
+	final Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ANode parent) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		Struct clazz;
 		if (parent instanceof SyntaxScope) {

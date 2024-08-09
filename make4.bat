@@ -1,8 +1,9 @@
+@setlocal enableextensions
 @echo echo Stage 4
 
 @if not defined JAVA_HOME set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.412.8-hotspot
 @echo JAVA_HOME = %JAVA_HOME%
-@if not defined OUT_ROOT set OUT_ROOT=%~dp0\build
+@if not defined OUT_ROOT set OUT_ROOT=%~dp0\buildCustom
 @echo OUT_ROOT = %OUT_ROOT%
 
 @if exist %OUT_ROOT%\classes4 rmdir /Q /S %OUT_ROOT%\classes4

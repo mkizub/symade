@@ -990,6 +990,7 @@ public abstract class ANode extends AHandleData implements INode {
 
 	public Object copyTo(Object to$node, CopyContext in$context) {
 		ANode node = (ANode)to$node;
+		node.pos = this.pos;
 		Object[] this_ext_data = this.getExtData();
 		for (int i=0; i < this_ext_data.length; i++) {
 			Object dat = this_ext_data[i];
@@ -1307,7 +1308,6 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public Object copyTo(Object to$node, CopyContext in$context) {
 		ASTNode node = (ASTNode)super.copyTo(to$node, in$context);
-		node.pos			= this.pos;
 		node.compflagsClearUnLock();
 		return node;
 	}

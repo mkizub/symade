@@ -1,3 +1,4 @@
+@setlocal enableextensions
 set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-8.0.412.8-hotspot
 @echo JAVA_HOME = %JAVA_HOME%
 set OUT_ROOT=buildBootstrap
@@ -22,3 +23,4 @@ rmdir /s /q %OUT_ROOT%
 
 set OUT_ROOT=
 @rem rmdir /s /q %OUT_ROOT%
+@endlocal

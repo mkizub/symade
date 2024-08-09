@@ -85,7 +85,7 @@ public class PassInfo {
 	private PassInfo() {}
 
 	public static rule resolveNameR(ANode from, ResInfo path)
-		ASTNode@ p;
+		ANode@ p;
 		ParentEnumerator pe;
 	{
 		{
@@ -119,7 +119,7 @@ public class PassInfo {
 		}
 		paths.append(info.copy());
 	}
-	
+
 	public static boolean resolveBestMethodR(
 		Object sc,
 		ResInfo info,
@@ -168,7 +168,7 @@ public class PassInfo {
 			info.set(paths[0]);
 			return true;
 		}
-		
+
 		for (int i=0; i < paths.length; i++) {
 			Method m1 = (Method)paths[i].resolvedDNode();
 			ResInfo p1 = paths[i];
@@ -178,16 +178,16 @@ public class PassInfo {
 				Method m2 = (Method)paths[j].resolvedDNode();
 				ResInfo p2 = paths[j];
 				CallType mt2 = paths[j].resolved_type;
-				
+
 				if (m1 == m2)
 					continue;
-				
+
 				trace(Kiev.debug && Kiev.debugResolve,"Compare "+m1+" and "+m2+" to be more specific for "+Method.toString(info.getName(),mt));
 
 				Type b;
 				boolean m1_is_va = m1.isVarArgs();
 				boolean m2_is_va = m2.isVarArgs();
-				
+
 				if (p1.getTransforms() > p2.getTransforms()) {
 					trace(Kiev.debug && Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because of path");
 					continue next_method;
@@ -254,7 +254,7 @@ public class PassInfo {
 			info.set(paths[0]);
 			return true;
 		}
-		
+
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 		for(int i=0; i < paths.length; i++) {
 			Method m = (Method)paths[i].resolvedDNode();
@@ -266,7 +266,7 @@ public class PassInfo {
 	}
 
 	public static rule resolveMethodR(ANode from, ResInfo path, CallType mt)
-		ASTNode@ p;
+		ANode@ p;
 		ParentEnumerator pe;
 	{
 		pe = new ParentEnumerator(from, path.inSyntaxContext()),
