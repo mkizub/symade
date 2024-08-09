@@ -165,9 +165,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 
 		Type itype;
 		Type xtype = container.getType(env);
-		ResInfo<Method> elems = null;
-		ResInfo<Method> nextelem = null;
-		ResInfo<Method> moreelem = null;
+		ResInfo elems = null;
+		ResInfo nextelem = null;
+		ResInfo moreelem = null;
 		if (xtype instanceof CTimeType) {
 			container = xtype.makeUnboxedExpr(container);
 			resolveENode(container,null,env);
@@ -184,15 +184,17 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			mode = ForEachStat.JITERATOR;
 		} else if( xtype.isInstanceOf( env.tenv.tpJavaIterable) ) {
 			PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo<Method>(env,this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext),
+				elems=new ResInfo(env,this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 				new CallType(xtype,null,null,env.tenv.tpAny,false));
-			itype = Type.getRealType(xtype,elems.resolvedDNode().mtype.ret());
+			Method method = (Method)elems.resolvedDNode();
+			itype = Type.getRealType(xtype,method.mtype.ret());
 			mode = ForEachStat.JITERABLE;
 		} else if( PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo<Method>(env,this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+				elems=new ResInfo(env,this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 				new CallType(xtype,null,null,env.tenv.tpAny,false))
 		) {
-			itype = Type.getRealType(xtype,elems.resolvedDNode().mtype.ret());
+			Method method = (Method)elems.resolvedDNode();
+			itype = Type.getRealType(xtype,method.mtype.ret());
 			mode = ForEachStat.ELEMS;
 		} else if( xtype ≡ env.tenv.tpRule &&
 			(
@@ -298,7 +300,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.ELEMS:
 			/* iter.hasMoreElements() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					moreelem=new ResInfo<Method>(env,this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+					moreelem=new ResInfo(env,this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 					new CallType(itype,null,null,env.tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
@@ -312,7 +314,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JITERABLE:
 			/* iter.hasNext() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					moreelem=new ResInfo<Method>(env,this,"hasNext",ResInfo.noStatic|ResInfo.noSyntaxContext),
+					moreelem=new ResInfo(env,this,"hasNext",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 					new CallType(itype,null,null,env.tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+"hasNext");
@@ -352,7 +354,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.ELEMS:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					nextelem=new ResInfo<Method>(env,this,nameNextElement,ResInfo.noStatic|ResInfo.noSyntaxContext),
+					nextelem=new ResInfo(env,this,nameNextElement,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 					new CallType(itype,null,null,env.tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
@@ -366,7 +368,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JITERABLE:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					nextelem=new ResInfo<Method>(env,this,"next",ResInfo.noStatic|ResInfo.noSyntaxContext),
+					nextelem=new ResInfo(env,this,"next",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 					new CallType(itype,null,null,env.tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);

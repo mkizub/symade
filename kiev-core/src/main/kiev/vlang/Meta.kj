@@ -68,11 +68,11 @@ public class UserMeta extends ASTNode implements MNode {
 	public UserMeta(JavaAnnotation decl) {
 		this.decl.symbol = decl.symbol;
 	}
-	
+
 	public UserMeta(String name) {
 		this.decl.name = name;
 	}
-	
+
 	public String qname() {
 		TypeDecl s = decl.dnode;
 		if (s != null)
@@ -86,12 +86,12 @@ public class UserMeta extends ASTNode implements MNode {
 			return td;
 		String name = decl.name;
 		if (name.indexOf('·') < 0) {
-			ResInfo<JavaAnnotation> info = new ResInfo<JavaAnnotation>(Env.getEnv(),this,name,ResInfo.noForwards);
+			ResInfo info = new ResInfo(Env.getEnv(),this,name,ResInfo.noForwards).match(JavaAnnotation.class);
 			if (!PassInfo.resolveNameR(this,info)) {
 				Kiev.reportError(this,"Unresolved annotation name "+name);
 				return null;
 			}
-			JavaAnnotation ann = info.resolvedDNode();
+			JavaAnnotation ann = (JavaAnnotation)info.resolvedDNode();
 			this.decl.symbol = info.resolvedSymbol();
 			ann = ann.checkResolved(env);
 			return ann;
@@ -126,7 +126,7 @@ public class UserMeta extends ASTNode implements MNode {
 		scope = scope.checkResolved(env);
 		return (JavaAnnotation)scope;
 	}
-	
+
 	public boolean isRuntimeVisible() {
 		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
 		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
@@ -161,14 +161,14 @@ public class UserMeta extends ASTNode implements MNode {
 			return env.tenv.tpVoid;
 		return td.getType(env);
 	}
-	
+
 	public int size() alias length {
 		return values.length;
 	}
 	public boolean isEmpty() {
 		return values.length == 0;
 	}
-	
+
 	public void verify(INode parent, AttrSlot slot) {
 		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
 		if (tdecl == null || !tdecl.isAnnotation()) {
@@ -178,7 +178,7 @@ public class UserMeta extends ASTNode implements MNode {
 			v.verify(this,nodeattr$values);
 		return;
 	}
-	
+
 	public void resolve(Env env, Type reqType) {
 		JavaAnnotation tdecl = getAnnotationDecl(env);
 		tdecl = tdecl.checkResolved(env);
@@ -224,7 +224,7 @@ public class UserMeta extends ASTNode implements MNode {
 				Kiev.reportError(this, "Annotation value "+m.sname+" is not specified");
 		}
 	}
-	
+
 	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "decl") {
 			TypeDecl scope;
@@ -248,10 +248,10 @@ public class UserMeta extends ASTNode implements MNode {
 				}
 				return result;
 			} else {
-				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,ResInfo.noForwards);
+				ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards).match(TypeDecl.class);
 				if (!PassInfo.resolveNameR(this,info))
 					return null;
-				scope = info.resolvedDNode();
+				scope = (TypeDecl)info.resolvedDNode();
 			}
 			while (dot >= 0) {
 				dot = name.indexOf('·');
@@ -273,10 +273,10 @@ public class UserMeta extends ASTNode implements MNode {
 					}
 					return result;
 				} else {
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,ResInfo.noForwards);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards).match(TypeDecl.class);
 					if!(scope.resolveNameR(info))
 						return null;
-					scope = info.resolvedDNode();
+					scope = (TypeDecl)info.resolvedDNode();
 				}
 			}
 		}
@@ -296,7 +296,7 @@ public class UserMeta extends ASTNode implements MNode {
 			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+decl+" annotation");
 	}
-	
+
 	public boolean getZ(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
@@ -311,7 +311,7 @@ public class UserMeta extends ASTNode implements MNode {
 		}
 		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a boolean constant, but "+v+(v != null ? (" of "+v.getClass()) : ""));
 	}
-	
+
 	public int getI(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
@@ -326,7 +326,7 @@ public class UserMeta extends ASTNode implements MNode {
 		}
 		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not an int constant, but "+v);
 	}
-	
+
 	public String getS(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
@@ -341,7 +341,7 @@ public class UserMeta extends ASTNode implements MNode {
 		}
 		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a String constant, but "+v);
 	}
-	
+
 	public MetaValue set(MetaValue value)
 	{
 		if (value == null)
@@ -456,7 +456,7 @@ public abstract class MetaValue extends ENode {
 				this.ident = "value";
 		}
 	}
-	
+
 	boolean checkValue(Type reqType, ASTNode value, AttrSlot slot) {
 		Env env = Env.getEnv();
 		if (value instanceof TypeRef) {
@@ -521,7 +521,7 @@ public final class MetaValueScalar extends MetaValue {
 		if (value instanceof MNode)
 			((MNode)value).verify(this,nodeattr$value);
 	}
-	
+
 	public void resolveFrontEnd(Type reqType) {
 		boolean ok;
 		do {
@@ -572,7 +572,7 @@ public final class MetaValueArray extends MetaValue {
 				((MNode)values[i]).verify(this,nodeattr$values);
 		}
 	}
-	
+
 	public void resolveFrontEnd(Type reqType) {
 		for (int i=0; i < values.length; i++) {
 			boolean ok;

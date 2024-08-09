@@ -181,10 +181,10 @@ public class AssignExpr extends ENode {
 			ContainerAccessExpr cae = (ContainerAccessExpr)lval;
 			Type ect1 = cae.obj.getType(env);
 			Type ect2 = cae.index.getType(env);
-			ResInfo<Method> info = new ResInfo<Method>(env,this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext);
+			ResInfo info = new ResInfo(env,this,nameArraySetOp,ResInfo.noStatic | ResInfo.noSyntaxContext).match(Method.class);
 			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
 			if (PassInfo.resolveBestMethodR(ect1,info,mt)) {
-				Method rm = info.resolvedDNode();
+				Method rm = (Method)info.resolvedDNode();
 				if !(rm.isMacro() && rm.isNative()) {
 					ENode res = info.buildCall((ASTNode)this, cae.obj, null, new ENode[]{~cae.index,~value});
 					res = res.closeBuild();
@@ -873,24 +873,24 @@ public class CastExpr extends ENode {
 	}
 
 	private boolean resolveOverloadedCast(Type et, Env env) {
-		ResInfo<Method> info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+		ResInfo info = new ResInfo(env,this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 		CallType mt = new CallType(et,null,null,this.ctype.getType(env),false);
 		if( PassInfo.resolveBestMethodR(et,info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return true;
 		}
-		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		info = new ResInfo(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 		mt = new CallType(null,null,new Type[]{expr.getType(env)},this.ctype.getType(env),false);
 		if( PassInfo.resolveMethodR(this,info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return true;
 		}
-		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		info = new ResInfo(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 		if( this.ctype.getTypeDecl(env).resolveMethodR(info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return true;
 		}
-		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		info = new ResInfo(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 		if( expr.getType(env).meta_type.tdecl.resolveMethodR(info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return true;

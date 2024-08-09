@@ -128,7 +128,7 @@ public final class TypeNameRef extends TypeRef {
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
 				AutoCompleteResult result = new AutoCompleteResult(false);
-				ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
+				ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(TypeDecl.class);
 				foreach (PassInfo.resolveNameR(this,info)) {
 					if (!result.containsData(info.resolvedSymbol()))
 						result.append(info.resolvedSymbol());
@@ -154,7 +154,7 @@ public final class TypeNameRef extends TypeRef {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					AutoCompleteResult result = new AutoCompleteResult(false);
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(TypeDecl.class);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());
@@ -299,7 +299,7 @@ public final class TypeNameArgsRef extends TypeRef {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					AutoCompleteResult result = new AutoCompleteResult(false);
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(TypeDecl.class);
 					foreach (PassInfo.resolveNameR(this,info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());
@@ -326,7 +326,7 @@ public final class TypeNameArgsRef extends TypeRef {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					AutoCompleteResult result = new AutoCompleteResult(false);
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(TypeDecl.class);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());
@@ -506,7 +506,7 @@ public final class TypeInnerNameRef extends TypeRef {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					AutoCompleteResult result = new AutoCompleteResult(false);
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(TypeDecl.class);
 					foreach (PassInfo.resolveNameR(this,info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());
@@ -536,7 +536,7 @@ public final class TypeInnerNameRef extends TypeRef {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					AutoCompleteResult result = new AutoCompleteResult(false);
-					ResInfo<TypeDecl> info = new ResInfo<TypeDecl>(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(TypeDecl.class);
 					foreach (((ScopeOfNames)scope).resolveNameR(info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());

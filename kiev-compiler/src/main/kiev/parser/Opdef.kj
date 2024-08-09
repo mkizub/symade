@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public class Opdef extends DNode {
-	
+
 	@AttrXMLDumpInfo(attr=true, name="priority")
 	@nodeAttr public int				prior;
 	@AttrXMLDumpInfo(attr=true, name="istype")
@@ -45,7 +45,7 @@ public class Opdef extends DNode {
 		this.resolved = new Operator(name.trim().intern());
 		return this.resolved;
 	}
-	
+
 	public COpdef[] compile() {
 		Vector<COpArgument> args = new Vector<COpArgument>();
 		foreach (OpArgument arg; this.args)
@@ -87,13 +87,13 @@ public class Opdef extends DNode {
 			copdefs[i] = new COpdef(this, prior, vargs[i].toArray(), type_operator);
 		return copdefs;
 	}
-	
+
 	public Opdef() {}
-	
+
 	public String toString() {
 		return "operator "+sname;
 	}
-	
+
 	public OpArgument[] getOpdefArgs() { return args; }
 
 	public boolean isLeftRecursive() {
@@ -102,7 +102,7 @@ public class Opdef extends DNode {
 		else
 			return args[0] instanceof OpArgEXPR;
 	}
-	
+
 	public String toString(ENode e) {
 		ENode[] exprs = e.getEArgs();
 		StringBuffer sb = new StringBuffer();
@@ -136,7 +136,7 @@ public class Opdef extends DNode {
 		}
 		return sb.toString().trim();
 	}
-	
+
 	public void addMethod(Method m) {
 		assert (m.hasName(this.sname));
 		for(int i=0; i < methods.length; i++)
@@ -147,7 +147,7 @@ public class Opdef extends DNode {
 
 	public Symbol resolveMethod(Env env, ENode expr) {
 		ENode[] args = expr.getEArgs();
-		ResInfo<Method> info = new ResInfo<Method>(env, expr, this.sname, ResInfo.noStatic);
+		ResInfo info = new ResInfo(env, expr, this.sname, ResInfo.noStatic).match(Method.class);
 		Type[] tps = new Type[args.length-1];
 		for (int i=0; i < tps.length; i++) {
 			tps[i] = args[i+1].getType(env);
@@ -163,7 +163,7 @@ public class Opdef extends DNode {
 			}
 			return info.resolvedSymbol();
 		}
-		info = new ResInfo<Method>(env, expr, this.sname, 0);
+		info = new ResInfo(env, expr, this.sname, 0).match(Method.class);
 		tps = new Type[args.length];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i].getType(env);
@@ -187,7 +187,7 @@ public class Opdef extends DNode {
 		m.dnode != null,
 		info ?= m.dnode.equalsByCast(info.getName(),mt,info.env.tenv.tpVoid,info)
 	}
-	
+
 	//public boolean isForCoreOperation(CoreOperation operation) {
 	//	foreach (Method m; methods; m.body instanceof CoreExpr) {
 	//		CoreOperation cop = ((CoreExpr)m.body).getCoreOperation();
@@ -202,9 +202,9 @@ public class Opdef extends DNode {
 public abstract class OpArgument extends SNode {
 	@AttrXMLDumpInfo(attr=true, name="attr")
 	@nodeAttr public String attr_name;
-	
+
 	public String getAttrName() { return attr_name; }
-	
+
 	@setter public final void set$attr_name(String value) {
 		this.attr_name = (value == null) ? null : value.intern();
 	}
@@ -216,7 +216,7 @@ public abstract class OpArgument extends SNode {
 			return (Opdef)p;
 		return null;
 	}
-	
+
 	public abstract String toOpName();
 
 	public abstract COpArgument compile();
@@ -295,7 +295,7 @@ public final class OpArgOPER extends OpArgument {
 
 	@AttrXMLDumpInfo(attr=true, name="symbol")
 	@nodeAttr public Symbol			symbol;
-	
+
 	@AttrXMLDumpInfo(attr=true, name="as-node")
 	@nodeAttr public String				as_node;
 
@@ -305,7 +305,7 @@ public final class OpArgOPER extends OpArgument {
 		this.symbol = new Symbol();
 		this.symbol.setUUID(null, "");
 	}
-	
+
 	public String toString() { "OPER "+symbol.sname }
 
 	public String toOpName() { this.symbol.sname }
@@ -325,7 +325,7 @@ public class OpArgSEQS extends OpArgument {
 	public String toString() { "SEQS"+toOpName() }
 
 	public OpArgument[] getSeqArgs() { return args; }
-	
+
 	public String toOpName() {
 		String name = "{ ";
 		foreach (OpArgument arg; args)
@@ -349,7 +349,7 @@ public class OpArgOPTIONAL extends OpArgument {
 	public String toString() { "OPTIONAL"+toOpName() }
 
 	public OpArgument[] getOptArgs() { return args; }
-	
+
 	public String toOpName() {
 		String name = "{ ";
 		foreach (OpArgument arg; args)
@@ -373,7 +373,7 @@ public class OpArgALTR extends OpArgument {
 	public String toString() { "ALTR"+toOpName() }
 
 	public OpArgument[] getAltArgs() { return args; }
-	
+
 	public String toOpName() {
 		String name = "{ ";
 		foreach (OpArgument arg; args)
@@ -398,7 +398,7 @@ public abstract class OpArgLIST extends OpArgument {
 	public abstract int getMinCount();
 
 	public OpArgOPER getSeparator() { return sep; }
-	
+
 	public String toOpName() {
 		if (sep != null)
 			return "{ "+el.toOpName()+" "+sep.toOpName()+" }";

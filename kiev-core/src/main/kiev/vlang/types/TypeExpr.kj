@@ -54,30 +54,30 @@ public class TypeExpr extends TypeRef {
 		}
 		super.callbackChanged(info);
 	}
-	
+
 	public void postVerify(Env env, INode parent, AttrSlot slot) {
 		if (op_name == "T #" || getType(env) instanceof ASTNodeType) {
 			this.replaceWithNode(new TypeASTNodeRef((ASTNodeType)getType(env)), parent, slot);
 		}
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{arg}; }
 
 	public Opdef getFakeOpdef(Env env) {
 		Opdef opd = null;
 		try {
-			ResInfo<Opdef> info = new ResInfo<Opdef>(env,this,op_name);
+			ResInfo info = new ResInfo(env,this,op_name).match(Opdef.class);
 			SyntaxScope ss = Env.ctxSyntaxScope(this);
 			if (ss != null) {
 				foreach (ImportSyntax imp; ss.syntaxes) {
 					KievSyntax stx = imp.name.dnode;
 					if (stx != null && stx.resolveNameR(info))
-						return info.resolvedDNode();
+						return (Opdef)info.resolvedDNode();
 				}
 			}
 			KievSyntax kiev_stx = (KievSyntax) env.loadAnyDecl("kiev·Syntax");
 			if (kiev_stx != null && kiev_stx.resolveNameR(info))
-				return info.resolvedDNode();
+				return (Opdef)info.resolvedDNode();
 		} catch (Throwable t) {}
 		return null;
 	}
@@ -94,9 +94,9 @@ public class TypeExpr extends TypeRef {
 			throw new CompilerException(this, "Cannot find ASTNodeType for name: "+arg.toString());
 		}
 		if (base_type == null) {
-			ResInfo<TypeOpDef> info = new ResInfo<TypeOpDef>(env,this,this.op_name);
+			ResInfo info = new ResInfo(env,this,this.op_name).match(TypeOpDef.class);
 			if (PassInfo.resolveNameR((TypeExpr)this,info)) {
-				TypeOpDef tod = info.resolvedDNode();
+				TypeOpDef tod = (TypeOpDef)info.resolvedDNode();
 				base_type = tod.dtype.getType(env);
 			}
 			else

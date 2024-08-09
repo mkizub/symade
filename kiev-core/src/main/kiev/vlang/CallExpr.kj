@@ -150,7 +150,7 @@ public class CallExpr extends ENode {
 		// super-call "super.func(args)"
 		if (obj instanceof SuperExpr) {
 			Type tp = Env.ctxTDecl(this).super_types[0].getType(env);
-			ResInfo<Method> info = new ResInfo<Method>(env,this,this.ident);
+			ResInfo info = new ResInfo(env,this,this.ident).match(Method.class);
 			info.enterForward(obj);
 			info.enterSuper();
 			mt = new CallType(tp,ata,ta,env.tenv.tpAny,false);
@@ -189,7 +189,7 @@ public class CallExpr extends ENode {
 			// try virtual call first
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				ResInfo<Method> info = new ResInfo<Method>(env,this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
+				ResInfo info = new ResInfo(env, this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext).match(Method.class);
 				mt = new CallType(tp,ata,ta,env.tenv.tpAny,false);
 				if (obj == null && Env.ctxMethod(this) != null) {
 					if (PassInfo.resolveMethodR((ASTNode)this,info,mt)) {
@@ -242,7 +242,7 @@ public class CallExpr extends ENode {
 			// try static call
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				ResInfo<Method> info = new ResInfo<Method>(env,this, this.ident);
+				ResInfo info = new ResInfo(env,this, this.ident).match(Method.class);
 				mt = new CallType(null,ata,ta,env.tenv.tpAny,false);
 				if (obj == null) {
 					if (PassInfo.resolveMethodR((ASTNode)this,info,mt)) {
@@ -503,7 +503,7 @@ public class CtorCallExpr extends ENode {
 		}
 		// constructor call "this(args)"
 		if (obj instanceof ThisExpr) {
-			ResInfo<Constructor> info = new ResInfo<Constructor>(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+			ResInfo info = new ResInfo(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Constructor.class);
 			if (!PassInfo.resolveBestMethodR(tp,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this.symbol = info.resolvedSymbol();
@@ -512,7 +512,7 @@ public class CtorCallExpr extends ENode {
 		// constructor call "super(args)"
 		if (obj instanceof SuperExpr) {
 			mt = new CallType(tp,null,ta,env.tenv.tpVoid,false);
-			ResInfo<Constructor> info = new ResInfo<Constructor>(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+			ResInfo info = new ResInfo(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Constructor.class);
 			if (!PassInfo.resolveBestMethodR(Env.ctxTDecl(this).super_types[0].getType(env),info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this.symbol = info.resolvedSymbol();

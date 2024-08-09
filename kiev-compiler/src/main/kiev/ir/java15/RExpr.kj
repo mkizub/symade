@@ -137,7 +137,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 				// Check that we need our $typeinfo
 				if (clz.getType(env) ≈ t)
 					return ((RENode)tie).replaceWithNodeResolve(env, reqType, ti_access);
-	
+
 				if (t instanceof ArgType) {
 					// Get corresponded type argument
 					ArgType at = (ArgType)t;
@@ -157,7 +157,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 		// but need typeinfo in <clinit>
 		if ((Env.ctxMethod(tie) == null || Env.ctxMethod(tie) instanceof Constructor && Env.ctxMethod(tie).isStatic()) && Env.ctxTDecl(tie).isInterface())
 			return;
-		
+
 		// Lookup and create if need as $typeinfo$N
 		foreach(Field f; clz.members; f.isStatic()) {
 			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
@@ -165,7 +165,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 			if (((TypeInfoExpr)f.init).ttype.getType(env) ≈ t)
 				return ((RENode)tie).replaceWithNodeResolve(env, reqType, new SFldExpr(tie.pos,f));
 		}
-		
+
 		foreach (ENode ti_arg; tie.cl_args; !(ti_arg instanceof SFldExpr))
 			return; // oops, cannot make it a static field
 		int i = 0;
@@ -418,7 +418,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 				RReturnStat.autoReturn(reqType, this, env);
 			return;
 		}
-		
+
 		Method m = resolveMethodAndNormalize(env);
 		if (m == null)
 			return; // error already reported
@@ -445,7 +445,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 			replaceWithNodeResolve(env, reqType, ((CoreOperation)m).calc(this));
 			return;
 		}
-		
+
 		setResolved(true);
 		if (isAutoReturnable())
 			RReturnStat.autoReturn(reqType, this, env);
@@ -463,7 +463,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 				RReturnStat.autoReturn(reqType, this, env);
 			return;
 		}
-		
+
 		Method m = resolveMethodAndNormalize(env);
 		if (m == null)
 			return; // error already reported
@@ -488,7 +488,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 			replaceWithNodeResolve(env, reqType, ((CoreOperation)m).calc(this));
 			return;
 		}
-		
+
 		setResolved(true);
 		if (isAutoReturnable())
 			RReturnStat.autoReturn(reqType, this, env);
@@ -591,7 +591,7 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 				RReturnStat.autoReturn(reqType, this, env);
 			return;
 		}
-		
+
 		Method m = resolveMethodAndNormalize(env);
 		if (m == null)
 			return; // error already reported
@@ -610,7 +610,7 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 				replaceWithNodeResolve(env, reqType, new CallExpr(pos,~lval,m,ENode.emptyArray));
 			return;
 		}
-		
+
 		setResolved(true);
 		if (isAutoReturnable())
 			RReturnStat.autoReturn(reqType, this, env);
@@ -700,10 +700,10 @@ public static final view RCastExpr of CastExpr extends RENode {
 	}
 
 	public final boolean tryOverloadedCast(Type et, Env env) {
-		ResInfo<Method> info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext);
+		ResInfo info = new ResInfo(env,this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 		CallType mt = new CallType(et,null,null,this.ctype.getType(env),false);
 		if( PassInfo.resolveBestMethodR(et,info,mt) ) {
-			Method m = info.resolvedDNode();
+			Method m = (Method)info.resolvedDNode();
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType(env);
@@ -716,13 +716,13 @@ public static final view RCastExpr of CastExpr extends RENode {
 			replaceWithNodeResolve(env, ctype.getType(env),call);
 			return true;
 		}
-		info = new ResInfo<Method>(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext);
+		info = new ResInfo(env,this,nameCastOp,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 		mt = new CallType(null,null,new Type[]{expr.getType(env)},this.ctype.getType(env),false);
 		if( PassInfo.resolveMethodR(this,info,mt)
 			|| this.ctype.getTypeDecl(env).resolveMethodR(info,mt)
 			|| expr.getType(env).meta_type.tdecl.resolveMethodR(info,mt)
 		) {
-			Method m = info.resolvedDNode();
+			Method m = (Method)info.resolvedDNode();
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
 				ArgType at = m.targs[i].getAType(env);
@@ -736,7 +736,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		}
 		return false;
 	}
-	
+
 	public final void tryTypeArgCast(Env env, Type reqType, Type tp, Type et) {
 		if (tp instanceof ArgType && tp.isUnerasable()) {
 			replaceWithNodeResolve(env, reqType,

@@ -116,10 +116,10 @@ public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOf
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					ResInfo<KievPackage> info = new ResInfo<KievPackage>(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
 					if !(scope.resolveNameR(info))
 						return null;
-					scope = info.resolvedDNode();
+					scope = (KievPackage)info.resolvedDNode();
 					dot = name.indexOf('·');
 				}
 				if (dot < 0) {

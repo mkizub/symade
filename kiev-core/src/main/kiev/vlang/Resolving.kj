@@ -17,8 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@unerasable
-public final class ResInfo<D extends DNode> implements Cloneable {
+public final class ResInfo implements Cloneable {
 
 	public static final int noStatic        = 0x0001;
 	public static final int noSyntaxContext = 0x0002;
@@ -30,6 +29,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	public final Env	env;
 
 	private Symbol		resolved_symbol;
+	private DNode		resolved_dnode;
 
 	private String		name;
 	private int			flags;
@@ -41,6 +41,8 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	private int			transforms;
 	private TypeDecl	from_scope;
 	private ANode		from;
+
+	private DNodeMatcher dnode_matcher;
 
 	// a real type of the method in Method.compare() call
 	public CallType		resolved_type;
@@ -59,7 +61,9 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	public Symbol resolvedSymbol() {
 		return resolved_symbol;
 	}
-	public D resolvedDNode() {
+	public DNode resolvedDNode() {
+		if (resolved_dnode != null)
+			return resolved_dnode;
 		if (resolved_symbol == null)
 			return null;
 		return resolved_symbol.dnode;
@@ -72,7 +76,7 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 		return ri;
 	}
 
-	public static ResInfo<DNode> newForDNode(Env env, ANode from, String nm, int fl) {
+	public static ResInfo newForDNode(Env env, ANode from, String nm, int fl) {
 		return new ResInfo(env, from, nm.intern(), fl);
 	}
 	public ResInfo(Env env, ANode from, String nm) {
@@ -95,6 +99,16 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 				from_scope = Env.ctxTDecl(from);
 		} catch (Throwable t) {}
 		this.processedNS = new Vector<ANode>();
+	}
+
+	public ResInfo setMatcher(DNodeMatcher matcher) {
+		this.dnode_matcher = matcher;
+		return this;
+	}
+
+	public <D> ResInfo match(Class<D> cl) {
+		this.dnode_matcher = new DNodeMatcherByClass<D>(cl);
+		return this;
 	}
 
 	public String getName() { return name; }
@@ -224,11 +238,23 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 	public boolean $bind_chk(ISymbol var) {
 		if (var == null)
 			return false;
-		if !(var.dnode instanceof D)
+		DNode d = null;
+		if (var instanceof Symbol) {
+			if (dnode_matcher != null)
+				d = dnode_matcher.matchOwner((Symbol)var);
+			else
+				d = var.getTargetDNode();
+		} else {
+			if (dnode_matcher != null)
+				d = dnode_matcher.matchNode(var);
+			else if (var instanceof DNode)
+				d = (DNode)var;
+		}
+		if (d == null)
 			return false;
 		if !(checkNodeName(var))
 			return false;
-		if !(check(var))
+		if !(check(d))
 			return false;
 		this.resolved_symbol = var.symbol;
 		return true;
@@ -251,9 +277,8 @@ public final class ResInfo<D extends DNode> implements Cloneable {
 			return sname != null && sname.startsWith(name);
 		return sname == name;
 	}
-	private boolean check(ISymbol isym) {
-		DNode n = isym.dnode;
-		if (n instanceof Var)
+	private boolean check(DNode n) {
+		if (n instanceof LVar)
 			return true;
 		else if (n instanceof Field || n instanceof Method) {
 			DNode d = (DNode)n;

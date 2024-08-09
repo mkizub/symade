@@ -49,7 +49,7 @@ public abstract class Import extends SNode implements Constants {
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					ResInfo<KievPackage> info = new ResInfo<KievPackage>(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
 					if !(scope.resolveNameR(info))
 						return null;
 					scope = (ScopeOfNames)info.resolvedDNode();
@@ -134,7 +134,7 @@ public class ImportMethod extends Import implements Constants, ScopeOfMethods {
 			Kiev.reportError(this,"Scope "+dn+" has no methods");
 			return false;
 		}
-		
+
 		int i = 0;
 		Type[] types;
 		if( args.length > 0 && args[0].getType(env) ≡ env.tenv.tpRule) {
@@ -146,7 +146,7 @@ public class ImportMethod extends Import implements Constants, ScopeOfMethods {
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType(env);
 		CallType mt = new CallType(null,null,types,env.tenv.tpAny,false);
-		ResInfo<Method> info = new ResInfo<Method>(env,this,method.name);
+		ResInfo info = new ResInfo(env,this,method.name).match(Method.class);
 		if( !((ScopeOfMethods)dn).resolveMethodR(info,mt) ) {
 			Kiev.reportError(this,"Unresolved method "+Method.toString(method.name,mt)+" in "+dn);
 			return false;
@@ -255,7 +255,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					ResInfo<KievPackage> info = new ResInfo<KievPackage>(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
 					if !(scope.resolveNameR(info))
 						return null;
 					scope = (ScopeOfNames)info.resolvedDNode();
@@ -265,7 +265,7 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 					head = name.intern();
 					AutoCompleteResult result = new AutoCompleteResult(false);
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
-					ResInfo<KievSyntax> info = new ResInfo<KievSyntax>(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags).match(KievSyntax.class);
 					foreach (scope.resolveNameR(info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());
@@ -285,11 +285,11 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	@nodeAttr public TypeRef			dtype;
-	
+
 	@AttrBinDumpInfo(ignore=true)
 	@abstract
 	@nodeData public String				op;
-	
+
 	@getter public String get$op() {
 		String sname = this.sname;
 		if (sname == null || !sname.startsWith("T "))
@@ -302,19 +302,19 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 		else
 			this.sname = "T "+val;
 	}
-	
+
 	public TypeOpDef() {}
-	
+
 	public Type getType(Env env) { return dtype.getType(env); }
-	
+
 	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return false; }
 
 	public void checkResolved(Env env) { dtype.getType(env).checkResolved(); }
-	
+
 	public Struct getStruct() {
 		return getType(Env.getEnv()).getStruct();
 	}
-	
+
 	public rule resolveNameR(ResInfo path) {
 		path.getPrevNode() == this.dtype,
 		path ?= path.env.tenv.tpTypeOpDefArg.definer

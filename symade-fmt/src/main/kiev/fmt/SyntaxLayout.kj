@@ -27,14 +27,14 @@ public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer,
 
 	@nodeAttr
 	public ASTNode∅			members;
-	
+
 	@UnVersioned
 	protected Draw_ATextSyntax compiled;
 
 	public ATextSyntax() {}
-	
+
 	public final ASTNode[] getContainerMembers() { this.members }
-	
+
 	public Object getDataToSerialize() {
 		return this.getCompiled().init();
 	}
@@ -53,14 +53,14 @@ public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer,
 	;
 		path @= members
 	}
-	
+
 	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		this.compiled = null;
 		return super.preResolveIn(env, parent, slot);
 	}
 
 	public abstract Draw_ATextSyntax getCompiled();
-	
+
 	public void fillCompiled(Draw_ATextSyntax ts) {
 		ts.q_name = this.qname();
 		Vector<Draw_ATextSyntax> sub_syntax = new Vector<Draw_ATextSyntax>();
@@ -130,7 +130,7 @@ public final class TopLevelTextSyntax extends ATextSyntax {
 	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
 		this.compiled = null;
 		if (Env.needResolving(parent_syntax)) {
-			ResInfo<ATextSyntax> info = new ResInfo<ATextSyntax>(env,this,parent_syntax.name);
+			ResInfo info = new ResInfo(env,this,parent_syntax.name).match(ATextSyntax.class);
 			if (!PassInfo.resolveNameR(this,info))
 				Kiev.reportError(this,"Cannot resolve syntax '"+parent_syntax.name+"'");
 			else if (parent_syntax.symbol != info.resolvedSymbol())
@@ -138,7 +138,7 @@ public final class TopLevelTextSyntax extends ATextSyntax {
 		}
 		return super.preResolveIn(env, parent, slot);
 	}
-	
+
 	public rule resolveNameR(ResInfo path)
 		StyleSheet@ stl;
 		ATextSyntax@ syn;
@@ -157,7 +157,7 @@ public final class TopLevelTextSyntax extends ATextSyntax {
 		path.enterSuper() : path.leaveSuper(),
 		syn.resolveNameR(path)
 	}
-	
+
 }
 
 @ThisIsANode(lang=SyntaxLang)
@@ -215,7 +215,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 
 	@nodeAttr
 	public SyntaxFunc∅				funcs;
-	
+
 	public SyntaxElemDecl() {}
 
 	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
@@ -226,7 +226,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 			return (dn instanceof Struct && VNodeUtils.isNodeKind((Struct)dn)) || (dn instanceof NodeDecl);
 		});
 	}
-	
+
 	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "rnode")
 			return SymbolRef.autoCompleteSymbol(rnode, str, slot, fun (DNode n)->boolean {
@@ -259,7 +259,7 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	@nodeAttr public String				esc_prefix;
 	@nodeAttr public String				esc_suffix;
 	@nodeAttr public ConstStringExpr∅	keywords;
-	
+
 	@setter
 	public void set$esc_prefix(String value) {
 		this.esc_prefix = (value != null) ? value.intern() : null;
@@ -308,9 +308,9 @@ public class SyntaxTypeRef extends ASTNode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public Struct⇑				clazz;
-	
+
 	@nodeAttr
-	public SyntaxTypeRef∅		args; 
+	public SyntaxTypeRef∅		args;
 
 	public String getSignature() {
 		Struct s = clazz.dnode;
@@ -327,7 +327,7 @@ public class SyntaxTypeRef extends ASTNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpectedType extends DNode {
-	
+
 	@nodeAttr public String				title;
 	@nodeAttr public SyntaxTypeRef		type_ref;
 
@@ -335,7 +335,7 @@ public class SyntaxExpectedType extends DNode {
 
 @ThisIsANode(lang=SyntaxLang)
 public class SyntaxExpectedTemplate extends DNode {
-	
+
 	@nodeAttr public String				title;
 	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType
 
@@ -349,7 +349,7 @@ public class SyntaxExpectedTemplate extends DNode {
 					;
 			});
 	}
-	
+
 	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
 			return SymbolRef.autoCompleteSymbol(this, str, slot, fun (DNode n)->boolean {
@@ -366,7 +366,7 @@ public class SyntaxExpectedTemplate extends DNode {
 public final class SyntaxElemFormatDecl extends DNode {
 	@nodeAttr
 	public SpaceCmd∅				spaces;
-	
+
 	public SyntaxElemFormatDecl() {}
 	public SyntaxElemFormatDecl(String name) {
 		this.sname = name;
@@ -485,7 +485,7 @@ public final class SyntaxFuncSetEnum extends SyntaxFunc {
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxFuncNewByTemplate extends SyntaxFunc {
 
-	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType 
+	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType
 
 	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
 		super.preResolveOut(env, parent, slot);
@@ -497,7 +497,7 @@ public final class SyntaxFuncNewByTemplate extends SyntaxFunc {
 					;
 			});
 	}
-	
+
 	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
 		if (slot.name == "expected_types")
 			return SymbolRef.autoCompleteSymbol(this, str, slot, fun (DNode n)->boolean {
@@ -553,7 +553,7 @@ public final class SyntaxFuncNewByTemplate extends SyntaxFunc {
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxFuncNewByFactory extends SyntaxFunc {
 
-	@nodeAttr public String factory; 
+	@nodeAttr public String factory;
 
 	public Draw_SyntaxFunc getCompiled() {
 		Draw_FuncNewByFactory dr_func = new Draw_FuncNewByFactory();
@@ -608,9 +608,9 @@ public abstract class SyntaxElem extends ASTNode {
 			fmt = this.fmt.dnode;
 		if (fmt == null) {
 			try {
-				ResInfo<SyntaxElemFormatDecl> info = new ResInfo<SyntaxElemFormatDecl>(Env.getEnv(),this,"fmt-default");
+				ResInfo info = new ResInfo(Env.getEnv(),this,"fmt-default").match(SyntaxElemFormatDecl.class);
 				if (PassInfo.resolveNameR(this,info)) {
-					fmt = info.resolvedDNode();
+					fmt = (SyntaxElemFormatDecl)info.resolvedDNode();
 					return fmt.compile();
 				}
 			} catch (Exception e) {}
@@ -633,7 +633,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public ASyntaxElemDecl⇑			decl;
-	
+
 	@nodeAttr
 	public String					text;
 
@@ -641,7 +641,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 	public SyntaxElemRef(ASyntaxElemDecl decl) {
 		this.decl.symbol = decl.symbol;
 	}
-	
+
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
 		return ((ASyntaxElemDecl)decl.dnode).elem.getCompiled(elem_decl);
 	}
@@ -658,7 +658,7 @@ public final class SyntaxToken extends SyntaxElem {
 	public void set$text(String value) {
 		this.text = (value != null) ? value.intern() : null;
 	}
-	
+
 	public SyntaxToken() {}
 	public SyntaxToken(String text) {
 		this.text = text;
@@ -687,7 +687,7 @@ public final class SyntaxIcon extends SyntaxElem {
 	public void set$icon_name(String value) {
 		this.icon_name = (value != null) ? value.intern() : null;
 	}
-	
+
 	public SyntaxIcon() {}
 	public SyntaxIcon(String icon_name) {
 		this.icon_name = icon_name;
@@ -715,12 +715,12 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 	public void set$text(String value) {
 		this.text = (value != null) ? value.intern() : null;
 	}
-	
+
 	@setter
 	public void set$attr_name(String value) {
 		this.attr_name = (value != null) ? value.intern() : null;
 	}
-	
+
 	public SyntaxPlaceHolder() {}
 
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
@@ -774,26 +774,26 @@ public final class SyntaxAttr extends SyntaxElem {
 
 	@nodeAttr
 	public String							name;
-	
+
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve @AttrXMLDumpInfo(attr=true)
 	final
 	public ATextSyntax⇑						in_syntax;
-	
+
 	@nodeAttr
 	public SyntaxElem						prefix;
 	@nodeAttr
 	public SyntaxElem						sufix;
 	@nodeAttr
 	public SyntaxElem						empty;
-	
+
 	@nodeAttr
 	public SyntaxAttrFormat					format;
-	
+
 	@setter
 	public final void set$name(String value) {
 		this.name = (value != null) ? value.intern() : null;
 	}
-	
+
 	public SyntaxAttr() {}
 
 	public AutoCompleteResult resolveAutoComplete(String str, AttrSlot slot) {
@@ -813,13 +813,13 @@ public final class SyntaxAttr extends SyntaxElem {
 		}
 		return super.resolveAutoComplete(str,slot);
 	}
-	
+
 	private AttrSlot findNodeAttr(NodeTypeInfo nti) {
 		foreach (AttrSlot a; nti.getAllAttributes(); name.equals(a.name))
 			return a;
 		return null;
 	}
-	
+
 	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
 		if (name == null || name.length() == 0) {
 			Kiev.reportError(this, "Attribute name is empty");
@@ -870,7 +870,7 @@ public final class SyntaxAttr extends SyntaxElem {
 		if (this.empty != null)
 			dr_elem.empty = this.empty.getCompiled(dr_elem.elem_decl);
 	}
-	
+
 	public NodeTypeInfo getExpectedType() {
 		INode p = parent();
 		while (p != null && !(p instanceof ASyntaxElemDecl))
@@ -950,7 +950,7 @@ public final class SyntaxList extends SyntaxAttrFormat {
 
 	@nodeAttr
 	public SyntaxElem							element;
-	
+
 	@nodeAttr
 	public CalcOption							filter;
 
@@ -1047,14 +1047,14 @@ public class SyntaxNode extends SyntaxElem {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public ATextSyntax⇑						in_syntax;
-	
+
 	@nodeAttr
 	public SyntaxElem						prefix;
 	@nodeAttr
 	public SyntaxElem						sufix;
 	@nodeAttr
 	public SyntaxElem						empty;
-	
+
 	public SyntaxNode() {}
 
 	public void fillCompiled(Draw_SyntaxElem _dr_elem) {
@@ -1069,7 +1069,7 @@ public class SyntaxNode extends SyntaxElem {
 		if (this.empty != null)
 			dr_elem.empty = this.empty.getCompiled(dr_elem.elem_decl);
 	}
-	
+
 	public Draw_SyntaxElem getCompiled(Draw_SyntaxElemDecl elem_decl) {
 		Draw_SyntaxNode dr_elem = new Draw_SyntaxNode(elem_decl);
 		fillCompiled(dr_elem);
@@ -1098,20 +1098,20 @@ public abstract class CalcOption extends ASTNode {
 	public final void set$name(String value) {
 		this.name = (value != null) ? value.intern() : null;
 	}
-	
+
 	public CalcOption() {}
 	public CalcOption(String name) {
 		if (name != null)
 			this.name = name.intern();
 	}
-	
+
 	public abstract Draw_CalcOption getCompiled();
 }
 
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionAnd extends CalcOption {
 	@nodeAttr public CalcOption∅ opts;
-	
+
 	public CalcOptionAnd() {}
 
 	public Draw_CalcOption getCompiled() {
@@ -1126,7 +1126,7 @@ public final class CalcOptionAnd extends CalcOption {
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionOr extends CalcOption {
 	@nodeAttr public CalcOption∅ opts;
-	
+
 	public CalcOptionOr() {}
 
 	public Draw_CalcOption getCompiled() {
@@ -1141,7 +1141,7 @@ public final class CalcOptionOr extends CalcOption {
 @ThisIsANode(lang=SyntaxLang)
 public final class CalcOptionNot extends CalcOption {
 	@nodeAttr public CalcOption opt;
-	
+
 	public CalcOptionNot() {}
 
 	public Draw_CalcOption getCompiled() {
@@ -1196,7 +1196,7 @@ public class CalcOptionTrue implements CalcOption {
 @ThisIsANode(lang=SyntaxLang)
 public class CalcOptionClass implements CalcOption {
 	private Class clazz;
-	
+
 	public CalcOptionClass() {}
 	public CalcOptionClass(String name) {
 		super(name);
@@ -1265,7 +1265,7 @@ public class CalcOptionIncludeInDump implements CalcOption {
 	public void set$dump(String value) {
 		this.dump = (value != null) ? value.intern() : null;
 	}
-	
+
 	public CalcOptionIncludeInDump() {}
 	public CalcOptionIncludeInDump(String dump, String name) {
 		super(name);

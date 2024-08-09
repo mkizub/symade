@@ -299,9 +299,9 @@ public final class IFldExpr extends LvalueExpr {
 			if (res[si] != null)
 				continue;
 			Type tp = tps[si];
-			ResInfo<Field> info = new ResInfo<Field>(env,this,this.ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards);
+			ResInfo info = new ResInfo(env,this,this.ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards).match(Field.class);
 			if (tp.resolveNameAccessR(info) ) {
-				res[si] = info.resolvedDNode();
+				res[si] = (Field)info.resolvedDNode();
 			}
 		}
 		int cnt = 0;
@@ -402,10 +402,11 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				return Type.getRealType(t,t.arg);
 			// Resolve overloaded access method
 			CallType mt = new CallType(t,null,new Type[]{index.getType(env)},env.tenv.tpAny,false);
-			ResInfo<Method> info = new ResInfo<Method>(env,this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			ResInfo info = new ResInfo(env,this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 			if( !PassInfo.resolveBestMethodR(t,info,mt) )
 				return env.tenv.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
-			return Type.getRealType(t,info.resolvedDNode().mtype.ret());
+			Method method = (Method)info.resolvedDNode();
+			return Type.getRealType(t,method.mtype.ret());
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return env.tenv.tpVoid;
@@ -424,10 +425,11 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		if (t instanceof ArrayType)
 			return new Type[]{Type.getRealType(t,t.arg)};
 		CallType mt = new CallType(t,null,new Type[]{index.getType(env)},env.tenv.tpAny,false);
-		ResInfo<Method> info = new ResInfo<Method>(env,this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		ResInfo info = new ResInfo(env,this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 		if( !PassInfo.resolveBestMethodR(t,info,mt) )
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
-		return new Type[]{Type.getRealType(t,info.resolvedDNode().mtype.ret())};
+		Method method = (Method)info.resolvedDNode();
+		return new Type[]{Type.getRealType(t,method.mtype.ret())};
 	}
 }
 
@@ -529,11 +531,11 @@ public final class LVarExpr extends LvalueExpr {
 	public Var getVarSafe() {
 		if (var != null)
 			return var;
-		ResInfo<Var> info = new ResInfo<Var>(Env.getEnv(),this,this.ident);
+		ResInfo info = new ResInfo(Env.getEnv(),this,this.ident).match(Var.class);
 		if( !PassInfo.resolveNameR((ASTNode)this,info) )
 			throw new CompilerException(this,"Unresolved var "+ident);
 		this.symbol = info.resolvedSymbol();
-		return info.resolvedDNode();
+		return (Var)info.resolvedDNode();
 	}
 
 	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {

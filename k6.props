@@ -1,4 +1,4 @@
-symade.transf.vnode.genUnversioned = false
+symade.transf.vnode.genUnversioned = true
 symade.transf.vnode.mnNode = kiev\u00b7vtree\u00b7ThisIsANode
 symade.transf.vnode.mnAtt = kiev\u00b7vtree\u00b7nodeAttr
 symade.transf.vnode.mnRef = kiev\u00b7vtree\u00b7nodeData

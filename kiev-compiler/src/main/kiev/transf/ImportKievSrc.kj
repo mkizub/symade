@@ -203,15 +203,15 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				String head;
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1).intern();
-				ResInfo<KievPackage> info = new ResInfo<KievPackage>(env,astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+				ResInfo info = new ResInfo(env,astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
 				if!(scope.resolveNameR(info)) {
 					Kiev.reportError(sr,"Unresolved package "+head+" in "+scope);
 					continue next_super_syntax;
 				}
-				scope = info.resolvedDNode();
+				scope = (KievPackage)info.resolvedDNode();
 				dot = name.indexOf('·');
 			}
-			ResInfo<KievSyntax> info = new ResInfo<KievSyntax>(env,astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			ResInfo info = new ResInfo(env,astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievSyntax.class);
 			if!(scope.resolveNameR(info)) {
 				Kiev.reportError(sr,"Unresolved syntax "+name+" in "+scope);
 				continue next_super_syntax;

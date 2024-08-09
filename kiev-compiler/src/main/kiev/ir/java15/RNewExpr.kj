@@ -96,7 +96,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 			CallType mt = new CallType(null,null,ta,ntype,false); //(CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
 			// First try overloaded 'new', than real 'new'
 			if( this.clazz == null && (ctx_method==null || !ctx_method.hasName(nameNewOp)) ) {
-				ResInfo<Method> info = new ResInfo<Method>(env,this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+				ResInfo info = new ResInfo(env,this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(Method.class);
 				if (PassInfo.resolveBestMethodR(ntype,info,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(ntype),info.resolvedSymbol(),((NewExpr)this).args.delToArray());
 					replaceWithNodeResolve(env, n);
@@ -104,10 +104,10 @@ public static final view RNewExpr of NewExpr extends RENode {
 				}
 			}
 			mt = new CallType(ntype,null,ta,env.tenv.tpVoid,false); //(CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,env.tenv.tpVoid,false));
-			ResInfo<Method> info = new ResInfo<Method>(env,this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
+			ResInfo info = new ResInfo(env,this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 			if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
 				this.symbol = info.resolvedSymbol();
-				info.resolvedDNode().makeArgs(args,ntype);
+				((Method)info.resolvedDNode()).makeArgs(args,ntype);
 				for(int i=0; i < args.length; i++)
 					resolveENode(args[i],mt.arg(i),env);
 			}
@@ -142,10 +142,10 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 			ta[i] = args[i].getType(env);
 		CallType mt = (CallType)Type.getRealType(ntype,new CallType(null,null,ta,ntype,false));
 		mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,env.tenv.tpVoid,false));
-		ResInfo<Constructor> info = new ResInfo<Constructor>(env,this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		ResInfo info = new ResInfo(env,this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 		if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
 			this.symbol = info.resolvedSymbol();
-			info.resolvedDNode().makeArgs(args,ntype);
+			((Method)info.resolvedDNode()).makeArgs(args,ntype);
 			for(int i=0; i < args.length; i++)
 				resolveENode(args[i],mt.arg(i),env);
 		}
@@ -210,7 +210,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
 	public		TypeRef				ntype;
 	public:ro	ENode[]				args;
-	
+
 	public void resolveENode(Type reqType, Env env) {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -311,7 +311,7 @@ public final view RNewClosure of NewClosure extends RENode {
 
 		return true;
 	}
-	
+
 	public void resolveENode(Type reqType, Env env) {
 		resolveDNode(clazz,env);
 		setResolved(true);

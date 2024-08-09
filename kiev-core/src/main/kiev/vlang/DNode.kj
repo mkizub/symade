@@ -586,13 +586,13 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
 		CallType mt = new CallType(null,null,args,ret,false);
-		ResInfo<Method> info = new ResInfo<Method>(env,this,name,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		ResInfo info = new ResInfo(env,this,name,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 		if (!this.getType(env).resolveCallAccessR(info, mt)) {
-			info = new ResInfo<Method>(env,this,name,ResInfo.noForwards|ResInfo.noSyntaxContext);
+			info = new ResInfo(env,this,name,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 			if (!this.resolveMethodR(info, mt))
 				throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
 		}
-		return info.resolvedDNode();
+		return (Method)info.resolvedDNode();
 	}
 
 	public rule resolveNameR(ResInfo info)

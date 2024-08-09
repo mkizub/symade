@@ -499,7 +499,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		depth = rmeth.push();
 		//expr.resolve(null);
 		Type xtype = expr.getType(env);
-		ResInfo<Method> elems;
+		ResInfo elems;
 		if( xtype.isInstanceOf( env.tenv.tpJavaEnumeration) ) {
 			itype = new TypeRef(xtype);
 			mode = IsoneofMode.JENUM;
@@ -508,15 +508,17 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			mode = IsoneofMode.JITERATOR;
 		} else if( xtype.isInstanceOf( env.tenv.tpJavaIterable) ) {
 			PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo<Method>(Env.getEnv(),this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext),
+				elems=new ResInfo(Env.getEnv(),this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 				new CallType(xtype,null,null,env.tenv.tpAny,false));
-			itype = new TypeRef(Type.getRealType(xtype,elems.resolvedDNode().mtype.ret()));
+			Method method = (Method)elems.resolvedDNode();
+			itype = new TypeRef(Type.getRealType(xtype,method.mtype.ret()));
 			mode = IsoneofMode.JITERABLE;
 		} else if( PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo<Method>(Env.getEnv(),this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext),
+				elems=new ResInfo(Env.getEnv(),this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
 				new CallType(xtype,null,null,env.tenv.tpAny,false))
 		) {
-			itype = new TypeRef(Type.getRealType(xtype,elems.resolvedDNode().mtype.ret()));
+			Method method = (Method)elems.resolvedDNode();
+			itype = new TypeRef(Type.getRealType(xtype,method.mtype.ret()));
 			mode = IsoneofMode.ELEMS;
 		} else if( xtype.isInstanceOf(env.tenv.tpArrayOfAny) ) {
 			TVarBld set = new TVarBld();

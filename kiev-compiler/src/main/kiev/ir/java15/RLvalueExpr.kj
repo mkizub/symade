@@ -58,10 +58,10 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 		resolveENode(index,null,env);
 		// Resolve overloaded access method
 		CallType mt = new CallType(obj.getType(env),null,new Type[]{index.getType(env)},env.tenv.tpAny,false);
-		ResInfo<Method> info = new ResInfo<Method>(env,(ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic);
+		ResInfo info = new ResInfo(env,(ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 		if( !PassInfo.resolveBestMethodR(obj.getType(env),info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
-		Method m = info.resolvedDNode();
+		Method m = (Method)info.resolvedDNode();
 		if !(m.isMacro() && m.isNative()) {
 			// Not a standard operator
 			if( m.dnode.isStatic() )
@@ -164,7 +164,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 	public:ro	Var[]			outer_refs;
 
 	public void setupOuterFields();
-	
+
 	public void resolveENode(Type reqType, Env env) throws RuntimeException {
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving "+this);
 		setupOuterFields();

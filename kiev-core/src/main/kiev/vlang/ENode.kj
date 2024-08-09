@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
 public abstract class ENode extends ASTNode {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
-	
+
 	final static class TypeSignature {
 		final String name;
 		final String sign;
@@ -28,9 +28,9 @@ public abstract class ENode extends ASTNode {
 			this.sign = sign;
 		}
 	}
-	
+
 	private Object	ident_or_symbol_or_type;
-	
+
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr @abstract public String			ident;
 	@AttrXMLDumpInfo(ignore=true)
@@ -48,11 +48,11 @@ public abstract class ENode extends ASTNode {
 	public void setTypeSignature(String signature) {
 		this.ident_or_symbol_or_type = new TypeSignature(signature);
 	}
-	
+
 	public boolean isExptTypeSignature() {
 		return this.ident_or_symbol_or_type instanceof TypeSignature;
 	}
-	
+
 	@getter public final String get$ident() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
@@ -101,7 +101,7 @@ public abstract class ENode extends ASTNode {
 		}
 		return null;
 	}
-	
+
 	@getter public final DNode get$dnode() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
@@ -125,7 +125,7 @@ public abstract class ENode extends ASTNode {
 		}
 		return null;
 	}
-	
+
 	@getter public final Type get$type_lnk() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
@@ -142,7 +142,7 @@ public abstract class ENode extends ASTNode {
 		}
 		return null;
 	}
-	
+
 	@setter public final void set$ident(String val) {
 		if (val != null) {
 			val = val.intern();
@@ -151,18 +151,18 @@ public abstract class ENode extends ASTNode {
 		}
 		ident_or_symbol_or_type = val;
 	}
-	
+
 	@setter public final void set$symbol(Symbol val) {
 		//if (val != null && val.target instanceof CoreOperation)
 		//	assert (!(this instanceof CallExpr));
 		ident_or_symbol_or_type = val;
 	}
-	
+
 	@setter public final void set$type_lnk(Type val) {
 		assert (this instanceof TypeRef);
 		ident_or_symbol_or_type = val;
 	}
-	
+
 	//
 	// Expr specific
 	//
@@ -217,7 +217,7 @@ public abstract class ENode extends ASTNode {
 	//
 	// Statement specific flags
 	//
-	
+
 	// abrupted
 	public final boolean isAbrupted() {
 		return this.is_stat_abrupted;
@@ -266,13 +266,13 @@ public abstract class ENode extends ASTNode {
 	}
 
 	public static final ENode[] emptyArray = new ENode[0];
-	
+
 	public ENode() {}
 
 	public void initFrom(ENode node, Symbol sym, ENode[] args) {
 		throw new RuntimeException("Cannot init "+getClass()+" from "+node.getClass());
 	}
-	
+
 	public Type[] getAccessTypes(Env env) {
 		return new Type[]{getType(env)};
 	}
@@ -283,9 +283,9 @@ public abstract class ENode extends ASTNode {
 			String ident = this.ident;
 			if (ident != null) {
 				ResInfo info;
-				info = new ResInfo<CoreOperation>(env,this,ident);
+				info = new ResInfo(env,this,ident).match(CoreOperation.class);
 				if (!env.root.resolveNameR(info)) { //(!PassInfo.resolveNameR(this,info)) {
-					info = new ResInfo<Opdef>(env,this,ident);
+					info = new ResInfo(env,this,ident).match(Opdef.class);
 					if (!PassInfo.resolveNameR(this,info)) {
 						if (Env.ctxMethod(this) == null || !Env.ctxMethod(this).isMacro())
 							Kiev.reportError(this,"Unresolved operator "+ident);
@@ -299,7 +299,7 @@ public abstract class ENode extends ASTNode {
 			return (Opdef)sym.dnode;
 		return null;
 	}
-	
+
 	public CoreOperation getOperation(Env env) {
 		DNode dn = this.dnode;
 		if (dn instanceof CoreOperation)
@@ -403,7 +403,7 @@ public abstract class ENode extends ASTNode {
 	public Object	getConstValue(Env env) {
 		throw new RuntimeException("Request for constant value of non-constant expression");
 	}
-	
+
 	public ENode closeBuild() { return this; }
 
 	public INode doRewrite(RewriteContext ctx) {
@@ -465,7 +465,7 @@ public final class NopExpr extends ENode {
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public NopExpr() {}
-	
+
 	public String toString() { return ""; }
 
 	public Type getType(Env env) {
@@ -484,12 +484,12 @@ public final class ArgExpr extends ENode {
 	@nodeAttr public ENode			expr;
 
 	public ArgExpr() {}
-	
+
 	public ArgExpr(Var var, ENode expr) {
 		this.var = var;
 		this.expr = expr;
 	}
-	
+
 	public ENode[] getEArgs() { return new ENode[]{expr}; }
 
 	public String toString() { return var + ":" + expr; }

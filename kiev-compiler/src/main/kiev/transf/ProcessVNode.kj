@@ -12,6 +12,10 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import static kiev.transf.VNodeUtils.mnNode;
+import static kiev.transf.VNodeUtils.mnAtt;
+import static kiev.transf.VNodeUtils.mnRef;
+
 /**
  * @author Maxim Kizub
  *
@@ -48,11 +52,11 @@ public final class VNodeUtils {
 	public final String nameNodeSymbolRef		= TransfProcessor.getPropS(PROP_BASE,"nameNodeSymbolRef","kiev·vtree·NodeSymbolRef");
 	public final String nameTreeWalker			= TransfProcessor.getPropS(PROP_BASE,"TreeWalker","kiev·vtree·TreeWalker");
 	public final String nameAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameAttrSlot","kiev·vtree·AttrSlot");
-	public final String nameScalarAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameScalarAttrSlot","kiev·vtree·ScalarAttrSlot");
-	public final String nameExtAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameExtAttrSlot","kiev·vtree·ExtAttrSlot");
+	public final String nameScalarAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameScalarAttrSlot","kiev·vtree·ScalarAttrSlot");
+	public final String nameExtAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameExtAttrSlot","kiev·vtree·ExtAttrSlot");
 	public final String nameSpaceAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev·vtree·SpaceAttrSlot");
 	public final String nameExtSpaceAttrSlot	= TransfProcessor.getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev·vtree·ExtSpaceAttrSlot");
-	public final String nameParentAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameParentAttrSlot","kiev·vtree·ParentAttrSlot");
+	public final String nameParentAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameParentAttrSlot","kiev·vtree·ParentAttrSlot");
 	public final String nameLanguageIface		= TransfProcessor.getPropS(PROP_BASE,"nameLanguageIface","kiev·vlang·Language");
 	public final String nameCopyContext			= TransfProcessor.getPropS(PROP_BASE,"nameCopyContext","kiev·vtree·CopyContext");
 	public final String nameCopyable			= TransfProcessor.getPropS(PROP_BASE,"nameCopyable","copyable");
@@ -1168,7 +1172,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if (get_var.isSynthetic())
 			get_var.setFinal(true);
 
-		if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && GEN_VERSIONED) {
+		if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
 			get_var.body.walkTree(null, null, new ITreeWalker() {
 				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 					if (n instanceof IFldExpr && n.obj instanceof ThisExpr)
@@ -1230,7 +1234,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if (set_var.isSynthetic())
 			set_var.setFinal(true);
 		Block body = set_var.block;
-		//if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && GEN_VERSIONED) {
+		//if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
 		//	body.walkTree(null, null, new ITreeWalker() {
 		//		public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 		//			if (n instanceof AssignExpr)
