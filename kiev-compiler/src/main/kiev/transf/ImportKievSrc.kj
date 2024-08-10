@@ -936,7 +936,7 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if (Kiev.dump_src_dir != null && fu.is_project_file && (fu.fname.endsWith(".java")||fu.fname.endsWith(".kj"))) {
 			try {
 				String fname = Kiev.dump_src_dir + "/" + fu.pname();
-				TextPrinter prt = new DefaultTextProcessor();
+				TextPrinter prt = new DefaultTextProcessor(env.getEnvContext());
 				prt.setProperty("class", "stx-fmt·syntax-for-java");
 				prt.setProperty("current", "true");
 				prt.print(new ANode[]{fu}, new File(fname), env);

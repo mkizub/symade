@@ -104,7 +104,7 @@ public final class Symbol extends ANode {
 	}
 
 	public SymUUID suuid() {
-		return (SymUUID)getUnVersionedData(SymUUID.class);
+		return (SymUUID)getUnVersionedData(SymUUID.DATA_ID);
 	}
 
 	final public SymUUID getUUID(Env env) {
@@ -169,14 +169,14 @@ public final class Symbol extends ANode {
 	}
 
 	public Symbol() {
-		super(new AHandle(), Kiev.getSemContext());
+		super(Kiev.getSemanticContext());
 	}
 	public Symbol(String sname) {
-		this();
+		super(Kiev.getSemanticContext());
 		this.sname = sname;
 	}
 	public Symbol(long pos, String sname) {
-		this();
+		super(Kiev.getSemanticContext());
 		this.pos = pos;
 		this.sname = sname;
 	}
@@ -239,11 +239,11 @@ public class Alias extends ANode {
 	public final Method⇑            symref;
 
 	public Alias() {
-		super(new AHandle(), Kiev.getSemContext());
+		super(Kiev.getSemanticContext());
 		this.symbol = new Symbol();
 	}
 	public Alias(String sname, Method m) {
-		super(new AHandle(), Kiev.getSemContext());
+		super(Kiev.getSemanticContext());
 		this.symbol = new Symbol(sname);
 		if (m != null)
 			this.symref.symbol = m.symbol;
@@ -326,7 +326,7 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
 
 	public SymbolRef() {
-		super(new AHandle(), Kiev.getSemContext());
+		super(Kiev.getSemanticContext());
 	}
 
 	public SymbolRef(String name) {

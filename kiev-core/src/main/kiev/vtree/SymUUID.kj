@@ -19,14 +19,17 @@ import syntax kiev.Syntax;
  */
 
 public final class SymUUID extends ANode.UnVersionedData {
-	
+
+	public static final String DATA_ID = SymUUID.class.getName().intern();
+	protected String unVersionedDataID() { DATA_ID }
+
 	public static final SymUUID Empty = new SymUUID(0L, 0L, null);
-	
+
 	public final long	high;
 	public final long	low;
 	public final Symbol symbol;
 	SymUUID next;
-	
+
 	/*
      * UUID = <time_low> "-" <time_mid> "-" <time_high_and_version> "-" <variant_and_sequence> "-" <node>
      * time_low               = 4*<hexOctet>
@@ -60,7 +63,7 @@ public final class SymUUID extends ANode.UnVersionedData {
 	public int hashCode() {
 		return (int)((high >> 32) ^ high ^ (low >> 32) ^ low);
 	}
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer(36);
 		digits(high >> 32, 8, sb);
@@ -169,13 +172,13 @@ public class SymUUIDHash {
 	protected void rehash() {
 		int oldCapacity = table.length;
 		SymUUID[] oldTable = table;
-		
+
 		int newCapacity = oldCapacity * 2 + 1;
 		SymUUID[] newTable = new SymUUID[newCapacity];
-		
+
 		threshold = (int)(newCapacity * loadFactor);
 		table = newTable;
-		
+
 		for (int i = oldCapacity ; i-- > 0 ;) {
 			for (SymUUID old = oldTable[i] ; old != null ; ) {
 				SymUUID e = old;
@@ -199,14 +202,14 @@ public class SymUUIDHash {
 			if (e == elem)
 				return;
 		}
-		
+
 		if (count >= threshold) {
 			// Rehash the table if the threshold is exceeded
 			rehash();
 			put(elem);
 			return;
 		}
-		
+
 		// Creates the new entry.
 		elem.next = tab[index];
 		tab[index] = elem;
@@ -236,7 +239,7 @@ public class SymUUIDHash {
 		}
 		return false;
 	}
-	
+
     /**
      * Clears the set so that it has no more elements in it.
      */

@@ -34,14 +34,15 @@ public final class ProjectionValue {
 	public Object value;
 	public ProjectionValue(String id, Object value) {
 		this.id = id;
-		this.value = value; 
+		this.value = value;
 	}
 }
 
-public class ProjectionContext extends Context {
+public class ProjectionContext extends ANodeContext {
 	public NodeProjectorFactory npfactory;
-	
-	public ProjectionContext() {
+
+	public ProjectionContext(Env env) {
+		super(env);
 	}
 
 	public NodeProjectorFactory getProjectonFactory() {
@@ -100,13 +101,13 @@ public abstract class AbstractNodeProjectorFactory implements NodeProjectorFacto
 		this.projection_context = projection_context;
 		projection_context.npfactory = this;
 	}
-	
+
 	public abstract NodeProjector getProjector(INode src, INode dst);
-	
+
 	public ProjectionContext getProjectionContext() {
 		return projection_context;
 	}
-	
+
 	public RootNodeProjector getRootProjector(INode src_root, INode dst_root) {
 		if (root_projector == null)
 			root_projector = new DefaultRootNodeProjector(this, src_root, dst_root);
@@ -160,15 +161,15 @@ public abstract class AbstractNodeProjectorFactory implements NodeProjectorFacto
 
 public class DefaultNodeProjectorFactory extends AbstractNodeProjectorFactory {
 	protected Hashtable<String,NodeTypeInfo>          allProjectionNodeTypeInfos = new Hashtable<String,NodeTypeInfo>();
-	
-	public DefaultNodeProjectorFactory() {
-		this(new ProjectionContext());
-	}
-	
+
+	//public DefaultNodeProjectorFactory() {
+	//	this(new ProjectionContext());
+	//}
+
 	public DefaultNodeProjectorFactory(ProjectionContext projection_context) {
 		this(projection_context);
 	}
-	
+
 	public void addProjectionNodeTypeInfo(String src_id, NodeTypeInfo nti) {
 		allProjectionNodeTypeInfos.put(src_id, nti);
 	}
@@ -202,17 +203,17 @@ public class DefaultNodeProjectorFactory extends AbstractNodeProjectorFactory {
 }
 
 public class DefaultRootNodeProjector implements RootNodeProjector {
-	
+
 	public NodeProjectorFactory npfactory;
 	public INode src_root;
 	public INode dst_root;
-	
+
 	public DefaultRootNodeProjector(NodeProjectorFactory npfactory, INode src_root, INode dst_root) {
 		this.npfactory = npfactory;
 		this.src_root = src_root;
 		this.dst_root = dst_root;
 	}
-	
+
 	public void project() {
 		dst_root = npfactory.projectNode(src_root);
 	}
@@ -418,9 +419,9 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 		src_node.asANode().addListener(this);
 		dst_node.asANode().addListener(this);
 	}
-	
+
 	public abstract String getPutbackProjId(AttrSlot slot, Object value);
-	
+
 	public final void link(Projection... projections) {
 		Projection prev = null;
 		foreach (Projection proj; projections) {
@@ -472,7 +473,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 				p.dispose();
 		}
 	}
-	
+
 	protected void ignoreSrcCallbackEvent(AttrSlot slot, Object value, int idx) {
 		this.ignore_notification = new IgnoredNodeChangeInfo(src_node, slot, value, idx);
 	}
@@ -530,7 +531,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 	public class ScalarSrcPort implements ProjSrcPort {
 		private final ScalarAttrSlot src_slot;	// source slot in XMLNodeProjector.this.src_node
 		private       Projection     dst_proj;	// attached destination projection
-		
+
 		public ScalarSrcPort(ScalarAttrSlot src_slot) {
 			this.src_slot = src_slot;
 		}
@@ -538,7 +539,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 		public String     getProjId() { return src_slot.name; }
 		public void       setSrcProj(Projection proj) { throw new RuntimeException("Set source projection"); }
 		public void       setDstProj(Projection proj) { this.dst_proj = proj; }
-		
+
 		public void project(ProjectAction act, ProjectionValue value, int idx) {
 			switch (act) {
 			case ProjectAction.INIT:
@@ -598,7 +599,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 	public class SpaceSrcPort implements ProjSrcPort {
 		private final SpaceAttrSlot  src_slot;	// source slot in XMLNodeProjector.this.src_node
 		private       Projection     dst_proj;	// attached destination projection
-		
+
 		public SpaceSrcPort(SpaceAttrSlot src_slot) {
 			this.src_slot = src_slot;
 		}
@@ -606,7 +607,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 		public String     getProjId() { return src_slot.name; }
 		public void       setSrcProj(Projection proj) { throw new RuntimeException("Set source projection"); }
 		public void       setDstProj(Projection proj) { this.dst_proj = proj; }
-		
+
 		public void project(ProjectAction act, ProjectionValue value, int idx) {
 			switch (act) {
 			case ProjectAction.INIT:
@@ -673,7 +674,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 	public class ExtSpaceSrcPort implements ProjSrcPort {
 		private final ExtSpaceAttrSlot  src_slot;	// source slot in XMLNodeProjector.this.src_node
 		private       Projection        dst_proj;	// attached destination projection
-		
+
 		public ExtSpaceSrcPort(ExtSpaceAttrSlot src_slot) {
 			this.src_slot = src_slot;
 		}
@@ -681,7 +682,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 		public String     getProjId() { return src_slot.name; }
 		public void       setSrcProj(Projection proj) { throw new RuntimeException("Set source projection"); }
 		public void       setDstProj(Projection proj) { this.dst_proj = proj; }
-		
+
 		public void project(ProjectAction act, ProjectionValue value, int idx) {
 			switch (act) {
 			case ProjectAction.INIT:
@@ -744,11 +745,11 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 			}
 		}
 	}
-	
+
 	public class ScalarDstPort implements ProjDstPort {
 		private final ScalarAttrSlot dst_slot;	// source slot in XMLNodeProjector.this.src_node
 		private       Projection     src_proj;	// attached destination projection
-		
+
 		public ScalarDstPort(ScalarAttrSlot dst_slot) {
 			this.dst_slot = dst_slot;
 		}
@@ -756,7 +757,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 		public String     getProjId() { return dst_slot.name; }
 		public void       setSrcProj(Projection proj) { this.src_proj = proj; }
 		public void       setDstProj(Projection proj) { throw new RuntimeException("Set destination projection"); }
-		
+
 		public void project(ProjectAction act, ProjectionValue value, int idx) {
 			switch (act) {
 			case ProjectAction.SET_SCALAR:
@@ -795,7 +796,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 	public class SpaceDstPort implements ProjDstPort {
 		private final SpaceAttrSlot  dst_slot;	// source slot in XMLNodeProjector.this.src_node
 		private       Projection     src_proj;	// attached destination projection
-		
+
 		public SpaceDstPort(SpaceAttrSlot dst_slot) {
 			this.dst_slot = dst_slot;
 		}
@@ -803,7 +804,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 		public String     getProjId() { return dst_slot.name; }
 		public void       setSrcProj(Projection proj) { this.src_proj = proj; }
 		public void       setDstProj(Projection proj) { throw new RuntimeException("Set destination projection"); }
-		
+
 		public void project(ProjectAction act, ProjectionValue value, int idx) {
 			switch (act) {
 			case ProjectAction.SET_ELEMENT:
@@ -876,28 +877,28 @@ public class JoinProjection implements Projection {
 			idx = -1;
 		}
 	}
-	
+
 	protected SrcInfo[]     srcinfos = SrcInfo.emptyArray;
 	protected Projection    dst_proj;
-	
+
 	public JoinProjection() {}
-	
+
 	public SrcInfo mapPutback(ProjectionValue value) {
 		foreach (SrcInfo si; srcinfos; si.proj_id == value.id)
 			return si;
 		return null;
 	}
-	
+
 	public String getProjId() { return ""; }
 	public void setSrcProj(Projection proj) { srcinfos = (SrcInfo[])Arrays.append(srcinfos, new SrcScalarInfo(proj)); }
 	public void setDstProj(Projection proj) { this.dst_proj = proj; }
-	
+
 	private SrcInfo getSrcInfo(String proj_id) {
 		foreach (SrcInfo si; srcinfos; si.proj_id == proj_id)
 			return si;
 		return null;
 	}
-	
+
 	private SrcInfo getSrcInfo(int idx) {
 		foreach (SrcInfo si; srcinfos) {
 			if (si instanceof SrcScalarInfo) {
@@ -909,7 +910,7 @@ public class JoinProjection implements Projection {
 		}
 		return null;
 	}
-	
+
 	private int getStartIndex(String proj_id) {
 		// find existing index
 		foreach (SrcInfo si; srcinfos; si.proj_id == proj_id) {
@@ -1115,7 +1116,7 @@ public class ProxyNodeProjector implements NodeProjector, ChangeListener {
 			dst_node = null;
 		}
 	}
-	
+
 	protected void ignoreSrcCallbackEvent(AttrSlot slot, Object value, int idx) {
 		this.ignore_notification = new IgnoredNodeChangeInfo(src_node, slot, value, idx);
 	}

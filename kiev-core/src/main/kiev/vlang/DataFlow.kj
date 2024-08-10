@@ -413,19 +413,14 @@ public interface DataFlowSlots {
 	public final boolean ASSERT_MORE = Kiev.debug;
 }
 
-public final class DataFlowContext extends Context {
-	public static final DataFlowContext DEFAULT = new DataFlowContext();
-
-	private DataFlowContext() {}
-}
 
 
+public final class DataFlowInfo extends ANode.UnVersionedData implements DataFlowSlots {
 
-public final class DataFlowInfo extends AHandleData implements DataFlowSlots {
+	public static final String DATA_ID = DataFlowInfo.class.getName().intern();
+	protected String unVersionedDataID() { DATA_ID }
 
-	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
-
-	public final ASTNode node_impl;
+	public:ro,ro,ro,rw ASTNode node_impl;
 
 	// will be a set of fields (DataFlow nodes for children) in code-generation
 	final DFSocket[] children;
@@ -447,31 +442,39 @@ public final class DataFlowInfo extends AHandleData implements DataFlowSlots {
 
 	// build data flow for this node
 	public static DataFlowInfo getDFlow(ASTNode n) {
-		//foreach (DataFlowInfo nh; n.handle().getHandleData(); nh.node_impl == n)
-		//	return nh;
-		for (AHandleData nh = n.handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
-			if (nh instanceof DataFlowInfo && nh.node_impl == n)
-				return (DataFlowInfo)nh;
+		DataFlowInfo dfi = (DataFlowInfo)n.getUnVersionedData(DataFlowInfo.DATA_ID);
+		if (dfi == null) {
+			dfi = new DataFlowInfo(n, getTemplate(n));
+			n.setUnVersionedData(dfi);
 		}
-		return new DataFlowInfo(n, getTemplate(n.getClass()));
+		return dfi;
 	}
 
-	private static DataFlowInfo getTemplate(Class cls) {
-		DataFlowInfo template = data_flows.get(cls);
+	private static DataFlowInfo getTemplate(ASTNode node) {
+		Hashtable<Class, DataFlowInfo> data_flows = node.getEnv().getDataFlowTemplates();
+		DataFlowInfo template = data_flows.get(node.getClass());
 		if (template == null) {
+			ANode template_node = node.getEnv().newNode(node.getClass(), node.getEnv().getEnvContext());
+			if (template_node == null)
+				throw new CompilerException(node,"Cannot instantiate node '"+node.getClass());
+			if !(template_node instanceof ASTNode)
+				throw new CompilerException(node,"Node with class '"+template_node.getClass()+" does not provide DFI support");
+
 			try {
-				template = new DataFlowInfo((ASTNode)cls.newInstance());
+				template = new DataFlowInfo((ASTNode)template_node);
 			} catch (java.lang.IllegalAccessException e) {
-				template = getTemplate(cls.getSuperclass());
+				//template = getTemplate(cls.getSuperclass());
 			}
-			data_flows.put(cls, template);
+			if (template == null)
+				throw new CompilerException(node,"Cannot create DFI for node with class '"+template_node.getClass());
+
+			data_flows.put(node.getClass(), template);
 		}
 		return template;
 	}
 	private DataFlowInfo(ASTNode node_impl, DataFlowInfo template) {
-		super(DataFlowContext.DEFAULT);
 		this.node_impl = node_impl;
-		node_impl.handle().addData(this);
+		node_impl.setUnVersionedData(this);
 		this.children = template.children;
 		if (template.results != null)
 			this.results = new DFState[template.results.length];
@@ -483,9 +486,8 @@ public final class DataFlowInfo extends AHandleData implements DataFlowSlots {
 		this.func_jmp = template.func_jmp;
 	}
 	private DataFlowInfo(ASTNode node_impl) {
-		super(DataFlowContext.DEFAULT);
 		this.node_impl = node_impl;
-		node_impl.handle().addData(this);
+		node_impl.setUnVersionedData(this);
 		Vector<DFSocket> chl_dfs = new Vector<DFSocket>();
 		Hashtable<String,DataFlowDefinition> dflows = new Hashtable<String,DataFlowDefinition>();
 		int attach_idx = 0;
@@ -555,7 +557,8 @@ public final class DataFlowInfo extends AHandleData implements DataFlowSlots {
 		}
 		if (this.locks > 0)
 			results = new DFState[this.locks];
-		//this.node_impl = null;
+		this.node_impl.delUnVersionedData(DATA_ID);
+		this.node_impl = null;
 	}
 
 	public final int allocResult() { return locks++; }

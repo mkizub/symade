@@ -59,7 +59,7 @@ public final class MetaUUID extends UserMeta {
 		this.value = val;
 		super.setS("value",val);
 	}
-	
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "this")
 			return true;
@@ -83,12 +83,12 @@ public final class MetaPacked extends UserMeta {
 		size = val;
 		super.setI("size",val);
 	}
-	
+
 	@setter public void set$offset(int val) {
 		offset = val;
 		super.setI("offset", val);
 	}
-	
+
 	@setter public void set$fld(SymbolRef<Field> val) {
 		if (fld == null) {
 			fld = val;
@@ -132,7 +132,7 @@ public final class MetaThrows extends UserMeta {
 		assert (mva.ident == "value");
 		mva.values += thr;
 	}
-	
+
 	@getter
 	public ASTNode[] get$exceptions() {
 		return getThrowns();
@@ -241,7 +241,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		}
 		dn.mflags_access = DNode.MASK_ACC_DEFAULT;
 	}
-	
+
 	@setter public final void set$simple(String val) {
 		this.simple = val.intern();
 		ANode p = parent();
@@ -257,7 +257,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		int flags = getFlags(dn);
 		return (flags & 0x55) != 0;
 	}
-	
+
 	public static final int getFlags(DNode dn) {
 		MetaAccess acc = dn.getMetaAccess();
 		if (acc == null) {
@@ -311,7 +311,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		//if (acc != null)
 		//	acc.verifyAccessDecl(dn);
 	}
-	
+
 	private void verifyAccessDecl(DNode n) {
 		if (flags == -1)
 			return;
@@ -470,7 +470,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		// Public was already checked, just throw an error
 		throwAccessError(from,n,acc,"public");
 	}
-	
+
 	private static void checkFinalWrite(ASTNode from, ASTNode n, int acc) {
 		if ((acc & 1) == 0)
 			return; // read access
@@ -527,7 +527,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 public abstract class MetaFlag extends ANode implements MNode {
 
 	public MetaFlag() {
-		super(new AHandle(), Context.DEFAULT);
+		super(Env.getEnv().getEnvContext());
 	}
 
 	public Language getCompilerLang() { return CoreLang; }
@@ -547,7 +547,7 @@ public abstract class MetaFlag extends ANode implements MNode {
 
 	public abstract int getBitPos();
 	abstract void setFlag(DNode dn, boolean on);
-	
+
 	public boolean equals(Object o) {
 		if (o == null)
 			return false;

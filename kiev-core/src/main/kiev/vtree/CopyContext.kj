@@ -5,16 +5,30 @@ import syntax kiev.Syntax;
 import java.util.IdentityHashMap;
 
 public interface CopyContext {
+	public ANodeContext toNodeContext();
 	public <N extends INode> N copyRoot(N node);
 	public <N extends INode> N copyFull(N node);
 	public void addCopyInfo(INode nold, INode nnew);
-	public INode getCopyOf(AHandle handle);
+	public INode getCopyOf(INode nold);
 	public void updateLinks();
 }
 
 public class Copier implements CopyContext {
 
-	private final IdentityHashMap<AHandle,INode> map = new IdentityHashMap<AHandle,INode>();
+	private final ANodeContext nodeContext;
+	private final IdentityHashMap<INode,INode> map = new IdentityHashMap<INode,INode>();
+
+	public Copier() {
+		this.nodeContext = Kiev.getSemanticContext();
+	}
+
+	public Copier(ANodeContext nodeContext) {
+		this.nodeContext = nodeContext;
+	}
+
+	public ANodeContext toNodeContext() {
+		return this.nodeContext;
+	}
 
 	public <N extends INode> N copyRoot(N node) {
 		N t = (N)node.copy(this);
@@ -28,12 +42,12 @@ public class Copier implements CopyContext {
 	}
 
 	public void addCopyInfo(INode nold, INode nnew) {
-		if (nold != nnew)
-			map.put(nold.handle(),nnew);
+		assert (map.get(nold) == null);
+		map.put(nold,nnew);
 	}
 
-	public INode getCopyOf(AHandle handle) {
-		return map.get(handle);
+	public INode getCopyOf(INode nold) {
+		return map.get(nold);
 	}
 
 	public void updateLinks() {
@@ -43,7 +57,7 @@ public class Copier implements CopyContext {
 					INode[] arr = attr.getArray(node);
 					for (int i=0; i < arr.length; i++) {
 						INode nold = arr[i];
-						INode nnew = map.get(nold.handle());
+						INode nnew = map.get(nold);
 						if (nnew != null && nold != nnew)
 							arr[i] = nnew;
 					}
@@ -51,7 +65,7 @@ public class Copier implements CopyContext {
 				else if (attr instanceof ScalarAttrSlot) {
 					Object nold = attr.get(node);
 					if (nold instanceof INode) {
-						INode nnew = map.get(nold.handle());
+						INode nnew = map.get(nold);
 						if (nnew != null && nold != nnew)
 							attr.set(node,nnew);
 					}
@@ -64,7 +78,7 @@ public class Copier implements CopyContext {
 					DataAttachInfo dai = (DataAttachInfo)dat;
 					if (dai.p_data instanceof INode) {
 						INode nold = (INode)dai.p_data;
-						INode nnew = map.get(nold.handle());
+						INode nnew = map.get(nold);
 						if (nnew != null && nold != nnew)
 							node.setVal(dai.p_slot,nnew);
 					}

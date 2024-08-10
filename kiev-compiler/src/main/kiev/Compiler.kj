@@ -32,19 +32,23 @@ import java.lang.management.*;
 public class EditorThreadGroup extends WorkerThreadGroup {
 	public EditorThreadGroup(WorkerThreadGroup bthr) {
 		super(bthr, "editor");
-		semantic_context = new SemContext(bthr.semantic_context);
+		semantic_context = new SemanticContext(bthr.semantic_context);
 	}
 }
 
 public class FrontendThreadGroup extends WorkerThreadGroup {
 	public static final FrontendThreadGroup THE_GROUP = new FrontendThreadGroup();
 
+	// The current syntax context
+	public ANodeContext				syntax_context;
+
 	private CompilerParseInfo[]		args;
 
 	private FrontendThreadGroup() {
 		super(null, "frontend");
 		this.theEnv = Env.createEnv();
-		semantic_context = new SemContext(null);
+		semantic_context = new SemanticContext(theEnv.getEnvContext());
+		syntax_context = semantic_context;
 	}
 
 	public void cleanEnv() {
@@ -151,7 +155,7 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 						}
 						else if (curFile.toLowerCase().endsWith(".xml")) {
 							File f = Kiev.newFile(curFile);
-							INode[] roots = DumpFactory.getXMLDumper().loadFromXmlFile(this.getEnv(), f, cpi.fdata);
+							INode[] roots = DumpFactory.getXMLDumper().loadFromXmlFile(this.getEnv(), syntax_context, f, cpi.fdata);
 							if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
 								ASTNode root = (ASTNode)roots[0];
 								if !(root instanceof FileUnit) {
@@ -194,7 +198,8 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 								BOM = 1;
 							//java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, BOM, file_sz-BOM);
 							diff_time = curr_time = System.currentTimeMillis();
-							Parser p = new Parser(this.getEnv(), file_chars, BOM, file_sz-BOM);
+							Parser p = new Parser(this.getEnv(), semantic_context, syntax_context,
+									file_chars, BOM, file_sz-BOM);
 							cpi.fu = p.FileUnit(cpi.fname);
 							cpi.fu.source_timestamp = Kiev.newFile(curFile).lastModified();
 							//cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
@@ -274,7 +279,7 @@ stop:;
 public class CompilerThreadGroup extends WorkerThreadGroup {
 	public CompilerThreadGroup(WorkerThreadGroup bthr) {
 		super(bthr, "compiler");
-		semantic_context = new SemContext(bthr.semantic_context);
+		semantic_context = new SemanticContext(bthr.semantic_context);
 		bend_context = new kiev.be.java15.JNodeContext(semantic_context);
 	}
 
@@ -378,9 +383,9 @@ public final class WorkerThread extends Thread {
 	// The environment of this thread (and group)
 	public Env          theEnv;
 	// The current semantic context
-	public SemContext   semantic_context;
+	public SemanticContext      semantic_context;
 	// The current java backend context
-	public Context      bend_context;
+	public BackendNodeContext   bend_context;
 
 	final int			worker_id;
 	int					be_pass_no;
@@ -424,13 +429,13 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 	public ExecutorService executorService;
 
 	// The environment of this thread group
-	public Env				theEnv;
+	public Env				  theEnv;
 	// The current semantic context
-	public SemContext		semantic_context;
+	public SemanticContext    semantic_context;
 	// The current java backend context
-	public Context			bend_context;
+	public BackendNodeContext bend_context;
 	// The current transaction of this thread group
-	public Transaction		transaction;
+	public Transaction		  transaction;
 
 	// Error section
 	public long		programm_start;
@@ -574,7 +579,7 @@ public abstract class WorkerThreadGroup extends ThreadGroup implements ThreadFac
 			Kiev.resetFrontEndPass();
 
 			////////////////////////////////////////////////////
-			//	                  Cleanup errors    //
+			//	                  Cleanup errors              //
 			////////////////////////////////////////////////////
 			if (getEnv().proj != null && getEnv().proj.errors.length > 0) {
 				foreach (INode root; new RootsEnumerator(cuLength)) {

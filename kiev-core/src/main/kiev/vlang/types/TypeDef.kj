@@ -30,13 +30,13 @@ public class VarianceCheckError {
 	public final ArgType		at;
 	// the expected variance
 	public final TypeVariance	variance;
-	
+
 	public VarianceCheckError(Type base, ArgType at, TypeVariance variance) {
 		this.base = base;
 		this.at = at;
 		this.variance = variance;
 	}
-	
+
 	public String toString() {
 		return varianceName(at.definer.getVarianceSafe())+" type variable "+at
 				+" found at "+varianceName(variance)+" position in type "+base;
@@ -62,7 +62,7 @@ public abstract class TypeDef extends TypeDecl {
 	public TypeVariance getVarianceSafe() { return TypeVariance.IN_VARIANT; }
 
 	public TypeDef(Symbol symbol) {
-		super(new AHandle(), symbol);
+		super(symbol);
 	}
 
 	public void checkResolved(Env env) {}
@@ -86,9 +86,9 @@ public abstract class TypeDef extends TypeDecl {
 			return new ArgMetaType(env.getTypeEnv(),this);
 		}
 	}
-	
+
 	public abstract Struct getStruct(Env env);
-	
+
 	public String toString() {
 		return sname;
 	}
@@ -102,20 +102,20 @@ public final class TypeAssign extends TypeDef {
 	@AttrBinDumpInfo(ignore=true)
 	@abstract @virtual
 	@nodeData public TypeRef type_ref;
-	
+
 	@getter public final TypeRef get$type_ref() {
 		if (super_types.length == 0)
 			return null;
 		return super_types[0];
 	}
-	
+
 	@setter public final void set$type_ref(TypeRef tr) {
 		if (super_types.length == 0)
 			super_types.add(tr);
 		else
 			super_types[0] = tr;
 	}
-	
+
 	public TypeAssign() {
 		super(new Symbol());
 	}
@@ -130,7 +130,7 @@ public final class TypeAssign extends TypeDef {
 		super(symbol);
 		this.super_types.add(new TypeRef(sup));
 	}
-	
+
 	public Struct getStruct(Env env) {
 		if (super_types.length > 0)
 			return super_types[0].getStruct(env);
@@ -187,7 +187,7 @@ public final class TypeConstr extends TypeDef {
 	@nodeAttr public TypeVariance		variance;
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }
-	
+
 	public TypeVariance getVarianceSafe() {
 		TypeVariance tv = this.variance;
 		if (tv == null)
@@ -215,7 +215,7 @@ public final class TypeConstr extends TypeDef {
 		lower_bound.delAll();
 		variance = null;
 	}
-	
+
 	public Struct getStruct(Env env) {
 		foreach (TypeRef tr; super_types) {
 			Struct s = tr.getStruct(env);
@@ -224,11 +224,11 @@ public final class TypeConstr extends TypeDef {
 		}
 		return null;
 	}
-	
+
 	public void postVerify(Env env, INode parent, AttrSlot slot) {
 		if !(parent() instanceof Method) {
 			TypeVariance variance = getVarianceSafe();
-			
+
 			// check upper bounds
 			foreach (TypeRef tr; getUpperBounds()) {
 				Type t = tr.getType(env);
@@ -236,7 +236,7 @@ public final class TypeConstr extends TypeDef {
 				if (err != null)
 					Kiev.reportWarning(this, err.toString());
 			}
-			
+
 			// check lower bounds with inverted variance
 			if (variance == TypeVariance.CO_VARIANT)
 				variance = TypeVariance.CONTRA_VARIANT;

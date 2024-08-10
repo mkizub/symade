@@ -35,7 +35,7 @@ public class JField extends JVar {
 			return (JField)jn;
 		return new JField(impl);
 	}
-	
+
 	public JField(Field impl) {
 		super(impl);
 		if (vn().isConstantExpr(Env.getEnv())) {

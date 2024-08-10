@@ -26,7 +26,9 @@ public interface Language {
 	public String getDefaultInfoSyntax();
 	public String getClassByNodeName(String name);
 	public AttrSlot getExtAttrByName(String name);
-	public ANode makeNode(Env env, String name, String ti_sign, String uuid);
+	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid);
+	public ANode makeNode(String name, ANodeContext context);
+	public ANode makeNode(Class clazz, ANodeContext context);
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -55,12 +57,45 @@ public final class LangDecl extends DNode implements GlobalDNodeContainer {
 }
 
 public abstract class LangBase implements Language {
-	
-	public static final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
+
+	protected final Hashtable<Class, NodeCreator> nodeTemplates = new Hashtable<Class, NodeCreator>(128);
+	protected final Hashtable<String,Class> allNodesMap = new Hashtable<String,Class>();
 	protected String defaultEditorSyntaxName;
 	protected String defaultInfoSyntaxName;
 	protected String languageName;
 	protected String langURI;
+
+	class NodeCreator {
+		final Class cl;
+		final java.lang.reflect.Constructor ctor;
+		final boolean deprecatedCtor;
+
+		NodeCreator(Class cl) {
+			this.cl = cl;
+
+			if (TypeInfoInterface.class.isAssignableFrom(cl)) {
+				throw new RuntimeException("Node class '"+cl+"' needs run-time type info");
+			} else {
+				try {
+					this.ctor = cl.getConstructor(ANodeContext.class);
+				} catch (NoSuchMethodException e) {
+					this.deprecatedCtor = true;
+					this.ctor = cl.getConstructor();
+				}
+			}
+		}
+
+		ANode newInstance(ANodeContext context) {
+			if (deprecatedCtor) {
+				ANode node = (ANode)ctor.newInstance();
+				if (context != null)
+					node.setContext(context);
+				return node;
+			}
+			return (ANode)ctor.newInstance(context);
+		}
+	}
+
 
 	public LangBase() {
 		if (getClass().getAnnotation(ThisIsALanguage.class) != null)
@@ -76,21 +111,48 @@ public abstract class LangBase implements Language {
 			allNodesMap.put(nm, c);
 		}
 	}
-	
+
 	public String getName() { return languageName; }
 
 	public final String getURI() { return langURI; }
-	
+
 	public String getClassByNodeName(String name) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
 		return c.getName();
 	}
-	public ANode makeNode(Env env, String name, String ti_sign, String uuid) {
+
+	public ANode makeNode(String name, ANodeContext context) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language "+this.getName()+" has no node "+name);
+		return makeNode(c, context);
+	}
+
+	public ANode makeNode(Class clazz, ANodeContext context) {
+		NodeCreator creator = nodeTemplates.get(clazz);
+		if (creator == null) {
+			creator = new NodeCreator(clazz);
+			nodeTemplates.put(clazz, creator);
+		}
+		if (creator != null) {
+			return creator.newInstance(context);
+		}
+		try {
+			java.lang.reflect.Constructor ctor = clazz.getConstructor(ANodeContext.class);
+			return (ANode)ctor.newInstance(context);
+		} catch (Exception e) {
+			java.lang.reflect.Constructor ctor = clazz.getConstructor();
+			return (ANode)ctor.newInstance();
+		}
+		//throw new RuntimeException("Language "+this.getName()+" cannot instantiona node "+clazz);
+	}
+
+	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid) {
+		Class c = allNodesMap.get(name);
+		if (c == null)
+			throw new RuntimeException("Language '"+this.getName()+"' has no node '"+name+"'");
 		Symbol symbol = null;
 		if (uuid != null)
 			symbol = env.getSymbolByUUID(uuid);
@@ -98,7 +160,7 @@ public abstract class LangBase implements Language {
 		if (ti_sign != null)
 			node = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 		else
-			node = (ANode)c.newInstance();
+			node = makeNode(c, context);
 		if (symbol != null) {
 			if (node instanceof Symbol)
 				node = symbol;
@@ -131,8 +193,8 @@ public final class CoreLang extends LangBase {
 	public String getName() { return "core"; }
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
-	
-	public ANode makeNode(Env env, String name, String ti_sign, String uuid) {
+
+	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid) {
 		if (ti_sign == null && name.equals("SymbolRef"))
 			return new SymbolRef();
 		if (uuid != null) {
@@ -146,7 +208,7 @@ public final class CoreLang extends LangBase {
 				}
 			}
 		}
-		return super.makeNode(env, name, ti_sign, uuid);
+		return super.makeNode(env, context, name, ti_sign, uuid);
 	}
 
 	public AttrSlot getExtAttrByName(String name) {

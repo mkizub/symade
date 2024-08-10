@@ -58,7 +58,7 @@ static public enum KievExt {
 public final class Kiev {
 
 	private static final ThreadLocal<String> curFile = new ThreadLocal<String>();
-	private static final ThreadLocal<SemContext> curSemContext = new ThreadLocal<SemContext>();
+	private static final ThreadLocal<SemanticContext> curSemContext = new ThreadLocal<SemanticContext>();
 
 	private Kiev() {}
 
@@ -81,7 +81,7 @@ public final class Kiev {
 		return new File(root_dir, path);
 	}
 
-	public static SemContext getSemContext() {
+	public static SemanticContext getSemanticContext() {
 		Thread thread = Thread.currentThread();
 		if (thread instanceof WorkerThread)
 			return ((WorkerThread)thread).semantic_context;
@@ -89,7 +89,7 @@ public final class Kiev {
 		return FrontendThreadGroup.THE_GROUP.semantic_context;
 	}
 
-	public static void setSemContext(SemContext sc) {
+	public static void setSemContext(SemanticContext sc) {
 		Thread thread = Thread.currentThread();
 		if (thread instanceof WorkerThread)
 			reportError("Semantic Context in worker thread must be used from ThreadGroup");
@@ -281,9 +281,9 @@ public final class Kiev {
 		if (thrg != null) {
 			Env env = thrg.getEnv();
 			if (from != null)
-				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorNodeInfo(err,msg,from.asANode()));
+				new ErrorNodeInfo(env.proj, err,msg,from.asANode());
 			else
-				env.proj.addVal(env.proj.getAttrSlot("errors"), new ErrorTextInfo(err,msg,cf,pos>>>12));
+				new ErrorTextInfo(env.proj, err,msg,cf,pos>>>12);
 		}
 		if( cf != null && verbose && (pos >>> 12) != 0 ) {
 			File f = Kiev.newFile(cf.toString());

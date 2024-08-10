@@ -20,13 +20,12 @@ import syntax kiev.Syntax;
 
 @ThisIsANode
 public final class PNode extends ANode {
-	
+
 	private static final AttrSlot[] $values = {};
 
 	private final NodeTypeInfo node_type_info;
 
 	public PNode(NodeTypeInfo node_type_info) {
-		super(new AHandle(), null);
 		this.node_type_info = node_type_info;
 	}
 

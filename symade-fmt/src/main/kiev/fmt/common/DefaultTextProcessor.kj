@@ -16,12 +16,14 @@ import kiev.fmt.SyntaxManager;
 import kiev.vlang.Env;
 import kiev.vlang.SyntaxScope;
 import kiev.vtree.ANode;
+import kiev.vtree.ANodeContext;
 import kiev.vtree.ExportXMLDump;
 import kiev.vtree.INode;
 
 import java.io.*;
 
 public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextParser {
+	private ANodeContext nodeContext;
 	private String syntax_qname;
 	private boolean current;
 	private String mode;
@@ -29,7 +31,11 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 
 	private int pos_x;
 	private int pos_y;
-	
+
+	public DefaultTextProcessor(ANodeContext nodeContext) {
+		this.nodeContext = nodeContext;
+	}
+
 	public void setProperty(String name, String value) {
 		if (name.equals("current"))
 			current = Boolean.parseBoolean(value);
@@ -42,7 +48,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 		else
 			throw new IllegalArgumentException(name);
 	}
-	
+
 	public Draw_ATextSyntax lookup(Env env) {
 		if (current)
 			return SyntaxManager.getLanguageSyntax(syntax_qname, env);
@@ -111,7 +117,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private void dumpXml(INode[] nodes, Writer writer, Env env) throws Exception {
 		if (mode == null)
 			mode = "full";
@@ -128,7 +134,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 						;
 		DumpFactory.getXMLDumper().dumpToXMLStream(env, new XMLDumpFilter(mode), comment, nodes, writer);
 	}
-	
+
 	private void dumpBin(INode[] nodes, OutputStream out, Env env) throws Exception {
 		if (comment == null)
 			comment =	"\n"+
@@ -143,7 +149,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 						;
 		DumpFactory.getBinDumper().dumpToBinStream(env, new BinDumpFilter(), comment, nodes, out);
 	}
-	
+
 	private void exportXml(ExportXMLDump node, Writer writer, Env env) throws Exception {
 		if (comment == null)
 			comment =	"\n"+
@@ -158,7 +164,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 						;
 		DumpFactory.getXMLDumper().exportToXMLStream(env, comment, node, writer);
 	}
-	
+
 	private void draw(DrawLayoutInfo root, Writer writer) throws Exception {
 		if (!(root.getDrawable() instanceof DrawTerm)) {
 			for (DrawLayoutInfo dli : root.getBlocks())
@@ -178,7 +184,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 			writer.write(' ');
 			pos_x++;
 		}
-		
+
 		Object term_obj = ((DrawTerm)leaf.getDrawable()).getTermObj();
 		if (term_obj != null && term_obj != DrawTerm.NULL_NODE && term_obj != DrawTerm.NULL_VALUE) {
 			String text = String.valueOf(term_obj);
@@ -200,7 +206,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 				return DumpFactory.getBinDumper().loadFromBinFile(env, file.getParent(), file, null);
 			}
 			if (syntax_qname.equals("<xml-dump>")) {
-				return DumpFactory.getXMLDumper().loadFromXmlFile(env, file, null);
+				return DumpFactory.getXMLDumper().loadFromXmlFile(env, nodeContext, file, null);
 			}
 			return parse(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")), env);
 		} catch (Exception e) {
@@ -224,7 +230,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 	public INode[] parse(Reader reader, Env env) {
 		try {
 			if (syntax_qname == null || syntax_qname.equals("<xml-dump>")) {
-				return DumpFactory.getXMLDumper().loadFromXmlStream(env, mode, reader);
+				return DumpFactory.getXMLDumper().loadFromXmlStream(env, nodeContext, mode, reader);
 			}
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) throw (RuntimeException)e;

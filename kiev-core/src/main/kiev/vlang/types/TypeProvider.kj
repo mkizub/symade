@@ -175,7 +175,7 @@ public final class CoreMetaType extends MetaType {
 	CoreType core_type;
 
 	private static TypeDecl makeTypeDecl(StdTypes tenv, String name) {
-		MetaTypeDecl tdecl = new MetaTypeDecl(new AHandle(), tenv.env.makeGlobalSymbol("kiev·stdlib·"+name));
+		MetaTypeDecl tdecl = new MetaTypeDecl(tenv.env.makeGlobalSymbol("kiev·stdlib·"+name));
 		tdecl.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tenv.env.newPackage("kiev·stdlib").pkg_members.add(tdecl);
 		return tdecl;

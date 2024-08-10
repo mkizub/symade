@@ -161,19 +161,10 @@ public class JMethod extends JDNode {
 				code.generateCode();
 				ENode bl = vn().body;
 				if (bl != null) {
-					final (AHandleData,ANode)->boolean predicate = fun (AHandleData nh, ANode node)->boolean {
-						return  nh instanceof JNode ||
-								nh instanceof DataFlowInfo && nh.node_impl == node;
-					};
 					bl.walkTree(new TreeWalker() {
 						public boolean pre_exec(ANode n) {
-							n.handle().cleanupIf(predicate, n);
-							//foreach (AHandleData nh; n.handle().getHandleData()) {
-							//	if (nh instanceof DataFlowInfo && nh.node_impl == n)
-							//		n.handle().delData(nh);
-							//	else if (nh instanceof JNode)
-							//		n.handle().delData(nh);
-							//}
+							n.delUnVersionedData(DataFlowInfo.DATA_ID);
+							n.delUnVersionedData(JNode.DATA_ID);
 							return true;
 						}
 					});

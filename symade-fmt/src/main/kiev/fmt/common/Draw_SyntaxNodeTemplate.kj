@@ -17,14 +17,14 @@ public class Draw_SyntaxNodeTemplate implements Serializable {
 		if (this.name != null) this.name = this.name.intern();
 		return this;
 	}
-	
+
 	public INode getTemplateNode() {
 		if (template_node != null)
 			return template_node;
 		if (dump == null)
 			return null;
 		try {
-			INode[] nodes = DumpFactory.getXMLDumper().deserializeFromXmlData(Env.getEnv(),dump);
+			INode[] nodes = DumpFactory.getXMLDumper().deserializeFromXmlData(Env.getEnv(), Env.getEnv().getEnvContext(), dump);
 			if (nodes != null && nodes.length > 0)
 				template_node = nodes[0];
 		} catch (Exception e) {

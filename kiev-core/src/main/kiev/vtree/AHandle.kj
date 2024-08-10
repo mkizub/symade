@@ -16,121 +16,58 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // Base context class.
-// Holds only flags about it's lifecycle.
-public class Context {
-	public static final Context DEFAULT = new Context();
+// Holds only Env and flags about it's lifecycle.
+public class ANodeContext {
 
-	// a flag that says, that data with this context is expired and can be deleted from AHandle
+	// Node environment
+	public final Env theEnv;
+	// Parent context
+	public final ANodeContext prev;
+
+	// this context is expired and nodes can be deleted
 	public boolean expired;
-}
+	// this context is locked, i.e. nodes cannot be changed
+	public boolean locked;
 
-public abstract class AHandleData {
-	private final Context context;
-	AHandleData h_hext_handle_data;
-
-	public AHandleData(Context context) {
-		this.context = context;
-		assert(context != null);
+	public ANodeContext(Env theEnv) {
+		this.theEnv = theEnv;
+		this.prev = theEnv.getEnvContext();
 	}
 
-	public final Context getDataContext() {
-		return this.context;
+	public ANodeContext(Env theEnv, ANodeContext prev) {
+		this.theEnv = theEnv;
+		this.prev = prev;
 	}
 
-	public final AHandleData getNextHandleData() {
-		return this.h_hext_handle_data;
-	}
-}
-
-public final class AHandle {
-	// List of nodes for this handle
-	AHandleData			h_nodes;
-
-	public AHandle() {
-	}
-
-	public synchronized void addData(AHandleData data) {
-		assert (data.h_hext_handle_data == null);
-		data.h_hext_handle_data = this.h_nodes;
-		this.h_nodes = data;
-	}
-
-	public synchronized void delData(AHandleData data) {
-		if (this.h_nodes == data) {
-			this.h_nodes = data.h_hext_handle_data;
-			data.h_hext_handle_data = null;
-			return;
+	public boolean inherits(ANodeContext ctx) {
+		for (ANodeContext self = this; self != null; self = self.prev) {
+			if (self == ctx)
+				return true;
 		}
-		for (AHandleData hd = this.h_nodes; hd != null; hd = hd.h_hext_handle_data) {
-			if (hd.h_hext_handle_data == data) {
-				hd.h_hext_handle_data = data.h_hext_handle_data;
-				data.h_hext_handle_data = null;
-				return;
-			}
-		}
-	}
-
-	public AHandleData getFirstHandleData() {
-		return this.h_nodes;
-	}
-
-	//public AHandleData[] getHandleDataArray() {
-	//	int i = 0;
-	//	for (AHandleData hd = this.h_nodes; hd != null; hd = hd.h_hext_handle_data)
-	//		i += 1;
-	//	AHandleData[] array = new AHandleData[i];
-	//	i = 0;
-	//	for (AHandleData hd = this.h_nodes; hd != null; hd = hd.h_hext_handle_data)
-	//		array[i++] = hd;
-	//	return array;
-	//}
-
-	public void applyToAll((AHandleData)->void apply) {
-		AHandleData hd = this.h_nodes;
-		while (hd != null) {
-			AHandleData hd_next = hd.h_hext_handle_data;
-			apply(hd);
-			hd = hd_next;
-		}
-	}
-
-	public void cleanupIf((AHandleData)->boolean needToCleanup) {
-		AHandleData hd_prev = null;
-		AHandleData hd = this.h_nodes;
-		while (hd != null) {
-			AHandleData hd_next = hd.h_hext_handle_data;
-			if (needToCleanup(hd) || hd.getDataContext().expired) {
-				if (hd_prev == null) {
-					this.h_nodes = hd_next;
-				} else {
-					hd_prev.h_hext_handle_data = hd_next;
-					hd.h_hext_handle_data = null;
-				}
-			} else {
-				hd_prev = hd;
-			}
-			hd = hd_next;
-		}
-	}
-
-	public <T extends ANode> void cleanupIf((AHandleData, T)->boolean needToCleanup, T arg) {
-		AHandleData hd_prev = null;
-		AHandleData hd = this.h_nodes;
-		while (hd != null) {
-			AHandleData hd_next = hd.h_hext_handle_data;
-			if (needToCleanup(hd, arg) || hd.getDataContext().expired) {
-				if (hd_prev == null) {
-					this.h_nodes = hd_next;
-				} else {
-					hd_prev.h_hext_handle_data = hd_next;
-					hd.h_hext_handle_data = null;
-				}
-			} else {
-				hd_prev = hd;
-			}
-			hd = hd_next;
-		}
+		return false;
 	}
 }
 
+// Context for global environment nodes (like standard types).
+public class EnvContext extends ANodeContext {
+	public EnvContext(Env theEnv) {
+		super(theEnv, null);
+	}
+}
+
+// Semantic nodes contexts.
+public final class SemanticContext extends ANodeContext {
+	public SemanticContext(ANodeContext prev) {
+		super(prev.theEnv, prev);
+	}
+}
+
+// Backend context.
+public class BackendNodeContext extends ANodeContext {
+	public final SemanticContext semantic_context;
+	public BackendNodeContext(SemanticContext semantic_context) {
+		super(semantic_context.theEnv, semantic_context);
+		this.semantic_context = semantic_context;
+	}
+}
 

@@ -21,7 +21,10 @@ import syntax kiev.Syntax;
 public interface INode {
 	public static final INode[] emptyArray = new INode[0];
 
-	public AHandle		handle();
+	public ANodeContext	getContext();
+	public void			setContext(ANodeContext context);
+	public Env			getEnv();
+	public Project		getProject();
 	public ANode		asANode();
 
 	public INode        parent();
@@ -278,23 +281,38 @@ public final class ExtSpaceIterator<+N extends INode> implements Enumeration<N> 
 	}
 }
 
-public abstract class ANode extends AHandleData implements INode {
+public abstract class ANode implements INode {
 	public static final ANode[] emptyArray = new ANode[0];
 	public static final Object[] emptyExtData = new Object[0];
 
-	public static abstract class UnVersionedData {}
+	public static abstract class UnVersionedData {
+		protected abstract String unVersionedDataID();
+		protected void unVersionedDataAttached() {}
+		protected void unVersionedDataDetached() {}
+	}
 
 	static final class ChangeListenerEntry extends UnVersionedData {
+		static final String DATA_ID = ChangeListenerEntry.class.getName().intern();
+		protected String unVersionedDataID() { DATA_ID }
+
 		final ChangeListener listener;
 		ChangeListenerEntry(ChangeListener listener) {
 			this.listener = listener;
 		}
 	}
 	static final class TextSourcePosition extends UnVersionedData {
+		static final String DATA_ID = TextSourcePosition.class.getName().intern();
+		protected String unVersionedDataID() { DATA_ID }
+
 		long			pos;
-		TextSourcePosition(long pos) { this.pos = pos; }
+		TextSourcePosition(long pos) {
+			this.pos = pos;
+		}
 	}
 	static final class TextSourceFilename extends UnVersionedData {
+		static final String DATA_ID = TextSourceFilename.class.getName().intern();
+		protected String unVersionedDataID() { DATA_ID }
+
 		String			fileName;
 		TextSourceFilename(String fileName) { this.fileName = fileName; }
 	}
@@ -318,8 +336,7 @@ public abstract class ANode extends AHandleData implements INode {
 
 	private static final NodeTypeInfo $node_type_info = new NodeTypeInfo("kiev·vtree·ANode", CoreLang, "Node", new NodeTypeInfo[0], ANode.$values);
 
-	final
-	public  AHandle					p_handle_;
+	private ANodeContext			p_context_;
 	private ANode					p_parent_;
 	private AttrSlot				p_pslot_;
 	private Object					p_ext_data_;
@@ -329,21 +346,35 @@ public abstract class ANode extends AHandleData implements INode {
 
 	//@UnVersioned
 	//@abstract @virtual
-	public long					pos;
+	public long						pos;
 	@abstract @virtual
-	public String				file_name;
+	public String					file_name;
 
-	public ANode(AHandle handle, Context context) {
-		super(context);
-		p_handle_ = handle;
-		handle.addData(this);
+	public ANode() {
+	}
+
+	public ANode(ANodeContext context) {
+		this.p_context_ = context;
 	}
 
 	final
-	public AHandle handle() { return p_handle_; }
-
-	final
 	public ANode asANode() { return this; }
+
+	public final ANodeContext getContext() {
+		return this.p_context_;
+	}
+
+	public final void setContext(ANodeContext context) {
+		this.p_context_ = context;
+	}
+
+	public final Env getEnv() {
+		return this.p_context_.theEnv;
+	}
+
+	public final Project getProject() {
+		return this.p_context_.theEnv.proj;
+	}
 
 	static
 	public ANode[] asANodes(INode[] arr) {
@@ -430,18 +461,19 @@ public abstract class ANode extends AHandleData implements INode {
 		this.p_ext_data_ = tmp;
 	}
 
-	public final UnVersionedData getUnVersionedData(Class clazz) {
-		foreach (UnVersionedData uvd; getExtData(); uvd.getClass() == clazz)
+	public final UnVersionedData getUnVersionedData(String dataId) {
+		foreach (UnVersionedData uvd; getExtData(); uvd.unVersionedDataID() == dataId)
 			return uvd;
 		return null;
 	}
 
-	public final synchronized void delUnVersionedData(Class clazz) {
+	public final synchronized void delUnVersionedData(String dataId) {
 		Object[] arr = getExtData();
 		for (int i=0; i < arr.length; i++) {
 			Object ext = arr[i];
-			if (ext instanceof UnVersionedData && ext.getClass() == clazz) {
+			if (ext instanceof UnVersionedData && ext.unVersionedDataID() == dataId) {
 				delExtElem(arr,i,ext);
+				ext.unVersionedDataDetached();
 				return;
 			}
 		}
@@ -451,13 +483,17 @@ public abstract class ANode extends AHandleData implements INode {
 		Object[] arr = getExtData();
 		for (int i=0; i < arr.length; i++) {
 			Object ext = arr[i];
-			if (ext instanceof UnVersionedData && ext.getClass() == value.getClass()) {
-				if (ext != value)
+			if (ext instanceof UnVersionedData && ext.unVersionedDataID() == value.unVersionedDataID()) {
+				if (ext != value) {
 					setExtElem(arr,i,value);
+					ext.unVersionedDataDetached();
+					value.unVersionedDataAttached();
+				}
 				return;
 			}
 		}
 		insExtElem(arr,arr.length,value);
+		value.unVersionedDataAttached();
 	}
 
 	public final synchronized void delListener(ChangeListener listener) {
@@ -488,7 +524,7 @@ public abstract class ANode extends AHandleData implements INode {
 	public final void setFileName(String fileName) { file_name = fileName; }
 
 	@getter public final String get$file_name() {
-		TextSourceFilename tsp = (TextSourceFilename)getUnVersionedData(TextSourceFilename.class);
+		TextSourceFilename tsp = (TextSourceFilename)getUnVersionedData(TextSourceFilename.DATA_ID);
 		if (tsp == null)
 			return null;
 		return tsp.fileName;
@@ -979,13 +1015,13 @@ public abstract class ANode extends AHandleData implements INode {
 	}
 
 	public Object copy(CopyContext cc) {
-		INode obj = cc.getCopyOf(this.handle());
+		INode obj = cc.getCopyOf(this);
 		if (obj != null)
 			return obj;
 		if (this instanceof TypeInfoInterface)
 			obj = (INode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
 		else
-			obj = (INode)this.getClass().newInstance();
+			obj = (INode)getEnv().newNode(this.getClass(), cc.toNodeContext());
 		cc.addCopyInfo(this,obj);
 		return this.copyTo(obj, cc);
 	}
@@ -1066,12 +1102,12 @@ public abstract class ANode extends AHandleData implements INode {
 
 	public INode doRewrite(RewriteContext ctx) {
 		if !(this instanceof ASTNode)
-			return new Copier().copyFull(this);
+			return new Copier(ctx.context).copyFull(this);
 		ANode rn;
 		if (this instanceof TypeInfoInterface)
 			rn = (ANode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
 		else
-			rn = (ANode)this.getClass().newInstance();
+			rn = getEnv().newNode(this.getClass(), ctx.context);
 		if (this instanceof DNode)
 			((DNode)rn).nodeflags = ((DNode)this).nodeflags;
 		foreach (AttrSlot attr; this.values(); attr.isAttr() && !attr.isNotCopyable()) {
@@ -1232,22 +1268,6 @@ class CurrentVersionInfo extends VersionInfo {
 	}
 }
 
-public final class SemContext extends Context {
-	public final SemContext prev;
-	public SemContext(SemContext prev) {
-		this.prev = prev;
-	}
-	public final boolean inherits(Context ctx) {
-		for (SemContext self = this; self != null; self = self.prev) {
-			if (self == ctx)
-				return true;
-		}
-		if (ctx == Context.DEFAULT)
-			return true;
-		return false;
-	}
-}
-
 @ThisIsANode(lang=CoreLang)
 public abstract class ASTNode extends ANode implements Constants {
 
@@ -1301,8 +1321,8 @@ public abstract class ASTNode extends ANode implements Constants {
 	public @packed(1,compileflags,4) boolean is_auto_generated;
 	public @packed(1,compileflags,3) boolean is_resolved;
 	public @packed(1,compileflags,2) boolean is_bad;
-	public @packed(1,compileflags,1) boolean versioned;
-	public @packed(1,compileflags,0) boolean locked;
+	//public @packed(1,compileflags,1) boolean versioned;
+	//public @packed(1,compileflags,0) boolean locked;
 
 	public AttrSlot[] values() {
 		return ASTNode.$values;
@@ -1375,38 +1395,19 @@ public abstract class ASTNode extends ANode implements Constants {
 	public Type getType(Env env) { return env.tenv.tpVoid; }
 
 	public ASTNode() {
-		this(new AHandle(), Kiev.getSemContext());
+		super(Kiev.getSemanticContext());
 	}
-	public ASTNode(AHandle handle) {
-		super(handle, Kiev.getSemContext());
-	}
-	public ASTNode(AHandle handle, SemContext context) {
-		super(handle, context);
+	public ASTNode(ANodeContext context) {
+		super(context);
 	}
 
 	public static ASTNode getActual(ASTNode node) {
-		//return node;
-		if (node == null)
-			return null;
-		SemContext semantic_context = Kiev.getSemContext();
-		//foreach (ASTNode nh; node.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
-		//	return nh;
-		for (AHandleData nh = node.handle().getFirstHandleData(); nh != null; nh = nh.getNextHandleData()) {
-			if (semantic_context.inherits(nh.getDataContext()) && nh instanceof ASTNode)
-				return (ASTNode)nh;
-		}
-		return null;
+		return node;
 	}
 
 	public ANode parent() {
 		ANode parent = super.parent();
 		return parent;
-//		if (parent == null)
-//			return null;
-//		SemContext semantic_context = Kiev.getSemContext();
-//		foreach (ASTNode nh; parent.handle().getHandleData(); semantic_context.inherits(nh.getDataContext()))
-//			return nh;
-//		return null;
 	}
 
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }

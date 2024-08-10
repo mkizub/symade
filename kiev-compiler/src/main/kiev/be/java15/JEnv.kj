@@ -49,17 +49,9 @@ public final class JEnv implements BEndEnv {
 	}
 
 	public void backendCleanup(ANode node) {
-		final (AHandleData)->void cleaner = fun (AHandleData data)->void {
-			if (data instanceof JNode)
-				data.backendCleanup();
-		};
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
-				n.handle().applyToAll(cleaner);
-				//foreach (JNode nh; n.handle().getHandleData()) {
-				//	nh.backendCleanup();
-				//	return true;
-				//}
+				n.delUnVersionedData(JNode.DATA_ID);
 				return true;
 			}
 		});
@@ -162,7 +154,7 @@ public final class JEnv implements BEndEnv {
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
-			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, data, name.src_name.toString(), pkg);
+			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, env.getEnvContext(), data, name.src_name.toString(), pkg);
 			if (roots != null) {
 				foreach (INode root; roots) {
 					if (root instanceof CompilationUnit) {

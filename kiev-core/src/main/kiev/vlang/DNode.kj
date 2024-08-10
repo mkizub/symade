@@ -307,11 +307,15 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 	}
 
 	public DNode() {
-		this(new AHandle(), new Symbol());
+		this.symbol = new Symbol();
 	}
 
-	public DNode(AHandle handle, Symbol symbol) {
-		super(handle);
+	public DNode(ANodeContext context, Symbol symbol) {
+		super(context);
+		this.symbol = symbol;
+	}
+
+	public DNode(Symbol symbol) {
 		this.symbol = symbol;
 	}
 
@@ -514,8 +518,8 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.is_struct_fe_passed = true;
 	}
 
-	public TypeDecl(AHandle handle, Symbol symbol) {
-		super(handle, symbol);
+	public TypeDecl(Symbol symbol) {
+		super(symbol);
 	}
 
 	public String qname() { sname }
@@ -655,8 +659,8 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 
 	public ASTNode[] getContainerMembers() { this.members }
 
-	public ComplexTypeDecl(AHandle handle, Symbol symbol) {
-		super(handle, symbol);
+	public ComplexTypeDecl(Symbol symbol) {
+		super(symbol);
 	}
 
 	public void callbackChanged(NodeChangeInfo info) {
@@ -809,13 +813,10 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 	}
 
 	public MetaTypeDecl() {
-		this(new AHandle(), new Symbol());
+		super(new Symbol());
 	}
 	public MetaTypeDecl(Symbol symbol) {
-		this(new AHandle(), symbol);
-	}
-	public MetaTypeDecl(AHandle handle, Symbol symbol) {
-		super(handle, symbol);
+		super(symbol);
 	}
 
 	public MetaType getMetaType(Env env) {
@@ -834,8 +835,11 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 
 	@nodeAttr public DNode∅						pkg_members;
 
-	public KievPackage(Symbol symbol) {
-		super(new AHandle(), symbol);
+	public KievPackage(ANodeContext context) {
+		super(context, new Symbol());
+	}
+	public KievPackage(Env env, Symbol symbol) {
+		super(env.getEnvContext(), symbol);
 		assert (symbol.isGlobalSymbol());
 		symbol.setUUID(null, "");
 	}
@@ -904,8 +908,8 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 
 @ThisIsANode(lang=CoreLang, copyable=false)
 public class KievRoot extends KievPackage {
-	public KievRoot() {
-		super(new Symbol());
+	public KievRoot(Env env) {
+		super(env, new Symbol());
 		this.setTypeDeclNotLoaded(false);
 	}
 	public String toString() {

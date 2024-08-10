@@ -21,15 +21,18 @@ import java.math.BigInteger;
  */
 
 public final class InspectorProjectionContext extends ProjectionContext {
+	public InspectorProjectionContext(Env env) {
+		super(env);
+	}
 	public InspectorProjectorFactory getProjectonFactory() {
 		return (InspectorProjectorFactory)npfactory;
 	}
 }
- 
+
 public final class InspectorProjectorFactory extends AbstractNodeProjectorFactory {
-	
-	public InspectorProjectorFactory() {
-		super(new InspectorProjectionContext());
+
+	public InspectorProjectorFactory(Env env) {
+		super(new InspectorProjectionContext(env));
 	}
 
 	public InspectorProjectionContext getProjectionContext() {
@@ -87,7 +90,7 @@ public class InspectorNodeProjector extends AbstractNodeProjector {
 		InspectorAttribute a = (InspectorAttribute)value;
 		return a.attr_slot.name;
 	}
-	
+
 	private void initPorts() {
 		if (this.ports != null)
 			return;
@@ -100,7 +103,7 @@ public class InspectorNodeProjector extends AbstractNodeProjector {
 			dst_port_sref = (ScalarDstPort)new ScalarDstPort(InspectorSymRefNode.nodeattr$ident_or_symbol_or_type);
 			ports.append(dst_port_sref);
 		}
-		
+
 		foreach (AttrSlot src_slot; src_node.values(); src_slot.isAttr()) {
 			if (src_slot == SymbolRef.nodeattr$ident_or_symbol_or_type) {
 				Projection src_port = new ScalarSrcPort((ScalarAttrSlot)src_slot);
@@ -154,21 +157,21 @@ public class InspectorNodeProjector extends AbstractNodeProjector {
 public class InspectorNode extends ANode {
 	@nodeAttr
 	public InspectorAttribute∅		attributes;
-	
+
 	@nodeAttr final
 	public String					type_id;
 
 	final
 	public TypeInfo					typeinfo;
-	
+
 	public InspectorNode(InspectorProjectionContext context, String type_id, TypeInfo typeinfo) {
-		super(new AHandle(), context);
+		super(context);
 		this.type_id = type_id;
 		this.typeinfo = typeinfo;
 	}
 
 	public Object copy(CopyContext cc) {
-		InspectorNode node = new InspectorNode((InspectorProjectionContext)this.getDataContext(), this.type_id, this.typeinfo);
+		InspectorNode node = new InspectorNode((InspectorProjectionContext)this.getContext(), this.type_id, this.typeinfo);
 		return this.copyTo(node,cc);
 	}
 }
@@ -185,7 +188,7 @@ public class InspectorSymRefNode extends InspectorNode {
 	}
 
 	public Object copy(CopyContext cc) {
-		InspectorSymRefNode node = new InspectorSymRefNode((InspectorProjectionContext)this.getDataContext(), this.type_id, this.typeinfo);
+		InspectorSymRefNode node = new InspectorSymRefNode((InspectorProjectionContext)this.getContext(), this.type_id, this.typeinfo);
 		return this.copyTo(node,cc);
 	}
 }
@@ -197,12 +200,12 @@ public abstract class InspectorAttribute extends ANode {
 
 	final
 	public AttrSlot attr_slot;
-	
+
 	public InspectorAttribute(InspectorProjectionContext context, AttrSlot attr_slot) {
-		super(new AHandle(), context);
+		super(context);
 		this.attr_slot = attr_slot;
 	}
-	
+
 	@getter public final String get$name() { return attr_slot.name; }
 }
 
@@ -210,11 +213,11 @@ public abstract class InspectorAttribute extends ANode {
 public abstract class InspectorScalarAttribute extends InspectorAttribute {
 	@nodeAttr
 	public Object data;
-	
+
 	public InspectorScalarAttribute(InspectorProjectionContext context, ScalarAttrSlot attr_slot) {
 		super(context, attr_slot);
 	}
-	
+
 	@getter public Object get$data() { return this.data; }
 	@setter public void set$data(Object data) { this.data = data; }
 }
@@ -223,13 +226,13 @@ public abstract class InspectorScalarAttribute extends InspectorAttribute {
 public class InspectorTextAttr extends InspectorScalarAttribute {
 	@nodeAttr abstract
 	public String value;
-	
+
 	public InspectorTextAttr(InspectorProjectionContext context, ScalarAttrSlot attr_slot) {
 		super(context, attr_slot);
 	}
 
 	public Object copy(CopyContext cc) {
-		InspectorTextAttr node = new InspectorTextAttr((InspectorProjectionContext)this.getDataContext(), (ScalarAttrSlot)this.attr_slot);
+		InspectorTextAttr node = new InspectorTextAttr((InspectorProjectionContext)this.getContext(), (ScalarAttrSlot)this.attr_slot);
 		return this.copyTo(node,cc);
 	}
 
@@ -310,12 +313,12 @@ public class InspectorTextAttr extends InspectorScalarAttribute {
 public class InspectorEnumAttr extends InspectorScalarAttribute {
 	@nodeAttr abstract
 	public Object value;
-	
+
 	public InspectorEnumAttr(InspectorProjectionContext context, ScalarAttrSlot attr_slot) {
 		super(context, attr_slot);
 	}
 	public Object copy(CopyContext cc) {
-		InspectorEnumAttr node = new InspectorEnumAttr((InspectorProjectionContext)this.getDataContext(), (ScalarAttrSlot)this.attr_slot);
+		InspectorEnumAttr node = new InspectorEnumAttr((InspectorProjectionContext)this.getContext(), (ScalarAttrSlot)this.attr_slot);
 		return this.copyTo(node,cc);
 	}
 	@getter public Object get$value() {
@@ -328,13 +331,13 @@ public class InspectorEnumAttr extends InspectorScalarAttribute {
 		if (slot == InspectorEnumAttr.nodeattr$value) {
 			if (attr_slot.typeinfo.clazz == Boolean.TYPE) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
-				result.append("false", "boolean", null, Boolean.FALSE); 
+				result.append("false", "boolean", null, Boolean.FALSE);
 				result.append("true", "boolean", null, Boolean.TRUE);
 				return result;
 			}
 			if (attr_slot.typeinfo.clazz == Boolean.class) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
-				result.append("false", "Boolean", null, Boolean.FALSE); 
+				result.append("false", "Boolean", null, Boolean.FALSE);
 				result.append("true", "Boolean", null, Boolean.TRUE);
 				result.append("null", "null", null, null);
 				return result;
@@ -342,7 +345,7 @@ public class InspectorEnumAttr extends InspectorScalarAttribute {
 			if (Enum.class.isAssignableFrom(attr_slot.typeinfo.clazz) && Enum.class != attr_slot.typeinfo.clazz) {
 				AutoCompleteResult result = new AutoCompleteResult(true);
 				foreach (Enum e; (Enum[])attr_slot.typeinfo.clazz.getDeclaredMethod(Constants.nameEnumValues).invoke(null)) {
-					result.append(e.toString(), e.getClass().getName(), null, e); 
+					result.append(e.toString(), e.getClass().getName(), null, e);
 				}
 				result.append("null", "null", null, null);
 				return result;
@@ -356,7 +359,7 @@ public class InspectorEnumAttr extends InspectorScalarAttribute {
 public class InspectorNodeAttr extends InspectorAttribute {
 	@nodeAttr
 	public InspectorNode node;
-	
+
 	@nodeAttr abstract
 	public:ro String type_id;
 
@@ -364,7 +367,7 @@ public class InspectorNodeAttr extends InspectorAttribute {
 		super(context, attr_slot);
 	}
 	public Object copy(CopyContext cc) {
-		InspectorNodeAttr node = new InspectorNodeAttr((InspectorProjectionContext)this.getDataContext(), (ScalarAttrSlot)this.attr_slot);
+		InspectorNodeAttr node = new InspectorNodeAttr((InspectorProjectionContext)this.getContext(), (ScalarAttrSlot)this.attr_slot);
 		return this.copyTo(node,cc);
 	}
 	@getter public String get$type_id() {
@@ -382,7 +385,7 @@ public class InspectorNodeAttr extends InspectorAttribute {
 public class InspectorSpaceAttr extends InspectorAttribute {
 	@nodeAttr
 	public InspectorNode∅ nodes;
-	
+
 	@nodeAttr abstract
 	public:ro int length;
 
@@ -390,7 +393,7 @@ public class InspectorSpaceAttr extends InspectorAttribute {
 		super(context, attr_slot);
 	}
 	public Object copy(CopyContext cc) {
-		InspectorSpaceAttr node = new InspectorSpaceAttr((InspectorProjectionContext)this.getDataContext(), (SpaceAttrSlot)this.attr_slot);
+		InspectorSpaceAttr node = new InspectorSpaceAttr((InspectorProjectionContext)this.getContext(), (SpaceAttrSlot)this.attr_slot);
 		return this.copyTo(node,cc);
 	}
 	@getter public int get$length() {
@@ -402,12 +405,12 @@ public class InspectorSpaceAttr extends InspectorAttribute {
 public class InspectorExtSpaceAttr extends InspectorAttribute {
 	@nodeAttr
 	public InspectorNode∅ nodes;
-	
+
 	public InspectorExtSpaceAttr(InspectorProjectionContext context, ExtSpaceAttrSlot attr_slot) {
 		super(context, attr_slot);
 	}
 	public Object copy(CopyContext cc) {
-		InspectorExtSpaceAttr node = new InspectorExtSpaceAttr((InspectorProjectionContext)this.getDataContext(), (ExtSpaceAttrSlot)this.attr_slot);
+		InspectorExtSpaceAttr node = new InspectorExtSpaceAttr((InspectorProjectionContext)this.getContext(), (ExtSpaceAttrSlot)this.attr_slot);
 		return this.copyTo(node,cc);
 	}
 }
