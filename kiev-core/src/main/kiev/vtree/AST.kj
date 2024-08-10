@@ -22,7 +22,6 @@ public interface INode {
 	public static final INode[] emptyArray = new INode[0];
 
 	public AHandle		handle();
-	//public long			getUID();
 	public ANode		asANode();
 
 	public INode        parent();
@@ -322,6 +321,7 @@ public abstract class ANode extends AHandleData implements INode {
 	final
 	public  AHandle					p_handle_;
 	private ANode					p_parent_;
+	private AttrSlot				p_pslot_;
 	private Object					p_ext_data_;
 
 	@virtual @abstract
@@ -341,9 +341,6 @@ public abstract class ANode extends AHandleData implements INode {
 
 	final
 	public AHandle handle() { return p_handle_; }
-
-	//final
-	//public long getUID() { return p_handle_.h_uid; }
 
 	final
 	public ANode asANode() { return this; }
@@ -605,10 +602,12 @@ public abstract class ANode extends AHandleData implements INode {
 	public final void callbackMetaSet(AttrSlot slot, MNode flag) {
 		assert(!flag.isAttached());
 		flag.p_parent_ = this;
+		flag.p_pslot_ = slot;
 	}
 	public final void callbackMetaDel(AttrSlot slot, MNode flag) {
 		assert(flag.isAttached());
 		flag.p_parent_ = null;
+		flag.p_pslot_ = null;
 	}
 
 	// attach to parent node 'parent' to parent's slot 'slot'
@@ -619,6 +618,7 @@ public abstract class ANode extends AHandleData implements INode {
 			assert(!isAttached());
 			assert(parent != null && parent != this);
 			this.p_parent_ = parent;
+			this.p_pslot_ = slot;
 			assert (parent() == parent);
 		} else {
 			Object[] arr = getExtData();
@@ -632,6 +632,7 @@ public abstract class ANode extends AHandleData implements INode {
 		if (slot.parent_attr_slot == ANode.nodeattr$parent) {
 			assert(p_parent_ == parent);
 			this.p_parent_ = null;
+			this.p_pslot_ = null;
 		} else {
 			Object[] arr = getExtData();
 			for (int i=0; i < arr.length; i++) {
@@ -666,31 +667,32 @@ public abstract class ANode extends AHandleData implements INode {
 	}
 
 	public final AttrSlot pslot() {
-		ANode parent = this.parent();
-		if (parent == null)
-			return null;
-		foreach (AttrSlot attr; parent.values(); attr.isChild() && !attr.isExtData()) {
-			if (attr instanceof ASpaceAttrSlot) {
-				foreach (INode n; attr.getArray(parent); n == this) {
-					return attr;
-				}
-			} else {
-				if (((ScalarAttrSlot)attr).get(parent) == this) {
-					return attr;
-				}
-			}
-		}
-		foreach (DataAttachInfo dat; parent.getExtData(); dat.p_slot.isChild()) {
-			if (dat.p_data == this) {
-				return dat.p_slot;
-			}
-			if (dat.p_data instanceof INode[]) {
-				foreach (INode n; (INode[])dat.p_data; n == this) {
-					return dat.p_slot;
-				}
-			}
-		}
-		return null;
+		return p_pslot_;
+//		ANode parent = this.parent();
+//		if (parent == null)
+//			return null;
+//		foreach (AttrSlot attr; parent.values(); attr.isChild() && !attr.isExtData()) {
+//			if (attr instanceof ASpaceAttrSlot) {
+//				foreach (INode n; attr.getArray(parent); n == this) {
+//					return attr;
+//				}
+//			} else {
+//				if (((ScalarAttrSlot)attr).get(parent) == this) {
+//					return attr;
+//				}
+//			}
+//		}
+//		foreach (DataAttachInfo dat; parent.getExtData(); dat.p_slot.isChild()) {
+//			if (dat.p_data == this) {
+//				return dat.p_slot;
+//			}
+//			if (dat.p_data instanceof INode[]) {
+//				foreach (INode n; (INode[])dat.p_data; n == this) {
+//					return dat.p_slot;
+//				}
+//			}
+//		}
+//		return null;
 	}
 
 	public AttrSlot[] values() {
