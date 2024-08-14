@@ -14,7 +14,7 @@ sourceSets {
 }
 
 tasks.compileJava {
-    options.isDeprecation = true
+    options.isDeprecation = false
     //options.isDebug = true
 }
 
@@ -23,7 +23,7 @@ dependencies {
 //    testImplementation("org.junit.jupiter:junit-jupiter")
     implementation(project(":kiev-stdlib"))
     implementation(project(":kiev-core"))
-    implementation(files("${project.rootDir}/symade-core.jar"))
+//    implementation(files("${project.rootDir}/symade-core.jar"))
 }
 
 //tasks.test {

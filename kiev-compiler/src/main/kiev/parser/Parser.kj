@@ -3,7 +3,7 @@ package kiev.parser;
 import syntax kiev.Syntax;
 
 public final class Parser extends kiev050 {
-	public Parser(Env env, SemanticContext semanticContext, ANodeContext syntaxContext, char[] file_chars, int start, int length) {
+	public Parser(Env env, ANodeContext semanticContext, ANodeContext syntaxContext, char[] file_chars, int start, int length) {
 		super(new JFlexToJavaCCAdapter(file_chars, start, length));
 		this.curEnv = env;
 		this.semanticContext = semanticContext;
@@ -18,7 +18,7 @@ public interface ParserConstants extends kiev050Constants {
 public abstract class ParserBase {
 
 	public Env				curEnv;
-	public SemanticContext	semanticContext;
+	public ANodeContext		semanticContext;
 	public ANodeContext		syntaxContext;
 	public FileUnit			curFileUnit;
 	public boolean			interface_only = false;
@@ -39,11 +39,7 @@ public abstract class ParserBase {
 		if( token==null ) pos = 0;
 		else if( token.next==null ) pos = (int)token.getPos();
 		else pos = (int)token.next.getPos();
-		//if( kiev.Kiev.debug ) {
-		//	kiev.Kiev.reportParserError(curFileUnit, pos, msg, e);
-		//} else {
-			kiev.Kiev.reportParserError(curFileUnit, pos, msg);
-		//}
+		curEnv.reportError().at(curFileUnit.pname(), pos>>>12, pos&0xFFF).cause(e).log(msg);
 	}
 
 	/** Report other Error (Exception) */
@@ -53,16 +49,12 @@ public abstract class ParserBase {
 		if( token==null ) pos = 0;
 		else if( token.next==null ) pos = (int)token.getPos();
 		else pos = (int)token.next.getPos();
-		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal parser error:\n"+e, e);
-		} else {
-			kiev.Kiev.reportParserError(curFileUnit, pos, "Internal parser error: "+e.getMessage());
-		}
+		curEnv.reportError().at(curFileUnit.pname(),0,0).log(e);
 		throw e;
 	}
 
 	final void reportError(ANode from, String message) throws Throwable {
-		kiev.Kiev.reportError(from, message);
+		from.reportError().log(message);
 	}
 
 	final Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ANode parent) {
@@ -253,6 +245,19 @@ public abstract class ParserBase {
 		return e;
 	}
 
+	final EToken mkEToken(Token t, ETokenKind kind) {
+		String image = t.image;
+		switch (t.kind) {
+		case ParserConstants.ESC_IDENTIFIER:
+			image = ConstExpr.source2ascii(t.image.substring(1,t.image.length()-1));;
+			break;
+		case ParserConstants.HID_IDENTIFIER:
+			image = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+			break;
+		}
+		return new EToken(t.getPos(), image, kind);
+	}
+
 	final void expandExpr(ASTExpression e, ENode n) {
 		if (n instanceof ASTExpression) {
 			foreach (ANode x; n.nodes.delToArray())
@@ -262,7 +267,7 @@ public abstract class ParserBase {
 		}
 	}
 
-	static ConstExpr sourceToConst(Token t) throws ParseException {
+	final ConstExpr sourceToConst(Token t) throws ParseException {
 		ConstExpr ce = null;
 		try
 		{
@@ -344,7 +349,8 @@ public abstract class ParserBase {
 			throw new ParseException(t.image);
 		}
 		if (ce == null) {
-			kiev.Kiev.reportParserError(null, (int)t.getPos(), "Unknown term "+t.image);
+			//kiev.Kiev.reportParserError(null, (int)t.getPos(), "Unknown term "+t.image);
+			curEnv.reportError().at(curFileUnit.pname(),t.getLinePos(),t.getColumnPos()).log("Unknown term '{}'", t.image);
 			ce = new ConstNullExpr();
 		}
 		ce.pos = t.getPos();

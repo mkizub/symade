@@ -42,17 +42,17 @@ public final class Label extends DNode {
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false)	public ASTNode∅		links;
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		verifyMetas();
 		return true;
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		ASTNode root = (ASTNode)Env.ctxRoot(this);
 		foreach (ASTNode lnk; links; Env.ctxRoot(lnk) != root) {
 			links.detach(lnk);
 		}
-		return super.preVerify(env, parent, slot);
+		return super.preVerify(parent, slot);
 	}
 
 	public INode doRewrite(RewriteContext ctx) {
@@ -181,7 +181,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		n instanceof Var,
 		((Var)n).isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType(info.env).resolveCallAccessR(info,mt)
+		n.getType().resolveCallAccessR(info,mt)
 	}
 }
 
@@ -246,7 +246,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		},
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType(info.env).resolveCallAccessR(info,mt)
+		n.getType().resolveCallAccessR(info,mt)
 	}
 }
 

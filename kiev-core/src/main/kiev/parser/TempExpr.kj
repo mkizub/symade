@@ -17,6 +17,16 @@ import syntax kiev.Syntax;
  *
  */
 
+public interface ASTToken extends ANode {
+	public boolean isIdentifier();
+	public boolean isOperator();
+	public boolean isMaybeOper();
+	public String  getTokenText();
+	public TypeRef asType();
+	public DNode   asScope();
+	public ENode   asExpr();
+}
+
 /**
  * Base class to represent unresolved, temporary created expressions.
  */
@@ -25,7 +35,7 @@ public abstract class UnresExpr extends ENode {
 
 	public UnresExpr() {}
 
-	public int getPriority(Env env) {
+	public int getPriority() {
 		return 255;
 	}
 
@@ -118,7 +128,7 @@ public final class UnresOpExpr extends UnresExpr {
 		return sb.toString();
 	}
 
-	public int getPriority(Env env) {
+	public int getPriority() {
 		if (isPrimaryExpr() || opd == null)
 			return 255;
 		return opd.prior;
@@ -199,7 +209,7 @@ public final class UnresReinterpExpr extends UnresExpr {
 		this.expr = expr;
 	}
 
-	public int getPriority(Env env) { return opCastPriority; }
+	public int getPriority() { return opCastPriority; }
 
 	public ENode closeBuild() {
 		ReinterpExpr ret = new ReinterpExpr(pos, tr.detach(), expr.closeBuild().detach());
@@ -302,7 +312,7 @@ public final class UnresCallExpr extends UnresExpr {
 		//this.setSuperExpr(super_flag);
 	}
 
-	public int getPriority(Env env) { return opCastPriority; }
+	public int getPriority() { return opCastPriority; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -365,7 +375,7 @@ public final class AccFldExpr extends UnresExpr {
 		assert (obj != null || fld.isStatic());
 	}
 
-	public int getPriority(Env env) { return opAccessPriority; }
+	public int getPriority() { return opAccessPriority; }
 
 	public String toString() {
 		if (fld.isStatic())
@@ -402,7 +412,7 @@ public class UnresTypeRef extends TypeRef {
 
 	public UnresTypeRef() {}
 
-	public int getPriority(Env env) {
+	public int getPriority() {
 		return 255;
 	}
 
@@ -435,7 +445,7 @@ public class UnresOpTypeRef extends UnresTypeRef {
 		return sb.toString();
 	}
 
-	public int getPriority(Env env) {
+	public int getPriority() {
 		if (isPrimaryExpr() || opd == null)
 			return 255;
 		return opd.prior;
@@ -506,7 +516,7 @@ public class UnresTypeWithArgs extends UnresTypeRef {
 			return base;
 		}
 		else if (base instanceof TypeNameRef) {
-			TypeRef ret = new TypeNameArgsRef(base.pos,base.ident,base.getTypeDecl(Env.getEnv()));
+			TypeRef ret = new TypeNameArgsRef(base.pos,base.ident,base.getTypeDecl());
 			ret.args.addAll(args);
 			return ret;
 		}

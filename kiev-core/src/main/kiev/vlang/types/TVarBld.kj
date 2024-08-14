@@ -49,11 +49,11 @@ public final class TemplateTVarSet extends TVSet {
 			if (v.isArgAppliable() && r.isValAppliable()) flags |= StdTypes.flValAppliable;
 		}
 	}
-	
+
 	// TVSet interface methods
-	
+
 	public TVar[] getTVars() { this.tvars }
-	
+
 	// find a bound type of an argument
 	public final Type resolve(ArgType arg) {
 		TVar[] tvars = this.tvars;
@@ -67,7 +67,7 @@ public final class TemplateTVarSet extends TVSet {
 		}
 		return arg;
 	}
-	
+
 	public final int getArgsLength() { return this.tvars.length; }
 	public final ArgType getArg(int i) { return this.tvars[i].var; }
 	public final Type resolveArg(int i)  {
@@ -89,8 +89,6 @@ public final class TemplateTVarSet extends TVSet {
 
 public final class TVarBld extends TVSet {
 
-	private static final boolean ASSERT_MORE = Kiev.debug;
-
 	public static final TVarBld emptySet = new TVarBld().close(-1);
 
 	@access:no,no,ro,rw		TVar[]		tvars;
@@ -99,27 +97,27 @@ public final class TVarBld extends TVSet {
 	public TVarBld() {
 		tvars = TVar.emptyArray;
 	}
-	
+
 	public TVarBld(ArgType var, Type bnd) {
 		if (bnd == null)
 			this.tvars = new TVar[]{ new TVar(var, bnd, TVar.MODE_FREE) };
 		else
 			this.tvars = new TVar[]{ new TVar(var, bnd, TVar.MODE_BOUND) };
-		if (ASSERT_MORE) checkIntegrity();
+		checkIntegrity();
 	}
-	
+
 	public TVarBld(AType vset) {
 		this.tvars = TVar.emptyArray;
 		this.append(vset);
 	}
-	
+
 	public TVarBld(TemplateTVarSet vset) {
 		if (vset.tvars.length > 0)
 			this.tvars = (TVar[])vset.tvars.clone();
 		else
 			this.tvars = TVar.emptyArray;
 	}
-	
+
 	// close the TVarBld, self-bind TVar-s with index >= n_free; or do not self-bind vars if n_free < 0
 	public TVarBld close(int n_free) {
 		if (this.tvars.length == 0) {
@@ -138,13 +136,13 @@ public final class TVarBld extends TVSet {
 		}
 		return this;
 	}
-	
+
 	// TVSet interface methods
-	
+
 	public TVar[] getTVars() {
 		return this.tvars;
 	}
-	
+
 	// find a bound type of an argument
 	public final Type resolve(ArgType arg) {
 		TVar[] tvars = this.tvars;
@@ -158,7 +156,7 @@ public final class TVarBld extends TVSet {
 		}
 		return arg;
 	}
-	
+
 	public final int getArgsLength() { return this.tvars.length; }
 	public final ArgType getArg(int i) { return this.tvars[i].var; }
 	public final Type resolveArg(int i)  {
@@ -176,7 +174,7 @@ public final class TVarBld extends TVSet {
 		for (int i=0; i < n; i++)
 			append(set.getArg(i), set.resolveArg(i));
 	}
-	
+
 	public void append(ArgType var, Type value)
 		require var != null;
 	{
@@ -207,13 +205,13 @@ public final class TVarBld extends TVSet {
 				tmp[i] = new TVar(v.var, var, n);
 		}
 		this.tvars = tmp;
-		
-		if (ASSERT_MORE) checkIntegrity();
+
+		checkIntegrity();
 		if (var ≢ value && value ≢ null)
 			set(n, value);
-		if (ASSERT_MORE) checkIntegrity();
+		checkIntegrity();
 	}
-	
+
 	void set(int v_idx, Type bnd)
 		require { bnd != null; }
 	{
@@ -241,23 +239,25 @@ public final class TVarBld extends TVSet {
 						av = tvars[av_idx];
 					}
 					if (v == av)
-						break; // don't alias a var to itself 
+						break; // don't alias a var to itself
 					assert (i < n && av_idx < n);
 					tvars[v_idx] = new TVar(v.var, av.var, av_idx);
-					if (ASSERT_MORE) checkIntegrity();
+					checkIntegrity();
 					return;
 				}
 			}
 		}
 		// not an alias, just bind
 		tvars[v_idx] = new TVar(v.var,bnd,TVar.MODE_BOUND);
-		if (ASSERT_MORE) checkIntegrity();
+		checkIntegrity();
 		return;
 	}
-	
+
 	private void checkIntegrity() {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
+		if (n == 0 || !tvars[0].var.tenv.env.debugOn)
+			return;
 		for (int i=0; i < n; i++) {
 			TVar v = tvars[i];
 			for (int j=0; j < n; j++)
@@ -272,7 +272,7 @@ public final class TVarBld extends TVSet {
 			}
 		}
 	}
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("TVarBld{\n");

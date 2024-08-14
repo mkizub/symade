@@ -40,16 +40,16 @@ public class JVar extends JDNode {
 			return new JField((Field)impl);
 		return new JVar(impl);
 	}
-	
+
 	protected JVar(Var impl) {
 		super(impl);
 		this.kind = vn().kind;
 	}
-	
+
 	public final boolean isNeedProxy() { vn().isNeedProxy() }
 
 	@getter public final Type get$vtype() {
-		return vn().vtype.getType(Env.getEnv());
+		return vn().vtype.getType();
 	}
 
 	@getter public final JENode get$init() {
@@ -57,7 +57,7 @@ public class JVar extends JDNode {
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating Var declaration");
+		trace(code.traceStatGen,"\tgenerating Var declaration");
 		code.setLinePos(this);
 		try {
 			if( init != null ) {
@@ -68,7 +68,7 @@ public class JVar extends JDNode {
 				code.addVar(this);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(vn(),e);
+			vn().reportError().log(e);
 		}
 	}
 

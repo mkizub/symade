@@ -1,0 +1,363 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.vtree;
+
+import syntax kiev.Syntax;
+
+import java.io.*;
+import static kiev.vtree.LoggingLevel.*;
+
+/**
+ * @author Maxim Kizub
+ * @version $Revision: 296 $
+ *
+ */
+
+public enum LoggingLevel {
+	TRACE,
+	DEBUG,
+	INFO,
+	WARNING,
+	ERROR,
+	FATAL
+}
+
+public interface LoggingEventBuilder {
+	LoggingEventBuilder at(INode node);
+	LoggingEventBuilder at(String file, int line, int column);
+	LoggingEventBuilder cause(Throwable t);
+	LoggingEventBuilder message(String msg);
+	LoggingEventBuilder addArg(Object arg);
+	LoggingEventBuilder addArgs(Object[] args);
+	LoggingEventBuilder formatted(boolean on);
+	void log();
+
+	void log(Throwable t) { cause(t).log(); }
+	void log(String msg) { message(msg).log(); }
+	void log(String msg, Object arg1) { message(msg).addArg(arg1).log(); }
+	void log(String msg, Object arg1, Object arg2) { message(msg).addArg(arg1).addArg(arg2).log(); }
+	void log(String msg, Object arg1, Object arg2, Object arg3) { message(msg).addArg(arg1).addArg(arg2).addArg(arg3).log(); }
+}
+
+public interface LoggingBuilderFactory {
+
+	void setRootDir(String rootDir);
+	LoggingLevel setLevel(LoggingLevel level);
+	LoggingLevel getLevel();
+
+	LoggingEventBuilder newTrace();
+	LoggingEventBuilder newDebug();
+	LoggingEventBuilder newInfo();
+	LoggingEventBuilder newWarning();
+	LoggingEventBuilder newError();
+	LoggingEventBuilder newFatalError();
+}
+
+@singleton
+public final class NOPLoggingEventBuilder implements LoggingEventBuilder {
+	public LoggingEventBuilder formatted(boolean on) { return this; }
+	public LoggingEventBuilder at(INode node) { return this; }
+	public LoggingEventBuilder at(String file, int line, int column) { return this; }
+	public LoggingEventBuilder cause(Throwable t) { return this; }
+	public LoggingEventBuilder message(String msg) { return this; }
+	public LoggingEventBuilder addArg(Object arg) { return this; }
+	public LoggingEventBuilder addArgs(Object[] args) { return this; }
+	public void log() {}
+
+	public void log(Throwable t) {}
+	public void log(String msg) {}
+	public void log(String msg, Object arg1) {}
+	public void log(String msg, Object arg1, Object arg2) {}
+	public void log(String msg, Object arg1, Object arg2, Object arg3) {}
+}
+
+public final class DefaultLoggingBuilderFactory implements LoggingBuilderFactory {
+
+	private LoggingLevel reportLevel = WARNING;
+	private String rootDir;
+	private boolean printStackTrace;
+
+	public DefaultLoggingBuilderFactory() {
+		this.rootDir = null;
+	}
+
+	public DefaultLoggingBuilderFactory(String rootDir) {
+		this.rootDir = rootDir;
+	}
+
+	public void setRootDir(String rootDir) {
+		this.rootDir = rootDir;
+	}
+
+	public LoggingLevel getLevel() { reportLevel }
+
+	public LoggingLevel setLevel(LoggingLevel level) {
+		if (level == null)
+			level = WARNING;
+		reportLevel = level;
+		printStackTrace = (reportLevel <= DEBUG);
+		return reportLevel;
+	}
+
+	public LoggingEventBuilder newTrace() {
+		if (reportLevel > TRACE) return NOPLoggingEventBuilder;
+		return new DefaultLoggingEventBuilder(TRACE, rootDir, printStackTrace);
+	}
+	public LoggingEventBuilder newDebug() {
+		if (reportLevel > DEBUG) return NOPLoggingEventBuilder;
+		return new DefaultLoggingEventBuilder(DEBUG, rootDir, printStackTrace);
+	}
+	public LoggingEventBuilder newInfo() {
+		if (reportLevel > INFO) return NOPLoggingEventBuilder;
+		return new DefaultLoggingEventBuilder(INFO, rootDir, printStackTrace);
+	}
+	public LoggingEventBuilder newWarning() {
+		if (reportLevel > WARNING) return NOPLoggingEventBuilder;
+		return new DefaultLoggingEventBuilder(WARNING, rootDir, printStackTrace);
+	}
+	public LoggingEventBuilder newError() {
+		if (reportLevel > ERROR) return NOPLoggingEventBuilder;
+		return new DefaultLoggingEventBuilder(ERROR, rootDir, printStackTrace);
+	}
+	public LoggingEventBuilder newFatalError() {
+		return new DefaultLoggingEventBuilder(FATAL, rootDir, printStackTrace);
+	}
+}
+
+public final class DefaultLoggingEventBuilder implements LoggingEventBuilder {
+
+	private final String rootDir;
+	private final LoggingLevel severity;
+	private boolean formatted;
+	private Throwable throwable;
+	private String message;
+	private Object[] arguments;
+	private int argCount;
+	private INode node;
+	private String fileName;
+	private int lineNo;
+	private int linePos;
+	private boolean printStackTrace;
+
+	public DefaultLoggingEventBuilder(LoggingLevel severity) {
+		this.severity = severity;
+		this.rootDir = null;
+	}
+
+	public DefaultLoggingEventBuilder(LoggingLevel severity, String rootDir, boolean printStackTrace) {
+		this.severity = severity;
+		this.rootDir = rootDir;
+		this.printStackTrace = printStackTrace;
+	}
+
+	public LoggingEventBuilder formatted(boolean on) {
+		this.formatted = on;
+		return this;
+	}
+
+	public LoggingEventBuilder at(INode node) {
+		this.node = node;
+		return this;
+	}
+
+	public LoggingEventBuilder at(String file, int line, int column) {
+		this.fileName = file;
+		this.lineNo = line;
+		this.linePos = column;
+		return this;
+	}
+
+	public LoggingEventBuilder cause(Throwable t) {
+		this.throwable = t;
+		return this;
+	}
+
+	public LoggingEventBuilder message(String msg) {
+		this.message = msg;
+		return this;
+	}
+
+	public LoggingEventBuilder addArg(Object arg) {
+		ensureArgCount(argCount + 1);
+		arguments[argCount++] = arg;
+		return this;
+	}
+
+	public LoggingEventBuilder addArgs(Object[] args) {
+		ensureArgCount(argCount + args.length + 1);
+		for (Object arg : args)
+			arguments[argCount++] = arg;
+		return this;
+	}
+
+	public void log() {
+		try {
+			logInternal();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+	private void logInternal() {
+		if (node != null)
+			checkNode(node.asANode());
+		if (throwable instanceof CompilerException) {
+			checkNode(((CompilerException)throwable).from);
+			if (throwable.getCause() != null)
+				throwable = throwable.getCause();
+		}
+
+		String msg;
+		if (message == null) {
+			if (throwable != null)
+				msg = throwable.toString(); //getMessage();
+			else
+				msg = "";
+		}
+		else if (argCount == 0)
+			msg = message;
+		else if (formatted)
+			msg = String.format(message, arguments);
+		else
+			msg = formatSimple(message, arguments);
+
+		PrintStream out = severity >= WARNING ? System.err : System.out;
+
+		String errMsg = "";
+		if (fileName != null)
+			errMsg = fileName + ":" + lineNo + ":" + linePos + ": ";
+		errMsg += severity.toString().toLowerCase()+": "+msg;
+		out.println(errMsg);
+
+		if (rootDir == null || lineNo <= 0 || fileName == null || severity <= DEBUG) {
+			if (throwable != null && printStackTrace)
+				throwable.printStackTrace(out);
+			return;
+		}
+
+		File f = null;
+		if (fileName != null) {
+			f = new File(fileName);
+			if (!f.isAbsolute())
+				f = new File(rootDir, fileName);
+			if (!f.exists() || !f.canRead())
+				f = null;
+		}
+
+		if (f != null) {
+			String ln = null;
+			LineNumberReader rd = null;
+			try {
+				rd = new LineNumberReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+				while (rd.getLineNumber() != lineNo)
+					ln = rd.readLine();
+				rd.close();
+			} catch (IOException ioc) {
+				ln = null;
+				if (rd != null) try {
+					rd.close();
+				} catch (IOException ignore) {}
+			}
+
+			if (ln != null) {
+				StringBuilder sbL = new StringBuilder();
+				StringBuilder sbX = new StringBuilder();
+				int len = ln.length();
+				for (int i=0, col=0; i < len; i++, col++) {
+					char c = ln.charAt(i);
+					if (c == '\t') {
+						for (int p = 1+sbL.length()%4; p > 0; --p) {
+							sbL.append(' ');
+							if (col < linePos) sbX.append(' ');
+						}
+						continue;
+					}
+					sbL.append(c);
+					if (col < linePos) sbX.append(' ');
+				}
+				sbX.append('^');
+
+				out.println(sbL.toString());
+				out.println(sbX.toString());
+			}
+		}
+
+		if (throwable != null && printStackTrace)
+			throwable.printStackTrace(out);
+	}
+
+	private void checkNode(ANode node) {
+		if (node == null)
+			return;
+		ANode from = node.asANode();
+		Method method = Env.ctxMethod(from);
+		TypeDecl clazz = Env.ctxTDecl(from);
+		FileUnit fu = Env.ctxFileUnit(from);
+		if (severity >= ERROR) {
+			if (method != null) method.setBad(true);
+			if (clazz != null) clazz.setBad(true);
+		}
+		if (fu != null && fileName == null)
+			fileName = fu.pname();
+
+		if (this.node == null)
+			this.node = node;
+
+		if (lineNo == 0) {
+			int pos = 0;
+			try {
+				for (int i=0; i < 3 && from != null && pos == 0; i++, from = from.parent())
+					pos = (int)from.pos;
+			} catch (Exception e) { /*ignore*/}
+			if (pos != 0) {
+				lineNo = pos >>> 12;
+				linePos = pos & 0xFFF;
+			}
+		}
+	}
+
+	private void ensureArgCount(int count) {
+		if (count <= 0) count = 1;
+		count += (count + 3) % 4;
+		if (arguments == null) {
+			arguments = new Object[count];
+			return;
+		}
+		Object[] tmp = new Object[count];
+		for (int i=0; i < argCount; ++i)
+			tmp[i] = arguments[i];
+		arguments = tmp;
+	}
+
+	private String formatSimple(String message, Object[] args) {
+		StringBuilder sb = new StringBuilder();
+		final int len = message.length();
+		int arg = -1;
+		for (int i=0; i < len; i++) {
+			char c = message.charAt(i);
+			if (c == '\\' && i < len+1) {
+				c = message.charAt(++i);
+				sb.append(c);
+				continue;
+			}
+			if (c == '{' && i < len+1) {
+				if (message.charAt(++i) == '}') {
+					if (args.length > arg+1)
+						sb.append(args[++arg]);
+					else
+						sb.append("{}");
+					continue;
+				}
+			}
+			sb.append(c);
+		}
+		return sb.toString();
+	}
+}

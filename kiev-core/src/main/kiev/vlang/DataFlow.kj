@@ -22,28 +22,30 @@ public class DFState {
 
 	public static final DFState[] emptyArray = new DFState[0];
 
+	private final Env env;
 	private final List<ScopeNodeInfo> states;
 	private final int abrupted;
 
-	private DFState(List<ScopeNodeInfo> states, int abrupted) {
+	private DFState(Env env, List<ScopeNodeInfo> states, int abrupted) {
+		this.env = env;
 		this.states = states;
 		this.abrupted = abrupted;
 	}
 
-	public static DFState makeNewState() {
+	public static DFState makeNewState(Env env) {
 		List<ScopeNodeInfo> states = List.Nil;
-		return new DFState(states,0);
+		return new DFState(env,states,0);
 	}
 
 	public ScopeNodeInfo getNodeInfo(Var[] path) {
 		foreach(ScopeNodeInfo sni; states; sni.match(path)) {
-			trace( Kiev.debug && Kiev.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni);
+			trace( env.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni);
 			return sni;
 		}
 		return null;
 	}
 
-	private static ScopeNodeInfo makeNode(Var[] path) {
+	private ScopeNodeInfo makeNode(Var[] path) {
 		ScopeNodeInfo sni;
 		if (path.length == 1) {
 			if (path[0] instanceof Field) {
@@ -62,20 +64,20 @@ public class DFState {
 		}
 		else
 			return null;
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add "+sni);
+		trace( env.debugNodeTypes, "types: add "+sni);
 		return sni;
 	}
 
-	private static ScopeNodeInfo makeNode(Var var) {
+	private ScopeNodeInfo makeNode(Var var) {
 		ScopeNodeInfo sni = new ScopeVarInfo(var);
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add "+sni);
+		trace( env.debugNodeTypes, "types: add "+sni);
 		return sni;
 	}
 
 	public DFState declNode(Var var) {
 		ScopeNodeInfo sni = makeNode(var);
-		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: (decl) var "+sni);
+		DFState dfs = new DFState(env, new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
+		trace( env.debugNodeTypes, "types: (decl) var "+sni);
 		return dfs;
 	}
 
@@ -94,21 +96,20 @@ public class DFState {
 		}
 changed:;
 		sni = sni.makeWithTypes(types);
-		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: (set types to) "+sni);
+		DFState dfs = new DFState(env,new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
+		trace( env.debugNodeTypes, "types: (set types to) "+sni);
 		return dfs;
 	}
 
 	public DFState setNodeValue(Var[] path, ENode expr) {
-		Env env = Env.getEnv();
-		Type tp = expr.getType(env);
-		if( tp ≡ env.tenv.tpNull && tp ≡ env.tenv.tpVoid )
+		Type tp = expr.getType();
+		if( tp ≡ tp.tenv.tpNull && tp ≡ tp.tenv.tpVoid )
 			return this;
 		ScopeNodeInfo sni = makeNode(path);
 		if (sni == null) return this;
 		sni = sni.makeWithTypes(addAccessType(sni.getTypes(), tp));
-		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: (set value to) "+sni);
+		DFState dfs = new DFState(env,new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
+		trace( env.debugNodeTypes, "types: (set value to) "+sni);
 		return dfs;
 	}
 
@@ -118,15 +119,14 @@ changed:;
 	 *  the class type (if exists), and others to be interface types
 	 */
 	static Type[] addAccessType(Type[] types, Type tp) {
-		Env env = Env.getEnv();
-		if( tp ≡ null || tp ≡ env.tenv.tpVoid || tp ≡ env.tenv.tpNull ) return types;
+		if( tp ≡ null || tp ≡ tp.tenv.tpVoid || tp ≡ tp.tenv.tpNull ) return types;
 		if( types == null || !tp.isReference() ) {
 			return new Type[]{tp};
 		}
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add type "+tp+" to "+Arrays.toString(types));
+		trace( tp.tenv.env.debugNodeTypes, "types: add type "+tp+" to "+Arrays.toString(types));
 		Type[] newtypes = new Type[]{tp};
 	next_type:
-		foreach(Type t1; types; t1 ≢ null && t1 ≢ env.tenv.tpVoid && t1 ≢ env.tenv.tpNull ) {
+		foreach(Type t1; types; t1 ≢ null && t1 ≢ t1.tenv.tpVoid && t1 ≢ t1.tenv.tpNull ) {
 			for( int i=0; i < newtypes.length; i++) {
 				Type t2 = newtypes[i];
 				if (t2.isInstanceOf(t1))
@@ -150,7 +150,7 @@ changed:;
 				}
 			}
 		}
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: add type yeilds "+Arrays.toString(newtypes));
+		trace( tp.tenv.env.debugNodeTypes, "types: add type yeilds "+Arrays.toString(newtypes));
 		return newtypes;
 	}
 
@@ -166,15 +166,15 @@ changed:;
 			}
 			return true;
 		});
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: vars "+Arrays.toString(vars)+" cleared to "+states);
+		trace( env.debugNodeTypes, "types: vars "+Arrays.toString(vars)+" cleared to "+states);
 		if (states == this.states)
 			return this;
-		DFState dfs = new DFState(states,this.abrupted);
+		DFState dfs = new DFState(env, states,this.abrupted);
 		return dfs;
 	}
 
 	public DFState setAbrupted() {
-		return new DFState(states,this.abrupted+1);
+		return new DFState(env,states,this.abrupted+1);
 	}
 
 	/** Joins two vectors by AND rule. I.e. initialized = 1.initialized && 2.initialized
@@ -212,6 +212,7 @@ changed:;
 					diff = new List.Cons<ScopeNodeInfo>(sni,diff);
 			}
 		}
+		Env env = state1.env;
 		List<ScopeNodeInfo> states = base_states;
 		foreach(ScopeNodeInfo sni; diff) {
 			ScopeNodeInfo sni1 = state1.getNodeInfo(sni.getPath());
@@ -220,11 +221,11 @@ changed:;
 				continue;
 			sni = sni1.makeJoin(sni2);
 			states = new List.Cons<ScopeNodeInfo>(sni, states);
-			trace( Kiev.debug && Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
+			trace(env.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
 		}
-		trace( Kiev.debug && Kiev.debugNodeTypes, "types: joined to "+states);
+		trace(env.debugNodeTypes, "types: joined to "+states);
 		assert (state1.abrupted == state2.abrupted);
-		DFState dfs = new DFState(states,state1.abrupted);
+		DFState dfs = new DFState(env,states,state1.abrupted);
 		return dfs;
 	}
 
@@ -234,12 +235,12 @@ public abstract class ScopeNodeInfo implements Cloneable {
 	private Type[]	types;
 	private ScopeNodeInfo j1;
 	private ScopeNodeInfo j2;
-	public abstract Type getDeclType(Env env);
+	public abstract Type getDeclType();
 	public abstract boolean match(Var[] path);
 	public abstract Var[] getPath();
 
 	protected final void setupDeclType() {
-		types = new Type[]{getDeclType(Env.getEnv())};
+		types = new Type[]{getDeclType()};
 	}
 
 	public final ScopeNodeInfo makeWithTypes(Type[] types) {
@@ -259,10 +260,11 @@ public abstract class ScopeNodeInfo implements Cloneable {
 	public final Type[] getTypes() {
 		if (types != null)
 			return types;
-		Env env = Env.getEnv();
-		Type[] types = new Type[]{this.getDeclType(env)};
-		foreach(Type t1; j1.getTypes(); t1 ≢ null && t1 ≢ env.tenv.tpVoid && t1 ≢ env.tenv.tpNull) {
-			foreach(Type t2; j2.getTypes(); t2 ≢ null && t2 ≢ env.tenv.tpVoid && t2 ≢ env.tenv.tpNull )
+		Type typeDecl = this.getDeclType();
+		StdTypes tenv = typeDecl.tenv;
+		Type[] types = new Type[]{typeDecl};
+		foreach(Type t1; j1.getTypes(); t1 ≢ null && t1 ≢ tenv.tpVoid && t1 ≢ tenv.tpNull) {
+			foreach(Type t2; j2.getTypes(); t2 ≢ null && t2 ≢ tenv.tpVoid && t2 ≢ tenv.tpNull )
 				types = DFState.addAccessType(types,Type.leastCommonType(t1,t2));
 		}
 		this.types = types;
@@ -279,8 +281,8 @@ public class ScopeVarInfo extends ScopeNodeInfo {
 		setupDeclType();
 	}
 
-	public Type getDeclType(Env env) {
-		return var.getType(env);
+	public Type getDeclType() {
+		return var.getType();
 	}
 
 	public String toString() {
@@ -312,8 +314,8 @@ public class ScopeStaticFieldInfo extends ScopeNodeInfo {
 		setupDeclType();
 	}
 
-	public Type getDeclType(Env env) {
-		return fld.getType(env);
+	public Type getDeclType() {
+		return fld.getType();
 	}
 
 	public String toString() {
@@ -364,10 +366,10 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 		return true;
 	}
 
-	public Type getDeclType(Env env) {
-		Type tp = ((Var)path[0]).getType(env);
+	public Type getDeclType() {
+		Type tp = ((Var)path[0]).getType();
 		for(int i=1; i < path.length; i++)
-			tp = Type.getRealType(tp, ((Field)path[i]).getType(env));
+			tp = Type.getRealType(tp, ((Field)path[i]).getType());
 		return tp;
 	}
 
@@ -409,8 +411,6 @@ public interface DataFlowSlots {
 	public final int TRU = 2;
 	public final int FLS = 3;
 	public final int JMP = 4;
-
-	public final boolean ASSERT_MORE = Kiev.debug;
 }
 
 
@@ -439,6 +439,8 @@ public final class DataFlowInfo extends ANode.UnVersionedData implements DataFlo
 	final DFFunc func_tru;
 	final DFFunc func_fls;
 	final DFFunc func_jmp;
+
+	public final Env getEnv() { node_impl.getEnv() }
 
 	// build data flow for this node
 	public static DataFlowInfo getDFlow(ASTNode n) {
@@ -495,7 +497,7 @@ public final class DataFlowInfo extends ANode.UnVersionedData implements DataFlo
 			DataFlowDefinition dfd = getFieldAnnotation(attr.name);
 			if (dfd != null) {
 				String seq = dfd.seq().intern();
-				if (ASSERT_MORE) assert (seq=="true" || seq=="false" || seq=="");
+				assert (seq=="true" || seq=="false" || seq=="");
 				DFSocket df;
 				if (seq == "true")
 					df = new DFSocketSpaceSeq(attr);
@@ -503,7 +505,7 @@ public final class DataFlowInfo extends ANode.UnVersionedData implements DataFlo
 					df = new DFSocketSpaceUnknown(attr);
 				else
 					df = new DFSocketChild(attr, attach_idx++);
-				if (ASSERT_MORE) assert (df.pslot == attr);
+				assert (df.pslot == attr);
 				chl_dfs.append(df);
 				dflows.put(attr.name,dfd);
 			}
@@ -751,6 +753,8 @@ public abstract class DFFunc implements DataFlowSlots {
 		assert(node.isAttached());
 		if (node.pslot() instanceof SpaceAttrSlot)
 			assert(((SpaceAttrSlot<ASTNode>)node.pslot()).indexOf(node.parent(),node) >= 0);
+		else if (node.pslot() instanceof ExtSpaceAttrSlot)
+			assert(((ExtSpaceAttrSlot<ASTNode>)node.pslot()).indexOf(node.parent(),node) >= 0);
 		else
 			assert(node.parent().getVal(node.pslot()) == node);
 		lst.append(node);
@@ -766,7 +770,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		for(;;) {
 		switch(f) {
 		case DFFuncThisIn():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
+			if (dfi.getEnv().debugOn) assert(checkNode(dfi.node_impl,null));
 			if (dfi.func_in != null) {
 				f = dfi.func_in;
 			} else {
@@ -783,15 +787,15 @@ public abstract class DFFunc implements DataFlowSlots {
 			}
 			break;
 		case DFFuncThisOut():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
+			if (dfi.getEnv().debugOn) assert(checkNode(dfi.node_impl,null));
 			f = dfi.func_out;
 			break;
 		case DFFuncThisTru():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
+			if (dfi.getEnv().debugOn) assert(checkNode(dfi.node_impl,null));
 			f = dfi.func_tru;
 			break;
 		case DFFuncThisFls():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
+			if (dfi.getEnv().debugOn) assert(checkNode(dfi.node_impl,null));
 			f = dfi.func_fls;
 			break;
 		case DFFuncChildIn(DFSocket dfs):

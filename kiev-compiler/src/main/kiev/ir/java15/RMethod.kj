@@ -32,60 +32,60 @@ public view RMethod of Method extends RDNode {
 
 	public Var getRetVar();
 	public MetaThrows getMetaThrows();
-	
+
 	// virtual static method
 	public final boolean isVirtualStatic();
 	public final void setVirtualStatic(boolean on);
-	// method with variable number of arguments	
+	// method with variable number of arguments
 	public final boolean isVarArgs();
 	public final void setVarArgs(boolean on);
 	// logic rule method
 	public final boolean isRuleMethod();
-	// need fields initialization	
+	// need fields initialization
 	public final boolean isNeedFieldInits();
 	public final void setNeedFieldInits(boolean on);
-	// a method generated as invariant	
+	// a method generated as invariant
 	public final boolean isInvariantMethod();
 	public final void setInvariantMethod(boolean on);
-	// a dispatcher (for multimethods)	
+	// a dispatcher (for multimethods)
 	public final boolean isDispatcherMethod();
 	public final void setDispatcherMethod(boolean on);
 	public final boolean isInlinedByDispatcherMethod();
-	
+
 	public Enumeration<WBCCondition> conditions() {
 		return (Enumeration<WBCCondition>)((Method)this).conditions.elements();
 	}
 
-	public void resolveDecl(Env env) {
-		RMethod.resolveMethod(this,env);
+	public void resolveDecl() {
+		RMethod.resolveMethod(this, tenv);
 	}
-	static void resolveMethod(@forward RMethod self, Env env) {
+	static void resolveMethod(@forward RMethod self, StdTypes tenv) {
 		if( isResolved() ) return;
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving method "+self);
+		trace(getEnv().debugResolve,"Resolving method "+self);
 		assert( ctx_tdecl == parent() || isInlinedByDispatcherMethod() );
 		//Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
 		try {
 			foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondRequire ) {
-				resolveENode(cond.body,env.tenv.tpVoid,env);
+				resolveENode(cond.body,tenv.tpVoid);
 			}
 			if (body != null && !isMacro() && !(body instanceof MetaValue)) {
 				body.setAutoReturnable(true);
-				resolveENode(body,mtype.ret(),env);
+				resolveENode(body,mtype.ret());
 				if (!body.isMethodAbrupted()) {
-					if (mtype.ret() ≡ env.tenv.tpVoid) {
+					if (mtype.ret() ≡ tenv.tpVoid) {
 						block.stats.append(new ReturnStat(pos,null));
 						body.setMethodAbrupted(true);
 					} else {
-						Kiev.reportError(self,"Return requared");
+						self.reportError().log("Return requared");
 					}
 				}
 			}
 			foreach(WBCCondition cond; conditions(); cond.cond == WBCType.CondEnsure ) {
-				if( mtype.ret() ≢ env.tenv.tpVoid ) getRetVar();
-				resolveDNode(cond,env);
+				if( mtype.ret() ≢ tenv.tpVoid ) getRetVar();
+				resolveDNode(cond);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(self,e);
+			self.reportError().log(e);
 		}
 
 		// Append invariants by list of violated/used fields
@@ -104,7 +104,7 @@ public view RMethod of Method extends RDNode {
 			}
 			Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
 */		}
-		
+
 		setResolved(true);
 	}
 }
@@ -112,15 +112,15 @@ public view RMethod of Method extends RDNode {
 @ViewOf(vcast=true)
 public final view RConstructor of Constructor extends RMethod {
 
-	public void resolveDecl(Env env) {
-		RMethod.resolveMethod(this,env); // super.resolveDecl(env)
+	public void resolveDecl() {
+		RMethod.resolveMethod(this,tenv); // super.resolveDecl()
 		ENode[] addstats = ((Constructor)this).addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
 			block.stats.insert(i,addstats[i]);
-			trace(Kiev.debug && Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
+			trace(getEnv().debugResolve,"ENode added to constructor: "+addstats[i]);
 		}
 		for(int i=0; i < addstats.length; i++)
-			resolveENode(addstats[i],env.tenv.tpVoid,env);
+			resolveENode(addstats[i],tenv.tpVoid);
 	}
 }
 
@@ -130,13 +130,13 @@ public final view RInitializer of Initializer extends RDNode {
 	public:ro Block			block;
 
 
-	public void resolveDecl(Env env) {
+	public void resolveDecl() {
 		if( isResolved() ) return;
-		
+
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			reportError().log(e);
 		}
 
 		setResolved(true);
@@ -149,10 +149,10 @@ public final view RWBCCondition of WBCCondition extends RDNode {
 	public ENode				body;
 	public Method				definer;
 
-	public void resolveDecl(Env env) {
+	public void resolveDecl() {
 		//if (code_attr != null) return;
 		if (body != null)
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 	}
 }
 

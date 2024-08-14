@@ -12,6 +12,8 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import kiev.compiler.WorkerThreadGroup;
+
 /**
  * @author Maxim Kizub
  *
@@ -35,7 +37,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 
 	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
-		Struct clazz = tr.getStruct(env);
+		Struct clazz = tr.getStruct();
 		if (clazz == null) return null;
 		return getViewImpl(clazz);
 	}
@@ -94,7 +96,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 			}
 			if (!ctor_found) {
 				Constructor ctor = new Constructor(ACC_PUBLIC);
-				ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL|ACC_SYNTHETIC));
+				ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(),Var.VAR_LOCAL,ACC_FINAL|ACC_SYNTHETIC));
 				ctor.body = new Block(clazz.pos);
 				clazz.members.add(ctor);
 			}
@@ -103,34 +105,34 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 		// add a cast from clazz.view_of to this view
 		if (view_meta != null && view_meta.getZ("vcast")) {
 			boolean cast_found = false;
-			foreach (Method dn; view_of.getStruct(env).members) {
-				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType(env)) {
+			foreach (Method dn; view_of.getStruct().members) {
+				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType()) {
 					cast_found = true;
 					break;
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", clazz.getType(env), ACC_PUBLIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl("$cast", clazz.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				if (clazz.isAbstract()) {
 					cast.setAbstract(true);
 				} else {
 					cast.body = new Block();
 				}
-				view_of.getStruct(env).addMethod(cast);
+				view_of.getStruct().addMethod(cast);
 			}
 		}
 		// add casts from this view to the clazz and a view instantiation cast
 		{
 			boolean cast_found = false;
 			foreach (Method dn; clazz.members) {
-				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType(env)) {
+				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType()) {
 					cast_found = true;
 					break;
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", view_of.getType(env), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+				Method cast = new MethodImpl("$cast", view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				clazz.addMethod(cast);
 				if (!clazz.isInterface()) {
@@ -140,15 +142,15 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 			}
 			cast_found = false;
 			foreach (Method dn; clazz.members) {
-				if (dn.hasName("makeView") && dn.isStatic() && dn.mtype.ret() ≈ clazz.getType(env)) {
+				if (dn.hasName("makeView") && dn.isStatic() && dn.mtype.ret() ≈ clazz.getType()) {
 					cast_found = true;
 					break;
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("makeView", clazz.getType(env), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl("makeView", clazz.getType(), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
-				cast.params.add(new LVar(0,"obj",view_of.getType(env),Var.VAR_LOCAL,ACC_FINAL));
+				cast.params.add(new LVar(0,"obj",view_of.getType(),Var.VAR_LOCAL,ACC_FINAL));
 				cast.body = new Block();
 				clazz.addMethod(cast);
 			}
@@ -164,7 +166,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 
 	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
-		Struct clazz = tr.getStruct(env);
+		Struct clazz = tr.getStruct();
 		if (clazz == null) return null;
 		return getViewImpl(clazz);
 	}
@@ -208,7 +210,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 		}
 
 		foreach (TypeRef st; clazz.super_types)
-			doProcess(st.getStruct(env));
+			doProcess(st.getStruct());
 
 		if (clazz.isForward())
 			return;
@@ -240,12 +242,12 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			clazz.iface_impl = impl;
 			super_view_impl = getViewImpl(clazz.super_types[0]);
 			if (super_view_impl != null)
-				impl.super_types += new TypeRef(super_view_impl.getType(env));
+				impl.super_types += new TypeRef(super_view_impl.getType());
 			else
 				impl.super_types += new TypeRef(this.env.getTypeEnv().tpObject);
-			impl.super_types += new TypeRef(clazz.getType(env));
+			impl.super_types += new TypeRef(clazz.getType());
 
-			if (clazz.super_types[0].getType(env) ≉ this.env.getTypeEnv().tpObject)
+			if (clazz.super_types[0].getType() ≉ this.env.getTypeEnv().tpObject)
 				clazz.super_types.insert(0, new TypeRef(this.env.getTypeEnv().tpObject));
 			clazz.members.append(~impl);
 
@@ -264,7 +266,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 				else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
 					Field cf = (Field)dn;
 					if (!cf.isPublic()) {
-						Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
+						cf.reportWarning().log("Field "+clazz+'.'+cf+" must be public");
 						cf.setPublic();
 					}
 					Field f = cc.copyRoot(cf);
@@ -277,7 +279,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 				if (dn instanceof Struct)
 					continue;
 				if (dn instanceof Method && !(dn instanceof Constructor) && !dn.isPublic() && !dn.isStatic()) {
-					Kiev.reportWarning(dn, "Method "+clazz+'.'+dn+" must be public");
+					dn.reportWarning().log("Method "+clazz+'.'+dn+" must be public");
 					dn.setPublic();
 				}
 				impl.members.add(~dn);
@@ -286,14 +288,14 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 		} else {
 			impl = clazz;
 			super_view_impl = getViewImpl(clazz.super_types[0]);
-			if (super_view_impl != null && super_view_impl != clazz.super_types[0].getStruct(env))
-				impl.super_types.insert(0, new TypeRef(super_view_impl.getType(env)));
+			if (super_view_impl != null && super_view_impl != clazz.super_types[0].getStruct())
+				impl.super_types.insert(0, new TypeRef(super_view_impl.getType()));
 		}
 
 		// generate a field for the object this view represents
-		Field fview = impl.resolveField(env, nameImpl, false);
+		Field fview = impl.resolveField(nameImpl, false);
 		if (fview == null)
-			fview = impl.addField(new Field(nameImpl,view_of.getType(env), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+			fview = impl.addField(new Field(nameImpl,view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		foreach (Constructor ctor; impl.members; !ctor.isStatic()) {
 			if (clazz.isInterfaceOnly()) {
@@ -328,7 +330,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 
 		// generate constructor
 		if (clazz.isInterfaceOnly()) {
-			Kiev.runProcessorsOn(impl);
+			env.runProcessorsOn(impl);
 			return;
 		}
 
@@ -339,15 +341,15 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 			CallType ct = m.mtype;
 			Method vm;
 			try {
-				vm = view_of.getStruct(env).resolveMethod(env, m.sname, ct.ret(), ct.params());
+				vm = view_of.getStruct().resolveMethod(m.sname, ct.ret(), ct.params());
 			} catch (CompilerException e) {
-				Kiev.reportError(m, e.getMessage());
+				m.reportError().log(e);
 				m.setAbstract(true);
 				continue;
 			}
 			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos,
-				new CastExpr(m.pos, view_of.getType(env),
+				new CastExpr(m.pos, view_of.getType(),
 					new IFldExpr(m.pos, new ThisExpr(m.pos), fview)
 					),
 				vm, ENode.emptyArray);
@@ -368,14 +370,14 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 				Block body = new Block(f.pos);
 				set_var.setFinal(true);
 				set_var.body = body;
-				Field view_fld = view_of.getType(env).getStruct().resolveField(env,f.sname);
+				Field view_fld = view_of.getType().getStruct().resolveField(f.sname);
 				ENode val = new LVarExpr(f.pos,set_var.params[0]);
-				if (f.getType(env).getAutoCastTo(view_fld.getType(env)) == null)
-					val = new CastExpr(f.pos,view_fld.getType(env),val);
+				if (f.getType().getAutoCastTo(view_fld.getType()) == null)
+					val = new CastExpr(f.pos,view_fld.getType(),val);
 				AssignExpr ae = new AssignExpr(f.pos,
 						new IFldExpr(f.pos,
 							new CastExpr(f.pos,
-								view_of.getType(env),
+								view_of.getType(),
 								new IFldExpr(f.pos,
 									new ThisExpr(f.pos),
 									fview
@@ -398,59 +400,59 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
 					new CastExpr(f.pos,
-						view_of.getType(env),
+						view_of.getType(),
 						new IFldExpr(f.pos,new ThisExpr(f.pos),fview)
 					),
-					view_of.getType(env).getStruct().resolveField(env,f.sname)
+					view_of.getType().getStruct().resolveField(f.sname)
 				);
-				if (val.getType(env).getAutoCastTo(f.getType(env)) == null)
-					val = new CastExpr(f.pos,f.getType(env),val);
+				if (val.getType().getAutoCastTo(f.getType()) == null)
+					val = new CastExpr(f.pos,f.getType(),val);
 				body.stats.add(new ReturnStat(f.pos,val));
 				get_var.setAbstract(false);
 			}
 		}
 
 		// implement the cast from clazz.view_of to this view
-		assert (!view_of.getStruct(env).isResolved());
-		foreach (Method dn; view_of.getStruct(env).members; !dn.isStatic()) {
-			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType(env)) {
+		assert (!view_of.getStruct().isResolved());
+		foreach (Method dn; view_of.getStruct().members; !dn.isStatic()) {
+			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType()) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
-					ReturnStat rst = new ReturnStat(0, new NewExpr(0, impl.getType(env), new ENode[]{new ThisExpr()}));
+					ReturnStat rst = new ReturnStat(0, new NewExpr(0, impl.getType(), new ENode[]{new ThisExpr()}));
 					dn.block.stats.add(rst);
-					Kiev.runProcessorsOn(rst);
+					env.runProcessorsOn(rst);
 				}
 				break;
 			}
 		}
 		// implement the cast from this view to the clazz
 		foreach (Method dn; impl.members; !dn.isStatic()) {
-			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType(env)) {
+			if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ view_of.getType()) {
 				if (dn.isSynthetic()) {
 					dn.setAbstract(false);
 					dn.body = new Block();
-					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, view_of.getType(env), new IFldExpr(0, new ThisExpr(), fview))));
-					Kiev.runProcessorsOn(dn.body);
+					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
+					env.runProcessorsOn(dn.body);
 				}
 				break;
 			}
 		}
 		// implement the view instantiation
 		foreach (Method dn; impl.members; dn.isStatic()) {
-			if (dn.hasName(nameCastOp) && dn.params.length == 1 && dn.mtype.ret() ≈ clazz.getType(env)) {
+			if (dn.hasName(nameCastOp) && dn.params.length == 1 && dn.mtype.ret() ≈ clazz.getType()) {
 				if (dn.isSynthetic()) {
 					ENode stat = new IfElseStat(0,
 						new BinaryBoolExpr(0, env.coreFuncs.fObjectBoolEQ,new LVarExpr(0, dn.params[0]),new ConstNullExpr()),
 						new ReturnStat(0, new ConstNullExpr()),
-						new ReturnStat(0, new NewExpr(0, impl.getType(env), new ENode[]{new LVarExpr(0, dn.params[0])}))
+						new ReturnStat(0, new NewExpr(0, impl.getType(), new ENode[]{new LVarExpr(0, dn.params[0])}))
 						);
 					dn.block.stats.add(stat);
-					Kiev.runProcessorsOn(stat);
+					env.runProcessorsOn(stat);
 				}
 				break;
 			}
 		}
 
-		Kiev.runProcessorsOn(impl);
+		env.runProcessorsOn(impl);
 	}
 
 }

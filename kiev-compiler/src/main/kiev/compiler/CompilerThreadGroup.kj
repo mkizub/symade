@@ -1,0 +1,120 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.compiler;
+import syntax kiev.Syntax;
+
+import kiev.transf.*;
+
+import java.util.IdentityHashMap;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.lang.management.*;
+
+
+public class CompilerThreadGroup extends WorkerThreadGroup {
+	public CompilerThreadGroup(WorkerThreadGroup bthr) {
+		this(bthr, bthr.jobThreads);
+	}
+	public CompilerThreadGroup(WorkerThreadGroup bthr, int jobThreads) {
+		super(bthr, "compiler", jobThreads);
+		semantic_context = new SemanticContext(bthr.semantic_context);
+		bend_context = new kiev.be.java15.JNodeContext(semantic_context);
+	}
+
+	public void runTask() {
+		theEnv.errorCounter.set(0);
+		theEnv.warningCounter.set(0);
+		runBackEnd();
+	}
+
+	private void runBackEnd() {
+		long curr_time = 0L, diff_time = 0L;
+		Transaction tr_me = Transaction.open("Compiler.java:runBackEnd(1)", this);
+		try {
+			////////////////////////////////////////////////////
+			//	                  Midend                      //
+			////////////////////////////////////////////////////
+
+			PluginNodeProcessor processor = (PluginNodeProcessor)theEnv.getNodeProcessor();
+			processor.resetMidEndPass();
+			do {
+				String[] msg = new String[1];
+				diff_time = curr_time = System.currentTimeMillis();
+				executorService.submit(new Runnable() { public void run() {
+					String s = processor.runCurrentMidEndProcessor(getEnv());
+					if (s != null)
+						msg[0] = s;
+				}}).get();
+				diff_time = System.currentTimeMillis() - curr_time;
+				Compiler.reportProgress(theEnv, msg[0], diff_time);
+				if (theEnv.errorCounter.get() > 0) throw new CompilationAbortError();
+			} while (processor.nextMidEndPass());
+
+			tr_me.close(this);
+			getEnv().getBackendEnv().cleanupHashOfFails();
+			if (this.reportTotals || theEnv.errorCounter.get() > 0  || theEnv.warningCounter.get() > 0)
+				reportTotals("Midend");
+
+			foreach(FileUnit fu; getProject().enumerateAllCompilationUnits()) {
+				if (fu.isInterfaceOnly() || fu.dont_run_backend)
+					continue; // don't run back-end on interface (API) files
+				final int errCount = theEnv.errorCounter.get();
+				Callable<String> task = new Callable<String>() { public String call() {
+					WorkerThread wth = (WorkerThread)Thread.currentThread();
+					WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+					wth.be_pass_no = 0;
+					wth.current_file = fu.pname();
+					foreach (BackendProcessor bp; processor.getBEProcessors()) {
+						if (bp.isEnabled()) {
+							long diff_time, curr_time;
+							diff_time = curr_time = System.currentTimeMillis();
+							try {
+								bp.process(fu,Transaction.get());
+							} catch (Exception e) {
+								getEnv().reportError().log(e);
+							}
+							diff_time = System.currentTimeMillis() - curr_time;
+							Compiler.reportProgress(theEnv, bp.getDescr(), fu.fname, diff_time);
+						}
+						wth.be_pass_no += 1;
+						//if (wthg.errCount > errCount)
+						//	break;
+					};
+					wth.current_file = null;
+					return null;
+				}};
+				this.tasks.add(task);
+			}
+			Transaction tr = Transaction.open("Compiler.java:runBackEnd(2)", this);
+			try {
+				executeTasks(true);
+			} finally {
+				tr.close(this);
+				tr.rollback(false);
+			}
+			//Env.classHashOfFails.clear();
+		} catch( Throwable e) {
+			if (e instanceof CompilationAbortError)
+				return;
+			getEnv().reportError().log(e);
+		} finally {
+			executorService.submit(new Runnable() { public void run() {
+				tr_me.rollback(false);
+			}});
+		}
+		if (this.reportTotals || theEnv.errorCounter.get() > 0  || theEnv.warningCounter.get() > 0)
+			reportTotals("Backend");
+	}
+
+}
+

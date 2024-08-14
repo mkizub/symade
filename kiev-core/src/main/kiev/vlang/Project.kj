@@ -13,8 +13,6 @@ import syntax kiev.Syntax;
 
 import java.io.File;
 
-import kiev.dump.DumpFactory;
-
 @ThisIsANode(lang=void)
 public final class Project extends SNode {
 
@@ -28,15 +26,14 @@ public final class Project extends SNode {
 	@nodeData public ASTNode∅			compilationUnits;
 	@AttrBinDumpInfo(ignore=true)
 	@AttrXMLDumpInfo(ignore=true)
-	@nodeData public LVar				thisPar;
-	@AttrBinDumpInfo(ignore=true)
-	@AttrXMLDumpInfo(ignore=true)
 	@nodeData public ErrorInfo∅			errors;
 
+	public File projectNativeFile;
+	public File projectNativeRootDir;
 
 	public Project(ANodeContext context) {
 		super(context);
-		this.root_dir = new DirUnit(".");
+		this.root_dir = new DirUnit(context, ".");
 	}
 
 	@setter public final void set$name(String value) {
@@ -48,7 +45,7 @@ public final class Project extends SNode {
 	}
 
 	public FileUnit getLoadedFile(File f) {
-		String path = DumpFactory.getRelativePath(f);
+		String path = Env.getRelativePath(f);
 		path = path.replace(File.separatorChar, '/');
 		DirUnit dir;
 		String name;
@@ -212,7 +209,8 @@ public final class DirUnit extends SNode {
 
 	public DirUnit() {}
 
-	public DirUnit(String name) {
+	public DirUnit(ANodeContext context, String name) {
+		super(context);
 		this.name = name;
 	}
 
@@ -234,8 +232,8 @@ public final class DirUnit extends SNode {
 		return false;
 	}
 
-	private DirUnit addDir(String name) {
-		DirUnit dir = new DirUnit(name);
+	private DirUnit addDir(ANodeContext context, String name) {
+		DirUnit dir = new DirUnit(context, name);
 		for (int i=0; i < members.length; i++) {
 			if !(members[i] instanceof SNode)
 				continue;
@@ -271,7 +269,7 @@ public final class DirUnit extends SNode {
 		return fu;
 	}
 
-	public DirUnit makeDir(String qname) {
+	public DirUnit makeDir(ANodeContext context, String qname) {
 		qname = qname.replace(File.separatorChar, '/');
 		DirUnit dir = this;
 		int start = 0;
@@ -285,7 +283,7 @@ public final class DirUnit extends SNode {
 					break;
 				}
 				if (dd == null)
-					dd = dir.addDir(nm);
+					dd = dir.addDir(context, nm);
 				dir = dd;
 			}
 			start = end+1;
@@ -299,7 +297,7 @@ public final class DirUnit extends SNode {
 				break;
 			}
 			if (dd == null)
-				dd = dir.addDir(nm);
+				dd = dir.addDir(context, nm);
 			dir = dd;
 		}
 		return dir;

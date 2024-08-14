@@ -24,13 +24,12 @@ import kiev.vlang.ProjectStyleInfo;
 import kiev.vlang.ProjectSyntaxFactory;
 import kiev.vlang.ProjectSyntaxFactoryAny;
 import kiev.vlang.ProjectSyntaxInfo;
-import kiev.Kiev;
 
 /**
  * Render Actions UI Action.
  */
 public final class RenderActions implements IPopupMenuListener, UIAction {
-	
+
 	private static ProjectSyntaxInfo PROJECT_TREE_SYNTAX;
 	private static ProjectSyntaxInfo KIEV_SYNTAX;
 	private static ProjectSyntaxInfo SYNTAX_SYNTAX;
@@ -58,31 +57,31 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 		sci.setFactory("kiev·fmt·common·DefaultTextProcessor");
 		sci.addParam("class", "stx-fmt·syntax-for-syntax");
 		SYNTAX_SYNTAX.setSyntax(sci);
-		
+
 		STYLE_NONE = new ProjectStyleInfo();
 		STYLE_NONE.setDescription("Erase style");
-		
+
 		STYLE_DEFAULT = new ProjectStyleInfo();
 		STYLE_DEFAULT.setDescription("Default style");
 		STYLE_DEFAULT.setQname("stx-fmt·style-sheet-default");
 	}
-	
+
 	/**
 	 * The UI View.
 	 */
 	private final IUIView ui;
-	
+
 	/**
 	 * The action
 	 * @see #RenderActions(UIView, String)
 	 */
 	private final String action;
-	
+
 	/**
 	 * The popup menu.
 	 */
 	private IPopupMenuPeer menu;
-	
+
 	/**
 	 * The constructor.
 	 * @param ui the view
@@ -92,7 +91,7 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 		this.ui = ui;
 		this.action = action;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see kiev.gui.UIAction#run()
 	 */
@@ -170,7 +169,7 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	public void popupMenuCanceled() {
 		menu.remove();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see kiev.gui.IPopupMenuListener#popupMenuExecuted(kiev.gui.IMenuItem)
 	 */
@@ -182,12 +181,12 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 			}
 		});
 	}
-	
+
 	/**
 	 * Set Syntax Action.
 	 */
 	public class SetSyntaxAction implements IMenuItem {
-		
+
 		/**
 		 * The UI View.
 		 */
@@ -197,12 +196,12 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 		 * The text.
 		 */
 		final String text;
-		
+
 		/**
 		 * The qualified name.
 		 */
 		final ProjectSyntaxInfo psi;
-		
+
 		/**
 		 * Is in project.
 		 */
@@ -221,14 +220,14 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 			this.psi = psi;
 			this.in_project = in_project;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.IMenuItem#getText()
 		 */
 		public String getText() {
 			return text;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIAction#run()
 		 */
@@ -246,7 +245,7 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Set Syntax Action.
 	 */
 	public class SetStyleAction implements IMenuItem {
-		
+
 		/**
 		 * The UI View.
 		 */
@@ -256,12 +255,12 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 		 * The text.
 		 */
 		final String text;
-		
+
 		/**
 		 * The qualified name.
 		 */
 		final ProjectStyleInfo psi;
-		
+
 		/**
 		 * Is in project.
 		 */
@@ -280,14 +279,14 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 			this.psi = psi;
 			this.in_project = in_project;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.IMenuItem#getText()
 		 */
 		public String getText() {
 			return text;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIAction#run()
 		 */
@@ -305,17 +304,17 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Syntax File As UI Action Factory.
 	 */
 	public final static class SyntaxFileAs implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Set the syntax of the curret view"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -328,17 +327,17 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Syntax File As UI Action Factory.
 	 */
 	public final static class StyleAs implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Set the style of the curret syntax"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -351,17 +350,17 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Open Folded All UI Action Factory.
 	 */
 	public final static class OpenFoldedAll implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Open (unfold) all folded elements"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -376,17 +375,17 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Close Folded All UI Action Factory.
 	 */
 	public final static class CloseFoldedAll implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Close (fold) all foldable elements"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -401,17 +400,17 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Toggle Show Place holders UI Action Factory.
 	 */
 	public final static class ToggleShowPlaceholders implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Toggle show of editor placeholders"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -424,17 +423,17 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 	 * Redraw UI Action Factory.
 	 */
 	public final static class Redraw implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Redraw the window"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -442,6 +441,6 @@ public final class RenderActions implements IPopupMenuListener, UIAction {
 			return new RenderActions(context.ui, "redraw");
 		}
 	}
-		
+
 }
 

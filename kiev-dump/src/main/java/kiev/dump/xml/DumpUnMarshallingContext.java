@@ -47,6 +47,7 @@ public class DumpUnMarshallingContext extends AUnMarshallingContext {
 	}
 
 	public DumpUnMarshallingContext(Env env, ANodeContext nodeContext) {
+		super(env.getLogger());
 		this.env = env;
 		this.nodeContext = nodeContext;
 		this.unmarshallers.push(new ANodeUnMarshaller());

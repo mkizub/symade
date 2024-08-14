@@ -26,6 +26,7 @@ public final class CoreOperation extends Method {
 	public BEndOperation		bend_func;
 
 	public CoreOperation(Env env, String sname, CallType otype, CoreFunc core_func) {
+		super(env.getEnvContext());
 		this.sname = sname;
 		this.core_func = core_func;
 		this.setPublic();
@@ -46,11 +47,11 @@ public final class CoreOperation extends Method {
 		return core_func.getOperator();
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		return false;
 	}
 
-	public void normilizeExpr(Env env, ENode expr, Symbol sym, INode parent, AttrSlot slot) {
+	public void normilizeExpr(ENode expr, Symbol sym, INode parent, AttrSlot slot) {
 		assert (sym.dnode == this);
 		this.core_func.normilizeExpr(expr,parent,slot);
 	}
@@ -68,8 +69,8 @@ public final class CoreExpr extends ENode {
 
 	public CoreExpr() {}
 
-	public CoreOperation getCoreOperation(Env env) {
-		CoreFunc cf = env.coreFuncs.get(ident);
+	public CoreOperation getCoreOperation() {
+		CoreFunc cf = getEnv().coreFuncs.get(ident);
 		if (cf == null)
 			return null;
 		return cf.operation;
@@ -446,7 +447,7 @@ public static abstract class BinaryFunc extends CoreFunc {
 		}
 		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 2) {
-			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+this.node_clazz);
+			expr.reportError().log("Don't know how to normalize {} into {}", expr.getClass(), this.node_clazz);
 			return;
 		}
 		ENode en = (ENode)this.node_clazz.newInstance();
@@ -457,8 +458,7 @@ public static abstract class BinaryFunc extends CoreFunc {
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getEArgs();
-		Env env = Env.getEnv();
-		return doCalc(args[0].getConstValue(env), args[1].getConstValue(env));
+		return doCalc(args[0].getConstValue(), args[1].getConstValue());
 	}
 	protected ConstExpr doCalc(Object:Object arg1, Object:Object arg2) {
 		throw new RuntimeException("Cannot calculate a const from "+arg1+" and "+arg2);
@@ -479,7 +479,7 @@ public static abstract class UnaryFunc extends CoreFunc {
 		}
 		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 1) {
-			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+this.node_clazz);
+			expr.reportError().log("Don't know how to normalize {} into ", expr.getClass(), this.node_clazz);
 			return;
 		}
 		ENode en = (ENode)this.node_clazz.newInstance();
@@ -490,7 +490,7 @@ public static abstract class UnaryFunc extends CoreFunc {
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getEArgs();
-		return doCalc(args[0].getConstValue(Env.getEnv()));
+		return doCalc(args[0].getConstValue());
 	}
 	protected ConstExpr doCalc(Object:Object arg) {
 		throw new RuntimeException("Cannot calculate a const from "+arg);
@@ -513,7 +513,7 @@ public static class ObjectAssign extends BinaryFunc {
 	public Operator getOperator() { Operator.Assign }
 	public CallType makeType(ENode expr) {
 		AssignExpr ae = (AssignExpr)expr;
-		Type ret = ae.lval.getType(Env.getEnv());
+		Type ret = ae.lval.getType();
 		return mkType(ret, ret, ret);
 	}
 }
@@ -1369,7 +1369,7 @@ public static class StringAssignADD extends BinaryFunc {
 	public void normilizeExpr(ENode expr, INode parent, AttrSlot slot) {
 		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 2) {
-			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass());
+			expr.reportError().log("Don't know how to normalize {}", expr.getClass());
 			return;
 		}
 		ENode lval = args[0];
@@ -1394,7 +1394,7 @@ public static class Conditional extends CoreFunc {
 		}
 		ENode[] args = expr.getEArgs();
 		if (args == null || args.length != 3) {
-			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+ConditionalExpr.class);
+			expr.reportError().log("Don't know how to normalize {} into {}", expr.getClass(), ConditionalExpr.class);
 			return;
 		}
 		for (int i=0; i < args.length; i++)
@@ -1405,7 +1405,7 @@ public static class Conditional extends CoreFunc {
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getEArgs();
-		Boolean cond = (Boolean)args[0].getConstValue(Env.getEnv());
+		Boolean cond = (Boolean)args[0].getConstValue();
 		ConstExpr ce1 = (ConstExpr)args[1];
 		ConstExpr ce2 = (ConstExpr)args[2];
 		if (cond.booleanValue())

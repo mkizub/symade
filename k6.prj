@@ -70,6 +70,18 @@
               <core:FileUnit name="PoolConstant.kj"/>
              </members>
             </sop:kiev.vlang.DirUnit>
+            <sop:kiev.vlang.DirUnit name="compiler">
+             <members>
+              <core:FileUnit name="CompilationAbortError.kj"/>
+              <core:FileUnit name="CompilerParseInfo.kj"/>
+              <core:FileUnit name="CompilerTasks.kj"/>
+              <core:FileUnit name="CompilerThreadGroup.kj"/>
+              <core:FileUnit name="EditorThreadGroup.kj"/>
+              <core:FileUnit name="FrontendThreadGroup.kj"/>
+              <core:FileUnit name="WorkerThread.kj"/>
+              <core:FileUnit name="WorkerThreadGroup.kj"/>
+             </members>
+            </sop:kiev.vlang.DirUnit>
             <sop:kiev.vlang.DirUnit name="ir">
              <members>
               <sop:kiev.vlang.DirUnit name="java15">
@@ -99,17 +111,13 @@
             </sop:kiev.vlang.DirUnit>
             <sop:kiev.vlang.DirUnit name="parser">
              <members>
-              <core:FileUnit name="ASTExpression.kj"/>
-              <core:FileUnit name="ASTExprParser.kj"/>
               <core:FileUnit name="ASTModifiers.kj"/>
-              <core:FileUnit name="EToken.kj"/>
               <core:FileUnit name="JFlexToJavaCCAdapter.kj"/>
               <core:FileUnit name="kiev050.kj"/>
               <core:FileUnit name="kiev050Constants.kj"/>
               <core:FileUnit name="KievLexer.kj"/>
               <core:FileUnit name="KievTokenType.kj"/>
               <core:FileUnit name="KievTokenTypes.kj"/>
-              <core:FileUnit name="Opdef.kj"/>
               <core:FileUnit name="ParseError.kj"/>
               <core:FileUnit name="ParseException.kj"/>
               <core:FileUnit name="Parser.kj"/>
@@ -124,6 +132,7 @@
               <core:FileUnit name="BackendProcessor.kj"/>
               <core:FileUnit name="ImportKievSrc.kj"/>
               <core:FileUnit name="Plugin.kj"/>
+              <core:FileUnit name="PluginNodeProcessor.kj"/>
               <core:FileUnit name="ProcessEnum.kj"/>
               <core:FileUnit name="ProcessInner.kj"/>
               <core:FileUnit name="ProcessLogic.kj"/>
@@ -139,11 +148,8 @@
              </members>
             </sop:kiev.vlang.DirUnit>
             <core:FileUnit name="Compiler.kj"/>
-            <core:FileUnit name="Errors.kj"/>
-            <core:FileUnit name="Kiev.kj"/>
             <core:FileUnit name="Main.kj"/>
             <core:FileUnit name="SopTest.kj"/>
-            <core:FileUnit name="Syntax.xml" type="text/xml/tree-dump"/>
            </members>
           </sop:kiev.vlang.DirUnit>
          </members>
@@ -162,6 +168,10 @@
            <members>
             <sop:kiev.vlang.DirUnit name="parser">
              <members>
+              <core:FileUnit name="ASTExpression.kj"/>
+              <core:FileUnit name="ASTExprParser.kj"/>
+              <core:FileUnit name="EToken.kj"/>
+              <core:FileUnit name="Opdef.kj"/>
               <core:FileUnit name="TempExpr.kj"/>
              </members>
             </sop:kiev.vlang.DirUnit>
@@ -218,10 +228,11 @@
             </sop:kiev.vlang.DirUnit>
             <sop:kiev.vlang.DirUnit name="vtree">
              <members>
-              <core:FileUnit name="AHandle.kj"/>
+              <core:FileUnit name="ANodeContext.kj"/>
               <core:FileUnit name="AST.kj"/>
               <core:FileUnit name="CopyContext.kj"/>
               <core:FileUnit name="ErrorInfo.kj"/>
+              <core:FileUnit name="Logging.kj"/>
               <core:FileUnit name="metas.kj"/>
               <core:FileUnit name="MetaTypes.xml" type="text/xml/tree-dump"/>
               <core:FileUnit name="NodeTypeInfo.kj"/>
@@ -232,6 +243,17 @@
               <core:FileUnit name="Tree.kj"/>
              </members>
             </sop:kiev.vlang.DirUnit>
+            <sop:kiev.vlang.DirUnit name="vdom">
+             <members>
+              <core:FileUnit name="Language.kj"/>
+              <core:FileUnit name="XMLAttribute.kj"/>
+              <core:FileUnit name="XMLElement.kj"/>
+              <core:FileUnit name="XMLNode.kj"/>
+              <core:FileUnit name="XMLQName.kj"/>
+              <core:FileUnit name="XMLText.kj"/>
+             </members>
+            </sop:kiev.vlang.DirUnit>
+            <core:FileUnit name="Syntax.xml" type="text/xml/tree-dump"/>
            </members>
           </sop:kiev.vlang.DirUnit>
          </members>
@@ -561,16 +583,6 @@
               <core:FileUnit name="IMenu.java"/>
               <core:FileUnit name="IMenuItem.java"/>
               <core:FileUnit name="UIAction.java"/>
-             </members>
-            </sop:kiev.vlang.DirUnit>
-            <sop:kiev.vlang.DirUnit name="vdom">
-             <members>
-              <core:FileUnit name="Language.kj"/>
-              <core:FileUnit name="XMLAttribute.kj"/>
-              <core:FileUnit name="XMLElement.kj"/>
-              <core:FileUnit name="XMLNode.kj"/>
-              <core:FileUnit name="XMLQName.kj"/>
-              <core:FileUnit name="XMLText.kj"/>
              </members>
             </sop:kiev.vlang.DirUnit>
            </members>

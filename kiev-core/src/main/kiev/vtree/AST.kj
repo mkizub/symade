@@ -372,8 +372,24 @@ public abstract class ANode implements INode {
 		return this.p_context_.theEnv;
 	}
 
+	public final StdTypes getTypeEnv() {
+		return this.p_context_.typeEnv;
+	}
+
 	public final Project getProject() {
 		return this.p_context_.theEnv.proj;
+	}
+
+	public final LoggingEventBuilder reportWarning() {
+		return getEnv().reportWarning().at(this);
+	}
+
+	public final LoggingEventBuilder reportError() {
+		return getEnv().reportError().at(this);
+	}
+
+	public final LoggingEventBuilder reportAs(LoggingLevel sever) {
+		return getEnv().reportAs(sever).at(this);
 	}
 
 	static
@@ -1336,7 +1352,7 @@ public abstract class ASTNode extends ANode implements Constants {
 
 	public final void replaceWithNodeReWalk(ASTNode node, INode parent, AttrSlot slot) {
 		node = replaceWithNode(node,parent,slot);
-		Kiev.runProcessorsOn(node);
+		getEnv().runProcessorsOn(node);
 		throw new ReWalkNodeException(node);
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode, INode parent, AttrSlot pslot) {
@@ -1392,10 +1408,10 @@ public abstract class ASTNode extends ANode implements Constants {
 		return false;
 	}
 
-	public Type getType(Env env) { return env.tenv.tpVoid; }
+	public Type getType() { return getEnv().tenv.tpVoid; }
 
 	public ASTNode() {
-		super(Kiev.getSemanticContext());
+		super(Env.getSemanticContext());
 	}
 	public ASTNode(ANodeContext context) {
 		super(context);
@@ -1415,7 +1431,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		foreach (AttrSlot attr; values(); attr.isAutoResolve() && attr.typeinfo.clazz == SymbolRef.class) {
 			String resolve_in = attr.auto_resolve_in;
 			ScopeOfNames scope = null;
@@ -1438,29 +1454,23 @@ public abstract class ASTNode extends ANode implements Constants {
 		}
 		return true;
 	}
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {}
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return true; }
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {}
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) { return true; }
-	public void postVerify(Env env, INode parent, AttrSlot slot) {}
+	public void preResolveOut(INode parent, AttrSlot slot) {}
+	public boolean mainResolveIn(INode parent, AttrSlot slot) { return true; }
+	public void mainResolveOut(INode parent, AttrSlot slot) {}
+	public boolean preVerify(INode parent, AttrSlot slot) { return true; }
+	public void postVerify(INode parent, AttrSlot slot) {}
 
 }
 
 
 public class CompilerException extends RuntimeException {
 	public ANode	from;
-	public CError	err_id;
 	public CompilerException(String msg) {
 		super(msg);
 	}
 	public CompilerException(ANode from, String msg) {
 		super(msg);
 		this.from = from;
-	}
-	public CompilerException(ANode from, CError err_id, String msg) {
-		super(msg);
-		this.from = from;
-		this.err_id = err_id;
 	}
 }
 

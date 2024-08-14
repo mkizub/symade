@@ -111,7 +111,7 @@ public class Opdef extends DNode {
 			if (arg instanceof OpArgEXPR) {
 				if (eidx < exprs.length) {
 					ENode e = exprs[eidx++];
-					if (e == null || e.getPriority(Env.getEnv()) < arg.getPriority())
+					if (e == null || e.getPriority() < arg.getPriority())
 						sb.append('(').append(e).append(')');
 					else
 						sb.append(e).append(' ');
@@ -145,33 +145,34 @@ public class Opdef extends DNode {
 		methods += (Method⇑)new SymbolRef<Method>(m);
 	}
 
-	public Symbol resolveMethod(Env env, ENode expr) {
+	public Symbol resolveMethod(ENode expr) {
+		StdTypes tenv = getEnv().tenv;
 		ENode[] args = expr.getEArgs();
-		ResInfo info = new ResInfo(env, expr, this.sname, ResInfo.noStatic).match(Method.class);
+		ResInfo info = new ResInfo(expr, this.sname, ResInfo.noStatic).match(Method.class);
 		Type[] tps = new Type[args.length-1];
 		for (int i=0; i < tps.length; i++) {
-			tps[i] = args[i+1].getType(env);
+			tps[i] = args[i+1].getType();
 			tps[i].checkResolved();
 		}
-		CallType mt = new CallType(args[0].getType(env), null, tps, env.tenv.tpAny, false);
-		if (PassInfo.resolveBestMethodR(args[0].getType(env),info,mt)) {
+		CallType mt = new CallType(args[0].getType(), null, tps, tenv.tpAny, false);
+		if (PassInfo.resolveBestMethodR(args[0].getType(),info,mt)) {
 			DNode dn = info.resolvedDNode();
 			if (dn instanceof Method && dn.body instanceof CoreExpr) {
-				CoreOperation cop = ((CoreExpr)dn.body).getCoreOperation(env);
+				CoreOperation cop = ((CoreExpr)dn.body).getCoreOperation();
 				if (cop != null)
 					return cop.symbol;
 			}
 			return info.resolvedSymbol();
 		}
-		info = new ResInfo(env, expr, this.sname, 0).match(Method.class);
+		info = new ResInfo(expr, this.sname, 0).match(Method.class);
 		tps = new Type[args.length];
 		for (int i=0; i < tps.length; i++)
-			tps[i] = args[i].getType(env);
-		mt = new CallType(null, null, tps, env.tenv.tpAny, false);
+			tps[i] = args[i].getType();
+		mt = new CallType(null, null, tps, tenv.tpAny, false);
 		if (PassInfo.resolveBestMethodR(this,info,mt)) {
 			DNode dn = info.resolvedDNode();
 			if (dn instanceof Method && dn.body instanceof CoreExpr) {
-				CoreOperation cop = ((CoreExpr)dn.body).getCoreOperation(env);
+				CoreOperation cop = ((CoreExpr)dn.body).getCoreOperation();
 				if (cop != null)
 					return cop.symbol;
 			}
@@ -303,7 +304,7 @@ public final class OpArgOPER extends OpArgument {
 
 	public OpArgOPER() {
 		this.symbol = new Symbol();
-		this.symbol.setUUID(null, "");
+		this.symbol.setUUID("");
 	}
 
 	public String toString() { "OPER "+symbol.sname }

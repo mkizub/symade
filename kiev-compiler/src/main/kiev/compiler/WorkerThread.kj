@@ -1,0 +1,53 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.compiler;
+import syntax kiev.Syntax;
+
+import kiev.transf.*;
+
+import java.util.IdentityHashMap;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.lang.management.*;
+
+
+public final class WorkerThread extends EnvThread {
+
+	final
+	public int			worker_id;
+	public int			be_pass_no;
+
+	public WorkerThread(WorkerThreadGroup wthg, Runnable r, String name, int id) {
+		super(wthg, r, name+"-thread-"+id);
+		this.worker_id = id;
+	}
+
+	public void run() {
+		WorkerThreadGroup wthg = (WorkerThreadGroup)getThreadGroup();
+		if (this.theEnv != wthg.theEnv)
+			this.theEnv = wthg.theEnv;
+		if (this.semantic_context != wthg.semantic_context)
+			this.semantic_context = wthg.semantic_context;
+		if (this.bend_context != wthg.bend_context)
+			this.bend_context = wthg.bend_context;
+		Transaction tr = wthg.transaction;
+		try {
+			super.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+		assert (tr == wthg.transaction);
+	}
+}
+

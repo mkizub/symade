@@ -11,7 +11,9 @@
 package kiev.be.java15;
 import syntax kiev.Syntax;
 
+import kiev.transf.PluginNodeProcessor;
 import kiev.dump.DumpFactory;
+import kiev.bytecode.Classpath;
 
 /**
  * @author Maxim Kizub
@@ -20,8 +22,16 @@ import kiev.dump.DumpFactory;
  */
 
 public class JEnvFactory implements BEndEnvFactory {
+	private String classpath;
+	private int targetJVM;
+	public JEnvFactory(String classpath, int targetJVM) {
+		if (classpath == null)
+			classpath = System.getProperty("java.class.path");
+		this.classpath = classpath;
+		this.targetJVM = targetJVM;
+	}
 	public BEndEnv makeBEndEnv(Env env) {
-		return new JEnv(env);
+		return new JEnv(env, classpath, targetJVM);
 	}
 }
 
@@ -29,6 +39,11 @@ public final class JEnv implements BEndEnv {
 
 	public final Env env;
 	public final StdTypes vtypes;
+	public final int targetJVM;
+	public final Classpath classpath;
+
+	/** Hashtable of all defined and loaded classes */
+	private Hash<String> classHashOfFails;
 
 	private JTypeEnv jtypes;
 	private OpCodeRules opcodeRules;
@@ -38,10 +53,17 @@ public final class JEnv implements BEndEnv {
 	private Method clazzStringBufferToString;
 	private Method clazzStringBufferInit;
 
-	public JEnv(Env env) {
+	public JEnv(Env env, String cp, int targetJVM) {
 		this.env = env;
 		this.vtypes = env.getTypeEnv();
+		this.targetJVM = targetJVM;
+		this.classpath = new kiev.bytecode.Classpath(env,cp,targetJVM);
+		this.classHashOfFails = new Hash<String>();
 		BEndFunc.init(this);
+	}
+
+	public PluginNodeProcessor getProcessor() {
+		(PluginNodeProcessor)env.getNodeProcessor()
 	}
 
 	public void generateFile(FileUnit fu) {
@@ -55,6 +77,10 @@ public final class JEnv implements BEndEnv {
 				return true;
 			}
 		});
+	}
+
+	public void cleanupHashOfFails() {
+		classHashOfFails.clear();
 	}
 
 	public JTypeEnv getJTypeEnv() {
@@ -81,21 +107,45 @@ public final class JEnv implements BEndEnv {
 	}
 	public Method getMthStringBufferToString() {
 		if (this.clazzStringBufferToString == null)
-			this.clazzStringBufferToString = getClsStringBuffer().resolveMethod(this.env,"toString",vtypes.tpString);
+			this.clazzStringBufferToString = getClsStringBuffer().resolveMethod("toString",vtypes.tpString);
 		return this.clazzStringBufferToString;
 	}
 	public Method getMthStringBufferInit() {
 		if (this.clazzStringBufferInit == null)
-			this.clazzStringBufferInit = getClsStringBuffer().resolveMethod(this.env,null,vtypes.tpVoid);
+			this.clazzStringBufferInit = getClsStringBuffer().resolveMethod(null,vtypes.tpVoid);
 		return this.clazzStringBufferInit;
 	}
 
+
+	public boolean existsTypeDecl(String qname) {
+		if (qname == "") return true;
+		// Check class is already loaded
+		if (classHashOfFails.get(qname) != null) return false;
+		DNode dn = env.resolveGlobalDNode(qname);
+		if (dn instanceof TypeDecl)
+			return true;
+		// Check if not loaded
+		return this.classpath.exists(qname.replace('·','/'));
+	}
+
+	public byte[] loadClazzFromClasspath(String name) {
+		env.reportDebug().log("Loading data for clazz {}", name);
+
+		byte[] data = this.classpath.read(name);
+
+		if (data == null || data.length == 0)
+			trace(getProcessor().traceBytecodeRead, "Data for clazz "+name+" not found");
+		else
+			trace(getProcessor().traceBytecodeRead, "Data for clazz "+name+" loaded");
+
+		return data;
+	}
 
 	public DNode loadDecl(ClazzName name) {
 		if (name.name.length() == 0) return this.env.root;
 		// Check class is already loaded
 		String qname = name.name.toString().replace('.','·');
-		if (env.isInHashOfFails(qname)) return null;
+		if (classHashOfFails.get(qname) != null) return null;
 		DNode cl = this.env.resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
@@ -103,24 +153,48 @@ public final class JEnv implements BEndEnv {
 		else if (cl instanceof TypeDecl && cl.isTypeDeclNotLoaded())
 			cl = actuallyLoadDecl(name);
 		if (cl == null)
-			env.addToHashOfFails(qname);
+			classHashOfFails.put(qname);
 		return cl;
+	}
+
+	public DNode loadAnyDecl(String qname) {
+		if (qname.length() == 0)
+			return env.root;
+		// Check class is already loaded
+		DNode dn = env.resolveGlobalDNode(qname);
+		// Load if not loaded or not resolved
+		if (dn == null)
+			dn = actuallyLoadDecl(qname);
+		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded()) {
+			if (dn instanceof Struct)
+				dn = actuallyLoadDecl((Struct)dn);
+			else
+				dn = actuallyLoadDecl(dn.qname());
+		}
+		if (dn == null)
+			classHashOfFails.put(qname);
+		return dn;
 	}
 
 	/** Actually load class from specified file and dir */
 	public DNode actuallyLoadDecl(String qname) {
+		if (classHashOfFails.get(qname) != null)
+			return null;
 		int p = qname.lastIndexOf('·');
 		if (p < 0)
 			return actuallyLoadDecl(ClazzName.fromToplevelName(this,qname));
 		String pname = qname.substring(0,p);
-		DNode dn = this.env.loadAnyDecl(pname);
+		DNode dn = this.loadAnyDecl(pname);
 		if (dn == null)
 			throw new RuntimeException("Cannot find class/package "+pname.replace('·','.'));
 		// maybe an inner class is already loaded by outer class
 		DNode cl = this.env.resolveGlobalDNode(qname);
 		if (cl != null && !cl.isTypeDeclNotLoaded())
 			return cl;
-		return actuallyLoadDecl(ClazzName.fromOuterAndName(dn, qname.substring(p+1)));
+		dn = actuallyLoadDecl(ClazzName.fromOuterAndName(dn, qname.substring(p+1)));
+		if (dn == null)
+			classHashOfFails.put(qname);
+		return dn;
 	}
 
 	/** Actually load class from specified file and dir */
@@ -147,13 +221,13 @@ public final class JEnv implements BEndEnv {
 
 		long curr_time = 0L, diff_time = 0L;
 		diff_time = curr_time = System.currentTimeMillis();
-		byte[] data = this.env.loadClazzFromClasspath(name.bytecode_name);
+		byte[] data = this.loadClazzFromClasspath(name.bytecode_name);
 		if (data == null)
 			return null;
 		DNode td = null;
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
-			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
+			env.reportDebug().log("Parsing XML data for clazz {}", name);
 			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, env.getEnvContext(), data, name.src_name.toString(), pkg);
 			if (roots != null) {
 				foreach (INode root; roots) {
@@ -163,14 +237,14 @@ public final class JEnv implements BEndEnv {
 						if (prj.compilationUnits.indexOf(cu) < 0)
 							prj.compilationUnits += cu;
 					}
-					Kiev.runProcessorsOn((ASTNode)root.asANode());
+					env.runProcessorsOn((ASTNode)root.asANode());
 				}
 			}
 			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
 		}
 		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
-			trace(kiev.bytecode.Clazz.traceRules,"Parsing .class data for clazz "+name);
-			clazz = new kiev.bytecode.Clazz();
+			env.reportDebug().log("Parsing .class data for clazz {}", name);
+			clazz = new kiev.bytecode.Clazz(env);
 			clazz.readClazz(data);
 		}
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
@@ -181,13 +255,12 @@ public final class JEnv implements BEndEnv {
 		}
 		if (td != null) {
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose )
-				Kiev.reportInfo("Loaded "+(
-					td instanceof KievPackage ? "package   ":
-					td.isInterface()          ? "interface ":
-					td instanceof KievSyntax  ? "syntax    ":
-					                            "class     "
-					)+name,diff_time);
+			Compiler.reportProgress(env, "Loaded "+(
+				td instanceof KievPackage ? "package  ":
+				td.isInterface()          ? "interface":
+				td instanceof KievSyntax  ? "syntax   ":
+											"class    "
+				), name, diff_time);
 		}
 		return td;
 	}

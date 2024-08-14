@@ -276,13 +276,13 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 			return;
 		}
 		ENode e = (ENode)node;
-		Opdef opdef = e.getFakeOpdef(npfactory.env);
+		Opdef opdef = e.getFakeOpdef();
 		if (opdef == null) {
 			DNode dn = e.dnode;
 			if (dn == null)
-				dn = e.getOperation(npfactory.env);
+				dn = e.getOperation();
 			if (dn instanceof Method)
-				opdef = npfactory.kiev_stx.getOpdefForMethod(npfactory.env, (Method)dn);
+				opdef = npfactory.kiev_stx.getOpdefForMethod((Method)dn);
 		}
 		if (opdef == null) {
 			dst_node.add(new KievETokenNode("("));
@@ -296,7 +296,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 		foreach (OpArgument arg; opdef.args) {
 			if (arg instanceof OpArgEXPR) {
 				ENode a = (ENode)e.getVal(e.getAttrSlot(arg.attr_name));
-				if (a == null || a.getPriority(npfactory.env) < arg.getPriority()) {
+				if (a == null || a.getPriority() < arg.getPriority()) {
 					dst_node.add(new KievETokenNode("("));
 					addExpr(a);
 					dst_node.add(new KievETokenNode(")"));
@@ -418,7 +418,7 @@ public class KievExprNode extends ANode {
 		unsaved = true;
 		try {
 			KievExprNode expr = new Copier().copyFull(this);
-			ASTExprParser pst = new ASTExprParser(Env.getEnv(), Env.ctxSyntaxScope(projector.src_node).getAllOpdefs(), expr.nodes);
+			ASTExprParser pst = new ASTExprParser(getEnv(), Env.ctxSyntaxScope(projector.src_node).getAllOpdefs(), expr.nodes);
 			List<ENode> results = pst.parseExpr();
 			if (results.length() == 0) {
 				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
@@ -515,15 +515,15 @@ public class KievETokenNode extends ANode implements ASTToken {
 		return base_kind == ETokenKind.MAYBE_OPERATOR || base_kind == ETokenKind.EXPL_OPERATOR || base_kind == ETokenKind.MAYBE_IDENTIFIER;
 	}
 
-	public TypeRef asType(Env env) {
+	public TypeRef asType() {
 		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
 		if (base_kind == ETokenKind.TYPE_DECL && value instanceof TypeDecl)
-			return new TypeNameRef(pos, text, ((TypeDecl)value).getType(env));
+			return new TypeNameRef(pos, text, ((TypeDecl)value).getType());
 		return null;
 	}
 
-	public DNode asScope(Env env) {
+	public DNode asScope() {
 		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
 		if ((base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL) && value instanceof DNode)
@@ -531,7 +531,7 @@ public class KievETokenNode extends ANode implements ASTToken {
 		return null;
 	}
 
-	public ENode asExpr(Env env) {
+	public ENode asExpr() {
 		guessKind();
 		if (value instanceof ConstExpr)
 			return (ENode)value;
@@ -616,7 +616,7 @@ public class KievETokenNode extends ANode implements ASTToken {
 			this.base_kind = ETokenKind.MAYBE_OPERATOR;
 
 		// resolve in the path of scopes
-		ResInfo info = new ResInfo(Env.getEnv(),this,text);
+		ResInfo info = new ResInfo(this,text);
 		if (PassInfo.resolveNameR(this,info)) {
 			if (info.resolvedSymbol().parent() instanceof OpArgOPER) {
 				this.base_kind = ETokenKind.MAYBE_OPERATOR;

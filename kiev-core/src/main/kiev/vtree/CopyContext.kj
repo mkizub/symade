@@ -19,7 +19,7 @@ public class Copier implements CopyContext {
 	private final IdentityHashMap<INode,INode> map = new IdentityHashMap<INode,INode>();
 
 	public Copier() {
-		this.nodeContext = Kiev.getSemanticContext();
+		this.nodeContext = Env.getSemanticContext();
 	}
 
 	public Copier(ANodeContext nodeContext) {

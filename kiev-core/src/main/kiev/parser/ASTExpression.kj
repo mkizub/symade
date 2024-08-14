@@ -28,20 +28,20 @@ public class ASTExpression extends ENode {
 
 	public ASTExpression() {}
 
-	public int getPriority(Env env) { return 256; }
+	public int getPriority() { return 256; }
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		// scan tokens, join qualified names
 		ANode[]	nodes = this.nodes;
 		for (int i=0; i < nodes.length-2; i++) {
 			ANode n0 = nodes[i];
-			if (n0 instanceof EToken && n0.asScope(env) instanceof KievPackage) {
+			if (n0 instanceof EToken && n0.asScope() instanceof KievPackage) {
 				ANode n1 = nodes[i+1];
 				if (n1 instanceof EToken && n1.ident == ".") {
 					ANode n2 = nodes[i+2];
 					if (n2 instanceof EToken && n2.isIdentifier()) {
-						KievPackage scope = (KievPackage)n0.asScope(env);
-						ResInfo info = new ResInfo(env,n2,n2.ident,ResInfo.noSyntaxContext|ResInfo.noForwards);
+						KievPackage scope = (KievPackage)n0.asScope();
+						ResInfo info = new ResInfo(n2,n2.ident,ResInfo.noSyntaxContext|ResInfo.noForwards);
 						if (!scope.resolveNameR(info))
 							continue;
 						DNode dn = info.resolvedDNode();
@@ -74,8 +74,8 @@ public class ASTExpression extends ENode {
 		return true;
 	}
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
-		ENode e = parseExpr(env);
+	public void preResolveOut(INode parent, AttrSlot slot) {
+		ENode e = parseExpr();
 		if (e != null) {
 			e = e.closeBuild();
 			if (isPrimaryExpr())
@@ -91,21 +91,21 @@ public class ASTExpression extends ENode {
         return sb.toString();
     }
 
-	public ENode parseExpr(Env env) {
-		ASTExprParser pst = new ASTExprParser(env, Env.ctxSyntaxScope(this).getAllOpdefs(), this.nodes);
+	public ENode parseExpr() {
+		ASTExprParser pst = new ASTExprParser(getEnv(), Env.ctxSyntaxScope(this).getAllOpdefs(), this.nodes);
 		List<ENode> results = pst.parseExpr();
 		if (results.length() == 0) {
 			StringBuffer msg = new StringBuffer("Expression: '"+this+"' cannot be resolved using defined operators");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
-			Kiev.reportError(this, msg.toString());
+			reportError().log(msg.toString());
 			return null;
 		}
 		if (results.length() > 1) {
 			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be resolved as:\n");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
-			Kiev.reportError(this, msg.toString());
+			reportError().log(msg.toString());
 			return null;
 		}
 		return (ENode)results.head();

@@ -18,15 +18,15 @@ import syntax kiev.Syntax;
  */
 
 public abstract class BackendProcessor extends AbstractProcessor implements Constants {
-	
+
 	private KievBackend backend;
-	
+
 	BackendProcessor(Env env, int id, KievBackend backend) {
 		super(env, id);
 		this.backend = backend;
 	}
 	public boolean isEnabled() {
-		return this.backend == KievBackend.Generic || this.backend == Kiev.useBackend;
+		return this.backend == KievBackend.Generic || this.backend == getProcessor().genBackend;
 	}
 	public boolean isDisabled() {
 		return !isEnabled();

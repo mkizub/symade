@@ -74,10 +74,10 @@ public final class EToken extends ENode implements ASTToken {
 	public EToken() {
 		this.base_kind = ETokenKind.UNKNOWN;
 	}
-	public EToken(Token t, ETokenKind kind) {
-		this.base_kind = kind;
-		set(t);
-	}
+//	public EToken(Token t, ETokenKind kind) {
+//		this.base_kind = kind;
+//		set(t);
+//	}
 	public EToken(long pos, String ident, ETokenKind kind) {
 		this.base_kind = kind;
 		this.pos = pos;
@@ -112,17 +112,17 @@ public final class EToken extends ENode implements ASTToken {
 		return this.ident;
 	}
 
-	public int getPriority(Env env) { return 256; }
+	public int getPriority() { return 256; }
 
-	public void set(Token t) {
-        pos = t.getPos();
-		if (t.image.startsWith("#id\"")) {
-			this.ident = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
-			this.base_kind = ETokenKind.EXPL_IDENTIFIER;
-		} else {
-			this.ident = t.image;
-		}
-	}
+//	public void set(Token t) {
+//        pos = t.getPos();
+//		if (t.image.startsWith("#id\"")) {
+//			this.ident = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+//			this.base_kind = ETokenKind.EXPL_IDENTIFIER;
+//		} else {
+//			this.ident = t.image;
+//		}
+//	}
 
 	public void setText(String text) {
 		this.value = null;
@@ -148,15 +148,15 @@ public final class EToken extends ENode implements ASTToken {
 		return base_kind == ETokenKind.MAYBE_OPERATOR || base_kind == ETokenKind.EXPL_OPERATOR || base_kind == ETokenKind.MAYBE_IDENTIFIER;
 	}
 
-	public TypeRef asType(Env env) {
+	public TypeRef asType() {
 		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
 		if (base_kind == ETokenKind.TYPE_DECL && value instanceof TypeDecl)
-			return new TypeNameRef(pos, ident, ((TypeDecl)value).getType(env));
+			return new TypeNameRef(pos, ident, ((TypeDecl)value).getType());
 		return null;
 	}
 
-	public DNode asScope(Env env) {
+	public DNode asScope() {
 		if (base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.MAYBE_IDENTIFIER)
 			guessKind();
 		if ((base_kind == ETokenKind.TYPE_DECL || base_kind == ETokenKind.SCOPE_DECL) && value instanceof DNode)
@@ -164,7 +164,7 @@ public final class EToken extends ENode implements ASTToken {
 		return null;
 	}
 
-	public ENode asExpr(Env env) {
+	public ENode asExpr() {
 		return this;
 	}
 
@@ -192,7 +192,7 @@ public final class EToken extends ENode implements ASTToken {
 			this.base_kind = ETokenKind.MAYBE_OPERATOR;
 
 		// resolve in the path of scopes
-		ResInfo info = new ResInfo(Env.getEnv(),this,ident);
+		ResInfo info = new ResInfo(this,ident);
 		if (PassInfo.resolveNameR(this,info)) {
 			if (info.resolvedSymbol().parent() instanceof OpArgOPER) {
 				this.base_kind = ETokenKind.MAYBE_OPERATOR;
@@ -209,14 +209,14 @@ public final class EToken extends ENode implements ASTToken {
 		}
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		String ident = this.ident;
 		if (ident == null || ident == "")
 			throw new CompilerException(this,"Empty token");
 		guessKind();
 		return true;
 	}
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
 		String ident = this.ident;
 		if (ident == null || ident == "")
 			throw new CompilerException(this,"Empty token");
@@ -231,7 +231,7 @@ public final class EToken extends ENode implements ASTToken {
 		}
 
 		// resolve in the path of scopes
-		ResInfo info = new ResInfo(env,this,ident);
+		ResInfo info = new ResInfo(this,ident);
 		if (!PassInfo.resolveNameR((ASTNode)this,info))
 			throw new CompilerException(this,"Unresolved token "+ident);
 		if (info.resolvedSymbol().parent() instanceof OpArgOPER) {
@@ -243,7 +243,7 @@ public final class EToken extends ENode implements ASTToken {
 		if (dn instanceof TypeDecl) {
 			value = dn;
 			TypeDecl td = (TypeDecl)dn;
-			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.getType(env)),parent,slot);
+			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.getType()),parent,slot);
 		}
 		else {
 			replaceWithNodeReWalk(info.buildAccess(this, null, info.resolvedSymbol()).closeBuild(),parent,slot);

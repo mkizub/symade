@@ -1,0 +1,272 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.compiler;
+import syntax kiev.Syntax;
+
+import kiev.transf.*;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
+
+import kiev.dump.DumpFactory;
+import kiev.dump.XMLDumpFilter;
+
+final class InitEnvironmentTask implements Runnable {
+	private final Compiler compiler;
+	InitEnvironmentTask(Compiler compiler) {
+		this.compiler = compiler;
+	}
+	public void run() {
+		FrontendThreadGroup fe_thrg = (FrontendThreadGroup) Thread.currentThread().getThreadGroup();
+		Transaction tr = Transaction.open("Bootstrap", fe_thrg);
+		try {
+			Env env = fe_thrg.getEnv();
+			PluginNodeProcessor processor = compiler.getNodeProcessor();
+			BEndEnvFactory benv_factory = new kiev.be.java15.JEnvFactory(compiler.getCompilerClasspath(), compiler.target);
+			env.InitializeEnv(processor, benv_factory);
+			loadProject(env);
+			processor.initializeCompilerPlugins(env);
+			fe_thrg.semantic_context = new SemanticContext(env.getEnvContext());
+			fe_thrg.syntax_context = fe_thrg.semantic_context;
+
+		} catch (Throwable t) {
+			t.printStackTrace();
+		} finally {
+			tr.close(fe_thrg);
+		}
+	}
+
+	private void loadProject(Env env) {
+		if (compiler.project_file == null)
+			return;
+		File pf = new File(compiler.project_file);
+		if (pf.exists()) {
+			Project prj = (Project)DumpFactory.getXMLDumper().loadProject(env, env.getEnvContext(), pf);
+			prj.projectNativeFile = pf;
+			if (compiler.root_dir == null)
+				prj.projectNativeRootDir = new File(System.getProperty("user.dir"));
+			else
+				prj.projectNativeRootDir = new File(compiler.root_dir);
+			env.proj = prj;
+			prj.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) {
+					if (n instanceof CompilationUnit) {
+						CompilationUnit cu = (CompilationUnit)n;
+						if (cu instanceof FileUnit)
+							cu.is_project_file = true;
+						if (prj.compilationUnits.indexOf(cu) < 0)
+							prj.compilationUnits += cu;
+						return false;
+					}
+					return true;
+				}
+			});
+		}
+	}
+}
+
+final class DumpProjectTask extends XMLDumpFilter implements Runnable {
+
+	DumpProjectTask() {
+		super("api");
+	}
+
+	public void run() {
+		WorkerThreadGroup wr_thrg = (WorkerThreadGroup) Thread.currentThread().getThreadGroup();
+		Transaction tr = Transaction.open("Dump project file", wr_thrg);
+		try {
+			dumpProjectFile(wr_thrg.getEnv());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		} finally {
+			tr.close(wr_thrg);
+		}
+	}
+
+	static final String COPYRIGHT =
+			"\n"+
+			" Copyright (c) 2005-2007 UAB \"MAKSINETA\".\n"+
+			" All rights reserved. This program and the accompanying materials\n"+
+			" are made available under the terms of the Common Public License Version 1.0\n"+
+			" which accompanies this distribution, and is available at\n"+
+			" http://www.eclipse.org/legal/cpl-v10.html\n"+
+			" \n"+
+			" Contributors:\n"+
+			"     \"Maxim Kizub\" mkizub@symade.com - initial design and implementation\n";
+
+	private void dumpProjectFile(Env env) {
+		Project proj = env.getProject();
+		File pf = proj.projectNativeFile;
+		if (pf == null || !pf.canWrite())
+			return;
+		INode[] nodes = { proj };
+		Writer swr = new StringWriter();
+		DumpFactory.getXMLDumper().dumpToXMLStream(env, (XMLDumpFilter)this, COPYRIGHT, nodes, swr);
+		swr.close();
+		String content = swr.toString();
+		Writer fwr = new OutputStreamWriter(new FileOutputStream(pf), "UTF-8");
+		fwr.write(content);
+		fwr.close();
+	}
+
+	public boolean ignoreAttr(INode parent, AttrSlot attr) {
+		if (parent instanceof FileUnit) {
+			if (attr.name == "fname" || attr.name == "ftype")
+				return false;
+			return true;
+		}
+		return super.ignoreAttr(parent, attr);
+	}
+	public boolean ignoreNode(INode parent, AttrSlot attr, INode node) {
+		if (node instanceof FileUnit)
+			return !node.is_project_file;
+		if (node instanceof DirUnit)
+			return !node.hasProjectFiles();
+		return super.ignoreNode(parent, attr, node);
+	}
+}
+
+
+final class ParseSourceFileTask implements Callable<String> {
+
+	private final Compiler compiler;
+	private final CompilerParseInfo cpi;
+
+	ParseSourceFileTask(Compiler compiler, CompilerParseInfo cpi) {
+		this.compiler = compiler;
+		this.cpi = cpi;
+	}
+
+	public String call() {
+		final WorkerThread wth = (WorkerThread) Thread.currentThread();
+		final FrontendThreadGroup fe_thrg = (FrontendThreadGroup) wth.getThreadGroup();
+		final ANodeContext syntax_context = fe_thrg.syntax_context;
+		final ANodeContext semantic_context = fe_thrg.semantic_context;
+		final Env theEnv = wth.theEnv;
+
+		String cpiFile = cpi.fname.replace('/', File.separatorChar);
+		String curFile = cpiFile;
+		if (!compiler.prefer_source && compiler.btd_dir != null && !cpiFile.toLowerCase().endsWith(".btd")) {
+			String btdFile = cpiFile;
+			int ext = btdFile.lastIndexOf('.');
+			if (ext > 0)
+				btdFile = compiler.btd_dir + "/" + btdFile.substring(0,ext)+".btd";
+			else
+				btdFile = compiler.btd_dir + "/" + btdFile+".btd";
+			long btd_time = theEnv.makeNativeFile(btdFile).lastModified();
+			long cpi_time = theEnv.makeNativeFile(cpiFile).lastModified();
+			if (btd_time > cpi_time)
+				curFile = btdFile;
+		}
+		ProjectSyntaxInfo psi = cpi.getProjectSyntaxInfo();
+		try {
+			long curr_time = 0L, diff_time = 0L;
+			diff_time = curr_time = System.currentTimeMillis();
+			wth.current_file = cpiFile;
+			if (curFile.toLowerCase().endsWith(".btd")) {
+				String fdir = theEnv.makeNativeFile(cpiFile).getParent();
+				File f = theEnv.makeNativeFile(curFile);
+				INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(theEnv, fdir, f, cpi.fdata);
+				if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
+					ASTNode root = (ASTNode)roots[0];
+					if !(root instanceof FileUnit) {
+						FileUnit fu = FileUnit.makeFile(DumpFactory.getRelativePath(f), theEnv.getProject(), false);
+						fu.current_syntax = new ProjectSyntaxFactoryBinDump();
+						fu.members += root;
+						cpi.fu = fu;
+					} else {
+						cpi.fu = (FileUnit)root;
+					}
+					cpi.fu.source_timestamp = f.lastModified();
+					//Kiev.runProcessorsOn(cpi.fu);
+				}
+			}
+			//else if (psi != null && psi.parser != null) {
+			//	File f = theEnv.makeNativeFile(curFile);
+			//	TextParser parser = (TextParser)psi.parser.makeTextProcessor();
+			//	INode[] roots = parser.parse(f,  theEnv);
+			//	if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
+			//		ASTNode root = (ASTNode)roots[0];
+			//		if !(root instanceof FileUnit) {
+			//			FileUnit fu = FileUnit.makeFile(DumpFactory.getRelativePath(f), theEnv.getProject(), false);
+			//			fu.ftype = psi.file_type;
+			//			fu.current_syntax = psi.syntax;
+			//			fu.members += root;
+			//			cpi.fu = fu;
+			//		} else {
+			//			cpi.fu = (FileUnit)root;
+			//		}
+			//		cpi.fu.source_timestamp = f.lastModified();
+			//	}
+			//}
+			else if (curFile.toLowerCase().endsWith(".xml")) {
+				File f = theEnv.makeNativeFile(curFile);
+				INode[] roots = DumpFactory.getXMLDumper().loadFromXmlFile(theEnv, syntax_context, f, cpi.fdata);
+				if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
+					ASTNode root = (ASTNode)roots[0];
+					if !(root instanceof FileUnit) {
+						FileUnit fu = FileUnit.makeFile(DumpFactory.getRelativePath(f), theEnv.getProject(), false);
+						fu.ftype = "text/xml/tree-dump";
+						fu.current_syntax = new ProjectSyntaxFactoryXmlDump();
+						fu.members += root;
+						cpi.fu = fu;
+					} else {
+						cpi.fu = (FileUnit)root;
+					}
+					cpi.fu.source_timestamp = f.lastModified();
+					//Kiev.runProcessorsOn(cpi.fu);
+				}
+			} else {
+				java.io.InputStreamReader file_reader = null;
+				char[] file_chars = new char[8196];
+				int file_sz = 0;
+				try {
+					if (cpi.fdata != null)
+						file_reader = new InputStreamReader(new ByteArrayInputStream(cpi.fdata), "UTF-8");
+					else
+						file_reader = new InputStreamReader(new FileInputStream(curFile), "UTF-8");
+					for (;;) {
+						int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
+						if (r < 0)
+							break;
+						file_sz += r;
+						if (file_sz >= file_chars.length) {
+							char[] tmp = new char[file_chars.length + 8196];
+							System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
+							file_chars = tmp;
+						}
+					}
+				} finally {
+					if (file_reader != null) file_reader.close();
+				}
+				int BOM = 0;
+				if (file_chars.length > 0 && file_chars[0] == '\uFEFF')
+					BOM = 1;
+				//java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, BOM, file_sz-BOM);
+				diff_time = curr_time = System.currentTimeMillis();
+				Parser p = new Parser(theEnv, semantic_context, syntax_context,
+						file_chars, BOM, file_sz-BOM);
+				cpi.fu = p.FileUnit(cpi.fname);
+				cpi.fu.source_timestamp = theEnv.makeNativeFile(curFile).lastModified();
+				//cpi.fu.current_syntax = "stx-fmt·syntax-for-java";
+				//bis.close();
+			}
+			diff_time = System.currentTimeMillis() - curr_time;
+			Compiler.reportProgress(theEnv, "Parsed  file  ", cpi.fname, diff_time);
+			System.out.flush();
+		} catch (Exception e) {
+			cpi.fu.reportError().cause(e).log();
+		} finally {
+			wth.current_file = null;
+		}
+		return null;
+	}
+}

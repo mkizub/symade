@@ -310,6 +310,11 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 		this.symbol = new Symbol();
 	}
 
+	public DNode(ANodeContext context) {
+		super(context);
+		this.symbol = new Symbol();
+	}
+
 	public DNode(ANodeContext context, Symbol symbol) {
 		super(context);
 		this.symbol = symbol;
@@ -428,7 +433,7 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 			try {
 				m.verify(this,DNode.nodeattr$metas);
 			} catch (CompilerException e) {
-				Kiev.reportError(m, e);
+				getEnv().reportError().at(m).cause(e).log();
 				continue;
 			}
 		}
@@ -454,7 +459,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public ASTNode[] getContainerMembers() { ASTNode.emptyArray }
 
-	public abstract MetaType getMetaType(Env env);
+	public abstract MetaType getMetaType();
 
 	public boolean isClazz() {
 		return false;
@@ -529,7 +534,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.super_types.delAll();
 	}
 
-	public Type getType(Env env) { return this.getMetaType(env).getDefType(); }
+	public Type getType() { return this.getMetaType().getDefType(); }
 	public Struct getStruct() { return null; }
 
 	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
@@ -540,9 +545,9 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public String toString() { return sname; }
 
-	public this.type checkResolved(Env env) {
+	public this.type checkResolved() {
 		if( isTypeDeclNotLoaded() ) {
-			TypeDecl td = env.loadTypeDecl(this);
+			TypeDecl td = getEnv().loadTypeDecl(this);
 			if (td.isTypeDeclNotLoaded())
 				throw new RuntimeException("TypeDecl "+this+" unresolved");
 			return td;
@@ -550,7 +555,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return this;
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		setFrontEndPassed();
 		return true;
 	}
@@ -558,25 +563,25 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final boolean instanceOf(TypeDecl tdecl) {
 		if (tdecl == null) return false;
 		if (this == tdecl) return true;
-		foreach (TypeRef st; super_types; st.getTypeDecl(Env.getEnv()) != null) {
-			if (st.getTypeDecl(Env.getEnv()).instanceOf(tdecl))
+		foreach (TypeRef st; super_types; st.getTypeDecl() != null) {
+			if (st.getTypeDecl().instanceOf(tdecl))
 				return true;
 		}
 		return false;
 	}
 
-	public Field resolveField(Env env, String name) {
-		return resolveField(env,name,true);
+	public Field resolveField(String name) {
+		return resolveField(name,true);
 	}
 
-	public Field resolveField(Env env, String name, boolean fatal) {
-		this = checkResolved(env);
+	public Field resolveField(String name, boolean fatal) {
+		this = checkResolved();
 		if (this instanceof ComplexTypeDecl) {
 			foreach (Field f; ((ComplexTypeDecl)this).members; f.sname == name)
 				return f;
 		}
-		foreach (TypeRef tr; this.super_types; tr.getTypeDecl(env) != null) {
-			Field f = tr.getTypeDecl(env).resolveField(env, name, false);
+		foreach (TypeRef tr; this.super_types; tr.getTypeDecl() != null) {
+			Field f = tr.getTypeDecl().resolveField(name, false);
 			if (f != null)
 				return f;
 		}
@@ -585,14 +590,14 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return null;
 	}
 
-	public Method resolveMethod(Env env, String name, Type ret, Type... va_args) {
+	public Method resolveMethod(String name, Type ret, Type... va_args) {
 		Type[] args = new Type[va_args.length];
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
 		CallType mt = new CallType(null,null,args,ret,false);
-		ResInfo info = new ResInfo(env,this,name,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
-		if (!this.getType(env).resolveCallAccessR(info, mt)) {
-			info = new ResInfo(env,this,name,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
+		ResInfo info = new ResInfo(this,name,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
+		if (!this.getType().resolveCallAccessR(info, mt)) {
+			info = new ResInfo(this,name,ResInfo.noForwards|ResInfo.noSyntaxContext).match(Method.class);
 			if (!this.resolveMethodR(info, mt))
 				throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
 		}
@@ -602,15 +607,15 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public rule resolveNameR(ResInfo info)
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: Resolving name "+info.getName()+" in "+this),
-		checkResolved(info.env),
+		trace(info.debugResolve,"TypeDecl: Resolving name "+info.getName()+" in "+this),
+		checkResolved(),
 		{
-			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in "+this),
+			trace(info.debugResolve,"TypeDecl: resolving in "+this),
 			resolveNameR_1(info) // resolve in this class
 		;
 			info.isSuperAllowed(),
 			info.getPrevSlotName() != "super_types",
-			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in super-class of "+this),
+			trace(info.debugResolve,"TypeDecl: resolving in super-class of "+this),
 			resolveNameR_3(info) // resolve in super-classes
 		}
 	}
@@ -622,9 +627,9 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		TypeRef@ sup_ref;
 	{
 		sup_ref @= super_types,
-		sup_ref.getTypeDecl(info.env) != null,
+		sup_ref.getTypeDecl() != null,
 		info.enterSuper() : info.leaveSuper(),
-		sup_ref.getTypeDecl(info.env).resolveNameR(info)
+		sup_ref.getTypeDecl().resolveNameR(info)
 	}
 
 	public rule resolveMethodR(ResInfo info, CallType mt)
@@ -632,11 +637,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	{
 		info.isStaticAllowed(),
 		info.isSuperAllowed(),
-		checkResolved(info.env),
-		trace(Kiev.debug && Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
+		checkResolved(),
+		trace(info.debugResolve, "Resolving "+info.getName()+" in "+this),
 		supref @= super_types,
 		info.enterSuper() : info.leaveSuper(),
-		supref.getType(info.env).meta_type.tdecl.resolveMethodR(info,mt)
+		supref.getType().meta_type.tdecl.resolveMethodR(info,mt)
 	}
 
 }
@@ -703,7 +708,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		//	}
 		//}
 		this.members.delAll();
-		Env.getEnv().tenv.callbackTypeVersionChanged(this);
+		getTypeEnv().callbackTypeVersionChanged(this);
 	}
 
 	public String qname() {
@@ -734,7 +739,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			res = DFState.makeNewState();
+			res = DFState.makeNewState(dfi.getEnv());
 			dfi.setResult(res_idx, res);
 			return res;
 		}
@@ -770,7 +775,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 	{
 		syn @= members,
 		syn instanceof ScopeOfNames,
-		trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+syn),
+		trace( info.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+syn),
 		((ScopeOfNames)syn).resolveNameR(info)
 	}
 
@@ -779,15 +784,15 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		TypeRef@ supref;
 	{
 		info.isStaticAllowed(),
-		checkResolved(info.env),
-		trace(Kiev.debug && Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
+		checkResolved(),
+		trace(info.debugResolve, "Resolving "+info.getName()+" in "+this),
 		{
 			method @= members,
 			info ?= method.equalsByCast(info.getName(),mt,info.env.tenv.tpVoid,info)
 		;	info.isSuperAllowed(),
 			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),
-			supref.getType(info.env).meta_type.tdecl.resolveMethodR(info,mt)
+			supref.getType().meta_type.tdecl.resolveMethodR(info,mt)
 		}
 	}
 
@@ -797,10 +802,10 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		String qname = this.qname();
 		if (qname == null || qname.indexOf("·") < 0)
 			return null;
-		trace(Kiev.debug && Kiev.debugResolve,"Package: trying to load in "+this);
+		trace(getEnv().debugResolve,"Package: trying to load in "+this);
 		String qn = qname+"·"+name;
-		DNode dn = Env.getEnv().loadAnyDecl(qn);
-		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
+		DNode dn = getEnv().loadAnyDecl(qn);
+		trace(getEnv().debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;
 	}
 
@@ -819,12 +824,13 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 		super(symbol);
 	}
 
-	public MetaType getMetaType(Env env) {
-		synchronized (env.tenv) {
-			MetaType mt = env.tenv.getExistingMetaType(this.symbol);
+	public MetaType getMetaType() {
+		StdTypes tenv = getEnv().tenv;
+		synchronized (tenv) {
+			MetaType mt = tenv.getExistingMetaType(this.symbol);
 			if (mt != null)
 				return mt;
-			return new XMetaType(env.tenv, this, 0);
+			return new XMetaType(tenv, this, 0);
 		}
 	}
 
@@ -838,10 +844,10 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 	public KievPackage(ANodeContext context) {
 		super(context, new Symbol());
 	}
-	public KievPackage(Env env, Symbol symbol) {
-		super(env.getEnvContext(), symbol);
+	public KievPackage(ANodeContext context, Symbol symbol) {
+		super(context, symbol);
 		assert (symbol.isGlobalSymbol());
-		symbol.setUUID(null, "");
+		symbol.setUUID("");
 	}
 
 	public final ASTNode[] getContainerMembers() { this.pkg_members }
@@ -872,9 +878,9 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 		DNode@ dn;
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debug && Kiev.debugResolve,"KievPackage: Resolving name "+info.getName()+" in "+this),
+		trace(info.debugResolve,"KievPackage: Resolving name "+info.getName()+" in "+this),
 		{
-			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in "+this),
+			trace(info.debugResolve,"TypeDecl: resolving in "+this),
 			info ?= this
 		;
 			info @= pkg_members
@@ -892,15 +898,15 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 			if (!Character.isJavaIdentifierPart(name.charAt(i)))
 				return null;
 		}
-		trace(Kiev.debug && Kiev.debugResolve,"Package: trying to load in package "+this);
+		trace(getEnv().debugResolve,"Package: trying to load in package "+this);
 		DNode dn = null;
 		String qn = name;
 		if (this instanceof KievRoot) {
-			dn = Env.getEnv().loadAnyDecl(qn);
+			dn = getEnv().loadAnyDecl(qn);
 		} else {
-			dn = Env.getEnv().loadAnyDecl(qn=(this.qname()+"·"+name));
+			dn = getEnv().loadAnyDecl(qn=(this.qname()+"·"+name));
 		}
-		trace(Kiev.debug && Kiev.debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
+		trace(getEnv().debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;
 	}
 
@@ -908,8 +914,14 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 
 @ThisIsANode(lang=CoreLang, copyable=false)
 public class KievRoot extends KievPackage {
+
+	@AttrBinDumpInfo(ignore=true)
+	@AttrXMLDumpInfo(ignore=true)
+	@nodeData
+	public LVar		thisPar;
+
 	public KievRoot(Env env) {
-		super(env, new Symbol());
+		super(env.getEnvContext(), new Symbol());
 		this.setTypeDeclNotLoaded(false);
 	}
 	public String toString() {

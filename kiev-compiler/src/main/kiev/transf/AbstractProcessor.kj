@@ -12,6 +12,8 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import kiev.compiler.*;
+
 /**
  * @author Maxim Kizub
  *
@@ -31,6 +33,8 @@ public abstract class AbstractProcessor implements Constants {
 	public abstract String getDescr();
 	public abstract void process(ANode node, Transaction tr);
 
+	public PluginNodeProcessor getProcessor() { (PluginNodeProcessor)env.getNodeProcessor() }
+
 	public ANodeContext getContext() { ((WorkerThread)Thread.currentThread()).semantic_context }
 
 	public static String getPropS(String base, String name, String dflt) {
@@ -38,7 +42,7 @@ public abstract class AbstractProcessor implements Constants {
 		String val = System.getProperty(fname,dflt);
 		if (val != null)
 			val = val.trim().intern();
-		trace(Kiev.debug, "Loaded "+fname+" as \""+val+"\"");
+		//env.reportDebug().log("Loaded '{}' as '{}'", fname, val);
 		return val;
 	}
 }

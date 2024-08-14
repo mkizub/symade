@@ -16,14 +16,14 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 	@SymbolRefAutoComplete(scopes={KievPackage})
 	@nodeAttr public KievSyntax⇑∅		super_syntax;
 	@nodeAttr public ASTNode∅			members;
-	
+
 	private Hash<String> allOperators;
 	private Hashtable<Method,Opdef> mapMethodsToOpdefs;
 
 	public KievSyntax() {}
-	
+
 	public final ASTNode[] getContainerMembers() { this.members }
-	
+
 	public String qname() {
 		if (sname == null || sname == "")
 			return null;
@@ -39,13 +39,13 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 			return "<anonymouse>";
 		return q.replace('·','.');
 	}
-	
+
 	public boolean isOperator(String s) {
 		if (allOperators == null)
 			allOperators = addOperators(new Hash<String>());
 		return allOperators.contains(s);
 	}
-	
+
 	public void getAllOpdefs(Vector<COpdef> opdefs) {
 		foreach (Opdef opd; members) {
 			COpdef[] copdefs = opd.compile();
@@ -55,8 +55,8 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		foreach (SymbolRef<KievSyntax> stx; super_syntax; stx.dnode != null)
 			stx.dnode.getAllOpdefs(opdefs);
 	}
-	
-	private void fillOpdefs(Env env, Hashtable<Method,Opdef> map) {
+
+	private void fillOpdefs(Hashtable<Method,Opdef> map) {
 		foreach (Opdef opd; members) {
 			foreach (Method⇑ mr; opd.methods; map.get(mr.dnode) == null) {
 				Method m = mr.dnode;
@@ -64,7 +64,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 					continue;
 				map.put(m, opd);
 				if (m.body instanceof CoreExpr) {
-					CoreOperation cop = ((CoreExpr)m.body).getCoreOperation(env);
+					CoreOperation cop = ((CoreExpr)m.body).getCoreOperation();
 					if (cop != null && map.get(cop) == null)
 						map.put(cop, opd);
 				}
@@ -73,18 +73,18 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		foreach (KievSyntax⇑ sup; super_syntax) {
 			KievSyntax stx = sup.dnode;
 			if (stx != null)
-				stx.fillOpdefs(env, map);
+				stx.fillOpdefs(map);
 		}
 	}
-	
-	public Opdef getOpdefForMethod(Env env, Method m) {
+
+	public Opdef getOpdefForMethod(Method m) {
 		if (mapMethodsToOpdefs == null) {
 			mapMethodsToOpdefs = new Hashtable<Method,Opdef>();
-			fillOpdefs(env, mapMethodsToOpdefs);
+			fillOpdefs(mapMethodsToOpdefs);
 		}
 		return mapMethodsToOpdefs.get(m);
 	}
-	
+
 	protected Hash<String> addOperators(Hash<String> tbl) {
 		foreach (Opdef opd; members; opd.resolved != null) {
 			foreach (OpArgOPER arg; opd.args)
@@ -100,20 +100,20 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		SymbolRef@	super_stx;
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: Resolving name "+info.getName()+" in "+this),
+		trace(info.debugResolve,"KievSyntax: Resolving name "+info.getName()+" in "+this),
 		{
-			trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: resolving in "+this),
+			trace(info.debugResolve,"KievSyntax: resolving in "+this),
 			info ?= this
 		;	// resolve in this syntax
 			info @= members
 		;	// resolve in imports and opdefs
 			n @= members,
 			n instanceof Import && n instanceof ScopeOfNames,
-			trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+n),
+			trace( info.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+n),
 			((ScopeOfNames)n).resolveNameR(info)
 		;
 			info.getPrevSlotName() != "super_syntax",
-			trace(Kiev.debug && Kiev.debugResolve,"KievSyntax: resolving in super-syntax of "+this),
+			trace(info.debugResolve,"KievSyntax: resolving in super-syntax of "+this),
 			super_stx @= super_syntax,
 			super_stx.dnode instanceof KievSyntax,
 			((KievSyntax)super_stx.dnode).resolveNameR(info)
@@ -125,7 +125,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 		SymbolRef<KievSyntax>@	super_stx;
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debug && Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
+		trace(info.debugResolve, "Resolving "+info.getName()+" in "+this),
 		{
 			member @= members,
 			member instanceof Method,

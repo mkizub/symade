@@ -23,14 +23,14 @@ public final view RSynchronizedStat of SynchronizedStat extends RENode {
 	public Var				expr_var;
 	public ENode			body;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(expr,null,env);
-			expr_var = new LVar(pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
-		} catch(Exception e ) { Kiev.reportError(this,e); }
+			resolveENode(expr,null);
+			expr_var = new LVar(pos,"",tenv.tpObject,Var.VAR_LOCAL,0);
+		} catch(Exception e ) { reportError().log(e); }
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
-		} catch(Exception e ) { Kiev.reportError(this,e); }
+			resolveENode(body,tenv.tpVoid);
+		} catch(Exception e ) { reportError().log(e); }
 		setAbrupted(body.isAbrupted());
 		setMethodAbrupted(body.isMethodAbrupted());
 	}
@@ -42,9 +42,9 @@ public final view RWithStat of WithStat extends RENode {
 	public ENode		body;
 	public Var			var_or_field;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(expr,null,env);
+			resolveENode(expr,null);
 			ENode e = expr;
 			switch (e) {
 			case LVarExpr:		var_or_field = ((LVarExpr)e).getVarSafe();	break;
@@ -53,21 +53,21 @@ public final view RWithStat of WithStat extends RENode {
 			case AssignExpr:	e = ((AssignExpr)e).lval;				goto case e;
 			}
 			if (var_or_field == null) {
-				Kiev.reportError(this,"With statement needs variable or field argument");
-				this.replaceWithNodeResolve(env, reqType,body);
+				reportError().log("'with' statement needs variable or field argument");
+				this.replaceWithNodeResolve(reqType,body);
 				return;
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			reportError().log(e);
 			return;
 		}
 
 		boolean is_forward = var_or_field.isForward();
 		if (!is_forward) var_or_field.setForward(true);
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			reportError().log(e);
 		} finally {
 			if (!is_forward) var_or_field.setForward(false);
 		}

@@ -26,14 +26,14 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public		int					max_vars;
 	public		int					index;		// index counter for RuleNode.idx
 
-	public void ruleGenerate(Env env) {
+	public void ruleGenerate() {
 		RuleMethod rm = (RuleMethod)this;
 		if (params.length == 0 || params[0].kind != Var.PARAM_RULE_ENV)
-			rm.params.insert(0, new LVar(rm.pos,namePEnvParam,env.tenv.tpRule,Var.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+			rm.params.insert(0, new LVar(rm.pos,namePEnvParam,tenv.tpRule,Var.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 		ENode b = this.body;
 		if (b instanceof RuleBlock) {
 			RuleBlock rb = (RuleBlock)b;
-			((RRuleBlock)rb).ruleGenerate(env,rm);
+			((RRuleBlock)rb).ruleGenerate(rm);
 			Struct frame = (Struct)rm.block.stats[0];
 			Var pEnv = null;
 			foreach (Var dn; rm.block.stats; dn.sname == namePEnvLVar) {
@@ -41,7 +41,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 				break;
 			}
 			if (pEnv == null) {
-				Kiev.reportError(this, "Cannot find "+namePEnvLVar);
+				reportError().log("Cannot find {}", namePEnvLVar);
 				return;
 			}
 			this.body.walkTree(null,null,new ITreeWalker() {
@@ -49,33 +49,33 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 					if (n instanceof LVarExpr) {
 						Var var = n.getVarSafe();
 						if (rm.localvars.indexOf(var) >= 0) {
-							Field f = frame.resolveField(env,var.sname);
+							Field f = frame.resolveField(var.sname);
 							n.replaceWithNode(new IFldExpr(n.pos, new LVarExpr(n.pos, pEnv), f), parent, slot);
 						}
 					}
 				}
 			});
-			Kiev.runProcessorsOn(this.body);
+			getEnv().runProcessorsOn(this.body);
 		}
 	}
 
-	public void resolveDecl(Env env) {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving rule "+this);
+	public void resolveDecl() {
+		trace(getEnv().debugResolve,"Resolving rule "+this);
 		try {
 			if( body != null ) {
-				if( mtype.ret() ≡ env.tenv.tpVoid ) body.setAutoReturnable(true);
-				resolveENode(body,env.tenv.tpVoid,env);
+				if( mtype.ret() ≡ tenv.tpVoid ) body.setAutoReturnable(true);
+				resolveENode(body,tenv.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( mtype.ret() ≡ env.tenv.tpVoid ) {
+				if( mtype.ret() ≡ tenv.tpVoid ) {
 					block.stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
-					Kiev.reportError(body,"Return requared");
+					body.reportError().log("Return requared");
 				}
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(body,e);
+			body.reportError().log(e);
 		}
 	}
 }
@@ -84,10 +84,10 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 public final view RRuleBlock of RuleBlock extends RENode {
 	public ASTRuleNode		rnode;
 
-	public boolean ruleGenerate(Env env, RuleMethod rule_method) {
-		rnode.rnResolve(env, ((RuleBlock)this), RuleBlock.nodeattr$rnode);
-		rnode.resolve1(env,null,null,false);
-		((RuleBlock)this).generateRuleBlock(env, rule_method);
+	public boolean ruleGenerate(RuleMethod rule_method) {
+		rnode.rnResolve(((RuleBlock)this), RuleBlock.nodeattr$rnode);
+		rnode.resolve1(null,null,false);
+		((RuleBlock)this).generateRuleBlock(rule_method);
 		return false;
 	}
 }

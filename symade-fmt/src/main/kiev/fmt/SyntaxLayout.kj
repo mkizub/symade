@@ -11,6 +11,7 @@
 package kiev.fmt;
 import syntax kiev.Syntax;
 
+import kiev.transf.*;
 import kiev.fmt.common.*;
 
 import kiev.dump.DumpFactory;
@@ -54,9 +55,9 @@ public abstract class ATextSyntax extends DNode implements GlobalDNodeContainer,
 		path @= members
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		this.compiled = null;
-		return super.preResolveIn(env, parent, slot);
+		return super.preResolveIn(parent, slot);
 	}
 
 	public abstract Draw_ATextSyntax getCompiled();
@@ -127,16 +128,16 @@ public final class TopLevelTextSyntax extends ATextSyntax {
 		return compiled;
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		this.compiled = null;
 		if (Env.needResolving(parent_syntax)) {
-			ResInfo info = new ResInfo(env,this,parent_syntax.name).match(ATextSyntax.class);
+			ResInfo info = new ResInfo(this,parent_syntax.name).match(ATextSyntax.class);
 			if (!PassInfo.resolveNameR(this,info))
-				Kiev.reportError(this,"Cannot resolve syntax '"+parent_syntax.name+"'");
+				reportError().log("Cannot resolve syntax '{}'", parent_syntax.name);
 			else if (parent_syntax.symbol != info.resolvedSymbol())
 				parent_syntax.symbol = info.resolvedSymbol();
 		}
-		return super.preResolveIn(env, parent, slot);
+		return super.preResolveIn(parent, slot);
 	}
 
 	public rule resolveNameR(ResInfo path)
@@ -188,16 +189,16 @@ public final class SyntaxNodeTemplate extends DNode {
 
 	@nodeAttr public ASTNode				template;
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) { return false; }
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return false; }
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) { return false; }
+	public boolean preResolveIn(INode parent, AttrSlot slot) { return false; }
+	public boolean mainResolveIn(INode parent, AttrSlot slot) { return false; }
+	public boolean preVerify(INode parent, AttrSlot slot) { return false; }
 
 	public Draw_SyntaxNodeTemplate getCompiled() {
 		Draw_SyntaxNodeTemplate templ = new Draw_SyntaxNodeTemplate();
 		templ.name = this.sname;
 		if (template != null) {
 			templ.template_node = template;
-			templ.dump = DumpFactory.getXMLDumper().serializeToXmlData(Env.getEnv(), new XMLDumpFilter("full"), new ANode[]{template});
+			templ.dump = DumpFactory.getXMLDumper().serializeToXmlData(getEnv(), new XMLDumpFilter("full"), new ANode[]{template});
 		}
 		return templ;
 	}
@@ -218,11 +219,11 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 
 	public SyntaxElemDecl() {}
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
-		super.preResolveOut(env, parent, slot);
+	public void preResolveOut(INode parent, AttrSlot slot) {
+		super.preResolveOut(parent, slot);
 		if (rnode.name == null)
 			return;
-		rnode.resolveSymbol(SeverError.Warning, fun (DNode dn)->boolean {
+		rnode.resolveSymbol(LoggingLevel.WARNING, fun (DNode dn)->boolean {
 			return (dn instanceof Struct && VNodeUtils.isNodeKind((Struct)dn)) || (dn instanceof NodeDecl);
 		});
 	}
@@ -273,14 +274,14 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 		super(new SyntaxNode());
 	}
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
-		super.preResolveOut(env, parent, slot);
+	public void preResolveOut(INode parent, AttrSlot slot) {
+		super.preResolveOut(parent, slot);
 		if (regexp_ok == null)
 			regexp_ok = ".*";
 		try {
 			Pattern.compile(regexp_ok);
 		} catch (PatternSyntaxException e) {
-			Kiev.reportError(this,"Syntax error in ident template pattern: "+regexp_ok);
+			reportError().log("Syntax error in ident template pattern: {}", regexp_ok);
 		}
 		foreach (ConstStringExpr cs; keywords; cs.value != null) {
 			String interned = cs.value.intern();
@@ -339,10 +340,10 @@ public class SyntaxExpectedTemplate extends DNode {
 	@nodeAttr public String				title;
 	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
-		super.preResolveOut(env, parent, slot);
+	public void preResolveOut(INode parent, AttrSlot slot) {
+		super.preResolveOut(parent, slot);
 		foreach (SymbolRef sr; expected_types; Env.needResolving(sr))
-			sr.resolveSymbol(SeverError.Error, fun (DNode dn)->boolean {
+			sr.resolveSymbol(LoggingLevel.ERROR, fun (DNode dn)->boolean {
 				return dn instanceof Struct && VNodeUtils.isNodeKind((Struct)dn)
 					|| dn instanceof SyntaxExpectedTemplate
 					|| dn instanceof SyntaxExpectedType
@@ -487,10 +488,10 @@ public final class SyntaxFuncNewByTemplate extends SyntaxFunc {
 
 	@nodeAttr public SymbolRef∅			expected_types; // ASTNode-s or SyntaxExpectedTemplate-s or SyntaxExpectedType
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
-		super.preResolveOut(env, parent, slot);
+	public void preResolveOut(INode parent, AttrSlot slot) {
+		super.preResolveOut(parent, slot);
 		foreach (SymbolRef sr; expected_types; Env.needResolving(sr))
-			sr.resolveSymbol(SeverError.Error, fun (DNode dn)->boolean {
+			sr.resolveSymbol(LoggingLevel.ERROR, fun (DNode dn)->boolean {
 				return dn instanceof Struct && VNodeUtils.isNodeKind((Struct)dn)
 					|| dn instanceof SyntaxExpectedTemplate
 					|| dn instanceof SyntaxExpectedType
@@ -608,7 +609,7 @@ public abstract class SyntaxElem extends ASTNode {
 			fmt = this.fmt.dnode;
 		if (fmt == null) {
 			try {
-				ResInfo info = new ResInfo(Env.getEnv(),this,"fmt-default").match(SyntaxElemFormatDecl.class);
+				ResInfo info = new ResInfo(this,"fmt-default").match(SyntaxElemFormatDecl.class);
 				if (PassInfo.resolveNameR(this,info)) {
 					fmt = (SyntaxElemFormatDecl)info.resolvedDNode();
 					return fmt.compile();
@@ -820,9 +821,9 @@ public final class SyntaxAttr extends SyntaxElem {
 		return null;
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (name == null || name.length() == 0) {
-			Kiev.reportError(this, "Attribute name is empty");
+			reportError().log("Attribute name is empty");
 			return false;
 		}
 		ASyntaxElemDecl sed = getSyntaxElemDecl();
@@ -954,7 +955,7 @@ public final class SyntaxList extends SyntaxAttrFormat {
 	@nodeAttr
 	public CalcOption							filter;
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (element == null)
 			element = new SyntaxNode();
 		return true;
@@ -995,7 +996,7 @@ public final class SyntaxTokenAttr extends SyntaxAttrFormat {
 
 @ThisIsANode(lang=SyntaxLang)
 public final class SyntaxIdentAttr extends SyntaxAttrFormat {
-	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve(sever=SeverError.Warning)
+	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve(error=false)
 	final
 	public SyntaxIdentTemplate⇑		decl;
 
@@ -1202,11 +1203,11 @@ public class CalcOptionClass implements CalcOption {
 		super(name);
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void mainResolveOut(INode parent, AttrSlot slot) {
 		try {
 			clazz = Class.forName(name);
 		} catch (Throwable t) {
-			Kiev.reportError(this, "Class '"+name+"' not found");
+			reportError().log("Class '{}' not found", name);
 		}
 	}
 

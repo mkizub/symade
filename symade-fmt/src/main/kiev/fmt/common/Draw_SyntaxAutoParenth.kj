@@ -10,7 +10,7 @@ public class Draw_SyntaxAutoParenth extends Draw_SyntaxElem {
 	public Draw_SyntaxExprTemplate			template;
 	public Draw_SyntaxElem					attr;
 	public int								priority;
-	
+
 	public Draw_SyntaxAutoParenth(Draw_SyntaxElemDecl elem_decl) { super(elem_decl); }
 
 	public Draw_SyntaxAutoParenth(Draw_SyntaxElemDecl elem_decl, Draw_SyntaxElem attr, int priority, Draw_SyntaxExprTemplate template) {
@@ -40,7 +40,7 @@ public class Draw_SyntaxAutoParenth extends Draw_SyntaxElem {
 		}
 		if (obj instanceof ENode) {
 			ENode en = (ENode)obj;
-			if (en.isPrimaryExpr() || en.getPriority(fmt.env) < this.priority)
+			if (en.isPrimaryExpr() || en.getPriority() < this.priority)
 				return new DrawAutoParenth(node, fmt, this);
 		}
 		return attr.makeDrawable(fmt, node);
@@ -57,7 +57,7 @@ public class Draw_SyntaxAutoParenth extends Draw_SyntaxElem {
 		}
 		if (obj instanceof ENode) {
 			ENode en = (ENode)obj;
-			if (en.isPrimaryExpr() || en.getPriority(fmt.env) < this.priority)
+			if (en.isPrimaryExpr() || en.getPriority() < this.priority)
 				return expected_node == curr_dr.drnode;
 		}
 		return attr.check(fmt, curr_dr, expected_node);

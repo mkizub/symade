@@ -12,45 +12,41 @@
 package kiev.gui;
 
 import kiev.gui.event.EventActionMap;
-import kiev.WorkerThreadGroup;
+import kiev.compiler.WorkerThreadGroup;
+import kiev.Compiler;
 import kiev.vlang.Env;
 
 /**
  * UImanager used to manage different implementations of the GUI.
  */
 public class UIManager {
-	
+
 	/**
 	 * The SWT switch.
 	 */
-	public static final boolean SWT = kiev.Kiev.run_gui_swt;
-	
-	/**
-	 * The Swing switch.
-	 */
-	public static final boolean SWING = kiev.Kiev.run_gui_swing;
-	
+	public static boolean SWT;
+
 	/**
 	 * The configuration.
 	 */
 	private static Configuration cfg;
-	
+
 	/**
 	 * Returns the new instance of <code>IWindow</code>.
 	 * @param env the environment
 	 * @return <code>IWindow</code>
 	 * @see kiev.gui.IWindow
 	 */
-	public static IWindow newWindow(WorkerThreadGroup thrg){
+	public static IWindow newWindow(WorkerThreadGroup thrg, Compiler compiler){
 		if (SWT) {
 			cfg = new kiev.gui.swt.Configuration(thrg.getEnv());
-			return new kiev.gui.swt.Window(thrg);
+			return new kiev.gui.swt.Window(thrg, compiler);
 		} else {
 			cfg = new kiev.gui.swing.Configuration(thrg.getEnv());
-			return new kiev.gui.swing.Window(thrg);
+			return new kiev.gui.swing.Window(thrg, compiler);
 		}
 	}
-	
+
 	/**
 	 * Initializes configuration with code bindings.
 	 * @param bs the binding set
@@ -58,14 +54,14 @@ public class UIManager {
 	public static void attachEventBindings(kiev.fmt.evt.BindingSet bs) {
 		cfg.attachBindings(bs);
 	}
-	
+
 	/**
 	 * Reset configuration bindings.
 	 */
 	public static void resetEventBindings() {
 		cfg.resetBindings();
 	}
-	
+
 	/**
 	 * Returns <code>EventActionMap</code> of UI actions.
 	 * @param uiv the view
@@ -89,7 +85,7 @@ public class UIManager {
 			return cfg.getInfoViewActionMap();
 		}
 	}
-	
+
 	/**
 	 * Returns the object put into clipboard.
 	 * @return <code>Object</code>
@@ -122,5 +118,5 @@ public class UIManager {
 		if (SWT) return new kiev.gui.swt.FileDialog(window, dlgType);
 		return new kiev.gui.swing.FileDialog(window, dlgType);
 	}
-	
+
 }

@@ -41,7 +41,7 @@ public final class MetaUUID extends UserMeta {
 				if (dn.symbol.suuid() != null)
 					this.value = dn.symbol.suuid().toString();
 				else if (this.value != null)
-					dn.symbol.setUUID(Env.getEnv(),this.value);
+					dn.symbol.setUUID(this.value);
 			}
 		}
 	}
@@ -54,7 +54,7 @@ public final class MetaUUID extends UserMeta {
 			DNode dn = (DNode)p;
 			if (dn.symbol.suuid() != null)
 				return;
-			dn.symbol.setUUID(Env.getEnv(),val);
+			dn.symbol.setUUID(val);
 		}
 		this.value = val;
 		super.setS("value",val);
@@ -190,9 +190,9 @@ public final class MetaAccess extends ASTNode implements MNode {
 
 	public String qname() { return "kiev·stdlib·meta·access"; }
 
-	public JavaAnnotation getAnnotationDecl(Env env) { return (JavaAnnotation)env.resolveGlobalDNode(this.qname()); }
+	public JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)getEnv().resolveGlobalDNode(this.qname()); }
 
-	public void resolve(Env env, Type reqType) {}
+	public void resolve(Type reqType) {}
 	public void verify(INode parent, AttrSlot slot) {}
 	public boolean isRuntimeVisible() { return false; }
 	public boolean isRuntimeInvisible() { return false; }
@@ -219,7 +219,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		super.callbackChanged(info);
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (this.flags == -1) {
 			ANode parent = parent();
 			if (parent instanceof DNode) {
@@ -318,71 +318,71 @@ public final class MetaAccess extends ASTNode implements MNode {
 
 		if( r_public || w_public ) {
 			if (simple != "public") {
-				Kiev.reportWarning(n,"Node "+n+" needs to be declared public");
+				n.reportWarning().log("Node {} needs to be declared public", n);
 				n.setPublic();
 			}
 		}
 		else if( r_protected || w_protected ) {
 			if !(simple == "public" || simple == "protected") {
-				Kiev.reportWarning(n,"Node "+n+" needs to be declared protected or public");
+				n.reportWarning().log("Node {} needs to be declared protected or public", n);
 				n.setProtected();
 			}
 		}
 		else if( r_default || w_default ) {
 			if (simple == "private") {
-				Kiev.reportWarning(n,"Node "+n+" needs to be declared with default/protected or public access");
+				n.reportWarning().log("Node {} needs to be declared with default/protected or public access", n);
 				n.setPkgPrivate();
 			}
 		}
 		if( r_public ) {
 			if( !r_protected ) {
-				Kiev.reportWarning(n,"Node "+n+" should have protected read access");
+				n.reportWarning().log("Node {} should have protected read access", n);
 				r_protected = true;
 			}
 			if( !r_default ) {
-				Kiev.reportWarning(n,"Node "+n+" should have default (package) read access");
+				n.reportWarning().log("Node {} should have default (package) read access", n);
 				r_default = true;
 			}
 			if( !r_private ) {
-				Kiev.reportWarning(n,"Node "+n+" should have private read access");
+				n.reportWarning().log("Node {} should have private read access", n);
 				r_private = true;
 			}
 		}
 		if( r_protected ) {
 			if( !r_private ) {
-				Kiev.reportWarning(n,"Node "+n+" should have private read access");
+				n.reportWarning().log("Node {} should have private read access", n);
 				r_private = true;
 			}
 		}
 		if( r_default ) {
 			if( !r_private ) {
-				Kiev.reportWarning(n,"Node "+n+" should have private read access");
+				n.reportWarning().log("Node {} should have private read access", n);
 				r_private = true;
 			}
 		}
 		if( w_public ) {
 			if( !w_protected ) {
-				Kiev.reportWarning(n,"Node "+n+" should have protected write access");
+				n.reportWarning().log("Node {} should have protected write access", n);
 				w_protected = true;
 			}
 			if( !w_default ) {
-				Kiev.reportWarning(n,"Node "+n+" should have default (package) write access");
+				n.reportWarning().log("Node {} should have default (package) write access", n);
 				w_default = true;
 			}
 			if( !w_private ) {
-				Kiev.reportWarning(n,"Node "+n+" should have private write access");
+				n.reportWarning().log("Node {} should have private write access", n);
 				w_private = true;
 			}
 		}
 		if( w_protected ) {
 			if( !w_private ) {
-				Kiev.reportWarning(n,"Node "+n+" should have private write access");
+				n.reportWarning().log("Node {} should have private write access", n);
 				w_private = true;
 			}
 		}
 		if( w_default ) {
 			if( !w_private ) {
-				Kiev.reportWarning(n,"Node "+n+" should have private write access");
+				n.reportWarning().log("Node {} should have private write access", n);
 				w_private = true;
 			}
 		}
@@ -504,7 +504,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		if (n instanceof Struct) sb.append(n);
 		else sb.append(Env.ctxTDecl(n)).append('.').append(n);
 		sb.append("\n\tfrom class ").append(getStructOf(from));
-		Kiev.reportError(from,new RuntimeException(sb.toString()));
+		from.reportError().cause(new RuntimeException(sb.toString())).log();
 	}
 
 	private static void throwFinalWriteError(ASTNode from, ASTNode n) {
@@ -519,7 +519,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 		Method m = Env.ctxMethod(from);
 		if (m != null)
 			sb.append("\n\tin method ").append(Env.ctxTDecl(m)).append('.').append(m);
-		Kiev.reportError(from,new RuntimeException(sb.toString()));
+		from.reportError().cause(new RuntimeException(sb.toString())).log();
 	}
 }
 
@@ -533,7 +533,7 @@ public abstract class MetaFlag extends ANode implements MNode {
 	public Language getCompilerLang() { return CoreLang; }
 	public String getCompilerNodeName() { return getClass().getSimpleName().intern(); }
 
-	public final JavaAnnotation getAnnotationDecl(Env env) { return (JavaAnnotation)env.resolveGlobalDNode(this.qname()); }
+	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)getEnv().resolveGlobalDNode(this.qname()); }
 
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.tree_change && info.slot.isSemantic()) {
@@ -554,7 +554,7 @@ public abstract class MetaFlag extends ANode implements MNode {
 		return (o.getClass() == this.getClass());
 	}
 
-	public void resolve(Env env, Type reqType) {}
+	public void resolve(Type reqType) {}
 	public void verify(INode parent, AttrSlot slot) {}
 	public boolean isRuntimeVisible() { return false; }
 	public boolean isRuntimeInvisible() { return false; }

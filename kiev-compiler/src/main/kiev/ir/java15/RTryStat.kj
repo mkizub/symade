@@ -22,12 +22,12 @@ public final view RCatchInfo of CatchInfo extends RENode {
 	public Var				arg;
 	public ENode			body;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
-			Kiev.reportError(body,e);
+			body.reportError().log(e);
 		}
 	}
 }
@@ -37,15 +37,15 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 	public ENode		body;
 	public Var			ret_arg;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		if (ret_arg == null) {
-			ret_arg = new LVar(pos,"",env.tenv.tpObject,Var.VAR_LOCAL,0);
+			ret_arg = new LVar(pos,"",tenv.tpObject,Var.VAR_LOCAL,0);
 		}
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
-			Kiev.reportError(body,e);
+			body.reportError().log(e);
 		}
 	}
 }
@@ -56,25 +56,25 @@ public final view RTryStat of TryStat extends RENode {
 	public:ro	CatchInfo[]			catchers;
 	public		FinallyInfo			finally_catcher;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		for(int i=0; i < catchers.length; i++) {
 			try {
-				resolveENode(catchers[i],env.tenv.tpVoid,env);
+				resolveENode(catchers[i],tenv.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(catchers[i],e);
+				catchers[i].reportError().log(e);
 			}
 		}
 		if(finally_catcher != null) {
 			try {
-				resolveENode(finally_catcher,env.tenv.tpVoid,env);
+				resolveENode(finally_catcher,tenv.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(finally_catcher,e);
+				finally_catcher.reportError().log(e);
 			}
 		}
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			reportError().log(e);
 		}
 		// Check if abrupted
 		if( finally_catcher!= null && finally_catcher.isMethodAbrupted())

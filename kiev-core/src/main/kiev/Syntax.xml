@@ -49,11 +49,6 @@
     </core:ImportImpl>
     <core:ImportImpl all='true'>
      <name>
-      <core:SymbolRef full='true' name='kiev·transf' />
-     </name>
-    </core:ImportImpl>
-    <core:ImportImpl all='true'>
-     <name>
       <core:SymbolRef full='true' name='kiev·parser' />
      </name>
     </core:ImportImpl>

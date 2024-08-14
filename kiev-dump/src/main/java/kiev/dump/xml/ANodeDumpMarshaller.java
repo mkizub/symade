@@ -70,7 +70,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 			out.addAttribute(new QName(SOP_URI, "ti", "sop"), ((TypeInfoInterface)node).getTypeInfoField().toString());
 
 		if (node instanceof DNode && !((DNode)node).isInterfaceOnly()) {
-			SymUUID suuid = ((Symbol)node.getVal(node.getAttrSlot("symbol"))).getUUID(context.getEnv());
+			SymUUID suuid = ((Symbol)node.getVal(node.getAttrSlot("symbol"))).getUUID();
 			if (suuid != SymUUID.Empty)
 				context.attributeData(new QName("uuid"), suuid.toString());
 			String pos = getNodeFilePos((ANode)node);
@@ -98,7 +98,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 			if (obj == null)
 				continue;
 			if (attr.isSymRef() && node instanceof SymbolRef)
-				context.attributeData(new QName(attr.getXmlLocalName()), ((SymbolRef)node).makeSignature(context.getEnv(),"api".equals(context.getDumpMode())));
+				context.attributeData(new QName(attr.getXmlLocalName()), ((SymbolRef)node).makeSignature("api".equals(context.getDumpMode())));
 			else
 				context.attributeData(new QName(attr.getXmlLocalName()), obj);
 		}

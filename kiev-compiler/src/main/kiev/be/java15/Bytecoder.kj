@@ -11,6 +11,7 @@
 package kiev.be.java15;
 import syntax kiev.Syntax;
 
+import kiev.transf.PluginNodeProcessor;
 import kiev.bytecode.ExceptionsAttribute;
 import static kiev.be.java15.Instr.*;
 
@@ -22,6 +23,7 @@ import static kiev.be.java15.Instr.*;
 
 public class Bytecoder implements JConstants {
 	public final JEnv							jenv;
+	public final boolean						traceRead;
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
@@ -31,12 +33,14 @@ public class Bytecoder implements JConstants {
 		this.cl = cl;
 		this.bcclazz = bcclazz;
 		this.constPool = constPool;
+		PluginNodeProcessor processor = (PluginNodeProcessor)jenv.env.getNodeProcessor();
+		this.traceRead = processor.traceBytecodeRead;
 	}
 
 	/** Reads class from DataInputStream
 	 */
 	public Struct readClazz(ClazzName clname, DNode outer) {
-		trace(Kiev.debug && Kiev.debugBytecodeRead,"Loading class "+clname.name);
+		jenv.env.reportDebug().log("Loading class {}", clname.name);
 		assert (outer instanceof KievPackage || outer instanceof Struct);
 
 		if (!bcclazz.getClazzName().toString().equals(clname.bytecode_name))
@@ -90,17 +94,17 @@ public class Bytecoder implements JConstants {
 			Signature.addTypeArgs(this.jenv, cl, cl_sign_sc);
 		}
 
-		cl.getMetaType(jenv.env);
+		cl.getMetaType();
 		jenv.vtypes.callbackTypeVersionChanged(cl);
 		cl.setFrontEndPassed();
 
-		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
+		jenv.env.reportDebug().log("Clazz type {}", bcclazz.getClazzName());
 
 		// This class's superclass name (load if not loaded)
 		if (bcclazz.getSuperClazzName() != null) {
 			assert(cl.super_types.length == 0);
 			String cl_super_name = bcclazz.getSuperClazzName().toString();
-			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
+			jenv.env.reportDebug().log("Super-class is {}", cl_super_name);
 			CompaundType st;
 			if (cl_sign_sc != null) {
 				st = Signature.getClassTypeSignature(this.jenv, cl, cl_sign_sc);
@@ -115,7 +119,7 @@ public class Bytecoder implements JConstants {
 		// Read interfaces
 		String[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
-			trace(Kiev.debug && Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
+			jenv.env.reportDebug().log("Class implements {}", interfs[i]);
 			CompaundType interf;
 			if (cl_sign_sc != null) {
 				interf = Signature.getClassTypeSignature(this.jenv, cl, cl_sign_sc);
@@ -134,7 +138,7 @@ public class Bytecoder implements JConstants {
 		if !(outer instanceof KievPackage) {
 			int n = 0;
 			for(ComplexTypeDecl p=((ComplexTypeDecl)outer); p != null && p.isStructInner() && !p.isStatic(); p=Env.ctxTDecl(p)) n++;
-			TypeAssign td = new TypeAssign(new Symbol("outer$"+n+"$type"), new TypeRef(((ComplexTypeDecl)outer).getType(jenv.env)));
+			TypeAssign td = new TypeAssign(new Symbol("outer$"+n+"$type"), new TypeRef(((ComplexTypeDecl)outer).getType()));
 			td.setSynthetic(true);
 			cl.members.append(td);
 			cl.ometa_tdef = td;
@@ -272,7 +276,7 @@ public class Bytecoder implements JConstants {
 					m.conditions.add(wbc);
 			}
 		}
-		trace(Kiev.debug && Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
+		jenv.env.reportDebug().log("read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		return m;
 	}
 
@@ -340,7 +344,7 @@ public class Bytecoder implements JConstants {
 //						inner[i] = null;
 //					}
 //				} catch(Exception e ) {
-//					Kiev.reportError(e);
+//					getEnv().reportError().log(e);
 //				}
 //			}
 //			a = new InnerClassesAttr(this.jenv);
@@ -368,7 +372,7 @@ public class Bytecoder implements JConstants {
 			int[] constants_pc = new int[32];
 			while( pc < ca.bcode.length ) {
 				cp = 0;
-				trace(Kiev.debug && Kiev.debugBytecodeRead,pc+": opc: "+JConstants.opcNames[0xFF&ca.bcode[pc]]);
+				trace(traceRead,pc+": opc: "+JConstants.opcNames[0xFF&ca.bcode[pc]]);
 				switch( 0xFF & ca.bcode[pc] ) {
 				case opc_ldc:
 					cp = 0xFF & ca.bcode[pc+1];
@@ -398,7 +402,7 @@ public class Bytecoder implements JConstants {
 					constants = (CP[])Arrays.ensureSize(constants,constants.length*2);
 					constants_pc = (int[])Arrays.ensureSize(constants_pc,constants.length);
 				}
-				trace(Kiev.debug && Kiev.debugBytecodeRead,pc+": CP: "+cp);
+				trace(traceRead,pc+": CP: "+cp);
 				constants_pc[constants_top] = pc+1;
 				kiev.bytecode.PoolConstant pcp = clazz.pool[cp];
 				switch(pcp.constant_type()) {
@@ -474,7 +478,7 @@ public class Bytecoder implements JConstants {
 				default:
 					throw new RuntimeException("Bad pool constant "+clazz.pool[cp]+" of opcode "+JConstants.opcNames[0xFF&ca.bcode[pc]]);
 				}
-				trace(Kiev.debug && Kiev.debugBytecodeRead,pc+": CP: "+constants[constants_top]);
+				trace(traceRead,pc+": CP: "+constants[constants_top]);
 				constants_top++;
 				pc += JConstants.opcLengths[0xFF & ca.bcode[pc]];
 			}
@@ -586,9 +590,9 @@ public class Bytecoder implements JConstants {
 			return mv;
 		case 'e': {
 			Type tp = Signature.getType(this.jenv,((kiev.bytecode.Annotation.element_value_enum_const)eval).getSignature(clazz).toString());
-			tp.meta_type.tdecl.checkResolved(jenv.env);
+			tp.meta_type.tdecl.checkResolved();
 			String fname = ((kiev.bytecode.Annotation.element_value_enum_const)eval).getFieldName(clazz).toString();
-			Field f = tp.meta_type.tdecl.resolveField(jenv.env,fname.toString().intern());
+			Field f = tp.meta_type.tdecl.resolveField(fname.toString().intern());
 			mv = new MetaValueScalar(nm, new SFldExpr(0,f));
 			}
 			return mv;
@@ -617,7 +621,7 @@ public class Bytecoder implements JConstants {
 	/** Write class
 	 */
 	public byte[] writeClazz() {
-	    bcclazz = new kiev.bytecode.Clazz();
+	    bcclazz = new kiev.bytecode.Clazz(jenv.env);
 
 	    // Constant pool
 		bcclazz.pool = writeConstPool();
@@ -632,7 +636,7 @@ public class Bytecoder implements JConstants {
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name
 	    if (cl.super_types.length > 0) {
-			Type tp = cl.super_types[0].getType(jenv.env);
+			Type tp = cl.super_types[0].getType();
 			assert(tp.getStruct().isClazz());
 		    String sup_sig = jenv.getJTypeEnv().getJType(tp.getStruct()).java_signature;
 		    bcclazz.cp_super_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(sup_sig).pos];
@@ -643,7 +647,7 @@ public class Bytecoder implements JConstants {
 		assert(cl.super_types.length > 0);
 	    bcclazz.cp_interfaces = new kiev.bytecode.ClazzPoolConstant[cl.super_types.length-1];
 		for(int i=1; i < cl.super_types.length; i++) {
-			Type tp = cl.super_types[i].getType(jenv.env);
+			Type tp = cl.super_types[i].getType();
 			assert(tp.getStruct().isInterface());
 		    String interf_sig = jenv.getJTypeEnv().getJType(tp.getStruct()).java_signature;
 			bcclazz.cp_interfaces[i-1] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(interf_sig).pos];
@@ -790,7 +794,7 @@ public class Bytecoder implements JConstants {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.sname).pos];
-		JType tp = jenv.getJTypeEnv().getJType(f.getType(jenv.env));
+		JType tp = jenv.getJTypeEnv().getJType(f.getType());
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes

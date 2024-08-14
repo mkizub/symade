@@ -12,6 +12,8 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import kiev.compiler.WorkerThreadGroup;
+
 import kiev.ir.java15.RRuleMethod;
 
 /**
@@ -50,7 +52,7 @@ public final class KievME_RuleGenartion extends BackendProcessor {
 				public boolean pre_exec(ANode n) {
 					if (n instanceof RuleMethod) {
 						RuleMethod rm = (RuleMethod)n;
-						((RRuleMethod)rm).ruleGenerate(env);
+						((RRuleMethod)rm).ruleGenerate();
 					}
 					return true;
 				}

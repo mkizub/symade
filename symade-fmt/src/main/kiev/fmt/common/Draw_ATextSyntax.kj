@@ -13,7 +13,7 @@ import kiev.vlang.Env;
 
 public class Draw_ATextSyntax implements Serializable {
 	private static final long serialVersionUID = 4993170764930753026L;
-	
+
 	static final class PairOpdefClass {
 		final Opdef opd;
 		final Class clazz;
@@ -40,9 +40,9 @@ public class Draw_ATextSyntax implements Serializable {
 				return false;
 			return true;
 		}
-		
+
 	}
-	
+
 	protected transient Hashtable<String,Draw_SyntaxElem>					badSyntax;
 	protected transient Hashtable<String,Draw_SyntaxElem>					allSyntax;
 	protected transient Hashtable<PairOpdefClass, Draw_SyntaxElem> 			allSyntaxExprs;
@@ -54,7 +54,7 @@ public class Draw_ATextSyntax implements Serializable {
 	public String						q_name;	// qualified name
 	public Draw_StyleSheet	style_sheet;
 
-	
+
 	Object readResolve() throws ObjectStreamException {
 		if (this.q_name != null) this.q_name = this.q_name.intern();
 		return this;
@@ -147,7 +147,7 @@ public class Draw_ATextSyntax implements Serializable {
 			elems.add( new Draw_SyntaxToken(elem_decl,"???") );
 		}
 	}
-	
+
 	protected Draw_SyntaxSet expr(Opdef opd, Draw_SyntaxExpr sexpr)
 	{
 		Draw_SyntaxElemDecl elem_decl = new Draw_SyntaxElemDecl();
@@ -167,7 +167,7 @@ public class Draw_ATextSyntax implements Serializable {
 				if (se instanceof Draw_SyntaxExpr) {
 					if (for_node instanceof ENode) {
 						ENode e = (ENode)for_node;
-						Opdef opd = e.getFakeOpdef(env);
+						Opdef opd = e.getFakeOpdef();
 						if (opd == null)
 							return se;
 						se = allSyntaxExprs.get(new PairOpdefClass(opd,for_node.getClass()));

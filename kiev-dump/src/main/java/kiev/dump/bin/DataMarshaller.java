@@ -90,7 +90,7 @@ public class DataMarshaller implements Marshaller {
     		return;
     	}
     	if (data instanceof Type) {
-    		String sig = ((Type)data).makeSignature(context.getEnv());
+    		String sig = ((Type)data).makeSignature();
     		out.writeString(sig);
     		return;
     	}

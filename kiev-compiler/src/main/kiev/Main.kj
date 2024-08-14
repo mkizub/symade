@@ -27,7 +27,8 @@ public class Main {
 	public static OutputStream	output;
 
 	public static void main(String[] args) {
-		System.out.println(Compiler.version);	
+		System.out.println(Compiler.version);
+		Compiler compiler = new Compiler();
 		String addr = null;
 		int port = 1966;
 		for(int i=0; i < args.length; i++) {
@@ -84,21 +85,21 @@ public class Main {
 				} else {
 					args[i] = null;
 					Compiler.printargs(args);
-					Compiler.run(args);
-					Compiler.runServer(InetAddress.getByName(addr),port);
+					compiler.compile(args);
+					compiler.runServer(InetAddress.getByName(addr),port);
 					return;
 				}
 			}
 			else if( args[i].equals("-i") || args[i].equals("-incremental")) {
 				Compiler.printargs(args);
-				Compiler.run(args);
-				Compiler.runIncremental(args);
+				compiler.compile(args);
+				compiler.runIncremental(args);
 				return;
 			}
 		}
-		Compiler.run(args);
+		compiler.compile(args);
 	}
-	
+
 	public static void setupStreams(String addr, int port) {
 		Socket s = null;
 		try {

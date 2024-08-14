@@ -22,8 +22,8 @@ public interface MNode extends ANode {
 	public static final MNode[] emptyArray = new MNode[0];
 
 	public String qname();
-	public JavaAnnotation getAnnotationDecl(Env env);
-	public void resolve(Env env, Type reqType);
+	public JavaAnnotation getAnnotationDecl();
+	public void resolve(Type reqType);
 	public void verify(INode parent, AttrSlot slot);
 	public boolean isRuntimeVisible();
 	public boolean isRuntimeInvisible();
@@ -42,7 +42,7 @@ public class UserMeta extends ASTNode implements MNode {
 		UserMeta meta = (UserMeta)o;
 		if (qname() != o.qname())
 			return false;
-		foreach (Method m; getAnnotationDecl(Env.getEnv()).members) {
+		foreach (Method m; getAnnotationDecl().members) {
 			MetaValue v1 = this.get(m.sname);
 			MetaValue v2 = meta.get(m.sname);
 			if (v1 == null && v2 == null)
@@ -80,27 +80,27 @@ public class UserMeta extends ASTNode implements MNode {
 		return decl.name;
 	}
 
-	public final JavaAnnotation getAnnotationDecl(Env env) {
+	public final JavaAnnotation getAnnotationDecl() {
 		JavaAnnotation td = decl.dnode;
 		if (td != null)
 			return td;
 		String name = decl.name;
 		if (name.indexOf('·') < 0) {
-			ResInfo info = new ResInfo(Env.getEnv(),this,name,ResInfo.noForwards).match(JavaAnnotation.class);
+			ResInfo info = new ResInfo(this,name,ResInfo.noForwards).match(JavaAnnotation.class);
 			if (!PassInfo.resolveNameR(this,info)) {
-				Kiev.reportError(this,"Unresolved annotation name "+name);
+				reportError().log("Unresolved annotation name '{}'", name);
 				return null;
 			}
 			JavaAnnotation ann = (JavaAnnotation)info.resolvedDNode();
 			this.decl.symbol = info.resolvedSymbol();
-			ann = ann.checkResolved(env);
+			ann = ann.checkResolved();
 			return ann;
 		}
-		DNode scope = Env.getEnv().root;
+		DNode scope = getEnv().root;
 		int dot;
 		do {
 			if !(scope instanceof ScopeOfNames) {
-				Kiev.reportError(this,"Unresolved identifier "+name+" in "+scope);
+				reportError().log("Unresolved identifier '{}' in '{}'", name, scope);
 				return null;
 			}
 			dot = name.indexOf('·');
@@ -111,24 +111,24 @@ public class UserMeta extends ASTNode implements MNode {
 			} else {
 				head = name;
 			}
-			ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
+			ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext);
 			if!(((ScopeOfNames)scope).resolveNameR(info)) {
-				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
+				reportError().log("Unresolved identifier '{}' in '{}'", head, scope);
 				return null;
 			}
 			scope = info.resolvedDNode();
 		} while (dot > 0);
 		if !(scope instanceof JavaAnnotation) {
-			Kiev.reportError(this,"Unresolved annotation "+decl.name);
+			reportError().log("Unresolved annotation '{}'", decl.name);
 			return null;
 		}
 		this.decl.symbol = scope.symbol;
-		scope = scope.checkResolved(env);
+		scope = scope.checkResolved();
 		return (JavaAnnotation)scope;
 	}
 
 	public boolean isRuntimeVisible() {
-		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
+		JavaAnnotation tdecl = getAnnotationDecl();
 		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
 		if (retens == null)
 			return false;
@@ -142,7 +142,7 @@ public class UserMeta extends ASTNode implements MNode {
 	}
 
 	public boolean isRuntimeInvisible() {
-		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
+		JavaAnnotation tdecl = getAnnotationDecl();
 		UserMeta retens = (UserMeta)tdecl.getMeta("java·lang·annotation·Retention");
 		if (retens == null)
 			return true;
@@ -155,11 +155,11 @@ public class UserMeta extends ASTNode implements MNode {
 		return false;
 	}
 
-	public Type getType(Env env) {
-		JavaAnnotation td = getAnnotationDecl(env);
+	public Type getType() {
+		JavaAnnotation td = getAnnotationDecl();
 		if (td == null)
-			return env.tenv.tpVoid;
-		return td.getType(env);
+			return getEnv().tenv.tpVoid;
+		return td.getType();
 	}
 
 	public int size() alias length {
@@ -170,7 +170,7 @@ public class UserMeta extends ASTNode implements MNode {
 	}
 
 	public void verify(INode parent, AttrSlot slot) {
-		JavaAnnotation tdecl = getAnnotationDecl(Env.getEnv());
+		JavaAnnotation tdecl = getAnnotationDecl();
 		if (tdecl == null || !tdecl.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
@@ -179,9 +179,9 @@ public class UserMeta extends ASTNode implements MNode {
 		return;
 	}
 
-	public void resolve(Env env, Type reqType) {
-		JavaAnnotation tdecl = getAnnotationDecl(env);
-		tdecl = tdecl.checkResolved(env);
+	public void resolve(Type reqType) {
+		JavaAnnotation tdecl = getAnnotationDecl();
+		tdecl = tdecl.checkResolved();
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
@@ -207,10 +207,10 @@ public class UserMeta extends ASTNode implements MNode {
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (t.getStruct() == null || !(t ≈ env.tenv.tpString || t ≈ env.tenv.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
+				if (t.getStruct() == null || !(t ≈ t.tenv.tpString || t ≈ t.tenv.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
 					throw new CompilerException(m, "Bad annotation value type "+t);
 			}
-			Kiev.runFrontEndProcessorsOn(v); //v.resolve(t);
+			getEnv().runFrontEndProcessorsOn(v); //v.resolve(t);
 		}
 		// check that all non-default values are specified, and add default values
 	next_method:
@@ -221,7 +221,7 @@ public class UserMeta extends ASTNode implements MNode {
 			}
 			// value not specified - does the method has a default meta-value?
 			if !(m.body instanceof MetaValue)
-				Kiev.reportError(this, "Annotation value "+m.sname+" is not specified");
+				reportError().log("Annotation value '{}' is not specified", m.sname);
 		}
 	}
 
@@ -240,7 +240,7 @@ public class UserMeta extends ASTNode implements MNode {
 			if (dot < 0) {
 				int flags = ResInfo.noForwards|ResInfo.noEquals;
 				AutoCompleteResult result = new AutoCompleteResult(false);
-				ResInfo info = new ResInfo(Env.getEnv(),this,head,flags);
+				ResInfo info = new ResInfo(this,head,flags);
 				foreach (PassInfo.resolveNameR(this,info)) {
 					DNode dn = info.resolvedDNode();
 					if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !result.containsData(info.resolvedSymbol()))
@@ -248,7 +248,7 @@ public class UserMeta extends ASTNode implements MNode {
 				}
 				return result;
 			} else {
-				ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards).match(TypeDecl.class);
+				ResInfo info = new ResInfo(this,head,ResInfo.noForwards).match(TypeDecl.class);
 				if (!PassInfo.resolveNameR(this,info))
 					return null;
 				scope = (TypeDecl)info.resolvedDNode();
@@ -265,7 +265,7 @@ public class UserMeta extends ASTNode implements MNode {
 				if (dot < 0) {
 					int flags = ResInfo.noForwards|ResInfo.noEquals;
 					AutoCompleteResult result = new AutoCompleteResult(false);
-					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(info)) {
 						DNode dn = info.resolvedDNode();
 						if ((dn instanceof KievPackage || dn instanceof JavaAnnotation) && !result.containsData(info.resolvedSymbol()))
@@ -273,7 +273,7 @@ public class UserMeta extends ASTNode implements MNode {
 					}
 					return result;
 				} else {
-					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards).match(TypeDecl.class);
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards).match(TypeDecl.class);
 					if!(scope.resolveNameR(info))
 						return null;
 					scope = (TypeDecl)info.resolvedDNode();
@@ -291,7 +291,7 @@ public class UserMeta extends ASTNode implements MNode {
 				return v;
 			}
 		}
-		JavaAnnotation td = getAnnotationDecl(Env.getEnv());
+		JavaAnnotation td = getAnnotationDecl();
 		foreach (Method m; td.members; m.hasName(name))
 			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+decl+" annotation");
@@ -304,8 +304,8 @@ public class UserMeta extends ASTNode implements MNode {
 			return false;
 		if (v instanceof ConstBoolExpr)
 			return ((ConstBoolExpr)v).value;
-		if (v instanceof ENode && v.isConstantExpr(Env.getEnv())) {
-			Object val = v.getConstValue(Env.getEnv());
+		if (v instanceof ENode && v.isConstantExpr()) {
+			Object val = v.getConstValue();
 			if (val instanceof Boolean)
 				return ((Boolean)val).booleanValue();
 		}
@@ -319,8 +319,8 @@ public class UserMeta extends ASTNode implements MNode {
 			return 0;
 		if (v instanceof ConstIntExpr)
 			return ((ConstIntExpr)v).value;
-		if (v instanceof ENode && v.isConstantExpr(Env.getEnv())) {
-			Object val = v.getConstValue(Env.getEnv());
+		if (v instanceof ENode && v.isConstantExpr()) {
+			Object val = v.getConstValue();
 			if (val instanceof Number)
 				return ((Number)val).intValue();
 		}
@@ -334,8 +334,8 @@ public class UserMeta extends ASTNode implements MNode {
 			return null;
 		if (v instanceof ConstStringExpr)
 			return ((ConstStringExpr)v).value;
-		if (v instanceof ENode && v.isConstantExpr(Env.getEnv())) {
-			Object val = v.getConstValue(Env.getEnv());
+		if (v instanceof ENode && v.isConstantExpr()) {
+			Object val = v.getConstValue();
 			if (val instanceof String)
 				return (String)val;
 		}
@@ -462,10 +462,9 @@ public abstract class MetaValue extends ENode {
 	}
 
 	boolean checkValue(Type reqType, ASTNode value, AttrSlot slot) {
-		Env env = Env.getEnv();
 		if (value instanceof TypeRef) {
-			if (reqType ≈ env.tenv.tpClass) {
-				((TypeRef)value).getType(env);
+			if (reqType ≈ getEnv().tenv.tpClass) {
+				((TypeRef)value).getType();
 				return false;
 			} else {
 				throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
@@ -478,16 +477,16 @@ public abstract class MetaValue extends ENode {
 		if (v instanceof SFldExpr && ((SFldExpr)v).var.isEnumField()) {
 			return false;
 		}
-		else if (!v.isConstantExpr(env))
+		else if (!v.isConstantExpr())
 			throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
-		Type vt = value.getType(env);
+		Type vt = value.getType();
 		if (vt ≉ reqType) {
 			v.replaceWith(fun ()->ASTNode {return new CastExpr(v.pos, reqType, v);}, this, slot);
 			return true;
 		}
-		if (!v.isConstantExpr(env))
+		if (!v.isConstantExpr())
 			throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
-		Type vt = v.getType(env);
+		Type vt = v.getType();
 		if (vt ≉ reqType)
 			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+ident);
 		return false;
@@ -540,7 +539,7 @@ public final class MetaValueScalar extends MetaValue {
 		do {
 			ok = true;
 			try {
-				Kiev.runFrontEndProcessorsOn(value);
+				getEnv().runFrontEndProcessorsOn(value);
 			} catch (ReWalkNodeException e) { ok = false; }
 		} while (ok && checkValue(reqType, value, nodeattr$value));
 	}
@@ -601,7 +600,7 @@ public final class MetaValueArray extends MetaValue {
 			do {
 				ok = true;
 				try {
-					Kiev.runFrontEndProcessorsOn(this.values[i]);
+					getEnv().runFrontEndProcessorsOn(this.values[i]);
 				} catch (ReWalkNodeException e) { ok = false; }
 			} while (ok && checkValue(reqType, this.values[i], nodeattr$values));
 		}

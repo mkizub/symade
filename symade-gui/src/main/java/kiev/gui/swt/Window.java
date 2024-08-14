@@ -30,7 +30,8 @@ import kiev.gui.UIView;
 import kiev.vlang.Env;
 import kiev.vlang.FileUnit;
 import kiev.vtree.INode;
-import kiev.WorkerThreadGroup;
+import kiev.Compiler;
+import kiev.compiler.WorkerThreadGroup;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -59,115 +60,115 @@ import org.eclipse.swt.widgets.TabItem;
  */
 public class Window extends kiev.gui.Window
 implements SelectionListener, FocusListener {
-	
+
 	/**
 	 * The shell.
 	 */
 	private static Shell shell;
-	
+
 	/**
 	 * The display.
 	 */
 	private static Display display;
-	
+
 	/**
 	 * Explorers tab folder.
 	 */
 	private TabFolder explorersFolder;
-	
+
 	/**
 	 * Editors tab folder.
 	 */
 	private TabFolder editorsFolder;
-	
+
 	/**
 	 * Views tab folder.
 	 */
 	private TabFolder viewsFolder;
-	
+
 	/**
 	 * Split folders to the right.
 	 */
 	private SashForm split_right;
-	
+
 	/**
 	 * Split folders to the bottom.
 	 */
 	private SashForm split_bottom;
-	
+
 	/**
 	 * The editors array.
 	 */
 	private Editor[] editors = new Editor[0];
-	
-	
+
+
 	/**
 	 * The info view.
 	 */
 	private UIView info_view;
-	
+
 	/**
 	 * The clipboard view.
 	 */
 	@SuppressWarnings("unused")
 	private UIView clip_view;
-		
+
 	/**
 	 * The project view.
 	 */
 	private ProjectView tree_view;
-	
+
 	/**
 	 * The properties view.
 	 */
-	private UIView prop_view;  
-	
+	private UIView prop_view;
+
 	/**
 	 * System color black.
 	 */
 	@SuppressWarnings("unused")
-	private static Color swtColorBlack; 
-	
+	private static Color swtColorBlack;
+
 	/**
 	 * System color white.
 	 */
-	private static Color swtColorWhite; 
-	
+	private static Color swtColorWhite;
+
 	/**
 	 * System default font.
 	 */
 	@SuppressWarnings("unused")
-	private static Font swtDefaultFont; 
-	
+	private static Font swtDefaultFont;
+
 	/**
 	 * The display area.
 	 */
 	private Composite displayArea;
-	
+
 	/**
 	 * Current focused object.
 	 */
 	private Canvas focused;
-	
+
 
 	/**
-	 * The resources required by the GUI in current SWT implementation. 
+	 * The resources required by the GUI in current SWT implementation.
 	 */
 	static ResourceBundle resources = ResourceBundle.getBundle("kiev.gui.swt.symade");
 
-	
+
 	/**
 	 * The constructor.
 	 * @param env the environment
 	 */
-	public Window(WorkerThreadGroup thrg) {
-		super(thrg);
+	public Window(WorkerThreadGroup thrg, Compiler compiler) {
+		super(thrg, compiler);
 		display = new Display();
 		shell = new Shell(display);
-		shell.setText(resources.getString("Window_title"));	
+		shell.setText(resources.getString("Window_title"));
 		shell.setLayout(new FillLayout());
 		shell.addShellListener (new ShellAdapter () {
-			
+
 			/* (non-Javadoc)
 			 * @see org.eclipse.swt.events.ShellAdapter#shellClosed(org.eclipse.swt.events.ShellEvent)
 			 */
@@ -202,7 +203,7 @@ implements SelectionListener, FocusListener {
 
 		// initialize colors
 		swtColorWhite = display.getSystemColor(SWT.COLOR_WHITE);
-		swtColorBlack = display.getSystemColor(SWT.COLOR_BLACK);		
+		swtColorBlack = display.getSystemColor(SWT.COLOR_BLACK);
 		swtDefaultFont = display.getSystemFont();
 
 		// create content composite
@@ -225,12 +226,12 @@ implements SelectionListener, FocusListener {
 		split_right.SASH_WIDTH = 5;
 		split_bottom.setWeights(new int[]{2,1});
 		split_bottom.SASH_WIDTH = 5;
-				
+
 		// Project tree view tab
 		item = new TabItem (explorersFolder, SWT.NONE);
 		item.setText(resources.getString("Project_title"));
 		Canvas tree_canvas = new Canvas(explorersFolder, SWT.BORDER | SWT.V_SCROLL);
-		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		tree_canvas.setLayoutData(gridData);
 		tree_canvas.addFocusListener(this);
 		item.setControl(tree_canvas);
@@ -239,7 +240,7 @@ implements SelectionListener, FocusListener {
 		item = new TabItem (viewsFolder, SWT.NONE);
 		item.setText(resources.getString("Info_title"));
 		Canvas info_canvas = new Canvas(viewsFolder, SWT.BORDER | SWT.V_SCROLL);
-		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		info_canvas.setLayoutData(gridData);
 		info_canvas.setBackground(swtColorWhite);
 		info_canvas.addFocusListener(this);
@@ -249,7 +250,7 @@ implements SelectionListener, FocusListener {
 		item = new TabItem (viewsFolder, SWT.NONE);
 		item.setText(resources.getString("Clipboard_title"));
 		Canvas clip_canvas = new Canvas(viewsFolder, SWT.BORDER | SWT.V_SCROLL);
-		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		clip_canvas.setLayoutData(gridData);
 		clip_canvas.addFocusListener(this);
 		item.setControl(clip_canvas);
@@ -257,29 +258,29 @@ implements SelectionListener, FocusListener {
 		// Inspector view tab
 		item = new TabItem (viewsFolder, SWT.NONE);
 		item.setText(resources.getString("Inspector_title"));
-		Canvas prop_table = new Canvas(viewsFolder, SWT.BORDER | SWT.V_SCROLL);					
-		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		Canvas prop_table = new Canvas(viewsFolder, SWT.BORDER | SWT.V_SCROLL);
+		gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		prop_table.setLayoutData(gridData);
 		prop_table.addFocusListener(this);
 		item.setControl(prop_table);
-		
+
 		// create views
 		info_view = new UIView(this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		clip_view = new UIView(this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		prop_view = new UIView(this, prop_table, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		tree_view = new ProjectView(this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
-		
+
 		// hook listeners
 		addListeners();
-		
+
 		// format and paint on custom GC
 		tree_view.setRoot(getCurrentProject(), true);
 		tree_view.formatAndPaint(true);
-	
+
 		// select projects tab
 		explorersFolder.setSelection(findTabItem(tree_canvas));
 		tree_canvas.requestFocus();
-		
+
 		displayArea.pack();
 
 		//position the windows on the screen
@@ -288,10 +289,10 @@ implements SelectionListener, FocusListener {
 	}
 
 	/**
-	 * Destroy. 
+	 * Destroy.
 	 */
 	private void destroyGUI() {
-		removeListeners();		
+		removeListeners();
 	}
 
 	/**
@@ -299,13 +300,13 @@ implements SelectionListener, FocusListener {
 	 * @return the display
 	 */
 	final static Display getDisplay(){return display;}
-	
+
 	/**
 	 * Returns the shell.
 	 * @return the shell
 	 */
 	final static Shell getShell(){return shell;}
-		
+
 	/**
 	 * Creates the menu bar.
 	 */
@@ -340,13 +341,13 @@ implements SelectionListener, FocusListener {
 		Menu menu = new Menu(bar);
 		MenuItem item;
 
-		//New 
+		//New
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("New_menuitem"), SWT.ALT + 'N', new FileActions.NewFile());
 
-		//Add 
+		//Add
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Add_menuitem"), SWT.ALT + 'A', new FileActions.AddFile());
 
-		//Load 
+		//Load
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Load_menuitem"), SWT.CTRL + 'L', new FileActions.LoadFileAs());
 
 		//Save As...
@@ -386,7 +387,7 @@ implements SelectionListener, FocusListener {
 		Menu bar = shell.getMenuBar();
 		Menu menu = new Menu(bar);
 
-		//Undo 
+		//Undo
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Undo_menuitem"), SWT.CTRL + 'Z', new EditActions.Undo());
 
 		//Copy
@@ -401,7 +402,7 @@ implements SelectionListener, FocusListener {
 		//Paste here
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Paste_here_menuitem"), SWT.CTRL + 'V',  new ClipboardActions.PasteHereFactory());
 
-		//Paste next  
+		//Paste next
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Paste_next_menuitem"), SWT.CTRL + 'B',  new ClipboardActions.PasteHereFactory());
 
 		new MenuItem(menu, SWT.SEPARATOR);
@@ -420,13 +421,13 @@ implements SelectionListener, FocusListener {
 
 		//Insert Mode
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Insert_Mode_menuitem"), SWT.ALT + 'I',  new NavigateNode.InsertMode());
-		
+
 		//Enter key code
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Enter_Key_Code_menuitem"), SWT.CTRL + 'K',  new KeyCodeEditor.Factory());
 
 		//Enter mouse code
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Enter_Mouse_Code_menuitem"), SWT.ALT + 'K',  new MouseButtonEditor.Factory());
-		
+
 		return menu;
 	}
 
@@ -438,7 +439,7 @@ implements SelectionListener, FocusListener {
 		Menu bar = shell.getMenuBar();
 		Menu menu = new Menu(bar);
 
-		//Syntax As... 
+		//Syntax As...
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Syntax_As_menuitem"), SWT.CTRL + SWT.ALT + 'S', new RenderActions.SyntaxFileAs());
 
 		//Unfold all
@@ -466,7 +467,7 @@ implements SelectionListener, FocusListener {
 		Menu bar = shell.getMenuBar();
 		Menu menu = new Menu(bar);
 
-		//Merge Tree 
+		//Merge Tree
 		new UIActionMenuItem(menu, SWT.PUSH, this, resources.getString("Merge_Tree_menuitem"), SWT.CTRL + SWT.ALT + 'M', new FileActions.MergeTreeAll());
 
 		//Compile Backend All
@@ -498,12 +499,12 @@ implements SelectionListener, FocusListener {
 		removeElementChangeListener(prop_view);
 		if (Helper.okToUse(editorsFolder)) editorsFolder.removeSelectionListener(this);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.FocusListener#focusGained(org.eclipse.swt.events.FocusEvent)
 	 */
 	public void focusGained(FocusEvent e) {
-		if (e.getSource() instanceof Canvas) focused = (Canvas)e.getSource();			
+		if (e.getSource() instanceof Canvas) focused = (Canvas)e.getSource();
 	}
 
 	/* (non-Javadoc)
@@ -524,7 +525,7 @@ implements SelectionListener, FocusListener {
 	 * @see kiev.gui.IWindow#openEditor(kiev.vlang.FileUnit, kiev.vtree.INode[])
 	 */
 	public IEditor openEditor(FileUnit fu, INode[] path) {
-		
+
 		// check if the editor is in use
 		for (Editor e: editors) {
 			if (e.getFileUnit() == fu || Env.ctxFileUnit(e.getRoot()) == fu) {
@@ -536,15 +537,15 @@ implements SelectionListener, FocusListener {
 				return e;
 			}
 		}
-		
-		// create editor, make sure the creation order	
-		
+
+		// create editor, make sure the creation order
+
 		// create canvas
-		Canvas edit_canvas = new Canvas(editorsFolder, SWT.BORDER | SWT.V_SCROLL);		
-		GridData gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);		
+		Canvas edit_canvas = new Canvas(editorsFolder, SWT.BORDER | SWT.V_SCROLL);
+		GridData gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
 		edit_canvas.setLayoutData(gridData);
 		edit_canvas.addFocusListener(this);
-	
+
 		// create editor
 		Editor editor = new Editor(this, edit_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		editors = (Editor[])kiev.stdlib.Arrays.append(editors, editor);
@@ -553,18 +554,18 @@ implements SelectionListener, FocusListener {
 		editor.setFileUnit(fu);
 		editor.formatAndPaint(true);
 		editor.goToPath(new UIDrawPath(path));
-		
+
 		// crate tab item
 		TabItem item = new TabItem (editorsFolder, SWT.NONE);
 		item.setText(fu.getFname());
 		item.setControl(edit_canvas);
 
 		// select tab
-		editorsFolder.setSelection(item);	
+		editorsFolder.setSelection(item);
 		edit_canvas.requestFocus();
 		addElementChangeListener(editor);
 		enableMenuItems();
-		
+
 		return editor;
 	}
 
@@ -578,7 +579,7 @@ implements SelectionListener, FocusListener {
 			if (e != editor) {v.add(e); continue;}
 			Canvas can = (Canvas)e.getViewPeer();
 			TabItem ti = findTabItem(can);
-			if (ti != null) ti.dispose();			
+			if (ti != null) ti.dispose();
 		}
 		editors = v.toArray(new Editor[v.size()]);
 
@@ -608,7 +609,7 @@ implements SelectionListener, FocusListener {
 		TabFolder tf = (TabFolder)can.getParent();
 		return findTabItem(tf, can);
 	}
-	
+
 	/**
 	 * Finding tab item in the canvas.
 	 * @param tf the tab folder
@@ -616,10 +617,10 @@ implements SelectionListener, FocusListener {
 	 * @return the tab item
 	 */
 	private TabItem findTabItem(TabFolder tf, Canvas can){
-		for (TabItem ti: tf.getItems()) if (ti.getControl() == can) return ti;			
+		for (TabItem ti: tf.getItems()) if (ti.getControl() == can) return ti;
 		return null;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
@@ -640,13 +641,13 @@ implements SelectionListener, FocusListener {
 				});
 		} else if (src instanceof TabFolder) {
 			TabFolder tf = (TabFolder)src;
-			TabItem ti = tf.getItem(tf.getSelectionIndex());		
+			TabItem ti = tf.getItem(tf.getSelectionIndex());
 			Canvas can = (Canvas)ti.getControl();
 			if (can != null) can.requestFocus();
-			enableMenuItems();		
+			enableMenuItems();
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see kiev.gui.Window#enableMenuItems()
 	 */
@@ -655,8 +656,8 @@ implements SelectionListener, FocusListener {
 		for (MenuItem menu: shell.getMenuBar().getItems())
 			for (MenuItem item: menu.getMenu().getItems()) {
 				UIActionMenuItem data = (UIActionMenuItem)item.getData();
-				if (data != null) item.setEnabled(data.checkEnabled());					
-			}						
+				if (data != null) item.setEnabled(data.checkEnabled());
+			}
 	}
 
 	public void updateStatusBar() {}

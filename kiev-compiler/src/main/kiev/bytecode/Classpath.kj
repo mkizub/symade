@@ -23,14 +23,16 @@ import java.util.zip.*;
  */
 
 public class Classpath implements BytecodeFileConstants {
+	public final Env				theEnv;
 	public Vector<ClasspathEntry>	entries;
 	public SymClasspathEntry		symEntries;
 
-	public Classpath() {
-		this(System.getProperty("java.class.path"));
-	}
+//	public Classpath() {
+//		this(System.getProperty("java.class.path"));
+//	}
 
-	public Classpath(String classpath) {
+	public Classpath(Env env, String classpath, int targetJVM) {
+		this.theEnv = env;
 //		String vers = (String)System.getProperties().get("java.version");
 //		System.out.println("java.version: "+vers);
 //		if( vers!=null && vers.charAt(1)=='.' && ((vers.charAt(0)=='1' && vers.charAt(2)>=2)||(vers.charAt(0)>='2')) ) {
@@ -47,11 +49,11 @@ public class Classpath implements BytecodeFileConstants {
 			classpath = bootpath+File.pathSeparator+classpath;
 //			System.out.println("actual CLASSPATH="+classpath);
 //		}
-		if (Kiev.verbose) System.out.println("classpath: "+classpath);
+		theEnv.reportInfo().log("classpath: {}", classpath);
 		File ctSym = new File(ctSymPath);
 		if (ctSym.exists() && ctSym.canRead()) {
-			if (Kiev.verbose) System.out.println("ctSym: "+ctSymPath);
-			symEntries = new SymClasspathEntry(ctSym);
+			theEnv.reportInfo().log("ctSym: ", ctSymPath);
+			symEntries = new SymClasspathEntry(ctSym, targetJVM);
 		}
 		StringTokenizer st = new StringTokenizer(classpath,File.pathSeparator);
 		entries = new Vector<ClasspathEntry>();
@@ -82,12 +84,24 @@ public class Classpath implements BytecodeFileConstants {
 
 	public boolean exists(String clazz_name) {
 		foreach(ClasspathEntry cpe; entries; cpe != null) {
-			if ( cpe.exists(clazz_name) )
+			if (cpe.exists(clazz_name))
 				return true;
 		}
 		if (symEntries != null && symEntries.exists(clazz_name)) {
 			return true;
 		}
+//		String jname = clazz_name.replace('/','.');
+//		java.lang.Package jp = new MyClassLoader(this.getClass().getClassLoader()).getPackage(jname);
+//		if (jp != null) {
+//			System.out.println("Found package in classloader: "+jname);
+//			return true;
+//		}
+//		InputStream inp = this.getClass().getClassLoader().getResourceAsStream(clazz_name+".xml");
+//		if (inp != null) {
+//			inp.close();
+//			System.out.println("Found class as xml: "+clazz_name+".xml");
+//			return true;
+//		}
 		return false;
 	}
 
@@ -101,6 +115,19 @@ public class Classpath implements BytecodeFileConstants {
 			byte[] data = symEntries.read(clazz_name);
 			if( data != null ) return data;
 		}
+//		String jname = clazz_name.replace('/','.');
+//		java.lang.Package jp = new MyClassLoader(this.getClass().getClassLoader()).getPackage(jname);
+//		if (jp != null) {
+//			System.out.println("Found package in classloader: "+jname);
+//			return createPlainPackage(clazz_name);
+//		}
+//		InputStream inp = this.getClass().getClassLoader().getResourceAsStream(clazz_name+".xml");
+//		if (inp != null) {
+//			System.out.println("Found class as xml: "+clazz_name+".xml");
+//			byte[] data = readXmlInputStream(inp);
+//			if (data != null) return data;
+//		}
+//		System.out.println("Not found even as xml: "+clazz_name+".xml");
 		return null;
 	}
 
@@ -129,7 +156,28 @@ public class Classpath implements BytecodeFileConstants {
 			if( from == data.length ) break;
 		}
 	}
+	public static byte[] readXmlInputStream(InputStream in) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		int n;
+		byte[] data = new byte[1024];
+		while ((n = in.read(data, 0, data.length)) != -1) {
+			out.write(data, 0, n);
+		}
+		out.flush();
+		in.close();
+		data = out.toByteArray();
+		return data;
+	}
 }
+
+//static class MyClassLoader extends ClassLoader {
+//	MyClassLoader(ClassLoader parent) {
+//		super(parent);
+//	}
+//	public java.lang.Package getPackage(String name) {
+//		return super.getPackage(name);
+//	}
+//};
 
 public interface ClasspathEntry {
 	public boolean	exists(String clazz_name);
@@ -272,11 +320,11 @@ public class SymClasspathEntry implements ClasspathEntry {
 	public java.util.Hashtable<String,java.util.Vector<String>>		direntries;
 	public ZipFile					zipfile;
 
-	public SymClasspathEntry(File name) {
+	public SymClasspathEntry(File name, int targetJVM) {
 		zipfile = new ZipFile(name);
 		direntries = new java.util.Hashtable<String,java.util.Vector<String>>();
 		java.util.Enumeration e = zipfile.entries();
-		String ctSymVersion = Integer.toString(Kiev.target, Character.MAX_RADIX).toUpperCase();
+		String ctSymVersion = Integer.toString(targetJVM, Character.MAX_RADIX).toUpperCase();
 		while (e.hasMoreElements()) {
 			ZipEntry ze = (ZipEntry)e.nextElement();
 			String fullName = ze.getName();

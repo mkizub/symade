@@ -56,17 +56,17 @@ import kiev.gui.swing.UIActionMenuItem.MenuItem;
 import kiev.vlang.Env;
 import kiev.vlang.FileUnit;
 import kiev.vtree.INode;
-import kiev.WorkerThreadGroup;
+import kiev.Compiler;
+import kiev.compiler.WorkerThreadGroup;
 
-public class Window extends kiev.gui.Window 
-implements ActionListener, FocusListener {
-	
+public class Window extends kiev.gui.Window implements ActionListener, FocusListener {
+
 	static Timer guiTimer = new Timer("GUI timer", true);
-	
+
 	/**
 	 * The frame.
 	 */
-	private JFrame frame; 
+	private JFrame frame;
 
 	/**
 	 * The explorers.
@@ -161,21 +161,21 @@ implements ActionListener, FocusListener {
 	 * The current component.
 	 */
 	private Component	cur_component;
-	
+
 
 	/**
 	 * The constructor.
 	 * @param env the environment
 	 */
-	public Window(WorkerThreadGroup thrg) {
-		super(thrg);
+	public Window(WorkerThreadGroup thrg, Compiler compiler) {
+		super(thrg, compiler);
 		frame = new JFrame("SymADE");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menu;
 		UIActionMenuItem mi;
-		
+
 		// "File" menu
 		menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_F);
@@ -336,7 +336,7 @@ implements ActionListener, FocusListener {
 		menuBar.add(menu);
 
 		frame.setJMenuBar(menuBar);
-		
+
 		status_bar = new JPanel();
 		status_bar.setBorder(new BevelBorder(BevelBorder.RAISED));
 		sb_editing = new StatusBarEditing(this);
@@ -379,8 +379,8 @@ implements ActionListener, FocusListener {
 		info_view = new UIView(this, info_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		clip_view = new UIView(this, clip_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
 		tree_view = new ProjectView(this, tree_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-project-tree"));
-		test_view = new Editor(this, test_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java")); 
-		error_view = new ErrorsView(this, error_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-errors")); 
+		test_view = new Editor(this, test_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-java"));
+		error_view = new ErrorsView(this, error_canvas, SyntaxManager.loadLanguageSyntax("stx-fmt·syntax-for-errors"));
 		addListeners();
 		getEditorThreadGroup().runTask(new Runnable() {
 			public void run() {
@@ -407,7 +407,7 @@ implements ActionListener, FocusListener {
 	private void addListeners() {
 		addElementChangeListener(info_view);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
@@ -491,7 +491,7 @@ implements ActionListener, FocusListener {
 			editors.remove((Component)e.getViewPeer());
 		}
 		editor_views = v.toArray(new Editor[v.size()]);
-		
+
 		// shrink views
 		java.util.Vector<UIView> w = new java.util.Vector<UIView>();
 		for (UIView e: views) if (e != ed) w.add(e);
@@ -499,7 +499,7 @@ implements ActionListener, FocusListener {
 
 		super.closeEditor(ed);
 	}
-	
+
 	public void updateStatusBar() {
 		sb_editing.statusUpdate();
 		sb_insmode.statusUpdate();

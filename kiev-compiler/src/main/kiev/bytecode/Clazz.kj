@@ -12,16 +12,17 @@ package kiev.bytecode;
 
 import syntax kiev.Syntax;
 
+import kiev.transf.PluginNodeProcessor;
+
 /**
  * @author Maxim Kizub
  * @version $Revision: 213 $
  *
  */
 
-public class Clazz implements BytecodeElement,BytecodeFileConstants {
-	public static boolean	traceRead = false;
-	public static boolean	traceWrite = false;
-	public static boolean	traceRules = false;
+public final class Clazz implements BytecodeElement,BytecodeFileConstants {
+
+	public final Env				env;
 
 	public PoolConstant[]			pool;
 	public int						flags;
@@ -31,6 +32,10 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public Field[]					fields;
 	public Method[]					methods;
 	public Attribute[]				attrs;
+
+	public Clazz(Env env) {
+		this.env = env;
+	}
 
 	public String getClazzName() {
 		return cp_clazz.ref.value;
@@ -56,7 +61,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 
 	public void readClazz(byte[] data) {
 		assert(data != null && data.length > 8 ,"Null bytecode");
-		ReadContext cont = new ReadContext();
+		ReadContext cont = new ReadContext(env);
 		cont.clazz = this;
 		cont.data = data;
 		cont.offset = 0;
@@ -67,7 +72,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public byte[] writeClazz() {
 		byte[] data = new byte[size(0)];
 		assert(data != null && data.length > 8 ,"Null bytecode");
-		ReadContext cont = new ReadContext();
+		ReadContext cont = new ReadContext(env);
 		cont.clazz = this;
 		cont.data = data;
 		cont.offset = 0;
@@ -111,27 +116,27 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		int idx;
 		assert(cont.offset == 0, "Read class not from offset 0");
 		int magic = cont.readInt();
-		trace(traceRead,cont.offset+": JAVA_MAGIC = 0x"+Integer.toHexString(magic));
+		trace(cont.traceRead,cont.offset+": JAVA_MAGIC = 0x"+Integer.toHexString(magic));
 		assert(magic == JAVA_MAGIC ,"Bad JAVA_MAGIC 0x"+Integer.toHexString(magic)+", should be 0x"+Integer.toHexString(JAVA_MAGIC));
 		int minor = cont.readShort();
-		trace(traceRead,cont.offset+": JAVA_MINOR_VERSION = "+minor);
+		trace(cont.traceRead,cont.offset+": JAVA_MINOR_VERSION = "+minor);
 		//assert(minor == JAVA_MINOR_VERSION ,"Bad JAVA_MINOR_VERSION "+minor+", should be "+JAVA_MINOR_VERSION);
 		int magor = cont.readShort();
-		trace(traceRead,cont.offset+": JAVA_VERSION = "+magor);
+		trace(cont.traceRead,cont.offset+": JAVA_VERSION = "+magor);
 		//assert(magor == JAVA_VERSION ,"Bad JAVA_VERSION "+magor+", should be "+JAVA_VERSION);
 
 		readConstantPool(cont);
 
 		flags = cont.readShort();
-		trace(traceRead,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
-		
+		trace(cont.traceRead,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
+
 		// class
 		idx = cont.readShort();
 		assert(idx > 0 && idx < pool.length ,"Class name index "+idx+" out of range");
 		assert(pool[idx].constant_type() == CONSTANT_CLASS ,"Class name index "+idx+" does not points to CONSTANT_CLASS");
 		cp_clazz = (ClazzPoolConstant)pool[idx];
-		trace(traceRead,cont.offset+": class name "+idx+" = "+cp_clazz.ref.value);
-		
+		trace(cont.traceRead,cont.offset+": class name "+idx+" = "+cp_clazz.ref.value);
+
 		// super-class
 		idx = cont.readShort();
 		assert(idx >= 0 && idx < pool.length ,"Super-Class name index "+idx+" out of range");
@@ -140,10 +145,10 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 			cp_super_clazz = null;
 		else
 			cp_super_clazz = (ClazzPoolConstant)pool[idx];
-		trace(traceRead,cont.offset+": super-class name "+idx+" = "+(idx==0?"":cp_super_clazz.ref.value));
+		trace(cont.traceRead,cont.offset+": super-class name "+idx+" = "+(idx==0?"":cp_super_clazz.ref.value));
 
 		int num = cont.readShort();
-		trace(traceRead,cont.offset+": number of interfaces is "+num);
+		trace(cont.traceRead,cont.offset+": number of interfaces is "+num);
 		assert(num*2 <= cont.data.length+cont.offset ,"Too big number of interfaces "+num);
 		cp_interfaces = new ClazzPoolConstant[num];
 		for(int i=0; i < num; i++) {
@@ -151,11 +156,11 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 			assert(idx > 0 && idx < pool.length ,"Interface "+i+" name index "+idx+" out of range");
 			assert(pool[idx].constant_type() == CONSTANT_CLASS ,"Interface "+i+" name index "+idx+" does not points to CONSTANT_CLASS");
 			cp_interfaces[i] = (ClazzPoolConstant)pool[idx];
-			trace(traceRead,cont.offset+": inetrface "+i+" name "+idx+" = "+cp_interfaces[i].ref.value);
+			trace(cont.traceRead,cont.offset+": inetrface "+i+" name "+idx+" = "+cp_interfaces[i].ref.value);
 		}
 
 		num = cont.readShort();
-		trace(traceRead,cont.offset+": number of fields is "+num);
+		trace(cont.traceRead,cont.offset+": number of fields is "+num);
 		assert(num*8 <= cont.data.length+cont.offset ,"Too big number of fields "+num);
 		if( num == 0 )
 			fields = Field.emptyArray;
@@ -167,7 +172,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		}
 
 		num = cont.readShort();
-		trace(traceRead,cont.offset+": number of methods is "+num);
+		trace(cont.traceRead,cont.offset+": number of methods is "+num);
 		assert(num*8 <= cont.data.length+cont.offset ,"Too big number of methods "+num);
 		if( num == 0 )
 			methods = Method.emptyArray;
@@ -188,12 +193,12 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public void write(ReadContext cont) {
 		assert(cont.offset == 0, "Write class not from offset 0");
 		assert(cont.data.length > 8, "Write into too small buffer "+cont.data.length);
-		trace(traceWrite,cont.offset+": Bytecode byffer size "+cont.data.length);
-		trace(traceWrite,cont.offset+": JAVA_MAGIC = 0x"+Integer.toHexString(JAVA_MAGIC));
+		trace(cont.traceWrite,cont.offset+": Bytecode byffer size "+cont.data.length);
+		trace(cont.traceWrite,cont.offset+": JAVA_MAGIC = 0x"+Integer.toHexString(JAVA_MAGIC));
 		cont.writeInt(JAVA_MAGIC);
-		trace(traceWrite,cont.offset+": JAVA_MINOR_VERSION = "+JAVA_MINOR_VERSION);
+		trace(cont.traceWrite,cont.offset+": JAVA_MINOR_VERSION = "+JAVA_MINOR_VERSION);
 		cont.writeShort(JAVA_MINOR_VERSION);
-		trace(traceWrite,cont.offset+": JAVA_VERSION = "+JAVA_VERSION);
+		trace(cont.traceWrite,cont.offset+": JAVA_VERSION = "+JAVA_VERSION);
 		cont.writeShort(JAVA_VERSION);
 
 		writeConstantPool(cont);
@@ -201,19 +206,19 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		assert(cont.data.length-cont.offset > 8, "Write into too small buffer");
 		int flags = this.flags;
 		flags &= ACC_PUBLIC|ACC_FINAL|ACC_SUPER|ACC_INTERFACE|ACC_ABSTRACT|ACC_SYNTHETIC|ACC_ANNOTATION|ACC_ENUM;
-		trace(traceWrite,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
+		trace(cont.traceWrite,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
 		cont.writeShort(flags);
-		
+
 		// class
 		assert(cp_clazz.idx > 0 && cp_clazz.idx < pool.length ,"Class name index "+cp_clazz.idx+" out of range");
 		assert(pool[cp_clazz.idx].constant_type() == CONSTANT_CLASS ,"Class name index "+cp_clazz+" does not points to CONSTANT_CLASS");
-		trace(traceWrite,cont.offset+": class name "+cp_clazz+" = "+cp_clazz.ref.value);
+		trace(cont.traceWrite,cont.offset+": class name "+cp_clazz+" = "+cp_clazz.ref.value);
 		cont.writeShort(cp_clazz.idx);
-		
+
 		// super-class
 		assert(cp_super_clazz == null || (cp_super_clazz.idx > 0 && cp_super_clazz.idx < pool.length) ,"Super-Class name index "+cp_super_clazz.idx+" out of range");
 		assert(cp_super_clazz == null || pool[cp_super_clazz.idx].constant_type() == CONSTANT_CLASS ,"Super-Class name index "+cp_super_clazz+" does not points to CONSTANT_CLASS");
-		trace(traceWrite,cont.offset+": super-class name "+cp_super_clazz+" = "+(cp_super_clazz==null?"":cp_super_clazz.ref.value));
+		trace(cont.traceWrite,cont.offset+": super-class name "+cp_super_clazz+" = "+(cp_super_clazz==null?"":cp_super_clazz.ref.value));
 		cont.writeShort(cp_super_clazz==null ? 0 : cp_super_clazz.idx);
 
 		int num = cp_interfaces.length;
@@ -225,19 +230,19 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		}
 
 		num = fields.length;
-		trace(traceWrite,cont.offset+": number of fields is "+num);
+		trace(cont.traceWrite,cont.offset+": number of fields is "+num);
 		cont.writeShort(num);
 		for(int i=0; i < num; i++)
 			fields[i].write(cont);
 
 		num = methods.length;
-		trace(traceWrite,cont.offset+": number of method is "+num);
+		trace(cont.traceWrite,cont.offset+": number of method is "+num);
 		cont.writeShort(num);
 		for(int i=0; i < num; i++)
 			methods[i].write(cont);
 
 		num = attrs.length;
-		trace(traceWrite,cont.offset+": number of attrs is "+num);
+		trace(cont.traceWrite,cont.offset+": number of attrs is "+num);
 		cont.writeShort(num);
 		for(int i=0; i < num; i++)
 			attrs[i].write(cont);
@@ -267,10 +272,21 @@ public interface BytecodeElement {
 	public void			write(ReadContext cont);
 }
 
-public class ReadContext {
+public final class ReadContext {
+	public final Env		env;
+	public final boolean	traceRead;
+	public final boolean	traceWrite;
+
 	public Clazz			clazz;
 	public byte[]			data;
 	public int				offset;
+
+	public ReadContext(Env env) {
+		this.env = env;
+		PluginNodeProcessor processor = (PluginNodeProcessor)env.getNodeProcessor();
+		this.traceRead = processor.traceBytecodeRead;
+		this.traceWrite = processor.traceBytecodeWrite;
+	}
 
 	public static int utf8Length(String str) {
 		int len = 0;
@@ -283,7 +299,7 @@ public class ReadContext {
 		}
 		return len;
 	}
-	
+
 	public void read(byte[] b) {
 		System.arraycopy(data,offset,b,0,b.length);
 		offset += b.length;

@@ -8,7 +8,7 @@ import kiev.vtree.Symbol;
 public class SymbElem extends Elem {
 
 	public static final int IS_NAMESPACE = 1 << 0; // the symbol is a namespace (package)
-	
+
 	// UUID
 	public SymUUID				uuid;
 	// simple symbol name
@@ -30,7 +30,7 @@ public class SymbElem extends Elem {
 	public SymbElem(int id, int addr) {
 		super(id, addr);
 	}
-	
+
 	public Symbol makeSymbol(Env env) {
 		if (symbol != null)
 			return symbol;
@@ -48,7 +48,7 @@ public class SymbElem extends Elem {
 			Symbol sym = ns.makeSubSymbol(name);
 			if (uuid != null) {
 				if (sym.suuid() == null)
-					sym.setUUID(env, uuid.high, uuid.low);
+					sym.setUUID(uuid.high, uuid.low);
 				else if (!sym.suuid().equals(uuid))
 					System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
 			}
@@ -57,9 +57,9 @@ public class SymbElem extends Elem {
 		}
 		this.symbol = new Symbol(name);
 		if (uuid != null)
-			this.symbol.setUUID(env, uuid.high, uuid.low);
+			this.symbol.setUUID(uuid.high, uuid.low);
 		return symbol;
 	}
-	
+
 	public boolean isNameSpace() { return (flags & IS_NAMESPACE) != 0; }
 }

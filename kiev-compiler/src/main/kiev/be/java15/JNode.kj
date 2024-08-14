@@ -11,8 +11,11 @@
 package kiev.be.java15;
 import syntax kiev.Syntax;
 
+import kiev.transf.PluginNodeProcessor;
+import kiev.compiler.*;
+
 public class JNodeContext extends BackendNodeContext {
-	public JNodeContext(SemanticContext semantic_context) {
+	public JNodeContext(ANodeContext semantic_context) {
 		super(semantic_context);
 	}
 }
@@ -39,6 +42,8 @@ public class JNode extends ANode.UnVersionedData implements JConstants {
 	}
 
 	public final ANodeContext vnContext() { jcontext_.semantic_context }
+	public final PluginNodeProcessor getProcessor() { (PluginNodeProcessor)jcontext_.theEnv.getNodeProcessor() }
+	public final Env getEnv() { jcontext_.theEnv }
 
     public final int getLinePos() { vn().getLineNo() }
 	public final boolean isResolved() { vn().isResolved() }
@@ -100,7 +105,7 @@ public class JNode extends ANode.UnVersionedData implements JConstants {
 	public boolean equals(Object:Object obj) { return false; }
 	public boolean equals(JNode:Object jnv) { return this == jnv; }
 
-	public final Type getType() { return vn().getType(Env.getEnv()); }
+	public final Type getType() { return vn().getType(); }
 
 	public void generate(Code code, Type reqType) {
 		throw new CompilerException(vn(),"Unresolved node ("+this.getClass()+") generation");
@@ -325,8 +330,8 @@ public class JENode extends JNode {
 	public final boolean isBreakTarget() { vn().isBreakTarget() }
 	public final void setAutoReturnable(boolean on) { vn().setAutoReturnable(on); }
 
-	public boolean isConstantExpr(Env env) { vn().isConstantExpr(env) }
-	public Object	getConstValue(Env env) { vn().getConstValue(env) }
+	public boolean isConstantExpr() { vn().isConstantExpr() }
+	public Object	getConstValue() { vn().getConstValue() }
 
 	public Operator getOper() { vn().getOper() }
 }
@@ -353,8 +358,8 @@ public final class JNopExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		// nothing to generate - noop
-		if (Kiev.debugOutputA || Kiev.debugOutputT) {
-			trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NopExpr: "+this);
+		if (getProcessor().genAsserts || getProcessor().genTraces) {
+			trace(code.traceStatGen,"\t\tgenerating NopExpr: "+this);
 			code.setLinePos(this);
 			code.addInstr(Instr.op_nop);
 		}
@@ -404,7 +409,7 @@ public class JTypeDecl extends JDNode {
 	public final boolean isTypeDeclNotLoaded() { vn().isTypeDeclNotLoaded() }
 	public final boolean isStructInner() { vn().isStructInner() }
 
-	public void checkResolved(Env env) { vn().checkResolved(env); }
+	public void checkResolved() { vn().checkResolved(); }
 }
 
 public final class JTypeRef extends JENode {

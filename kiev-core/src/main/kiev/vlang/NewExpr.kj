@@ -71,12 +71,12 @@ public final class NewExpr extends ENode {
 		this.outer = outer;
 	}
 
-	public int		getPriority(Env env) { return Constants.opAccessPriority; }
+	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public Type getType(Env env) {
+	public Type getType() {
 		if (this.clazz != null)
-			return this.clazz.getType(env);
-		Type ntype = this.ntype.getType(env);
+			return this.clazz.getType();
+		Type ntype = this.ntype.getType();
 		Struct clazz = ntype.getStruct();
 		if (outer == null && clazz != null && clazz.ometa_tdef != null) {
 			if (Env.ctxMethod(this) != null || !Env.ctxMethod(this).isStatic())
@@ -84,15 +84,15 @@ public final class NewExpr extends ENode {
 		}
 		if (outer == null)
 			return ntype;
-		TVarBld vs = new TVarBld(clazz.ometa_tdef.getAType(env), outer.getType(env));
+		TVarBld vs = new TVarBld(clazz.ometa_tdef.getAType(), outer.getType());
 		vs.append(ntype);
 		return ntype.make(vs);
 	}
 
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
 		if( clazz == null )
 			return true;
-		Type tp = ntype.getType(env);
+		Type tp = ntype.getType();
 		tp.checkResolved();
 		// Local anonymouse class
 		CompaundType sup  = (CompaundType)tp;
@@ -100,37 +100,37 @@ public final class NewExpr extends ENode {
 		clazz.super_types.delAll();
 		TypeRef sup_tr = new Copier().copyFull(this.ntype);
 		if( sup.tdecl.isInterface() ) {
-			clazz.super_types.insert(0, new TypeRef(env.tenv.tpObject));
+			clazz.super_types.insert(0, new TypeRef(tp.tenv.tpObject));
 			clazz.super_types.add(sup_tr);
 		} else {
 			clazz.super_types.insert(0, sup_tr);
 		}
 
 		// Process inner classes and cases
-		Kiev.runProcessorsOn(clazz);
+		getEnv().runProcessorsOn(clazz);
 		return true;
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void mainResolveOut(INode parent, AttrSlot slot) {
 		if (ntype instanceof MacroSubstTypeRef)
 			return;
 		Type ntype;
 		if (this.clazz != null)
-			ntype = this.clazz.getType(env);
+			ntype = this.clazz.getType();
 		else
-			ntype = this.ntype.getType(env);
+			ntype = this.ntype.getType();
 		Struct s = ntype.getStruct();
 		if (s == null) {
-			Kiev.reportError(this,"Instantiation of non-concrete type "+this.ntype+" ???");
+			reportError().log("Instantiation of non-concrete type {}", this.ntype);
 			return;
 		}
 		if (s.isEnum()) {
-			Kiev.reportError(this,"Forbidden enum value instantiation");
+			reportError().log("Forbidden enum value instantiation");
 			return;
 		}
 		if (outer == null && s.isStructInner() && !s.isStatic() && s.ometa_tdef != null) {
 			if (Env.ctxMethod(this)!=null && Env.ctxMethod(this).isStatic()) {
-				Kiev.reportError(this,"'new' for inner class requares outer instance specification");
+				reportError().log("'new' for inner class requares outer instance specification");
 				return;
 			}
 			outer = new ThisExpr(pos);
@@ -138,7 +138,7 @@ public final class NewExpr extends ENode {
 		}
 		if (outer != null) {
 			//outer.resolve(null);
-			TVarBld vs = new TVarBld(s.ometa_tdef.getAType(env), outer.getType(env));
+			TVarBld vs = new TVarBld(s.ometa_tdef.getAType(), outer.getType());
 			vs.append(ntype);
 			ntype = ntype.make(vs);
 		}
@@ -148,12 +148,12 @@ public final class NewExpr extends ENode {
 
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType(env);
+			ta[i] = args[i].getType();
 		{
 			CallType mt = (CallType)new CallType(null,null,ta,ntype,false);
 			// First try overloaded 'new', than real 'new'
 			if( this.clazz == null && (Env.ctxMethod(this)==null || !Env.ctxMethod(this).hasName(nameNewOp)) ) {
-				ResInfo info = new ResInfo(env,this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(Method.class);
+				ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(Method.class);
 				if (PassInfo.resolveBestMethodR(ntype,info,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(ntype),info.resolvedSymbol(),((NewExpr)this).args.delToArray());
 					replaceWithNodeReWalk(n,parent,slot);
@@ -163,8 +163,8 @@ public final class NewExpr extends ENode {
 		}
 		// try to find a constructor
 		{
-			CallType mt = (CallType)new CallType(ntype,null,ta,env.tenv.tpVoid,false);
-			ResInfo info = new ResInfo(env,this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Constructor.class);
+			CallType mt = (CallType)new CallType(ntype,null,ta,getEnv().tenv.tpVoid,false);
+			ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Constructor.class);
 			if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
 				this.symbol = info.resolvedSymbol();
 				return;
@@ -178,8 +178,8 @@ public final class NewExpr extends ENode {
 			if (ok)
 				return;
 		}
-		Kiev.reportWarning(this,"Can't find apropriative initializer for "+
-			Method.toString("<constructor>",args,env.tenv.tpVoid)+" for "+ntype);
+		reportWarning().log("Can't find apropriative initializer for {} in {}",
+				Method.toString("<constructor>",args,getEnv().tenv.tpVoid), ntype);
 	}
 
 	public String toString() {
@@ -219,19 +219,19 @@ public final class NewEnumExpr extends ENode {
 
 	public NewEnumExpr() {}
 
-	public int		getPriority(Env env) { return Constants.opAccessPriority; }
+	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public Type getType(Env env) {
-		return Env.ctxTDecl(this).getType(env);
+	public Type getType() {
+		return Env.ctxTDecl(this).getType();
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
-		Type ntype = this.getType(env);
+	public void mainResolveOut(INode parent, AttrSlot slot) {
+		Type ntype = this.getType();
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType(env);
-		CallType mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,env.tenv.tpVoid,false));
-		ResInfo info = new ResInfo(env,this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Constructor.class);
+			ta[i] = args[i].getType();
+		CallType mt = (CallType)Type.getRealType(ntype,new CallType(ntype,null,ta,ntype.tenv.tpVoid,false));
+		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Constructor.class);
 		if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
 			this.symbol = info.resolvedSymbol();
 			return;
@@ -244,7 +244,8 @@ public final class NewEnumExpr extends ENode {
 			if (ok)
 				return;
 		}
-		Kiev.reportWarning(this,"Can't find apropriative initializer for "+Method.toString("<constructor>",args,env.tenv.tpVoid)+" for "+ntype);
+		reportWarning().log("Can't find apropriative initializer for {} in {}",
+				Method.toString("<constructor>",args,ntype.tenv.tpVoid), ntype);
 	}
 
 	public String toString() {
@@ -284,15 +285,15 @@ public final class NewArrayExpr extends ENode {
 		ArrayType art = this.arrtype;
 		if (art != null)
 			return art;
-		art = new ArrayType(ntype.getType(Env.getEnv()));
+		art = new ArrayType(ntype.getType());
 		for(int i=1; i < args.length; i++) art = new ArrayType(art);
 		this.arrtype = art;
 		return art;
 	}
 
-	public int getPriority(Env env) { return Constants.opAccessPriority; }
+	public int getPriority() { return Constants.opAccessPriority; }
 
-	public Type getType(Env env) { return arrtype; }
+	public Type getType() { return arrtype; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -326,9 +327,9 @@ public final class NewInitializedArrayExpr extends ENode {
 			this.args.addAll(args);
 	}
 
-	public int		getPriority(Env env) { return Constants.opAccessPriority; }
+	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public Type getType(Env env) { return ntype.getType(env); }
+	public Type getType() { return ntype.getType(); }
 
 	public void setType(ArrayType reqType) {
 		assert (this.ntype == null);
@@ -337,28 +338,28 @@ public final class NewInitializedArrayExpr extends ENode {
 		while (art instanceof ArrayType) { dim++; art = art.arg; }
 		TypeRef tp = new TypeRef(art);
 		for (int i=0; i < dim; i++)
-			tp = new TypeExpr(tp, Operator.PostTypeArray, new ArrayType(tp.getType(Env.getEnv())));
+			tp = new TypeExpr(tp, Operator.PostTypeArray, new ArrayType(tp.getType()));
 		this.ntype = (TypeExpr)tp;
 
 		foreach (NewInitializedArrayExpr arg; args; arg.ntype == null) {
 			Type tp = reqType.arg;
 			if!(tp instanceof ArrayType)
-				Kiev.reportError(this,"Wrong dimension of array initializer");
+				reportError().log("Wrong dimension of array initializer");
 			else
 				arg.setType((ArrayType)tp);
 		}
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		if (ntype == null)
 			return true;
-		Type tp = getType(env);
+		Type tp = getType();
 		if!(tp instanceof ArrayType)
 			throw new CompilerException(this,"Wrong dimension of array initializer");
 		tp = ((ArrayType)tp).arg;
 		foreach (NewInitializedArrayExpr arg; args; arg.ntype == null) {
 			if!(tp instanceof ArrayType)
-				Kiev.reportError(this,"Wrong dimension of array initializer");
+				reportError().log("Wrong dimension of array initializer");
 			else
 				arg.setType((ArrayType)tp);
 		}
@@ -396,13 +397,13 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		this.pos = pos;
 	}
 
-	public int		getPriority(Env env) { return Constants.opAccessPriority; }
+	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public Type getType(Env env) {
+	public Type getType() {
 		Vector<Type> args = new Vector<Type>();
 		foreach (Var fp; params)
-			args.append(fp.getType(env));
-		return new CallType(null, null, args.toArray(), type_ret.getType(env), true);
+			args.append(fp.getType());
+		return new CallType(null, null, args.toArray(), type_ret.getType(), true);
 	}
 
 	public String toString() {

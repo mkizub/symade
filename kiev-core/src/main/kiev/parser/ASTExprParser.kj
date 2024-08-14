@@ -17,16 +17,6 @@ import syntax kiev.Syntax;
  *
  */
 
-public interface ASTToken extends ANode {
-	public boolean isIdentifier();
-	public boolean isOperator();
-	public boolean isMaybeOper();
-	public String  getTokenText();
-	public TypeRef asType(Env env);
-	public DNode   asScope(Env env);
-	public ENode   asExpr(Env env);
-}
-
 public final class ASTExprParser {
 
 	final static class OpdefEnumerator implements Enumeration<COpdef> {
@@ -112,14 +102,14 @@ public final class ASTExprParser {
 	public List<ENode> parseExpr() {
 		List<ENode> results = List.Nil;
 		ENode@ result;
-		trace( Kiev.debug && Kiev.debugOperators, "\n\n\nParsing expr: "+this);
+		trace( this.env.debugOperators, "\n\n\nParsing expr: "+this);
 		foreach( resolveExpr(result,0) ) {
 			ENode res = result;
 			if (this.cur_pos == nodes.length) {
-				trace( Kiev.debug && Kiev.debugOperators, "Add possible resolved expression: "+result);
+				trace( this.env.debugOperators, "Add possible resolved expression: "+result);
 				results = new List.Cons<ENode>(res,results);
 			} else {
-				trace( Kiev.debug && Kiev.debugOperators, "Incomplete possible resolved expression: "+res);
+				trace( this.env.debugOperators, "Incomplete possible resolved expression: "+res);
 			}
 		}
 		return results;
@@ -128,14 +118,14 @@ public final class ASTExprParser {
 	public List<ENode> parseType() {
 		List<ENode> results = List.Nil;
 		ENode@ result;
-		trace( Kiev.debug && Kiev.debugOperators, "\n\n\nParsing type: "+this);
+		trace( this.env.debugOperators, "\n\n\nParsing type: "+this);
 		foreach( resolveType(result) ) {
 			ENode res = result;
 			if (this.cur_pos == nodes.length) {
-				trace( Kiev.debug && Kiev.debugOperators, "Add possible resolved expression: "+result);
+				trace( this.env.debugOperators, "Add possible resolved expression: "+result);
 				results = new List.Cons<ENode>(res,results);
 			} else {
-				trace( Kiev.debug && Kiev.debugOperators, "Incomplete possible resolved expression: "+res);
+				trace( this.env.debugOperators, "Incomplete possible resolved expression: "+res);
 			}
 		}
 		return results;
@@ -146,20 +136,20 @@ public final class ASTExprParser {
 		COpdef@			opd;
 		ANode[]			opArgs;
 	{
-		trace( Kiev.debug && Kiev.debugOperators, "resolveExpr: 0 restLength "+this.restLength()+" priority "+priority),
+		trace( this.env.debugOperators, "resolveExpr: 0 restLength "+this.restLength()+" priority "+priority),
 		this.restLength() > 0,
 		{
 			// left recursion ( E <= E ... )
 			!isDefinitelyOper(this.currNode()),
 			getPriority(this.currNode()) >= priority,
 			expr ?= asExpr(this.currNode()),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveExpr: 1 left "+expr),
+			trace(this.env.debugOperators, "resolveExpr: 1 left "+expr),
 			this.push() : this.pop()
 		;	// E <= ... E
 			this.restLength() > 0,
 			opd @= this.iterateFirst(priority,false),
 			matchOpStart(opd),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveExpr: 2 for "+opd),
+			trace(this.env.debugOperators, "resolveExpr: 2 for "+opd),
 			opArgs = this.makeOpArgs(opd),
 			resolveOpArg(opd.args, 0, opArgs),
 			expr ?= makeExpr(opd,opArgs)
@@ -172,17 +162,17 @@ public final class ASTExprParser {
 		COpdef@			opd;
 		ANode[]			opArgs;
 	{
-		trace( Kiev.debug && Kiev.debugOperators, "resolveExprNext: 0 restLength "+this.restLength()+" priority "+priority+" prev: "+prev),
+		trace(this.env.debugOperators, "resolveExprNext: 0 restLength "+this.restLength()+" priority "+priority+" prev: "+prev),
 		this.restLength() > 0,
 		opd @= this.iterateNext(priority,false),
 		matchOpStart(opd,prev),
-		trace( Kiev.debug && Kiev.debugOperators, "resolveExprNext: 1 for "+prev+" "+opd),
+		trace(this.env.debugOperators, "resolveExprNext: 1 for "+prev+" "+opd),
 		opArgs = this.makeOpArgs(opd,prev),
 		resolveOpArg(opd.args, 1, opArgs),
 		expr ?= makeExpr(opd,opArgs),
 		resolveExprNext(ret, expr, priority)
 	;
-		trace( Kiev.debug && Kiev.debugOperators, "resolveExprNext: 2 res "+prev),
+		trace(this.env.debugOperators, "resolveExprNext: 2 res "+prev),
 		ret ?= prev
 	}
 
@@ -191,19 +181,19 @@ public final class ASTExprParser {
 		COpdef@			opd;
 		ANode[]			opArgs;
 	{
-		trace( Kiev.debug && Kiev.debugOperators, "resolveType: 0 restLength "+this.restLength()),
+		trace(this.env.debugOperators, "resolveType: 0 restLength "+this.restLength()),
 		this.restLength() > 0,
 		{
 			// left-recursion ( T <= T ... )
 			expr ?= asType(this.currNode()),
 			$cut,
-			trace( Kiev.debug && Kiev.debugOperators, "resolveType: 1 left "+expr),
+			trace(this.env.debugOperators, "resolveType: 1 left "+expr),
 			this.push() : this.pop()
 		;	// T <= ... T
 			this.restLength() > 0,
 			opd @= this.iterateFirst(255,true),
 			matchOpStart(opd),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveType: 2 for "+opd),
+			trace(this.env.debugOperators, "resolveType: 2 for "+opd),
 			opArgs = this.makeOpArgs(opd),
 			resolveOpArg(opd.args, 0, opArgs),
 			expr ?= makeExpr(opd,opArgs)
@@ -216,18 +206,18 @@ public final class ASTExprParser {
 		COpdef@			opd;
 		ANode[]			opArgs;
 	{
-		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 0 restLength "+this.restLength()+" prev: "+prev),
+		trace(this.env.debugOperators, "resolveTypeNext: 0 restLength "+this.restLength()+" prev: "+prev),
 		this.restLength() > 0,
 		opd @= this.iterateNext(0,true),
 		matchTypeOpStart(opd,prev),
-		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 1 for "+prev+" "+opd),
+		trace(this.env.debugOperators, "resolveTypeNext: 1 for "+prev+" "+opd),
 		opArgs = this.makeOpArgs(opd,prev),
 		resolveOpArg(opd.args, 1, opArgs),
 		expr ?= makeExpr(opd,opArgs),
 		resolveTypeNext(ret, expr)
 	;
 		ret ?= asType(prev),
-		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 2 res "+prev)
+		trace(this.env.debugOperators, "resolveTypeNext: 2 res "+prev)
 	}
 
 	private rule resolveOpArg(COpArgument[] args, int pos, ANode[] result)
@@ -235,42 +225,42 @@ public final class ASTExprParser {
 		ANode[] opArgs;
 		SeqRes seq_res;
 	{
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 0 for pos "+pos+" as "+(args.length == pos? "END" : args[pos])),
+		trace(this.env.debugOperators, "resolveOpArg: 0 for pos "+pos+" as "+(args.length == pos? "END" : args[pos])),
 		pos > 0 && args.length == pos,
 		$cut,
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 1 return OK")
+		trace(this.env.debugOperators, "resolveOpArg: 1 return OK")
 	;
 		this.restLength() > 0,
 		{
 			args[pos] instanceof COpArgEXPR,
 			resolveExpr(expr, ((COpArgEXPR)args[pos]).prior),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 3 added "+expr),
+			trace(this.env.debugOperators, "resolveOpArg: 3 added "+expr),
 			result[pos] = expr
 		;
 			args[pos] instanceof COpArgTYPE,
 			resolveType(expr),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 5 added "+expr),
+			trace(this.env.debugOperators, "resolveOpArg: 5 added "+expr),
 			result[pos] = expr
 		;
 			args[pos] instanceof COpArgIDNT,
 			isIdent(this.currNode()),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 6 added "+this.currNode()),
+			trace(this.env.debugOperators, "resolveOpArg: 6 added "+this.currNode()),
 			result[pos] = this.push() : this.pop()
 		;
 			args[pos] instanceof COpArgOPER,
 			isOperMatch(this.currNode(), (COpArgOPER)args[pos]),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 7 added "+this.currNode()),
+			trace(this.env.debugOperators, "resolveOpArg: 7 added "+this.currNode()),
 			result[pos] = makeExpr(this.push(),(COpArgOPER)args[pos]) : this.pop()
 		;
 			args[pos] instanceof COpArgNODE,
 			((COpArgNODE)args[pos]).clazz.isInstance(this.currNode()),
-			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 8 added "+this.currNode()),
+			trace(this.env.debugOperators, "resolveOpArg: 8 added "+this.currNode()),
 			result[pos] = this.push() : this.pop()
 		},
 		resolveOpArg(args, pos+1, result)
 	;
 		args[pos] instanceof COpArgLIST,
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: seq "+args[pos]),
+		trace(this.env.debugOperators, "resolveOpArg: seq "+args[pos]),
 		seq_res = parseSeq((COpArgLIST)args[pos]) : this.cur_pos = seq_res.save_cur_pos,
 		seq_res.exprs != null,
 		((COpArgLIST)args[pos]).min_count <= seq_res.exprs.length,
@@ -287,27 +277,27 @@ public final class ASTExprParser {
 		res.save_cur_pos = this.cur_pos;
 		Stack<ANode> seq_stk = new Stack<ANode>();
 		if (resolveLongestSeqEl(seq.el, seq_stk)) {
-			trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 0 add "+seq_stk.peek());
+			trace(this.env.debugOperators, "parseSeq: 0 add "+seq_stk.peek());
 			if (seq.sep == null) {
 				while (this.nodes.length > this.cur_pos && resolveLongestSeqEl(seq.el, seq_stk)) {
-					trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 2 add "+seq_stk.peek());
+					trace(this.env.debugOperators, "parseSeq: 2 add "+seq_stk.peek());
 				}
 			} else {
 				while (this.nodes.length > this.cur_pos && isOperMatch(this.currNode(), seq.sep)) {
-					trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 1 add "+seq.sep);
+					trace(this.env.debugOperators, "parseSeq: 1 add "+seq.sep);
 					this.cur_pos += 1; // each separator
 					if (resolveLongestSeqEl(seq.el, seq_stk)) {
-						trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 2 add "+seq_stk.peek());
+						trace(this.env.debugOperators, "parseSeq: 2 add "+seq_stk.peek());
 						continue;
 					}
-					trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 3 failed ");
+					trace(this.env.debugOperators, "parseSeq: 3 failed ");
 					this.cur_pos = res.save_cur_pos;
 					return res; // if there was the separator - there must be the next expression
 				}
 			}
 		}
 		res.exprs = seq_stk.toArray();
-		trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 4 success found "+res.exprs.length);
+		trace(this.env.debugOperators, "parseSeq: 4 success found "+res.exprs.length);
 		return res;
 	}
 
@@ -422,7 +412,7 @@ public final class ASTExprParser {
 		if (e instanceof TypeRef)
 			return (TypeRef)e;
 		if (e instanceof ASTToken)
-			return e.asType(env);
+			return e.asType();
 		return null;
 	}
 	private ENode asExpr(ANode e) {
@@ -431,7 +421,7 @@ public final class ASTExprParser {
 		if (e instanceof ENode)
 			return (ENode)e;
 		if (e instanceof ASTToken)
-			return e.asExpr(env);
+			return e.asExpr();
 		return null;
 	}
 	private boolean isDefinitelyOper(ANode e) {
@@ -445,7 +435,7 @@ public final class ASTExprParser {
 	}
 	private int getPriority(ANode n) {
 		if (n instanceof ENode)
-			return n.getPriority(env);
+			return n.getPriority();
 		return 255;
 	}
 	private ANode makeExpr(ANode e, COpArgOPER oper) {

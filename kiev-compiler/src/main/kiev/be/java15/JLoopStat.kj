@@ -35,7 +35,7 @@ public final class JLabel extends JDNode {
 			return (JLabel)jn;
 		return new JLabel(impl);
 	}
-	
+
 	protected JLabel(Label impl) {
 		super(impl);
 	}
@@ -82,13 +82,13 @@ public abstract class JLoopStat extends JENode implements BreakTarget, ContinueT
 			return JForEachStat.attach((ForEachStat)impl);
 		return new JLoopStat(impl);
 	}
-	
+
 	protected JLoopStat(LoopStat impl) {
 		super(impl);
 		lblcnt = (JLabel)impl.lblcnt;
 		lblbrk = (JLabel)impl.lblbrk;
 	}
-	
+
 	public final JLabel getCntLabel() { return lblcnt; }
 	public final JLabel getBrkLabel() { return lblbrk; }
 }
@@ -108,13 +108,13 @@ public final class JWhileStat extends JLoopStat {
 			return (JWhileStat)jn;
 		return new JWhileStat(impl);
 	}
-	
+
 	protected JWhileStat(WhileStat impl) {
 		super(impl);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating WhileStat");
+		trace(code.traceStatGen,"\tgenerating WhileStat");
 		code.setLinePos(this);
 		WhileStat vn = vn();
 		JENode cond = (JENode)vn.cond;
@@ -131,8 +131,8 @@ public final class JWhileStat extends JLoopStat {
 			body.generate(code,code.tenv.tpVoid);
 			lblcnt.generate(code,code.tenv.tpVoid);
 
-			if( cond.isConstantExpr(code.env) ) {
-				if( ((Boolean)cond.getConstValue(code.env)).booleanValue() ) {
+			if( cond.isConstantExpr() ) {
+				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
@@ -140,7 +140,7 @@ public final class JWhileStat extends JLoopStat {
 			}
 			lblbrk.generate(code,code.tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(vn,e);
+			vn.reportError().log(e);
 		}
 	}
 }
@@ -160,13 +160,13 @@ public final class JDoWhileStat extends JLoopStat {
 			return (JDoWhileStat)jn;
 		return new JDoWhileStat(impl);
 	}
-	
+
 	protected JDoWhileStat(DoWhileStat impl) {
 		super(impl);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating DoWhileStat");
+		trace(code.traceStatGen,"\tgenerating DoWhileStat");
 		code.setLinePos(this);
 		DoWhileStat vn = vn();
 		JENode cond = (JENode)vn.cond;
@@ -183,8 +183,8 @@ public final class JDoWhileStat extends JLoopStat {
 			body.generate(code,code.tenv.tpVoid);
 			lblcnt.generate(code,code.tenv.tpVoid);
 
-			if( cond.isConstantExpr(code.env) ) {
-				if( ((Boolean)cond.getConstValue(code.env)).booleanValue() ) {
+			if( cond.isConstantExpr() ) {
+				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
@@ -192,7 +192,7 @@ public final class JDoWhileStat extends JLoopStat {
 			}
 			lblbrk.generate(code,code.tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(vn,e);
+			vn.reportError().log(e);
 		}
 	}
 }
@@ -212,13 +212,13 @@ public final class JForStat extends JLoopStat {
 			return (JForStat)jn;
 		return new JForStat(impl);
 	}
-	
+
 	protected JForStat(ForStat impl) {
 		super(impl);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ForStat");
+		trace(code.traceStatGen,"\tgenerating ForStat");
 		lblcnt.getCodeLabel(code);
 		lblbrk.getCodeLabel(code);
 		CodeLabel body_label = code.newLabel();
@@ -254,9 +254,9 @@ public final class JForStat extends JLoopStat {
 
 			code.addInstr(Instr.set_label,check_label);
 			if( cond != null ) {
-				if( cond.isConstantExpr(code.env) && ((Boolean)cond.getConstValue(code.env)).booleanValue() )
+				if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() )
 					code.addInstr(Instr.op_goto,body_label);
-				else if( cond.isConstantExpr(code.env) && !((Boolean)cond.getConstValue(code.env)).booleanValue() );
+				else if( cond.isConstantExpr() && !((Boolean)cond.getConstValue()).booleanValue() );
 				else JBoolExpr.gen_iftrue(code, cond, body_label);
 			} else {
 				code.addInstr(Instr.op_goto,body_label);
@@ -269,7 +269,7 @@ public final class JForStat extends JLoopStat {
 					((JVar)jn).removeVar(code);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(vn,e);
+			vn.reportError().log(e);
 		}
 	}
 }
@@ -289,13 +289,13 @@ public final class JForEachStat extends JLoopStat {
 			return (JForEachStat)jn;
 		return new JForEachStat(impl);
 	}
-	
+
 	protected JForEachStat(ForEachStat impl) {
 		super(impl);
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating ForEachStat");
+		trace(code.traceStatGen,"\tgenerating ForEachStat");
 		lblcnt.getCodeLabel(code);
 		lblbrk.getCodeLabel(code);
 		CodeLabel body_label = code.newLabel();
@@ -355,7 +355,7 @@ public final class JForEachStat extends JLoopStat {
 
 			lblbrk.generate(code,code.tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(vn,e);
+			vn.reportError().log(e);
 		}
 	}
 

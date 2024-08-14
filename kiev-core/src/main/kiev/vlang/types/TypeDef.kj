@@ -65,29 +65,30 @@ public abstract class TypeDef extends TypeDecl {
 		super(symbol);
 	}
 
-	public void checkResolved(Env env) {}
+	public void checkResolved() {}
 
-	public Type getType(Env env) {
-		return getAType(env);
+	public Type getType() {
+		return getAType();
 	}
-	public ArgType getAType(Env env) {
-		ArgMetaType mt = (ArgMetaType)env.tenv.getExistingMetaType(this.symbol);
+	public ArgType getAType() {
+		ArgMetaType mt = (ArgMetaType)getEnv().tenv.getExistingMetaType(this.symbol);
 		if (mt != null)
 			return mt.atype;
 		this.verifyMetas();
-		return getMetaType(env).atype;
+		return getMetaType().atype;
 	}
 
-	public ArgMetaType getMetaType(Env env) {
-		synchronized (env.tenv) {
-			MetaType mt = env.tenv.getExistingMetaType(this.symbol);
+	public ArgMetaType getMetaType() {
+		StdTypes tenv = getEnv().tenv;
+		synchronized (tenv) {
+			MetaType mt = tenv.getExistingMetaType(this.symbol);
 			if (mt != null)
 				return (ArgMetaType)mt;
-			return new ArgMetaType(env.getTypeEnv(),this);
+			return new ArgMetaType(tenv,this);
 		}
 	}
 
-	public abstract Struct getStruct(Env env);
+	public abstract Struct getStruct();
 
 	public String toString() {
 		return sname;
@@ -131,33 +132,33 @@ public final class TypeAssign extends TypeDef {
 		this.super_types.add(new TypeRef(sup));
 	}
 
-	public Struct getStruct(Env env) {
+	public Struct getStruct() {
 		if (super_types.length > 0)
-			return super_types[0].getStruct(env);
+			return super_types[0].getStruct();
 		return null;
 	}
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void preResolveOut(INode parent, AttrSlot slot) {
 		if (isTypeVirtual()) {
 			ANode parent = parent();
 			if (parent instanceof TypeDecl) {
 				foreach (TypeRef tr; parent.super_types) {
-					TypeDecl td = tr.getTypeDecl(env);
-					ResInfo info = new ResInfo(env,this,this.sname,ResInfo.noForwards|ResInfo.noSyntaxContext);
+					TypeDecl td = tr.getTypeDecl();
+					ResInfo info = new ResInfo(this,this.sname,ResInfo.noForwards|ResInfo.noSyntaxContext);
 					foreach (td.resolveNameR(info)) {
 						DNode dn = info.resolvedDNode();
 						if !(dn instanceof TypeDef) {
-							Kiev.reportError(this,"Typedef "+parent+"."+sname+" extends non-typedef node");
+							reportError().log("Typedef {}.{} extends non-typedef node", parent, sname);
 							continue;
 						}
 						if (dn instanceof TypeAssign) {
-							Kiev.reportWarning(this,"Typedef "+parent+"."+sname+" extends final typedef");
+							reportWarning().log("Typedef {}.{} extends final typedef", parent, sname);
 						} else {
 							TypeConstr tc = (TypeConstr)dn;
 							if (!tc.isTypeVirtual())
-								Kiev.reportWarning(this,"Typedef "+parent+"."+sname+" extends non-virtual typedef");
+								reportWarning().log("Typedef {}.{} extends non-virtual typedef", parent, sname);
 							//if (!tc.isTypeAbstract())
-							//	Kiev.reportWarning(this,"Typedef extends non-abstract typedef");
+							//	reportWarning().log("Typedef extends non-abstract typedef");
 						}
 					}
 				}
@@ -165,13 +166,13 @@ public final class TypeAssign extends TypeDef {
 		}
 	}
 
-	public void postVerify(Env env, INode parent, AttrSlot slot) {
+	public void postVerify(INode parent, AttrSlot slot) {
 		// check upper bounds
 		foreach (TypeRef tr; getUpperBounds()) {
-			Type t = tr.getType(env);
+			Type t = tr.getType();
 			VarianceCheckError err = t.checkVariance(t,TypeVariance.IN_VARIANT);
 			if (err != null)
-				Kiev.reportWarning(this, err.toString());
+				reportWarning().log(err.toString());
 		}
 	}
 }
@@ -216,25 +217,25 @@ public final class TypeConstr extends TypeDef {
 		variance = null;
 	}
 
-	public Struct getStruct(Env env) {
+	public Struct getStruct() {
 		foreach (TypeRef tr; super_types) {
-			Struct s = tr.getStruct(env);
+			Struct s = tr.getStruct();
 			if (s != null)
 				return s;
 		}
 		return null;
 	}
 
-	public void postVerify(Env env, INode parent, AttrSlot slot) {
+	public void postVerify(INode parent, AttrSlot slot) {
 		if !(parent() instanceof Method) {
 			TypeVariance variance = getVarianceSafe();
 
 			// check upper bounds
 			foreach (TypeRef tr; getUpperBounds()) {
-				Type t = tr.getType(env);
+				Type t = tr.getType();
 				VarianceCheckError err = t.checkVariance(t,variance);
 				if (err != null)
-					Kiev.reportWarning(this, err.toString());
+					reportWarning().log(err.toString());
 			}
 
 			// check lower bounds with inverted variance
@@ -243,10 +244,10 @@ public final class TypeConstr extends TypeDef {
 			else if (variance == TypeVariance.CONTRA_VARIANT)
 				variance = TypeVariance.CO_VARIANT;
 			foreach (TypeRef tr; getLowerBounds()) {
-				Type t = tr.getType(env);
+				Type t = tr.getType();
 				VarianceCheckError err = t.checkVariance(t,variance);
 				if (err != null)
-					Kiev.reportWarning(this, err.toString());
+					reportWarning().log(err.toString());
 			}
 		}
 	}

@@ -32,8 +32,8 @@ public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
 	public		ENode		obj;
 	public:ro	Field		var;
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
-		resolveENode(obj,null,env);
+	public void resolveENode(Type reqType) throws RuntimeException {
+		resolveENode(obj,null);
 
 		// Set violation of the field
 		if( ctx_method != null
@@ -43,7 +43,7 @@ public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
 
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -52,61 +52,61 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 	public ENode		obj;
 	public ENode		index;
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
+	public void resolveENode(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
-		resolveENode(obj,null,env);
-		resolveENode(index,null,env);
+		resolveENode(obj,null);
+		resolveENode(index,null);
 		// Resolve overloaded access method
-		CallType mt = new CallType(obj.getType(env),null,new Type[]{index.getType(env)},env.tenv.tpAny,false);
-		ResInfo info = new ResInfo(env,(ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
-		if( !PassInfo.resolveBestMethodR(obj.getType(env),info,mt) )
+		CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},tenv.tpAny,false);
+		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
+		if( !PassInfo.resolveBestMethodR(obj.getType(),info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
 		Method m = (Method)info.resolvedDNode();
 		if !(m.isMacro() && m.isNative()) {
 			// Not a standard operator
 			if( m.dnode.isStatic() )
-				replaceWithNodeResolve(env, reqType, new CallExpr(pos,null,info.resolvedSymbol(),new ENode[]{~obj,~index}));
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,info.resolvedSymbol(),new ENode[]{~obj,~index}));
 			else
-				replaceWithNodeResolve(env, reqType, new CallExpr(pos,~obj,info.resolvedSymbol(),new ENode[]{~index}));
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~obj,info.resolvedSymbol(),new ENode[]{~index}));
 			return;
 		}
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
 @ViewOf(vcast=true)
 public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
+	public void resolveENode(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		ANode p = parent();
 		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
 			p = p.parent();
 		DNode decl = (DNode)p;
 		if (decl.isStatic() && ctx_tdecl.sname != nameIFaceImpl)
-			Kiev.reportError(this,"Access '"+parent()+"' in static context");
+			reportError().log("Access '{}' in static context", parent());
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
 @ViewOf(vcast=true)
 public static final view RSuperExpr of SuperExpr extends RENode {
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
+	public void resolveENode(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		ANode p = parent();
 		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
 			p = p.parent();
 		DNode decl = (DNode)p;
 		if (decl.isStatic() && ctx_tdecl.sname != nameIFaceImpl)
-			Kiev.reportError(this,"Access '"+parent()+"' in static context");
+			reportError().log("Access '{}' in static context", parent());
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -117,7 +117,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 	public Var getVarSafe();
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
+	public void resolveENode(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
 		ComplexTypeDecl ctx_tdecl = this.ctx_tdecl;
 		if !(ctx_tdecl.parent() instanceof KievPackage || ctx_tdecl.parent() instanceof ComplexTypeDecl) {
@@ -127,9 +127,9 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if ((vf = ctx_tdecl.resolveField(env,this.ident,false)) == null) {
+				if ((vf = ctx_tdecl.resolveField(this.ident,false)) == null) {
 					// Add field
-					vf = new Field(this.ident,var.getType(env),ACC_PUBLIC);
+					vf = new Field(this.ident,var.getType(),ACC_PUBLIC);
 					ctx_tdecl.members.add(vf);
 					vf.setNeedProxy(true);
 					vf.init = new Copier().copyFull((ENode)this);
@@ -138,7 +138,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 		}
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -147,14 +147,14 @@ public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
 	public		TypeRef		obj;
 	public:ro	Field		var;
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
+	public void resolveENode(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		// Set violation of the field
 		if( ctx_method != null )
 			ctx_method.addViolatedField(var);
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -165,10 +165,10 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 
 	public void setupOuterFields();
 
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving "+this);
+	public void resolveENode(Type reqType) throws RuntimeException {
+		trace(getEnv().debugResolve,"Resolving "+this);
 		setupOuterFields();
-		if( Kiev.debug && Kiev.debugResolve ) {
+		if (getEnv().debugResolve) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)
 				sb.append("->").append(outer_refs[i].sname);
@@ -176,7 +176,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 		}
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -185,13 +185,13 @@ public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
 	public TypeRef		ctype;
 	public ENode		expr;
 
-	public void resolveENode(Type reqType, Env env) {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving "+this);
-		resolveENode(expr,null,env);
-		Type ctype = this.getType(env);
-		Type extp = expr.getType(env);
+	public void resolveENode(Type reqType) {
+		trace(getEnv().debugResolve,"Resolving "+this);
+		resolveENode(expr,null);
+		Type ctype = this.getType();
+		Type extp = expr.getType();
 		if (ctype ≈ extp) {
-			replaceWithNodeResolve(env, reqType,~expr);
+			replaceWithNodeResolve(reqType,~expr);
 			return;
 		}
 		if (ctype.isIntegerInCode() && extp.isIntegerInCode())
@@ -205,10 +205,10 @@ public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
 		else if (extp instanceof CTimeType && extp.getEnclosedType() ≈ ctype)
 			;
 		else
-			Kiev.reportError(this, "Cannot reinterpret "+extp+" as "+ctype);
+			reportError().log("Cannot reinterpret {} as {}", extp, ctype);
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 

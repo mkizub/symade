@@ -88,14 +88,14 @@ public abstract class ENode extends ASTNode {
 			return ((Type)id).meta_type.tdecl.symbol;
 		if (id instanceof NameAndUUID) {
 			NameAndUUID nid = (NameAndUUID)id;
-			Symbol sym = Env.getEnv().getSymbolByUUID(nid.uuid_high, nid.uuid_low);
+			Symbol sym = getEnv().getSymbolByUUID(nid.uuid_high, nid.uuid_low);
 			if (sym != null) {
 				this.symbol = sym;
 				return sym;
 			}
 		}
 		if (id instanceof TypeSignature) {
-			Type tp = AType.fromSignature(Env.getEnv(),id.sign,true);
+			Type tp = AType.fromSignature(getEnv(),id.sign,true);
 			this.type_lnk = tp;
 			return tp.meta_type.tdecl.symbol;
 		}
@@ -112,14 +112,14 @@ public abstract class ENode extends ASTNode {
 			return ((Type)id).meta_type.tdecl;
 		if (id instanceof NameAndUUID) {
 			NameAndUUID nid = (NameAndUUID)id;
-			Symbol sym = Env.getEnv().getSymbolByUUID(nid.uuid_high, nid.uuid_low);
+			Symbol sym = getEnv().getSymbolByUUID(nid.uuid_high, nid.uuid_low);
 			if (sym != null) {
 				this.symbol = sym;
 				return sym.dnode;
 			}
 		}
 		if (id instanceof TypeSignature) {
-			Type tp = AType.fromSignature(Env.getEnv(),id.sign,true);
+			Type tp = AType.fromSignature(getEnv(),id.sign,true);
 			this.type_lnk = tp;
 			return tp.meta_type.tdecl;;
 		}
@@ -136,7 +136,7 @@ public abstract class ENode extends ASTNode {
 			return tp;
 		}
 		if (id instanceof TypeSignature) {
-			Type tp = AType.fromSignature(Env.getEnv(),id.sign,true);
+			Type tp = AType.fromSignature(getEnv(),id.sign,true);
 			this.type_lnk = tp;
 			return tp;
 		}
@@ -273,22 +273,22 @@ public abstract class ENode extends ASTNode {
 		throw new RuntimeException("Cannot init "+getClass()+" from "+node.getClass());
 	}
 
-	public Type[] getAccessTypes(Env env) {
-		return new Type[]{getType(env)};
+	public Type[] getAccessTypes() {
+		return new Type[]{getType()};
 	}
 
-	public Opdef resolveOpdef(Env env) {
+	public Opdef resolveOpdef() {
 		Symbol sym = this.symbol;
 		if (sym == null) {
 			String ident = this.ident;
 			if (ident != null) {
 				ResInfo info;
-				info = new ResInfo(env,this,ident).match(CoreOperation.class);
-				if (!env.root.resolveNameR(info)) { //(!PassInfo.resolveNameR(this,info)) {
-					info = new ResInfo(env,this,ident).match(Opdef.class);
+				info = new ResInfo(this,ident).match(CoreOperation.class);
+				if (!getEnv().root.resolveNameR(info)) { //(!PassInfo.resolveNameR(this,info)) {
+					info = new ResInfo(this,ident).match(Opdef.class);
 					if (!PassInfo.resolveNameR(this,info)) {
 						if (Env.ctxMethod(this) == null || !Env.ctxMethod(this).isMacro())
-							Kiev.reportError(this,"Unresolved operator "+ident);
+							reportError().log("Unresolved operator {}", ident);
 						return null;
 					}
 				}
@@ -300,7 +300,7 @@ public abstract class ENode extends ASTNode {
 		return null;
 	}
 
-	public CoreOperation getOperation(Env env) {
+	public CoreOperation getOperation() {
 		DNode dn = this.dnode;
 		if (dn instanceof CoreOperation)
 			return (CoreOperation)dn;
@@ -314,7 +314,7 @@ public abstract class ENode extends ASTNode {
 			return dn.resolved;
 		return null;
 	}
-	public Opdef getFakeOpdef(Env env) {
+	public Opdef getFakeOpdef() {
 		Opdef opd = null;
 		Method m = null;
 		Object id = this.ident_or_symbol_or_type;
@@ -325,7 +325,7 @@ public abstract class ENode extends ASTNode {
 			if (p instanceof Method)
 				m = (Method)p;
 			else
-				m = getOperation(env);
+				m = getOperation();
 		}
 		if (m != null) {
 			try {
@@ -334,14 +334,14 @@ public abstract class ENode extends ASTNode {
 					foreach (ImportSyntax imp; ss.syntaxes) {
 						KievSyntax stx = imp.name.dnode;
 						if (stx != null) {
-							opd = stx.getOpdefForMethod(env, m);
+							opd = stx.getOpdefForMethod(m);
 							if (opd != null)
 								return opd;
 						}
 					}
 				}
-				KievSyntax kiev_stx = (KievSyntax) env.loadAnyDecl("kiev·Syntax");
-				opd = kiev_stx.getOpdefForMethod(env, m);
+				KievSyntax kiev_stx = (KievSyntax) getEnv().loadAnyDecl("kiev·Syntax");
+				opd = kiev_stx.getOpdefForMethod(m);
 				if (opd != null)
 					return opd;
 			} catch (Throwable t) {}
@@ -349,20 +349,20 @@ public abstract class ENode extends ASTNode {
 		return null;
 	}
 
-	public final Method resolveMethodAndNormalize(Env env, INode parent, AttrSlot slot) {
+	public final Method resolveMethodAndNormalize(INode parent, AttrSlot slot) {
 		DNode dn = this.dnode;
 		Method m;
 		Symbol sym;
 		if (dn == null) {
-			Opdef opd = resolveOpdef(env);
+			Opdef opd = resolveOpdef();
 			dn = this.dnode;
 		}
 		if (dn instanceof Opdef) {
 			Opdef opd = (Opdef)dn;
-			sym = opd.resolveMethod(env,this);
+			sym = opd.resolveMethod(this);
 			if (sym == null) {
 				if (Env.ctxMethod(this) == null || !Env.ctxMethod(this).isMacro())
-					Kiev.reportError(this, "Unresolved method for operator "+opd);
+					reportError().log("Unresolved method for operator {}", opd);
 				return null;
 			}
 			m = (Method)sym.dnode;
@@ -373,15 +373,15 @@ public abstract class ENode extends ASTNode {
 			sym = this.symbol;
 		}
 		else if (dn != null) {
-			Kiev.reportError(this, "Unknown node typer "+dn.getClass()+" during expression normalization");
+			reportError().log("Unknown node typer {} during expression normalization", dn.getClass());
 			return null;
 		}
 		else {
 			if (Env.ctxMethod(this) == null || !Env.ctxMethod(this).isMacro())
-				Kiev.reportError(this, "Unresolved '"+ident+"' during expression normalization");
+				reportError().log("Unresolved '{}' during expression normalization", ident);
 			return null;
 		}
-		m.normilizeExpr(env, this, sym, parent, slot);
+		m.normilizeExpr(this, sym, parent, slot);
 		return m;
 	}
 
@@ -389,18 +389,18 @@ public abstract class ENode extends ASTNode {
 
 	public int getLvalArity() { return -1; }
 
-	public int getPriority(Env env) {
+	public int getPriority() {
 		if (isPrimaryExpr())
 			return 255;
-		Opdef opd = getFakeOpdef(env);
+		Opdef opd = getFakeOpdef();
 		if (opd == null)
 			return 255;
 		return opd.prior;
 	}
 
 	public boolean valueEquals(Object o) { return false; }
-	public boolean isConstantExpr(Env env) { return false; }
-	public Object	getConstValue(Env env) {
+	public boolean isConstantExpr() { return false; }
+	public Object	getConstValue() {
 		throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
@@ -440,7 +440,7 @@ public abstract class ENode extends ASTNode {
 	}
 
 	public String toStringByOpdef() {
-		Opdef opd = getFakeOpdef(Env.getEnv());
+		Opdef opd = getFakeOpdef();
 		if (opd != null)
 			return opd.toString(this);
 		StringBuffer sb = new StringBuffer();
@@ -468,8 +468,8 @@ public final class NopExpr extends ENode {
 
 	public String toString() { return ""; }
 
-	public Type getType(Env env) {
-		return env.tenv.tpVoid;
+	public Type getType() {
+		return getEnv().tenv.tpVoid;
 	}
 }
 
@@ -494,15 +494,15 @@ public final class ArgExpr extends ENode {
 
 	public String toString() { return var + ":" + expr; }
 
-	public Type getType(Env env) {
-		return expr.getType(env);
+	public Type getType() {
+		return expr.getType();
 	}
 
-	public boolean isConstantExpr(Env env) {
-		return expr.isConstantExpr(env);
+	public boolean isConstantExpr() {
+		return expr.isConstantExpr();
 	}
-	public Object getConstValue(Env env) {
-		return expr.getConstValue(env);
+	public Object getConstValue() {
+		return expr.getConstValue();
 	}
 }
 

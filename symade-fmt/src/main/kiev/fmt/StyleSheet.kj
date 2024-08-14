@@ -27,12 +27,12 @@ public class StyleSheet extends DNode implements GlobalDNodeContainer, ExportSer
 
 	@nodeAttr
 	public ASTNode∅			members;
-	
+
 	@UnVersioned
 	protected Draw_StyleSheet compiled;
 
 	public final ASTNode[] getContainerMembers() { this.members }
-	
+
 	public Object getDataToSerialize() {
 		return this.getCompiled().init();
 	}
@@ -59,7 +59,7 @@ public class StyleSheet extends DNode implements GlobalDNodeContainer, ExportSer
 		path.enterSuper() : path.leaveSuper(),
 		sup.dnode.resolveNameR(path)
 	}
-	
+
 	public Draw_StyleSheet getCompiled() {
 		if (compiled != null)
 			return compiled;
@@ -89,7 +89,7 @@ public final class DrawColor extends DNode {
 	@nodeAttr
 	public int rgb_color;
 
-	
+
 	public DrawColor() {}
 	public DrawColor(String name) {
 		this.sname = name;
@@ -132,7 +132,7 @@ public enum SpaceAction {
 public class SpaceInfo extends DNode {
 	@nodeAttr SpaceKind		kind;
 	@nodeAttr SyntaxSize		size;
-	
+
 	public SpaceInfo() {
 		this.size = new SyntaxSize();
 	}
@@ -145,7 +145,7 @@ public class SpaceInfo extends DNode {
 		this.size.gfx_size = pixel_size;
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (size == null)
 			size = new SyntaxSize();
 		if (size.unit == null)
@@ -161,13 +161,13 @@ public final class SpaceCmd extends ASTNode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public SpaceInfo⇑					si;
-	
+
 	@nodeAttr
 	public SpaceAction					action_before;
-	
+
 	@nodeAttr
 	public SpaceAction					action_after;
-	
+
 	public SpaceCmd() {
 		action_before = SP_NOP;
 		action_after = SP_NOP;
@@ -178,10 +178,10 @@ public final class SpaceCmd extends ASTNode {
 		this.action_after = action_after;
 	}
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void preResolveOut(INode parent, AttrSlot slot) {
 		if (si.name == null)
 			si.name = "sp";
-		super.preResolveOut(env, parent, slot);
+		super.preResolveOut(parent, slot);
 	}
 }
 
@@ -189,15 +189,15 @@ public final class SpaceCmd extends ASTNode {
 public final class SyntaxStyleDecl extends DNode {
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	public SyntaxStyleDecl⇑∅		fallback;
-	
+
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public DrawColor⇑				color;
-	
+
 	@nodeAttr @SymbolRefAutoComplete @SymbolRefAutoResolve
 	final
 	public DrawFont⇑				font;
-	
+
 	@nodeAttr
 	public SpaceCmd∅				spaces;
 
@@ -225,7 +225,7 @@ public final class SyntaxStyleDecl extends DNode {
 			style.color = this.color.dnode.compile();
 		if (this.font != null && this.font.dnode != null && this.font.dnode.font_name != null)
 			style.font = this.font.dnode.compile();
-		
+
 		foreach (SpaceCmd sc; spaces) {
 			LayoutSpace ls = new LayoutSpace();
 			SpaceInfo si = (SpaceInfo)sc.si.dnode;
@@ -265,7 +265,7 @@ public final class SyntaxSize extends SNode {
 	@AttrXMLDumpInfo(attr=true, name="g")
 	@nodeAttr public int gfx_size;
 	@AttrXMLDumpInfo(attr=true, name="t")
-	@nodeAttr public int txt_size; 
+	@nodeAttr public int txt_size;
 	public Draw_Size getCompiled() {
 		Draw_Size sz = new Draw_Size();
 		sz.unit = this.unit;
@@ -430,7 +430,7 @@ public final class ParagraphLayout extends DNode {
 	public ParagraphKind			flow;
 	@nodeAttr
 	public ParagraphOption∅		options;
-	
+
 	public ParagraphLayout() {}
 
 	public Draw_Paragraph getCompiled() {

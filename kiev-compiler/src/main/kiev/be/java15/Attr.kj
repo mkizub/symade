@@ -45,7 +45,7 @@ public class Attr implements JConstants {
 
 public class CodeAttr extends Attr {
 
-	public JMethod	method;
+	public JMethod		method;
 	public int			max_stack;
 	public int			max_locals;
 	CodeCatchInfo[]		catchers;
@@ -452,17 +452,17 @@ public class ContractAttr extends CodeAttr {
 }
 
 public abstract class MetaAttr extends Attr {
-	
+
 	final JEnv jenv;
-	
+
 	public MetaAttr(String name, JEnv jenv) {
 		super(name);
 		this.jenv = jenv;
 	}
-	
+
 	protected final void generateValue(ConstPool constPool, ASTNode value) {
 		if (value instanceof ConstExpr) {
-			Object v = ((ConstExpr)value).getConstValue(jenv.env);
+			Object v = ((ConstExpr)value).getConstValue();
 			if     ( v instanceof Boolean )			constPool.addNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0));
 			else if( v instanceof Byte )			constPool.addNumberCP((Byte)v);
 			else if( v instanceof Short )			constPool.addNumberCP((Short)v);
@@ -474,7 +474,7 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof String )			constPool.addAsciiCP((String)v);
 		}
 		else if (value instanceof TypeRef) {
-			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType(jenv.env)).java_signature);
+			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType()).java_signature);
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
@@ -485,10 +485,10 @@ public abstract class MetaAttr extends Attr {
 		}
 		else if (value instanceof UserMeta) {
 			UserMeta m = (UserMeta)value;
-			JavaAnnotation tdecl = m.getAnnotationDecl(jenv.env);
+			JavaAnnotation tdecl = m.getAnnotationDecl();
 			constPool.addAsciiCP(jenv.getJTypeEnv().getJType(tdecl).java_signature);
 			foreach (Method mm; tdecl.members) {
-				MetaValue v = m.get(mm.sname); 
+				MetaValue v = m.get(mm.sname);
 				generateValue(constPool,v);
 			}
 		}
@@ -498,7 +498,7 @@ public abstract class MetaAttr extends Attr {
 		}
 		else if (value instanceof MetaValueArray) {
 			constPool.addAsciiCP(value.ident);
-			MetaValueArray va = (MetaValueArray)value; 
+			MetaValueArray va = (MetaValueArray)value;
 			foreach (ASTNode n; va.values)
 				generateValue(constPool,n);
 		}
@@ -516,11 +516,11 @@ public abstract class MetaAttr extends Attr {
 		}
 		return ev;
 	}
-	
+
 	public kiev.bytecode.Annotation.element_value write_value(ConstPool constPool, ASTNode value) {
 		if (value instanceof ConstExpr) {
-			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
-			Object v = ((ConstExpr)value).getConstValue(jenv.env);
+			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const();
+			Object v = ((ConstExpr)value).getConstValue();
 			if     ( v instanceof Boolean ) {
 				ev.tag = (byte)'Z';
 				ev.const_value_index = constPool.getNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0)).pos;
@@ -563,16 +563,16 @@ public abstract class MetaAttr extends Attr {
 			return ev;
 		}
 		else if (value instanceof TypeRef) {
-			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
+			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info();
 			ev.tag = (byte)'c';
-			ev.class_info_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType(jenv.env)).java_signature).pos;
+			ev.class_info_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(((TypeRef)value).getType()).java_signature).pos;
 			return ev;
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)Env.ctxTDecl(f);
-			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
+			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const();
 			ev.tag = (byte)'e';
 			ev.type_name_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(s).java_signature).pos;
 			ev.const_name_index = constPool.getAsciiCP(f.sname).pos;
@@ -580,7 +580,7 @@ public abstract class MetaAttr extends Attr {
 		}
 		else if (value instanceof UserMeta) {
 			UserMeta m = (UserMeta)value;
-			kiev.bytecode.Annotation.element_value_annotation ev = new kiev.bytecode.Annotation.element_value_annotation(); 
+			kiev.bytecode.Annotation.element_value_annotation ev = new kiev.bytecode.Annotation.element_value_annotation();
 			ev.tag = (byte)'@';
 			ev.annotation_value = new kiev.bytecode.Annotation.annotation();
 			write_annotation(constPool, m, ev.annotation_value);
@@ -590,7 +590,7 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(ConstPool constPool, UserMeta m, kiev.bytecode.Annotation.annotation a) {
-		JavaAnnotation tdecl = m.getAnnotationDecl(jenv.env);
+		JavaAnnotation tdecl = m.getAnnotationDecl();
 		a.type_index = constPool.getAsciiCP(jenv.getJTypeEnv().getJType(tdecl).java_signature).pos;
 		int n = 0;
 		foreach (Method mm; tdecl.members)
@@ -599,7 +599,7 @@ public abstract class MetaAttr extends Attr {
 		a.values = new kiev.bytecode.Annotation.element_value[n];
 		n = 0;
 		foreach (Method mm; tdecl.members) {
-			MetaValue v = m.get(mm.sname); 
+			MetaValue v = m.get(mm.sname);
 			a.names[n] = constPool.addAsciiCP(v.ident).pos;
 			if (v instanceof MetaValueScalar) {
 				a.values[n] = write_value(constPool, ((MetaValueScalar)v).value);
@@ -746,7 +746,7 @@ public class RIParMetaAttr extends MetaAttr {
 
 public class DefaultMetaAttr extends MetaAttr {
 	public MetaValue      mv;
-	
+
 	public DefaultMetaAttr(JEnv jenv, MetaValue mv) {
 		super(attrAnnotationDefault, jenv);
 		this.mv = mv;
@@ -756,7 +756,7 @@ public class DefaultMetaAttr extends MetaAttr {
 		constPool.addAsciiCP(name);
 		generateValue(constPool, mv);
 	}
-	
+
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		kiev.bytecode.AnnotationDefault a = new kiev.bytecode.AnnotationDefault();
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];

@@ -11,8 +11,9 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.WorkerThreadGroup;
-import kiev.EditorThreadGroup;
+import kiev.compiler.WorkerThreadGroup;
+import kiev.compiler.EditorThreadGroup;
+import kiev.Compiler;
 import kiev.gui.event.ElementChangeListener;
 import kiev.gui.event.ElementEvent;
 import kiev.vlang.Env;
@@ -22,10 +23,10 @@ import kiev.vtree.INode;
 import kiev.vtree.Transaction;
 
 /**
- * Common stuff. 
+ * Common stuff.
  */
 public abstract class Window implements IWindow {
-	
+
 	private class TransactionInfo {
 		String name;
 		Transaction tr;
@@ -38,16 +39,21 @@ public abstract class Window implements IWindow {
 			this.fileName = editor.getFileUnit().getFname();
 		}
 	}
-	
+
 	/**
 	 * The current <code>Env</code>.
 	 */
 	protected final Env currentEnv;
-	
+
 	/**
 	 * The current <code>EditorThreadGroup</code>.
 	 */
 	protected final EditorThreadGroup currentEditorThreadGroup;
+
+	/**
+	 * The current <code>Compiler</code>.
+	 */
+	protected final Compiler compiler;
 
 	/**
 	 * The views array.
@@ -62,14 +68,15 @@ public abstract class Window implements IWindow {
 	/**
 	 * The constructor.
 	 */
-	public Window(WorkerThreadGroup thrg){
-		currentEnv = thrg.getEnv();
-		currentEditorThreadGroup = new EditorThreadGroup(thrg);
+	public Window(WorkerThreadGroup thrg, Compiler compiler) {
+		this.currentEnv = thrg.getEnv();
+		this.currentEditorThreadGroup = new EditorThreadGroup(thrg);
+		this.compiler = compiler;
 	}
-	
-	/** 
-	 * List of current element change listeners. 
-	 * When editor sets the current element these listeners are notified. 
+
+	/**
+	 * List of current element change listeners.
+	 * When editor sets the current element these listeners are notified.
 	 */
 	private ElementChangeListener[] elementChangeListeners = new ElementChangeListener[0];
 
@@ -80,13 +87,21 @@ public abstract class Window implements IWindow {
 	public Env getCurrentEnv() {
 		return currentEnv;
 	}
-		
+
 	/**
 	 * Returns the current project.
 	 * @return the current project
 	 */
 	public Project getCurrentProject() {
 		return currentEnv.proj;
+	}
+
+	/**
+	 * Returns the compiler.
+	 * @return the compiler
+	 */
+	public Compiler getCompiler() {
+		return compiler;
 	}
 
 	/**
@@ -134,7 +149,7 @@ public abstract class Window implements IWindow {
 	/**
 	 * Forwards the given notification event to all
 	 * <code>ElementChangeListeners</code> that registered
-	 * themselves as listeners for <code>ElementEvent</code> event. 
+	 * themselves as listeners for <code>ElementEvent</code> event.
 	 * Currently we redraw views in the background when editor selection changes.
 	 * @param e  the event to be forwarded
 	 * @see #addElementChangeListener
@@ -145,7 +160,7 @@ public abstract class Window implements IWindow {
 			l.elementChanged(e);
 		}
 	}
-	
+
 	/**
 	 * Notify that errors list may be changed.
 	 */
@@ -155,7 +170,7 @@ public abstract class Window implements IWindow {
 	 * Checks and enables menu items.
 	 */
 	protected abstract void enableMenuItems();
-	
+
 	/*
 	 * Start new transaction
 	 */
@@ -176,7 +191,7 @@ public abstract class Window implements IWindow {
 		}
 		updateStatusBar();
 	}
-	
+
 	/*
 	 * Undo
 	 */

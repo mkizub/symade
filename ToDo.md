@@ -33,5 +33,8 @@
 - rewriteByMacro(env, "kiev·ir·RuleTemplates", "mkRuleBlock", ...)
   - load rewrite templates as resource, if not in classpath
 - compiler depends on import kiev.fmt.common.TextParser;
-- fix AHandle's public <T extends ANode> void cleanupIf((AHandleData, T)->boolean needToCleanup, T arg)
-  - should compile with <T>
+- fix AHandle's public \<T extends ANode> void cleanupIf((AHandleData, T)->boolean needToCleanup, T arg)
+  - should compile with \<T>
+- generate symade-version-debug.jar with traces and symade-version.jar without traces
+- fix java primitive values boxing/unboxing
+- implement pragmas and automatic extensions enabling if used in code and not disabled

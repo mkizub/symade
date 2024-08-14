@@ -24,16 +24,22 @@ import java.util.Collections;
 @ThisIsANode(lang=CoreLang)
 public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOfMethods {
 	@nodeAttr @final
-	public KievPackage⇑			srpkg;
+	public KievPackage⇑				srpkg;
 	@nodeAttr
 	public ImportSyntax∅			syntaxes;
 	@nodeAttr(parent="kiev·vtree·ANode.nodeattr$syntax_parent")
 	public ASTNode∅					members;
 
-	private COpdef[]						all_opdefs;
+	private COpdef[]				all_opdefs;
 
 	public SyntaxScope() {
-		this.srpkg.symbol = Env.getEnv().root.symbol;
+		this.srpkg.symbol = getEnv().root.symbol;
+		this.srpkg.qualified = true;
+	}
+
+	public SyntaxScope(ANodeContext context) {
+		super(context);
+		this.srpkg.symbol = getEnv().root.symbol;
 		this.srpkg.qualified = true;
 	}
 
@@ -47,32 +53,32 @@ public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOf
 		{
 			path ?= syn
 		;	syn instanceof Import && syn instanceof ScopeOfNames,
-			trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
+			trace( path.debugResolve, "In import (no star): "+syn),
 			((ScopeOfNames)syn).resolveNameR(path)
 		}
 	;
 		path.getPrevSlotName() != "srpkg",
-		trace( Kiev.debug && Kiev.debugResolve, "In namespace package: "+srpkg),
+		trace( path.debugResolve, "In namespace package: "+srpkg),
 		getPackage().resolveNameR(path)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		syn @= members,
 		syn instanceof Import && syn instanceof ScopeOfNames,
-		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
+		trace( path.debugResolve, "In import (with star): "+syn),
 		((ScopeOfNames)syn).resolveNameR(path)
 	;
 		srpkg.name != "",
-		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
+		trace( path.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noSyntaxContext) : path.leaveMode(),
-		Env.getEnv().root.resolveNameR(path)
+		path.env.root.resolveNameR(path)
 	;
 		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
+		trace( path.debugResolve, "In syntax (no star): "+istx),
 		istx.resolveNameR(path)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
+		trace( path.debugResolve, "In syntax (with star): "+istx),
 		istx.resolveNameR(path)
 	}
 
@@ -83,28 +89,28 @@ public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOf
 	{
 		syn @= members,
 		syn instanceof Import && syn instanceof ScopeOfMethods,
-		trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
+		trace( path.debugResolve, "In import (no star): "+syn),
 		((ScopeOfMethods)syn).resolveMethodR(path,mt)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		syn @= members,
 		syn instanceof Import && syn instanceof ScopeOfMethods,
-		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
+		trace( path.debugResolve, "In import (with star): "+syn),
 		((ScopeOfMethods)syn).resolveMethodR(path,mt)
 	;
 		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (no star): "+istx),
+		trace( path.debugResolve, "In syntax (no star): "+istx),
 		istx.resolveMethodR(path,mt)
 	;
 		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		istx @= syntaxes,
-		trace( Kiev.debug && Kiev.debugResolve, "In syntax (with star): "+istx),
+		trace( path.debugResolve, "In syntax (with star): "+istx),
 		istx.resolveMethodR(path,mt)
 	}
 
 	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {
 		if (slot.name == "srpkg") {
-			KievPackage scope = Env.getEnv().root;
+			KievPackage scope = getEnv().root;
 			SyntaxScope ss = Env.ctxSyntaxScope(parent());
 			if (ss != null)
 				scope = ss.getPackage();
@@ -116,7 +122,7 @@ public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOf
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
 					name = name.substring(dot+1);
-					ResInfo info = new ResInfo(Env.getEnv(),this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
 					if !(scope.resolveNameR(info))
 						return null;
 					scope = (KievPackage)info.resolvedDNode();
@@ -126,7 +132,7 @@ public abstract class SyntaxScope extends SNode implements ScopeOfNames, ScopeOf
 					head = name.intern();
 					AutoCompleteResult result = new AutoCompleteResult(false);
 					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noEquals;
-					ResInfo info = new ResInfo(Env.getEnv(),this,head,flags);
+					ResInfo info = new ResInfo(this,head,flags);
 					foreach (scope.resolveNameR(info)) {
 						if (!result.containsData(info.resolvedSymbol()))
 							result.append(info.resolvedSymbol());
@@ -219,19 +225,24 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 			dir = proj.root_dir;
 			name = qname;
 		} else {
-			dir = proj.root_dir.makeDir(qname.substring(0,end));
+			dir = proj.root_dir.makeDir(proj.getContext(), qname.substring(0,end));
 			name = qname.substring(end+1);
 		}
 		foreach (FileUnit fu; dir.members; name.equals(fu.fname))
 			return fu;
-		FileUnit fu = new FileUnit(name, project_file);
+		FileUnit fu = new FileUnit(proj.getContext(), name, project_file);
 		dir.addFile(fu);
 		return fu;
 	}
 
 	public FileUnit() {}
 
-	private FileUnit(String name, boolean project_file) {
+	public FileUnit(ANodeContext context) {
+		super(context);
+	}
+
+	private FileUnit(ANodeContext context, String name, boolean project_file) {
+		super(context);
 		this.fname = name;
 		this.is_project_file = project_file;
 	}
@@ -241,10 +252,10 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 		if (td != null)
 			return td;
 		if (srpkg.name == "") {
-			td = Env.getEnv().root;
+			td = getEnv().root;
 			srpkg.symbol = td.symbol;
 		} else {
-			td = Env.getEnv().newPackage(srpkg.name);
+			td = getEnv().newPackage(srpkg.name);
 			srpkg.symbol = td.symbol;
 			srpkg.qualified = true;
 		}
@@ -276,21 +287,21 @@ public class NameSpace extends SyntaxScope {
 		KievPackage td = srpkg.dnode;
 		if (td != null)
 			return td;
-		Kiev.reportError(this, "Namespaces not implemented / not tested");
+		reportError().log("Namespaces not implemented / not tested");
 		SyntaxScope ss = Env.ctxSyntaxScope(parent());
 		if (ss != null)
 			td = ss.getPackage();
 		if (srpkg.name == "") {
 			if (td == null)
-				td = Env.getEnv().root;
+				td = getEnv().root;
 			srpkg.symbol = new Symbol(); // anonymous namespace
 		} else {
 			if (td == null || td instanceof KievRoot) {
-				td = Env.getEnv().newPackage(srpkg.name);
+				td = getEnv().newPackage(srpkg.name);
 				srpkg.symbol = td.symbol;
 				srpkg.qualified = true;
 			} else {
-				td = Env.getEnv().newPackage(td.qname() + "·" + srpkg.name);
+				td = getEnv().newPackage(td.qname() + "·" + srpkg.name);
 				srpkg.symbol = td.symbol;
 				srpkg.qualified = false;
 			}

@@ -20,14 +20,14 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(copyable=false)
 public abstract class ErrorInfo extends ANode {
-	@nodeData public SeverError sever;
+	@nodeData public LoggingLevel sever;
 	@nodeData public String message;
 	@nodeData public String text;
 
 	protected ErrorInfo(ANodeContext context) {
 		super(context);
 	}
-	protected ErrorInfo(Project proj, SeverError sever, String message, String text) {
+	protected ErrorInfo(Project proj, LoggingLevel sever, String message, String text) {
 		super(proj.getContext());
 		this.sever = sever;
 		this.message = message;
@@ -43,7 +43,7 @@ public class ErrorNodeInfo extends ErrorInfo {
 	public ErrorNodeInfo(ANodeContext context) {
 		super(context);
 	}
-	public ErrorNodeInfo(Project proj, SeverError sever, String message, ANode node) {
+	public ErrorNodeInfo(Project proj, LoggingLevel sever, String message, ANode node) {
 		super(proj, sever, message, null);
 		this.node = node;
 	}
@@ -57,7 +57,7 @@ public class ErrorTextInfo extends ErrorInfo {
 	public ErrorTextInfo(ANodeContext context) {
 		super(context);
 	}
-	public ErrorTextInfo(Project proj, SeverError sever, String message, String file, int lineno) {
+	public ErrorTextInfo(Project proj, LoggingLevel sever, String message, String file, int lineno) {
 		super(proj, sever, message, null);
 		this.file = file;
 		this.lineno = lineno;

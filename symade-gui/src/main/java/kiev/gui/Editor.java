@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 
-import kiev.Kiev;
 import kiev.fmt.DrawCtrl;
 import kiev.fmt.DrawTokenTerm;
 import kiev.fmt.DrawValueTerm;
@@ -48,27 +47,27 @@ import kiev.vlang.FileUnit;
  */
 public class Editor extends UIView implements IEditor, ElementChangeListener {
 
-	/** 
-	 * The FileUnit showed in this editor 
-	 */	
+	/**
+	 * The FileUnit showed in this editor
+	 */
 	private FileUnit the_file_unit;
 
-	/** 
+	/**
 	 * The current editor mode.
 	 */
 	private boolean insert_mode;
-	
+
 	/**
 	 * The current text attribute we edit
 	 */
 	private DrawValueTerm		edit_term;
 
-	/** 
+	/**
 	 * The current X position for scrolling up/down.
 	 */
 	protected int cur_x;
 
-	/** 
+	/**
 	 * The current item.
 	 */
 	private final CurElem	cur_elem;
@@ -78,11 +77,11 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	 */
 	private final class CurElem {
 		class DrawPathElem {
-			final INode		parent;	// the parent node 
+			final INode		parent;	// the parent node
 			final AttrSlot	slot;	// the slot in the parent node
 			final int		idx;	// the index in the slot (if it's a space slot)
 			final INode		node;	// recorded value stored in the slot (if it's a child slot)
-			final Drawable	dr;		// the drawable 
+			final Drawable	dr;		// the drawable
 			public DrawPathElem(INode parent, AttrSlot slot, int idx, INode node, Drawable dr) {
 				this.parent = parent;
 				this.slot = slot;
@@ -189,7 +188,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 			setDrawTerm(dr.getFirstLeaf());
 			return;
 		}
-		
+
 		private Drawable findDrawable(Drawable dr, final INode node) {
 			try {
 				dr.walkTree(null, null, new ITreeWalker() {
@@ -273,7 +272,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	}
 
 	/**
-	 * Set currently selected node. 
+	 * Set currently selected node.
 	 * @return the selected node or null if nothing selected.
 	 */
 	public void setSelectedNode(INode node) {
@@ -281,7 +280,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	}
 
 	/**
-	 * Get currently selected node. 
+	 * Get currently selected node.
 	 * @return the selected node or null if nothing selected.
 	 */
 	public INode getSelectedNode() {
@@ -289,7 +288,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	}
 
 	/**
-	 * Set currentl DrawTerm. 
+	 * Set currentl DrawTerm.
 	 */
 	public void setDrawTerm(DrawTerm dt) {
 		if (dt != getDrawTerm())
@@ -298,7 +297,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	}
 
 	/**
-	 * Get current DrawTerm under cursor. 
+	 * Get current DrawTerm under cursor.
 	 * @return the pointed DrawTerm or null.
 	 */
 	public DrawTerm getDrawTerm() {
@@ -306,12 +305,12 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	}
 
 	private void execAction(UIAction action) {
-		Kiev.setSemContext(window.currentEditorThreadGroup.semantic_context);
-		try {
+//		Kiev.setSemContext(window.currentEditorThreadGroup.semantic_context);
+//		try {
 			action.exec();
-		} finally {
-			Kiev.setSemContext(null);
-		}
+//		} finally {
+//			Kiev.setSemContext(null);
+//		}
 	}
 
 	/* (non-Javadoc)
@@ -447,7 +446,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 			}
 		}
 		//if (stx0 instanceof Draw_SyntaxSet && ((Draw_SyntaxSet)stx0).nested_function_lookup) {
-		//	for (Drawable d: dr.getChildren()) 
+		//	for (Drawable d: dr.getChildren())
 		//		if( (x=checkFunctionTarget(attr, d)) != null) return x;
 		//}
 		if (dr instanceof DrawOptional && (x=checkFunctionTarget(attr, ((DrawOptional)dr).getArg())) != null) return x;
@@ -481,7 +480,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 				}
 			}
 		}
-		
+
 		DrawTerm dt = getDrawTerm();
 		if (dt != edit_term)
 			stopTextEditMode();
@@ -543,11 +542,11 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 		getWindow().updateStatusBar();
 		formatAndPaint(false);
 	}
-	
+
 	public boolean isInTextEditMode() {
 		return edit_term != null;
 	}
-	
+
 	public void startTextEditMode(DrawValueTerm term) {
 		stopTextEditMode();
 		edit_term = term;
@@ -567,7 +566,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 	//
 	// Text editor interface
 	//
-	
+
 	public void editTypeChar(final char ch) {
 		int edit_offset = getEditOffset();
 		if (edit_term instanceof DrawTokenTerm) {
@@ -610,7 +609,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 			}
 		}
 	}
-	
+
 	public String getEditText() {
 		Object o = edit_term.getTermObj();
 		if (o == null || o == DrawTerm.NULL_VALUE)
@@ -628,14 +627,14 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 		if (edit_offset < 0 || text == null) {
 			edit_offset = 0;
 			getViewPeer().setCursor_offset(edit_offset);
-		} 
+		}
 		else if (edit_offset > text.length()) {
 			edit_offset = text.length();
 			getViewPeer().setCursor_offset(edit_offset);
 		}
 		return edit_offset;
 	}
-	
+
 	public void editSetItem(Object item) {
 		if (item == null)
 			return;
@@ -648,22 +647,22 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 		showAutoComplete(true);
 		formatAndPaint(true);
 	}
-	
+
 	/**
 	 * Auto-Completer.
 	 */
 	private class AutoCompleter {
-		
+
 		/**
 		 * The name.
 		 */
 		private String name;
-		
+
 		/**
 		 * The declarations to show.
 		 */
 		public AutoCompleteResult result;
-		
+
 		/**
 		 * the constructor.
 		 * @param name the name
@@ -672,7 +671,7 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 			this.name = name;
 			result = edit_term.drnode.asANode().resolveAutoComplete(name==null?"":name,edit_term.attr_slot);
 		}
-		
+
 	}
 
 	/**
@@ -688,5 +687,5 @@ public class Editor extends UIView implements IEditor, ElementChangeListener {
 		AutoCompleteResult autocomplete_result = new AutoCompleter(name).result;
 		getViewPeer().setPopupComboContent(autocomplete_result, qualified);
 	}
-	
+
 }

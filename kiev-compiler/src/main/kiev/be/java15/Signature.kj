@@ -36,7 +36,7 @@ final class Signature {
 	public static Type getType(JEnv jenv, String sig) {
 		return Signature.getType(jenv, new StringScanner(sig));
 	}
-	
+
 	public static Type getType(JEnv jenv, StringScanner sc) {
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
@@ -98,7 +98,7 @@ final class Signature {
 		CompaundMetaType cmt = new CompaundMetaType(jenv.vtypes,cname.name.replace('.','·'));
 		return new CompaundType(cmt, null, null);
 	}
-	
+
 	private static TypeConstr getTypeArgDecl(DNode dn, String aname) {
 		if (dn instanceof Method) {
 			foreach (TypeConstr tc; dn.targs; tc.sname == aname)
@@ -186,7 +186,7 @@ final class Signature {
 			TypeConstr tc = getTypeArgDecl(dn, aname);
 			if (tc == null)
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" unknown type argument: "+aname);
-			return tc.getAType(jenv.env);
+			return tc.getAType();
 		}
 
 		throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" expected 'T' or '[' or 'L'");
@@ -200,7 +200,7 @@ final class Signature {
 
 		if (ch != 'L')
 			throw new RuntimeException("Bad class type signature "+sc+" at pos "+sc.pos+" expected 'L'");
-	
+
 		int pos = sc.pos;
 		do {
 			ch = sc.nextChar();
@@ -209,7 +209,7 @@ final class Signature {
 		CompaundMetaType cmt = new CompaundMetaType(jenv.vtypes, cname.replace('/','·'));
 		CompaundType ct;
 		if (ch == '<') {
-			cmt.tdecl.checkResolved(jenv.env);
+			cmt.tdecl.checkResolved();
 			TVarBld vs = new TVarBld();
 			int aidx = 0;
 			// type arguments
@@ -233,7 +233,7 @@ final class Signature {
 				else {
 					param = getTypeFromFieldSignature(jenv, dn, sc);
 				}
-				vs.append(cmt.tdecl.args[aidx++].getAType(jenv.env), param);
+				vs.append(cmt.tdecl.args[aidx++].getAType(), param);
 			}
 			ch = sc.nextChar();
 			assert (ch == '>');
@@ -252,13 +252,13 @@ final class Signature {
 			} while (sc.hasMoreChars() && ch != '<' && ch != ';' && ch != '.');
 			cname = sc.str.substring(pos,sc.pos-1);
 			cmt = new CompaundMetaType(jenv.vtypes, outer.meta_type.qname() + '·' + cname);
-			cmt.tdecl.checkResolved(jenv.env);
+			cmt.tdecl.checkResolved();
 			TVarBld vs = new TVarBld();
 			TypeAssign ta = ((ComplexTypeDecl)cmt.tdecl).ometa_tdef;
 			if (ta == null)
-				Kiev.reportWarning("in signature "+sc+" at pos "+sc.pos+": type "+ct+" inner of "+outer+" must have outer TypeAssign");
+				jenv.env.reportWarning().log("in signature "+sc+" at pos "+sc.pos+": type "+ct+" inner of "+outer+" must have outer TypeAssign");
 			else
-				vs.append(ta.getAType(jenv.env), outer);
+				vs.append(ta.getAType(), outer);
 			if (ch == '<') {
 				int aidx = 0;
 				// type arguments
@@ -279,7 +279,7 @@ final class Signature {
 					else {
 						param = getTypeFromFieldSignature(jenv, dn, sc);
 					}
-					vs.append(cmt.tdecl.args[aidx++].getAType(jenv.env), param);
+					vs.append(cmt.tdecl.args[aidx++].getAType(), param);
 				}
 				ch = sc.nextChar();
 				assert (ch == '>');
@@ -303,7 +303,7 @@ final class Signature {
 		if (ch != '(')
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" expected '(' but found '"+ch+"'");
 		sc.nextChar();
-		
+
 		Vector<Type> args = new Vector<Type>();
 		while (sc.hasMoreChars() && (ch=sc.peekChar()) != ')') {
 			Type arg = getTypeFromFieldSignature(jenv, m, sc);
@@ -315,10 +315,10 @@ final class Signature {
 		Type ret = getTypeFromFieldSignature(jenv, m, sc);
 		Vector<Type> targs = new Vector<Type>();
 		foreach (TypeConstr targ; m.targs)
-			targs.append(targ.getAType(jenv.env));
+			targs.append(targ.getAType());
 		Type accessor = null;
 		if (!m.isStatic())
-			accessor = ((TypeDecl)m.parent()).getType(jenv.env);
+			accessor = ((TypeDecl)m.parent()).getType();
 		return new CallType(accessor, targs.toArray(), args.toArray(), ret, false);
 	}
 
@@ -328,14 +328,14 @@ public class StringScanner {
 
 	public String	str;
 	public int		pos;
-	
+
 	public StringScanner(String str) {
 		this.str = str;
 		pos = 0;
 	}
-	
+
 	public String toString() { return str; }
-	
+
 	public boolean hasMoreChars() {
 		return pos < str.length();
 	}

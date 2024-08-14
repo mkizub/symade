@@ -34,15 +34,15 @@ public static final view RWhileStat of WhileStat extends RLoopStat {
 	public ENode		cond;
 	public ENode		body;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(cond,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(cond, env);
-		} catch(Exception e ) { Kiev.reportError(cond,e); }
+			resolveENode(cond,tenv.tpBoolean);
+			RBoolExpr.checkBool(cond, tenv);
+		} catch(Exception e ) { cond.reportError().log(e); }
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
-		} catch(Exception e ) { Kiev.reportError(body,e); }
-		if( cond.isConstantExpr(env) && ((Boolean)cond.getConstValue(env)).booleanValue() && !isBreaked() ) {
+			resolveENode(body,tenv.tpVoid);
+		} catch(Exception e ) { body.reportError().log(e); }
+		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
 			setMethodAbrupted(true);
 		}
 	}
@@ -53,19 +53,19 @@ public static view RDoWhileStat of DoWhileStat extends RLoopStat {
 	public ENode		cond;
 	public ENode		body;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(body,e);
+			body.reportError().log(e);
 		}
 		try {
-			resolveENode(cond,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(cond, env);
+			resolveENode(cond,tenv.tpBoolean);
+			RBoolExpr.checkBool(cond, tenv);
 		} catch(Exception e ) {
-			Kiev.reportError(cond,e);
+			cond.reportError().log(e);
 		}
-		if( cond.isConstantExpr(env) && ((Boolean)cond.getConstValue(env)).booleanValue() && !isBreaked() ) {
+		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
 			setMethodAbrupted(true);
 		}
 	}
@@ -78,46 +78,46 @@ public static final view RForStat of ForStat extends RLoopStat {
 	public    ENode			body;
 	public    ENode			iter;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		foreach (ASTNode n; inits) {
 			try {
 				if (n instanceof DNode) {
-					resolveDNode(n,env);
+					resolveDNode(n);
 				}
 				else if (n instanceof SNode) {
-					resolveSNode(n,env);
+					resolveSNode(n);
 				}
 				else if (n instanceof ENode) {
-					resolveENode(n,env.tenv.tpVoid,env);
+					resolveENode(n,tenv.tpVoid);
 					((ENode)n).setGenVoidExpr(true);
 				}
 			} catch(Exception e ) {
-				Kiev.reportError(n,e);
+				n.reportError().log(e);
 			}
 		}
 		if( cond != null ) {
 			try {
-				resolveENode(cond,env.tenv.tpBoolean,env);
-				RBoolExpr.checkBool(cond, env);
+				resolveENode(cond,tenv.tpBoolean);
+				RBoolExpr.checkBool(cond, tenv);
 			} catch(Exception e ) {
-				Kiev.reportError(cond,e);
+				cond.reportError().log(e);
 			}
 		}
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(body,e);
+			body.reportError().log(e);
 		}
 		if( iter != null ) {
 			try {
-				resolveENode(iter,env.tenv.tpVoid,env);
+				resolveENode(iter,tenv.tpVoid);
 				iter.setGenVoidExpr(true);
 			} catch(Exception e ) {
-				Kiev.reportError(iter,e);
+				iter.reportError().log(e);
 			}
 		}
 		if( ( cond==null
-			|| (cond.isConstantExpr(env) && ((Boolean)cond.getConstValue(env)).booleanValue())
+			|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
 			)
 			&& !isBreaked()
 		) {
@@ -140,7 +140,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 	public ENode		body;
 	public ENode		iter_incr;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		// foreach( type x; container; cond) statement
 		// is equivalent to
 		// for(iter-type x$iter = container.elements(); x$iter.hasMoreElements(); ) {
@@ -161,60 +161,60 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		//	}
 		//
 
-		resolveENode(container,null,env);
+		resolveENode(container,null);
 
 		Type itype;
-		Type xtype = container.getType(env);
+		Type xtype = container.getType();
 		ResInfo elems = null;
 		ResInfo nextelem = null;
 		ResInfo moreelem = null;
 		if (xtype instanceof CTimeType) {
 			container = xtype.makeUnboxedExpr(container);
-			resolveENode(container,null,env);
-			xtype = container.getType(env);
+			resolveENode(container,null);
+			xtype = container.getType();
 		}
-		if( xtype.isInstanceOf(env.tenv.tpArrayOfAny) ) {
-			itype = env.tenv.tpInt;
+		if( xtype.isInstanceOf(tenv.tpArrayOfAny) ) {
+			itype = tenv.tpInt;
 			mode = ForEachStat.ARRAY;
-		} else if( xtype.isInstanceOf( env.tenv.tpJavaEnumeration) ) {
+		} else if( xtype.isInstanceOf( tenv.tpJavaEnumeration) ) {
 			itype = xtype;
 			mode = ForEachStat.JENUM;
-		} else if( xtype.isInstanceOf( env.tenv.tpJavaIterator) ) {
+		} else if( xtype.isInstanceOf( tenv.tpJavaIterator) ) {
 			itype = xtype;
 			mode = ForEachStat.JITERATOR;
-		} else if( xtype.isInstanceOf( env.tenv.tpJavaIterable) ) {
+		} else if( xtype.isInstanceOf( tenv.tpJavaIterable) ) {
 			PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo(env,this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
-				new CallType(xtype,null,null,env.tenv.tpAny,false));
+				elems=new ResInfo(this,"iterator",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
+				new CallType(xtype,null,null,tenv.tpAny,false));
 			Method method = (Method)elems.resolvedDNode();
 			itype = Type.getRealType(xtype,method.mtype.ret());
 			mode = ForEachStat.JITERABLE;
 		} else if( PassInfo.resolveBestMethodR(xtype,
-				elems=new ResInfo(env,this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
-				new CallType(xtype,null,null,env.tenv.tpAny,false))
+				elems=new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
+				new CallType(xtype,null,null,tenv.tpAny,false))
 		) {
 			Method method = (Method)elems.resolvedDNode();
 			itype = Type.getRealType(xtype,method.mtype.ret());
 			mode = ForEachStat.ELEMS;
-		} else if( xtype ≡ env.tenv.tpRule &&
+		} else if( xtype ≡ tenv.tpRule &&
 			(
-			   ( container instanceof CallExpr && ((CallExpr)container).func.mtype.ret() ≡ env.tenv.tpRule )
-			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType(env) ≡ env.tenv.tpRule )
+			   ( container instanceof CallExpr && ((CallExpr)container).func.mtype.ret() ≡ tenv.tpRule )
+			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ tenv.tpRule )
 			)
 		  ) {
-			itype = env.tenv.tpRule;
+			itype = tenv.tpRule;
 			mode = ForEachStat.RULE;
 		} else {
 			throw new CompilerException(container,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
-		if( itype ≡ env.tenv.tpRule ) {
+		if( itype ≡ tenv.tpRule ) {
 			iter = new LVar(pos,"$env",itype,Var.VAR_LOCAL,0);
 		}
 		else if( var != null ) {
 			iter = new LVar(var.pos,var.sname+"$iter",itype,Var.VAR_LOCAL,0);
 			if (mode == ForEachStat.ARRAY) {
-				iter_array = new LVar(container.pos,var.sname+"$arr",container.getType(env),Var.VAR_LOCAL,0);
+				iter_array = new LVar(container.pos,var.sname+"$arr",container.getType(),Var.VAR_LOCAL,0);
 			}
 		}
 		else {
@@ -236,24 +236,24 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 					new LVarExpr(iter.pos,iter),
 					new ConstIntExpr(0)
 				));
-			Kiev.runProcessorsOn(iter_init);
-			resolveENode(iter_init,env.tenv.tpInt,env);
+			getEnv().runProcessorsOn(iter_init);
+			resolveENode(iter_init,tenv.tpInt);
 			break;
 		case ForEachStat.JENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos,
 				new LVarExpr(iter.pos,iter), new Copier().copyFull(container)
 				);
-			Kiev.runProcessorsOn(iter_init);
-			resolveENode(iter_init,iter.getType(env),env);
+			getEnv().runProcessorsOn(iter_init);
+			resolveENode(iter_init,iter.getType());
 			break;
 		case ForEachStat.JITERATOR:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos,
 				new LVarExpr(iter.pos,iter), new Copier().copyFull(container)
 				);
-			Kiev.runProcessorsOn(iter_init);
-			resolveENode(iter_init,iter.getType(env),env);
+			getEnv().runProcessorsOn(iter_init);
+			resolveENode(iter_init,iter.getType());
 			break;
 		case ForEachStat.JITERABLE:
 			/* iter = container.iterate(); */
@@ -261,8 +261,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new LVarExpr(iter.pos,iter),
 				new CallExpr(container.pos,new Copier().copyFull(container),elems.resolvedSymbol(),ENode.emptyArray)
 				);
-			Kiev.runProcessorsOn(iter_init);
-			resolveENode(iter_init,iter.getType(env),env);
+			getEnv().runProcessorsOn(iter_init);
+			resolveENode(iter_init,iter.getType());
 			break;
 		case ForEachStat.ELEMS:
 			/* iter = container.elements(); */
@@ -270,8 +270,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new LVarExpr(iter.pos,iter),
 				new CallExpr(container.pos,new Copier().copyFull(container),elems.resolvedSymbol(),ENode.emptyArray)
 				);
-			Kiev.runProcessorsOn(iter_init);
-			resolveENode(iter_init,iter.getType(env),env);
+			getEnv().runProcessorsOn(iter_init);
+			resolveENode(iter_init,iter.getType());
 			break;
 		case ForEachStat.RULE:
 			/* iter = rule(iter/hidden,...); */
@@ -279,8 +279,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter_init = new AssignExpr(iter.pos,
 				new LVarExpr(iter.pos,iter), new ConstNullExpr()
 				);
-			Kiev.runProcessorsOn(iter_init);
-			resolveENode(iter_init,env.tenv.tpVoid,env);
+				getEnv().runProcessorsOn(iter_init);
+			resolveENode(iter_init,tenv.tpVoid);
 			}
 			break;
 		}
@@ -291,17 +291,17 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		switch( mode ) {
 		case ForEachStat.ARRAY:
 			/* iter < container.length */
-			iter_cond = new BinaryBoolExpr(iter.pos, env.coreFuncs.fIntBoolLT,
+			iter_cond = new BinaryBoolExpr(iter.pos, coreFuncs.fIntBoolLT,
 				new LVarExpr(iter.pos,iter),
-				new IFldExpr(iter.pos,new LVarExpr(0,iter_array),env.tenv.tpArrayOfAny.resolveField("length"))
+				new IFldExpr(iter.pos,new LVarExpr(0,iter_array),tenv.tpArrayOfAny.resolveField("length"))
 				);
 			break;
 		case ForEachStat.JENUM:
 		case ForEachStat.ELEMS:
 			/* iter.hasMoreElements() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					moreelem=new ResInfo(env,this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
-					new CallType(itype,null,null,env.tenv.tpAny,false))
+					moreelem=new ResInfo(this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
+					new CallType(itype,null,null,tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(iter.pos,
@@ -314,8 +314,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JITERABLE:
 			/* iter.hasNext() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					moreelem=new ResInfo(env,this,"hasNext",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
-					new CallType(itype,null,null,env.tenv.tpAny,false))
+					moreelem=new ResInfo(this,"hasNext",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
+					new CallType(itype,null,null,tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+"hasNext");
 			iter_cond = new CallExpr(iter.pos,
@@ -328,7 +328,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* (iter = rule(iter, ...)) != null */
 			iter_cond = new BinaryBoolExpr(
 				container.pos,
-				env.coreFuncs.fObjectBoolNE,
+				coreFuncs.fObjectBoolNE,
 				new AssignExpr(container.pos,
 					new LVarExpr(container.pos,iter),
 					new Copier().copyFull(container)),
@@ -337,9 +337,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			break;
 		}
 		if( iter_cond != null ) {
-			Kiev.runProcessorsOn(iter_cond);
-			resolveENode(iter_cond,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(iter_cond, env);
+			getEnv().runProcessorsOn(iter_cond);
+			resolveENode(iter_cond,tenv.tpBoolean);
+			RBoolExpr.checkBool(iter_cond, tenv);
 		}
 
 		// Initialize value
@@ -354,8 +354,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.ELEMS:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					nextelem=new ResInfo(env,this,nameNextElement,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
-					new CallType(itype,null,null,env.tenv.tpAny,false))
+					nextelem=new ResInfo(this,nameNextElement,ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
+					new CallType(itype,null,null,tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			ce = new CallExpr(iter.pos,
@@ -368,8 +368,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JITERABLE:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,
-					nextelem=new ResInfo(env,this,"next",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
-					new CallType(itype,null,null,env.tenv.tpAny,false))
+					nextelem=new ResInfo(this,"next",ResInfo.noStatic|ResInfo.noSyntaxContext).match(Method.class),
+					new CallType(itype,null,null,tenv.tpAny,false))
 				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			ce = new CallExpr(iter.pos,
@@ -383,50 +383,50 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			break;
 		}
 		if (ce != null) {
-			var_init = ce; // to allow ce.getType(env)
-			if (ce.getType(env).isInstanceOf(var.getType(env))) {
+			var_init = ce; // to allow ce.getType()
+			if (ce.getType().isInstanceOf(var.getType())) {
 				var_init = new AssignExpr(var.pos,new LVarExpr(var.pos,var),~ce);
 			} else {
-				Var tmp = new LVar(var.pos, "tmp", ce.getType(env), Var.VAR_LOCAL, ACC_FINAL);
+				Var tmp = new LVar(var.pos, "tmp", ce.getType(), Var.VAR_LOCAL, ACC_FINAL);
 				tmp.init = ~ce;
 				Block b = new Block();
 				b.addSymbol(tmp);
 				b.stats.add(new IfElseStat(tmp.pos,
-					new BooleanNotExpr(tmp.pos, new InstanceofExpr(tmp.pos, new LVarExpr(tmp.pos,tmp),var.getType(env))),
+					new BooleanNotExpr(tmp.pos, new InstanceofExpr(tmp.pos, new LVarExpr(tmp.pos,tmp),var.getType())),
 					new ContinueStat(),
 					null
 				));
 				b.stats.add(
 					new AssignExpr(var.pos,
 						new LVarExpr(var.pos,var),
-						new CastExpr(var.pos, var.getType(env), new LVarExpr(tmp.pos,tmp))
+						new CastExpr(var.pos, var.getType(), new LVarExpr(tmp.pos,tmp))
 						)
 				);
 				var_init = b;
 			}
-			Kiev.runProcessorsOn(var_init);
-			resolveENode(var_init,var.getType(env),env);
+			getEnv().runProcessorsOn(var_init);
+			resolveENode(var_init,var.getType());
 			var_init.setGenVoidExpr(true);
 		}
 
 		// Check condition, if any
 		if( cond != null ) {
-			resolveENode(cond,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(cond, env);
+			resolveENode(cond,tenv.tpBoolean);
+			RBoolExpr.checkBool(cond, tenv);
 		}
 
 		// Process body
 		try {
-			resolveENode(body,env.tenv.tpVoid,env);
+			resolveENode(body,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(body,e);
+			body.reportError().log(e);
 		}
 
 		// Increment iterator
 		if( mode == ForEachStat.ARRAY ) {
 			/* iter++ */
-			iter_incr = new IncrementExpr(iter.pos,env.coreFuncs.fIntPostINCR,new LVarExpr(iter.pos,iter));
-			resolveENode(iter_incr,env.tenv.tpVoid,env);
+			iter_incr = new IncrementExpr(iter.pos,coreFuncs.fIntPostINCR,new LVarExpr(iter.pos,iter));
+			resolveENode(iter_incr,tenv.tpVoid);
 			iter_incr.setGenVoidExpr(true);
 		} else {
 			iter_incr = null;

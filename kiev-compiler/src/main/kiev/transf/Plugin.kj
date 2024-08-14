@@ -12,28 +12,67 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import kiev.compiler.*;
+
 import java.util.Properties;
+import java.io.File;
 
 public interface PluginFactory {
 	public PluginDescr getPluginDescr(String name);
 }
 
+// Backends
+static public enum KievBackend {
+	Generic					: "generic",
+	Java15					: "java15",
+	VSrc					: "vsrc"
+}
+
+static public enum KievExt {
+	JavaOnly				: "java-only"		,
+	DumpAPI					: "dump-api"		,
+	Rewrite					: "rewrite"			,
+	GotoCase				: "goto-case"		,
+	Goto					: "goto"			,
+	With					: "with"			,
+	Closures				: "closures"		,
+	VirtualFields			: "virtual-fields"	,
+	PackedFields			: "packed-fields"	,
+	VarArgs					: "varargs"			,
+	Forward					: "forward"			,
+	Logic					: "logic"			,
+	Alias					: "alias"			,
+	Operator				: "operators"		,
+	Typedef					: "typedef"			,
+	Enum					: "enum"			,
+	View					: "view"			,
+	PizzaCase				: "pizza-case"		,
+	Contract				: "contract"		,
+	Generics				: "generics"		,
+	Templates				: "templates"		,
+	Wrappers				: "wrappers"		,
+	Access					: "access"			,
+	VNode					: "vnode"			,
+	DFlow					: "dflow"			,
+	XPath					: "xpath"
+}
+
 public final class PluginDescr {
-	
+
 	public static final String[] stages = new String[]{ "fe", "fv", "me", "mv", "be" };
-	
+
 	public String name;
 	public String descr;
 	public boolean enabled;
 	public PluginDescr[] depends;
 	public ProcessorDescr[] processors;
-	
+
 	public PluginDescr(String name) {
 		this.name = name;
 		this.depends = new PluginDescr[0];
 		this.processors = new ProcessorDescr[0];
 	}
-	
+
 	public PluginDescr depends(String name) {
 		this.depends = (PluginDescr[])Arrays.append(this.depends, new PluginDescr(name));
 		return this;
@@ -43,12 +82,12 @@ public final class PluginDescr {
 		this.processors = (ProcessorDescr[])Arrays.append(this.processors, proc);
 		return this;
 	}
-	
+
 	public String toString() {
 		return name;
 	}
-	
-	public static ProcessorDescr[][] loadAllPlugins() {
+
+	public static ProcessorDescr[][] loadAllPlugins(Env env) {
 		Hashtable<String,PluginDescr> plugins = new Hashtable<String,PluginDescr>();
 		Hashtable<String,ProcessorDescr> processors = new Hashtable<String,ProcessorDescr>();
 		// load all plugins mentioned in system properties
@@ -56,7 +95,7 @@ public final class PluginDescr {
 		foreach (String p; (java.util.Enumeration<String>)props.propertyNames(); p.startsWith("symade.plugin.")) {
 			String name = p.substring(14).intern();
 			String value = props.getProperty(p);
-			trace(Kiev.debug && Kiev.verbose, "Found plugin declaration "+value);
+			env.reportDebug().log("Found plugin declaration ", value);
 			try {
 				PluginFactory pf = (PluginFactory)Class.forName(value).newInstance();
 				PluginDescr pd = pf.getPluginDescr(name);
@@ -70,8 +109,7 @@ public final class PluginDescr {
 					pd.processors = new ProcessorDescr[0];
 				plugins.put(pd.name, pd);
 			} catch (Exception e) {
-				if (Kiev.verbose)
-					e.printStackTrace();
+				env.reportError().log(e);
 			}
 		}
 		// resolve plugin dependancies
@@ -83,10 +121,10 @@ public final class PluginDescr {
 					pd = plugins.get(pd.name);
 				if (pd == null) {
 					plugin.depends = (PluginDescr[])Arrays.remove(plugin.depends,i--);
-					trace(Kiev.verbose, "Plugin "+plugin+" depends on unknown plugin "+plugin.depends[i]);
+					env.reportWarning().log("Plugin {} depends on unknown plugin {}", plugin, plugin.depends[i]);
 				} else {
 					plugin.depends[i] = pd;
-					trace(Kiev.debug && Kiev.verbose, "Plugin "+plugin+" depends on plugin "+pd);
+					env.reportDebug().log("Plugin {} depends on plugin {}", plugin, pd);
 				}
 			}
 			foreach (ProcessorDescr proc; plugin.processors) {
@@ -96,7 +134,7 @@ public final class PluginDescr {
 					qname = plugin.name+":"+proc.stage+":"+proc.name;
 					proc.qname = qname;
 				}
-				trace(Kiev.debug && Kiev.verbose, "Plugin "+plugin+" has processor "+qname);
+				env.reportDebug().log("Plugin {} has processor {}", plugin, qname);
 				processors.put(qname,proc);
 			}
 		}
@@ -110,14 +148,14 @@ public final class PluginDescr {
 				String pd_qname = pd.qname;
 				pd = processors.get(pd.qname);
 				if (pd == null) {
-					trace(Kiev.verbose, "Processor "+proc+" runs before unknown processor "+pd_qname);
+					env.reportWarning().log("Processor {} runs before unknown processor {}", proc, pd_qname);
 					continue;
 				}
 				if (pd.stage == null || !pd.stage.equals(proc.stage)) {
-					trace(Kiev.verbose, "Processor "+proc+" runs before invalid stage processor "+pd_qname);
+					env.reportWarning().log("Processor {} runs before invalid stage processor {}", proc, pd_qname);
 					continue;
 				}
-				trace(Kiev.debug && Kiev.verbose, "Processor "+proc+" runs before "+pd);
+				env.reportDebug().log("Processor {} runs before {}", proc, pd);
 				proc.before = (ProcessorDescr[])Arrays.appendUniq(proc.before,pd);
 				pd.after = (ProcessorDescr[])Arrays.appendUniq(pd.after,proc);
 			}
@@ -125,14 +163,14 @@ public final class PluginDescr {
 				String pd_qname = pd.qname;
 				pd = processors.get(pd.qname);
 				if (pd == null) {
-					trace(Kiev.verbose, "Processor "+proc+" runs after unknown processor "+pd_qname);
+					env.reportWarning().log("Processor {} runs after unknown processor {}", proc, pd_qname);
 					continue;
 				}
 				if (pd.stage == null || !pd.stage.equals(proc.stage)) {
-					trace(Kiev.verbose, "Processor "+proc+" runs after invalid stage processor "+pd_qname);
+					env.reportWarning().log("Processor {} runs after invalid stage processor {}", proc, pd_qname);
 					continue;
 				}
-				trace(Kiev.debug && Kiev.verbose, "Processor "+proc+" runs after "+pd);
+				env.reportDebug().log("Processor {} runs after {}", proc, pd);
 				proc.after = (ProcessorDescr[])Arrays.appendUniq(proc.after,pd);
 				pd.before = (ProcessorDescr[])Arrays.appendUniq(pd.before,proc);
 			}
@@ -144,14 +182,14 @@ public final class PluginDescr {
 			Vector<ProcessorDescr> procs = new Vector<ProcessorDescr>();
 			foreach (ProcessorDescr proc; processors.elements(); stage.equals(proc.stage))
 				procs.append(proc);
+			env.reportDebug().log("For stage {} sorting processors {}", stage, processors);
 			Vector<ProcessorDescr> out = sort(stage, procs);
-			trace(Kiev.verbose, "Stage "+stage+": "+out);
+			env.reportDebug().log("Stage {}: {}", stage, out);
 			ret[i] = out.toArray();
 		}
 		return ret;
 	}
 	private static Vector<ProcessorDescr> sort(String stage, Vector<ProcessorDescr> processors) {
-		trace(Kiev.debug && Kiev.verbose, "For stage "+stage+" sorting processors "+processors);
 		Vector<ProcessorDescr> out = new Vector<ProcessorDescr>();
 		while (processors.size() > 0) {
 			// get roots of the graph
@@ -172,7 +210,7 @@ public final class PluginDescr {
 }
 
 public final class ProcessorDescr {
-	
+
 	private ProcessorDescr(String qname) {
 		this.qname = qname;
 	}
@@ -184,7 +222,7 @@ public final class ProcessorDescr {
 		this.before = new ProcessorDescr[0];
 		this.after = new ProcessorDescr[0];
 	}
-	
+
 	public ProcessorDescr before(String qname) {
 		this.before = (ProcessorDescr[])Arrays.append(this.before, new ProcessorDescr(qname));
 		return this;
@@ -193,7 +231,7 @@ public final class ProcessorDescr {
 		this.after = (ProcessorDescr[])Arrays.append(this.after, new ProcessorDescr(qname));
 		return this;
 	}
-	
+
 	public String name; // processor's simple name
 	public String qname; // qualified name in form "plugin:stage:processor", like "vnode:fe:pass3" or "virt-fld:me:pre-generate"
 	public String descr;
@@ -205,13 +243,13 @@ public final class ProcessorDescr {
 	// the priority of this processors, to sort processors that runs before/after the same pair of processors;
 	// the higher priority - the earlier it will execute; negative priority means as late as possible execution.
 	public int priority;
-	
+
 	private Class clazz;
-	
+
 	public AbstractProcessor makeProcessor(Env env, int proc_id) {
 		return (AbstractProcessor)clazz.getConstructor(Env.class,Integer.TYPE).newInstance(env,Integer.valueOf(proc_id));
 	}
-	
+
 	public String toString() {
 		if (qname != null)
 			return qname;

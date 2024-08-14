@@ -13,7 +13,7 @@ package kiev.dump.xml;
 import java.io.*;
 import java.util.Vector;
 
-import kiev.WorkerThread;
+import kiev.vlang.EnvThread;
 import kiev.dump.DumpFilter;
 import kiev.dump.MarshallingContext;
 import kiev.dump.UnMarshallingContext;
@@ -144,7 +144,7 @@ public final class XMLDumperImpl implements XMLDumper {
 	}
 
 	public INode[] loadFromXmlFile(Env env, ANodeContext nodeContext, File f, byte[] data) throws Exception {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread() instanceof EnvThread);
 		DumpUnMarshallingContext deserializer = new DumpUnMarshallingContext(env, nodeContext);
 		deserializer.file = f;
 		if (data != null)
@@ -168,14 +168,14 @@ public final class XMLDumperImpl implements XMLDumper {
 	}
 
 	public INode loadProject(Env env, ANodeContext nodeContext, File f) throws Exception {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread() instanceof EnvThread);
 		DumpUnMarshallingContext deserializer = new DumpUnMarshallingContext(env, nodeContext);
 		XMLDumpFactory.parse(new BufferedInputStream(new FileInputStream(f)), deserializer);
 		return (INode)deserializer.result;
 	}
 
 	public INode[] loadFromXmlData(Env env, ANodeContext nodeContext, byte[] data, String tdname, DNode pkg) throws Exception {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread() instanceof EnvThread);
 		DumpUnMarshallingContext deserializer = new DumpUnMarshallingContext(env, nodeContext);
 		deserializer.tdname = tdname;
 		deserializer.pkg = pkg;
@@ -187,7 +187,7 @@ public final class XMLDumperImpl implements XMLDumper {
 	}
 
 	public INode[] deserializeFromXmlFile(Env env, ANodeContext nodeContext, File f) throws Exception {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread() instanceof EnvThread);
 		DumpUnMarshallingContext deserializer = new DumpUnMarshallingContext(env, nodeContext);
 		deserializer.is_import = true;
 		XMLDumpFactory.parse(new BufferedInputStream(new FileInputStream(f)), deserializer);
@@ -196,7 +196,7 @@ public final class XMLDumperImpl implements XMLDumper {
 		return new INode[]{(INode)deserializer.result};
 	}
 	public INode[] deserializeFromXmlData(Env env, ANodeContext nodeContext, byte[] data) throws Exception {
-		assert (Thread.currentThread() instanceof WorkerThread);
+		assert (Thread.currentThread() instanceof EnvThread);
 		DumpUnMarshallingContext deserializer = new DumpUnMarshallingContext(env, nodeContext);
 		deserializer.is_import = true;
 		XMLDumpFactory.parse(new ByteArrayInputStream(data), deserializer);

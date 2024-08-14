@@ -21,11 +21,11 @@ import syntax kiev.Syntax;
 public class TypeRef extends ENode {
 
 	public static final TypeRef[] emptyArray = new TypeRef[0];
-	
+
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
 	public TypeRef() {}
-	
+
 	public static TypeRef newTypeRef(Type tp)
 		operator "new T"
 	{
@@ -49,7 +49,7 @@ public class TypeRef extends ENode {
 			return new TypeClosureRef((CallType)tp);
 		throw new RuntimeException("Unknow type for TypeRef: "+tp.getClass());
 	}
-	
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (/* dump == "api" && */ (attr.name == "type_lnk" || attr.name == "ident")) {
 			boolean use_type = true;
@@ -72,24 +72,24 @@ public class TypeRef extends ENode {
 		return type_lnk;
 	}
 
-	public Type getType(Env env) {
+	public Type getType() {
 		return type_lnk;
 	}
-	
+
 	public TypeRef closeBuild() { return this; }
 
-	public boolean isArray() { return getType(Env.getEnv()).isArray(); }
-	public void checkResolved(Env env) { getType(env).checkResolved(); } 
-	public Struct getStruct(Env env) { if (type_lnk == null) return null; return type_lnk.getStruct(); }
-	public TypeDecl getTypeDecl(Env env) { if (type_lnk == null) return null; return type_lnk.meta_type.tdecl; }
+	public boolean isArray() { return getType().isArray(); }
+	public void checkResolved() { getType().checkResolved(); }
+	public Struct getStruct() { if (type_lnk == null) return null; return type_lnk.getStruct(); }
+	public TypeDecl getTypeDecl() { if (type_lnk == null) return null; return type_lnk.meta_type.tdecl; }
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
-		((TypeRef)this).getType(env); // calls resolving
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
+		((TypeRef)this).getType(); // calls resolving
 		return false;
 	}
 
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
-		((TypeRef)this).getType(env); // calls resolving
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
+		((TypeRef)this).getType(); // calls resolving
 		return false;
 	}
 
@@ -97,11 +97,11 @@ public class TypeRef extends ENode {
 		if (o instanceof Type) return this.type_lnk ≡ (Type)o;
 		return this == o;
 	}
-	
+
 	public String toString() {
 		return String.valueOf(type_lnk);
 	}
-	
+
 }
 
 /*
@@ -134,21 +134,21 @@ public class TypeDeclRef extends TypeRef {
 		ANode p = parent();
 		while (p != null && !(p instanceof Var))
 			p = p.parent();
-		return Env.getEnv().tenv.tpVoid;
+		return getTypeEnv().tpVoid;
 	}
 
-	public Type getType(Env env)
+	public Type getType()
 	{
 		if (this.type_lnk != null)
 			return this.type_lnk;
 		ANode p = parent();
 		while (p != null && !(p instanceof Var))
 			p = p.parent();
-		return env.tenv.tpVoid;
+		return getEnv().tenv.tpVoid;
 	}
 
 	public String toString() {
-		return String.valueOf(getType(Env.getEnv()));
+		return String.valueOf(getType());
 	}
 }
 
@@ -172,7 +172,7 @@ public class TypeASTNodeRef extends TypeRef {
 		this.type_lnk = tp;
 	}
 
-	public Type getType(Env env) {
+	public Type getType() {
 		if (this.type_lnk != null)
 			return this.type_lnk;
 		Class cls = ASTNodeMetaType.allNodes.get(arg.name);
@@ -194,11 +194,11 @@ public class TypeASTNodeRef extends TypeRef {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public Struct getStruct(Env env) {
+	public Struct getStruct() {
 		return null;
 	}
-	public TypeDecl getTypeDecl(Env env) {
-		return (TypeDecl)env.tenv.symbolTDeclASTNodeType.dnode;
+	public TypeDecl getTypeDecl() {
+		return (TypeDecl)getEnv().tenv.symbolTDeclASTNodeType.dnode;
 	}
 
 	public String toString() {

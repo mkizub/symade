@@ -117,7 +117,7 @@ public @interface SymbolRefAutoComplete {
 public @interface SymbolRefAutoResolve {
 	boolean value() default true;
 	String in() default "";
-	SeverError sever() default SeverError.Error;
+	boolean error() default true;
 }
 
 //

@@ -106,7 +106,7 @@ public class JMethod extends JDNode {
 	}
 
 	public void generate(JEnv jenv, ConstPool constPool) {
-		if (Kiev.debug && (Kiev.debugStatGen || Kiev.debugInstrGen)) System.out.println("\tgenerating Method "+this);
+		jenv.env.reportDebug().log("generating method "+this);
 		foreach(JWBCCondition cond; this.conditions; cond.cond != WBCType.CondInvariant)
 			cond.generate(jenv,constPool,jenv.vtypes.tpVoid);
 		if( !isAbstract() && body != null && !(body.vn() instanceof MetaValue)) {
@@ -120,14 +120,14 @@ public class JMethod extends JDNode {
 				}
 				code.addVars(params);
 				if( !isBad() && !isMacro() ) {
-					if( Kiev.verify )
+					if (getProcessor().genVerifiable)
 						generateArgumentCheck(code);
-					if( Kiev.debugOutputC ) {
+					if (getProcessor().genContracts) {
 						foreach(JWBCCondition cond; this.conditions)
 							cond.generateEntryCall(jenv, code, isConstructor());
 					}
 					body.generate(code,code.tenv.tpVoid);
-					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
+					if (getProcessor().genContracts && code.need_to_gen_post_cond) {
 						if( mtype.ret() ≢ code.tenv.tpVoid ) {
 							code.addVar(getRetVar());
 							code.addInstr(Instr.op_store,getRetVar());
@@ -170,7 +170,7 @@ public class JMethod extends JDNode {
 					});
 				}
 			} catch(Exception e) {
-				Kiev.reportError(this.vn(),e);
+				vn().reportError().log(e);
 			}
 		}
 		MetaThrows throwns = getMetaThrows();
@@ -178,7 +178,7 @@ public class JMethod extends JDNode {
 			ASTNode[] mthrs = throwns.getThrowns();
         	String[] thrs = new String[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = jenv.getJTypeEnv().getJType(mthrs[i].getType(jenv.env)).java_signature;
+				thrs[i] = jenv.getJTypeEnv().getJType(mthrs[i].getType()).java_signature;
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);
@@ -221,7 +221,7 @@ public class JInitializer extends JDNode {
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating Initializer");
+		trace(code.traceStatGen,"\tgenerating Initializer");
 		code.setLinePos(this);
 		JENode body = (JENode)((Initializer)this.vn()).body;
 		body.generate(code,reqType);
@@ -303,7 +303,7 @@ public class JWBCCondition extends JDNode {
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode(this);
 			} catch(Exception e) {
-				Kiev.reportError(this.vn(),e);
+				vn().reportError().log(e);
 			}
 			return;
 		}

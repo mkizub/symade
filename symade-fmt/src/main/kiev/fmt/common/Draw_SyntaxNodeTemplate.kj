@@ -24,7 +24,8 @@ public class Draw_SyntaxNodeTemplate implements Serializable {
 		if (dump == null)
 			return null;
 		try {
-			INode[] nodes = DumpFactory.getXMLDumper().deserializeFromXmlData(Env.getEnv(), Env.getEnv().getEnvContext(), dump);
+			Env env = Env.getEnv();
+			INode[] nodes = DumpFactory.getXMLDumper().deserializeFromXmlData(env, env.getEnvContext(), dump);
 			if (nodes != null && nodes.length > 0)
 				template_node = nodes[0];
 		} catch (Exception e) {

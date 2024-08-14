@@ -24,7 +24,7 @@ public abstract class Type extends AType {
 
 	public abstract String toString();
 	public abstract Type getErasedType();
-	
+
 	public final Type[] getMetaSupers() {
 		return meta_type.getMetaSupers(this);
 	}
@@ -39,7 +39,7 @@ public abstract class Type extends AType {
 		//bindings(); // update this type, if outdated
 		return meta_type.applay(this,bindings);
 	}
-	
+
 	public Struct getStruct() { return null; }
 	public MNode getMeta(String name) { return null; }
 
@@ -75,13 +75,13 @@ public abstract class Type extends AType {
 			ArgType at = (ArgType)t2;
 			if (at.definer.super_types.length > 0) {
 				foreach (TypeRef tr; at.definer.super_types) {
-					if (!this.isInstanceOf(tr.getType(tenv.env)))
+					if (!this.isInstanceOf(tr.getType()))
 						return false;
 				}
 			}
 			if (at.definer.getLowerBounds().length > 0) {
 				foreach (TypeRef tr; at.definer.getLowerBounds()) {
-					if (!tr.getType(tenv.env).isInstanceOf(this))
+					if (!tr.getType().isInstanceOf(this))
 						return false;
 				}
 			}
@@ -198,8 +198,8 @@ public abstract class Type extends AType {
 
 	public Type getUnboxedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
 	public Type getEnclosedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
-	public ENode makeUnboxedExpr(ENode from)		{ throw new RuntimeException("Type "+this+" is not a box type"); } 
-	
+	public ENode makeUnboxedExpr(ENode from)		{ throw new RuntimeException("Type "+this+" is not a box type"); }
+
 	public static Type getRealType(Type t1, TypeRef t2) {
 		return Type.getRealType(t1, t2.type_lnk);
 	}
@@ -210,18 +210,18 @@ public abstract class Type extends AType {
 		return Type.getRealType(t1.type_lnk, t2.type_lnk);
 	}
 	public static Type getRealType(Type t1, Type t2) {
-		trace(Kiev.debug && Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
 		if( t1 == null || t2 == null )	return t2;
+		trace(t2.tenv.env.debugResolve,"Get real type of "+t2+" in "+t1);
 		return t2.applay(t1);
 	}
 
 	public static CompaundType getProxyType(Type tp) {
 		TVarBld set = new TVarBld();
-		set.append(tp.tenv.tpRefProxy.tdecl.args[0].getAType(tp.tenv.env), tp);
+		set.append(tp.tenv.tpRefProxy.tdecl.args[0].getAType(), tp);
 		return (CompaundType)((CompaundMetaType)tp.tenv.tpRefProxy.meta_type).make(set);
 	}
 
-	public final Field resolveField(String name) { return meta_type.tdecl.resolveField(tenv.env, name); }
+	public final Field resolveField(String name) { return meta_type.tdecl.resolveField(name); }
 
 
 	// checks the type 'base' for argument 'at' to confirm variance 'variance'
@@ -241,7 +241,7 @@ public abstract class Type extends AType {
 		Debug.assert ("Unexpected variance "+at.definer.getVarianceSafe()+" of "+at);
 		return null;
 	}
-	
+
 	public VarianceCheckError checkVariance(TypeVariance variance) {
 		return checkVariance(this,variance);
 	}
@@ -273,7 +273,7 @@ public abstract class Type extends AType {
 		}
 */		return null;
 	}
-	
+
 }
 
 public final class XType extends Type {
@@ -289,7 +289,7 @@ public final class XType extends Type {
 	public XType(MetaType meta_type, TemplateTVarSet template, TVarBld bindings) {
 		super(meta_type, template, 0, bindings);
 	}
-	
+
 	public Type getErasedType() {
 		foreach (Type t; getMetaSupers(); t != null && t != tenv.tpVoid)
 			return t.getErasedType();
@@ -304,7 +304,7 @@ public final class XType extends Type {
 		}
 		return null;
 	}
-	
+
 	public MNode getMeta(String name) {
 		return tdecl.getMeta(name);
 	}
@@ -317,7 +317,7 @@ public final class XType extends Type {
 		if (n > 0) {
 			str.append('<');
 			for(int i=0; i < n; i++) {
-				str.append(resolve(tdecl.args[i].getAType(tenv.env)));
+				str.append(resolve(tdecl.args[i].getAType()));
 				if( i < n-1)
 					str.append(',');
 			}
@@ -489,7 +489,7 @@ public final class ASTNodeType extends Type {
 	public static ASTNodeType newASTNodeType(RewritePattern rp)
 		operator "new T"
 	{
-		ASTNodeMetaType meta_type = (ASTNodeMetaType)rp.var.vtype.getType(Env.getEnv()).meta_type;
+		ASTNodeMetaType meta_type = (ASTNodeMetaType)rp.var.vtype.getType().meta_type;
 		TVarBld tvb = new TVarBld();
 		foreach (RewritePattern var; rp.vars) {
 			ASTNodeType ast = newASTNodeType(var);
@@ -530,9 +530,9 @@ public final class ArgType extends Type {
 	@virtual typedef MType = ArgMetaType;
 
 	public static final ArgType[] emptyArray = new ArgType[0];
-	
+
 	public final String name;
-	
+
 	@virtual @abstract
 	public:ro TypeDef		definer;
 
@@ -549,25 +549,25 @@ public final class ArgType extends Type {
 		if (definer.isTypeForward())    flags |= StdTypes.flForward;
 		return flags;
 	}
-	
+
 	public ArgType(ArgMetaType meta_type) {
 		super(meta_type, TemplateTVarSet.emptySet, makeFlags(meta_type));
 		this.name = meta_type.tdecl.sname;
 	}
-	
+
 	public MNode getMeta(String name)				{ return definer.getMeta(name); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public Type getErasedType() {
 		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
 			return tenv.tpObject;
-		return up[0].getType(tenv.env).getErasedType();
+		return up[0].getType().getErasedType();
 	}
 
 	public String toString() {
 		return String.valueOf(definer.sname);
 	}
-	
+
 	public boolean isCoVariant() { return definer.getVarianceSafe() == TypeVariance.CO_VARIANT; }
 	public boolean isContraVariant() { return definer.getVarianceSafe() == TypeVariance.CONTRA_VARIANT; }
 	public boolean isInVariant() { return definer.getVarianceSafe() == TypeVariance.IN_VARIANT; }
@@ -578,7 +578,7 @@ public final class ArgType extends Type {
 		if (up.length == 0)
 			return tenv.tpObject.isCastableTo(t);
 		foreach (TypeRef tr; up) {
-			if (tr.getType(tenv.env).isCastableTo(t))
+			if (tr.getType().isCastableTo(t))
 				return true;
 		}
 		return false;
@@ -590,21 +590,21 @@ public final class ArgType extends Type {
 		if (up.length == 0)
 			return tenv.tpObject.isInstanceOf(t);
 		foreach (TypeRef tr; up) {
-			if (tr.getType(tenv.env).isInstanceOf(t))
+			if (tr.getType().isInstanceOf(t))
 				return true;
 		}
 		return false;
 	}
-	
+
 	public boolean checkBindings(Type base, Type t) {
 		if (this ≡ t) return true;
 		return checkUpperBounds(base, t) && checkLowerBounds(base, t);
 	}
-	
+
 	private boolean checkUpperBounds(Type base, Type t) {
 		TypeRef[] types = definer.getUpperBounds();
 		foreach (TypeRef tr; types) {
-			Type bnd = tr.getType(tenv.env);
+			Type bnd = tr.getType();
 			while (bnd instanceof ArgType) {
 				Type res = base.resolve((ArgType)bnd);
 				if (res == bnd)
@@ -620,7 +620,7 @@ public final class ArgType extends Type {
 	private boolean checkLowerBounds(Type base, Type t) {
 		TypeRef[] types = definer.getLowerBounds();
 		foreach (TypeRef tr; types) {
-			Type bnd = tr.getType(tenv.env);
+			Type bnd = tr.getType();
 			while (bnd instanceof ArgType) {
 				Type res = base.resolve((ArgType)bnd);
 				if (res == bnd)
@@ -647,10 +647,10 @@ public final class CompaundType extends Type {
 	public CompaundType(CompaundMetaType meta_type, TemplateTVarSet template, TVarBld bindings) {
 		super(meta_type, template, 0, bindings);
 	}
-	
+
 	public Struct getStruct()					{ return (Struct)tdecl; }
 	public MNode getMeta(String name)			{ return tdecl.getMeta(name); }
-	public Type getErasedType()					{ return tdecl.getType(tenv.env); }
+	public Type getErasedType()					{ return tdecl.getType(); }
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
@@ -659,7 +659,7 @@ public final class CompaundType extends Type {
 		if (n > 0) {
 			str.append('<');
 			for(int i=0; i < n; i++) {
-				str.append(resolve(tdecl.args[i].getAType(tenv.env)));
+				str.append(resolve(tdecl.args[i].getAType()));
 				if( i < n-1)
 					str.append(',');
 			}
@@ -674,7 +674,7 @@ public final class CompaundType extends Type {
 		if( t ≡ tenv.tpVoid ) return t;
 		if( t ≡ tenv.tpAny ) return t;
 		if( isInstanceOf(t) ) return this;
-		if( this.tdecl.isStructView() && ((KievView)this.tdecl).view_of.getType(tenv.env).getAutoCastTo(t) != null ) return t;
+		if( this.tdecl.isStructView() && ((KievView)this.tdecl).view_of.getType().getAutoCastTo(t) != null ) return t;
 		if( t instanceof CoreType && !t.isReference() ) {
 			if( t.getRefTypeForPrimitive() ≈ this )
 				return t;
@@ -705,23 +705,23 @@ public class ArrayType extends Type {
 	public:ro Type		arg;
 
 	@getter public Type get$arg() { return this.resolveArg(0); }
-	
+
 	public static ArrayType newArrayType(Type tp)
 		operator "new T"
 	{
 		return new ArrayType(tp, tp.meta_type.tenv);
 	}
-	
+
 	private ArrayType(Type arg, StdTypes tenv) {
 		super(tenv.arrayMetaType, tenv.arrayTemplBindings, 0, new TVarBld(tenv.tpArrayArg, arg));
 	}
-	
+
 	protected ArrayType(VarargMetaType meta_type, TemplateTVarSet template, int flags, TVarBld bindings) {
 		super(meta_type, template, flags, bindings);
 	}
 
 	public MNode getMeta(String name)				{ return null; }
-	
+
 	public Type getErasedType() {
 		return newArrayType(arg.getErasedType());
 	}
@@ -747,19 +747,19 @@ public final class VarargType extends ArrayType {
 	public:ro Type		arg;
 
 	@getter public Type get$arg() { return this.resolveArg(0); }
-	
+
 	public static VarargType newVarargType(Type tp)
 		operator "new T"
 	{
 		return new VarargType(tp, tp.meta_type.tenv);
 	}
-	
+
 	private VarargType(Type arg, StdTypes tenv) {
 		super(tenv.varargMetaType, tenv.varargTemplBindings, 0, new TVarBld(tenv.tpVarargArg, arg));
 	}
 
 	public MNode getMeta(String name)				{ return null; }
-	
+
 	public Type getErasedType() {
 		return newArrayType(arg.getErasedType());
 	}
@@ -784,7 +784,7 @@ public abstract class CTimeType extends Type {
 	}
 
 	public abstract ENode makeUnboxedExpr(ENode from); // returns an expression of unboxed type
-	public abstract ENode makeInitExpr(Var dn, ENode init); // returns an expression of enclosed type 
+	public abstract ENode makeInitExpr(Var dn, ENode init); // returns an expression of enclosed type
 	public abstract Type getUnboxedType();
 
 	public Type getEnclosedType()	{ return this.resolveArg(0); }
@@ -793,21 +793,21 @@ public abstract class CTimeType extends Type {
 public final class WildcardCoType extends CTimeType {
 
 	@virtual typedef MType = WildcardCoMetaType;
-	
+
 	public static WildcardCoType newWildcardCoType(Type tp)
 		operator "new T"
 	{
 		return new WildcardCoType(tp, tp.meta_type.tenv);
 	}
-	
+
 	private WildcardCoType(Type base_type, StdTypes tenv) {
 		super(tenv.wildcardCoMetaType, 0, tenv.tpWildcardCoArg, base_type);
 	}
-	
+
 	public final ENode makeUnboxedExpr(ENode from) { from }
 	public final ENode makeInitExpr(Var dn, ENode init) { init }
 	public final Type getUnboxedType()	{ getEnclosedType() }
-	
+
 	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
 	public MNode getMeta(String name)		{ return getEnclosedType().getMeta(name); }
 
@@ -841,21 +841,21 @@ public final class WildcardCoType extends CTimeType {
 public final class WildcardContraType extends CTimeType {
 
 	@virtual typedef MType = WildcardContraMetaType;
-	
+
 	public static WildcardContraType newWildcardContraType(Type tp)
 		operator "new T"
 	{
 		return new WildcardContraType(tp, tp.meta_type.tenv);
 	}
-	
+
 	private WildcardContraType(Type base_type, StdTypes tenv) {
 		super(tenv.wildcardContraMetaType, 0, tenv.tpWildcardContraArg, base_type);
 	}
-	
+
 	public final ENode makeUnboxedExpr(ENode from) { from }
 	public final ENode makeInitExpr(Var dn, ENode init) { init }
 	public final Type getUnboxedType()	{ getEnclosedType() }
-	
+
 	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
 	public MNode getMeta(String name)		{ return getEnclosedType().getMeta(name); }
 
@@ -889,11 +889,11 @@ public final class WildcardContraType extends CTimeType {
 public final class WrapperType extends CTimeType {
 
 	@virtual typedef MType = WrapperMetaType;
-	
+
 	public static Type newWrapperType(Type tp) {
 		return new WrapperType(tp);
 	}
-	
+
 	public WrapperType(Type unwrapped_type) {
 		super(WrapperMetaType.instance(unwrapped_type.tenv, unwrapped_type), 0, unwrapped_type.tenv.tpWrapperArg, unwrapped_type);
 	}
@@ -903,13 +903,13 @@ public final class WrapperType extends CTimeType {
 
 	@getter
 	private Field get$wrapped_field() { return ((WrapperMetaType)this.meta_type).field; }
-	
+
 	public final ENode makeUnboxedExpr(ENode from) {
 		Field wf = wrapped_field;
 		if (wf == null)
 			return from;
 		return new IFldExpr(from.pos, ~from, wf);
-	} 
+	}
 	public final ENode makeInitExpr(Var dn, ENode init) {
 		if (dn.isInitWrapper())
 			return init;
@@ -923,17 +923,17 @@ public final class WrapperType extends CTimeType {
 			e = new NewExpr(init.pos,getEnclosedType(),new ENode[]{~init});
 		e = new ReinterpExpr(e.pos,this,~e);
 		e.setForWrapper(true);
-		
+
 		return e;
 	}
-	
+
 	public final Type getUnboxedType()	{
 		Field wf = wrapped_field;
 		if (wf == null)
 			return getEnclosedType();
-		return Type.getRealType(getEnclosedType(), wf.getType(tenv.env));
+		return Type.getRealType(getEnclosedType(), wf.getType());
 	}
-	
+
 	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
 	public MNode getMeta(String name)		{ return getEnclosedType().getMeta(name); }
 
@@ -971,7 +971,7 @@ public final class TupleType extends Type {
 	@virtual typedef MType = TupleMetaType;
 
 	public  final int		arity;
-	
+
 	TupleType(TupleMetaType meta_type, TVarBld bindings) {
 		super(meta_type,meta_type.getTemplBindings(),0,bindings);
 		this.arity = meta_type.arity;
@@ -1014,7 +1014,7 @@ public final class CallType extends Type {
 		assert(this.getArg(1) == tenv.tpCallTupleArg);
 		assert(this.resolveArg(1).meta_type == tenv.tupleMetaTypes[arity]);
 	}
-	
+
 	public static CallType createCallType(Type accessor, Type[] bnd_targs, Type[] args, Type ret, boolean is_closure)
 		operator "new T"
 	{
@@ -1055,7 +1055,7 @@ public final class CallType extends Type {
 		vs.append(tenv.tpCallTupleArg, new TupleType(tenv.tupleMetaTypes[args.length], ts));
 		Type accessor = null;
 		if (!meth.mflags_is_static && !meth.is_mth_virtual_static)
-			accessor = Env.ctxTDecl(meth).getType(tenv.env);
+			accessor = Env.ctxTDecl(meth).getType();
 		if (accessor != null)
 			vs.append(tenv.tpSelfTypeArg, tenv.tpSelfTypeArg /*accessor*/);
 		ArgType[] targs = ArgType.emptyArray;
@@ -1063,7 +1063,7 @@ public final class CallType extends Type {
 			TypeConstr[] mtargs = meth.targs;
 			targs = new ArgType[mtargs.length];
 			for (int i=0; i < mtargs.length; i++) {
-				ArgType at = mtargs[i].getAType(tenv.env);
+				ArgType at = mtargs[i].getAType();
 				vs.append(at, null);
 				targs[i] = at;
 			}
@@ -1076,20 +1076,20 @@ public final class CallType extends Type {
 		vs.append(this);
 		return new CallType((CallMetaType)this.meta_type, vs, this.arity);
 	}
-	
+
 	public Type ret() {
 		AType bindings = this.bindings();
 		assert (bindings.getArg(0) ≡ tenv.tpCallRetArg);
 		return bindings.resolveArg(0).applay(bindings);
 	}
-	
+
 	public Type arg(int idx) {
 		AType bindings = this.bindings();
 		assert (bindings.getArg(1) ≡ tenv.tpCallTupleArg);
 		TupleType tp = (TupleType)bindings.resolveArg(1);
 		return tp.resolveArg(idx).applay(bindings);
 	}
-	
+
 	public Type[] params() {
 		int arity = this.arity;
 		if (arity == 0)
@@ -1156,14 +1156,14 @@ public final class CallType extends Type {
 			Type t2 = tp.arg(i);
 			if (t1 ≉ t2) {
 				if( t1.isInstanceOf(t2) ) {
-					trace(Kiev.debug && Kiev.debugMultiMethod,"Type "+t1+" is greater then "+t2);
+					trace(tenv.env.debugMultiMethod,"Type "+t1+" is greater then "+t2);
 					gt = true;
 				} else {
-					trace(Kiev.debug && Kiev.debugMultiMethod,"Types "+t1+" and "+t2+" are uncomparable");
+					trace(tenv.env.debugMultiMethod,"Types "+t1+" and "+t2+" are uncomparable");
 					return false;
 				}
 			} else {
-				trace(Kiev.debug && Kiev.debugMultiMethod,"Types "+t1+" and "+t2+" are equals");
+				trace(tenv.env.debugMultiMethod,"Types "+t1+" and "+t2+" are equals");
 			}
 		}
 		return gt;

@@ -11,7 +11,8 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.EditorThreadGroup;
+import kiev.Compiler;
+import kiev.compiler.EditorThreadGroup;
 import kiev.vlang.Env;
 import kiev.vlang.FileUnit;
 import kiev.vlang.Project;
@@ -23,53 +24,59 @@ import kiev.vtree.INode;
  *
  */
 public interface IWindow {
-	
+
 	/**
 	 * Opens <code>Editor</code> tab in the editors tab folder.
-	 * 
+	 *
 	 * @param fu the file unit to open
 	 */
 	public IEditor openEditor(FileUnit fu);
-	
+
 	/**
 	 * Opens <code>Editor</code> tab in the editors tab folder for a node path.
-	 * 
+	 *
 	 * @param fu the file unit to open
 	 * @param path the node path
 	 */
 	public IEditor openEditor(FileUnit fu, INode[] path);
-	
+
 	/**
 	 * Closes <code>Editor</code> tab. When current editor is closed the first is
-	 * selected. 
-	 * 
+	 * selected.
+	 *
 	 * @param ed the editor
 	 */
 	public void closeEditor(IEditor ed);
-		
+
 	/**
 	 * Returns the current view selected.
-	 * 
+	 *
 	 * @return the current view
 	 */
 	public UIView getCurrentView();
-	
+
 	/**
 	 * Request to update status bar.
 	 */
 	public void updateStatusBar();
-	
+
 	/**
 	 * Returns the current environment.
 	 * @return the environment
 	 */
 	public Env getCurrentEnv();
-		
+
 	/**
 	 * Returns the current project.
 	 * @return the current project
 	 */
 	public Project getCurrentProject();
+
+	/**
+	 * Returns the <code>Compiler</code>.
+	 * @return the Compiler
+	 */
+	public Compiler getCompiler();
 
 	/**
 	 * Returns the <code>EditorThreadGroup</code>.

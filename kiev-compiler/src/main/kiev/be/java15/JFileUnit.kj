@@ -35,7 +35,7 @@ public class JFileUnit extends JSNode {
 			return new JFileUnit(impl);
 		return new JFileUnitToCompile(impl);
 	}
-	
+
 	public JFileUnit(FileUnit impl) {
 		super(impl);
 	}
@@ -55,15 +55,13 @@ public class JFileUnitToCompile extends JFileUnit {
 	public JFileUnitToCompile(FileUnit impl) {
 		super(impl);
 		timestamp = Long.MAX_VALUE;
-		if (Kiev.fast_gen)
-			timestamp = impl.source_timestamp;
 		pname = impl.pname();
 		fname = impl.fname;
 		Vector<JStruct> structs = new Vector<JStruct>();
 		collectStructs(impl, structs);
 		this.structs = structs.toArray();
 	}
-	
+
 	private static void collectStructs(SyntaxScope ss, Vector<JStruct> structs) {
 		foreach (ASTNode n; ss.members) {
 			if (n instanceof Struct)
@@ -72,20 +70,21 @@ public class JFileUnitToCompile extends JFileUnit {
 				collectStructs((SyntaxScope)n, structs);
 		}
 	}
-	
+
 	public void generate(JEnv jenv) {
-		String cur_file = Kiev.getCurFile();
-		Kiev.setCurFile(pname);
+		EnvThread thr = (EnvThread)Thread.currentThread();
+		String saved_file = thr.current_file;
+		thr.current_file = pname;
         try {
 			long curr_time = 0L, diff_time = 0L;
 			foreach (JStruct n; structs) {
 				diff_time = curr_time = System.currentTimeMillis();
 				boolean gen = n.generate(jenv, timestamp);
 				diff_time = System.currentTimeMillis() - curr_time;
-				if( Kiev.verbose && gen )
-					Kiev.reportInfo("Generated clas "+n,diff_time);
+				if (gen)
+					Compiler.reportProgress(jenv.env, "Generated clas", n, diff_time);
 			}
-		} finally { Kiev.setCurFile(cur_file); }
+		} finally { thr.current_file = saved_file; }
 	}
 }
 

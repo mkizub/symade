@@ -12,6 +12,8 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import kiev.compiler.WorkerThreadGroup;
+
 import static kiev.transf.VNodeUtils.mnNode;
 import static kiev.transf.VNodeUtils.mnAtt;
 import static kiev.transf.VNodeUtils.mnRef;
@@ -104,23 +106,23 @@ public final class VNodeUtils {
 	}
 
 	VNodeUtils(Env env) {
-		tpINode = env.loadTypeDecl(nameINode, true).getType(env);
-		tpANode = env.loadTypeDecl(nameANode, true).getType(env);
-		tpNode = env.loadTypeDecl(nameNode, true).getType(env);
-		tpNodeTypeInfo = env.loadTypeDecl(nameNodeTypeInfo, true).getType(env);
+		tpINode = env.loadTypeDecl(nameINode, true).getType();
+		tpANode = env.loadTypeDecl(nameANode, true).getType();
+		tpNode = env.loadTypeDecl(nameNode, true).getType();
+		tpNodeTypeInfo = env.loadTypeDecl(nameNodeTypeInfo, true).getType();
 		tpNArray = new ArrayType(tpANode);
-		tpNodeSpace = env.loadTypeDecl(nameNodeSpace, true).getType(env);
-		tpNodeExtSpace = env.loadTypeDecl(nameNodeExtSpace, true).getType(env);
-		tpNodeSymbolRef = env.loadTypeDecl(nameNodeSymbolRef, true).getType(env);
-		tpTreeWalker = env.loadTypeDecl(nameTreeWalker, true).getType(env);
-		tpAttrSlot = env.loadTypeDecl(nameAttrSlot, true).getType(env);
-		tpScalarAttrSlot = env.loadTypeDecl(nameScalarAttrSlot, true).getType(env);
-		tpExtAttrSlot = env.loadTypeDecl(nameExtAttrSlot, true).getType(env);
-		tpSpaceAttrSlot = env.loadTypeDecl(nameSpaceAttrSlot, true).getType(env);
-		tpExtSpaceAttrSlot = env.loadTypeDecl(nameExtSpaceAttrSlot, true).getType(env);
-		tpParentAttrSlot = env.loadTypeDecl(nameParentAttrSlot, true).getType(env);
-		tpLanguageIface = env.loadTypeDecl(nameLanguageIface, true).getType(env);
-		tpCopyContext = env.loadTypeDecl(nameCopyContext, true).getType(env);
+		tpNodeSpace = env.loadTypeDecl(nameNodeSpace, true).getType();
+		tpNodeExtSpace = env.loadTypeDecl(nameNodeExtSpace, true).getType();
+		tpNodeSymbolRef = env.loadTypeDecl(nameNodeSymbolRef, true).getType();
+		tpTreeWalker = env.loadTypeDecl(nameTreeWalker, true).getType();
+		tpAttrSlot = env.loadTypeDecl(nameAttrSlot, true).getType();
+		tpScalarAttrSlot = env.loadTypeDecl(nameScalarAttrSlot, true).getType();
+		tpExtAttrSlot = env.loadTypeDecl(nameExtAttrSlot, true).getType();
+		tpSpaceAttrSlot = env.loadTypeDecl(nameSpaceAttrSlot, true).getType();
+		tpExtSpaceAttrSlot = env.loadTypeDecl(nameExtSpaceAttrSlot, true).getType();
+		tpParentAttrSlot = env.loadTypeDecl(nameParentAttrSlot, true).getType();
+		tpLanguageIface = env.loadTypeDecl(nameLanguageIface, true).getType();
+		tpCopyContext = env.loadTypeDecl(nameCopyContext, true).getType();
 
 		PostTypeSpace = Operator.getOperatorByName(operatorPostTypeSpace);
 		PostTypeExtSpace = Operator.getOperatorByName(operatorPostTypeExtSpace);
@@ -181,7 +183,7 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 			UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 			UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 			if (fmatt != null || fmref != null) {
-				Kiev.reportWarning(f,"Field "+f+" of non-@node class "+Env.ctxTDecl(f)+" may not be @nodeAttr or @nodeData");
+				f.reportWarning().log("Field "+f+" of non-@node class "+Env.ctxTDecl(f)+" may not be @nodeAttr or @nodeData");
 			}
 		}
 	}
@@ -192,22 +194,22 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 		//if (fmatt != null || fmref != null) {
 		//	System.out.println("process @node: field "+f+" has @nodeAttr="+fmatt+" and @nodeData="+fmref);
 		if (fmatt != null && fmref != null) {
-			Kiev.reportError(f,"Field "+Env.ctxTDecl(f)+"."+f+" marked both @nodeAttr and @nodeData");
+			f.reportError().log("Field {}.{} marked both @nodeAttr and @nodeData", Env.ctxTDecl(f), f);
 		}
 		if (fmatt != null || fmref != null) {
 			if (f.isStatic())
-				Kiev.reportError(f,"Field "+Env.ctxTDecl(f)+"."+f+" is static and cannot have @nodeAttr or @nodeData");
+				f.reportError().log("Field {}.{} is static and cannot have @nodeAttr or @nodeData", Env.ctxTDecl(f), f);
 			boolean isArr = false;
 			{
-				Type ft = f.getType(env);
+				Type ft = f.getType();
 				boolean isExtData = fmatt != null ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 				if (ft.isInstanceOf(tpNArray)) {
 					if (!isExtData) {
 						if (!ft.isInstanceOf(tpNodeSpace))
-							Kiev.reportError(f,"Use node space operator '"+operatorPostTypeSpace+"' instead of 'T []'");
+							f.reportError().log("Use node space operator '{}' instead of 'T []'", operatorPostTypeSpace);
 					} else {
 						if (!ft.isInstanceOf(tpNodeExtSpace))
-							Kiev.reportError(f,"Use node extended space operator '"+operatorPostTypeExtSpace+"' instead of 'T []'"); // ⋈
+							f.reportError().log("Use node extended space operator '{}' instead of 'T []'", operatorPostTypeExtSpace); // ⋈
 					}
 					if (ft.isInstanceOf(tpNodeExtSpace)) {
 						if (!f.isAbstract())
@@ -220,14 +222,14 @@ public final class VNodeFE_Pass3 extends TransfProcessor {
 			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @nodeAttr="+fmatt+" or @nodeData="+fmref);
 			if (isArr && f.init != null && !f.init.isAutoGenerated()) {
-				Kiev.reportError(f,"Field "+Env.ctxTDecl(f)+"."+f+" may not have initializer");
+				f.reportError().log("Field {}.{} may not have initializer", Env.ctxTDecl(f), f);
 			}
 		}
 		else if (!f.isStatic() && !f.isInterfaceOnly() && !f.isAbstract()) {
-			if (f.getType(env).isInstanceOf(tpNArray))
-				Kiev.reportWarning(f,"Field "+Env.ctxTDecl(f)+"."+f+" must be marked with @nodeAttr or @nodeData");
-			else if (VNodeUtils.isNodeKind(f.getType(env)))
-				Kiev.reportWarning(f,"Field "+Env.ctxTDecl(f)+"."+f+" must be marked with @nodeAttr or @nodeData");
+			if (f.getType().isInstanceOf(tpNArray))
+				f.reportWarning().log("Field "+Env.ctxTDecl(f)+"."+f+" must be marked with @nodeAttr or @nodeData");
+			else if (VNodeUtils.isNodeKind(f.getType()))
+				f.reportWarning().log("Field "+Env.ctxTDecl(f)+"."+f+" must be marked with @nodeAttr or @nodeData");
 		}
 		if (!f.isStatic() && !f.isAbstract() && !f.isFinal() && f.getMeta(mnUnVersioned) == null)
 			f.setVirtual(true);
@@ -250,10 +252,10 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 		UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 		boolean isAtt = (fmatt != null);
-		boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
-		boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
+		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
+		boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
 		boolean isExtData = isAtt ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
-		Type ft = f.getType(env);
+		Type ft = f.getType();
 		Type clz_tp = (isArr || isSet) ? ft.resolveArg(0) : ft;
 		//if (clz_tp ≡ env.tenv.tpInt);
 		//else if (clz_tp ≡ env.tenv.tpBoolean);
@@ -272,8 +274,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		String sname = ("NodeAttr_"+f.sname).intern();
 		foreach (TypeDecl td; snode.members; td.sname == sname) {
 			if (!f.isInterfaceOnly())
-				Kiev.reportWarning(td,"Class "+snode+"."+sname+" already exists and will not be generated");
-			return td.getType(env);
+				td.reportWarning().log("Class "+snode+"."+sname+" already exists and will not be generated");
+			return td.getType();
 		}
 		Struct s = this.env.newStruct(sname,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),null);
 		if (!s.isAttached())
@@ -287,23 +289,23 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		if (isAtt) {
 			String p = fmatt.getS("parent");
 			if (p.length() == 0) {
-				parent_attr_slot = tpANode.meta_type.tdecl.resolveField(env, "nodeattr$parent");
+				parent_attr_slot = tpANode.meta_type.tdecl.resolveField("nodeattr$parent");
 			} else {
 				int s = p.lastIndexOf('.');
 				if (s < 0)
-					parent_attr_slot = snode.resolveField(env,p.intern());
+					parent_attr_slot = snode.resolveField(p.intern());
 				else
-					parent_attr_slot = ((TypeDecl)env.resolveGlobalDNode(p.substring(0,s))).resolveField(env,p.substring(s+1).intern());
+					parent_attr_slot = ((TypeDecl)env.resolveGlobalDNode(p.substring(0,s))).resolveField(p.substring(s+1).intern());
 			}
 		}
 		if (isSet) {
 			TVarBld set = new TVarBld();
-			set.append(tpExtSpaceAttrSlot.getStruct().args[0].getAType(env), clz_tp);
+			set.append(tpExtSpaceAttrSlot.getStruct().args[0].getAType(), clz_tp);
 			s.super_types.insert(0, new TypeRef(tpExtSpaceAttrSlot.applay(set)));
 		}
 		else if (isArr) {
 			TVarBld set = new TVarBld();
-			set.append(tpSpaceAttrSlot.getStruct().args[0].getAType(env), clz_tp);
+			set.append(tpSpaceAttrSlot.getStruct().args[0].getAType(), clz_tp);
 			s.super_types.insert(0, new TypeRef(tpSpaceAttrSlot.applay(set)));
 		}
 		else {
@@ -317,7 +319,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		{
 			Constructor ctor = new Constructor(0);
 			s.members.add(ctor);
-			Constructor sctor = (Constructor)s.super_types[0].getStruct(env).resolveMethod(env,null,tenv.tpVoid,tenv.tpString,tpParentAttrSlot,tenv.tpTypeInfo);
+			Constructor sctor = (Constructor)s.super_types[0].getStruct().resolveMethod(null,tenv.tpVoid,tenv.tpString,tpParentAttrSlot,tenv.tpTypeInfo);
 			ENode parent_fld_expr = (parent_attr_slot == null ? new ConstNullExpr() : new SFldExpr(0,parent_attr_slot));
 			CtorCallExpr ce = new CtorCallExpr(f.pos,
 					new SuperExpr(),
@@ -339,7 +341,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 					getArr.params.add(new LVar(0, "parent", tpINode, Var.VAR_LOCAL, ACC_FINAL));
 					s.addMethod(getArr);
 					getArr.body = new Block(0);
-					ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(env), new LVarExpr(0, getArr.params[0]) ), f);
+					ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(), new LVarExpr(0, getArr.params[0]) ), f);
 					getArr.block.stats.add(new ReturnStat(f.pos,val));
 				}
 				// add public void set(ASTNode parent, N[]:Object narr)
@@ -349,9 +351,9 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 					setArr.params.add(new LVar(0, "narr", tenv.tpObject /*new ArrayType(tpINode)*/, Var.VAR_LOCAL, ACC_FINAL));
 					s.addMethod(setArr);
 					setArr.body = new Block(0);
-					ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(env), new LVarExpr(0, setArr.params[0]) ), f);
+					ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(), new LVarExpr(0, setArr.params[0]) ), f);
 					setArr.block.stats.add(new ExprStat(
-						new AssignExpr(f.pos,lval,new CastExpr(f.pos, f.getType(env), new LVarExpr(0, setArr.params[1])))
+						new AssignExpr(f.pos,lval,new CastExpr(f.pos, f.getType(), new LVarExpr(0, setArr.params[1])))
 					));
 				}
 			} else {
@@ -362,11 +364,11 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 					s.addMethod(getVal);
 					Block block = new Block(0);
 					getVal.body = block;
-					ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(env), new LVarExpr(0, getVal.params[0]) ), f);
+					ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(), new LVarExpr(0, getVal.params[0]) ), f);
 					ReturnStat rs = new ReturnStat(f.pos,val);
 					block.stats.add(rs);
-					if!(val.getType(env).isReference())
-						CastExpr.autoCastToReference(env, val, rs, ReturnStat.nodeattr$expr);
+					if!(val.getType().isReference())
+						CastExpr.autoCastToReference(val, rs, ReturnStat.nodeattr$expr);
 				}
 				// add public void set(ASTNode parent, Object narr)
 				{
@@ -376,9 +378,9 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 					s.addMethod(setVal);
 					setVal.body = new Block(0);
 					if (!f.isFinal() && MetaAccess.writeable(f)) {
-						ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(env), new LVarExpr(0, setVal.params[0]) ), f);
+						ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.getType(), new LVarExpr(0, setVal.params[0]) ), f);
 						ENode val = new LVarExpr(0, setVal.params[1]);
-						Type ftp = f.getType(env);
+						Type ftp = f.getType();
 						if (ftp.isReference())
 							val = new CastExpr(0,ftp,val);
 						else if (ftp ≡ tenv.tpBoolean)
@@ -390,7 +392,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 						AssignExpr ae = new AssignExpr(f.pos,lval,val);
 						setVal.block.stats.add(new ExprStat(ae));
 						if!(ftp.isReference())
-							CastExpr.autoCastToPrimitive(env, val, (CoreType)ftp, ae, AssignExpr.nodeattr$value);
+							CastExpr.autoCastToPrimitive(val, (CoreType)ftp, ae, AssignExpr.nodeattr$value);
 					} else {
 						ConstStringExpr msg = new ConstStringExpr((isAtt ? "@nodeAttr " : "@nodeData ")+f.sname+" is not writeable");
 						setVal.block.stats.add(
@@ -408,8 +410,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			}
 		}
 
-		Kiev.runProcessorsOn(s);
-		return s.getType(env);
+		env.runProcessorsOn(s);
+		return s.getType();
 	}
 
 	private void makeNodeDecl(SymadeNode sn) {
@@ -420,8 +422,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		NodeDecl nd = new NodeDecl();
 		sn.node_decl = nd;
 
-		foreach (TypeRef st; sn.super_types; st.getTypeDecl(env) instanceof SymadeNode) {
-			SymadeNode supsn = (SymadeNode)st.getTypeDecl(env);
+		foreach (TypeRef st; sn.super_types; st.getTypeDecl() instanceof SymadeNode) {
+			SymadeNode supsn = (SymadeNode)st.getTypeDecl();
 			makeNodeDecl(supsn);
 			NodeDecl⇑ snd = (NodeDecl⇑)new SymbolRef<NodeDecl>(supsn.node_decl);
 			snd.qualified = true;
@@ -429,13 +431,13 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 		}
 		foreach (Field f; sn.members; !f.isStatic() && (f.getMeta(mnAtt) != null || f.getMeta(mnRef) != null)) {
 			boolean isAtt = (f.getMeta(mnAtt) != null);
-			boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
-			boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
+			boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+			boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 			NodeAttribute na = new NodeAttribute();
 			na.sname = f.sname;
 			if (!isAtt)
 				na.is_data = true;
-			Type ft = f.getType(env);
+			Type ft = f.getType();
 			if (isArr)
 				na.attr_kind = NodeAttrKind.SPACE_OF_NODES;
 			else if (isSet)
@@ -511,8 +513,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			return; // already generated
 
 		Vector<Struct> sup_struct = new Vector<Struct>();
-		foreach (TypeRef st; s.super_types; VNodeUtils.isNodeKind(st.getStruct(env))) {
-			Struct sups = st.getStruct(env);
+		foreach (TypeRef st; s.super_types; VNodeUtils.isNodeKind(st.getStruct())) {
+			Struct sups = st.getStruct();
 			this.doProcess(sups);
 			sup_struct.append(sups);
 		}
@@ -523,8 +525,8 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			aflds.append(f);
 		foreach (Field f; aflds) {
 			boolean isAtt = (f.getMeta(mnAtt) != null);
-			boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
-			boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
+			boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+			boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 			Type tpa = makeNodeAttrClass(s,f);
 			String fname = ("nodeattr$"+f.sname).intern();
 			Field f_attr = null;
@@ -534,7 +536,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			}
 			if (f_attr != null) {
 				if (!f.isInterfaceOnly())
-					Kiev.reportWarning(f_attr,"Field "+s+"."+fname+" already exists and will not be generated");
+					f_attr.reportWarning().log("Field "+s+"."+fname+" already exists and will not be generated");
 				dnaflds.append(f_attr);
 			} else {
 				Field dnaf = new Field(fname, tpa, ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
@@ -566,7 +568,7 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 
 		Field fld_nti = new Field("$node_type_info", tpNodeTypeInfo, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
 		fld_nti.init = new NewExpr(0, tpNodeTypeInfo, new ENode[]{
-			new TypeClassExpr(0, new TypeRef(s.getType(env))),
+			new TypeClassExpr(0, new TypeRef(s.getType())),
 			node_defined_slots
 		});
 		s.addField(fld_nti);
@@ -626,15 +628,15 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 				} finally { tr.leave(); }
 			}
 			/*
-			if (node instanceof Struct && !node.isInterface() && node.getType(env).isInstanceOf(tpLanguageIface)) {
+			if (node instanceof Struct && !node.isInterface() && node.getType().isInstanceOf(tpLanguageIface)) {
 				LangDecl ld = getLangDecl((Struct)node);
 				if (!ld.isAttached()) {
 					((KievPackage)node.parent()).pkg_members += ld;
 					FileUnit fu = FileUnit.makeFile("lang"+node.sname, env.getProject(), false);
 					fu.members += ld;
 				}
-				foreach (TypeRef tr; node.super_types; tr.getType(env).isInstanceOf(tpLanguageIface)) {
-					ld.super_langs += (LangDecl⇑)new SymbolRef<LangDecl>(getLangDecl(tr.getStruct(env)));
+				foreach (TypeRef tr; node.super_types; tr.getType().isInstanceOf(tpLanguageIface)) {
+					ld.super_langs += (LangDecl⇑)new SymbolRef<LangDecl>(getLangDecl(tr.getStruct()));
 				}
 			}
 			*/
@@ -646,36 +648,36 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
 		TypeDecl td;
 		if (langValue.value instanceof TypeClassExpr)
-			td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl(env);
+			td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl();
 		else
-			td = ((TypeRef)langValue.value).getTypeDecl(env);
-		if (td.getType(env) ≡ this.env.getTypeEnv().tpVoid)
+			td = ((TypeRef)langValue.value).getTypeDecl();
+		if (td.getType() ≡ this.env.getTypeEnv().tpVoid)
 			return;
 		if!(td instanceof Struct) {
-			Kiev.reportError(m,"Language '"+td+"' is not a class");
+			m.reportError().log("Language '{}' is not a class", td);
 			return;
 		}
 		if (td.isInterfaceOnly())
 			return;
-		Field nodeClasses = td.resolveField(env,"nodeClasses", false);
+		Field nodeClasses = td.resolveField("nodeClasses", false);
 		if (nodeClasses == null) {
-			Kiev.reportWarning(m,"Language '"+td+"' has no field 'nodeClasses'");
+			m.reportWarning().log("Language '"+td+"' has no field 'nodeClasses'");
 			return;
 		}
 		if!(nodeClasses.init instanceof NewInitializedArrayExpr) {
-			Kiev.reportError(m,"Language '"+td+"' has field 'nodeClasses' with wrong initializer (NewInitializedArrayExpr expected)");
+			m.reportError().log("Language '{}' has field 'nodeClasses' with wrong initializer (NewInitializedArrayExpr expected)", td);
 			return;
 		}
 		NewInitializedArrayExpr init = (NewInitializedArrayExpr)nodeClasses.init;
 		boolean found = false;
 		foreach (TypeClassExpr tce; init.args) {
-			if (tce.ttype.getStruct(env) == s) {
+			if (tce.ttype.getStruct() == s) {
 				found = true;
 				break;
 			}
 		}
 		if (!found) {
-			Kiev.reportError(m,"Language '"+td+"' has no reference to @node '"+s+"' in field 'nodeClasses'");
+			m.reportError().log("Language '{}' has no reference to @node '{}' in field 'nodeClasses'", td, s);
 			return;
 		}
 		/*
@@ -688,8 +690,8 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 			ndname = s.sname;
 		nd.sname = ndname;
 		ld.decls += nd;
-		foreach (TypeRef tr; s.super_types; VNodeUtils.isNodeKind(tr.getType(env)))
-			nd.super_decls += (NodeDecl⇑)new SymbolRef<NodeDecl>(getNodeDecl(tr.getStruct(env)));
+		foreach (TypeRef tr; s.super_types; VNodeUtils.isNodeKind(tr.getType()))
+			nd.super_decls += (NodeDecl⇑)new SymbolRef<NodeDecl>(getNodeDecl(tr.getStruct()));
 		foreach (Field f; s.members) {
 			UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 			UserMeta fmref = (UserMeta)f.getMeta(mnRef);
@@ -698,7 +700,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 				na.sname = f.sname;
 				if (fmref != null)
 					na.is_data = true;
-				Type ft = f.getType(env);
+				Type ft = f.getType();
 				if (ft ≈ tenv.tpBoolean)
 					na.attr_kind = NodeAttrKind.SCALAR_BOOL;
 				else if (ft ≈ tenv.tpString)
@@ -790,7 +792,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 	public Method getCodeSet() {
 		if (_codeSet == null) {
 			TypeDecl td = (TypeDecl)this.env.loadTypeDecl("kiev·transf·TemplateVNode", true);
-			_codeSet = td.resolveMethod(env, "codeSet", this.env.getTypeEnv().tpVoid)
+			_codeSet = td.resolveMethod("codeSet", this.env.getTypeEnv().tpVoid)
 		}
 		return _codeSet;
 	}
@@ -798,7 +800,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 	public Method getCodeGet() {
 		if (_codeGet == null) {
 			TypeDecl td = (TypeDecl)this.env.loadTypeDecl("kiev·transf·TemplateVNode", true);
-			_codeGet = td.resolveMethod(env, "codeGet", this.env.getTypeEnv().tpVoid)
+			_codeGet = td.resolveMethod("codeGet", this.env.getTypeEnv().tpVoid)
 		}
 		return _codeGet;
 	}
@@ -822,8 +824,8 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		else
 			impl = s.iface_impl;
 
-		foreach (TypeRef st; iface.super_types; isNodeKind(st.getStruct(env)))
-			this.doProcess(st.getStruct(env));
+		foreach (TypeRef st; iface.super_types; isNodeKind(st.getStruct()))
+			this.doProcess(st.getStruct());
 
 		// attribute names array
 		Vector<Field> aflds = null;
@@ -845,26 +847,26 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			for(int i=0; i < vals_init.length; i++) {
 				Field f = aflds[i];
 				boolean isAtt = (f.getMeta(mnAtt) != null);
-				boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
-				boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
+				boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+				boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 				if (Env.ctxTDecl(f) != iface) {
-					vals_init[i] = new SFldExpr(f.pos, iface.resolveField(env,("nodeattr$"+f.sname).intern(), true));
+					vals_init[i] = new SFldExpr(f.pos, iface.resolveField(("nodeattr$"+f.sname).intern(), true));
 					continue;
 				}
 				Field nodeattr_f = getField(iface,("nodeattr$"+f.sname).intern());
-				ENode e = new NewExpr(0, nodeattr_f.getType(env), ENode.emptyArray);
+				ENode e = new NewExpr(0, nodeattr_f.getType(), ENode.emptyArray);
 				nodeattr_f.init = e;
-				Kiev.runProcessorsOn(e);
+				env.runProcessorsOn(e);
 				vals_init[i] = new SFldExpr(nodeattr_f.pos, nodeattr_f);
 			}
 			vals.init = new NewInitializedArrayExpr(0, new TypeExpr(tpAttrSlot,Operator.PostTypeArray,new ArrayType(tpAttrSlot)), vals_init);
-			Kiev.runProcessorsOn(vals.init);
+			env.runProcessorsOn(vals.init);
 		}
 
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(iface, nameEnumValues)) {
 			if (!s.isInterfaceOnly())
-				Kiev.reportWarning(iface,"Method "+iface+"."+nameEnumValues+" already exists, @node member is not generated");
+				iface.reportWarning().log("Method "+iface+"."+nameEnumValues+" already exists, @node member is not generated");
 		} else {
 			Method elems = new MethodImpl(nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
 			iface.addMethod(elems);
@@ -873,7 +875,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 				elems.block.stats.add(
 					new ReturnStat(0,
 						new SFldExpr(0,vals) ) );
-				Kiev.runProcessorsOn(elems);
+				env.runProcessorsOn(elems);
 			}
 		}
 
@@ -887,7 +889,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			throw new CompilerException(s,"Auto-generated field with name "+"$node_type_info"+" is not found");
 		if (hasMethod(iface, "getNodeTypeInfo")) {
 			if (!s.isInterfaceOnly())
-				Kiev.reportWarning(iface,"Method "+iface+"."+"getNodeTypeInfo"+" already exists, @node member is not generated");
+				iface.reportWarning().log("Method "+iface+"."+"getNodeTypeInfo"+" already exists, @node member is not generated");
 		} else {
 			Method mnti = new MethodImpl("getNodeTypeInfo",tpNodeTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC);
 			iface.addMethod(mnti);
@@ -896,14 +898,14 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 				mnti.block.stats.add(
 					new ReturnStat(0,
 						new SFldExpr(0,fld_node_type_info) ) );
-				Kiev.runProcessorsOn(mnti);
+				env.runProcessorsOn(mnti);
 			}
 		}
 
 		StdTypes tenv = this.env.getTypeEnv();
 
 		// Language getCompilerLang()
-		if (!iface.getType(env).isInstanceOf(tpNode) || hasMethod(impl, "getCompilerLang")) {
+		if (!iface.getType().isInstanceOf(tpNode) || hasMethod(impl, "getCompilerLang")) {
 			//if (!s.isInterfaceOnly())
 			//	Kiev.reportWarning(s,"Method "+s+"."+"getCompilerLang already exists, @node member is not generated");
 		} else {
@@ -915,23 +917,23 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 				MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
 				TypeDecl td;
 				if (langValue.value instanceof TypeClassExpr)
-					td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl(env);
+					td = ((TypeClassExpr)langValue.value).ttype.getTypeDecl();
 				else
-					td = ((TypeRef)langValue.value).getTypeDecl(env);
+					td = ((TypeRef)langValue.value).getTypeDecl();
 				ENode res = null;
-				if (td.getType(env) ≡ tenv.tpVoid)
+				if (td.getType() ≡ tenv.tpVoid)
 					res = new ConstNullExpr();
 				else if (!td.isSingleton())
 					res = new ConstNullExpr();
 				else
-					res = new TypeRef(td.getType(env));
+					res = new TypeRef(td.getType());
 				lng.block.stats.append(new ReturnStat(0,res));
-				Kiev.runProcessorsOn(lng);
+				env.runProcessorsOn(lng);
 			}
 		}
 
 		// String getCompilerNodeName()
-		if (!iface.getType(env).isInstanceOf(tpNode) || hasMethod(impl, "getCompilerNodeName")) {
+		if (!iface.getType().isInstanceOf(tpNode) || hasMethod(impl, "getCompilerNodeName")) {
 			//if (!s.isInterfaceOnly())
 			//	Kiev.reportWarning(s,"Method "+s+"."+"getCompilerNodeName already exists, @node member is not generated");
 		} else {
@@ -944,7 +946,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 				if (nm == null || nm.length() == 0)
 					nm = iface.sname;
 				nname.block.stats.append(new ReturnStat(0,new ConstStringExpr(nm)));
-				Kiev.runProcessorsOn(nname);
+				env.runProcessorsOn(nname);
 			}
 		}
 
@@ -954,7 +956,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		else if (hasMethod(impl, "copyTo")) {
 			if (!s.isInterfaceOnly())
-				Kiev.reportWarning(impl,"Method "+impl+"."+"copyTo(...) already exists, @node member is not generated");
+				impl.reportWarning().log("Method "+impl+"."+"copyTo(...) already exists, @node member is not generated");
 		} else {
 			Method copyV = new MethodImpl("copyTo",tenv.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			Var tn;
@@ -964,14 +966,14 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			impl.addMethod(copyV);
 			if (!s.isInterfaceOnly()) {
 				copyV.body = new Block();
-				Var v = new LVar(0,"node",impl.getType(env),Var.VAR_LOCAL,0);
-				if (isNodeKind(impl.super_types[0].getStruct(env))) {
+				Var v = new LVar(0,"node",impl.getType(),Var.VAR_LOCAL,0);
+				if (isNodeKind(impl.super_types[0].getStruct())) {
 					CallExpr cae = new CallExpr(0,new SuperExpr(),
 						new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,tn), new LVarExpr(0,cc)});
-					v.init = new CastExpr(0,impl.getType(env),cae);
+					v.init = new CastExpr(0,impl.getType(),cae);
 					copyV.block.addSymbol(v);
 				} else {
-					v.init = new CastExpr(0,impl.getType(env),new LVarExpr(0,tn));
+					v.init = new CastExpr(0,impl.getType(),new LVarExpr(0,tn));
 					copyV.block.addSymbol(v);
 				}
 				foreach (Field f; impl.members) {
@@ -984,9 +986,9 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 						if (fmeta != null && !fmeta.getZ(nameCopyable))
 							continue; // do not copy the field
 					}
-					boolean isNode = (VNodeUtils.isNodeKind(f.getType(env)));
-					boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
-					boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
+					boolean isNode = (VNodeUtils.isNodeKind(f.getType()));
+					boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+					boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 					if (f.getMeta(mnAtt) != null && (isNode || isArr)) {
 						if (isArr) {
 							CallExpr cae = new CallExpr(0,
@@ -1024,7 +1026,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 									new ExprStat(0,
 										new AssignExpr(0,
 											new IFldExpr(0,new LVarExpr(0,v),f),
-											new CastExpr(0,f.getType(env),cae)
+											new CastExpr(0,f.getType(),cae)
 										)
 									),
 									null
@@ -1045,7 +1047,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 					}
 				}
 				copyV.block.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
-				Kiev.runProcessorsOn(copyV);
+				env.runProcessorsOn(copyV);
 			}
 		}
 
@@ -1057,18 +1059,18 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			UserMeta fmatt = (UserMeta)f.getMeta(mnAtt);
 			UserMeta fmref = (UserMeta)f.getMeta(mnRef);
 			if (fmatt != null || fmref != null) {
-				boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
-				boolean isSymRef = f.getType(env).isInstanceOf(tpNodeSymbolRef);
+				boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+				boolean isSymRef = f.getType().isInstanceOf(tpNodeSymbolRef);
 				if (isArr && !f.isAbstract()) {
-					f.init = new CastExpr(f.pos, f.getType(env),
+					f.init = new CastExpr(f.pos, f.getType(),
 						new IFldExpr(f.pos,
-							new SFldExpr(f.pos, iface.resolveField(env,("nodeattr$"+f.sname).intern(), true)),
+							new SFldExpr(f.pos, iface.resolveField(("nodeattr$"+f.sname).intern(), true)),
 							tpAttrSlot.resolveField("defaultValue")
 						)
 					);
 				}
 				if (isSymRef && !f.isAbstract()) {
-					f.init = new ReinterpExpr(f.pos, f.getType(env), new NewExpr(f.pos, f.getType(env).getMetaSupers()[0], ENode.emptyArray));
+					f.init = new ReinterpExpr(f.pos, f.getType(), new NewExpr(f.pos, f.getType().getMetaSupers()[0], ENode.emptyArray));
 				}
 			}
 			if (f.isVirtual() && f.getMetaPacked() == null) {
@@ -1085,27 +1087,27 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if (!s.isAttached())
 			iface.members += s;
 	super_vvv:
-		foreach (TypeRef st; iface.super_types; isNodeKind(st.getStruct(env)) || nameNode.equals(st.getStruct(env).qname()) || nameANode.equals(st.getStruct(env).qname())) {
+		foreach (TypeRef st; iface.super_types; isNodeKind(st.getStruct()) || nameNode.equals(st.getStruct().qname()) || nameANode.equals(st.getStruct().qname())) {
 			Struct stv = null;
-			foreach (Struct v; st.getStruct(env).members; v.sname == "VVV") {
-				s.super_types += new TypeRef(v.getType(env));
+			foreach (Struct v; st.getStruct().members; v.sname == "VVV") {
+				s.super_types += new TypeRef(v.getType());
 				break super_vvv;
 			}
 		}
 
 		Constructor ctor = new Constructor(ACC_PUBLIC);
-		ctor.params += new LVar(0,"node",impl.getType(env),Var.VAR_LOCAL,0);
+		ctor.params += new LVar(0,"node",impl.getType(),Var.VAR_LOCAL,0);
 		ctor.body = new Block();
 		ctor.block.stats += new ExprStat(new CtorCallExpr(0,new SuperExpr(),new ENode[]{new LVarExpr(0,ctor.params[0])}));
 		s.members += ctor;
 
 		foreach (Field f; impl.members; !f.isStatic() && !f.isAbstract() && !f.isFinal() && f.getMeta(mnUnVersioned) == null) {
-			Field sf = new Field(f.sname,f.getType(env),ACC_SYNTHETIC);
+			Field sf = new Field(f.sname,f.getType(),ACC_SYNTHETIC);
 			s.members += sf;
 			ctor.block.stats += new ExprStat(new AssignExpr(0,new IFldExpr(0,new ThisExpr(),sf),new IFldExpr(0,new LVarExpr(0,ctor.params[0]),f,true)));
 		}
 
-		Kiev.runProcessorsOn(s);
+		env.runProcessorsOn(s);
 		return s;
 	}
 
@@ -1113,7 +1115,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if (iface == null)
 			return;
 		if (iface.qname().equals(nameANode)) {
-			aflds.append(iface.resolveField(env,"parent"));
+			aflds.append(iface.resolveField("parent"));
 			return;
 		}
 		if (!isNodeKind(iface))
@@ -1125,25 +1127,25 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			aflds.append(f);
 		}
 		foreach (TypeRef st; iface.super_types)
-			collectAllAttrFields(aflds, st.getStruct(env));
+			collectAllAttrFields(aflds, st.getStruct());
 	}
 
 	private Field getField(Struct s, String name) {
-		Field f = s.resolveField(env,name, false);
+		Field f = s.resolveField(name, false);
 		if (f != null)
 			return f;
 		throw new CompilerException(s,"Auto-generated field with name "+name+" is not found");
 	}
 
 	private boolean hasMethod(Struct s, String name) {
-		s = s.checkResolved(env);
+		s = s.checkResolved();
 		foreach (Method m; s.members; m.hasName(name)) return true;
 		return false;
 	}
 
 	private void fixGetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
-		boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
+		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 
 		if (isSet)
 			return;
@@ -1159,20 +1161,20 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			if (isAtt && !fmatt.getZ(nameExtData) || !isAtt && !fmref.getZ(nameExtData))
 				return;
 			String fname = ("nodeattr$"+f.sname).intern();
-			Field fatt = Env.ctxTDecl(f).resolveField(env,fname);
+			Field fatt = Env.ctxTDecl(f).resolveField(fname);
 			get_var.setAbstract(false);
 			if (get_var.isSynthetic())
 				get_var.setFinal(true);
 			Block body = new Block();
-			body.stats += new CastExpr(f.getType(env),new CallExpr(0,new SFldExpr(0,fatt),new SymbolRef<Method>("get"),null,new ENode[]{new ThisExpr()}));
+			body.stats += new CastExpr(f.getType(),new CallExpr(0,new SFldExpr(0,fatt),new SymbolRef<Method>("get"),null,new ENode[]{new ThisExpr()}));
 			get_var.body = body;
-			Kiev.runProcessorsOn(body);
+			env.runProcessorsOn(body);
 			return;
 		}
 		if (get_var.isSynthetic())
 			get_var.setFinal(true);
 
-		if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
+		if (s.getType().isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
 			get_var.body.walkTree(null, null, new ITreeWalker() {
 				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 					if (n instanceof IFldExpr && n.obj instanceof ThisExpr)
@@ -1183,15 +1185,15 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 
 		if (isAtt)
-			get_var.setMeta(new UserMeta(mnAtt)).resolve(env, null);
+			get_var.setMeta(new UserMeta(mnAtt)).resolve(null);
 		else
-			get_var.setMeta(new UserMeta(mnRef)).resolve(env, null);
+			get_var.setMeta(new UserMeta(mnRef)).resolve(null);
 	}
 
 	private void fixSetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
-		boolean isArr = f.getType(env).isInstanceOf(tpNodeSpace);
-		boolean isSet = f.getType(env).isInstanceOf(tpNodeExtSpace);
+		boolean isArr = f.getType().isInstanceOf(tpNodeSpace);
+		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
 
 		if (isSet)
 			return;
@@ -1208,13 +1210,13 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			break;
 		}
 		if (value == null) {
-			Kiev.reportError(set_var,"Cannot find a value to assign parameter");
+			set_var.reportError().log("Cannot find a value to assign parameter");
 			return;
 		}
 
 		Field fatt = null;
 		if (fmatt != null || fmref != null)
-			fatt = Env.ctxTDecl(f).resolveField(env,("nodeattr$"+f.sname).intern());
+			fatt = Env.ctxTDecl(f).resolveField(("nodeattr$"+f.sname).intern());
 
 		if (set_var.isAbstract()) {
 			if (fatt == null)
@@ -1227,14 +1229,14 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			Block body = new Block();
 			body.stats += new CallExpr(0,new SFldExpr(0,fatt),new SymbolRef<Method>("set"),null,new ENode[]{new ThisExpr(),new LVarExpr(0,value)});
 			set_var.body = body;
-			Kiev.runProcessorsOn(body);
+			env.runProcessorsOn(body);
 			return;
 		}
 
 		if (set_var.isSynthetic())
 			set_var.setFinal(true);
 		Block body = set_var.block;
-		//if (s.getType(env).isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
+		//if (s.getType().isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
 		//	body.walkTree(null, null, new ITreeWalker() {
 		//		public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
 		//			if (n instanceof AssignExpr)
@@ -1244,10 +1246,10 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		//	});
 		//}
 		if (!isArr && isAtt) {
-			Var old = new LVar(body.pos,"$old",f.getType(env),Var.VAR_LOCAL,ACC_FINAL);
+			Var old = new LVar(body.pos,"$old",f.getType(),Var.VAR_LOCAL,ACC_FINAL);
 			old.init = new IFldExpr(0,new ThisExpr(),f);
 			body.stats.insert(0,old);
-			Kiev.runProcessorsOn(old);
+			env.runProcessorsOn(old);
 			ENode p_st = new ExprStat(0,
 						new CallExpr(0,
 							new ThisExpr(),
@@ -1262,12 +1264,12 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 						)
 					);
 			body.stats.append(p_st);
-			Kiev.runProcessorsOn(p_st);
+			env.runProcessorsOn(p_st);
 		}
 		if (isAtt)
-			set_var.setMeta(new UserMeta(mnAtt)).resolve(env, null);
+			set_var.setMeta(new UserMeta(mnAtt)).resolve(null);
 		else
-			set_var.setMeta(new UserMeta(mnRef)).resolve(env, null);
+			set_var.setMeta(new UserMeta(mnRef)).resolve(null);
 	}
 
 	boolean fixAccessInGetter(Field f, IFldExpr fe, INode parent, AttrSlot slot) {
@@ -1275,7 +1277,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 			return true;
 		if (parent instanceof AssignExpr && slot.name == "lval")
 			return true;
-		if (!fe.getType(env).isInstanceOf(tpNode))
+		if (!fe.getType().isInstanceOf(tpNode))
 			return true;
 		Method csm = getCodeGet();
 		ANode rewriter = csm.body;
@@ -1285,7 +1287,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		RewriteContext rctx = new RewriteContext(env, fe, args);
 		ANode rn = (ANode)rewriter.doRewrite(rctx);
 		rn = fe.replaceWithNode(~rn, parent, slot);
-		Kiev.runProcessorsOn(rn);
+		env.runProcessorsOn(rn);
 		return false;
 	}
 	boolean fixAssignInSetter(Field f, AssignExpr ae, INode parent, AttrSlot slot) {
@@ -1299,7 +1301,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		RewriteContext rctx = new RewriteContext(env, ae, args);
 		ANode rn = (ANode)rewriter.doRewrite(rctx);
 		rn = ae.replaceWithNode(~rn,parent,slot);
-		Kiev.runProcessorsOn(rn);
+		env.runProcessorsOn(rn);
 		return false;
 	}
 
@@ -1393,7 +1395,7 @@ public final class VNodeBE_FixResolve extends BackendProcessor {
 				if (fe.obj instanceof ThisExpr && fe.var.isFinal() && fe.var.getMeta(mnAtt) != null) {
 					Field f = fe.var;
 					fe.setAsField(true);
-					Field fatt = Env.ctxTDecl(f).resolveField(env,("nodeattr$"+f.sname).intern());
+					Field fatt = Env.ctxTDecl(f).resolveField(("nodeattr$"+f.sname).intern());
 					ENode p_st = new ExprStat(0,
 								new CallExpr(0,
 									new ThisExpr(),
@@ -1408,7 +1410,7 @@ public final class VNodeBE_FixResolve extends BackendProcessor {
 								)
 							);
 					block.stats.insert(i+1, p_st);
-					Kiev.runProcessorsOn(p_st);
+					env.runProcessorsOn(p_st);
 				}
 			}
 		}

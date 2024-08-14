@@ -19,11 +19,11 @@ import syntax kiev.Syntax;
 
 @ViewOf(vcast=true)
 public final view RConstExpr of ConstExpr extends RENode {
-	
-	public final void resolveENode(Type reqType, Env env) {
+
+	public final void resolveENode(Type reqType) {
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 

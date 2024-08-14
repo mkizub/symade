@@ -66,10 +66,10 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			InlineMethodStat node = (InlineMethodStat)dfi.node_impl;
-			DFState in = DFState.makeNewState();
+			DFState in = DFState.makeNewState(dfi.getEnv());
 			for(int i=0; i < node.new_vars.length; i++) {
 				in = in.declNode((Var)node.new_vars[i].dnode);
-				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].getType(Env.getEnv()));
+				in = in.addNodeType(new Var[]{(Var)node.new_vars[i].dnode},node.dispatched.params[i].getType());
 			}
 			res = in;
 			dfi.setResult(res_idx, res);
@@ -188,17 +188,18 @@ public class IfElseStat extends ENode {
 		this.elseSt = elseSt;
 	}
 
-	public Type getType(Env env) {
+	public Type getType() {
+		StdTypes tenv = getEnv().tenv;
 		if (thenSt == null || elseSt == null)
-			return env.tenv.tpVoid;
-		Type t1 = thenSt.getType(env);
-		Type t2 = elseSt.getType(env);
-		if (t1 ≡ env.tenv.tpVoid || t2 ≡ env.tenv.tpVoid)
-			return env.tenv.tpVoid;
+			return tenv.tpVoid;
+		Type t1 = thenSt.getType();
+		Type t2 = elseSt.getType();
+		if (t1 ≡ tenv.tpVoid || t2 ≡ tenv.tpVoid)
+			return tenv.tpVoid;
 		if( t1.isReference() && t2.isReference() ) {
 			if( t1 ≡ t2 ) return t1;
-			if( t1 ≡ env.tenv.tpNull ) return t2;
-			if( t2 ≡ env.tenv.tpNull ) return t1;
+			if( t1 ≡ tenv.tpNull ) return t2;
+			if( t2 ≡ tenv.tpNull ) return t1;
 			return Type.leastCommonType(t1,t2);
 		}
 		if( t1.isNumber() && t2.isNumber() ) {
@@ -256,19 +257,19 @@ public class BreakStat extends ENode {
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false) public Label		dest;
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (dest != null && !Env.hasSameRoot(dest, this)) {
 			dest.delLink(this);
 			dest = null;
 		}
-		return super.preVerify(env, parent, slot);
+		return super.preVerify(parent, slot);
 	}
 
 	public BreakStat() {
 		this.ident = "";
 	}
 
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
 		ASTNode p;
 		if (dest != null) {
 			dest.delLink((BreakStat)this);
@@ -277,7 +278,7 @@ public class BreakStat extends ENode {
 		if (ident == null || ident == "") {
 			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
-				Kiev.reportError(this,"Break not within loop/switch statement");
+				reportError().log("Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = p.lblbrk;
@@ -303,7 +304,7 @@ public class BreakStat extends ENode {
 				p = pp;
 			}
 			if( p instanceof Method || p == null) {
-				Kiev.reportError(this,"Break not within loop/switch statement");
+				reportError().log("Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = p.lblbrk;
@@ -326,19 +327,19 @@ public class ContinueStat extends ENode {
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false) public Label		dest;
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (dest != null && !Env.hasSameRoot(dest, this)) {
 			dest.delLink(this);
 			dest = null;
 		}
-		return super.preVerify(env, parent, slot);
+		return super.preVerify(parent, slot);
 	}
 
 	public ContinueStat() {
 		this.ident = "";
 	}
 
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
 		ASTNode p;
 		if (dest != null) {
 			dest.delLink((ContinueStat)this);
@@ -347,7 +348,7 @@ public class ContinueStat extends ENode {
 		if (this.ident == null || this.ident == "") {
 			for(p=(ASTNode)parent(); !(p instanceof LoopStat || p instanceof Method); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
-				Kiev.reportError(this,"Continue not within loop statement");
+				reportError().log("Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = p.lblcnt;
@@ -373,7 +374,7 @@ public class ContinueStat extends ENode {
 				p = pp;
 			}
 			if( p instanceof Method || p == null) {
-				Kiev.reportError(this,"Continue not within loop statement");
+				reportError().log("Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = p.lblcnt;
@@ -396,30 +397,30 @@ public class GotoStat extends ENode {
 	@AttrBinDumpInfo(ignore=true)
 	@nodeData(copyable=false) public Label		dest;
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (dest != null && !Env.hasSameRoot(dest, this)) {
 			dest.delLink(this);
 			dest = null;
 		}
-		return super.preVerify(env, parent, slot);
+		return super.preVerify(parent, slot);
 	}
 
 	public GotoStat() {
 		this.ident = "";
 	}
 
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
 		if (dest != null) {
 			dest.delLink((GotoStat)this);
 			dest = null;
 		}
 		Label[] labels = resolveStat(this.ident,Env.ctxMethod(this).body);
 		if( labels.length == 0 ) {
-			Kiev.reportError(this,"Label "+ident+" unresolved");
+			reportError().log("Label '{}' unresolved", ident);
 			return false;
 		}
 		if( labels.length > 1 ) {
-			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
+			reportError().log("Umbigouse label '{}' in goto statement", ident);
 		}
 		Label label = labels[0];
 		dest = label;

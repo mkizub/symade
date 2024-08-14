@@ -10,6 +10,6 @@ public class SymRefConvertor implements Convertor {
 	}
 
     public String convert(Object data, MarshallingContext context) {
-		return ((SymbolRef)data).makeSignature(context.getEnv());
+		return ((SymbolRef)data).makeSignature();
 	}
 }

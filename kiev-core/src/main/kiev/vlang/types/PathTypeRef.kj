@@ -39,37 +39,37 @@ public class PathTypeRef extends TypeRef {
 		}
 		super.callbackChanged(info);
 	}
-	
-	public CoreOperation getOperation(Env env) { env.coreFuncs.fPathTypeAccess.operation }
+
+	public CoreOperation getOperation() { getEnv().coreFuncs.fPathTypeAccess.operation }
 
 	public ENode[] getEArgs() { return new ENode[]{path}; }
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		if (path instanceof EToken && path.ident == nameThis)
 			path.replaceWithNode(new ThisExpr(path.pos), this, nodeattr$path);
 		return true;
 	}
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) { getType(env); }
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) { return true; }
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) { getType(env); }
+	public void preResolveOut(INode parent, AttrSlot slot) { getType(); }
+	public boolean mainResolveIn(INode parent, AttrSlot slot) { return true; }
+	public void mainResolveOut(INode parent, AttrSlot slot) { getType(); }
 
-	public Type getType(Env env) {
+	public Type getType() {
 		//if (this.type_lnk != null)
 		//	return this.type_lnk;
 		Type tp;
 		if (path instanceof ThisExpr)
-			tp = env.tenv.tpSelfTypeArg;
+			tp = getEnv().tenv.tpSelfTypeArg;
 		else
-			tp = path.getType(env);
+			tp = path.getType();
 		//this.type_lnk = tp;
 		return tp;
 	}
 
-	public Struct getStruct(Env env) {
-		return this.getType(env).getStruct();
+	public Struct getStruct() {
+		return this.getType().getStruct();
 	}
-	public TypeDecl getTypeDecl(Env env) {
-		return this.getType(env).meta_type.tdecl;
+	public TypeDecl getTypeDecl() {
+		return this.getType().meta_type.tdecl;
 	}
 
 	public String toString() {

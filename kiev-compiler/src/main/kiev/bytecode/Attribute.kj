@@ -72,13 +72,13 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 		// Name must already be read
 		int len = cont.readInt();
 		assert(cont.data.length-cont.offset >= len,"Too big length "+len+" specified for attribute");
-		trace(Clazz.traceRead,cont.offset+": attribute length is "+len);
+		trace(cont.traceRead,cont.offset+": attribute length is "+len);
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		cont.offset += len;
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value
 			+" len="+data.length);
 		assert(start_pos == 0 || start_pos == cont.offset);
@@ -89,14 +89,14 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 
 	public static Attribute[] readAttributes(ReadContext cont) {
 		int num = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": number of attributes is "+num);
+		trace(cont.traceRead,cont.offset+": number of attributes is "+num);
 		if( num == 0 ) return Attribute.emptyArray;
 		Attribute[] attrs = new Attribute[num];
 		for(int i=0; i < num; i++) {
 			int cp_name = cont.readShort();
 			assert(cp_name > 0 && cp_name < cont.clazz.pool.length ,"Attribute name index "+cp_name+" out of range");
 			assert(cont.clazz.pool[cp_name].constant_type() == CONSTANT_UTF8 ,"Attribute name index dos not points to CONSTANT_UTF8");
-			trace(Clazz.traceRead,cont.offset+": attribute name "+cp_name+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+			trace(cont.traceRead,cont.offset+": attribute name "+cp_name+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 			Class aclass = attrMap.get( ((Utf8PoolConstant)cont.clazz.pool[cp_name]).value );
 			Attribute attr;
 			if( aclass == null )
@@ -141,11 +141,11 @@ public class SourceFileAttribute extends Attribute {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		cp_filename = readUtf8Ref(cont,false);
-		trace(Clazz.traceRead,cont.offset+": filename is "+cp_filename.value);
+		trace(cont.traceRead,cont.offset+": filename is "+cp_filename.value);
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
-		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_filename.value);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": filename is "+cp_filename.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2);
@@ -162,11 +162,11 @@ public class SourceDebugExtensionAttribute extends Attribute {
 		int len = cont.readInt();
 		data = new byte[len];
 		cont.read(data);
-		trace(Clazz.traceRead,cont.offset+": smap is "+ new String(data,"UTF-8"));
+		trace(cont.traceRead,cont.offset+": smap is "+ new String(data,"UTF-8"));
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
-		trace(Clazz.traceWrite,cont.offset+": smap is "+new String(data,"UTF-8"));
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": smap is "+new String(data,"UTF-8"));
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(data.length);
@@ -190,11 +190,11 @@ public class GenericsSignatureAttribute extends Attribute {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		cp_signature = readUtf8Ref(cont,false);
-		trace(Clazz.traceRead,cont.offset+": filename is "+cp_signature.value);
+		trace(cont.traceRead,cont.offset+": filename is "+cp_signature.value);
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
-		trace(Clazz.traceWrite,cont.offset+": filename is "+cp_signature.value);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": filename is "+cp_signature.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2);
@@ -220,7 +220,7 @@ public class ConstantValueAttribute extends Attribute {
 		cp_value = cont.clazz.pool[cont.readShort()];
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2);
@@ -253,7 +253,7 @@ public class ExceptionsAttribute extends Attribute {
 			cp_exceptions[i] = readClazzRef(cont,false);
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name+", name="+cp_name.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+cp_exceptions.length*2);
@@ -275,7 +275,7 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 		public int					handler_pc;
 		public ClazzPoolConstant	cp_signature;
 	}
-	
+
 	public int					max_stack;
 	public int					max_locals;
 	public byte[]				code;
@@ -295,15 +295,15 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		max_stack = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": max_stack is "+max_stack);
+		trace(cont.traceRead,cont.offset+": max_stack is "+max_stack);
 		max_locals = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": max_locals is "+max_locals);
+		trace(cont.traceRead,cont.offset+": max_locals is "+max_locals);
 		int codelen = cont.readInt();
-		trace(Clazz.traceRead,cont.offset+": code length "+codelen);
+		trace(cont.traceRead,cont.offset+": code length "+codelen);
 		code = new byte[codelen];
 		cont.read(code);
 		int catchlen = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": there is "+catchlen+" catchers here");
+		trace(cont.traceRead,cont.offset+": there is "+catchlen+" catchers here");
 		catchers = new CatchInfo[catchlen];
 		for(int i=0; i < catchlen; i++) {
 			CatchInfo ci = new CatchInfo();
@@ -311,7 +311,7 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 			ci.end_pc = cont.readUShort();
 			ci.handler_pc = cont.readUShort();
 			ci.cp_signature = readClazzRef(cont,true);
-			trace(Clazz.traceRead,cont.offset+": catcher "+i+":"+
+			trace(cont.traceRead,cont.offset+": catcher "+i+":"+
 				ci.start_pc+"-"+ci.end_pc+" -> "+ci.handler_pc+
 				" for "+(ci.cp_signature==null ? "<any>" : ci.cp_signature.ref.value) );
 			catchers[i] = ci;
@@ -319,24 +319,24 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 		attrs = Attribute.readAttributes(cont);
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size(Integer.MIN_VALUE)-6);
-		trace(Clazz.traceWrite,cont.offset+": max_stack is "+max_stack);
+		trace(cont.traceWrite,cont.offset+": max_stack is "+max_stack);
 		cont.writeShort(max_stack);
-		trace(Clazz.traceWrite,cont.offset+": max_locals is "+max_locals);
+		trace(cont.traceWrite,cont.offset+": max_locals is "+max_locals);
 		cont.writeShort(max_locals);
-		trace(Clazz.traceWrite,cont.offset+": code length "+code.length);
+		trace(cont.traceWrite,cont.offset+": code length "+code.length);
 		cont.writeInt(code.length);
-		if(Clazz.traceWrite) trace_code(cont);
+		if(cont.traceWrite) trace_code(cont);
 		cont.write(code);
-		trace(Clazz.traceWrite,"\ttotal "+catchers.length+" catchers");
+		trace(cont.traceWrite,"\ttotal "+catchers.length+" catchers");
 		cont.writeShort(catchers.length);
 		for(int i=0; i < catchers.length; i++) {
 			CatchInfo ci = catchers[i];
-			trace(Clazz.traceWrite,"\t"+ci.start_pc+" - "
+			trace(cont.traceWrite,"\t"+ci.start_pc+" - "
 				+ci.end_pc+" -> "+ci.handler_pc+" "
 				+(ci.cp_signature==null?" finally":ci.cp_signature.ref.value));
 			cont.writeShort(ci.start_pc);
@@ -509,7 +509,7 @@ public class LocalVariableTableAttribute extends Attribute {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		int elen = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": there is "+elen+" vars in table");
+		trace(cont.traceRead,cont.offset+": there is "+elen+" vars in table");
 		vars = new VarInfo[elen];
 		for(int i=0; i < elen; i++) {
 			VarInfo vi = new VarInfo();
@@ -518,14 +518,14 @@ public class LocalVariableTableAttribute extends Attribute {
 			vi.cp_varname = readUtf8Ref(cont,false);
 			vi.cp_signature = readUtf8Ref(cont,false);
 			vi.slot = cont.readShort();
-			trace(Clazz.traceRead,cont.offset+": var "+i+":"+
+			trace(cont.traceRead,cont.offset+": var "+i+":"+
 				vi.start_pc+"-"+(vi.start_pc+vi.length_pc)+" in "+vi.slot+" slot "+
 				" for "+vi.cp_varname.value+" of type "+vi.cp_signature.value);
 			vars[i] = vi;
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value+", vars="+vars.length+", len="+(2+vars.length*10));
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value+", vars="+vars.length+", len="+(2+vars.length*10));
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+vars.length*10);
@@ -533,7 +533,7 @@ public class LocalVariableTableAttribute extends Attribute {
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
 			VarInfo vi = vars[i];
-			//trace(Clazz.traceWrite,cont.offset+": var["+i+"]: start_pc="+vi.start_pc+", length_pc="+vi.length_pc+", slot="+vi.slot);
+			//trace(cont.traceWrite,cont.offset+": var["+i+"]: start_pc="+vi.start_pc+", length_pc="+vi.length_pc+", slot="+vi.slot);
 			cont.writeShort(vi.start_pc);
 			cont.writeShort(vi.length_pc);
 			cont.writeShort(vi.cp_varname.idx);
@@ -570,7 +570,7 @@ public class InnerClassesAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
@@ -615,16 +615,16 @@ public class LineNumberTableAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name.idx+", name="+cp_name.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(2+start_pc.length*4);
 		int elen = start_pc.length;
-		trace(Clazz.traceWrite,cont.offset+": total "+start_pc.length+" lines in the table");
+		trace(cont.traceWrite,cont.offset+": total "+start_pc.length+" lines in the table");
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
-			trace(Clazz.traceWrite,cont.offset+": pc: "+start_pc[i]+" for line "+lineno[i]);
+			trace(cont.traceWrite,cont.offset+": pc: "+start_pc[i]+" for line "+lineno[i]);
 			cont.writeShort(start_pc[i]);
 			cont.writeShort(lineno[i]);
 		}
@@ -655,7 +655,7 @@ public class KievClassArgumentsAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(2+argno.length*6);
@@ -683,7 +683,7 @@ public class KievFlagsAttribute extends Attribute {
 		flags = cont.readInt();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute = 0x"+Integer.toHexString(flags));
+		trace(cont.traceWrite,cont.offset+": attribute = 0x"+Integer.toHexString(flags));
 		cont.writeShort(cp_name);
 		cont.writeInt(4);
 		cont.writeInt(flags);
@@ -705,7 +705,7 @@ public class KievImportAttribute extends Attribute {
 		cp_ref = cont.readShort();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute clazz="+getClazzName(cont.clazz)
+		trace(cont.traceWrite,cont.offset+": attribute clazz="+getClazzName(cont.clazz)
 			+" name="+getNodeName(cont.clazz)+" sign="+getSignature(cont.clazz));
 		cont.writeShort(cp_name);
 		cont.writeInt(2);
@@ -744,12 +744,12 @@ public class KievAliasAttribute extends Attribute {
 			cp_alias[i] = cont.readShort();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(cp_alias.length*2);
 		for(int i=0; i < cp_alias.length; i++) {
-			trace(Clazz.traceWrite,cont.offset+": alias "+getAlias(i,cont.clazz));
+			trace(cont.traceWrite,cont.offset+": alias "+getAlias(i,cont.clazz));
 			cont.writeShort(cp_alias[i]);
 		}
 	}
@@ -772,7 +772,7 @@ public class KievTypedefAttribute extends Attribute {
 		cp_tpnm = cont.readShort();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(4);
@@ -806,7 +806,7 @@ public class KievOperatorAttribute extends Attribute {
 		cp_image = cont.readShort();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(6);
@@ -841,7 +841,7 @@ public class KievCaseAttribute extends Attribute {
 			cp_casefields[i] = cont.readShort();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(2+cp_casefields.length*2);
@@ -873,15 +873,15 @@ public class KievEnumAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(2+fields.length*6);
 		int elen = fields.length;
-		trace(Clazz.traceWrite,cont.offset+": total "+elen+" enum fields");
+		trace(cont.traceWrite,cont.offset+": total "+elen+" enum fields");
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
-			trace(Clazz.traceWrite,cont.offset+": field "+getFieldName(i,cont.clazz)+" has value "+values[i]);
+			trace(cont.traceWrite,cont.offset+": field "+getFieldName(i,cont.clazz)+" has value "+values[i]);
 			cont.writeShort(fields[i]);
 			cont.writeInt(values[i]);
 		}
@@ -911,11 +911,11 @@ public class KievContractAttribute extends Attribute {
 		data = new byte[len];
 		System.arraycopy(cont.data,cont.offset,data,0,len);
 		max_stack = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": max_stack is "+max_stack);
+		trace(cont.traceRead,cont.offset+": max_stack is "+max_stack);
 		max_locals = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": max_locals is "+max_locals);
+		trace(cont.traceRead,cont.offset+": max_locals is "+max_locals);
 		int codelen = cont.readInt();
-		trace(Clazz.traceRead,cont.offset+": code length "+codelen);
+		trace(cont.traceRead,cont.offset+": code length "+codelen);
 		code = new byte[codelen];
 		cont.read(code);
 		int catchlen = cont.readShort();
@@ -923,7 +923,7 @@ public class KievContractAttribute extends Attribute {
 		attrs = Attribute.readAttributes(cont);
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size(Integer.MIN_VALUE)-6);
@@ -956,15 +956,15 @@ public class KievCheckFieldsAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(2+fields.length*2);
 		int elen = fields.length;
-		trace(Clazz.traceWrite,cont.offset+": total "+elen+" checked fields");
+		trace(cont.traceWrite,cont.offset+": total "+elen+" checked fields");
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
-			trace(Clazz.traceWrite,cont.offset+": field "+getFieldName(i,cont.clazz));
+			trace(cont.traceWrite,cont.offset+": field "+getFieldName(i,cont.clazz));
 			cont.writeShort(fields[i]);
 		}
 	}
@@ -998,15 +998,15 @@ public class KievGenerationsAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(2+gens.length*2);
 		int elen = gens.length;
-		trace(Clazz.traceWrite,cont.offset+": total "+elen+" generated types");
+		trace(cont.traceWrite,cont.offset+": total "+elen+" generated types");
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
-			trace(Clazz.traceWrite,cont.offset+": gen.class "+getGenName(i,cont.clazz));
+			trace(cont.traceWrite,cont.offset+": gen.class "+getGenName(i,cont.clazz));
 			cont.writeShort(gens[i]);
 		}
 	}
@@ -1045,15 +1045,15 @@ public class KievPackedFieldsAttribute extends Attribute {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute"
+		trace(cont.traceWrite,cont.offset+": attribute"
 			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cont.writeShort(cp_name);
 		cont.writeInt(2+8*fields.length);
 		int elen = fields.length;
-		trace(Clazz.traceWrite,cont.offset+": total "+elen+" packed fields");
+		trace(cont.traceWrite,cont.offset+": total "+elen+" packed fields");
 		cont.writeShort(elen);
 		for(int i=0; i < elen; i++) {
-			trace(Clazz.traceWrite,cont.offset+": name="+getFieldName(i,cont.clazz)
+			trace(cont.traceWrite,cont.offset+": name="+getFieldName(i,cont.clazz)
 				+" sig="+getSignature(i,cont.clazz)
 				+" packer="+getPackerName(i,cont.clazz)
 				+" size="+sizes[i]+" offset="+offsets[i]
@@ -1089,7 +1089,7 @@ public class KievPackerFieldAttribute extends Attribute {
 		size = cont.readInt();
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": size = 0x"+Integer.toHexString(size));
+		trace(cont.traceWrite,cont.offset+": size = 0x"+Integer.toHexString(size));
 		cont.writeShort(cp_name);
 		cont.writeInt(4);
 		cont.writeInt(size);
@@ -1109,7 +1109,7 @@ public abstract class Annotation extends Attribute {
 		public abstract int size();
 		public abstract void read(ReadContext cont);
 		public abstract void write(ReadContext cont);
-		
+
 		public static element_value Read(ReadContext cont) {
 			byte tag  = cont.readByte();
 			element_value v;
@@ -1129,7 +1129,7 @@ public abstract class Annotation extends Attribute {
 			v.read(cont);
 			return v;
 		}
-		
+
 	}
 	public static class element_value_const extends element_value {
 		public int  const_value_index;
@@ -1138,7 +1138,7 @@ public abstract class Annotation extends Attribute {
 			const_value_index = cont.readShort();
 		}
 		public void write(ReadContext cont) {
-			trace(Clazz.traceWrite,cont.offset+": value idx "+const_value_index);
+			trace(cont.traceWrite,cont.offset+": value idx "+const_value_index);
 			cont.writeShort(const_value_index);
 		}
 		public Object getValue(Clazz clazz) {
@@ -1162,8 +1162,8 @@ public abstract class Annotation extends Attribute {
 			const_name_index = cont.readShort();
 		}
 		public void write(ReadContext cont) {
-			trace(Clazz.traceWrite,cont.offset+": type idx "+type_name_index);
-			trace(Clazz.traceWrite,cont.offset+": name idx "+const_name_index);
+			trace(cont.traceWrite,cont.offset+": type idx "+type_name_index);
+			trace(cont.traceWrite,cont.offset+": name idx "+const_name_index);
 			cont.writeShort(type_name_index);
 			cont.writeShort(const_name_index);
 		}
@@ -1181,7 +1181,7 @@ public abstract class Annotation extends Attribute {
 			class_info_index = cont.readShort();
 		}
 		public void write(ReadContext cont) {
-			trace(Clazz.traceWrite,cont.offset+": class idx "+class_info_index);
+			trace(cont.traceWrite,cont.offset+": class idx "+class_info_index);
 			cont.writeShort(class_info_index);
 		}
 		public String getSignature(Clazz clazz) {
@@ -1210,7 +1210,7 @@ public abstract class Annotation extends Attribute {
 		public int size() {
 			int sz = 1+2;
 			foreach (element_value p; values)
-				sz += p.size(); 
+				sz += p.size();
 			return sz;
 		}
 		public void read(ReadContext cont) {
@@ -1220,10 +1220,10 @@ public abstract class Annotation extends Attribute {
 				values[i] = element_value.Read(cont);
 		}
 		public void write(ReadContext cont) {
-			trace(Clazz.traceWrite,cont.offset+": count "+values.length);
+			trace(cont.traceWrite,cont.offset+": count "+values.length);
 			cont.writeShort(values.length);
 			for(int i=0; i < values.length; i++) {
-				trace(Clazz.traceWrite,cont.offset+": "+i+": tag "+values[i].tag);
+				trace(cont.traceWrite,cont.offset+": "+i+": tag "+values[i].tag);
 				cont.writeByte(values[i].tag);
 				values[i].write(cont);
 			}
@@ -1236,7 +1236,7 @@ public abstract class Annotation extends Attribute {
 		public int size() {
 			int sz = 4;
 			foreach (element_value p; values)
-				sz += 2+p.size(); 
+				sz += 2+p.size();
 			return sz;
 		}
 		public void read(ReadContext cont) {
@@ -1250,13 +1250,13 @@ public abstract class Annotation extends Attribute {
 			}
 		}
 		public void write(ReadContext cont) {
-			trace(Clazz.traceWrite,cont.offset+": type idx "+type_index);
-			trace(Clazz.traceWrite,cont.offset+": names count "+names.length);
+			trace(cont.traceWrite,cont.offset+": type idx "+type_index);
+			trace(cont.traceWrite,cont.offset+": names count "+names.length);
 			cont.writeShort(type_index);
 			cont.writeShort(names.length);
 			for(int i=0; i < names.length; i++) {
-				trace(Clazz.traceWrite,cont.offset+": "+i+": name idx "+names[i]);
-				trace(Clazz.traceWrite,cont.offset+": "+i+": tag "+((char)values[i].tag));
+				trace(cont.traceWrite,cont.offset+": "+i+": name idx "+names[i]);
+				trace(cont.traceWrite,cont.offset+": "+i+": tag "+((char)values[i].tag));
 				cont.writeShort(names[i]);
 				cont.writeByte(values[i].tag);
 				values[i].write(cont);
@@ -1274,7 +1274,7 @@ public abstract class Annotation extends Attribute {
 
 public abstract class Annotations extends Annotation {
 	public Annotation.annotation[]	annotations;
-	
+
 	public int size(int offset) {
 		int sz = 6+2;
 		foreach (Annotation.annotation a; annotations)
@@ -1293,8 +1293,8 @@ public abstract class Annotations extends Annotation {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
-		trace(Clazz.traceWrite,cont.offset+": count "+annotations.length);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": count "+annotations.length);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size(Integer.MIN_VALUE)-6);
@@ -1312,7 +1312,7 @@ public class RIAnnotations extends Annotations {
 
 public abstract class ParAnnotations extends Annotation {
 	public Annotation.annotation[][]	annotations;
-	
+
 	public int size(int offset) {
 		int sz = 6+1;
 		foreach (Annotation.annotation[] aa; annotations) {
@@ -1338,14 +1338,14 @@ public abstract class ParAnnotations extends Annotation {
 		}
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
-		trace(Clazz.traceWrite,cont.offset+": par count "+annotations.length);
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": par count "+annotations.length);
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size(Integer.MIN_VALUE)-6);
 		cont.writeByte(annotations.length);
 		for(int p=0; p < annotations.length; p++) {
-			trace(Clazz.traceWrite,cont.offset+": par "+p+" annotations count "+annotations[p].length);
+			trace(cont.traceWrite,cont.offset+": par "+p+" annotations count "+annotations[p].length);
 			for(int i=0; i < annotations[p].length; i++) {
 				cont.writeShort(annotations[p].length);
 				annotations[p][i].write(cont);
@@ -1373,8 +1373,8 @@ public class AnnotationDefault extends Annotation {
 		value = element_value.Read(cont);
 	}
 	public void write(ReadContext cont) {
-		trace(Clazz.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
-		trace(Clazz.traceWrite,cont.offset+": tag is "+((char)value.tag));
+		trace(cont.traceWrite,cont.offset+": attribute ref_name="+cp_name.idx+", name="+cp_name.value);
+		trace(cont.traceWrite,cont.offset+": tag is "+((char)value.tag));
 		assert(start_pos == 0 || start_pos == cont.offset);
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size(Integer.MIN_VALUE)-6);

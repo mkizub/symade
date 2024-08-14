@@ -20,34 +20,34 @@ import syntax kiev.Syntax;
 @ViewOf(vcast=true)
 public static final view RField of Field extends RVar {
 	public		ConstExpr		const_value;
-	
+
 	// field's initializer was already added to class initializer
 	public final boolean isAddedToInit();
 	public final void setAddedToInit(boolean on);
 
-	public void resolveDecl(Env env) {
-		Type tp = this.getType(env);
+	public void resolveDecl() {
+		Type tp = this.getType();
 		if (init instanceof TypeRef)
-			((RTypeRef)(TypeRef)init).toExpr(getType(env),env);
+			((RTypeRef)(TypeRef)init).toExpr(getType());
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr(this,init);
 			try {
-				Kiev.runProcessorsOn(init);
-				resolveENode(init,tp.getEnclosedType(),env);
+				getEnv().runProcessorsOn(init);
+				resolveENode(init,tp.getEnclosedType());
 			} catch(Exception e ) {
-				Kiev.reportError(this,e);
+				reportError().log(e);
 			}
 		}
 		else if( init != null ) {
 			try {
-				resolveENode(init,tp,env);
-				Type it = init.getType(env);
+				resolveENode(init,tp);
+				Type it = init.getType();
 				if( !it.isInstanceOf(tp) ) {
 					init = new CastExpr(init.pos,tp,~init);
-					resolveENode(init,tp,env);
+					resolveENode(init,tp);
 				}
 			} catch(Exception e ) {
-				Kiev.reportError(this,e);
+				reportError().log(e);
 			}
 		}
 		setResolved(true);

@@ -57,7 +57,7 @@ public class Draw_TreeSyntax extends Draw_ATextSyntax {
 			Draw_SyntaxElem se = sed;
 			if (node instanceof ENode && se instanceof Draw_SyntaxExpr) {
 				ENode e = (ENode)node;
-				Opdef opd = e.getFakeOpdef(env);
+				Opdef opd = e.getFakeOpdef();
 				if (opd == null)
 					return se;
 				se = allSyntaxExprs.get(new PairOpdefClass(opd,node.getClass()));

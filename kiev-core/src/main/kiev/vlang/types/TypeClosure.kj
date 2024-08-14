@@ -26,34 +26,34 @@ public class TypeClosureRef extends TypeRef {
 	@nodeAttr public TypeRef		ret;
 
 	public TypeClosureRef() {}
-	
+
 	public TypeClosureRef(CallType tp) {
 		this.type_lnk = tp;
 		assert (tp.isReference());
 	}
 
-	public Type getType(Env env) {
+	public Type getType() {
 		if (this.type_lnk != null)
 			return this.type_lnk;
 		Type[] args = new Type[this.args.length];
 		for(int i=0; i < args.length; i++) {
-			args[i] = this.args[i].getType(env);
+			args[i] = this.args[i].getType();
 		}
-		Type ret = this.ret.getType(env);
+		Type ret = this.ret.getType();
 		this.type_lnk = new CallType(null,null,args,ret,true);
 		return this.type_lnk;
 	}
-	
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "type_lnk")
 			return false;
 		return super.includeInDump(dump, attr, val);
 	}
 
-	public Struct getStruct(Env env) {
+	public Struct getStruct() {
 		return null;
 	}
-	public TypeDecl getTypeDecl(Env env) {
-		return (TypeDecl)env.tenv.symbolCallTDecl.dnode;
+	public TypeDecl getTypeDecl() {
+		return (TypeDecl)getTypeEnv().symbolCallTDecl.dnode;
 	}
 }

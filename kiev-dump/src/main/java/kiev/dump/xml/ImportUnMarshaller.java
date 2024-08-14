@@ -4,16 +4,16 @@ import java.util.Hashtable;
 
 import javax.xml.namespace.QName;
 
-import kiev.Kiev;
 import kiev.dump.AcceptInfo;
 import kiev.dump.UnMarshaller;
 import kiev.dump.UnMarshallingContext;
 import kiev.dump.AttributeSet;
 import kiev.stdlib.Arrays;
 import kiev.vlang.ConstExpr;
+import kiev.vtree.LoggingBuilderFactory;
 
 public class ImportUnMarshaller implements UnMarshaller {
-	
+
 	final class ObjData {
 		ImportTypeAlias info;
 		Object          obj;
@@ -23,9 +23,15 @@ public class ImportUnMarshaller implements UnMarshaller {
 		}
 	}
 
+	final LoggingBuilderFactory logger;
+
 	private final Hashtable<QName,ImportTypeAlias>	type_aliases = new Hashtable<QName,ImportTypeAlias>();
 	private ImportTypeAlias default_type_alias;
-	
+
+	public ImportUnMarshaller(LoggingBuilderFactory logger) {
+		this.logger = logger;
+	}
+
 	public ImportUnMarshaller addTypeAlias(ImportTypeAlias info) {
 		QName qname = info.qname;
 		if (qname != null)
@@ -46,7 +52,7 @@ public class ImportUnMarshaller implements UnMarshaller {
 		} catch (Exception e) {}
 		return null;
 	}
-	
+
     public boolean canUnMarshal(QName qname, AttributeSet attrs, UnMarshallingContext context) {
 		if (type_aliases.get(qname) != null)
 			return true;
@@ -65,7 +71,7 @@ public class ImportUnMarshaller implements UnMarshaller {
 			return new AcceptInfo(true, qname);
 		return null;
 	}
-	
+
 	public Object exit(Object self, UnMarshallingContext context) {
 		return ((ObjData)self).obj;
 	}
@@ -83,7 +89,7 @@ public class ImportUnMarshaller implements UnMarshaller {
 		}
 		return obj_dat;
 	}
-	
+
 	public void accept(Object self, QName qname, Object target, UnMarshallingContext context) {
 		ObjData obj_dat = (ObjData)self;
 		String fname = obj_dat.info.field_aliases.get(qname);
@@ -99,7 +105,7 @@ public class ImportUnMarshaller implements UnMarshaller {
 			throw new RuntimeException("Cannot save value", e);
 		}
 	}
-	
+
 	private void writeField(Object self, String fname, Object data) throws Exception {
 		Class self_clazz = self.getClass();
 		java.lang.reflect.Field fld = null;
@@ -129,11 +135,11 @@ public class ImportUnMarshaller implements UnMarshaller {
 		else if (fld != null)
 			fld_clazz = fld.getType();
 		else {
-			Kiev.reportWarning("Attribute '"+fname+"' has no such setter or field in "+self_clazz);
+			logger.newWarning().log("Attribute '{}' has no such setter or field in {}", fname, self_clazz);
 			return;
 		}
 		Class clazz = fld_clazz.isArray() ? fld_clazz.getComponentType() : fld_clazz;
-		
+
 		if (data != null && data instanceof String) {
 			String value = (String)data;
 			if (clazz == String.class)
@@ -157,7 +163,7 @@ public class ImportUnMarshaller implements UnMarshaller {
 			else if (Enum.class.isAssignableFrom(clazz))
 				data = clazz.getMethod("valueOf",String.class).invoke(null,value.trim());
 			else {
-				Kiev.reportWarning("Attribute '"+fname+"' of "+self.getClass()+" uses unsupported "+clazz);
+				logger.newWarning().log("Attribute '{}' of {} uses unsupported {}", fname, self.getClass(), clazz);
 				return;
 			}
 		}
@@ -213,7 +219,7 @@ public class ImportUnMarshaller implements UnMarshaller {
 		if (text.charAt(text.length()-1) == 'L' || text.charAt(text.length()-1) == 'l') {
 			text = text.substring(0,text.length()-1);
 			if (text.length() == 0)
-				return 0L; // 0L 
+				return 0L; // 0L
 		}
 		long l = ConstExpr.parseLong(text,radix);
 		return l;

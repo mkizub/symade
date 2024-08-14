@@ -56,14 +56,18 @@ public final class RewriteContext {
 
 	public static INode rewriteByMacro(Env env, String tdecl_name, String macro_name, Object... args) {
 		TypeDecl tdecl = (TypeDecl)env.loadAnyDecl(tdecl_name);
-		if (tdecl == null)
+		if (tdecl == null) {
+			env.reportError().log("Macro type decl '{}' not found", tdecl_name);
 			return null;
+		}
 		Type[] types = new Type[args.length];
 		for (int i=0; i < args.length; i++)
 			types[i] = getMacroParamType(env, args[i].getClass());
-		Method m = tdecl.resolveMethod(env, macro_name, env.tenv.tpVoid, types);
-		if (m == null || m.body == null)
+		Method m = tdecl.resolveMethod(macro_name, env.tenv.tpVoid, types);
+		if (m == null || m.body == null) {
+			env.reportError().log("Macro '{}' in type decl '{}' not found", macro_name, tdecl_name);
 			return null;
+		}
 		Hashtable<String,Object> params = new Hashtable<String,Object>();
 		Var[] mparams = m.params;
 		for (int i=0; i < mparams.length; i++)
@@ -74,7 +78,7 @@ public final class RewriteContext {
 
 	public RewriteContext(Env env, ASTNode root, Hashtable<String,Object> args) {
 		this.env = env;
-		this.context = Kiev.getSemanticContext();
+		this.context = Env.getSemanticContext();
 		this.root = root;
 		this.args = args;
 	}
@@ -170,9 +174,9 @@ public final class RewriteContext {
 		}
 		else if (o instanceof TypeDecl) {
 			if (attr.typeinfo.clazz == TypeRef.class)
-				o = new TypeRef(o.getType(env));
+				o = new TypeRef(o.getType());
 			else if (attr.typeinfo.clazz == ENode.class)
-				o = new TypeRef(o.getType(env));
+				o = new TypeRef(o.getType());
 		}
 		else if (o instanceof ASTNode[]) {
 			BlockRewr bl = new BlockRewr();
@@ -233,10 +237,10 @@ public final class RewritePattern extends ENode {
 		this.var = new LVar("_",Env.getEnv().tenv.tpVoid);
 	}
 
-	public Type	getType(Env env) { return new ASTNodeType(this); }
+	public Type	getType() { return new ASTNodeType(this); }
 
 	public boolean match(ASTNode node) {
-		if ( ((ASTNodeMetaType)((ASTNodeType)getType(Env.getEnv())).meta_type).clazz.equals(node.getClass()) )
+		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.equals(node.getClass()) )
 			return true;
 		return false;
 	}
@@ -265,7 +269,7 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 		info.isForwardsAllowed(),
 		var.var.isForward(),
 		info.enterForward(var.var) : info.leaveForward(var.var),
-		var.getType(info.env).resolveNameAccessR(info)
+		var.getType().resolveNameAccessR(info)
 	}
 
 	public INode doRewrite(RewriteContext ctx) {
@@ -313,11 +317,11 @@ public final class RewriteNodeFactory extends ENode {
 		} catch (Throwable t) {}
 	}
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void preResolveOut(INode parent, AttrSlot slot) {
 		if (node_class == null && ident != null) {
 			setupClass();
 			if (node_class == null)
-				Kiev.reportError(this,"Compiler node '"+this.ident+"' does not exists");
+				reportError().log("Compiler node '{}' does not exists", this.ident);
 		}
 	}
 
@@ -443,21 +447,21 @@ public class IfElseRewr extends ENode {
 		this.elseSt = elseSt;
 	}
 
-	public void postVerify(Env env, INode parent, AttrSlot slot) {
+	public void postVerify(INode parent, AttrSlot slot) {
 		if (thenSt == null || elseSt == null)
 			throw new RuntimeException("Missed then or else part of 'if#'");
 	}
 
 	public INode doRewrite(RewriteContext ctx) {
 		ENode cond = this.cond;
-		if (!cond.isConstantExpr(ctx.env)) {
+		if (!cond.isConstantExpr()) {
 			cond = (ENode)this.cond.doRewrite(ctx);
-			if (!cond.isConstantExpr(ctx.env)) {
-				assert (cond.isConstantExpr(ctx.env));
+			if (!cond.isConstantExpr()) {
+				assert (cond.isConstantExpr());
 				throw new RuntimeException("Non-constant condition in 'if#'");
 			}
 		}
-		Boolean b = (Boolean)cond.getConstValue(ctx.env);
+		Boolean b = (Boolean)cond.getConstValue();
 		if (b.booleanValue())
 			return thenSt.doRewrite(ctx);
 		else
@@ -479,25 +483,25 @@ public class SwitchRewr extends SwitchStat {
 
 	public SwitchRewr() {}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
-		Type tp = sel.getType(env).getErasedType();
+	public void mainResolveOut(INode parent, AttrSlot slot) {
+		Type tp = sel.getType().getErasedType();
 		if (tp instanceof ASTNodeType) {
 			if (!((ASTNodeMetaType)tp.meta_type).clazz.isEnum())
-				Kiev.reportError(this, "Type of switch# selector must be primitive type or enum");
+				reportError().log("Type of switch# selector must be primitive type or enum");
 		}
 		else if!(tp instanceof CoreType)
-			Kiev.reportError(this, "Type of switch# selector must be primitive type or enum");
+			reportError().log("Type of switch# selector must be primitive type or enum");
 	}
 
 	public INode doRewrite(RewriteContext ctx) {
 		Object sel = this.sel;
-		if (!sel.isConstantExpr(ctx.env))
+		if (!sel.isConstantExpr())
 			sel = sel.doRewrite(ctx);
 		CaseLabel cl = null;
 		if (sel instanceof ConstEnumExpr)
 			cl = findEnumCase((ConstEnumExpr)sel);
 		else
-			Kiev.reportError(this, "Unsupported switch# selector "+sel);
+			reportError().log("Unsupported switch# selector {}", sel);
 		if (cl == null)
 			return null;
 		BlockRewr bl = new BlockRewr();
@@ -526,7 +530,7 @@ public class SwitchRewr extends SwitchStat {
 			if (val instanceof ConstEnumExpr && val.value == e.value)
 				return cl;
 			if (val instanceof SFldExpr) {
-				if (type_name.equals(val.obj.getTypeDecl(Env.getEnv()).qname()) && name == val.ident)
+				if (type_name.equals(val.obj.getTypeDecl().qname()) && name == val.ident)
 					return cl;
 			}
 		}
@@ -556,7 +560,7 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 		BlockRewr cont = (BlockRewr)this.container.doRewrite(ctx);
 		BlockRewr bl = new BlockRewr();
 		foreach (ASTNode n; cont.stats) {
-			Type tp = var.getType(ctx.env);
+			Type tp = var.getType();
 			if (tp instanceof ASTNodeType) {
 				if (!((ASTNodeMetaType)tp.meta_type).clazz.isAssignableFrom(n.getClass()))
 					continue;
@@ -568,9 +572,9 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 				if!(c instanceof ENode)
 					continue;
 				ENode e = (ENode)c;
-				if (!e.isConstantExpr(ctx.env))
+				if (!e.isConstantExpr())
 					continue;
-				if (e.getConstValue(ctx.env) != Boolean.TRUE)
+				if (e.getConstValue() != Boolean.TRUE)
 					continue;
 			}
 			ASTNode r = (ASTNode)body.doRewrite(rc);
@@ -610,8 +614,8 @@ public class MacroListIntExpr extends ENode {
 			INode s = start.doRewrite(ctx);
 			if (s instanceof Number)
 				si = s.intValue();
-			else if (s instanceof ENode && s.isConstantExpr(ctx.env))
-				si = ((Number)s.getConstValue(ctx.env)).intValue();
+			else if (s instanceof ENode && s.isConstantExpr())
+				si = ((Number)s.getConstValue()).intValue();
 			else
 				return null;
 		}
@@ -620,8 +624,8 @@ public class MacroListIntExpr extends ENode {
 			INode e = end.doRewrite(ctx);
 			if (e instanceof Number)
 				ei = e.intValue();
-			else if (e instanceof ENode && e.isConstantExpr(ctx.env))
-				ei = ((Number)e.getConstValue(ctx.env)).intValue();
+			else if (e instanceof ENode && e.isConstantExpr())
+				ei = ((Number)e.getConstValue()).intValue();
 			else
 				return null;
 		}
@@ -640,17 +644,17 @@ public final class MacroSelfExpr extends ENode {
 
 	public MacroSelfExpr() {}
 
-	public Type getType(Env env) {
+	public Type getType() {
 		try {
 			ComplexTypeDecl td = Env.ctxTDecl(this);
 			if (td == null)
-				return env.tenv.tpVoid;
+				return getEnv().tenv.tpVoid;
 			if (td.sname == nameIFaceImpl)
-				return Env.ctxTDecl(td).getType(env);
-			return td.getType(env);
+				return Env.ctxTDecl(td).getType();
+			return td.getType();
 		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return env.tenv.tpVoid;
+			reportError().log(e);
+			return getEnv().tenv.tpVoid;
 		}
 	}
 
@@ -672,17 +676,18 @@ public final class MacroAccessExpr extends ENode {
 
 	public MacroAccessExpr() {}
 
-	public CoreOperation getOperation(Env env) { env.coreFuncs.fMacroAccess.operation }
+	public CoreOperation getOperation() { getEnv().coreFuncs.fMacroAccess.operation }
 
-	public Type getType(Env env) {
+	public Type getType() {
+		StdTypes tenv = getEnv().tenv;
 		ENode obj = this.obj;
 		Type ot;
 		if (obj instanceof LVarExpr && obj.getVarSafe().parent() instanceof RewritePattern)
-			ot = ((RewritePattern)obj.getVarSafe().parent()).getType(env).getErasedType();
+			ot = ((RewritePattern)obj.getVarSafe().parent()).getType().getErasedType();
 		else
-			ot = obj.getType(env).getErasedType();
+			ot = obj.getType().getErasedType();
 		if!(ot instanceof ASTNodeType)
-			return env.tenv.tpVoid;
+			return tenv.tpVoid;
 		String name = ("attr$"+ident+"$type").intern();
 		int n = ot.getArgsLength();
 		for (int i=0; i < n; i++) {
@@ -691,24 +696,24 @@ public final class MacroAccessExpr extends ENode {
 		}
 		foreach (AttrSlot a; obj.values(); a.name == this.ident) {
 			Class clazz = a.typeinfo.clazz;
-			if (clazz == Boolean.class) return env.tenv.tpBoolean;
-			if (clazz == String.class) return env.tenv.tpString;
-			if (clazz == Integer.class) return env.tenv.tpInt;
-			if (clazz == Byte.class) return env.tenv.tpByte;
-			if (clazz == Short.class) return env.tenv.tpShort;
-			if (clazz == Long.class) return env.tenv.tpLong;
-			if (clazz == Float.class) return env.tenv.tpFloat;
-			if (clazz == Double.class) return env.tenv.tpDouble;
-			if (clazz == Character.class) return env.tenv.tpChar;
+			if (clazz == Boolean.class) return tenv.tpBoolean;
+			if (clazz == String.class) return tenv.tpString;
+			if (clazz == Integer.class) return tenv.tpInt;
+			if (clazz == Byte.class) return tenv.tpByte;
+			if (clazz == Short.class) return tenv.tpShort;
+			if (clazz == Long.class) return tenv.tpLong;
+			if (clazz == Float.class) return tenv.tpFloat;
+			if (clazz == Double.class) return tenv.tpDouble;
+			if (clazz == Character.class) return tenv.tpChar;
 			if (clazz.isEnum()) return new ASTNodeType(clazz);
 			return new ASTNodeType(clazz);
 		}
-		return env.tenv.tpVoid;
+		return tenv.tpVoid;
 	}
 /*
-	public boolean	isConstantExpr(Env env) {
+	public boolean	isConstantExpr() {
 		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr(env))
+			if (var.init != null && var.init.isConstantExpr())
 				return true;
 			else if (var.const_value != null)
 				return true;
@@ -716,29 +721,29 @@ public final class MacroAccessExpr extends ENode {
 		return false;
 	}
 */
-	public Object	getConstValue(Env env) {
+	public Object	getConstValue() {
 		return obj.getVal(obj.getAttrSlot(this.ident));
 	}
 
 	public String toString() {
 		if (obj == null)
 			return String.valueOf(ident);
-		if (obj.getPriority(Env.getEnv()) < opAccessPriority)
+		if (obj.getPriority() < opAccessPriority)
 			return "("+obj.toString()+")>->"+ident;
 		else
 			return obj.toString()+">->"+ident;
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void mainResolveOut(INode parent, AttrSlot slot) {
 		ENode obj = this.obj;
 		Type tp;
 		if (obj instanceof LVarExpr && obj.getVarSafe().parent() instanceof RewritePattern)
-			tp = ((RewritePattern)obj.getVarSafe().parent()).getType(env).getErasedType();
+			tp = ((RewritePattern)obj.getVarSafe().parent()).getType().getErasedType();
 		else
-			tp = obj.getType(env).getErasedType();
+			tp = obj.getType().getErasedType();
 		if!(tp instanceof ASTNodeType)
 			throw new CompilerException(this, "Accessor must be an AST node");
-		ResInfo info = new ResInfo(env,this,ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards).match(Field.class);
+		ResInfo info = new ResInfo(this,ident,ResInfo.noStatic | ResInfo.noSyntaxContext | ResInfo.noForwards).match(Field.class);
 		if!(tp.resolveNameAccessR(info)) {
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
 			msg.append("\t").append(tp).append('\n');
@@ -790,17 +795,17 @@ public class MacroSubstTypeRef extends TypeRef {
 		return mtype.doRewrite(ctx);
 	}
 
-	public Type getType(Env env) {
+	public Type getType() {
 		if (req_type != null)
-			return req_type.getType(env);
-		return env.tenv.tpAny;
+			return req_type.getType();
+		return getEnv().tenv.tpAny;
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		return true;
 	}
 
-	public boolean mainResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean mainResolveIn(INode parent, AttrSlot slot) {
 		return true;
 	}
 
@@ -830,7 +835,7 @@ public class MacroBinaryBoolExpr extends ENode {
 
 	public String toString() { toStringByOpdef() }
 
-	public Type getType(Env env) { return env.tenv.tpBoolean; }
+	public Type getType() { return getEnv().tenv.tpBoolean; }
 
 	public INode doRewrite(RewriteContext ctx) {
 		INode e1 = expr1.doRewrite(ctx);
@@ -855,17 +860,17 @@ public class MacroBinaryBoolExpr extends ENode {
 		return new ConstBoolExpr(false);
 	}
 
-	public boolean isConstantExpr(Env env) {
-		if (!expr1.isConstantExpr(env))
+	public boolean isConstantExpr() {
+		if (!expr1.isConstantExpr())
 			return false;
-		if (!expr2.isConstantExpr(env))
+		if (!expr2.isConstantExpr())
 			return false;
 		DNode m = this.dnode;
 		if !(m instanceof Method) {
-			Opdef opd = resolveOpdef(env);
+			Opdef opd = resolveOpdef();
 			if (opd == null)
 				return false;
-			Symbol sym = opd.resolveMethod(env,this);
+			Symbol sym = opd.resolveMethod(this);
 			if (sym != null) {
 				this.symbol = sym;
 				m = sym.dnode;
@@ -875,8 +880,8 @@ public class MacroBinaryBoolExpr extends ENode {
 			return true;
 		return false;
 	}
-	public Object getConstValue(Env env) {
-		return ((CoreOperation)this.dnode).calc(this).getConstValue(env);
+	public Object getConstValue() {
+		return ((CoreOperation)this.dnode).calc(this).getConstValue();
 	}
 }
 
@@ -894,9 +899,9 @@ public class MacroHasMetaExpr extends ENode {
 
 	public MacroHasMetaExpr() {}
 
-	public Type getType(Env env) { return env.tenv.tpBoolean; }
+	public Type getType() { return getEnv().tenv.tpBoolean; }
 
-	public int getPriority(Env env) { return opInstanceOfPriority; }
+	public int getPriority() { return opInstanceOfPriority; }
 
 	public INode doRewrite(RewriteContext ctx) {
 		INode expr = this.expr.doRewrite(ctx);

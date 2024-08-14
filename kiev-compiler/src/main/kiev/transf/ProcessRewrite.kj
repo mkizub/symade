@@ -33,7 +33,7 @@ public final class RewriteME_Rewrite extends BackendProcessor {
 	public String getDescr() { "Rewrite rules" }
 
 	public boolean isEnabled() {
-		return Kiev.enabled(KievExt.Rewrite);
+		return getProcessor().isEnabled(KievExt.Rewrite);
 	}
 
 	public void process(ANode node, Transaction tr) {
@@ -133,7 +133,7 @@ public final class RewriteME_Rewrite extends BackendProcessor {
 			RewriteContext rctx = new RewriteContext(env, self, args);
 			ASTNode rn = (ASTNode)rewriter.doRewrite(rctx);
 			rn = self.replaceWithNode(~rn, parent, slot);
-			Kiev.runProcessorsOn(rn);
+			env.runProcessorsOn(rn);
 			throw new ReWalkNodeException(rn);
 		} finally { tr.leave(); }
 	}

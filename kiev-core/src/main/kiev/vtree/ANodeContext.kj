@@ -19,24 +19,55 @@ import java.util.concurrent.atomic.AtomicInteger;
 // Holds only Env and flags about it's lifecycle.
 public class ANodeContext {
 
-	// Node environment
-	public final Env theEnv;
+	/** Node environment */
+	final
+	public Env					theEnv;
+	/** Type environment */
+	//final // needed try to set via reflection?
+	public:ro,ro,rw StdTypes	typeEnv;
+
 	// Parent context
-	public final ANodeContext prev;
+	final
+	public ANodeContext	prev;
 
 	// this context is expired and nodes can be deleted
-	public boolean expired;
+	public boolean		expired;
 	// this context is locked, i.e. nodes cannot be changed
-	public boolean locked;
+	public boolean		locked;
 
-	public ANodeContext(Env theEnv) {
+	ANodeContext(Env theEnv, boolean isEnvContext)
+		require theEnv != null;
+		require isEnvContext;
+		ensure this instanceof EnvContext;
+	{
 		this.theEnv = theEnv;
+		this.typeEnv = theEnv.tenv;
+		this.prev = null;
+	}
+
+	public ANodeContext(Env theEnv)
+		require theEnv != null;
+		require theEnv.tenv != null;
+	{
+		this.theEnv = theEnv;
+		this.typeEnv = theEnv.tenv;
 		this.prev = theEnv.getEnvContext();
 	}
 
-	public ANodeContext(Env theEnv, ANodeContext prev) {
+	public ANodeContext(Env theEnv, ANodeContext prev)
+		require theEnv != null;
+		require theEnv.tenv != null;
+		require prev != null;
+	{
 		this.theEnv = theEnv;
+		this.typeEnv = theEnv.tenv;
 		this.prev = prev;
+	}
+
+	void setTypeEnv(StdTypes tenv) {
+		if (typeEnv != null || !(this instanceof EnvContext))
+			throw new IllegalStateException("Cannot set StdTypes");
+		this.typeEnv = tenv;
 	}
 
 	public boolean inherits(ANodeContext ctx) {
@@ -51,7 +82,10 @@ public class ANodeContext {
 // Context for global environment nodes (like standard types).
 public class EnvContext extends ANodeContext {
 	public EnvContext(Env theEnv) {
-		super(theEnv, null);
+		super(theEnv, true);
+	}
+	public void setTypeEnv(StdTypes tenv) {
+		super.setTypeEnv(tenv)
 	}
 }
 
@@ -64,8 +98,8 @@ public final class SemanticContext extends ANodeContext {
 
 // Backend context.
 public class BackendNodeContext extends ANodeContext {
-	public final SemanticContext semantic_context;
-	public BackendNodeContext(SemanticContext semantic_context) {
+	public final ANodeContext semantic_context;
+	public BackendNodeContext(ANodeContext semantic_context) {
 		super(semantic_context.theEnv, semantic_context);
 		this.semantic_context = semantic_context;
 	}

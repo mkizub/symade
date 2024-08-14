@@ -24,18 +24,22 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 	public:ro SymbolRef[]				old_vars;
 	public:ro SymbolRef[]				new_vars;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		Type[] types = new Type[new_vars.length];
 		for (int i=0; i < new_vars.length; i++) {
 			Var nv = (Var)new_vars[i].dnode;
-			types[i] = nv.getType(env);
-			if (nv.vtype.type_lnk != dispatched.params[i].getType(env))
-				nv.vtype.type_lnk = dispatched.params[i].getType(env);
+			types[i] = nv.getType();
+			if (nv.vtype.type_lnk != dispatched.params[i].getType())
+				nv.vtype.type_lnk = dispatched.params[i].getType();
 		}
 		try {
-			resolveDNode(dispatched,env);
-			if( dispatched.body.isAbrupted() ) setAbrupted(true);
-			if( dispatched.body.isMethodAbrupted() ) setMethodAbrupted(true);
+			resolveDNode(dispatched);
+			if (dispatched.body == null) {
+				dispatched.reportError().log("Inline method has no body");
+			} else {
+				if( dispatched.body.isAbrupted() ) setAbrupted(true);
+				if( dispatched.body.isMethodAbrupted() ) setMethodAbrupted(true);
+			}
 		} finally {
 			for (int i=0; i < new_vars.length; i++) {
 				Var nv = (Var)new_vars[i].dnode;
@@ -50,14 +54,14 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 public final view RExprStat of ExprStat extends RENode {
 	public ENode		expr;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
 			if (expr != null) {
-				resolveENode(expr,env.tenv.tpVoid,env);
+				resolveENode(expr,tenv.tpVoid);
 				expr.setGenVoidExpr(true);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(expr,e);
+			expr.reportError().log(e);
 		}
 	}
 }
@@ -66,40 +70,40 @@ public final view RExprStat of ExprStat extends RENode {
 public final view RReturnStat of ReturnStat extends RENode {
 	public ENode		expr;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		setMethodAbrupted(true);
 		if( expr != null ) {
 			try {
-				resolveENode(expr,ctx_method.mtype.ret(),env);
+				resolveENode(expr,ctx_method.mtype.ret());
 			} catch(Exception e ) {
-				Kiev.reportError(expr,e);
+				expr.reportError().log(e);
 			}
 		}
-		if( ctx_method.mtype.ret() ≡ env.tenv.tpVoid ) {
-			if( expr != null && expr.getType(env) ≢ env.tenv.tpVoid) {
-				Kiev.reportError(this,"Can't return value in void method");
+		if( ctx_method.mtype.ret() ≡ tenv.tpVoid ) {
+			if( expr != null && expr.getType() ≢ tenv.tpVoid) {
+				reportError().log("Can't return value in void method");
 				expr = null;
 			}
 		} else {
 			if( expr == null )
-				Kiev.reportError(this,"Return must return a value in non-void method");
-			else if (!expr.getType(env).isInstanceOf(ctx_method.mtype.ret()) && expr.getType(env) != env.tenv.tpNull)
-				Kiev.reportError(this,"Return expression is not of type "+ctx_method.mtype.ret());
+				reportError().log("Return must return a value in non-void method");
+			else if (!expr.getType().isInstanceOf(ctx_method.mtype.ret()) && expr.getType() != tenv.tpNull)
+				reportError().log("Return expression is not of type {}", ctx_method.mtype.ret());
 		}
 	}
 
-	public static void autoReturn(Type reqType, RENode expr, Env env) {
+	public static void autoReturn(Type reqType, RENode expr) {
 		if (expr.parent() instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
-		expr.replaceWithResolve(env, reqType, fun ()->ENode { return new ReturnStat(expr.pos, ((ENode)expr).detach()); });
+		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ((ENode)expr).detach()); });
 	}
 
-	public static void autoReturn(Type reqType, ENode expr, Env env) {
+	public static void autoReturn(Type reqType, ENode expr) {
 		if (expr.parent() instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
-		((RENode)expr).replaceWithResolve(env, reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
+		((RENode)expr).replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
 	}
 }
 
@@ -107,16 +111,16 @@ public final view RReturnStat of ReturnStat extends RENode {
 public final view RThrowStat of ThrowStat extends RENode {
 	public ENode		expr;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		setMethodAbrupted(true);
 		try {
-			resolveENode(expr,env.tenv.tpThrowable,env);
+			resolveENode(expr,tenv.tpThrowable);
 		} catch(Exception e ) {
-			Kiev.reportError(expr,e);
+			expr.reportError().log(e);
 		}
-		Type exc = expr.getType(env);
-		if( !PassInfo.checkException((ThrowStat)this,exc,env) )
-			Kiev.reportWarning(this,"Exception "+exc+" must be caught or declared to be thrown");
+		Type exc = expr.getType();
+		if( !PassInfo.checkException((ThrowStat)this,exc,tenv) )
+			reportWarning().log("Exception {} must be caught or declared to be thrown", exc);
 	}
 }
 
@@ -126,32 +130,32 @@ public final view RIfElseStat of IfElseStat extends RENode {
 	public ENode		thenSt;
 	public ENode		elseSt;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(cond,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(cond, env);
+			resolveENode(cond,tenv.tpBoolean);
+			RBoolExpr.checkBool(cond, tenv);
 		} catch(Exception e ) {
-			Kiev.reportError(cond,e);
+			cond.reportError().log(e);
 		}
 
 		try {
-			resolveENode(thenSt,env.tenv.tpVoid,env);
+			resolveENode(thenSt,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(thenSt,e);
+			thenSt.reportError().log(e);
 		}
 		if( elseSt != null ) {
 			try {
-				resolveENode(elseSt,env.tenv.tpVoid,env);
+				resolveENode(elseSt,tenv.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(elseSt,e);
+				elseSt.reportError().log(e);
 			}
 		}
 
-		if (!cond.isConstantExpr(env)) {
+		if (!cond.isConstantExpr()) {
 			if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
 			if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
 		}
-		else if (cond.getConstValue(env) instanceof Boolean && ((Boolean)cond.getConstValue(env)).booleanValue()) {
+		else if (cond.getConstValue() instanceof Boolean && ((Boolean)cond.getConstValue()).booleanValue()) {
 			if( thenSt.isAbrupted() ) setAbrupted(true);
 			if( thenSt.isMethodAbrupted() ) setMethodAbrupted(true);
 		}
@@ -168,21 +172,24 @@ public final view RCondStat of CondStat extends RENode {
 	public ENode		cond;
 	public ENode		message;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
 			if (enabled == null)
 				enabled = new AssertEnabledExpr();
-			resolveENode(enabled,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(enabled, env);
-			resolveENode(cond,env.tenv.tpBoolean,env);
-			RBoolExpr.checkBool(cond, env);
+			resolveENode(enabled,tenv.tpBoolean);
+			RBoolExpr.checkBool(enabled, tenv);
+			resolveENode(cond,tenv.tpBoolean);
+			RBoolExpr.checkBool(cond, tenv);
 		} catch(Exception e ) {
-			Kiev.reportError(cond,e);
+			cond.reportError().log(e);
 		}
 		try {
-			resolveENode(message,env.tenv.tpString,env);
+			resolveENode(message,tenv.tpString);
 		} catch(Exception e ) {
-			Kiev.reportError(message,e);
+			if (message != null)
+				message.reportError().log(e);
+			else
+				reportError().log(e);
 		}
 	}
 }
@@ -192,11 +199,11 @@ public final view RLabeledStat of LabeledStat extends RENode {
 	public Label			lbl;
 	public ENode			stat;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		try {
-			resolveENode(stat,env.tenv.tpVoid,env);
+			resolveENode(stat,tenv.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(stat,e);
+			stat.reportError().log(e);
 		}
 		if( stat.isAbrupted() ) setAbrupted(true);
 		if( stat.isMethodAbrupted() ) setMethodAbrupted(true);
@@ -207,7 +214,7 @@ public final view RLabeledStat of LabeledStat extends RENode {
 public final view RBreakStat of BreakStat extends RENode {
 	public Label			dest;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		setAbrupted(true);
 		ASTNode p;
 		if (dest != null) {
@@ -217,7 +224,7 @@ public final view RBreakStat of BreakStat extends RENode {
 		if (this.ident == null || this.ident == "") {
 			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
-				Kiev.reportError(this,"Break not within loop/switch statement");
+				reportError().log("Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = p.lblbrk;
@@ -243,7 +250,7 @@ public final view RBreakStat of BreakStat extends RENode {
 				p = pp;
 			}
 			if( p instanceof Method || p == null) {
-				Kiev.reportError(this,"Break not within loop/switch statement");
+				reportError().log("Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = p.lblbrk;
@@ -255,7 +262,7 @@ public final view RBreakStat of BreakStat extends RENode {
 			}
 		}
 		if( p instanceof Method )
-			Kiev.reportError(this,"Break not within loop/switch statement");
+			reportError().log("Break not within loop/switch statement");
 		((ENode)p).setBreaked(true);
 	}
 }
@@ -264,7 +271,7 @@ public final view RBreakStat of BreakStat extends RENode {
 public final view RContinueStat of ContinueStat extends RENode {
 	public Label			dest;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		setAbrupted(true);
 		// TODO: check label or loop statement available
 	}
@@ -274,7 +281,7 @@ public final view RContinueStat of ContinueStat extends RENode {
 public final view RGotoStat of GotoStat extends RENode {
 	public Label			dest;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		setAbrupted(true);
 		if (dest != null) {
 			dest.delLink((GotoStat)this);
@@ -282,11 +289,11 @@ public final view RGotoStat of GotoStat extends RENode {
 		}
 		Label[] labels = GotoStat.resolveStat(this.ident, ctx_method.body);
 		if( labels.length == 0 ) {
-			Kiev.reportError(this,"Label "+ident+" unresolved");
+			reportError().log("Label '{}' unresolved", ident);
 			return;
 		}
 		if( labels.length > 1 ) {
-			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
+			reportError().log("Umbigouse label '{}' in goto statement", ident);
 		}
 		Label label = labels[0];
 		dest = label;
@@ -299,7 +306,7 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 	public ENode		expr;
 	public SwitchStat	sw;
 
-	public void resolveENode(Type reqType, Env env) {
+	public void resolveENode(Type reqType) {
 		setAbrupted(true);
 		for(ASTNode node = (ASTNode)this.parent(); node != null; node = (ASTNode)node.parent()) {
 			if (node instanceof SwitchStat) {
@@ -313,7 +320,7 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 		if( this.sw == null )
 			throw new CompilerException(this,"goto case statement not within a switch statement");
 		if( expr != null )
-			resolveENode(expr,sw.sel.getType(env),env);
+			resolveENode(expr,sw.sel.getType());
 	}
 }
 

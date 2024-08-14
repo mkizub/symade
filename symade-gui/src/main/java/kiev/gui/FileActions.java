@@ -21,12 +21,12 @@ import kiev.vlang.ProjectSyntaxFactoryBinDump;
 import kiev.vlang.ProjectSyntaxFactoryXmlDump;
 import kiev.vlang.ProjectSyntaxInfo;
 
-import kiev.CompilerThreadGroup;
+import kiev.compiler.CompilerThreadGroup;
+import kiev.compiler.FrontendThreadGroup;
 
 import kiev.Compiler;
-import kiev.EditorThreadGroup;
-import kiev.CompilerParseInfo;
-import kiev.Kiev;
+import kiev.compiler.EditorThreadGroup;
+import kiev.compiler.CompilerParseInfo;
 import kiev.dump.DumpFactory;
 import kiev.fmt.Drawable;
 import kiev.fmt.common.TextParser;
@@ -43,10 +43,10 @@ import kiev.vtree.INode;
 import kiev.vtree.Transaction;
 
 /**
- * Group of actions in the File menu section. 
+ * Group of actions in the File menu section.
  */
 public final class FileActions implements UIAction {
-	
+
 	private static ProjectSyntaxInfo XML_DUMP;
 	private static ProjectSyntaxInfo BIN_DUMP;
 	static {
@@ -65,27 +65,27 @@ public final class FileActions implements UIAction {
 		BIN_DUMP.setPrinter(new ProjectSyntaxFactoryBinDump());
 		BIN_DUMP.setParser(new ProjectSyntaxFactoryBinDump());
 }
-	
+
 	/**
 	 * The Window.
 	 */
 	private final IWindow wnd;
-	
+
 	/**
 	 * The View.
 	 */
 	private final IUIView uiv;
-	
+
 	/**
 	 * The Drawable.
 	 */
 	private final Drawable dr;
-	
+
 	/**
 	 * The action.
 	 */
 	private final String action;
-	
+
 	/**
 	 * The File Unit.
 	 */
@@ -102,7 +102,7 @@ public final class FileActions implements UIAction {
 		this.uiv = null;
 		this.dr = null;
 	}
-	
+
 	/**
 	 * The constructor.
 	 * @param uiv the info view
@@ -114,7 +114,7 @@ public final class FileActions implements UIAction {
 		this.action = action;
 		this.dr = null;
 	}
-	
+
 	/**
 	 * The constructor.
 	 * @param uiv the info view
@@ -127,7 +127,7 @@ public final class FileActions implements UIAction {
 		this.action = action;
 		this.dr = dr;
 	}
-	
+
 	/**
 	 * Performs dump the AST node to a text file.
 	 * @param node the AST node
@@ -140,7 +140,7 @@ public final class FileActions implements UIAction {
 			printer.setProperty("current", "true");
 		printer.print(new INode[]{node}, f,  wnd.getCurrentEnv());
 	}
-	
+
 	/**
 	 * Performs dump the AST node to a text file.
 	 * @param node the AST node
@@ -155,7 +155,7 @@ public final class FileActions implements UIAction {
 			res.add(node);
 		return res.toArray(new INode[res.size()]);
 	}
-	
+
 	/**
 	 * Make new FileUnit.
 	 * @param f the file
@@ -166,11 +166,12 @@ public final class FileActions implements UIAction {
 			fu = FileUnit.makeFile(rel_path, wnd.getCurrentProject(), false);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see kiev.gui.UIAction#run()
 	 */
 	public void exec() {
+		final Env env = wnd.getCurrentEnv();
 		if (action == "new"){
 			System.out.println("Running \"new\" action");
 			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.OPEN_TYPE);
@@ -184,7 +185,7 @@ public final class FileActions implements UIAction {
 			dialog.setFilterPath(wnd.getCurrentProject().getRoot_dir().getName());
 			if (! (IFileDialog.OK == dialog.open())) return;
 			final File f = dialog.getSelectedFile();
-			if (f == null) return;						
+			if (f == null) return;
 			if (! dialog.checkFileExists(f)) return;
 			if (! dialog.checkFilterExtensions(f)) return;
 			try {
@@ -194,40 +195,40 @@ public final class FileActions implements UIAction {
 			}
 			makeFileUnit(f);
 			wnd.openEditor(fu);
-		} 
+		}
 		if (action == "add"){
 			System.out.println("Running \"add\" action");
 			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.OPEN_TYPE);
 			ArrayList<FileFilter> filters = new ArrayList<FileFilter>();
-			filters.add(new FileFilter(XML_DUMP, false)); 
+			filters.add(new FileFilter(XML_DUMP, false));
 			for (ProjectSyntaxInfo psi : wnd.getCurrentProject().getSyntax_infos())
 				filters.add(new FileFilter(psi, false));
 			dialog.setFilters(filters.toArray(new FileFilter[filters.size()]));;
 			dialog.setFilterPath(wnd.getCurrentProject().getRoot_dir().getName());
 			if (! (IFileDialog.OK == dialog.open())) return;
 			final File f = dialog.getSelectedFile();
-			if (f == null) return;						
-			if (! dialog.checkFilterExtensions(f)) return;			
+			if (f == null) return;
+			if (! dialog.checkFilterExtensions(f)) return;
 			FileFilter dff = dialog.getSelectedFilter();
 			if (dff != null && !dff.accept(f)) return;
 			CompilerParseInfo cpi = new CompilerParseInfo(f, dff.syntax_info, true);
 			EditorThreadGroup thrg = wnd.getEditorThreadGroup();
 			Transaction tr = Transaction.open("Actions.java:load-as", thrg);
 			try {
-				Compiler.runFrontEnd(new CompilerParseInfo[]{cpi});
-				System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
+				wnd.getCompiler().runFrontEndParse(new CompilerParseInfo[]{cpi});
+				System.out.println("Frontend compiler completed with "+env.errorCounter+" error(s)");
 			} catch( Exception e ) {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
 			} finally { tr.close(thrg); }
 			wnd.fireErrorsModified();
-			wnd.getCurrentEnv().dumpProjectFile();
-		} 
+			//env.dumpProjectFile();
+		}
 		else if (action == "load-as") {
 			System.out.println("Running \"load-as\" action");
 			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.OPEN_TYPE);
 			ArrayList<FileFilter> filters = new ArrayList<FileFilter>();
-			filters.add(new FileFilter(BIN_DUMP, false)); 
-			filters.add(new FileFilter(XML_DUMP, false)); 
+			filters.add(new FileFilter(BIN_DUMP, false));
+			filters.add(new FileFilter(XML_DUMP, false));
 			for (ProjectSyntaxInfo psi : wnd.getCurrentProject().getSyntax_infos()) {
 				if (psi.getParser() != null)
 					filters.add(new FileFilter(psi, false));
@@ -247,8 +248,8 @@ public final class FileActions implements UIAction {
 				EditorThreadGroup thrg = wnd.getEditorThreadGroup();
 				Transaction tr = Transaction.open("Actions.java:load-as", thrg);
 				try {
-					Compiler.runFrontEnd(new CompilerParseInfo[]{cpi});
-					System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
+					wnd.getCompiler().runFrontEndParse(new CompilerParseInfo[]{cpi});
+					System.out.println("Frontend compiler completed with "+env.errorCounter+" error(s)");
 					fu = cpi.fu;
 				} catch( Exception e ) {
 					System.out.println("Read error while Xml-to-Kiev importing: "+e);
@@ -264,16 +265,16 @@ public final class FileActions implements UIAction {
 			if (uiv.getRoot() instanceof FileUnit) fu = (FileUnit)uiv.getRoot();
 			else fu = (FileUnit)Env.ctxFileUnit(this.uiv.getRoot());
 			if (fu == null) return;
-			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.SAVE_TYPE);	    
-			File f = Kiev.newFile(fu.pname());
+			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.SAVE_TYPE);
+			File f = env.makeNativeFile(fu.pname());
 			if (f.getParentFile() != null)
 				dialog.setFilterPath(f.getParentFile().getPath());
-			ArrayList<FileFilter> filters = new ArrayList<FileFilter>(); 
-			filters.add(new FileFilter(BIN_DUMP, false)); 
-			filters.add(new FileFilter(XML_DUMP, false)); 
+			ArrayList<FileFilter> filters = new ArrayList<FileFilter>();
+			filters.add(new FileFilter(BIN_DUMP, false));
+			filters.add(new FileFilter(XML_DUMP, false));
 			for (ProjectSyntaxInfo psi : wnd.getCurrentProject().getSyntax_infos()) {
 				if (psi.getPrinter() != null) {
-					filters.add(new FileFilter(psi, false)); 
+					filters.add(new FileFilter(psi, false));
 					filters.add(new FileFilter(psi, true));
 				}
 			}
@@ -295,20 +296,20 @@ public final class FileActions implements UIAction {
 			FileUnit fu;
 			if (uiv.getRoot() instanceof FileUnit)	fu = (FileUnit)uiv.getRoot();
 			else fu = (FileUnit)Env.ctxFileUnit(uiv.getRoot());
-			File f = Kiev.newFile(fu.pname());
+			File f = env.makeNativeFile(fu.pname());
 			ProjectSyntaxFactory stx_factory = fu.getCurrent_syntax();
 			if (stx_factory == null) {
 				IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.SAVE_TYPE);
 				dialog.setFileName(f.getName());
-				f = Kiev.newFile(fu.pname());
+				f = env.makeNativeFile(fu.pname());
 				if (f.getParentFile() != null)
 					dialog.setFilterPath(f.getParentFile().getPath());
-				ArrayList<FileFilter> filters = new ArrayList<FileFilter>(); 
-				filters.add(new FileFilter(XML_DUMP, false)); 
-				filters.add(new FileFilter(BIN_DUMP, false)); 
+				ArrayList<FileFilter> filters = new ArrayList<FileFilter>();
+				filters.add(new FileFilter(XML_DUMP, false));
+				filters.add(new FileFilter(BIN_DUMP, false));
 				for (ProjectSyntaxInfo psi : wnd.getCurrentProject().getSyntax_infos()) {
 					if (psi.getPrinter() != null) {
-						filters.add(new FileFilter(psi, false)); 
+						filters.add(new FileFilter(psi, false));
 						filters.add(new FileFilter(psi, true));
 					}
 				}
@@ -332,8 +333,8 @@ public final class FileActions implements UIAction {
 			System.out.println("Running \"import-as\" action");
 			IFileDialog dialog = UIManager.newFileDialog(wnd, IFileDialog.OPEN_TYPE);
 			ArrayList<FileFilter> filters = new ArrayList<FileFilter>();
-			filters.add(new FileFilter(XML_DUMP, false)); 
-			filters.add(new FileFilter(BIN_DUMP, false)); 
+			filters.add(new FileFilter(XML_DUMP, false));
+			filters.add(new FileFilter(BIN_DUMP, false));
 			for (ProjectSyntaxInfo psi : wnd.getCurrentProject().getSyntax_infos()) {
 				if (psi.getParser() != null)
 					filters.add(new FileFilter(psi, false));
@@ -352,7 +353,9 @@ public final class FileActions implements UIAction {
 				wnd.openEditor(fu);
 				return;
 			}
-			EditorThreadGroup thrg = wnd.getEditorThreadGroup();
+			//EditorThreadGroup thrg = wnd.getEditorThreadGroup();
+			//FrontendThreadGroup thrg = FrontendThreadGroup.THE_GROUP;
+			FrontendThreadGroup thrg = wnd.getCompiler().getFrontendThreadGroup();
 			Transaction tr = Transaction.open("Actions.java:import-as", thrg);
 			try {
 				ProjectSyntaxFactory psi = dff.syntax_info.getParser();
@@ -367,9 +370,9 @@ public final class FileActions implements UIAction {
 						if (!files.contains(fu))
 							files.add(fu);
 					}
-					Compiler.runFrontEnd(thrg,files.toArray(new FileUnit[files.size()]));
+					wnd.getCompiler().runFrontEnd(files.toArray(new FileUnit[files.size()]));
 				}
-				System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
+				System.out.println("Frontend compiler completed with "+env.errorCounter+" error(s)");
 			} catch( Exception e ) {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
 			} finally { tr.close(thrg); }
@@ -398,19 +401,19 @@ public final class FileActions implements UIAction {
 			dumpTextFile(fu, f, dff.syntax_info.getPrinter(), dff.current);
 		}
 		else if (action == "merge-all") {
-			//wnd.getCurrentEnv().root.mergeTree();
+			//env.root.mergeTree();
 			System.out.println("Tree merged to the editor version.");
 		}
 		else if (action == "run-backend") {
 			System.out.println("Running backend compiler...");
 			CompilerThreadGroup thrg = new CompilerThreadGroup(wnd.getEditorThreadGroup());
-			thrg.errCount = 0;
-			thrg.warnCount = 0;
-			Compiler.runBackEnd(thrg, null);
+			env.errorCounter.set(0);
+			env.warningCounter.set(0);
+			wnd.getCompiler().runBackEnd(thrg, null);
 			wnd.fireErrorsModified();
 		}
 		else if (action == "run-frontend-all") {
-			runFrontEndCompiler((Editor)uiv, new INode[]{wnd.getCurrentEnv().root});
+			runFrontEndCompiler((Editor)uiv, new INode[]{env.root});
 		}
 		else if (action == "run-frontend") {
 			runFrontEndCompiler((Editor)uiv, new INode[]{uiv.getRoot()});
@@ -435,7 +438,7 @@ public final class FileActions implements UIAction {
 	}
 
 	/**
-	 * Runs compiler's front-end. 
+	 * Runs compiler's front-end.
 	 * @param editor the editor
 	 * @param root the root node
 	 */
@@ -443,32 +446,33 @@ public final class FileActions implements UIAction {
 		System.out.println("Running frontend compiler...");
 		editor.getWindow().startTransaction(editor, "Action:runFrontEndCompiler");
 		try {
-			EditorThreadGroup thrg = wnd.getEditorThreadGroup();
-			Compiler.runFrontEnd(thrg,roots);
-			System.out.println("Frontend compiler completed with "+thrg.errCount+" error(s)");
+			//EditorThreadGroup thrg = wnd.getEditorThreadGroup();
+			//FrontendThreadGroup thrg = FrontendThreadGroup.THE_GROUP;
+			wnd.getCompiler().runFrontEnd(roots);
+			System.out.println("Frontend compiler completed with "+wnd.getCurrentEnv().errorCounter+" error(s)");
 		} finally {
 			editor.getWindow().stopTransaction(false);
 		}
 		wnd.fireErrorsModified();
 		editor.formatAndPaint(true);
 	}
-	
+
 
 	/**
 	 * "Save As..." action factory.
 	 */
 	public final static class SaveFileAs implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Save the file as a new file"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -483,17 +487,17 @@ public final class FileActions implements UIAction {
 	 * "Save" action factory.
 	 */
 	public final static class SaveFile implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Save the file"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -508,17 +512,17 @@ public final class FileActions implements UIAction {
 	 * "New..." action factory.
 	 */
 	public final static class NewFile implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "New file into the current view"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -531,26 +535,26 @@ public final class FileActions implements UIAction {
 	 * "Add..." action factory.
 	 */
 	public final static class AddFile implements UIActionFactory {
-		
+
 		/**
 		 * The description.
 		 */
 		private String descr = "Add file to the current project";
-		
+
 		/**
 		 * Is for pop-up menu.
 		 */
 		private boolean forPopupMenu;
-		
+
 		/**
 		 * Explicit constructor.
 		 */
 		public AddFile() {}
-		
+
 		/**
-		 * The constructor. 
+		 * The constructor.
 		 * @param descr the description
-		 * @param forPopupMenu is for pop-up menu 
+		 * @param forPopupMenu is for pop-up menu
 		 */
 		public AddFile(String descr, boolean forPopupMenu) {
 			this.descr = descr;
@@ -561,12 +565,12 @@ public final class FileActions implements UIAction {
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return descr; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return forPopupMenu; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -574,22 +578,22 @@ public final class FileActions implements UIAction {
 			return new FileActions(context.wnd, "add");
 		}
 	}
-	
+
 	/**
-	 * "Load..." action factory. 
+	 * "Load..." action factory.
 	 */
 	public final static class LoadFileAs implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Load a file into current view as a file with specified syntax"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -599,20 +603,20 @@ public final class FileActions implements UIAction {
 	}
 
 	/**
-	 * "Import..." action factory. 
+	 * "Import..." action factory.
 	 */
 	public final static class ImportFileAs implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Import file with specified syntax"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -622,20 +626,20 @@ public final class FileActions implements UIAction {
 	}
 
 	/**
-	 * "Import..." action factory. 
+	 * "Import..." action factory.
 	 */
 	public final static class ExportFileAs implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Export file with specified syntax"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -647,20 +651,20 @@ public final class FileActions implements UIAction {
 	}
 
 	/**
-	 * "Merge tree" action factory. 
+	 * "Merge tree" action factory.
 	 */
 	public final static class MergeTreeAll implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Merge editor's changes into working tree for the whole project"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -673,17 +677,17 @@ public final class FileActions implements UIAction {
 	 * "Run back-end all" action factory.
 	 */
 	public final static class RunBackendAll implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Run back-end compilation for the whole project"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -698,17 +702,17 @@ public final class FileActions implements UIAction {
 	 * "Run front-end all" action factory.
 	 */
 	public final static class RunFrontendAll implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Run front-end compilation for the whole project"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -720,20 +724,20 @@ public final class FileActions implements UIAction {
 	}
 
 	/**
-	 * "Run frontend" action factory. 
+	 * "Run frontend" action factory.
 	 */
 	public final static class RunFrontend implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Run front-end compilation for the current compilation unit"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -743,12 +747,12 @@ public final class FileActions implements UIAction {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * "Test compile KievExprNode" action factory. 
+	 * "Test compile KievExprNode" action factory.
 	 */
 	public final static class RunTokenListCompilation implements UIActionFactory {
-		
+
 		public String getDescr() { return "Run compilation of KievExprNode"; }
 		public boolean isForPopupMenu() { return true; }
 		public UIAction getAction(UIActionViewContext context) {
@@ -757,22 +761,22 @@ public final class FileActions implements UIAction {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * "Use event bindings" action factory.
 	 */
 	public final static class UseEventBindings implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Compile and use event bindings"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */
@@ -787,17 +791,17 @@ public final class FileActions implements UIAction {
 	 * "Reset event bindings" action factory.
 	 */
 	public final static class ResetEventBindings implements UIActionFactory {
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getDescr()
 		 */
 		public String getDescr() { return "Reset event bindings to default"; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#isForPopupMenu()
 		 */
 		public boolean isForPopupMenu() { return false; }
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIActionFactory#getAction(kiev.gui.UIActionViewContext)
 		 */

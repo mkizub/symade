@@ -38,7 +38,7 @@ public final class JNewExpr extends JENode {
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
+		trace(code.traceStatGen,"\t\tgenerating NewExpr: "+this);
 		Type ntype = this.getType();
 		code.setLinePos(this);
 		NewExpr vn = vn();
@@ -49,7 +49,7 @@ public final class JNewExpr extends JENode {
 			ntype = ntype.getErasedType();
 		if( ntype instanceof ArgType ) {
 			if( outer != null || args.length > 0 ) {
-				Kiev.reportError(vn,"Constructor with arguments for type argument is not supported");
+				vn.reportError().log("Constructor with arguments for type argument is not supported");
 				return;
 			} else {
 				// If we have primitive type
@@ -59,18 +59,18 @@ public final class JNewExpr extends JENode {
 				}
 				int i;
 				for(i=0; i < ((Struct)code.clazz).args.length; i++)
-					if (ntype ≈ ((Struct)code.clazz).args[i].getAType(code.env)) break;
+					if (ntype ≈ ((Struct)code.clazz).args[i].getAType()) break;
 				if( i >= ((Struct)code.clazz).args.length )
 					throw new CompilerException(vn,"Can't create an instance of argument type "+ntype);
 				long pos = vn.pos;
-				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(code.env,nameTypeInfo));
+				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,ntype,
 					new CallExpr(pos,tie,
-						code.tenv.tpTypeInfo.tdecl.resolveMethod(code.env,"newInstance",code.tenv.tpObject,code.tenv.tpInt),
+						code.tenv.tpTypeInfo.tdecl.resolveMethod("newInstance",code.tenv.tpObject,code.tenv.tpInt),
 						new ENode[]{new ConstIntExpr(i)}
 					)
 				);
-				RNode.resolveENode(e,reqType,code.env);
+				RNode.resolveENode(e,reqType);
 				((JENode)e).generate(code,reqType);
 				return;
 			}
@@ -146,7 +146,7 @@ public final class JNewEnumExpr extends JENode {
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewEnumExpr: "+this);
+		trace(code.traceStatGen,"\t\tgenerating NewEnumExpr: "+this);
 		Type ntype = this.getType();
 		code.setLinePos(this);
 		NewEnumExpr vn = vn();
@@ -191,12 +191,12 @@ public final class JNewArrayExpr extends JENode {
 
 	protected JNewArrayExpr(NewArrayExpr impl) {
 		super(impl);
-		this.ntype = impl.ntype.getType(Env.getEnv());
+		this.ntype = impl.ntype.getType();
 		this.arrtype = impl.arrtype;
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
+		trace(code.traceStatGen,"\t\tgenerating NewArrayExpr: "+this);
 		code.setLinePos(this);
 		NewArrayExpr vn = vn();
 		JENode[] args = JNode.toJArray<JENode>(vn.args);
@@ -239,11 +239,11 @@ public final class JNewInitializedArrayExpr extends JENode {
 
 	protected JNewInitializedArrayExpr(NewInitializedArrayExpr impl) {
 		super(impl);
-		this.ntype = impl.ntype.getType(Env.getEnv());
+		this.ntype = impl.ntype.getType();
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
+		trace(code.traceStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
 		code.setLinePos(this);
 		NewInitializedArrayExpr vn = vn();
 		JENode[] args = JNode.toJArray<JENode>(vn.args);
@@ -283,13 +283,13 @@ public final class JNewClosure extends JENode {
 		this.clazz = (JStruct)impl.clazz;
 	}
 
-	@getter public final CallType getCallType(Env env)	{
-		return (CallType) vn().getType(env);
+	@getter public final CallType getCallType()	{
+		return (CallType) vn().getType();
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
-		CallType ctype = this.getCallType(code.env);
+		trace(code.traceStatGen,"\t\tgenerating NewClosure: "+this);
+		CallType ctype = this.getCallType();
 		code.setLinePos(this);
 		JStruct cl = clazz;
 		code.addInstr(op_new,clazz.getType());

@@ -1,0 +1,292 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.transf;
+
+import syntax kiev.Syntax;
+
+import kiev.compiler.*;
+
+import java.io.File;
+
+public class PluginNodeProcessor implements NodeProcessor {
+
+	private Env       theEnv;
+	private boolean[] disabled_extensions = new boolean[KievExt.values().length];
+
+	public boolean genVerifiable;		// code may not pass verification, i.e. must be run as java -Xverify:none
+	public boolean genEvenWithErrors;	// gen .class files even with errors (to have at least metadata)
+	public boolean genAsserts;			// generate asserts
+	public boolean genTraces;			// generate traces
+	public boolean genContracts;		// generate require/ensure/invariant contract asserts
+	public boolean genDebugLineTable;	// generate line table debug in classes
+	public boolean genDebugLVarTable;	// generate local vars debug in classes
+	public boolean genDebugSourceMap;	// generated source file table (SMAP)
+
+	public boolean traceBytecodeRead;
+	public boolean traceBytecodeWrite;
+	public boolean traceStatGen;
+	public boolean traceInstrGen;
+
+	public int         genTargetJVM = 8;	// generated source file table (SMAP)
+	public KievBackend genBackend   = KievBackend.Java15;
+	public File        genOutputDir;
+	public File        genBinTreeDumpDir;
+
+	private int					fe_pass_no;
+	private int					me_pass_no;
+
+	private AbstractProcessor[]	feProcessors;
+	private AbstractProcessor[]	vfProcessors;
+	private AbstractProcessor[]	meProcessors;
+	private AbstractProcessor[]	beProcessors;
+
+	public AbstractProcessor[] getFEProcessors()       { return feProcessors; }
+	public AbstractProcessor[] getVFProcessors()       { return vfProcessors; }
+	public AbstractProcessor[] getMEProcessors()       { return meProcessors; }
+	public AbstractProcessor[] getBEProcessors()       { return beProcessors; }
+
+	public boolean genAssertsEnabled() { genAsserts }
+	public boolean genTracesEnabled() { genTraces }
+
+	public boolean isDisabled(KievExt ext) {
+		int idx = (int)ext;
+		return disabled_extensions[idx];
+	}
+
+	public boolean isEnabled(KievExt ext) {
+		int idx = (int)ext;
+		return !disabled_extensions[idx];
+	}
+
+	//	public boolean[] getExtSet() {
+	//		return (boolean[])disabled_extensions.clone();
+	//	}
+	//
+	//	public void setExtSet(boolean[] set) {
+	//		disabled_extensions = set;
+	//	}
+
+	public void setEnabled(KievExt ext) {
+		disabled_extensions[((int)ext)] = false;
+	}
+
+	public void setDisabled(KievExt ext) {
+		disabled_extensions[((int)ext)] = true;
+	}
+
+	private void addCorePlugin(String name, String clazz) {
+		name = "symade.plugin."+name;
+		if (System.getProperty(name) != null)
+			return;
+		System.setProperty(name, clazz);
+	}
+
+	@unerasable
+	private AbstractProcessor[] collectProcessors(Env env, String stage, ProcessorDescr[][] processors, int proc_id) {
+		for (int i=0; i < PluginDescr.stages.length; i++) {
+			if (!PluginDescr.stages[i].equals(stage))
+				continue;
+			Vector<AbstractProcessor> v = new Vector<AbstractProcessor>();
+			foreach (ProcessorDescr pd; processors[i]) {
+				AbstractProcessor p = pd.makeProcessor(env, proc_id++);
+				if (p != null)
+					v.add(p);
+			}
+			return v.toArray();
+		}
+		throw new Error("Unknown stage "+stage);
+	}
+
+	public void initializeCompilerPlugins(Env env) {
+		this.theEnv = env;
+		addCorePlugin("kiev", "kiev.transf.KievPlugin");
+		addCorePlugin("inner", "kiev.transf.InnerPlugin");
+		addCorePlugin("pizza", "kiev.transf.PizzaPlugin");
+		addCorePlugin("vnode", "kiev.transf.VNodePlugin");
+		addCorePlugin("virt-fld", "kiev.transf.VirtFldPlugin");
+		addCorePlugin("pack-fld", "kiev.transf.PackFldPlugin");
+		addCorePlugin("enum", "kiev.transf.EnumPlugin");
+		addCorePlugin("view", "kiev.transf.ViewPlugin");
+		addCorePlugin("logic", "kiev.transf.LogicPlugin");
+		addCorePlugin("macro", "kiev.transf.MacroPlugin");
+		ProcessorDescr[][] stages = PluginDescr.loadAllPlugins(env);
+
+		int proc_id = 0;
+
+		this.feProcessors = collectProcessors(env, "fe", stages, proc_id);
+		proc_id += this.feProcessors.length;
+
+		this.vfProcessors = collectProcessors(env, "fv", stages, proc_id);
+		proc_id += this.vfProcessors.length;
+
+		this.meProcessors = collectProcessors(env, "me", stages, proc_id);
+		proc_id += this.meProcessors.length;
+
+		this.beProcessors = collectProcessors(env, "be", stages, proc_id);
+		proc_id += this.beProcessors.length;
+	}
+
+	private String swapCurFile(ANode node) {
+		EnvThread thr = (EnvThread)Thread.currentThread();
+		String old_file = thr.current_file;
+		if (node instanceof FileUnit) {
+			thr.current_file = node.pname();
+		} else {
+			FileUnit fu = Env.ctxFileUnit(node);
+			if (fu != null)
+				thr.current_file = fu.pname();
+			else
+				thr.current_file = null;
+		}
+		return old_file;
+	}
+	private void setCurFile(String fname) {
+		EnvThread thr = (EnvThread)Thread.currentThread();
+		thr.current_file = fname;
+	}
+
+	public void resetFrontEndPass() {
+		fe_pass_no = 0;
+		me_pass_no = 0;
+	}
+	public boolean nextFrontEndPass() {
+		fe_pass_no += 1;
+		return fe_pass_no < getFEProcessors().length;
+	}
+	public void resetMidEndPass() {
+		me_pass_no = 0;
+	}
+	public boolean nextMidEndPass() {
+		me_pass_no += 1;
+		return me_pass_no < getMEProcessors().length;
+	}
+
+	public String runCurrentFrontEndProcessor(Env env, INode root) {
+		if !(root instanceof ANode)
+			return null;
+		AbstractProcessor tp = getFEProcessors()[fe_pass_no];
+		if (!tp.isEnabled())
+			return null;
+		if (root == env.root) {
+			foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits())
+				runCurrentFEP(tp, cu);
+		} else {
+			runCurrentFEP(tp, root.asANode());
+		}
+		return tp.getDescr();
+	}
+
+	private void runCurrentFEP(AbstractProcessor tp, ANode root) {
+		String old_file = swapCurFile(root);
+		try {
+			tp.process(root,Transaction.get());
+		} catch (Exception e) {
+			root.reportError().log(e);
+		} finally {
+			setCurFile(old_file);
+		}
+	}
+
+	public void runVerifyProcessors(INode root) {
+		Transaction tr = Transaction.enter(Transaction.get(),"Verification");
+		try {
+			root.walkTree(root.parent(), root.pslot(), new ITreeWalker() {
+				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
+					if !(n instanceof ASTNode)
+						return false;
+					ASTNode astn = (ASTNode)n;
+					foreach (AbstractProcessor vp; getVFProcessors(); vp.isEnabled())
+						vp.process(astn, tr);
+					return n.preVerify(parent, slot);
+				}
+				public void post_exec(INode n, INode parent, AttrSlot slot) {
+					if (n instanceof ASTNode)
+						n.postVerify(parent, slot);
+				}
+			});
+		} finally { tr.leave(); }
+	}
+
+	public String runCurrentMidEndProcessor(Env env) {
+		AbstractProcessor bp = getMEProcessors()[me_pass_no];
+		if (!bp.isEnabled())
+			return null;
+		foreach(CompilationUnit cu; env.proj.enumerateAllCompilationUnits()) {
+			String old_file = swapCurFile(cu);
+			try {
+				bp.process(cu,Transaction.get());
+			} catch (Exception e) {
+				cu.reportError().log(e);
+			} finally {
+				setCurFile(old_file);
+			}
+		}
+		return bp.getDescr();
+	}
+
+	public void runFrontEndProcessorsOn(ANode node) {
+		AbstractProcessor[] feProcessors = getFEProcessors();
+		for (int i=fe_pass_no; i < feProcessors.length; i++) {
+			AbstractProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node,Transaction.get());
+		}
+	}
+
+	public void runProcessorsOn(ANode node) {
+		runProcessorsOn(node, false);
+	}
+	public void runProcessorsOn(ANode node, boolean with_current) {
+		AbstractProcessor[] feProcessors = getFEProcessors();
+		int N = fe_pass_no;
+		if (with_current && N < feProcessors.length) N += 1;
+		for (int i=0; i < N; i++) {
+			AbstractProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node,Transaction.get());
+		}
+		if (N < feProcessors.length)
+			return;
+		Transaction tr = Transaction.enter(Transaction.get(),"Kiev.java:runProcessorsOn()");
+		try {
+			AbstractProcessor[] meProcessors = getMEProcessors();
+			N = me_pass_no;
+			if (with_current && N < meProcessors.length) N += 1;
+			for (int i=0; i < N; i++) {
+				AbstractProcessor mp = meProcessors[i];
+				if (mp.isEnabled())
+					mp.process(node,tr);
+			}
+			if (N < meProcessors.length)
+				return;
+			AbstractProcessor[] beProcessors = getBEProcessors();
+			WorkerThread wth = (WorkerThread)Thread.currentThread();
+			N = wth.be_pass_no;
+			if (with_current && N < beProcessors.length) N += 1;
+			for (int i=0; i < N; i++) {
+				AbstractProcessor bp = beProcessors[i];
+				if (bp.isEnabled())
+					bp.process(node,tr);
+			}
+		} finally { tr.leave(); }
+	}
+
+	public void runProcessorsWithRewalk(ANode node) {
+		assert(node.isAttached());
+		try {
+			runProcessorsOn(node);
+		} catch (ReWalkNodeException e) {
+			runProcessorsWithRewalk((ASTNode)e.replacer);
+			return;
+		}
+	}
+
+}

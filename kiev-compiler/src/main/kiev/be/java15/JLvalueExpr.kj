@@ -40,11 +40,11 @@ public class JLvalueExpr extends JENode {
 			return JReinterpExpr.attach((ReinterpExpr)impl);
 		return new JLvalueExpr(impl);
 	}
-	
+
 	protected JLvalueExpr(LvalueExpr impl) {
 		super(impl);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		generateLoad(code);
@@ -87,17 +87,17 @@ public final class JIFldExpr extends JLvalueExpr {
 			return (JIFldExpr)jn;
 		return new JIFldExpr(impl);
 	}
-	
+
 	protected JIFldExpr(IFldExpr impl) {
 		super(impl);
 		this.var = (JField)impl.var;
 	}
 
-	public boolean	isConstantExpr(Env env) { return var.isConstantExpr(env); }
-	public Object	getConstValue(Env env) { return var.getConstValue(env); }
+	public boolean	isConstantExpr() { return var.isConstantExpr(); }
+	public Object	getConstValue() { return var.getConstValue(); }
 
 	public void generateCheckCastIfNeeded(Code code) {
-		if( !Kiev.verify ) return;
+		if (!getProcessor().genVerifiable) return;
 		IFldExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		Type ot = obj.getType();
@@ -106,12 +106,12 @@ public final class JIFldExpr extends JLvalueExpr {
 	}
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - load only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating IFldExpr - load only: "+this);
 		code.setLinePos(this);
 		IFldExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+			vn.reportError().log("IFldExpr: Generating virtual field '{}' directly", var);
 		MetaAccess.verifyRead(vn,var.vn());
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
@@ -122,23 +122,23 @@ public final class JIFldExpr extends JLvalueExpr {
 			if (var == arr_length) {
 				code.addInstr(Instr.op_arrlength);
 			} else {
-				Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
+				vn.reportError().log("IFldExpr: Unknown native macro field {}", var);
 				JConstExpr.generateConst(null, code, getType());
 			}
 		} else {
 			code.addInstr(op_getfield,var,obj.getType());
-			if( Kiev.verify && var.getType() instanceof ArgType && getType().isReference() )
+			if (getProcessor().genVerifiable && var.getType() instanceof ArgType && getType().isReference())
 				code.addInstr(op_checkcast,getType());
 		}
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
 		code.setLinePos(this);
 		IFldExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+			vn.reportError().log("IFldExpr: Generating virtual field '{}' directly", var);
 		MetaAccess.verifyRead(vn,var.vn());
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
@@ -150,38 +150,38 @@ public final class JIFldExpr extends JLvalueExpr {
 			if (var == arr_length) {
 				code.addInstr(Instr.op_arrlength);
 			} else {
-				Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
+				vn.reportError().log("IFldExpr: Unknown native macro field {}", var);
 				JConstExpr.generateConst(null, code, getType());
 			}
 		} else {
 			code.addInstr(op_getfield,var,obj.getType());
-			if( Kiev.verify && var.getType() instanceof ArgType && getType().isReference() )
+			if (getProcessor().genVerifiable && var.getType() instanceof ArgType && getType().isReference())
 				code.addInstr(op_checkcast,getType());
 		}
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - access only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating IFldExpr - access only: "+this);
 		code.setLinePos(this);
 		IFldExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+			vn.reportError().log("IFldExpr: Generating virtual field '{}' directly", var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - store only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating IFldExpr - store only: "+this);
 		code.setLinePos(this);
 		IFldExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+			vn.reportError().log("IFldExpr: Generating virtual field '{}' directly", var);
 		MetaAccess.verifyWrite(vn,var.vn());
 		if (var.isNative()) {
 			assert(var.isMacro());
-			Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
+			vn.reportError().log("IFldExpr: Unknown native macro field {}", var);
 			code.addInstr(op_pop);
 			code.addInstr(op_pop);
 		} else {
@@ -190,17 +190,17 @@ public final class JIFldExpr extends JLvalueExpr {
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
 		code.setLinePos(this);
 		IFldExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		if (var.isVirtual() && !isAsField())
-			Kiev.reportError(vn, "IFldExpr: Generating virtual field "+var+" directly");
+			vn.reportError().log("IFldExpr: Generating virtual field '{}' directly", var);
 		MetaAccess.verifyWrite(vn,var.vn());
 		code.addInstr(op_dup_x);
 		if (var.isNative()) {
 			assert(var.isMacro());
-			Kiev.reportError(vn, "IFldExpr: Unknown native macro field "+var);
+			vn.reportError().log("IFldExpr: Unknown native macro field {}", var);
 			code.addInstr(op_pop);
 			code.addInstr(op_pop);
 		} else {
@@ -226,13 +226,13 @@ public final class JContainerAccessExpr extends JLvalueExpr {
 			return (JContainerAccessExpr)jn;
 		return new JContainerAccessExpr(impl);
 	}
-	
+
 	protected JContainerAccessExpr(ContainerAccessExpr impl) {
 		super(impl);
 	}
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
 		code.setLinePos(this);
 		ContainerAccessExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
@@ -247,7 +247,7 @@ public final class JContainerAccessExpr extends JLvalueExpr {
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ContainerAccessExpr - load & dup: "+this);
 		code.setLinePos(this);
 		ContainerAccessExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
@@ -263,7 +263,7 @@ public final class JContainerAccessExpr extends JLvalueExpr {
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - access only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ContainerAccessExpr - access only: "+this);
 		ContainerAccessExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
 		JENode index = (JENode)vn.index;
@@ -277,7 +277,7 @@ public final class JContainerAccessExpr extends JLvalueExpr {
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
 		code.setLinePos(this);
 		ContainerAccessExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
@@ -291,7 +291,7 @@ public final class JContainerAccessExpr extends JLvalueExpr {
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ContainerAccessExpr - store & dup: "+this);
 		code.setLinePos(this);
 		ContainerAccessExpr vn = vn();
 		JENode obj = (JENode)vn.obj;
@@ -322,57 +322,57 @@ public final class JThisExpr extends JLvalueExpr {
 			return (JThisExpr)jn;
 		return new JThisExpr(impl);
 	}
-	
+
 	protected JThisExpr(ThisExpr impl) {
 		super(impl);
 	}
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ThisExpr - load only: "+this);
 		code.setLinePos(this);
 		if (!code.method.isStatic())
 			code.addInstrLoadThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_load,code.method.params[0]);
 		else {
-			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
+			vn().reportError().log("Access '{}' in static context", this);
 			code.addNullConst();
 		}
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
 		code.setLinePos(this);
 		if (!code.method.isStatic())
 			code.addInstrLoadThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_load,code.method.params[0]);
 		else {
-			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
+			vn().reportError().log("Access '{}' in static context", this);
 			code.addNullConst();
 		}
 		code.addInstr(op_dup);
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ThisExpr - access only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ThisExpr - access only: "+this);
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ThisExpr - store only: "+this);
 		code.setLinePos(this);
 		if (!code.method.isStatic())
 			code.addInstrStoreThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_store,code.method.params[0]);
 		else {
-			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
+			vn().reportError().log("Access '{}' in static context", this);
 			code.addInstr(op_pop);
 		}
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ThisExpr - store & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ThisExpr - store & dup: "+this);
 		code.setLinePos(this);
 		code.addInstr(op_dup);
 		if (!code.method.isStatic())
@@ -380,7 +380,7 @@ public final class JThisExpr extends JLvalueExpr {
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_store,code.method.params[0]);
 		else {
-			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
+			vn().reportError().log("Access '{}' in static context", this);
 			code.addInstr(op_pop);
 		}
 	}
@@ -402,20 +402,20 @@ public final class JSuperExpr extends JENode {
 			return (JSuperExpr)jn;
 		return new JSuperExpr(impl);
 	}
-	
+
 	protected JSuperExpr(SuperExpr impl) {
 		super(impl);
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SuperExpr");
+		trace(code.traceStatGen,"\t\tgenerating SuperExpr");
 		code.setLinePos(this);
 		if (!code.method.isStatic())
 			code.addInstrLoadThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
 			code.addInstr(op_load,code.method.params[0]);
 		else {
-			Kiev.reportError(vn(),"Access '"+toString()+"' in static context");
+			vn().reportError().log("Access '{}' in static context", this);
 			code.addNullConst();
 		}
 	}
@@ -438,7 +438,7 @@ public final class JLVarExpr extends JLvalueExpr {
 			return (JLVarExpr)jn;
 		return new JLVarExpr(impl);
 	}
-	
+
 	protected JLVarExpr(LVarExpr impl) {
 		super(impl);
 		this.var = (JVar)impl.var;
@@ -474,17 +474,17 @@ public final class JLVarExpr extends JLvalueExpr {
 					break;
 				}
 			}
-			trace(Kiev.debug && Kiev.debugStatGen,"Var "+var+" substituted for condition");
+			trace(code.traceStatGen,"Var "+var+" substituted for condition");
 		}
 		assert( var.jparent.equals(code.method), "Can't find var for condition" );
 		return var;
 	}
 
 	public void generateVerifyCheckCast(Code code) {
-		if( !Kiev.verify ) return;
-		if( !var.getType().isReference() || var.getType().isArray() ) return;
+		if (!getProcessor().genVerifiable) return;
+		if (!var.getType().isReference() || var.getType().isArray()) return;
 		Type chtp = null;
-		if( var.jparent instanceof JMethod ) {
+		if (var.jparent instanceof JMethod) {
 			JMethod m = (JMethod)var.jparent;
 			JVar[] params = m.params;
 			for(int i=0; i < params.length; i++) {
@@ -503,7 +503,7 @@ public final class JLVarExpr extends JLvalueExpr {
 	}
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating LVarExpr - load only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating LVarExpr - load only: "+this);
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
@@ -523,7 +523,7 @@ public final class JLVarExpr extends JLvalueExpr {
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating LVarExpr - load & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating LVarExpr - load & dup: "+this);
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
@@ -545,7 +545,7 @@ public final class JLVarExpr extends JLvalueExpr {
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating LVarExpr - access only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating LVarExpr - access only: "+this);
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
@@ -559,7 +559,7 @@ public final class JLVarExpr extends JLvalueExpr {
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating LVarExpr - store only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating LVarExpr - store only: "+this);
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
@@ -577,7 +577,7 @@ public final class JLVarExpr extends JLvalueExpr {
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating LVarExpr - store & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating LVarExpr - store & dup: "+this);
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
@@ -617,42 +617,42 @@ public final class JSFldExpr extends JLvalueExpr {
 			return (JSFldExpr)jn;
 		return new JSFldExpr(impl);
 	}
-	
+
 	protected JSFldExpr(SFldExpr impl) {
 		super(impl);
 		this.var = (JField)impl.var;
 	}
 
-	public boolean	isConstantExpr(Env env) { return var.isConstantExpr(env); }
-	public Object	getConstValue(Env env) { return var.getConstValue(env); }
+	public boolean	isConstantExpr() { return var.isConstantExpr(); }
+	public Object	getConstValue() { return var.getConstValue(); }
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);
 		MetaAccess.verifyRead(vn(),var.vn());
 		code.addInstr(op_getstatic,var,code.clazz.getType());
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		code.setLinePos(this);
 		MetaAccess.verifyRead(vn(),var.vn());
 		code.addInstr(op_getstatic,var,code.clazz.getType());
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - access only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating SFldExpr - access only: "+this);
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		code.setLinePos(this);
 		MetaAccess.verifyWrite(vn(),var.vn());
 		code.addInstr(op_putstatic,var,code.clazz.getType());
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
 		code.setLinePos(this);
 		MetaAccess.verifyWrite(vn(),var.vn());
 		code.addInstr(op_dup);
@@ -676,13 +676,13 @@ public final class JOuterThisAccessExpr extends JENode {
 			return (JOuterThisAccessExpr)jn;
 		return new JOuterThisAccessExpr(impl);
 	}
-	
+
 	protected JOuterThisAccessExpr(OuterThisAccessExpr impl) {
 		super(impl);
 	}
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr: "+this);
+		trace(code.traceStatGen,"\t\tgenerating OuterThisAccessExpr: "+this);
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		JField[] outer_refs = JNode.toJArray<JField>(vn().outer_refs);
@@ -707,13 +707,13 @@ public final class JReinterpExpr extends JLvalueExpr {
 			return (JReinterpExpr)jn;
 		return new JReinterpExpr(impl);
 	}
-	
+
 	protected JReinterpExpr(ReinterpExpr impl) {
 		super(impl);
 	}
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - load only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ReinterpExpr - load only: "+this);
 		code.setLinePos(this);
 		ReinterpExpr vn = vn();
 		JENode expr = (JENode)vn.expr;
@@ -724,7 +724,7 @@ public final class JReinterpExpr extends JLvalueExpr {
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - load & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ReinterpExpr - load & dup: "+this);
 		code.setLinePos(this);
 		ReinterpExpr vn = vn();
 		JENode expr = (JENode)vn.expr;
@@ -737,7 +737,7 @@ public final class JReinterpExpr extends JLvalueExpr {
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - access only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ReinterpExpr - access only: "+this);
 		code.setLinePos(this);
 		ReinterpExpr vn = vn();
 		JENode expr = (JENode)vn.expr;
@@ -748,7 +748,7 @@ public final class JReinterpExpr extends JLvalueExpr {
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - store only: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ReinterpExpr - store only: "+this);
 		code.setLinePos(this);
 		ReinterpExpr vn = vn();
 		JENode expr = (JENode)vn.expr;
@@ -759,7 +759,7 @@ public final class JReinterpExpr extends JLvalueExpr {
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - store & dup: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ReinterpExpr - store & dup: "+this);
 		code.setLinePos(this);
 		ReinterpExpr vn = vn();
 		JENode expr = (JENode)vn.expr;

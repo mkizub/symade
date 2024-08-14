@@ -19,14 +19,14 @@ import syntax kiev.Syntax;
 
 @ThisIsANode(lang=CoreLang)
 public final class NodeDecl extends DNode implements GlobalDNodeContainer {
-	@SymbolRefAutoComplete @SymbolRefAutoResolve(sever=SeverError.Warning)
+	@SymbolRefAutoComplete @SymbolRefAutoResolve(error=false)
 	@nodeAttr
 	public NodeDecl⇑∅       super_decls;
 	@nodeAttr
 	public NodeAttribute∅   attrs;
-	
+
 	private NodeTypeInfo    node_type_info;
-	
+
 	private static int depth;
 
 	public ASTNode[] getContainerMembers() { attrs }
@@ -42,9 +42,9 @@ public final class NodeDecl extends DNode implements GlobalDNodeContainer {
 		}
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		this.node_type_info = null;
-		return super.preResolveIn(env, parent, slot);
+		return super.preResolveIn(parent, slot);
 	}
 
 	public rule resolveNameR(ResInfo path)
@@ -52,7 +52,7 @@ public final class NodeDecl extends DNode implements GlobalDNodeContainer {
 		path ?= this
 	;	path @= attrs
 	}
-	
+
 	public NodeTypeInfo makeNodeTypeInfo() {
 		if (node_type_info != null)
 			return node_type_info;
@@ -80,25 +80,25 @@ public final class NodeDecl extends DNode implements GlobalDNodeContainer {
 }
 
 public enum NodeAttrKind {
-	SCALAR_BOOL, SCALAR_CHAR, SCALAR_BYTE, SCALAR_SHORT, SCALAR_INT, SCALAR_LONG, SCALAR_FLOAT, SCALAR_DOUBLE, 
-	SCALAR_STRING, SCALAR_ENUM, SCALAR_OBJ, 
+	SCALAR_BOOL, SCALAR_CHAR, SCALAR_BYTE, SCALAR_SHORT, SCALAR_INT, SCALAR_LONG, SCALAR_FLOAT, SCALAR_DOUBLE,
+	SCALAR_STRING, SCALAR_ENUM, SCALAR_OBJ,
 	SCALAR_NODE, SPACE_OF_NODES, EXT_SPACE_OF_NODES
 }
 
 @ThisIsANode(lang=CoreLang)
 public final class NodeAttribute extends DNode {
 	private AttrSlot        attr_slot;
-	
+
 	@AttrXMLDumpInfo(attr=true, name="kind")
 	@nodeAttr
 	public NodeAttrKind		attr_kind;
 	@AttrXMLDumpInfo(attr=true)
 	@nodeAttr
 	public boolean			is_data;
-	
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		this.attr_slot = null;
-		return super.preResolveIn(env, parent, slot);
+		return super.preResolveIn(parent, slot);
 	}
 
 	//public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -171,9 +171,9 @@ public final class NodeTypeInfo {
 	private final NodeTypeInfo[]    direct_super_types;
 	private final AttrSlot[]        defined_slots;
 	private final AttrSlot[]        all_slots;
-	
+
 	private final NodeTypeInfo		proxy_nti;
-	
+
 	private static NodeTypeInfo getNodeTypeInfo(Class clazz) {
 		if (!INode.class.isAssignableFrom(clazz))
 			return null;
@@ -185,7 +185,7 @@ public final class NodeTypeInfo {
 			return null;
 		}
 	}
-	
+
 	private static AttrSlot[] getAllAttrSlots(Class clazz) {
 		try {
 			java.lang.reflect.Field f = clazz.getDeclaredField("$values");
@@ -195,7 +195,7 @@ public final class NodeTypeInfo {
 			return new AttrSlot[0];
 		}
 	}
-	
+
 	public NodeTypeInfo(NodeTypeInfo nti) {
 		this.clazz = PNode.class;
 		this.proxy_nti = this;
@@ -225,7 +225,7 @@ public final class NodeTypeInfo {
 		}
 		this.all_slots = slots.toArray();
 	}
-	
+
 	public NodeTypeInfo(Class clazz, AttrSlot[] defined_slots) {
 		this.clazz = clazz;
 		this.id = clazz.getName().replace('.','·').intern();
@@ -276,7 +276,7 @@ public final class NodeTypeInfo {
 	public AttrSlot[] getAllAttributes() { all_slots }
 	public Language getCompilerLang() { this.lang }
 	public String getCompilerNodeName() { name_in_lang }
-	
+
 	public ANode newInstance() {
 		if (clazz == PNode.class)
 			return new PNode(this);
@@ -285,6 +285,6 @@ public final class NodeTypeInfo {
 		else
 			return (ANode)clazz.newInstance();
 	}
-	
+
 }
 

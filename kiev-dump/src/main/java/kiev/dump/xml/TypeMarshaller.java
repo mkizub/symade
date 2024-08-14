@@ -11,7 +11,7 @@ public class TypeMarshaller implements Marshaller {
 	}
 
     public void marshal(Object data, DumpWriter _out, MarshallingContext context) throws Exception {
-    	XMLDumpWriter out = (XMLDumpWriter)_out; 
-		out.addText(((Type)data).makeSignature(context.getEnv()));
+    	XMLDumpWriter out = (XMLDumpWriter)_out;
+		out.addText(((Type)data).makeSignature());
 	}
 }

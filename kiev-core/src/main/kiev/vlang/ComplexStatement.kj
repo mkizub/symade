@@ -64,7 +64,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 			if (res != null)
 				dfi.setResult(res_idx, res);
 			else
-				res = DFState.makeNewState();
+				res = DFState.makeNewState(dfi.getEnv());
 			return res;
 		}
 	}
@@ -100,7 +100,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		var @= pattern,
 		var.isForward(),
 		info.enterForward(var) : info.leaveForward(var),
-		var.getType(info.env).resolveCallAccessR(info,mt)
+		var.getType().resolveCallAccessR(info,mt)
 	}
 
 }
@@ -136,14 +136,14 @@ public class SwitchStat extends Block {
 
 	public String toString() { return "switch("+sel+")"; }
 
-	public void preResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void preResolveOut(INode parent, AttrSlot slot) {
 		Vector<CaseLabel> labels = new Vector<CaseLabel>();
 		CaseLabel dflt = null;
 		foreach (CaseLabel l; stats) {
 			labels.append(l);
 			if (l.val == null) {
 				if (dflt != null)
-					Kiev.reportError(l, "Multiple 'default' cases.");
+					l.reportError().log("Multiple 'default' cases.");
 				else
 					dflt = l;
 			}
@@ -162,8 +162,8 @@ public class SwitchStat extends Block {
 			cases += l;
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
-		Type tp = sel.getType(env);
+	public void mainResolveOut(INode parent, AttrSlot slot) {
+		Type tp = sel.getType();
 		if (tp.meta_type.tdecl.isEnum()) {
 			SwitchEnumStat sw = new SwitchEnumStat();
 			sw.sel = ~this.sel;
@@ -185,8 +185,9 @@ public class SwitchStat extends Block {
 				sw.stats += st;
 			this.replaceWithNodeReWalk(sw,parent,slot);
 		}
-		if (tp.getAutoCastTo(env.tenv.tpInt) ≢ env.tenv.tpInt)
-			Kiev.reportError(this, "Type of switch selector must be int");
+		StdTypes tenv = getEnv().tenv;
+		if (tp.getAutoCastTo(tenv.tpInt) ≢ tenv.tpInt)
+			reportError().log("Type of switch selector must be int");
 	}
 
 }
@@ -210,10 +211,10 @@ public class SwitchEnumStat extends SwitchStat {
 
 	public String toString() { return "switch-enum("+sel+")"; }
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
-		Type tp = sel.getType(env);
+	public void mainResolveOut(INode parent, AttrSlot slot) {
+		Type tp = sel.getType();
 		if (!tp.meta_type.tdecl.isEnum())
-			Kiev.reportError(this, "Expected enum value as selector");
+			reportError().log("Expected enum value as selector");
 	}
 
 }
@@ -233,10 +234,10 @@ public class SwitchTypeStat extends SwitchStat {
 
 	public String toString() { return "switch-type("+sel+")"; }
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
-		Type tp = sel.getType(env);
+	public void mainResolveOut(INode parent, AttrSlot slot) {
+		Type tp = sel.getType();
 		if (!tp.isReference())
-			Kiev.reportError(this, "Expected value of reference type as selector");
+			reportError().log("Expected value of reference type as selector");
 	}
 
 }
@@ -258,10 +259,10 @@ public class MatchStat extends SwitchStat {
 
 	public String toString() { return "match("+sel+")"; }
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
-		Type tp = sel.getType(env);
+	public void mainResolveOut(INode parent, AttrSlot slot) {
+		Type tp = sel.getType();
 		if (!tp.isReference() || !tp.meta_type.tdecl.isHasCases())
-			Kiev.reportError(this, "Expected value of type with cases as selector");
+			reportError().log("Expected value of type with cases as selector");
 	}
 
 }

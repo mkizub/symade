@@ -11,6 +11,7 @@
 package kiev.be.java15;
 import syntax kiev.Syntax;
 
+import kiev.transf.PluginNodeProcessor;
 import static kiev.be.java15.Instr.*;
 
 /**
@@ -105,6 +106,9 @@ public final class Code implements JConstants {
 
 	public boolean			need_to_gen_post_cond;
 
+	final boolean			traceStatGen;
+	final boolean			traceInstrGen;
+
 	public Code(JEnv je, JStruct s, JMethod m, ConstPool cp) {
 		jenv = je;
 		jtenv = jenv.getJTypeEnv();
@@ -150,12 +154,22 @@ public final class Code implements JConstants {
 
 		reachable = true;
 
+		PluginNodeProcessor processor = (PluginNodeProcessor)jenv.env.getNodeProcessor();
+		this.traceStatGen = processor.traceStatGen;
+		this.traceInstrGen = processor.traceInstrGen;
 	}
 
-	private void reportCodeWarning(String msg) {
-		if (Kiev.code_nowarn)
-			return;
-		Kiev.reportCodeWarning(last_lineno, Env.ctxFileUnit(this.clazz.vn()), this.clazz.vn(), this.method.vn(), msg);
+	private void reportCodeWarning(String msg, Instr i) {
+//		if (Kiev.code_nowarn)
+//			return;
+//		Kiev.reportCodeWarning(last_lineno, Env.ctxFileUnit(this.clazz.vn()), this.clazz.vn(), this.method.vn(), msg);
+	}
+
+	private void reportCodeUnreachable(Instr i) {
+		//		if (Kiev.code_nowarn)
+		//			return;
+		//		Kiev.reportCodeWarning(last_lineno, Env.ctxFileUnit(this.clazz.vn()), this.clazz.vn(), this.method.vn(), msg);
+		//this.reportCodeWarning("{} ingnored as unreachable", i);
 	}
 
 	public void pushStackPos() {};
@@ -192,7 +206,7 @@ public final class Code implements JConstants {
 		else max_stack_top++;
 		stack[top++] = jtype;
 		if( max_stack < max_stack_top ) max_stack = max_stack_top;
-		if( Kiev.debug && Kiev.debugInstrGen ) {
+		if (traceInstrGen) {
 			StringBuffer sb = new StringBuffer(); sb.append("stack is:");
 			for(int i=0; i < top; i++) sb.append(' ').append(stack[i]);
 			System.out.println(sb.toString());
@@ -207,7 +221,7 @@ public final class Code implements JConstants {
 		else max_stack_top--;
 		stack[top+1] = null;
 		if( top < 0 ) throw new RuntimeException("Top of stack is < 0 for pc="+pc);
-		if( Kiev.debug && Kiev.debugInstrGen ) {
+		if (traceInstrGen) {
 			StringBuffer sb = new StringBuffer(); sb.append("stack is:");
 			for(int i=0; i < top; i++) sb.append(' ').append(stack[i]);
 			System.out.println(sb.toString());
@@ -254,7 +268,7 @@ public final class Code implements JConstants {
 		verify and update stack info
 	 */
 	private void add_opcode(int op) {
-		trace(Kiev.debug && Kiev.debugInstrGen,"\tadd opcode "+opcNames[op]);
+		trace(traceInstrGen,"\tadd opcode "+opcNames[op]);
 		prev_pc = pc;
 		JType[] types = this.jenv.getOpCodeRules().op_input_types[op];	// get argument types
 		for(int i=0,j=types.length-1; i < types.length; i++,j--) {
@@ -291,7 +305,7 @@ public final class Code implements JConstants {
 	private void add_opcode_and_byte(int op, int arg) {
 		add_opcode(op);
 		add_code_byte(arg);
-		trace(Kiev.debug && Kiev.debugInstrGen,"\t\topcode arg is byte "+arg);
+		trace(traceInstrGen,"\t\topcode arg is byte "+arg);
 	}
 
 	/** Add java native opcode with two-byte argument
@@ -299,7 +313,7 @@ public final class Code implements JConstants {
 	private void add_opcode_and_short(int op, int arg) {
 		add_opcode(op);
 		add_code_short(arg);
-		trace(Kiev.debug && Kiev.debugInstrGen,"\t\topcode arg is short "+arg);
+		trace(traceInstrGen,"\t\topcode arg is short "+arg);
 	}
 
 	/** Add java native opcode with four-byte argument
@@ -307,7 +321,7 @@ public final class Code implements JConstants {
 	private void add_opcode_and_int(int op, int arg) {
 		add_opcode(op);
 		add_code_int(arg);
-		trace(Kiev.debug && Kiev.debugInstrGen,"\t\topcode arg is int "+arg);
+		trace(traceInstrGen,"\t\topcode arg is int "+arg);
 	}
 
 	/** Add java native opcode with ContPool constant pointer
@@ -339,7 +353,7 @@ public final class Code implements JConstants {
 			constants_pc[constants_top] = pc - (op==opc_ldc?1:2);
 			constants_top++;
 		}
-		trace(Kiev.debug && Kiev.debugInstrGen,"\t\topcode arg is CP "+arg);
+		trace(traceInstrGen,"\t\topcode arg is CP "+arg);
 	}
 
 	/** Add jump/opcode (cond & uncond) with label it use to jump to
@@ -359,7 +373,7 @@ public final class Code implements JConstants {
 			labels_top++;
 			add_code_short(0);
 		}
-		trace(Kiev.debug && Kiev.debugInstrGen,"\t\topcode arg is label "+arg);
+		trace(traceInstrGen,"\t\topcode arg is label "+arg);
 	}
 
 	/** Add jump/opcode (cond & uncond) with label it use to jump to
@@ -370,7 +384,7 @@ public final class Code implements JConstants {
 			bcode = (byte[])Arrays.cloneToSize(bcode, bcode.length+256);
 		System.arraycopy(dump,0,bcode,pc,dump.length);
 		pc += dump.length;
-		trace(Kiev.debug && Kiev.debugInstrGen,"\t\tadd opcode dump of length "+dump.length);
+		trace(traceInstrGen,"\t\tadd opcode dump of length "+dump.length);
 	}
 
 	/** Add java native opcode
@@ -484,10 +498,10 @@ public final class Code implements JConstants {
 	private void generateCall(JMethod m, boolean super_flag, Type tp) {
 		boolean call_static;
 		if( !m.isStatic() ) {
-			trace(Kiev.debug && Kiev.debugInstrGen,"\t\tgenerating non-static call to method: "+m);
+			trace(traceInstrGen,"\t\tgenerating non-static call to method: "+m);
 			call_static = false;
 		} else {
-			trace(Kiev.debug && Kiev.debugInstrGen,"\t\tgenerating static call to method: "+m);
+			trace(traceInstrGen,"\t\tgenerating static call to method: "+m);
 			call_static = true;
 		}
 		JMethodType mtype = (JMethodType)jtenv.getJType(Type.getRealType(tp,m.dtype));
@@ -525,7 +539,7 @@ public final class Code implements JConstants {
 			}
 			add_code_byte(argslen);
 			add_code_byte(0);
-			trace(Kiev.debug && Kiev.debugInstrGen,"call has "+mtype.jargs.length+" params");
+			trace(traceInstrGen,"call has "+mtype.jargs.length+" params");
 		}
 		else if(super_flag || m.isPrivate()) {
 			add_opcode_and_CP(opc_invokespecial,cpm);
@@ -892,7 +906,7 @@ public final class Code implements JConstants {
 		For debug version automatically generates debug info
 	 */
 	public void addVarAlias(JVar jvar, JVar jalias) {
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code add var "+jalias+" as alias of "+jvar);
+		trace(traceInstrGen,"Code add var "+jalias+" as alias of "+jvar);
 		CodeVar cv = lookupCodeVar(jvar);
 		if (cv == null)
 			throw new RuntimeException("Var "+jvar+" not exists in the code");
@@ -906,7 +920,7 @@ public final class Code implements JConstants {
 
 	/**  Remove local var alias for this code. */
 	public void removeVarAlias(JVar jvar, JVar jalias) {
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code add var "+jalias+" as alias of "+jvar);
+		trace(traceInstrGen,"Code add var "+jalias+" as alias of "+jvar);
 		CodeVar cv = lookupCodeVar(jvar);
 		if (cv == null)
 			throw new RuntimeException("Var "+jvar+" not exists in the code");
@@ -925,7 +939,7 @@ public final class Code implements JConstants {
 		For debug version automatically generates debug info
 	 */
 	public CodeVar addVar(JVar v) {
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code add var "+v);
+		trace(traceInstrGen,"Code add var "+v);
 		if (lookupCodeVar(v) != null)
 			throw new RuntimeException("Var "+v+" already added to the code");
 		CodeVar cv = new CodeVar(this, v, num_vars, cur_locals);
@@ -941,7 +955,7 @@ public final class Code implements JConstants {
 			max_locals = cur_locals;
 		if( v.sname != "" && v.sname != null)
 			lvta.addVar(cv);
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code var "+v+" added to bc pos "+pc+" "+cv);
+		trace(traceInstrGen,"Code var "+v+" added to bc pos "+pc+" "+cv);
 		return cv;
 	}
 
@@ -951,7 +965,7 @@ public final class Code implements JConstants {
 		CodeVar cv = lookupCodeVar(v);
 		if (cv == null)
 			throw new RuntimeException("Var "+v+" not exists in the code");
-		trace(Kiev.debug && Kiev.debugInstrGen,"Code remove var "+cv+" from bc pos "+pc);
+		trace(traceInstrGen,"Code remove var "+cv+" from bc pos "+pc);
 		cv.end_pc = prev_pc; //pc-1;
 		JType t = jtenv.getJType(v.vtype);
 		if (t==jtenv.tpLong || t==jtenv.tpDouble) {
@@ -1054,9 +1068,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction for this code.
 	 */
 	public void addInstr(Instr i) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1122,9 +1136,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction for this code.
 	 */
 	public void addInstrIncr(JVar v, int val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": op_incr "+v+" "+val);
-		if( !reachable ) {
-			this.reportCodeWarning("\"op_incr\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": op_incr "+v+" "+val);
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_incr);
 			return;
 		}
 		CodeVar cv = lookupCodeVar(v);
@@ -1137,9 +1151,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with label for this code.
 	 */
 	public void addInstr(Instr i, CodeLabel l) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+l);
-		if( !reachable && !isInfoInstr(i) ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i+" -> "+l);
+		if (!reachable && !isInfoInstr(i)) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1162,7 +1176,7 @@ public final class Code implements JConstants {
         	break;
         case op_jsr:		add_opcode_and_label(opc_jsr,l);		break;
 		case set_label:
-			trace(Kiev.debug && Kiev.debugInstrGen,"Attach label to position "+pc);
+			trace(traceInstrGen,"Attach label to position "+pc);
 			l.attachPosition();
 			reachable = true;
 			break;
@@ -1186,12 +1200,12 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with var for this code.
 	 */
 	public void addInstr(Instr i, JVar v) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+v);
+		trace(traceInstrGen,pc+": "+i+" -> "+v);
 		CodeVar cv = lookupCodeVar(v);
 		if (cv == null)
 			throw new RuntimeException("Var "+v+" not exists in the code");
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1213,9 +1227,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with field for this code.
 	 */
 	public void addInstr(Instr i, JField f, Type tp) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+f);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i+" -> "+f);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 		JType ttt = jtenv.getJType(Type.getRealType(tp.getErasedType(),f.jctx_tdecl.getType()));
@@ -1250,9 +1264,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with type for this code.
 	 */
 	public void addInstr(Instr i, Type itype) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+itype);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i+" -> "+itype);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1287,9 +1301,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with type for this code.
 	 */
 	public void addInstr(Instr i, Type itype, int dim) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" "+dim+" -> "+itype);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i+" "+dim+" -> "+itype);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 		switch(i) {
@@ -1309,9 +1323,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with method call for this code.
 	 */
 	public void addInstr(Instr i, JMethod method, boolean super_flag, Type tp) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+(super_flag?"super.":"")+method);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i+" -> "+(super_flag?"super.":"")+method);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1326,9 +1340,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with method reference for this code.
 	 */
 	public void addInstr(Instr i, JMethod method, int nargs, Type tp) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i+" -> "+method);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i+" -> "+method);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
        	throw new RuntimeException("Bad call-use instruction");
@@ -1337,9 +1351,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with switch table for this code.
 	 */
 	public void addInstr(Instr i, CodeSwitch sw) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i);
+		if (!reachable) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1360,9 +1374,9 @@ public final class Code implements JConstants {
 	/** Add pseude-instruction with try/catch for this code.
 	 */
 	public void addInstr(Instr i, CodeCatchInfo catcher) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+i);
-		if( !reachable && !isInfoInstr(i) ) {
-			this.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+i);
+		if (!reachable && !isInfoInstr(i)) {
+			this.reportCodeUnreachable(i);
 			return;
 		}
 	    switch(i) {
@@ -1391,9 +1405,9 @@ public final class Code implements JConstants {
 
 
 	public void addConst(int val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_iconst+" "+val);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_iconst+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_iconst+" "+val);
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_push_iconst);
 			return;
 		}
 		switch(val) {
@@ -1420,9 +1434,9 @@ public final class Code implements JConstants {
 	}
 
 	public void addConst(long val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_lconst+" "+val);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_lconst+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_lconst+" "+val);
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_push_lconst);
 			return;
 		}
 		if( val == 0L )			add_opcode(opc_lconst_0);
@@ -1435,9 +1449,9 @@ public final class Code implements JConstants {
 	}
 
 	public void addConst(float val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_fconst+" "+val);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_fconst+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_fconst+" "+val);
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_push_fconst);
 			return;
 		}
 		if( val == 0.0f )		add_opcode(opc_fconst_0);
@@ -1451,9 +1465,9 @@ public final class Code implements JConstants {
 	}
 
 	public void addConst(double val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_dconst+" "+val);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_dconst+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_dconst+" "+val);
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_push_dconst);
 			return;
 		}
 		if( val == 0.0D )		add_opcode(opc_dconst_0);
@@ -1466,9 +1480,9 @@ public final class Code implements JConstants {
 	}
 
 	public void addConst(String val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_sconst+" \""+val+"\"");
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_sconst+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_sconst+" \""+val+"\"");
+		if (!reachable ) {
+			this.reportCodeUnreachable(Instr.op_push_sconst);
 			return;
 		}
 		CP c = constPool.addStringCP(val);
@@ -1477,9 +1491,9 @@ public final class Code implements JConstants {
 	}
 
 	public void addConst(JType val) {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_tconst+" \""+val+"\"");
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_tconst+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_tconst+" \""+val+"\"");
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_push_tconst);
 			return;
 		}
 		CP c = constPool.addClazzCP(val.java_signature);
@@ -1488,9 +1502,9 @@ public final class Code implements JConstants {
 	}
 
 	public void addNullConst() {
-		trace(Kiev.debug && Kiev.debugInstrGen,pc+": "+Instr.op_push_null);
-		if( !reachable ) {
-			this.reportCodeWarning("\""+Instr.op_push_null+"\" ingnored as unreachable");
+		trace(traceInstrGen,pc+": "+Instr.op_push_null);
+		if (!reachable) {
+			this.reportCodeUnreachable(Instr.op_push_null);
 			return;
 		}
 		add_opcode(opc_aconst_null);
@@ -1515,10 +1529,10 @@ public final class Code implements JConstants {
 
 		if( !cond_generation && !(cond == 1 || cond == 2) ) {
 			// Initialize local var table
-			if( Kiev.debugOutputV )
+			if (jenv.getProcessor().genDebugLVarTable)
 				attrs = (Attr[])Arrays.append(attrs,lvta);
 			// Initialize line number table
-			if( Kiev.debugOutputL ) {
+			if (jenv.getProcessor().genDebugLineTable) {
 				LinenoTableAttr lnta = new LinenoTableAttr();
 				if( line_top >= 0 ) {
 					while( line_top >= 0 && (linetable[line_top] >>> 16) >= pc )
@@ -1564,7 +1578,7 @@ public final class Code implements JConstants {
 		return;
 	}
 
-	public static void patchCodeConstants(CodeAttr ca) {
+	public static void patchCodeConstants(JEnv jenv, CodeAttr ca) {
 		final byte[] bcode = ca.bcode;
 		final CP[]   constants = ca.constants;
 		final int[]  constants_pc = ca.constants_pc;
@@ -1575,7 +1589,7 @@ public final class Code implements JConstants {
 			if( cppos < 1 )
 				throw new RuntimeException("Constant referenced, but not generated");
 			int pc = constants_pc[i];
-			trace(Kiev.debug && Kiev.debugInstrGen,pc+": ref CP to pos "+cppos+": "+cp);
+			trace(jenv.getProcessor().traceInstrGen, pc+": ref CP to pos "+cppos+": "+cp);
 			bcode[pc+0] = (byte)(cppos >>> 8);
 			bcode[pc+1] = (byte)cppos;
 		}

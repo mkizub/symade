@@ -107,6 +107,11 @@ public abstract class Var extends DNode {
 		this.mflags_var_kind = kind;
 	}
 
+	public Var(ANodeContext context, int kind) {
+		super(context);
+		this.mflags_var_kind = kind;
+	}
+
 	public Var(String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
@@ -132,22 +137,22 @@ public abstract class Var extends DNode {
 		return super.includeInDump(dump,attr,val);
 	}
 
-	public boolean preResolveIn(Env env, INode parent, AttrSlot slot) {
+	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		verifyMetas();
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.ntype == null) {
-			Type tp = getType(env);
+			Type tp = getType();
 			if!(tp instanceof ArrayType)
-				Kiev.reportError(this,"Scalar var is initialized by array");
+				reportError().log("Scalar var is initialized by array");
 			else
 				init.setType((ArrayType)tp);
 		}
 		return true;
 	}
 
-	public boolean	isConstantExpr(Env env) {
+	public boolean	isConstantExpr() {
 		if (this.isFinal()) {
-			if (this.init != null && this.init.isConstantExpr(env))
+			if (this.init != null && this.init.isConstantExpr())
 				return true;
 			else if (this.const_value != null)
 				return true;
@@ -155,18 +160,18 @@ public abstract class Var extends DNode {
 		return false;
 	}
 
-	public Object	getConstValue(Env env) {
-		if (this.init != null && this.init.isConstantExpr(env))
-			return this.init.getConstValue(env);
+	public Object	getConstValue() {
+		if (this.init != null && this.init.isConstantExpr())
+			return this.init.getConstValue();
 		else if (this.const_value != null)
-			return this.const_value.getConstValue(env);
+			return this.const_value.getConstValue();
 		throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		if (this.init != null) {
-			if (isConstantExpr(env)) {
-				ConstExpr ce = ConstExpr.fromConst(getConstValue(env));
+			if (isConstantExpr()) {
+				ConstExpr ce = ConstExpr.fromConst(getConstValue());
 				if (!ce.valueEquals(this.const_value))
 					this.const_value = ce;
 			}
@@ -185,11 +190,11 @@ public abstract class Var extends DNode {
 		return sname.hashCode();
 	}
 
-	public Type	getType(Env env) {
+	public Type	getType() {
 		TypeRef vtype = this.vtype;
 		if (vtype == null)
-			return Env.getEnv().tenv.tpVoid;
-		return vtype.getType(env);
+			return getTypeEnv().tpVoid;
+		return vtype.getType();
 	}
 
 	public Method getGetterMethod() {
@@ -225,8 +230,8 @@ public abstract class Var extends DNode {
 			Var node = (Var)dfi.node_impl;
 			DFState out = DFFunc.calc(f, dfi);
 			out = out.declNode(node);
-			Env env = Env.getEnv();
-			if( node.init != null && node.init.getType(env) ≢ env.tenv.tpVoid )
+			StdTypes tenv = dfi.getEnv().tenv;
+			if( node.init != null && node.init.getType() ≢ tenv.tpVoid )
 				out = out.setNodeValue(new Var[]{node},node.init);
 			res = out;
 			dfi.setResult(res_idx, res);
@@ -245,6 +250,10 @@ public class LVar extends Var {
 	}
 
 	public LVar() { super(VAR_LOCAL); }
+
+	public LVar(ANodeContext context) {
+		super(context, VAR_LOCAL);
+	}
 
 	public LVar(long pos, String name, Type tp, int kind, int flags)
 		require tp != null;
@@ -328,49 +337,49 @@ public class Field extends Var implements GlobalDNode {
 		return super.includeInDump(dump,attr,val);
 	}
 
-	public Method makeReadAccessor(Env env) {
+	public Method makeReadAccessor() {
 		assert(isPrivate());
 		if (getter_from_inner != null && getter_from_inner.dnode != null)
 			return getter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), this.getType(env), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		if (isStatic()) {
 			m.block.stats += new SFldExpr(pos,this);
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
+			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(),Var.VAR_LOCAL,0);
 			m.params += self;
 			m.block.stats += new IFldExpr(pos,new LVarExpr(pos,self),this);
 		}
 		Env.ctxTDecl(this).members += m;
-		Kiev.runProcessorsOn(m);
+		getEnv().runProcessorsOn(m);
 		this.getter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
 
-	public Method makeWriteAccessor(Env env) {
+	public Method makeWriteAccessor() {
 		assert(isPrivate());
 		if (setter_from_inner != null && setter_from_inner.dnode != null)
 			return setter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), env.tenv.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
-		Var val = new LVar(pos,"value",this.getType(env),Var.VAR_LOCAL,0);
+		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), getEnv().tenv.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
+		Var val = new LVar(pos,"value",this.getType(),Var.VAR_LOCAL,0);
 		m.params += val;
 		m.body = new Block();
 		if (isStatic()) {
 			m.block.stats += new ExprStat(pos,new AssignExpr(pos,new SFldExpr(pos,this),new LVarExpr(pos,val)));
 		} else {
-			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(env),Var.VAR_LOCAL,0);
+			Var self = new LVar(pos,Constants.nameThis,Env.ctxTDecl(this).getType(),Var.VAR_LOCAL,0);
 			m.params.insert(0,self);
 			m.block.stats += new ExprStat(pos,new AssignExpr(pos,new IFldExpr(pos,new LVarExpr(pos,self),this),new LVarExpr(pos,val)));
 		}
 		Env.ctxTDecl(this).members += m;
-		Kiev.runProcessorsOn(m);
+		getEnv().runProcessorsOn(m);
 		this.setter_from_inner = new SymbolRef<Method>(m);
 		return m;
 	}
 
-	public void postVerify(Env env, INode parent, AttrSlot slot) {
+	public void postVerify(INode parent, AttrSlot slot) {
 		if (!isStatic() && !isPrivate()) {
-			Type t = this.getType(env);
+			Type t = this.getType();
 			TypeVariance variance = TypeVariance.IN_VARIANT;
 			boolean readable = MetaAccess.readable(this);
 			boolean writable = MetaAccess.writeable(this) && !this.isFinal();
@@ -382,7 +391,7 @@ public class Field extends Var implements GlobalDNode {
 				variance = TypeVariance.CONTRA_VARIANT;
 			VarianceCheckError err = t.checkVariance(variance);
 			if (err != null)
-				Kiev.reportWarning(this.vtype, err.toString());
+				this.vtype.reportWarning().log(err.toString());
 		}
 	}
 }

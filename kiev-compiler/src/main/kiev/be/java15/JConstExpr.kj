@@ -30,14 +30,14 @@ public final class JConstBoolExpr extends JConstExpr implements IBoolExpr {
 			return (JConstBoolExpr)jn;
 		return new JConstBoolExpr(impl);
 	}
-	
+
 	protected JConstBoolExpr(ConstBoolExpr impl) {
 		super(impl);
 		this.value = impl.value;
 	}
-	
+
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
+		trace(code.traceStatGen,"\t\tgenerating ConstBoolExpr: "+this);
 		code.setLinePos(this);
 		if( reqType ≢ code.tenv.tpVoid ) {
 			if( value )
@@ -48,13 +48,13 @@ public final class JConstBoolExpr extends JConstExpr implements IBoolExpr {
 	}
 
 	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_true "+this);
+		trace(code.traceStatGen,"\t\tgenerating ConstBoolExpr: if_true "+this);
 		code.setLinePos(this);
 		if( value ) code.addInstr(op_goto,label);
 	}
 
 	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_false "+this);
+		trace(code.traceStatGen,"\t\tgenerating ConstBoolExpr: if_false "+this);
 		code.setLinePos(this);
 		if( !value ) code.addInstr(op_goto,label);
 	}
@@ -78,11 +78,11 @@ public class JConstExpr extends JENode {
 			return JConstBoolExpr.attach((ConstBoolExpr)impl);
 		return new JConstExpr(impl);
 	}
-	
+
 	protected JConstExpr(ConstExpr impl) {
 		super(impl);
 	}
-	
+
 	public void generate(Code code, Type reqType) {
 		JConstExpr.generateConst(this, code, reqType);
 	}
@@ -90,11 +90,11 @@ public class JConstExpr extends JENode {
 	public static void generateConst(JConstExpr self, Code code, Type reqType) {
 		Object value;
 		if (self == null) {
-			trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating dummy value");
+			trace(code.traceStatGen,"\t\tgenerating dummy value");
 			value = null;
 		} else {
-			value = self.vn().getConstValue(code.env);
-			trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
+			value = self.vn().getConstValue();
+			trace(code.traceStatGen,"\t\tgenerating ConstExpr: "+value);
 			code.setLinePos(self);
 		}
 		if( value == null ) {

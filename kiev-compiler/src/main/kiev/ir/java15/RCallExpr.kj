@@ -24,50 +24,50 @@ public final view RCallExpr of CallExpr extends RENode {
 	public		ENode			obj;
 	public:ro	TypeRef[]		targs;
 	public:ro	ENode[]			args;
-	
-	public final CallType getCallType(Env env);
 
-	public void resolveENode(Type reqType, Env env) {
-		resolveENode(obj,null,env);
+	public final CallType getCallType();
+
+	public void resolveENode(Type reqType) {
+		resolveENode(obj,null);
 		Method func = this.func;
-		CallType mt = this.getCallType(env);
+		CallType mt = this.getCallType();
 		func.makeArgs(args, mt);
 		assert (!(func instanceof Constructor));
 		if (func.isRuleMethod()) {
 			// Very special case for rule call from inside of RuleMethod
 			ENode env_arg = new ConstNullExpr();
 			ANode p = this.parent();
-			if (p instanceof AssignExpr && p.lval.getType(env) ≡ env.tenv.tpRule)
+			if (p instanceof AssignExpr && p.lval.getType() ≡ tenv.tpRule)
 				env_arg = new Copier().copyFull(p.lval);
 			((CallExpr)this).setHiddenArg(new ArgExpr(func.getHiddenParam(Var.PARAM_RULE_ENV),env_arg));
 		}
 		if (func.isVarArgs()) {
-			Type tn = func.getVarArgParam().getType(env);
+			Type tn = func.getVarArgParam().getType();
 			Type varg_tp = tn.resolveArg(0);
 			int i=0;
 			for(; i < func.mtype.arity-1; i++)
-				resolveENode(args[i],Type.getRealType(obj.getType(env),func.mtype.arg(i)),env);
-			if (args.length == i+1 && args[i].getType(env).isInstanceOf(new ArrayType(varg_tp))) {
+				resolveENode(args[i],Type.getRealType(obj.getType(),func.mtype.arg(i)));
+			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
-				resolveENode(args[i],func.getVarArgParam().getType(env),env);
+				resolveENode(args[i],func.getVarArgParam().getType());
 			} else {
 				for(; i < args.length; i++)
-					resolveENode(args[i],varg_tp,env);
+					resolveENode(args[i],varg_tp);
 			}
 		} else {
 			for (int i=0; i < args.length; i++)
-				resolveENode(args[i],Type.getRealType(obj.getType(env),func.mtype.arg(i)),env);
+				resolveENode(args[i],Type.getRealType(obj.getType(),func.mtype.arg(i)));
 		}
 		if (func.isTypeUnerasable()) {
 			CallExpr ce = (CallExpr)this;
 			foreach (ArgExpr earg; ce.hargs; earg.var.kind >= Var.PARAM_METHOD_TYPEINFO)
 				earg.detach();
 			foreach (TypeDef td; func.targs) {
-				Type tp = mt.resolve(td.getAType(env));
+				Type tp = mt.resolve(td.getAType());
 				ENode earg = new TypeInfoExpr(tp);
 				Var param = func.getMethodTypeInfoParam(td.sname);
 				ce.setHiddenArg(new ArgExpr(param,earg));
-				resolveENode(earg,null,env);
+				resolveENode(earg,null);
 			}
 		}
 		if !(func.parent() instanceof TypeDecl) {
@@ -78,7 +78,7 @@ public final view RCallExpr of CallExpr extends RENode {
 		}
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -89,17 +89,17 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 	public:ro	ENode			obj;
 	public		ENode			tpinfo;
 	public:ro	ENode[]			args;
-	
-	public final CallType getCallType(Env env);
 
-	public void resolveENode(Type reqType, Env env) {
+	public final CallType getCallType();
+
+	public void resolveENode(Type reqType) {
 		Method func = func;
-		CallType mt = this.getCallType(env);
+		CallType mt = this.getCallType();
 		func.makeArgs(args, mt);
 		assert (func instanceof Constructor);
 		if (func.getClassTypeInfoParam() != null) {
 			Method mmm = ctx_method;
-			Type tp = Env.ctxTDecl(mmm) != Env.ctxTDecl(func) ? ctx_tdecl.super_types[0].getType(env) : ctx_tdecl.getType(env);
+			Type tp = Env.ctxTDecl(mmm) != Env.ctxTDecl(func) ? ctx_tdecl.super_types[0].getType() : ctx_tdecl.getType();
 			assert(ctx_method instanceof Constructor && !ctx_method.isStatic());
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
@@ -107,41 +107,41 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 				tpinfo = new LVarExpr(pos,mmm.getClassTypeInfoParam());
 			else
 				tpinfo = new TypeInfoExpr(tp);
-			resolveENode(tpinfo,null,env);
+			resolveENode(tpinfo,null);
 		}
 		if (func.isVarArgs()) {
-			Type tn = func.getVarArgParam().getType(env);
+			Type tn = func.getVarArgParam().getType();
 			Type varg_tp = tn.resolveArg(0);
 			int i=0;
 			for(; i < func.mtype.arity-1; i++)
-				resolveENode(args[i],func.mtype.arg(i),env);
-			if (args.length == i+1 && args[i].getType(env).isInstanceOf(new ArrayType(varg_tp))) {
+				resolveENode(args[i],func.mtype.arg(i));
+			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
-				resolveENode(args[i],func.getVarArgParam().getType(env),env);
+				resolveENode(args[i],func.getVarArgParam().getType());
 			} else {
 				for(; i < args.length; i++)
-					resolveENode(args[i],varg_tp,env);
+					resolveENode(args[i],varg_tp);
 			}
 		} else {
 			for (int i=0; i < args.length; i++)
-				resolveENode(args[i],func.mtype.arg(i),env);
+				resolveENode(args[i],func.mtype.arg(i));
 		}
 		if (func.isTypeUnerasable()) {
 			CtorCallExpr ce = (CtorCallExpr)this;
 			foreach (ArgExpr earg; ce.hargs; earg.var.kind >= Var.PARAM_METHOD_TYPEINFO)
 				earg.detach();
 			foreach (TypeDef td; func.targs) {
-				Type tp = mt.resolve(td.getAType(env));
+				Type tp = mt.resolve(td.getAType());
 				ENode earg = new TypeInfoExpr(tp);
 				Var param = func.getMethodTypeInfoParam(td.sname);
 				ce.setHiddenArg(new ArgExpr(param,earg));
-				resolveENode(earg,null,env);
+				resolveENode(earg,null);
 			}
 		}
 		{
 			CtorCallExpr ce = (CtorCallExpr)this;
 			foreach (ArgExpr ae; ce.hargs)
-				resolveENode(ae,null,env);
+				resolveENode(ae,null);
 		}
 		if !(func.parent() instanceof TypeDecl) {
 			ANode n = func.parent();
@@ -151,7 +151,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 		}
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 
@@ -162,12 +162,12 @@ public final view RClosureCallExpr of ClosureCallExpr extends RENode {
 	public		ClosureCallKind	kind;
 
 	public boolean isKindAuto();
-	public Method getCallIt(CallType tp, Env env);
-	
-	public void resolveENode(Type reqType, Env env) throws RuntimeException {
+	public Method getCallIt(CallType tp);
+
+	public void resolveENode(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
-		resolveENode(expr,null,env);
-		Type extp = expr.getType(env);
+		resolveENode(expr,null);
+		Type extp = expr.getType();
 		if !(extp instanceof CallType)
 			throw new CompilerException(expr,"Expression "+expr+" is not a closure");
 		CallType tp = (CallType)extp;
@@ -180,11 +180,11 @@ public final view RClosureCallExpr of ClosureCallExpr extends RENode {
 				kind = ClosureCallKind.CURRY;
 		}
 		for(int i=0; i < args.length; i++)
-			resolveENode(args[i],tp.arg(i),env);
-		Method call_it = getCallIt(tp,env);
+			resolveENode(args[i],tp.arg(i));
+		Method call_it = getCallIt(tp);
 		setResolved(true);
 		if (isAutoReturnable())
-			RReturnStat.autoReturn(reqType, this, env);
+			RReturnStat.autoReturn(reqType, this);
 	}
 }
 

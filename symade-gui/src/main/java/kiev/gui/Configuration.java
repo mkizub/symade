@@ -32,30 +32,31 @@ import kiev.gui.event.KeyboardEvent;
 import kiev.gui.event.MouseEvent;
 import kiev.gui.event.InputEvent;
 import kiev.vlang.Env;
+import kiev.vtree.DefaultLoggingBuilderFactory;
 
 /**
  * Configuration.
  */
 public abstract class Configuration {
-	
+
 	public final Env env;
-	
+
 	/**
 	 * Key modifiers for keyboard and mouse events.
 	 */
 	public enum Modifiers { CTRL, ALT, SHIFT };
-	
-			
+
+
 	/**
 	 * Default configuration for editors.
 	 */
 	protected BindingSet editorBindingsDefault;
-	
+
 	/**
 	 * The configuration for editors.
 	 */
 	protected BindingSet editorBindings;
-	
+
 	/**
 	 * The editors bindings.
 	 */
@@ -65,12 +66,12 @@ public abstract class Configuration {
 	 * Default configuration for views.
 	 */
 	protected BindingSet infoBindingsDefault;
-	
+
 	/**
 	 * The configuration for views.
 	 */
 	protected BindingSet infoBindings;
-	
+
 	/**
 	 *  The views bindings.
 	 */
@@ -80,36 +81,36 @@ public abstract class Configuration {
 	 * Default configuration for project view.
 	 */
 	protected BindingSet projectBindingsDefault;
-	
+
 	/**
 	 * The configuration for project view.
 	 */
 	protected BindingSet projectBindings;
-	
+
 	/**
 	 * The project view bindings.
 	 */
 	protected EventActionMap projectNaviMap;
-	
+
 	/**
 	 * Default configuration for project view.
 	 */
 	protected BindingSet errorsBindingsDefault;
-	
+
 	/**
 	 * The configuration for project view.
 	 */
 	protected BindingSet errorsBindings;
-	
+
 	/**
 	 * The project view bindings.
 	 */
 	protected EventActionMap errorsNaviMap;
-	
+
 	protected Configuration(Env env) {
 		this.env = env;
 	}
-	
+
 	/**
 	 * Returns associated modifier mask.
 	 * @param mods the modifiers
@@ -122,7 +123,7 @@ public abstract class Configuration {
 	 * @return InputEvent
 	 */
 	public abstract InputEvent makeInputEvent();
-	
+
 	/**
 	 * Creates <code>InputEvent</code> from parameters.
 	 * @param mask the modifiers mask
@@ -130,7 +131,7 @@ public abstract class Configuration {
 	 * @return InputEvent
 	 */
 	public abstract InputEvent makeKeyboardInputEvent(int mask, int code);
-	
+
 	/**
 	 * Creates <code>InputEvent</code> from parameters.
 	 * @param mask the modifiers mask
@@ -139,11 +140,11 @@ public abstract class Configuration {
 	 * @return InputEvent
 	 */
 	public abstract InputEvent makeMouseInputEvent(int mask, int count, int button);
-	
+
 
 	/**
 	 * Iterate through collection of elements to create an <code>InputEvent</code> and
-	 * instantiates defined by configuration associated action factory. These events 
+	 * instantiates defined by configuration associated action factory. These events
 	 * and associated action factories are mapped to the bindings.
 	 * @param naviMap the bindings
 	 * @param bindings the collection of elements
@@ -162,9 +163,9 @@ public abstract class Configuration {
 							code = kbe.keyCode;
 							if (kbe.withAlt) mask |= getModifierMask(Modifiers.ALT);
 							else if (kbe.withCtrl) mask |= getModifierMask(Modifiers.CTRL);
-							else if (kbe.withShift) mask |= getModifierMask(Modifiers.SHIFT);  
-							ei = makeKeyboardInputEvent(mask, code); 
-						} 
+							else if (kbe.withShift) mask |= getModifierMask(Modifiers.SHIFT);
+							ei = makeKeyboardInputEvent(mask, code);
+						}
 						else if (event instanceof MouseEvent){
 							MouseEvent me = (MouseEvent)event;
 							int mask = 0, button, count;
@@ -172,21 +173,21 @@ public abstract class Configuration {
 							button = me.button;
 							if (me.withAlt) mask |= getModifierMask(Modifiers.ALT);
 							else if (me.withCtrl) mask |= getModifierMask(Modifiers.CTRL);
-							else if (me.withShift) mask |= getModifierMask(Modifiers.SHIFT);  
-							ei = makeMouseInputEvent(mask, count, button); 
-						}		
-						
+							else if (me.withShift) mask |= getModifierMask(Modifiers.SHIFT);
+							ei = makeMouseInputEvent(mask, count, button);
+						}
+
 						//create instance of action factory class
 						naviMap.add(ei,	makeActionFactory(bnd.action));
 					}
-				} else 
-				if (item instanceof Action){					
+				} else
+				if (item instanceof Action){
 					naviMap.add(makeInputEvent(),	makeActionFactory((Action)item));
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-			} 
-		}		
+			}
+		}
 	}
 
 	/**
@@ -212,9 +213,9 @@ public abstract class Configuration {
 		} catch (Exception e){
 			e.printStackTrace();
 		}
-		return af;		
+		return af;
 	}
-	
+
 	/**
 	 * Restore configuration to their defaults.
 	 */
@@ -225,23 +226,23 @@ public abstract class Configuration {
 		errorsBindings = errorsBindingsDefault;
 	}
 
-	
+
 	/**
-	 * The configuration is not bound until mapped. 
+	 * The configuration is not bound until mapped.
 	 * @param eam the event action map
 	 * @param bs the binding set
 	 * @return <code>EventActionMap</code>
 	 */
 	private  EventActionMap getActionMap(EventActionMap eam, BindingSet bs){
-		if (eam != null) return eam;		
+		if (eam != null) return eam;
 		EventActionMap naviMap = new EventActionMap();
 		eam = naviMap;
-		addBindings(naviMap, bs);	
+		addBindings(naviMap, bs);
 		return naviMap;
-		
+
 	}
 	/**
-	 * Returns the editors bindings. 
+	 * Returns the editors bindings.
 	 * @return <code>EventActionMap</code>
 	 */
 	public EventActionMap getEditorActionMap() {
@@ -249,7 +250,7 @@ public abstract class Configuration {
 	}
 
 	/**
-	 * Returns the project view bindings. 
+	 * Returns the project view bindings.
 	 * @return <code>EventActionMap</code>
 	 */
 	public EventActionMap getProjectViewActionMap() {
@@ -257,21 +258,21 @@ public abstract class Configuration {
 	}
 
 	/**
-	 * Returns the views bindings. 
+	 * Returns the views bindings.
 	 * @return <code>EventActionMap</code>
 	 */
 	public EventActionMap getInfoViewActionMap() {
 		return getActionMap(infoNaviMap, infoBindings);
 	}
-	
+
 	/**
-	 * Returns the errors bindings. 
+	 * Returns the errors bindings.
 	 * @return <code>EventActionMap</code>
 	 */
 	public EventActionMap getErrorsViewActionMap() {
 		return getActionMap(errorsNaviMap, errorsBindings);
 	}
-	
+
 	/**
 	 * Import configuration bindings from dumped XML.
 	 * @param src_bs the node
@@ -312,13 +313,14 @@ public abstract class Configuration {
 			errorsNaviMap = null;
 		}
 	}
-	
+
 	/**
 	 * Returns Bindings Import Context.
 	 * @return <code>ImportMarshallingContext</code>
 	 */
 	private ImportMarshallingContext getBindingsImportContext() {
-		ImportUnMarshaller um = new ImportUnMarshaller();
+		DefaultLoggingBuilderFactory logger = new DefaultLoggingBuilderFactory();
+		ImportUnMarshaller um = new ImportUnMarshaller(logger);
 		um.addTypeAlias(new ImportTypeAlias("bindings", BindingSet.class).
 				addImplicitFieldAlias("action", "items").
 				addImplicitFieldAlias("bind", "items").
@@ -339,10 +341,10 @@ public abstract class Configuration {
 				addFieldAlias("ctrl", "withCtrl").
 				addFieldAlias("alt", "withAlt").
 				addFieldAlias("shift", "withShift"));
-		ImportMarshallingContext context = new ImportMarshallingContext(um);
+		ImportMarshallingContext context = new ImportMarshallingContext(logger, um);
 		return context;
 	}
-	
+
 	/**
 	 * Loads configuration from resource.
 	 * @param name the resource name
@@ -370,5 +372,5 @@ public abstract class Configuration {
 		}
 		return null;
 	}
-	
+
 }

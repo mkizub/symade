@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.dump.xml;
 
-import kiev.Kiev;
 import kiev.dump.AcceptInfo;
 import kiev.dump.DumpFactory;
 import kiev.dump.UnMarshaller;
@@ -155,7 +154,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 					if (sym.suuid() != null && !sym.suuid().toString().equals(dn_uuid))
 						System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
 					else
-						sym.setUUID(context.getEnv(),dn_uuid);
+						sym.setUUID(dn_uuid);
 				}
 				if (dn.getVal(dn.getAttrSlot("symbol")) != sym) {
 					if (sym.parent() != null)
@@ -314,7 +313,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 					if (sym.suuid() != null && !sym.suuid().toString().equals(dn_uuid))
 						System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
 					else
-						sym.setUUID(context.getEnv(),dn_uuid);
+						sym.setUUID(dn_uuid);
 				}
 				else if (node instanceof DNode) {
 					Symbol sym = (Symbol)node.getVal(node.getAttrSlot("symbol"));
@@ -322,7 +321,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 					if (sym.suuid() != null && !sym.suuid().toString().equals(dn_uuid))
 						System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
 					else
-						sym.setUUID(context.getEnv(),dn_uuid);
+						sym.setUUID(dn_uuid);
 				}
 				else if (node instanceof MetaUUID)
 					node.setVal(node.getAttrSlot("value"), attributes.getValue(i));
@@ -413,7 +412,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 			else if (node instanceof ConstEnumExpr && Enum.class.isAssignableFrom(((ConstEnumExpr)node).getTypeInfoField().getTopArgs()[0].clazz) && Enum.class != ((ConstEnumExpr)node).getTypeInfoField().getTopArgs()[0].clazz)
 				attr.set(node,((ConstEnumExpr)node).getTypeInfoField().getTopArgs()[0].clazz.getMethod("valueOf",String.class).invoke(null,value.trim()));
 			else
-				Kiev.reportWarning("Attribute '"+attr.name+"' of "+node.getClass()+" uses unsupported "+clazz);
+				context.env.reportWarning().log("Attribute '{}' of {} uses unsupported {}", attr.name, node.getClass(), clazz);
 		}
 		else if (clazz == Operator.class)
 			attr.set(node,Operator.getOperatorByName(value.trim()));
@@ -437,7 +436,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 				String uuid = value.substring(p+1);
 				symbol.setVal(symbol.getAttrSlot("sname"), sname);
 				if (!context.is_import)
-					symbol.setUUID(context.getEnv(),uuid);
+					symbol.setUUID(uuid);
 			} else {
 				symbol.setVal(symbol.getAttrSlot("sname"), value);
 			}
@@ -481,7 +480,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 		}
 		else
 			//throw new SAXException("Attribute '"+attr.name+"' of "+node.getClass()+" uses unsupported "+clazz);
-			Kiev.reportWarning("Attribute '"+attr.name+"' of "+node.getClass()+" uses unsupported "+clazz);
+			context.env.reportWarning().log("Attribute '{}' of {} uses unsupported {}", attr.name, node.getClass(), clazz);
 	}
 	private static long parseLong(String text) {
 		text = text.trim();

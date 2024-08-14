@@ -18,18 +18,18 @@ import syntax kiev.Syntax;
  */
 
 public abstract class TransfProcessor extends AbstractProcessor implements Constants {
-	
+
 	private final KievExt extension;
-	
+
 	public TransfProcessor(Env env, int id, KievExt ext) {
 		super(env, id);
 		this.extension = ext;
 	}
 	public boolean isEnabled() {
-		return Kiev.enabled(extension);
+		return getProcessor().isEnabled(extension);
 	}
 	public boolean isDisabled() {
-		return Kiev.disabled(extension);
+		return getProcessor().isDisabled(extension);
 	}
 }
 

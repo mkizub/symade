@@ -10,7 +10,7 @@ public class SymbolConvertor implements Convertor {
 	}
 
     public String convert(Object data, MarshallingContext context) {
-		return ((Symbol)data).makeSignature(context.getEnv());
+		return ((Symbol)data).makeSignature();
 	}
 }
 

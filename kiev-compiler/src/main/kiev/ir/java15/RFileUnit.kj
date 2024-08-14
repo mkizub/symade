@@ -30,36 +30,37 @@ public static final view RFileUnit of FileUnit extends RSyntaxScope {
 
 	public String pname();
 
-	public void resolveDecl(Env env) {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving file "+fname);
-		String curr_file = Kiev.getCurFile();
-		Kiev.setCurFile(pname());
+	public void resolveDecl() {
+		trace(getEnv().debugResolve,"Resolving file "+fname);
+		EnvThread thr = (EnvThread)Thread.currentThread();
+		String saved_file = thr.current_file;
+		thr.current_file = pname();
         try {
 			foreach (ASTNode n; members) {
 				try {
 					if (n instanceof DNode && !n.isMacro())
-						resolveDNode(n,env);
+						resolveDNode(n);
 					else if (n instanceof SNode)
-						resolveSNode(n,env);
+						resolveSNode(n);
 				} catch(Exception e) {
-					Kiev.reportError(n,e);
+					n.reportError().log(e);
 				}
 			}
-		} finally { Kiev.setCurFile(curr_file); }
+		} finally { thr.current_file = saved_file; }
 	}
 }
 
 @ViewOf(vcast=true)
 public static view RNameSpace of NameSpace extends RSyntaxScope {
-	public void resolveDecl(Env env) {
+	public void resolveDecl() {
 		foreach (ASTNode n; members) {
 			try {
 				if (n instanceof DNode && !n.isMacro())
-					resolveDNode(n,env);
+					resolveDNode(n);
 				else if (n instanceof SNode)
-					resolveSNode(n,env);
+					resolveSNode(n);
 			} catch(Exception e) {
-				Kiev.reportError(n,e);
+				n.reportError().log(e);
 			}
 		}
 	}

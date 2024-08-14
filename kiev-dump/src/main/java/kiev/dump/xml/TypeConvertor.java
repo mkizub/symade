@@ -12,8 +12,8 @@ public class TypeConvertor implements Convertor {
 
     public String convert(Object data, MarshallingContext context) {
 		if (data instanceof Type)
-			return ((Type)data).makeSignature(context.getEnv());
-		return ((TypeRef)data).getType(context.getEnv()).makeSignature(context.getEnv());
+			return ((Type)data).makeSignature();
+		return ((TypeRef)data).getType().makeSignature();
 	}
 }
 

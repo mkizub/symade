@@ -11,8 +11,6 @@
  *******************************************************************************/
 package kiev.gui;
 
-import kiev.Kiev;
-
 /**
  * UI Action Menu Item.
  */
@@ -37,18 +35,18 @@ public abstract class UIActionMenuItem {
 		this.wnd = wnd;
 		this.factory = factory;
 	}
-	
+
 	/**
 	 * Check if it's enabled.
 	 * @return boolean
 	 */
 	public boolean checkEnabled() {
-		Kiev.setSemContext(wnd.currentEditorThreadGroup.semantic_context);
-		try {
+//		Kiev.setSemContext(wnd.currentEditorThreadGroup.semantic_context);
+//		try {
 			return factory != null && factory.getAction(new UIActionViewContext(wnd, null, wnd.getCurrentView())) != null;
-		} finally {
-			Kiev.setSemContext(null);
-		}
+//		} finally {
+//			Kiev.setSemContext(null);
+//		}
 	}
 
 	/**

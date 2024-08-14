@@ -45,7 +45,7 @@ public final class SyntaxManager {
 		if (env != null) {
 			DNode ts = env.resolveGlobalDNode(name);
 			if (ts instanceof ATextSyntax){
-				trace(Kiev.verbose, "getLanguageSyntax ts="+ ts);
+				env.reportInfo().log("getLanguageSyntax ts={}", ts);
 				return ts.getCompiled().init();
 			}
 		}
@@ -78,7 +78,7 @@ public final class SyntaxManager {
 		if (env != null) {
 			DNode ss = env.resolveGlobalDNode(name);
 			if (ss instanceof StyleSheet){
-				trace(Kiev.verbose, "getStyleSheet ts="+ ss);
+				env.reportInfo().log("getStyleSheet ts={}", ss);
 				return ss.getCompiled().init();
 			}
 		}

@@ -34,23 +34,23 @@ public class DumpMarshallingContext implements MarshallingContext {
 	public final Env env;
 	public final BinDumpWriter writer;
 	public final BinDumpFilter filter;
-	
+
 	private final ANodeDumpMarshaller node_marshaller = new ANodeDumpMarshaller();
 	private final DataMarshaller data_marshaller = new DataMarshaller();
-	
+
 	private final IdentityHashMap<Object,SymbElem> symbTable = new IdentityHashMap<Object,SymbElem>();
 	private final IdentityHashMap<INode,NodeElem> nodeTable = new IdentityHashMap<INode,NodeElem>();
 	private final IdentityHashMap<Class,NodeElem> flagTable = new IdentityHashMap<Class,NodeElem>();
 	private final IdentityHashMap<Object,ConstElem> constTable = new IdentityHashMap<Object,ConstElem>();
 	private final IdentityHashMap<AttrSlot,AttrElem> attrTable = new IdentityHashMap<AttrSlot,AttrElem>();
 	private final HashMap<String,TypeElem> typeTable = new HashMap<String,TypeElem>();
-	
+
 	private int symbol_id_counter;
 	private int node_id_counter;
 	private int const_id_counter;
 	private int attr_id_counter;
 	private int type_id_counter;
-	
+
 	public DumpMarshallingContext(INode[] roots, Env env, BinDumpFilter filter, BinDumpWriter writer) {
 		this.roots = roots;
 		this.env = env;
@@ -60,7 +60,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 			typeTable.put(te.name, te);
 		type_id_counter = 256;
 	}
-	
+
 	public Env getEnv() {
 		return env;
 	}
@@ -82,7 +82,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 	public MarshallingContext add(Convertor c) {
 		throw new UnsupportedOperationException("Marshalling error");
 	}
-	
+
     public void marshalDocument() {
     	try {
     		createElements();
@@ -120,7 +120,7 @@ public class DumpMarshallingContext implements MarshallingContext {
     public void marshalData(Object data) {
 		throw new UnsupportedOperationException("Marshalling error");
     }
-    
+
     /**
      * Marshal another object using the specified marshaller
      * @param data       the next item to convert
@@ -146,7 +146,7 @@ public class DumpMarshallingContext implements MarshallingContext {
     public void attributeData(QName attr, Object data) {
 		throw new UnsupportedOperationException("Marshalling error");
     }
-    
+
     /**
      * Write attribute using the specified convertor
 	 * @param attr the attribute name
@@ -184,7 +184,7 @@ public class DumpMarshallingContext implements MarshallingContext {
     public ConstElem getConstElem(Enum eval) {
     	return constTable.get(eval);
     }
-    
+
     // Scan data from the root and create elements
     private void createElements() {
     	if (roots == null || roots.length == 0)
@@ -243,13 +243,13 @@ public class DumpMarshallingContext implements MarshallingContext {
 			}
     	}
     }
-    
+
     private SymbElem makeSymbolElem(Symbol sym) {
     	SymbElem se = getSymbolElem(sym);
 		if (se != null)
 			return se;
 		if (sym.parent() instanceof TypeDecl)
-			sym.getUUID(env);
+			sym.getUUID();
 		SymUUID suuid = sym.suuid();
 		if (suuid == SymUUID.Empty)
 			suuid = null;
@@ -385,7 +385,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 		//	flags |= AttrElem.IS_EXTERNAL;
 		if (slot.isNotCopyable())
 			flags |= AttrElem.IS_NO_COPY;
-		
+
 		ae = new AttrElem(attr_id, vtype, flags, slot);
 		attrTable.put(slot, ae);
 		return ae;
@@ -396,7 +396,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 		constTable.put(val, ce);
 		return ce;
     }
-    
+
     // Write standard elements
     private void writeElements() throws Exception {
     	{	// write symbols
@@ -505,7 +505,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 		writer.endBlock(Signature.TAG_SYMB_SIGN);
 		se.eaddr = writer.getStreamPos();
     }
-    
+
     private void writeConstElem(ConstElem ce) throws Exception {
     	if (ce.eaddr != 0)
     		return;	// already written
@@ -528,7 +528,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 		writer.endBlock(Signature.TAG_CONST_SIGN);
 		ce.eaddr = writer.getStreamPos();
     }
-    
+
     private void writeAttrElem(AttrElem ae) throws Exception {
     	if (ae.eaddr != 0)
     		return;	// already written
@@ -547,7 +547,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 		writer.endBlock(Signature.TAG_ATTR_SIGN);
 		ae.eaddr = writer.getStreamPos();
     }
-    
+
     private void writeTypeElem(TypeElem te) throws Exception {
     	if (te.eaddr != 0)
     		return;	// already written

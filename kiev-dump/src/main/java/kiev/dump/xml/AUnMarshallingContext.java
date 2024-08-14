@@ -2,21 +2,23 @@ package kiev.dump.xml;
 
 import javax.xml.namespace.QName;
 
-import kiev.Kiev;
 import kiev.dump.AcceptInfo;
 import kiev.dump.UnMarshaller;
 import kiev.dump.UnMarshallingContext;
 import kiev.dump.AttributeSet;
 import kiev.stdlib.Debug;
-import kiev.vlang.Env;
+import kiev.vtree.LoggingBuilderFactory;
+
 import static kiev.stdlib.Asserts.*;
 
 public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshallingContext {
 
 	private static final boolean TRACE = false;
-	
+
 	public Object result;
-	
+
+	final LoggingBuilderFactory logger;
+
 	final Stack<UnMarshaller>   unmarshallers;
 	//final Stack<Decoder>        decoders;
 	final Stack<StateInfo>      states;
@@ -31,17 +33,18 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 			this.unmarshaller = unmarshaller;
 		}
 	}
-	
+
 	boolean expect_attr;
 	Object attr_value;
 	int ignore_count;
 
-	AUnMarshallingContext() {
+	AUnMarshallingContext(LoggingBuilderFactory logger) {
+		this.logger        = logger;
 		this.unmarshallers = new Stack<UnMarshaller>();
 		//this.decoders      = new Stack<Decoder>();
 		this.states        = new Stack<StateInfo>();
 	}
-	
+
 	public Object getResult() {
 		return result;
 	}
@@ -56,13 +59,13 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 			return null;
 		return states.peek().attr;
 	}
-	
+
 	public void startDocument() {
 		assert (result == null);
 		assert (states.isEmpty());
 		assert (attr_value == null);
 	}
-	
+
 	public void endDocument() {
 		// do nothing
 		assert (result != null);
@@ -76,14 +79,14 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 			return;
 		}
 		if (expect_attr) {
-			// inside node, expecting attribute/field name 
+			// inside node, expecting attribute/field name
 			assert (!states.isEmpty()); // : "Expecting attribute entry, but stack of nodes is empty";
 			assert (states.peek().attr == null); // : "Expecting attribute entry, but have unsaved attribute "+states.peek().attr;
 			// at node scope, expect attribute(s)
 			if (attr_value instanceof String) {
 				// probably ignorable whitespace
 				if (((String)attr_value).trim().length() != 0)
-					Kiev.reportWarning("Mixing text '"+attr_value+"' and data: start of element "+qn);
+					logger.newWarning().log("Mixing text '{}' and data: start of element {}", attr_value, qn);
 				attr_value = null;
 			}
 			assert (attr_value == null); // : "Expecting attribute entry, but have unsaved data "+attr_value;
@@ -108,14 +111,14 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 					}
 				}
 			}
-			Kiev.reportWarning("Cannot accept attribute '"+qn+"'");
+			logger.newWarning().log("Cannot accept attribute '{}'", qn);
 			ignore_count = 1;
 		} else {
-			// at the document start or inside an attribute, expecting node data or text, got text element 
+			// at the document start or inside an attribute, expecting node data or text, got text element
 			if (attr_value instanceof String) {
 				// probably ignorable whitespace
 				if (((String)attr_value).trim().length() != 0)
-					Kiev.reportWarning("Mixing text '"+attr_value+"' and data: start of element "+qn);
+					logger.newWarning().log("Mixing text '{}' and data: start of element {}", attr_value, qn);
 				attr_value = null;
 			}
 			if (attr_value != null) {
@@ -136,7 +139,7 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 				expect_attr = true;
 				return;
 			}
-			Kiev.reportWarning("Cannot unmarshal '"+qn+"'");
+			logger.newWarning().log("Cannot unmarshal '{}'", qn);
 			ignore_count = 1;
 		}
 	}
@@ -196,7 +199,7 @@ public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshall
 		else if (attr_value instanceof String)
 			attr_value = ((String)attr_value) + str;
 		else if (str.trim().length() > 0) {
-			Kiev.reportWarning("Mixing text '"+str+"' and data: in element "+states.peek().attr);
+			logger.newWarning().log("Mixing text '{}' and data: in element {}", str, states.peek().attr);
 		}
 	}
 

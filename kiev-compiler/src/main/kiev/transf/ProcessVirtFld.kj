@@ -12,6 +12,8 @@ package kiev.transf;
 
 import syntax kiev.Syntax;
 
+import kiev.compiler.WorkerThreadGroup;
+
 /**
  * @author Maxim Kizub
  *
@@ -79,7 +81,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 
 	private void addSetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
-		Field f = s.resolveField(env, name, false );
+		Field f = s.resolveField(name, false );
 		MetaAccess acc;
 		if( f != null ) {
 			if (f.parent() != m.parent())
@@ -97,7 +99,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			}
 			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
-			Kiev.reportWarning(m, "Creating @virtual @abstract field "+name);
+			m.reportWarning().log("Creating @virtual @abstract field {}", name);
 			f = new Field(name,m.mtype.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
 			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
@@ -114,7 +116,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		f.setVirtual(true);
 		f.setter = new SymbolRef<Method>(m);
 		if (!(m instanceof MethodSetter) && m.getMeta(nameMetaSetter) == null) {
-			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
+			m.reportWarning().log("Method looks to be a setter, but @setter is not specified");
 		}
 		if( m.isPublic() ) {
 			if !(acc.w_public & acc.w_protected & acc.w_default & acc.w_private) {
@@ -153,7 +155,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 
 	private void addGetterForAbstractField(ComplexTypeDecl s, String name, Method m) {
 		name = name.intern();
-		Field f = s.resolveField(env, name, false );
+		Field f = s.resolveField(name, false );
 		MetaAccess acc;
 		if( f != null ) {
 			if (f.parent() != m.parent())
@@ -171,7 +173,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			}
 			if (acc.flags == -1) acc.flags = MetaAccess.getFlags(f);
 		} else {
-			Kiev.reportWarning(m, "Creating @virtual @abstract field "+name);
+			m.reportWarning().log("Creating @virtual @abstract field {}", name);
 			f = new Field(name,m.mtype.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC);
 			s.members += f;
 			if (f.isFinal()) f.setFinal(false);
@@ -188,7 +190,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		f.setVirtual(true);
 		f.getter = new SymbolRef<Method>(m);
 		if (!(m instanceof MethodGetter) && m.getMeta(nameMetaGetter) == null) {
-			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
+			m.reportWarning().log("Method looks to be a getter, but @getter is not specified");
 		}
 		if( m.isPublic() ) {
 			if !(acc.r_public & acc.r_protected & acc.r_default & acc.r_private) {
@@ -274,7 +276,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 					name = ("get"+name).intern();
 				if (!getter.isMethodBridge()) {
 					foreach (Method m; s.members; m.sname == name && m.params.length == 0)
-						Kiev.reportError(getter, "Getter method name conflicts with method "+m);
+						getter.reportError().log("Getter method name conflicts with method {}", m);
 				}
 				getter.sname = name;
 			}
@@ -286,7 +288,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 				name = ("set"+name).intern();
 				if (!setter.isMethodBridge()) {
 					foreach (Method m; s.members; m.sname == name && m.params.length == 1)
-						Kiev.reportError(setter, "Setter method name conflicts with method "+m);
+						setter.reportError().log("Setter method name conflicts with method {}", m);
 				}
 				setter.sname = name;
 			}
@@ -295,7 +297,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 
 	private void addMethodsForVirtualField(ComplexTypeDecl s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
-			Kiev.reportError(f,"Static fields can't be virtual");
+			f.reportError().log("Static fields can't be virtual");
 			f.setVirtual(false);
 		}
 		if( s.isInterface() && f.isVirtual() ) f.setAbstract(true);
@@ -349,7 +351,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 			f.setter = new SymbolRef<Method>(set_var);
 		}
 		else if( set_found && (f.isFinal() || !MetaAccess.writeable(f)) ) {
-			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
+			f.reportError().log("Virtual set$ method for non-writeable field {}", f);
 		}
 
 		if( !get_found && MetaAccess.readable(f)) {
@@ -368,7 +370,7 @@ public final class VirtFldME_PreGenerate extends BackendProcessor implements Con
 			f.getter = new SymbolRef<Method>(get_var);
 		}
 		else if( get_found && !MetaAccess.readable(f) ) {
-			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
+			f.reportError().log("Virtual get$ method for non-readable field {}", f);
 		}
 
 		if (!f.isAbstract() && !f.isPrivate())
@@ -429,7 +431,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 		Method getter = f.getGetterMethod();
 		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
 		if (getter == null) {
-			Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
+			fa.reportError().log("Getter method for virtual field '{} not found", f);
 			fa.setAsField(true);
 			return true;
 		}
@@ -463,16 +465,16 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 			}
 			if (setter == null) {
 				if (!f.isFinal() && MetaAccess.writeable(f))
-					Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
+					fa.reportWarning().log("Setter method for virtual field '{}' not found", f);
 				fa.setAsField(true);
 				return true;
 			}
 			if (getter == null && !ae.isGenVoidExpr()) {
-				Kiev.reportWarning(fa, "Getter method for virtual field "+f+" not found");
+				fa.reportWarning().log("Getter method for virtual field '{}' not found", f);
 				fa.setAsField(true);
 				return true;
 			}
-			Type ae_tp = ae.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ae.getType(env);
+			Type ae_tp = ae.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ae.getType();
 			Operator op = ae.getOper();
 			ENode expr;
 			if (ae.isGenVoidExpr()) {
@@ -488,7 +490,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
@@ -528,16 +530,16 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 			}
 			if (setter == null) {
 				if (!f.isFinal() && MetaAccess.writeable(f))
-					Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
+					fa.reportWarning().log("Setter method for virtual field '{}' not found", f);
 				fa.setAsField(true);
 				return true;
 			}
 			if (getter == null && !ae.isGenVoidExpr()) {
-				Kiev.reportWarning(fa, "Getter method for virtual field "+f+" not found");
+				fa.reportWarning().log("Getter method for virtual field '{}' not found", f);
 				fa.setAsField(true);
 				return true;
 			}
-			Type ae_tp = ae.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ae.getType(env);
+			Type ae_tp = ae.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ae.getType();
 			Operator op = ae.getOper();
 			if      (op == Operator.AssignAdd)                  op = Operator.Add;
 			else if (op == Operator.AssignSub)                  op = Operator.Sub;
@@ -560,7 +562,7 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 				acc = ((LVarExpr)fa.obj).getVarSafe();
 			}
 			else {
-				Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+				Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
 				var.init = ~fa.obj;
 				be.addSymbol(var);
 				acc = var;
@@ -601,17 +603,17 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 				return true;
 			}
 			if (setter == null) {
-				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
+				fa.reportError().log("Setter method for virtual field '{}' not found", f);
 				fa.setAsField(true);
 				return true;
 			}
 			if (getter == null) {
-				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
+				fa.reportError().log("Getter method for virtual field '{}' not found", f);
 				fa.setAsField(true);
 				return true;
 			}
 			ENode expr;
-			Type ie_tp = ie.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ie.getType(env);
+			Type ie_tp = ie.isGenVoidExpr() ? this.env.getTypeEnv().tpVoid : ie.getType();
 			Operator ieop = ie.getOper();
 			if (ie.isGenVoidExpr()) {
 				if (ieop == Operator.PreIncr || ieop == Operator.PostIncr) {
@@ -630,14 +632,14 @@ public final class VirtFldBE_Rewrite extends BackendProcessor implements Constan
 					acc = ((LVarExpr)fa.obj).getVarSafe();
 				}
 				else {
-					Var var = new LVar(0,"tmp$virt",fa.obj.getType(env),Var.VAR_LOCAL,0);
+					Var var = new LVar(0,"tmp$virt",fa.obj.getType(),Var.VAR_LOCAL,0);
 					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}
 				Var res = null;
 				if (ieop == Operator.PostIncr || ieop == Operator.PostDecr) {
-					res = new LVar(0,"tmp$res",f.getType(env),Var.VAR_LOCAL,0);
+					res = new LVar(0,"tmp$res",f.getType(),Var.VAR_LOCAL,0);
 					be.addSymbol(res);
 				}
 				ConstExpr ce;

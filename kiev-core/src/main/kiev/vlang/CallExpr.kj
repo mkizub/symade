@@ -90,43 +90,43 @@ public class CallExpr extends ENode {
 		return args;
 	}
 
-	public int getPriority(Env env) { return Constants.opCallPriority; }
+	public int getPriority() { return Constants.opCallPriority; }
 
-	public Type getType(Env env) {
+	public Type getType() {
 		Method m = this.func;
 		if (m == null)
-			return env.tenv.tpVoid;
+			return getEnv().tenv.tpVoid;
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return getCallType(env).ret();
+		return getCallType().ret();
 	}
 
-	public CallType getCallType(Env env) {
+	public CallType getCallType() {
 		Method m = this.func;
 		if (m == null)
-			return new CallType(null,null,null,env.tenv.tpVoid,false);
+			return new CallType(null,null,null,getEnv().tenv.tpVoid,false);
 		return this.func.makeType(this.targs, this.getEArgs());
 	}
 
-	public Type[] getAccessTypes(Env env) {
+	public Type[] getAccessTypes() {
 		if (obj == null || func == null || func.isStatic())
-			return new Type[]{getType(env)};
-		Type[] objTypes = obj.getAccessTypes(env);
+			return new Type[]{getType()};
+		Type[] objTypes = obj.getAccessTypes();
 		Type[] retTypes = new Type[objTypes.length];
 		Type[] mt = new Type[args.length];
 		for (int i=0; i < objTypes.length; i++) {
 			for (int j=0; j < mt.length; j++)
-				mt[j] = args[i].getType(env);
+				mt[j] = args[i].getType();
 			retTypes[i] = func.makeType(this.targs, objTypes[i], mt).ret();
 		}
 		return retTypes;
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void mainResolveOut(INode parent, AttrSlot slot) {
 		if (func != null) {
 			if (obj == null) {
 				assert (func.isStatic() || func instanceof Constructor);
-				obj = new TypeRef(Env.ctxTDecl(func).getType(env));
+				obj = new TypeRef(Env.ctxTDecl(func).getType());
 			}
 			if (Env.hasSameRoot(func, this)) {
 				//if (obj instanceof SuperExpr && !this.isSuperExpr())
@@ -149,23 +149,24 @@ public class CallExpr extends ENode {
 			return;
 		}
 
-		Type tp = Env.ctxTDecl(this).getType(env);
+		StdTypes tenv = getEnv().tenv;
+		Type tp = Env.ctxTDecl(this).getType();
 		CallType mt = null;
 
 		Type[] ata = new Type[targs.length];
 		for (int i=0; i < ata.length; i++)
-			ata[i] = targs[i].getType(env);
+			ata[i] = targs[i].getType();
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType(env);
+			ta[i] = args[i].getType();
 
 		// super-call "super.func(args)"
 		if (obj instanceof SuperExpr) {
-			Type tp = Env.ctxTDecl(this).super_types[0].getType(env);
-			ResInfo info = new ResInfo(env,this,this.ident).match(Method.class);
+			Type tp = Env.ctxTDecl(this).super_types[0].getType();
+			ResInfo info = new ResInfo(this,this.ident).match(Method.class);
 			info.enterForward(obj);
 			info.enterSuper();
-			mt = new CallType(tp,ata,ta,env.tenv.tpAny,false);
+			mt = new CallType(tp,ata,ta,tenv.tpAny,false);
 			try {
 				if (!PassInfo.resolveBestMethodR(tp,info,mt))
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(this.ident,args,null));
@@ -188,12 +189,12 @@ public class CallExpr extends ENode {
 			res = new UnresCallExpr[1];
 		}
 		else if( obj instanceof TypeRef ) {
-			Type otp = ((TypeRef)obj).getType(env);
+			Type otp = ((TypeRef)obj).getType();
 			tps = new Type[]{otp};
 			res = new UnresCallExpr[1];
 			goto try_static;
 		} else {
-			tps = obj.getAccessTypes(env);
+			tps = obj.getAccessTypes();
 			res = new UnresCallExpr[tps.length];
 		}
 
@@ -201,8 +202,8 @@ public class CallExpr extends ENode {
 			// try virtual call first
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				ResInfo info = new ResInfo(env, this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext).match(Method.class);
-				mt = new CallType(tp,ata,ta,env.tenv.tpAny,false);
+				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext).match(Method.class);
+				mt = new CallType(tp,ata,ta,tenv.tpAny,false);
 				if (obj == null && Env.ctxMethod(this) != null) {
 					if (PassInfo.resolveMethodR((ASTNode)this,info,mt)) {
 						res[si] = info.buildCall((ASTNode)this, obj, targs, args);
@@ -224,12 +225,12 @@ public class CallExpr extends ENode {
 			// try closure var or an instance fiels
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				ResInfo info = new ResInfo(env,this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
+				ResInfo info = new ResInfo(this, this.ident, ResInfo.noStatic | ResInfo.noSyntaxContext);
 				if (obj == null) {
 					if (PassInfo.resolveNameR((ASTNode)this,info)) {
 						DNode closure = info.resolvedDNode();
 						if ((closure instanceof Var || closure instanceof Field)
-							&& Type.getRealType(tp,closure.getType(env)) instanceof CallType
+							&& Type.getRealType(tp,closure.getType()) instanceof CallType
 						) {
 							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
 							cnt += 1;
@@ -239,7 +240,7 @@ public class CallExpr extends ENode {
 					if (tp.resolveNameAccessR(info)) {
 						DNode closure = info.resolvedDNode();
 						if ((closure instanceof Var || closure instanceof Field)
-							&& Type.getRealType(tp,closure.getType(env)) instanceof CallType
+							&& Type.getRealType(tp,closure.getType()) instanceof CallType
 						) {
 							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
 							cnt += 1;
@@ -254,8 +255,8 @@ public class CallExpr extends ENode {
 			// try static call
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				ResInfo info = new ResInfo(env,this, this.ident).match(Method.class);
-				mt = new CallType(null,ata,ta,env.tenv.tpAny,false);
+				ResInfo info = new ResInfo(this, this.ident).match(Method.class);
+				mt = new CallType(null,ata,ta,tenv.tpAny,false);
 				if (obj == null) {
 					if (PassInfo.resolveMethodR((ASTNode)this,info,mt)) {
 						res[si] = info.buildCall((ASTNode)this, obj, targs, args);
@@ -274,11 +275,11 @@ public class CallExpr extends ENode {
 			// try closure static field
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
-				ResInfo info = new ResInfo(env,this, this.ident, ResInfo.noSyntaxContext);
+				ResInfo info = new ResInfo(this, this.ident, ResInfo.noSyntaxContext);
 				if (obj == null) {
 					if (PassInfo.resolveNameR((ASTNode)this,info)) {
 						DNode closure = info.resolvedDNode();
-						if (closure instanceof Field && Type.getRealType(tp,closure.getType(env)) instanceof CallType) {
+						if (closure instanceof Field && Type.getRealType(tp,closure.getType()) instanceof CallType) {
 							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
 							cnt += 1;
 						}
@@ -286,7 +287,7 @@ public class CallExpr extends ENode {
 				} else {
 					if (tp.meta_type.tdecl.resolveNameR(info)) {
 						DNode closure = info.resolvedDNode();
-						if (closure instanceof Field && Type.getRealType(tp,closure.getType(env)) instanceof CallType) {
+						if (closure instanceof Field && Type.getRealType(tp,closure.getType()) instanceof CallType) {
 							res[si] = info.buildCall((ASTNode)this, obj, targs, args);
 							cnt += 1;
 						}
@@ -346,14 +347,14 @@ public class CallExpr extends ENode {
 	}
 
 	// verify resolved call
-	public boolean preVerify(Env env, INode parent, AttrSlot slot) {
+	public boolean preVerify(INode parent, AttrSlot slot) {
 		Method func = this.func;
 		if (func == null && Env.ctxMethod(this) != null && Env.ctxMethod(this).isMacro())
 			return true;
 		if (func == null)
-			Kiev.reportError(this, "Un-resolved method for "+this);
-		if (func.isStatic() && !func.isVirtualStatic() && !(obj instanceof TypeRef))
-			obj = new TypeRef(Env.ctxTDecl(func).getType(env));
+			reportError().log("Un-resolved method for {}", this);
+		else if (func.isStatic() && !func.isVirtualStatic() && !(obj instanceof TypeRef))
+			obj = new TypeRef(Env.ctxTDecl(func).getType());
 		return true;
 	}
 
@@ -384,7 +385,7 @@ public class CallExpr extends ENode {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if (obj != null) {
-			if( obj.getPriority(Env.getEnv()) > opAccessPriority )
+			if( obj.getPriority() > opAccessPriority )
 				sb.append('(').append(obj).append(").");
 			else
 				sb.append(obj).append('.');
@@ -406,7 +407,7 @@ public class CallExpr extends ENode {
 		int idx = 0;
 		Hashtable<String,Object> args = new Hashtable<String,Object>();
 		foreach (Var fp; func.params; fp.kind == Var.VAR_LOCAL) {
-			if (fp.getType(ctx.env).getErasedType() instanceof ASTNodeType)
+			if (fp.getType().getErasedType() instanceof ASTNodeType)
 				args.put(fp.sname, this.args[idx++].doRewrite(ctx));
 			else
 				args.put(fp.sname, this.args[idx++]);
@@ -480,32 +481,32 @@ public class CtorCallExpr extends ENode {
 		return this.args;
 	}
 
-	public int getPriority(Env env) { return Constants.opCallPriority; }
+	public int getPriority() { return Constants.opCallPriority; }
 
-	public Type getType(Env env) {
-		return env.tenv.tpVoid;
+	public Type getType() {
+		return getEnv().tenv.tpVoid;
 	}
 
-	public CallType getCallType(Env env) {
+	public CallType getCallType() {
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType(env);
-		return new CallType(Env.ctxTDecl(this).getType(env),null,ta,env.tenv.tpVoid,false);
+			ta[i] = args[i].getType();
+		return new CallType(Env.ctxTDecl(this).getType(),null,ta,getEnv().tenv.tpVoid,false);
 	}
 
-	public void mainResolveOut(Env env, INode parent, AttrSlot slot) {
+	public void mainResolveOut(INode parent, AttrSlot slot) {
 		if (func != null) {
 			assert (func instanceof Constructor);
 			if (Env.hasSameRoot(func, this))
 				return;
 		}
 
-		Type tp = Env.ctxTDecl(this).getType(env);
+		Type tp = Env.ctxTDecl(this).getType();
 
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType(env);
-		CallType mt = new CallType(tp,null,ta,env.tenv.tpVoid,false);
+			ta[i] = args[i].getType();
+		CallType mt = new CallType(tp,null,ta,tp.tenv.tpVoid,false);
 
 		if (obj == null && symbol == null) {
 			if (ident == "super")
@@ -515,7 +516,7 @@ public class CtorCallExpr extends ENode {
 		}
 		// constructor call "this(args)"
 		if (obj instanceof ThisExpr) {
-			ResInfo info = new ResInfo(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Constructor.class);
+			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Constructor.class);
 			if (!PassInfo.resolveBestMethodR(tp,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this.symbol = info.resolvedSymbol();
@@ -523,9 +524,9 @@ public class CtorCallExpr extends ENode {
 		}
 		// constructor call "super(args)"
 		if (obj instanceof SuperExpr) {
-			mt = new CallType(tp,null,ta,env.tenv.tpVoid,false);
-			ResInfo info = new ResInfo(env,this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Constructor.class);
-			if (!PassInfo.resolveBestMethodR(Env.ctxTDecl(this).super_types[0].getType(env),info,mt))
+			mt = new CallType(tp,null,ta,tp.tenv.tpVoid,false);
+			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noSyntaxContext).match(Constructor.class);
+			if (!PassInfo.resolveBestMethodR(Env.ctxTDecl(this).super_types[0].getType(),info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this.symbol = info.resolvedSymbol();
 			return;
@@ -604,14 +605,14 @@ public class ClosureCallExpr extends ENode {
 			return true;
 		if (k == ClosureCallKind.CURRY)
 			return false;
-		CallType t = (CallType)expr.getType(Env.getEnv());
+		CallType t = (CallType)expr.getType();
 		return t.arity == args.length;
 	}
 
-	public int getPriority(Env env) { return Constants.opCallPriority; }
+	public int getPriority() { return Constants.opCallPriority; }
 
-	public Type getType(Env env) {
-		CallType t = (CallType)expr.getType(env);
+	public Type getType() {
+		CallType t = (CallType)expr.getType();
 		if (isACall())
 			return t.ret();
 		Type[] types = new Type[t.arity - args.length];
@@ -632,17 +633,18 @@ public class ClosureCallExpr extends ENode {
 		return sb.toString();
 	}
 
-	public Method getCallIt(CallType tp, Env env) {
+	public Method getCallIt(CallType tp) {
 		String call_it_name;
 		Type ret;
+		StdTypes tenv = getTypeEnv();
 		if( tp.ret().isReference() ) {
 			call_it_name = "call_Object";
-			ret = env.tenv.tpObject;
+			ret = tenv.tpObject;
 		} else {
 			call_it_name = ("call_"+tp.ret()).intern();
 			ret = tp.ret();
 		}
-		return env.tenv.tpClosure.getStruct().resolveMethod(env, call_it_name, ret);
+		return tenv.tpClosure.getStruct().resolveMethod(call_it_name, ret);
 	}
 }
 

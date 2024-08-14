@@ -8,22 +8,17 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev;
+package kiev.compiler;
 import syntax kiev.Syntax;
 
-import java.io.*;
 
-/**
- * @author Maxim Kizub
- *
- */
-
-public enum CError {
-	E000;
-}
-public enum SeverError {
-	Warning,
-	Error,
-	InternalError
+public class EditorThreadGroup extends WorkerThreadGroup {
+	public EditorThreadGroup(WorkerThreadGroup bthr) {
+		this(bthr, bthr.jobThreads);
+	}
+	public EditorThreadGroup(WorkerThreadGroup bthr, int jobThreads) {
+		super(bthr, "editor", jobThreads);
+		semantic_context = new SemanticContext(bthr.semantic_context);
+	}
 }
 

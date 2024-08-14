@@ -43,7 +43,7 @@ public class CodeLabel implements JConstants {
 	public static final CodeLabel[] emptyArray = new CodeLabel[0];
 
 	public final Code	code;
-	
+
 	/** PC position of this label */
 	public int			pc = -1;
 
@@ -119,10 +119,10 @@ public class CodeLabel implements JConstants {
 			// This point is unreachable by normal flow control,
 			// just setup stack to be correct
 			if( stack == null ) {
-				trace(Kiev.debug && Kiev.debugInstrGen,"Stack state at unreacheable code is undefined, assuming current");
+				trace(code.traceInstrGen,"Stack state at unreacheable code is undefined, assuming current");
 				stack = (JType[])Arrays.cloneToSize(code.stack,code.top);
 			} else {
-				trace(Kiev.debug && Kiev.debugInstrGen,"Attaching label at unreachable code, stack depth is "+stack.length);
+				trace(code.traceInstrGen,"Attaching label at unreachable code, stack depth is "+stack.length);
 				code.top = stack.length;
 				System.arraycopy(stack,0,code.stack,0,stack.length);
 				for(int i=code.top; i < code.stack.length; i++) {
@@ -220,7 +220,7 @@ public class CodeTableSwitch extends CodeSwitch {
 		code.add_code_int( def_case.pc-this.pc );
 		code.add_code_int( lo );
 		code.add_code_int( hi );
-		trace(Kiev.debug && Kiev.debugInstrGen,"\ttable switch: from "+lo+" to "+hi+" default pc="+def_case.pc);
+		trace(code.traceInstrGen,"\ttable switch: from "+lo+" to "+hi+" default pc="+def_case.pc);
 		for(int i=0; i <= hi-lo; i++)
 			if( cases[i] != null )
 				code.add_code_int( cases[i].pc-this.pc );

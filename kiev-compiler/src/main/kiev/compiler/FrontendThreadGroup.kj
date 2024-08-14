@@ -1,0 +1,226 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.compiler;
+import syntax kiev.Syntax;
+
+import kiev.transf.*;
+
+import kiev.stdlib.Arrays;
+//import kiev.fmt.common.TextParser;
+import kiev.dump.DumpFactory;
+import kiev.dump.XMLDumpFilter;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.lang.management.*;
+
+
+public class FrontendThreadGroup extends WorkerThreadGroup {
+
+	// The current syntax context
+	public ANodeContext				syntax_context;
+
+	private CompilerParseInfo[]		args;
+
+	public PluginNodeProcessor getProcessor() { (PluginNodeProcessor)theEnv.getNodeProcessor() }
+
+	public FrontendThreadGroup(Env theEnv) {
+		super(null, "frontend", 1);
+		this.theEnv = theEnv;
+		this.semantic_context = theEnv.getEnvContext();
+		this.syntax_context = theEnv.getEnvContext();
+	}
+
+	public void runFrontEndParseTask(Compiler compiler, CompilerParseInfo[] args) {
+		this.args = args;
+		this.roots = null;
+		theEnv.errorCounter.set(0);
+		theEnv.warningCounter.set(0);
+		runFrontEndParse(compiler);
+	}
+
+	public void runTask(INode[] roots) {
+		this.roots = roots;
+		theEnv.errorCounter.set(0);
+		theEnv.warningCounter.set(0);
+		runFrontEnd();
+		this.roots = null;
+	}
+
+	private void runFrontEndParse(Compiler compiler) {
+		this.programm_start = this.programm_end = System.currentTimeMillis();
+		long curr_time = 0L, diff_time = 0L;
+		try {
+			getEnv().reportInfo().log(Compiler.version);
+			//	Runtime.getRuntime().traceMethodCalls(Compiler.methodTrace);
+
+			if (!getEnv().isInitialized()) {
+				if (args == null)
+					args = new CompilerParseInfo[0];
+				executorService.submit(new InitEnvironmentTask(compiler)).get();
+			}
+			executorService.submit(new Runnable() { public void run() {
+				foreach (CompilerParseInfo cpi; args; cpi.add_to_project && cpi.fname != null)
+					getProject().addProjectFile(cpi.fname);
+				addRequaredToMake(compiler);
+			}}).get();
+
+			if( args == null || args.length == 0 )
+				return;
+
+			getProcessor().resetFrontEndPass();
+
+			for(int i=0; i < args.length; i++) {
+				this.tasks.add(new ParseSourceFileTask(compiler, args[i]));
+			}
+			Transaction tr = Transaction.open("Parse", this);
+			try {
+				executeTasks(true);
+			} finally {
+				tr.close(this);
+			}
+
+			this.roots = new INode[]{this.getEnv().root};
+
+		} catch( Throwable e) {
+			if (e instanceof CompilationAbortError)
+				goto stop;
+			this.getEnv().reportError().log(e);
+			goto stop;
+		}
+
+	stop:;
+		if (theEnv.errorCounter.get() == 0) {
+			executorService.submit(new DumpProjectTask()).get();
+		}
+		else {
+			this.roots = null;
+		}
+		if (this.reportTotals || theEnv.errorCounter.get() > 0  || theEnv.warningCounter.get() > 0)
+			reportTotals("Frontend");
+	}
+
+	private void runFrontEnd() {
+		if (roots == null || roots.length == 0)
+			return;
+
+		int cuLength = getProject().compilationUnits.length;
+
+		this.programm_start = this.programm_end = System.currentTimeMillis();
+		long curr_time = 0L, diff_time = 0L;
+		try {
+			getEnv().reportInfo().log(Compiler.version);
+			//Runtime.getRuntime().traceMethodCalls(Compiler.methodTrace);
+
+
+			getProcessor().resetFrontEndPass();
+
+			////////////////////////////////////////////////////
+			//	                  Cleanup errors              //
+			////////////////////////////////////////////////////
+			if (getEnv().proj != null && getEnv().proj.errors.length > 0) {
+				foreach (INode root; new RootsEnumerator(cuLength)) {
+					root.walkTree(null, null, new ITreeWalker() {
+						private final Env env = WorkerThreadGroup.this.getEnv();
+						private ErrorInfo[] errors = this.env.proj.errors;
+						public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
+							foreach (ErrorNodeInfo err; this.errors; err.node == n) {
+								this.env.proj.errors.detach(err);
+								this.errors = this.env.proj.errors;
+							}
+							return true;
+						}
+					});
+				}
+			}
+
+			////////////////////////////////////////////////////
+			//	                  Frontend                    //
+			////////////////////////////////////////////////////
+
+			do {
+				String[] msg = new String[1];
+				diff_time = curr_time = System.currentTimeMillis();
+				foreach (INode root; new RootsEnumerator(cuLength)) {
+					executorService.submit(new Runnable() { public void run() {
+						String s = getProcessor().runCurrentFrontEndProcessor(getEnv(),root);
+						if (s != null)
+							msg[0] = s;
+					}}).get();
+				}
+				diff_time = System.currentTimeMillis() - curr_time;
+				Compiler.reportProgress(theEnv, msg[0], diff_time);
+				if (theEnv.errorCounter.get() > 0) goto stop;
+			} while (getProcessor().nextFrontEndPass());
+
+			diff_time = curr_time = System.currentTimeMillis();
+			foreach (INode root; new RootsEnumerator(cuLength)) {
+				executorService.submit(new Runnable() { public void run() {
+					getProcessor().runVerifyProcessors(root);
+				}}).get();
+			}
+			diff_time = System.currentTimeMillis() - curr_time;
+			Compiler.reportProgress(theEnv, "Tree verification", diff_time);
+			if (theEnv.errorCounter.get() > 0) goto stop;
+
+		} catch( Throwable e) {
+			if (e instanceof CompilationAbortError)
+				goto stop;
+			getEnv().reportError().log(e);
+			goto stop;
+		}
+
+	stop:;
+		executorService.submit(new Runnable() { public void run() {
+			try {
+				//foreach (INode root; WorkerThreadGroup.this.new RootsEnumerator(cuLength))
+				//	Kiev.lockNodeTree(root);
+				getEnv().getBackendEnv().cleanupHashOfFails();
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}}).get();
+		if (theEnv.errorCounter.get() == 0) {
+			executorService.submit(new DumpProjectTask()).get();
+		} else {
+			this.roots = null;
+		}
+		if (this.reportTotals || theEnv.errorCounter.get() > 0  || theEnv.warningCounter.get() > 0)
+			reportTotals("Frontend");
+	}
+
+	private boolean containsFileName(String fname) {
+		foreach (CompilerParseInfo cpi; args; cpi.fname.equals(fname))
+			return true;
+		return false;
+	}
+
+	private void addRequaredToMake(Compiler compiler) {
+		foreach (FileUnit fu; this.getProject().enumerateAllCompilationUnits(); !containsFileName(fu.pname())) {
+			ProjectSyntaxInfo psi = null;
+			if (fu.ftype != null) {
+				foreach (ProjectSyntaxInfo p; this.getProject().syntax_infos; fu.ftype.equals(p.file_type)) {
+					psi = p;
+					if (psi.parser != null)
+						break;
+				}
+			}
+			if (compiler.verbose)
+				System.out.println("File "+fu.pname());
+			File f = new File(compiler.makePath(fu.pname()));
+			args = (CompilerParseInfo[])Arrays.appendUniq(args,new CompilerParseInfo(f,psi,true));
+		}
+	}
+
+}
+
