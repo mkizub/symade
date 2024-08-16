@@ -952,8 +952,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		boolean run_backend = false;
 
 		foreach (ASTNode n; fu.members) {
-			if (n instanceof ComplexTypeDecl)
-				run_backend |= dumpAPI((ComplexTypeDecl)n, timestamp);
+			if (n instanceof MetaTypeDecl)
+				run_backend |= dumpAPI((MetaTypeDecl)n, timestamp);
 			if (n instanceof KievSyntax)
 				run_backend |= dumpAPI((KievSyntax)n, timestamp);
 			if (n instanceof SyntaxScope)
@@ -971,8 +971,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 	public boolean dumpAPI(SyntaxScope ns, long timestamp) {
 		boolean run_backend = false;
 		foreach (ASTNode n; ns.members) {
-			if (n instanceof ComplexTypeDecl)
-				run_backend |= dumpAPI((ComplexTypeDecl)n, timestamp);
+			if (n instanceof MetaTypeDecl)
+				run_backend |= dumpAPI((MetaTypeDecl)n, timestamp);
 			else if (n instanceof KievSyntax)
 				run_backend |= dumpAPI((KievSyntax)n, timestamp);
 			else if (n instanceof SyntaxScope)
@@ -984,15 +984,15 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		}
 		return run_backend;
 	}
-	public boolean dumpAPI(ComplexTypeDecl td, long timestamp) {
+	public boolean dumpAPI(MetaTypeDecl td, long timestamp) {
 		File output_dir = getProcessor().genOutputDir;
 		if (output_dir==null)
 			output_dir = new File("classes");
-		String out_file = td.qname().replace('·',File.separatorChar);
-		boolean run_backend = timestamp > new File(output_dir,out_file+(td instanceof Struct ? ".class" : ".xml")).lastModified();
+		String out_file = td.qname().replace('·',File.separatorChar)+".btd";
+		boolean run_backend = false; //timestamp > new File(output_dir,out_file).lastModified();
 		if (td.isPrivate())
 			return run_backend;
-		File f = new File(output_dir,out_file+".xml");
+		File f = new File(output_dir,out_file);
 		{
 			FileUnit fu = Env.ctxFileUnit(td);
 			fu.addGeneratedFile(f.getPath());
@@ -1000,7 +1000,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if (timestamp < f.lastModified())
 			return run_backend;
 		try {
-			DumpFactory.getXMLDumper().dumpToXMLFile(env, new XMLDumpFilter("api"), new ANode[]{td}, f);
+			DumpFactory.getBinDumper().dumpToBinFile(env, new BinDumpFilter(), new ANode[]{td}, f);
+			//DumpFactory.getXMLDumper().dumpToXMLFile(env, new XMLDumpFilter("api"), new ANode[]{td}, f);
 		} catch (IOException e) {
 			env.reportWarning().cause(e).log("Create/write error while API dump: "+e);
 		}
@@ -1011,11 +1012,16 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if (output_dir==null)
 			output_dir = new File("classes");
 		try {
-			String out_file = td.qname().replace('·',File.separatorChar)+".xml";
+			String out_file = td.qname().replace('·',File.separatorChar)+".btd";
 			File f = new File(output_dir,out_file);
+			{
+				FileUnit fu = Env.ctxFileUnit(td);
+				fu.addGeneratedFile(f.getPath());
+			}
 			if (timestamp < f.lastModified())
 				return false;
-			DumpFactory.getXMLDumper().dumpToXMLFile(env, new XMLDumpFilter("api"), new ANode[]{td}, f);
+			DumpFactory.getBinDumper().dumpToBinFile(env, new BinDumpFilter(), new ANode[]{td}, f);
+			//DumpFactory.getXMLDumper().dumpToXMLFile(env, new XMLDumpFilter("api"), new ANode[]{td}, f);
 		} catch (IOException e) {
 			env.reportWarning().cause(e).log("Create/write error while API dump: "+e);
 		}

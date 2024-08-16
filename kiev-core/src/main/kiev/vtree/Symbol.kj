@@ -260,6 +260,9 @@ public class Alias extends ANode {
 		super.callbackChanged(info);
 	}
 
+	public String toString() {
+		return name;
+	}
 }
 
 @ThisIsANode(lang=CoreLang)

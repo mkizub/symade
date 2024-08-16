@@ -38,3 +38,4 @@
 - generate symade-version-debug.jar with traces and symade-version.jar without traces
 - fix java primitive values boxing/unboxing
 - implement pragmas and automatic extensions enabling if used in code and not disabled
+- cast of Foo[] to Foo... (varargs) not always works (Collections.addAll(HashSet<String>, String[]))

@@ -15,7 +15,7 @@ rmdir /s /q %OUT_ROOT%
 @if %errorlevel% NEQ 0 (exit /b %errorlevel%)
 
 "%JAVA_HOME%\bin\jar" cfe symade-core-debug.jar kiev.Main -C %OUT_ROOT%\symade3 .
-"%JAVA_HOME%\bin\jar" uf symade-core-debug.jar @bootstrap.res
+@rem "%JAVA_HOME%\bin\jar" uf symade-core-debug.jar @bootstrap.res
 
 "%JAVA_HOME%\bin\jar" cf symade-core-sources.jar -C kiev-stdlib\src\main .
 "%JAVA_HOME%\bin\jar" uf symade-core-sources.jar -C kiev-core\src\main .
@@ -27,7 +27,7 @@ rmdir /s /q %OUT_ROOT%
 @if %errorlevel% NEQ 0 (exit /b %errorlevel%)
 
 "%JAVA_HOME%\bin\jar" cfe symade-core.jar kiev.Main -C %OUT_ROOT%\symade4 .
-"%JAVA_HOME%\bin\jar" uf  symade-core.jar @bootstrap.res
+@rem "%JAVA_HOME%\bin\jar" uf  symade-core.jar @bootstrap.res
 
 set OUT_ROOT=
 @rem rmdir /s /q %OUT_ROOT%

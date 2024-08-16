@@ -13,7 +13,7 @@ import syntax kiev.Syntax;
 
 public interface JConstants extends Constants {
 
-	
+
 	public final static String jsigRule		= "Lkiev/stdlib/rule;";
 	public final static String sigAny			= "?";
 	public final static String sigVoid		= "V";
@@ -26,7 +26,7 @@ public interface JConstants extends Constants {
 	public final static String sigFloat		= "F";
 	public final static String sigDouble		= "D";
 	public final static String sigNull		= "0";
-	
+
 	/** Java bytecode constants */
 
     // top-level constants
@@ -48,25 +48,25 @@ public interface JConstants extends Constants {
     public static final int CONSTANT_INTERFACEMETHOD	= 11;
     public static final int CONSTANT_NAMEANDTYPE		= 12;
 
-	public final static String nameInit				= "<init>";
+	public final static String nameInit					= "<init>";
 	public final static String nameClassInit			= "<clinit>";
 
 	// Well known attributes
-	public final static String attrCode				= "Code";
+	public final static String attrCode					= "Code";
 	public final static String attrSourceFile			= "SourceFile";
 	public final static String attrSourceDebugExtension= "SourceDebugExtension";
 	public final static String attrSignature			= "Signature";
 	public final static String attrLocalVarTable		= "LocalVariableTable";
-	public final static String attrLinenoTable		= "LineNumberTable";
+	public final static String attrLinenoTable			= "LineNumberTable";
 	public final static String attrExceptions			= "Exceptions";
-	public final static String attrInnerClasses		= "InnerClasses";
+	public final static String attrInnerClasses			= "InnerClasses";
 	public final static String attrConstantValue		= "ConstantValue";
-	public final static String attrRequire			= "kiev.Require";
+	public final static String attrRequire				= "kiev.Require";
 	public final static String attrEnsure				= "kiev.Ensure";
 	public final static String attrRVAnnotations		= "RuntimeVisibleAnnotations";
 	public final static String attrRIAnnotations		= "RuntimeInvisibleAnnotations";
-	public final static String attrRVParAnnotations	= "RuntimeVisibleParameterAnnotations";
-	public final static String attrRIParAnnotations	= "RuntimeInvisibleParameterAnnotations";
+	public final static String attrRVParAnnotations		= "RuntimeVisibleParameterAnnotations";
+	public final static String attrRIParAnnotations		= "RuntimeInvisibleParameterAnnotations";
 	public final static String attrAnnotationDefault	= "AnnotationDefault";
 
     // types for newarray

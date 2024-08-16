@@ -172,7 +172,7 @@ public abstract class JType {
 
 	public final JTypeEnv		jtenv;
 	public final MetaType		jmeta_type;
-	public final String		java_signature;
+	public final String			java_signature;
 	public final int			flags;
 
 	JType(JTypeEnv jtenv, MetaType meta_type, String java_signature, int flags) {
@@ -194,15 +194,15 @@ public abstract class JType {
 	public final boolean isInteger()		{ return (jmeta_type.flags & MetaType.flInteger)		!= 0 ; }
 	public final boolean isFloatInCode()	{ return (jmeta_type.flags & MetaType.flFloatInCode)	!= 0 ; }
 	public final boolean isFloat()			{ return (jmeta_type.flags & MetaType.flFloat)			!= 0 ; }
-	public final boolean isNumber()		{ return (jmeta_type.flags & MetaType.flNumber)		!= 0 ; }
-	public final boolean isDoubleSize()	{ return (jmeta_type.flags & MetaType.flDoubleSize)	!= 0 ; }
+	public final boolean isNumber()			{ return (jmeta_type.flags & MetaType.flNumber)			!= 0 ; }
+	public final boolean isDoubleSize()		{ return (jmeta_type.flags & MetaType.flDoubleSize)		!= 0 ; }
 	public final boolean isBoolean()		{ return (jmeta_type.flags & MetaType.flBoolean)		!= 0 ; }
 	public final boolean isCallable()		{ return (jmeta_type.flags & MetaType.flCallable)		!= 0 ; }
 	public final boolean isAbstract()		{ return (flags & flAbstract)							!= 0 ; }
-	public final boolean isUnerasable()	{ return (flags & flUnerasable)						!= 0 ; }
+	public final boolean isUnerasable()		{ return (flags & flUnerasable)							!= 0 ; }
 	public final boolean isVirtual()		{ return (flags & flVirtual)							!= 0 ; }
 	public final boolean isFinal()			{ return (flags & flFinal)								!= 0 ; }
-	public final boolean isStatic()		{ return (flags & flStatic)								!= 0 ; }
+	public final boolean isStatic()			{ return (flags & flStatic)								!= 0 ; }
 	public final boolean isForward()		{ return (flags & flForward)							!= 0 ; }
 
 	public static JType leastCommonType(JType tp1, JType tp2) {

@@ -349,8 +349,22 @@ public final class DefaultLoggingEventBuilder implements LoggingEventBuilder {
 			}
 			if (c == '{' && i < len+1) {
 				if (message.charAt(++i) == '}') {
-					if (args.length > arg+1)
-						sb.append(args[++arg]);
+					if (args.length > arg+1) {
+						Object arg = args[++arg];
+						if (arg.getClass().isArray()) {
+							if      (arg instanceof boolean[]) sb.append(Arrays.toString((boolean[])arg));
+							else if (arg instanceof byte[]   ) sb.append(Arrays.toString((byte[])arg));
+							else if (arg instanceof char[]   ) sb.append(Arrays.toString((char[])arg));
+							else if (arg instanceof short[]  ) sb.append(Arrays.toString((short[])arg));
+							else if (arg instanceof int[]    ) sb.append(Arrays.toString((int[])arg));
+							else if (arg instanceof long[]   ) sb.append(Arrays.toString((long[])arg));
+							else if (arg instanceof float[]  ) sb.append(Arrays.toString((float[])arg));
+							else if (arg instanceof double[] ) sb.append(Arrays.toString((double[])arg));
+							else                               sb.append(Arrays.toString((Object[])arg));
+						} else {
+							sb.append(arg);
+						}
+					}
 					else
 						sb.append("{}");
 					continue;

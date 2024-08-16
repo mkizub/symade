@@ -106,10 +106,10 @@ public abstract class ParserBase {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null)
 			sym = curEnv.getSymbolByUUID(uuid);
-		if (sym == null && parent instanceof TypeDecl) {
-			if (parent.symbol.isGlobalSymbol())
-				sym = parent.symbol.makeGlobalSubSymbol(name);
-		}
+		//if (sym == null && parent instanceof TypeDecl) {
+		//	if (parent.symbol.isGlobalSymbol())
+		//		sym = parent.symbol.makeGlobalSubSymbol(name);
+		//}
 		if (sym == null)
 			sym = new Symbol(name);
 		TypeConstr arg = new TypeConstr(sym);

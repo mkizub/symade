@@ -167,6 +167,30 @@ public class SourceDebugExtensionAttr extends Attr {
 	}
 }
 
+public class ClassSignatureAttr extends Attr {
+
+	/** Signature */
+	public String		signature;
+
+	/** Constructor for bytecode reader and raw field creation */
+	public ClassSignatureAttr(String signature) {
+		super(attrSignature);
+		this.signature = signature;
+	}
+
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		constPool.addAsciiCP(signature);
+	}
+
+	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+		kiev.bytecode.SignatureAttribute csa = new kiev.bytecode.SignatureAttribute();
+		csa.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
+		csa.cp_signature = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(signature).pos];
+		return csa;
+	}
+}
+
 public class LocalVarTableAttr extends Attr {
 
 	public CodeVar[]		vars;

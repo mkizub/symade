@@ -249,6 +249,13 @@ public class JStruct extends JTypeDecl {
 			}
 		}
 
+		if (needClassSignature()) {
+			Signature s = Signature.makeClassTypeSignature(vn());
+			//System.out.println("Signature for "+this+" is: "+s);
+			ClassSignatureAttr csa = new ClassSignatureAttr(s.sig);
+			this.addAttr(csa);
+		}
+
 		if (inner_info != null) {
 			int count = 0;
 			DNode[] inners = inner_info.inners;
@@ -343,6 +350,24 @@ public class JStruct extends JTypeDecl {
 			System.out.println("Create/write error while Kiev-to-JavaBytecode exporting: "+e);
 		}
 	}
+
+	private boolean needClassSignature() {
+		Struct s = vn();
+		if (s instanceof JavaEnum)
+			return false;
+		if (s.args.length != 0) {
+			//System.out.println("Struct "+this+" needs class signature because it's type "+s.getType()+" has "+s.getType().getTArgs().length+" args");
+			return true;
+		} else {
+			//System.out.println("Struct "+this+" has no args: "+s.getType());
+		}
+		foreach (TypeRef sup; s.super_types; sup.getStruct().args.length  != 0) {
+			//System.out.println("Struct "+this+" needs class signature because it's super-type "+sup.getType()+" has "+sup.getStruct().args.length+" args");
+			return true;
+		}
+		return false;
+	}
+
 }
 
 

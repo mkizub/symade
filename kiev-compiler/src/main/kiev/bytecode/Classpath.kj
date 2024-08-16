@@ -16,6 +16,9 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+
 /**
  * @author Maxim Kizub
  * @version $Revision: 238 $
@@ -26,6 +29,7 @@ public class Classpath implements BytecodeFileConstants {
 	public final Env				theEnv;
 	public Vector<ClasspathEntry>	entries;
 	public SymClasspathEntry		symEntries;
+	public ClassloaderEntry			urlEntries;
 
 //	public Classpath() {
 //		this(System.getProperty("java.class.path"));
@@ -43,17 +47,27 @@ public class Classpath implements BytecodeFileConstants {
 			File extdir = new File(homepath+File.separator+"lib"+File.separator+"ext");
 			String[] extfiles = extdir.list();
 			if (extfiles != null) {
-				foreach(String f; extfiles)
-				bootpath = bootpath + File.pathSeparator + extdir + File.separator + f;
+				foreach(String f; extfiles) {
+					if (bootpath == null)
+						bootpath = extdir + File.separator + f;
+					else
+						bootpath = bootpath + File.pathSeparator + extdir + File.separator + f;
+				}
 			}
-			classpath = bootpath+File.pathSeparator+classpath;
+			if (bootpath != null)
+				classpath = bootpath+File.pathSeparator+classpath;
 //			System.out.println("actual CLASSPATH="+classpath);
 //		}
 		theEnv.reportInfo().log("classpath: {}", classpath);
 		File ctSym = new File(ctSymPath);
 		if (ctSym.exists() && ctSym.canRead()) {
-			theEnv.reportInfo().log("ctSym: ", ctSymPath);
+			theEnv.reportInfo().log("ctSym: {}", ctSymPath);
 			symEntries = new SymClasspathEntry(ctSym, targetJVM);
+		}
+		if (this.getClass().getClassLoader() instanceof URLClassLoader) {
+			URLClassLoader ucl = (URLClassLoader)this.getClass().getClassLoader();
+			theEnv.reportInfo().log("URL Classloader: {}", ucl.getURLs());
+			urlEntries = new ClassloaderEntry();
 		}
 		StringTokenizer st = new StringTokenizer(classpath,File.pathSeparator);
 		entries = new Vector<ClasspathEntry>();
@@ -87,9 +101,10 @@ public class Classpath implements BytecodeFileConstants {
 			if (cpe.exists(clazz_name))
 				return true;
 		}
-		if (symEntries != null && symEntries.exists(clazz_name)) {
+		if (symEntries != null && symEntries.exists(clazz_name))
 			return true;
-		}
+		if (urlEntries != null && urlEntries.exists(clazz_name))
+			return true;
 //		String jname = clazz_name.replace('/','.');
 //		java.lang.Package jp = new MyClassLoader(this.getClass().getClassLoader()).getPackage(jname);
 //		if (jp != null) {
@@ -113,6 +128,10 @@ public class Classpath implements BytecodeFileConstants {
 		}
 		if (symEntries != null && symEntries.exists(clazz_name)) {
 			byte[] data = symEntries.read(clazz_name);
+			if( data != null ) return data;
+		}
+		if (urlEntries != null && urlEntries.exists(clazz_name)) {
+			byte[] data = urlEntries.read(clazz_name);
 			if( data != null ) return data;
 		}
 //		String jname = clazz_name.replace('/','.');
@@ -156,7 +175,9 @@ public class Classpath implements BytecodeFileConstants {
 			if( from == data.length ) break;
 		}
 	}
-	public static byte[] readXmlInputStream(InputStream in) {
+	public static byte[] readInputStream(InputStream in) {
+		if (in == null)
+			return null;
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		int n;
 		byte[] data = new byte[1024];
@@ -179,15 +200,15 @@ public class Classpath implements BytecodeFileConstants {
 //	}
 //};
 
-public interface ClasspathEntry {
+interface ClasspathEntry {
 	public boolean	exists(String clazz_name);
 	public byte[]	read(String clazz_name);
 }
 
-public class DirClasspathEntry implements ClasspathEntry {
+class DirClasspathEntry implements ClasspathEntry {
 	public File			dir;
 
-	public DirClasspathEntry(File dir) {
+	DirClasspathEntry(File dir) {
 		this.dir = dir;
 	}
 
@@ -197,6 +218,8 @@ public class DirClasspathEntry implements ClasspathEntry {
 			name = name.replace('/',File.separatorChar);
 		File f;
 		if ((f=new File(dir,name)).exists() && f.canRead() && f.isDirectory() && f.getCanonicalPath().endsWith(name))
+			return true;
+		else if ((f=new File(dir,name+".btd")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".btd"))
 			return true;
 		else if ((f=new File(dir,name+".xml")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".xml"))
 			return true;
@@ -221,6 +244,14 @@ public class DirClasspathEntry implements ClasspathEntry {
 				return Classpath.createPlainPackage(clazz_name);
 			}
 		}
+		else if ((f=new File(dir,name+".btd")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".btd")) {
+			//System.out.println("Reading '"+clazz_name+"' from file '"+f.getCanonicalPath()+"'");
+			byte[] data = new byte[(int)f.length()];
+			FileInputStream fis = new FileInputStream(f);
+			Classpath.readFully(fis,data);
+			fis.close();
+			return data;
+		}
 		else if ((f=new File(dir,name+".xml")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".xml")) {
 			byte[] data = new byte[(int)f.length()];
 			FileInputStream fis = new FileInputStream(f);
@@ -239,11 +270,11 @@ public class DirClasspathEntry implements ClasspathEntry {
 	}
 }
 
-public class ZipClasspathEntry implements ClasspathEntry {
+class ZipClasspathEntry implements ClasspathEntry {
 	public java.util.Hashtable		direntries;
 	public ZipFile					zipfile;
 
-	public ZipClasspathEntry(File name) {
+	ZipClasspathEntry(File name) {
 		zipfile = new ZipFile(name);
 		direntries = new java.util.Hashtable();
 		java.util.Enumeration e = zipfile.entries();
@@ -275,6 +306,8 @@ public class ZipClasspathEntry implements ClasspathEntry {
 		ZipEntry f;
 		if( (f=zipfile.getEntry(name+"/")) != null )
 			return true;
+		else if( (f=zipfile.getEntry(name+".btd")) != null )
+			return true;
 		else if( (f=zipfile.getEntry(name+".xml")) != null )
 			return true;
 		else if( (f=zipfile.getEntry(name+".class")) != null )
@@ -296,6 +329,13 @@ public class ZipClasspathEntry implements ClasspathEntry {
 				return Classpath.createPlainPackage(clazz_name);
 			}
 		}
+		else if( (f=zipfile.getEntry(name+".btd")) != null ) {
+			byte[] data = new byte[(int)f.getSize()];
+			InputStream zis = zipfile.getInputStream(f);
+			Classpath.readFully(zis,data);
+			zis.close();
+			return data;
+		}
 		else if( (f=zipfile.getEntry(name+".xml")) != null ) {
 			byte[] data = new byte[(int)f.getSize()];
 			InputStream zis = zipfile.getInputStream(f);
@@ -316,11 +356,11 @@ public class ZipClasspathEntry implements ClasspathEntry {
 }
 
 // stripped class files,
-public class SymClasspathEntry implements ClasspathEntry {
+class SymClasspathEntry implements ClasspathEntry {
 	public java.util.Hashtable<String,java.util.Vector<String>>		direntries;
 	public ZipFile					zipfile;
 
-	public SymClasspathEntry(File name, int targetJVM) {
+	SymClasspathEntry(File name, int targetJVM) {
 		zipfile = new ZipFile(name);
 		direntries = new java.util.Hashtable<String,java.util.Vector<String>>();
 		java.util.Enumeration e = zipfile.entries();
@@ -417,6 +457,43 @@ public class SymClasspathEntry implements ClasspathEntry {
 			}
 		}
 		//System.out.println(zipfile.getName()+" has no "+name);
+		return null;
+	}
+}
+
+class ClassloaderEntry implements ClasspathEntry {
+
+	private boolean checkExists(String fname) {
+		URLClassLoader ucl = (URLClassLoader)this.getClass().getClassLoader();
+		URL url = ucl.findResource(fname);
+		if (url == null)
+			return false;
+		String path = url.getPath();
+		if (!path.endsWith(fname))
+			return false;
+		if (!"file".equalsIgnoreCase(url.getProtocol())) {
+			System.out.println("Found class as: "+fname+"; url: "+url);
+			return true;
+		}
+		File f = new File(path);
+		if (f.exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(fname)) {
+			System.out.println("Found class as: "+fname+"; url: "+url);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean exists(String clazz_name) {
+		return checkExists(clazz_name+".btd");
+	}
+
+	public byte[] read(String clazz_name) {
+		if (checkExists(clazz_name+".btd")) {
+			URLClassLoader ucl = (URLClassLoader)this.getClass().getClassLoader();
+			InputStream inp = ucl.getResourceAsStream(clazz_name+".btd");
+			byte[] data = Classpath.readInputStream(inp);
+			if (data != null) return data;
+		}
 		return null;
 	}
 }

@@ -183,6 +183,17 @@ public class JMethod extends JDNode {
         	athr.exceptions = thrs;
 			this.addAttr(athr);
         }
+		{
+			Vector<ConstStringExpr> strings = new Vector<ConstStringExpr>();
+			for (Alias a : vn().aliases)
+				strings.add(new ConstStringExpr(a.toString()));
+			if (!strings.isEmpty()) {
+				UserMeta um = new UserMeta("kiev·stdlib·meta·alias");
+				um.set(new MetaValueArray("value", strings.toArray()));
+				vn().metas += um;
+				//System.out.println("Generate method alias annotation with "+Arrays.toString(strings.toArray())+" aliases to method "+this);
+			}
+		}
 	}
 
 	public void generateArgumentCheck(Code code) {

@@ -63,7 +63,7 @@ public interface BytecodeFileConstants {
 	public static final int ACC_SYNTHETIC				= 1 << 12;
 	public static final int ACC_ANNOTATION				= 1 << 13;
 	public static final int ACC_ENUM					= 1 << 14; // enum classes and fields of enum classes
-	
+
 }
 
 public interface JavaOpcodes {
@@ -295,34 +295,34 @@ public interface NewArrayConstants {
 
 public interface BytecodeAttributeNames {
 
-	public final static String attrCode				= "Code";
+	public final static String attrCode					= "Code";
 	public final static String attrSourceFile			= "SourceFile";
-	public final static String attrSourceDebugExtension= "SourceDebugExtension";
+	public final static String attrSourceDebugExtension	= "SourceDebugExtension";
 	public final static String attrSignature			= "Signature";
 	public final static String attrLocalVarTable		= "LocalVariableTable";
-	public final static String attrLinenoTable		= "LineNumberTable";
+	public final static String attrLinenoTable			= "LineNumberTable";
 	public final static String attrExceptions			= "Exceptions";
-	public final static String attrInnerClasses		= "InnerClasses";
+	public final static String attrInnerClasses			= "InnerClasses";
 	public final static String attrConstantValue		= "ConstantValue";
 //	public final static String attrClassArguments		= "kiev.ClassArguments";
 //	public final static String attrPizzaCase			= "kiev.PizzaCase";
-//	public final static String attrKiev				= "kiev.Kiev";
+//	public final static String attrKiev					= "kiev.Kiev";
 //	public final static String attrFlags				= "kiev.Flags";
 //	public final static String attrAlias				= "kiev.Alias";
-//	public final static String attrTypedef			= "kiev.Typedef";
-//	public final static String attrOperator			= "kiev.Operator";
+//	public final static String attrTypedef				= "kiev.Typedef";
+//	public final static String attrOperator				= "kiev.Operator";
 //	public final static String attrImport				= "kiev.Import";
-//	public final static String attrEnum				= "kiev.Enum";
-	public final static String attrRequire			= "kiev.Require";
+//	public final static String attrEnum					= "kiev.Enum";
+	public final static String attrRequire				= "kiev.Require";
 	public final static String attrEnsure				= "kiev.Ensure";
-//	public final static String attrCheckFields		= "kiev.CheckFields";
-//	public final static String attrGenerations		= "kiev.Generations";
-//	public final static String attrPackedFields		= "kiev.PackedFields";
-//	public final static String attrPackerField		= "kiev.PackerField";
+//	public final static String attrCheckFields			= "kiev.CheckFields";
+//	public final static String attrGenerations			= "kiev.Generations";
+//	public final static String attrPackedFields			= "kiev.PackedFields";
+//	public final static String attrPackerField			= "kiev.PackerField";
 	public final static String attrRVAnnotations		= "RuntimeVisibleAnnotations";
 	public final static String attrRIAnnotations		= "RuntimeInvisibleAnnotations";
-	public final static String attrRVParAnnotations	= "RuntimeVisibleParameterAnnotations";
-	public final static String attrRIParAnnotations	= "RuntimeInvisibleParameterAnnotations";
+	public final static String attrRVParAnnotations		= "RuntimeVisibleParameterAnnotations";
+	public final static String attrRIParAnnotations		= "RuntimeInvisibleParameterAnnotations";
 	public final static String attrAnnotationDefault	= "AnnotationDefault";
 }
 

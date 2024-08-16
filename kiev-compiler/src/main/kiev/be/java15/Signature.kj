@@ -145,6 +145,7 @@ final class Signature {
 				Type bnd = getTypeFromFieldSignature(jenv,dn,sc);
 				arg.super_types += new TypeRef(bnd);
 			}
+			//System.out.println("Bytecode signature add arg "+arg+" to: "+dn);
 		} while (sc.hasMoreChars() && sc.peekChar() != '>');
 		if (sc.nextChar() != '>')
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '>' expected");
@@ -320,6 +321,81 @@ final class Signature {
 		if (!m.isStatic())
 			accessor = ((TypeDecl)m.parent()).getType();
 		return new CallType(accessor, targs.toArray(), args.toArray(), ret, false);
+	}
+
+	public static Signature makeClassTypeSignature(ComplexTypeDecl tdecl) {
+		StringBuilder sb = new StringBuilder();
+		if (tdecl.args.length != 0) {
+			sb.append('<');
+			for (TypeConstr targ : tdecl.args) {
+				ArgType t = (ArgType)targ.getType();
+				sb.append(t.name);
+				if (t.definer.super_types.length > 0) {
+					for (TypeRef sup : t.definer.super_types) {
+						Type st = sup.getType();
+						if (st instanceof CompaundType || st instanceof ArrayType || st instanceof ArgType)
+							sb.append(':').append(makeTypeSignature(st))
+					}
+				} else {
+					sb.append(":Ljava/lang/Object;");
+				}
+			}
+			sb.append('>');
+		}
+		for (TypeRef sup : tdecl.super_types) {
+			Type st = sup.getType();
+			if (st instanceof CompaundType)
+				sb.append(makeTypeSignature(st));
+		}
+		return new Signature(sb.toString());
+	}
+	public static Signature makeTypeSignature(Type tp) {
+		if (tp instanceof CompaundType) {
+			StringBuilder sb = new StringBuilder();
+			sb.append('L');
+			sb.append(tp.tdecl.bytecode_name);
+			int n = tp.tdecl.args.length;
+			if (n > 0) {
+				sb.append('<');
+				for(int i=0; i < n; i++)
+					sb.append(makeTypeSignature(tp.resolve(tp.tdecl.args[i].getAType())));
+				sb.append('>');
+			}
+			sb.append(';');
+			return new Signature(sb.toString());
+		}
+		else if (tp instanceof ArrayType) {
+			StringBuilder sb = new StringBuilder();
+			sb.append('[').append(makeTypeSignature(tp.arg));
+			return new Signature(sb.toString());
+		}
+		else if (tp instanceof ArgType) {
+			StringBuilder sb = new StringBuilder();
+			sb.append('T').append(tp.name).append(';');
+			return new Signature(sb.toString());
+		}
+		else if (tp instanceof CoreType) {
+			StdTypes tenv = tp.tenv;
+			if (tp == tenv.tpBoolean) return new Signature("Z");
+			if (tp == tenv.tpByte)    return new Signature("B");
+			if (tp == tenv.tpChar)    return new Signature("C");
+			if (tp == tenv.tpShort)   return new Signature("S");
+			if (tp == tenv.tpInt)     return new Signature("I");
+			if (tp == tenv.tpFloat)   return new Signature("F");
+			if (tp == tenv.tpDouble)  return new Signature("D");
+			if (tp == tenv.tpLong)    return new Signature("J");
+			return new Signature("*");
+			//if (tp == tenv.tpVoid)    return new Signature("Lkiev/stdlib/void;");
+			//if (tp == tenv.tpNull)    return new Signature("Lkiev/stdlib/null;");
+			//if (tp == tenv.tpAny)     return new Signature("Lkiev/stdlib/any;");
+		}
+		else if (tp instanceof XType) {
+			foreach (Type st; tp.getMetaSupers(); st != null && st != tp.tenv.tpVoid)
+				return makeTypeSignature(st);
+			return new Signature("Ljava/lang/Object;");
+		}
+		tp.tenv.env.reportError().log("Can't make type signature for {}", tp);
+		return new Signature("Ljava/lang/Object;");
 	}
 
 }

@@ -36,7 +36,7 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 	}
 
 	public String getFieldSignature(Clazz clazz) {
-		foreach (GenericsSignatureAttribute a; attrs)
+		foreach (SignatureAttribute a; attrs)
 			return a.getSignature(clazz);
 		return null;
 	}

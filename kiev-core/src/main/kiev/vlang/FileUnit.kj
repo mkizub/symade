@@ -268,7 +268,7 @@ public final class FileUnit extends SyntaxScope, CompilationUnit {
 			return;
 		}
 		HashSet<String> hset = new HashSet<String>();
-		Collections.addAll(hset, generated_files);
+		hset.addAll(java.util.Arrays.asList(generated_files));
 		if (!hset.contains(fname)) {
 			hset.add(fname);
 			generated_files = hset.toArray(new String[hset.size()]);

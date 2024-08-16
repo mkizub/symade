@@ -83,8 +83,8 @@ public final class BinDumpReader {
 	public INode[] loadDocument() throws Exception {
 		checkHeader();
 		readDocument();
-		//for (DelayedTypeInfo dti : delayed_types)
-		//	dti.applay(env);
+		for (DelayedTypeInfo dti : delayed_types)
+			dti.applay(env);
 		return roots;
 	}
 

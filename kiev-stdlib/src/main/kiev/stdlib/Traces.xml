@@ -23,7 +23,7 @@
   <core:SymbolRef full='true' name='kiev·stdlib' />
  </srpkg>
  <members>
-  <core:JavaClass uuid='1afbcbca-bdd7-4dfd-87c4-635060c2cacf' mode='CLASS' name='Traces'>
+  <core:MetaTypeDecl uuid='1afbcbca-bdd7-4dfd-87c4-635060c2cacf' name='Traces'>
    <members>
     <core:Method uuid='03fb6de2-61a7-45a9-a21e-829c7881dcac' name='trace'>
      <type_ret>
@@ -168,6 +168,6 @@
    <metas>
     <core:MetaPublic />
    </metas>
-  </core:JavaClass>
+  </core:MetaTypeDecl>
  </members>
 </core:FileUnit>

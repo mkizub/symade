@@ -49,7 +49,7 @@ public class Opdef extends DNode {
 	public COpdef[] compile() {
 		Vector<COpArgument> args = new Vector<COpArgument>();
 		foreach (OpArgument arg; this.args)
-			args.append(arg.compile());
+			args.add(arg.compile());
 		Vector<Vector<COpArgument>> vargs = new Vector<Vector<COpArgument>>();
 		vargs.append(args);
 	outer_loop:

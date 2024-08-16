@@ -23,7 +23,7 @@
   <core:SymbolRef full='true' name='kiev·stdlib' />
  </srpkg>
  <members>
-  <core:JavaClass uuid='0af20afd-bdb1-4e54-b3a5-5dcb3b18c49f' mode='CLASS' name='Asserts'>
+  <core:MetaTypeDecl uuid='0af20afd-bdb1-4e54-b3a5-5dcb3b18c49f' name='Asserts'>
    <members>
     <core:Method uuid='1e2d38dc-dfae-4225-bca1-73ab20d0486b' name='assert'>
      <type_ret>
@@ -297,6 +297,6 @@
    <metas>
     <core:MetaPublic />
    </metas>
-  </core:JavaClass>
+  </core:MetaTypeDecl>
  </members>
 </core:FileUnit>

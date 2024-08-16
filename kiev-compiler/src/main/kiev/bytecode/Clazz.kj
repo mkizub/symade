@@ -54,7 +54,7 @@ public final class Clazz implements BytecodeElement,BytecodeFileConstants {
 	}
 
 	public String getClazzSignature() {
-		foreach (GenericsSignatureAttribute a; attrs)
+		foreach (SignatureAttribute a; attrs)
 			return a.getSignature(this);
 		return null;
 	}

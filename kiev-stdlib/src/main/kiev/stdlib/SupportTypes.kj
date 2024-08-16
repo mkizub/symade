@@ -25,18 +25,18 @@ public abstract class closure implements Cloneable {
 	public Object[]		$args;
 	public int			max$args;	// = 0
 	public int			top$arg;	// = 0
-	
+
 	public closure(int max$args) {
 		this.max$args = max$args;
 		$args = max$args==0? $noargs: new Object[max$args];
 	}
-	
+
 	protected void throwException(String msg) {
 		throw new RuntimeException("This closure "+getClass()+" "+msg);
 	}
-	
+
 	public void		call_void()		{ throwException("does not returns void"); }
-	public rule		call_rule()		{ throwException("is not a rule") }
+	public #id"rule"# call_rule(rule r)	{ throwException("is not a rule"); return null; }
 	public boolean	call_boolean()	{ throwException("does not returns boolean"); return false; }
 	public byte		call_byte()		{ throwException("does not returns byte"); return (byte)0; }
 	public char		call_char()		{ throwException("does not returns char"); return '\000'; }
@@ -46,7 +46,7 @@ public abstract class closure implements Cloneable {
 	public float	call_float()	{ throwException("does not returns float"); return 0.F; }
 	public double	call_double()	{ throwException("does not returns double"); return 0.D; }
 	public Object	call_Object()	{ throwException("does not returns Object"); return null; }
-	
+
 	public Object clone() {
 		closure cl;
 		try {
@@ -58,7 +58,7 @@ public abstract class closure implements Cloneable {
 		}
 		return cl;
 	}
-	
+
 	public closure addArg(boolean arg) {
 		try {
 			$args[top$arg++] = Boolean.valueOf(arg);

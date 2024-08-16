@@ -861,7 +861,7 @@ public class Compiler {
 				sb.append(' ');
 			sb.append(' ').append(tm).append("ms ]");
 		} else {
-			for (int i = 72 - msg.length(); i > 0; i--)
+			for (int i = 73 - msg.length(); i > 0; i--)
 				sb.append(' ');
 			sb.append(" ]");
 		}

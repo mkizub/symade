@@ -91,6 +91,11 @@ public class Bytecoder implements JConstants {
 		StringScanner cl_sign_sc = null;
 		if (bcclazz.getClazzSignature() != null) {
 			cl_sign_sc = new StringScanner(bcclazz.getClazzSignature().toString());
+			//System.out.println("Bytecode signature for "+cl+" is: "+cl_sign_sc);
+			if (cl.args.length != 0) {
+				jenv.env.reportWarning().log("Bytecoder loads a class with signature '{}' for class {} that already has args {}", cl_sign_sc, cl, cl.args);
+				cl.args.delAll();
+			}
 			Signature.addTypeArgs(this.jenv, cl, cl_sign_sc);
 		}
 
@@ -277,6 +282,25 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		jenv.env.reportDebug().log("read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
+
+		UserMeta aliases = (UserMeta)m.getMeta("kiev·stdlib·meta·alias");
+		if (aliases != null) {
+			MetaValueArray strings = (MetaValueArray)aliases.get("value");
+			foreach (ConstStringExpr str; strings.values) {
+				Alias al;
+				if (str.value.startsWith("operator \"")) {
+					al = new OperatorAlias(str.value.substring(10,str.value.length()-1), m);
+					//System.out.println("Bytecoder add operator alias '"+al.name+"' to method "+m);
+				} else {
+					al = new Alias(str.value, m);
+					//System.out.println("Bytecoder add alias '"+al.name+"' to method "+m);
+				}
+				m.aliases += al;
+			}
+			//for (Alias al : m.aliases) {
+			//	System.out.println("Bytecoder method '"+m+"' has alias '"+al.name+"'");
+			//}
+		}
 		return m;
 	}
 

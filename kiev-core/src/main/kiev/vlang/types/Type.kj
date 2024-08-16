@@ -63,25 +63,28 @@ public abstract class Type extends AType {
 		meta_type.resolveNameAccessR(this,info)
 	}
 
-	public boolean isInstanceOf(Type t2) operator "V ≥ V" {
+	private boolean isInstanceOfRecursive(Type t2, int depth) {
+		if (depth > 100)
+			throw new IllegalStateException("isInstanceOfRecursive "+this+" >= "+t2);
+
 		Type t1 = this;
 		if( t1 ≡ t2 || t2 ≡ tenv.tpAny ) return true;
 		if( t1.isReference() && t2 ≈ tenv.tpObject ) return true;
 		if( t1 ≡ tenv.tpNull && t2.isReference() ) return true;
 		if (t2 instanceof WildcardCoType) {
-			return this.isInstanceOf(t2.getEnclosedType());
+			return this.isInstanceOfRecursive(t2.getEnclosedType(), depth+1);
 		}
 		if (t2 instanceof ArgType) {
 			ArgType at = (ArgType)t2;
 			if (at.definer.super_types.length > 0) {
 				foreach (TypeRef tr; at.definer.super_types) {
-					if (!this.isInstanceOf(tr.getType()))
+					if (!this.isInstanceOfRecursive(tr.getType(), depth+1))
 						return false;
 				}
 			}
 			if (at.definer.getLowerBounds().length > 0) {
 				foreach (TypeRef tr; at.definer.getLowerBounds()) {
-					if (!tr.getType().isInstanceOf(this))
+					if (!tr.getType().isInstanceOfRecursive(this, depth+1))
 						return false;
 				}
 			}
@@ -103,20 +106,24 @@ public abstract class Type extends AType {
 					continue;
 				if (a2.name == "This" && r1.meta_type.tdecl.instanceOf(r2.meta_type.tdecl))
 					continue;
-				if ((a2.isCoVariant() || r2 instanceof WildcardCoType) && r1.isInstanceOf(r2))
+				if ((a2.isCoVariant() || r2 instanceof WildcardCoType) && r1.isInstanceOfRecursive(r2, depth+1))
 					continue;
-				if ((a2.isContraVariant() || r2 instanceof WildcardContraType)&& r2.isInstanceOf(r1))
+				if ((a2.isContraVariant() || r2 instanceof WildcardContraType)&& r2.isInstanceOfRecursive(r1, depth+1))
 					continue;
 				// before we can declare N to be covariant in NodeSpace<+N extends ANode>
-				if (t1.isArray() && t2.isArray() && r1.isInstanceOf(r2))
+				if (t1.isArray() && t2.isArray() && r1.isInstanceOfRecursive(r2, depth+1))
 					continue;
-				if ((r1 instanceof ArgType || r2 instanceof ArgType) && r1.isInstanceOf(r2))
+				if ((r1 instanceof ArgType || r2 instanceof ArgType) && r1.isInstanceOfRecursive(r2, depth+1))
 					continue;
 				return false;
 			}
 			return true;
 		}
 		return false;
+
+	}
+	public boolean isInstanceOf(Type t2) operator "V ≥ V" {
+		return isInstanceOfRecursive(t2, 0);
 	}
 
 	public Type getAutoCastTo(Type t)

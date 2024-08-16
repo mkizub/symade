@@ -157,6 +157,11 @@ public class StdTypes {
 		KievPackage java_util            = env.newPackage("java·util");
 		KievPackage kiev_stdlib          = env.newPackage("kiev·stdlib");
 		KievPackage kiev_stdlib_meta     = env.newPackage("kiev·stdlib·meta");
+		env.newPackage("kiev·vtree");
+		env.newPackage("kiev·vlang");
+		env.newPackage("kiev·vlang·types");
+		env.newPackage("kiev·ir");
+		env.newPackage("kiev·transf");
 
 		Struct tpObjectClazz = env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass(),null);
 		tpObjectClazz.setTypeDeclNotLoaded(true);

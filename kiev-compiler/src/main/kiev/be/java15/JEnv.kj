@@ -226,9 +226,9 @@ public final class JEnv implements BEndEnv {
 			return null;
 		DNode td = null;
 		kiev.bytecode.Clazz clazz = null;
-		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
-			env.reportDebug().log("Parsing XML data for clazz {}", name);
-			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, env.getEnvContext(), data, name.src_name.toString(), pkg);
+		if (data.length > 7 && new String(data,0,0,7).equals("<btree>")) {
+			env.reportDebug().log("Parsing BTD data for clazz {}", name);
+			INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(env, null, null, data);
 			if (roots != null) {
 				foreach (INode root; roots) {
 					if (root instanceof CompilationUnit) {
@@ -246,6 +246,22 @@ public final class JEnv implements BEndEnv {
 			env.reportDebug().log("Parsing .class data for clazz {}", name);
 			clazz = new kiev.bytecode.Clazz(env);
 			clazz.readClazz(data);
+		}
+		else if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
+			env.reportDebug().log("Parsing XML data for clazz {}", name);
+			INode[] roots = DumpFactory.getXMLDumper().loadFromXmlData(env, env.getEnvContext(), data, name.src_name.toString(), pkg);
+			if (roots != null) {
+				foreach (INode root; roots) {
+					if (root instanceof CompilationUnit) {
+						CompilationUnit cu = (CompilationUnit)root;
+						Project prj = env.proj;
+						if (prj.compilationUnits.indexOf(cu) < 0)
+							prj.compilationUnits += cu;
+					}
+					env.runProcessorsOn((ASTNode)root.asANode());
+				}
+			}
+			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
 		}
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)

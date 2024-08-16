@@ -144,10 +144,10 @@ public abstract class WorkerThreadGroup extends EnvThreadGroup implements Thread
 			System.out.println(theEnv.warningCounter.get()+" warnings");
 		programm_end = System.currentTimeMillis();
 		System.out.println(src+": total "+(programm_end-programm_start)+"ms, memory used "+getPeekMemoryInfo()+"Mb");
-		if (reportMemory && reportTotals) {
-			dumpJITInfo();
-			dumpMemoryInfo();
-		}
+		//if (reportMemory && reportTotals) {
+		//	dumpJITInfo();
+		//	dumpMemoryInfo();
+		//}
 		//if (Kiev.testError != null) {
 		//	System.out.println("FAILED: there was no expected error "+Kiev.testError+" at "+Kiev.testErrorLine+":"+Kiev.testErrorOffs);
 		//	Kiev.systemExit(1);
