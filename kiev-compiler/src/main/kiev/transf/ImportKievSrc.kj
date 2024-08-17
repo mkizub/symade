@@ -964,6 +964,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 				dumpAPI((ExportSerialized)n, timestamp);
 			if (n instanceof ExportXMLDump)
 				dumpAPI((ExportXMLDump)n, timestamp);
+			if (n instanceof Struct && (n.isPublic() || n.isProtected()))
+				dumpAPI((Struct)n, timestamp);
 		}
 
 		env.reportInfo().log("Dumped API of source file {}", fu);
@@ -981,6 +983,8 @@ public final class KievME_DumpAPI extends BackendProcessor {
 				dumpAPI((ExportSerialized)n, timestamp);
 			else if (n instanceof ExportXMLDump)
 				dumpAPI((ExportXMLDump)n, timestamp);
+			else if (n instanceof Struct && (n.isPublic() || n.isProtected()))
+				dumpAPI((Struct)n, timestamp);
 		}
 		return run_backend;
 	}
@@ -1080,6 +1084,28 @@ public final class KievME_DumpAPI extends BackendProcessor {
 			DumpFactory.getXMLDumper().exportToXMLFile(env,node,f);
 		} catch (Exception e) {
 			env.reportWarning().cause(e).log("Create/write error while exporting: "+e);
+		}
+	}
+	public void dumpAPI(Struct td, long timestamp) {
+		File output_dir = getProcessor().genOutputDir;
+		if (output_dir==null)
+			output_dir = new File("classes");
+		String out_file = td.qname().replace('·',File.separatorChar)+".btd";
+		boolean run_backend = false; //timestamp > new File(output_dir,out_file).lastModified();
+		if !(td.isPublic() || td.isProtected())
+			return;
+		File f = new File(output_dir,out_file);
+		if (timestamp < f.lastModified())
+			return;
+		{
+			FileUnit fu = Env.ctxFileUnit(td);
+			fu.addGeneratedFile(f.getPath());
+		}
+		try {
+			DumpFactory.getBinDumper().dumpToBinFile(env, new BinDumpFilter(true), new ANode[]{td}, f);
+			//DumpFactory.getXMLDumper().dumpToXMLFile(env, new XMLDumpFilter("api"), new ANode[]{td}, f);
+		} catch (IOException e) {
+			env.reportWarning().cause(e).log("Create/write error while API dump: "+e);
 		}
 	}
 }

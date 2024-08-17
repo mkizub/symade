@@ -13,7 +13,6 @@ sourceSets {
     main {
         java {
             srcDir("src/main/java")
-            compileClasspath += files("${project.rootDir}/bin/swt-win.jar")
         }
     }
 }
@@ -26,6 +25,7 @@ dependencies {
     implementation(project(":kiev-dump"))
     implementation(project(":kiev-compiler"))
     implementation(project(":symade-fmt"))
+    compileOnly(files("${project.rootDir}/bin/swt-win.jar"))
 }
 
 //tasks.test {

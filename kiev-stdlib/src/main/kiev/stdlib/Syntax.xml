@@ -34,6 +34,11 @@
       <core:SymbolRef full='true' name='kiev·stdlib·meta' />
      </name>
     </core:ImportImpl>
+    <core:ImportStatic all='true'>
+     <name>
+      <core:SymbolRef full='true' name='kiev·stdlib·Asserts' />
+     </name>
+    </core:ImportStatic>
     <core:ImportImpl all='true'>
      <name>
       <core:SymbolRef full='true' name='java·lang' />

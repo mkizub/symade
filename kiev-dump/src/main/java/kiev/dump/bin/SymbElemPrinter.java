@@ -23,7 +23,7 @@ public class SymbElemPrinter extends ElemPrinter<SymbElem> {
 		SymbElem se = (SymbElem)el;
 		if (tav.tag == Signature.TAG_SYMB_SIGN) {
 			se.namesp = (SymbElem)tav.val;
-			out.printf("%sNAMESP: %s\n", ind(), se.namesp.name);
+			out.printf("%sNAMESP: %s (%d)\n", ind(), se.namesp.name, se.namesp.id);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_OCTET) {

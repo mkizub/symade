@@ -228,7 +228,7 @@ public final class JEnv implements BEndEnv {
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,0,7).equals("<btree>")) {
 			env.reportDebug().log("Parsing BTD data for clazz {}", name);
-			INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(env, null, null, data);
+			INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(env, null, null, true, data);
 			if (roots != null) {
 				foreach (INode root; roots) {
 					if (root instanceof CompilationUnit) {

@@ -17,6 +17,7 @@ public final class BinDumpReader {
 	final Env env;
 	final String cur_dir;
 	final DecoderFactory dfactory;
+	final boolean api;
 	ByteBuffer buf;
 	int version_major;
 	int version_minor;
@@ -35,10 +36,11 @@ public final class BinDumpReader {
 	final HashMap<Integer,Elem> addrTable = new HashMap<Integer,Elem>();
 	final ArrayList<DelayedTypeInfo> delayed_types = new ArrayList<DelayedTypeInfo>();
 
-	public BinDumpReader(Env env, String dir, DecoderFactory dfactory, InputStream inp) throws DumpException, IOException {
+	public BinDumpReader(Env env, String dir, DecoderFactory dfactory, boolean api, InputStream inp) throws DumpException, IOException {
 		this.env = env;
 		this.cur_dir = dir;
 		this.dfactory = dfactory;
+		this.api = api;
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] buf = new byte[4096];
 		int sz;

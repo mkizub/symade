@@ -9,8 +9,6 @@ import kiev.dump.AttributeSet;
 import kiev.stdlib.Debug;
 import kiev.vtree.LoggingBuilderFactory;
 
-import static kiev.stdlib.Asserts.*;
-
 public abstract class AUnMarshallingContext implements XMLDumpReader, UnMarshallingContext {
 
 	private static final boolean TRACE = false;

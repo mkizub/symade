@@ -203,7 +203,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 	public INode[] parse(File file, Env env) {
 		try {
 			if (syntax_qname.equals("<bin-dump>")) {
-				return DumpFactory.getBinDumper().loadFromBinFile(env, file.getParent(), file, null);
+				return DumpFactory.getBinDumper().loadFromBinFile(env, file.getParent(), file, false, null);
 			}
 			if (syntax_qname.equals("<xml-dump>")) {
 				return DumpFactory.getXMLDumper().loadFromXmlFile(env, nodeContext, file, null);
@@ -218,7 +218,7 @@ public class DefaultTextProcessor implements TextDrawSyntax, TextPrinter, TextPa
 	public INode[] parse(InputStream inp, Env env) {
 		try {
 			if (syntax_qname == null || syntax_qname.equals("<bin-dump>")) {
-				return DumpFactory.getBinDumper().loadFromBinStream(env, ".", "full", inp);
+				return DumpFactory.getBinDumper().loadFromBinStream(env, ".", false, inp);
 			}
 			return parse(new BufferedReader(new InputStreamReader(inp, "UTF-8")), env);
 		} catch (Exception e) {

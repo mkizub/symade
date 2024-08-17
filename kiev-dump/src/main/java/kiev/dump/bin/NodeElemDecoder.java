@@ -133,7 +133,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 			}
 			return true;
 		}
-		// otherwice set it as an attribute value
+		// otherwise set it as an attribute value
 		checkValTag(tav.tag, ne.node, te);
 		setValue(ne, ne.node, te.attrs[attr_pos], tav);
 		attr_pos += 1;
@@ -174,6 +174,8 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 						if (p instanceof KievPackage)
 							p.addVal(p.getAttrSlot("pkg_members"), dn);
 					}
+					if (reader.api)
+						dn.setInterfaceOnly();
 				}
 			}
 			return true;

@@ -1,7 +1,9 @@
 package kiev.dump;
 
+import kiev.vlang.DNode;
 import kiev.vlang.ENode;
 import kiev.vlang.Initializer;
+import kiev.vlang.Field;
 import kiev.vlang.Method;
 import kiev.vlang.TypeDecl;
 import kiev.vlang.types.TypeASTNodeRef;
@@ -13,9 +15,9 @@ import kiev.vtree.INode;
 import kiev.vtree.AttrSlot;
 
 public class BinDumpFilter implements DumpFilter {
-	
+
 	public final boolean api;
-	
+
 	public BinDumpFilter() {
 		this(false);
 	}
@@ -56,10 +58,17 @@ public class BinDumpFilter implements DumpFilter {
 				return false;
 			if (m.parent() instanceof TypeDecl) {
 				TypeDecl p = (TypeDecl)m.parent();
-				if (p.isMixin() || p.isMacro())
+				if (p.isMixin() || p.isMacro() || p.isAnnotation())
 					return false;
 			}
 			return true;
+		}
+		if (parent instanceof Field) {
+			Field f = (Field)parent;
+			if (attr.name == "init") {
+				return !(f.isFinal() && f.isConstantExpr());
+			}
+			return false;
 		}
 		return false;
 	}
@@ -69,6 +78,10 @@ public class BinDumpFilter implements DumpFilter {
 			return false;
 		if (node instanceof Initializer)
 			return true;
+		//if (node instanceof DNode) {
+		//	if (!(node.isPublic() || node.isProtected()))
+		//		return true;
+		//}
 		return false;
 	}
 

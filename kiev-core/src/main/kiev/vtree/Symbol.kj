@@ -12,6 +12,8 @@ package kiev.vtree;
 
 import syntax kiev.Syntax;
 
+import java.util.UUID;
+
 /**
  * @author Maxim Kizub
  * @version $Revision: 271 $
@@ -24,6 +26,17 @@ public interface ISymbolHost extends INode {
 	public:ro Symbol		symbol;
 
 	@getter public Symbol	get$symbol();
+}
+
+// Symbol or qualified name+uuid
+public interface ISymbolInfo {
+	boolean isGlobal();
+	boolean isNS();				// namespaces (packages)
+	boolean isType();			// type name
+	UUID    getUUID();			// uuid of this symbol
+	Symbol  getSymbol();		// returns resolved symbol
+	String  getSimpleName();	// non-qualified symbol name, "" for anonymous symbols
+	String  getGlobalName();	// fully-qualified symbol name for global symbols, simple name otherwice
 }
 
 /**

@@ -25,7 +25,7 @@ import kiev.vtree.INode;
  */
 
 public final class BinDumperImpl implements BinDumper {
-	
+
 	private static void make_output_dir(File f) throws IOException {
 		File dir = f.getParentFile();
 		if (dir != null) {
@@ -42,11 +42,11 @@ public final class BinDumperImpl implements BinDumper {
 		out.endDocument();
 		return bout.toByteArray();
 	}
-	
+
 	public void dumpToBinFile(Env env, BinDumpFilter filter, INode[] nodes, File f) throws Exception
 	{
 		make_output_dir(f);
-		String comment = 
+		String comment =
 				"\n"+
 				" Copyright (c) 2005-2007 UAB \"MAKSINETA\".\n"+
 				" All rights reserved. This program and the accompanying materials\n"+
@@ -80,26 +80,26 @@ public final class BinDumperImpl implements BinDumper {
 		}
 	}
 
-	public INode[] loadFromBinFile(Env env, String dir, File f, byte[] data) throws Exception {
+	public INode[] loadFromBinFile(Env env, String dir, File f, boolean api, byte[] data) throws Exception {
 		//assert (Thread.currentThread() instanceof WorkerThread);
 		INode[] roots;
 		if (data != null)
-			roots = new BinDumpReader(env, dir, new ElemDecoderFactory(), new ByteArrayInputStream(data)).loadDocument();
+			roots = new BinDumpReader(env, dir, new ElemDecoderFactory(), api, new ByteArrayInputStream(data)).loadDocument();
 		else
-			roots = new BinDumpReader(env, dir, new ElemDecoderFactory(), new BufferedInputStream(new FileInputStream(f))).loadDocument();
+			roots = new BinDumpReader(env, dir, new ElemDecoderFactory(), api, new BufferedInputStream(new FileInputStream(f))).loadDocument();
 		//if (root instanceof FileUnit) {
 		//	FileUnit fu = (FileUnit) root;
 		//	fu.setVal("fname", f.getName());
 		//}
 		return roots;
 	}
-	
-	public INode[] loadFromBinStream(Env env, String dir, String mode, InputStream inp) throws Exception
+
+	public INode[] loadFromBinStream(Env env, String dir, boolean api, InputStream inp) throws Exception
 	{
-		INode[] roots = new BinDumpReader(env, dir, new ElemDecoderFactory(), new BufferedInputStream(inp)).loadDocument();
+		INode[] roots = new BinDumpReader(env, dir, new ElemDecoderFactory(), api, new BufferedInputStream(inp)).loadDocument();
 		return roots;
 	}
-	
+
 	public INode loadProject(Env env, File f) throws Exception {
 //		assert (Thread.currentThread() instanceof WorkerThread);
 //		DumpUnMarshallingContext deserializer = new DumpUnMarshallingContext(env);

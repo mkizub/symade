@@ -174,7 +174,7 @@ final class ParseSourceFileTask implements Callable<String> {
 			if (curFile.toLowerCase().endsWith(".btd")) {
 				String fdir = theEnv.makeNativeFile(cpiFile).getParent();
 				File f = theEnv.makeNativeFile(curFile);
-				INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(theEnv, fdir, f, cpi.fdata);
+				INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(theEnv, fdir, f, false, cpi.fdata);
 				if (roots != null && roots.length > 0 && roots[0] instanceof ASTNode) {
 					ASTNode root = (ASTNode)roots[0];
 					if !(root instanceof FileUnit) {

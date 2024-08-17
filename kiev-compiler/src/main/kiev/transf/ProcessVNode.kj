@@ -665,7 +665,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 			return;
 		}
 		if!(nodeClasses.init instanceof NewInitializedArrayExpr) {
-			m.reportError().log("Language '{}' has field 'nodeClasses' with wrong initializer (NewInitializedArrayExpr expected)", td);
+			m.reportWarning().log("Language '{}' has field 'nodeClasses' with wrong initializer (NewInitializedArrayExpr expected)", td);
 			return;
 		}
 		NewInitializedArrayExpr init = (NewInitializedArrayExpr)nodeClasses.init;
@@ -677,7 +677,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 			}
 		}
 		if (!found) {
-			m.reportError().log("Language '{}' has no reference to @node '{}' in field 'nodeClasses'", td, s);
+			m.reportWarning().log("Language '{}' has no reference to @node '{}' in field 'nodeClasses'", td, s);
 			return;
 		}
 		/*
@@ -806,6 +806,8 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 	}
 
 	public void doProcess(Struct:ANode s) {
+		if (s.isInterfaceOnly())
+			return;
 		if (s.isInterface() && !s.isMixin() || !isNodeImpl(s)) {
 			foreach(Struct sub; s.members)
 				doProcess(sub);

@@ -9,13 +9,13 @@ import kiev.vtree.INode;
 public class DumpUnMarshallingContext implements UnMarshallingContext {
 
 	private final Env env;
-	
+
 	public INode result;
 	
 	public DumpUnMarshallingContext(Env env) {
 		this.env = env;
 	}
-	
+
 	public Env getEnv() {
 		return env;
 	}

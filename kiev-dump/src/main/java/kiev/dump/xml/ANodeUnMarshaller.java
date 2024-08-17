@@ -24,8 +24,6 @@ import java.io.File;
 import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
 
-import static kiev.stdlib.Asserts.*;
-
 public class ANodeUnMarshaller implements UnMarshaller {
 
 	public static final String SOP_URI = "sop://sop/";

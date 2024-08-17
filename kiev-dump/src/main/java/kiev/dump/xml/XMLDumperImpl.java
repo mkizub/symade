@@ -28,8 +28,6 @@ import kiev.vtree.INode;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ITreeWalker;
 
-import static kiev.stdlib.Asserts.*;
-
 /**
  * @author Maxim Kizub
  * @version $Revision: 133 $

@@ -115,6 +115,8 @@ public abstract class AttrSlot {
 				this.flags |= IS_CHILD;
 			else if (ANode.class.isAssignableFrom(typeinfo.clazz) || INode.class.isAssignableFrom(typeinfo.clazz))
 				this.flags |= IS_CHILD;
+			else if (this instanceof ScalarAttrSlot && p_attr == ANode.nodeattr$parent && INode.class.isAssignableFrom(typeinfo.clazz))
+				this.flags |= IS_CHILD;
 		}
 		if (this instanceof SpaceAttrSlot || this instanceof ExtSpaceAttrSlot) defaultValue = java.lang.reflect.Array.newInstance(typeinfo.clazz,0);
 		else if (typeinfo.clazz == Boolean.class) defaultValue = Boolean.FALSE;

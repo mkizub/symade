@@ -246,6 +246,7 @@ class DirClasspathEntry implements ClasspathEntry {
 		}
 		else if ((f=new File(dir,name+".btd")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".btd")) {
 			//System.out.println("Reading '"+clazz_name+"' from file '"+f.getCanonicalPath()+"'");
+			//System.out.println("Loading class from BTD: "+clazz_name+".btd");
 			byte[] data = new byte[(int)f.length()];
 			FileInputStream fis = new FileInputStream(f);
 			Classpath.readFully(fis,data);
@@ -330,6 +331,7 @@ class ZipClasspathEntry implements ClasspathEntry {
 			}
 		}
 		else if( (f=zipfile.getEntry(name+".btd")) != null ) {
+			//System.out.println("Loading class from BTD: "+name+".btd");
 			byte[] data = new byte[(int)f.getSize()];
 			InputStream zis = zipfile.getInputStream(f);
 			Classpath.readFully(zis,data);
@@ -472,12 +474,12 @@ class ClassloaderEntry implements ClasspathEntry {
 		if (!path.endsWith(fname))
 			return false;
 		if (!"file".equalsIgnoreCase(url.getProtocol())) {
-			System.out.println("Found class as: "+fname+"; url: "+url);
+			//System.out.println("Found class as: "+fname+"; url: "+url);
 			return true;
 		}
 		File f = new File(path);
 		if (f.exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(fname)) {
-			System.out.println("Found class as: "+fname+"; url: "+url);
+			//System.out.println("Found class as: "+fname+"; url: "+url);
 			return true;
 		}
 		return false;
@@ -489,6 +491,7 @@ class ClassloaderEntry implements ClasspathEntry {
 
 	public byte[] read(String clazz_name) {
 		if (checkExists(clazz_name+".btd")) {
+			//System.out.println("Loading class from BTD: "+clazz_name+".btd");
 			URLClassLoader ucl = (URLClassLoader)this.getClass().getClassLoader();
 			InputStream inp = ucl.getResourceAsStream(clazz_name+".btd");
 			byte[] data = Classpath.readInputStream(inp);

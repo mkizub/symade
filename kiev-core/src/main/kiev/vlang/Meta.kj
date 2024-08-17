@@ -71,6 +71,8 @@ public class UserMeta extends ASTNode implements MNode {
 
 	public UserMeta(String name) {
 		this.decl.name = name;
+		if (name.indexOf('·') >= 0)
+			this.decl.qualified = true;
 	}
 
 	public String qname() {
@@ -84,7 +86,11 @@ public class UserMeta extends ASTNode implements MNode {
 		JavaAnnotation td = decl.dnode;
 		if (td != null)
 			return td;
-		String name = decl.name;
+		String name;
+		if (decl.symbol != null)
+			name = decl.symbol.qname();
+		else
+			name = decl.name;
 		if (name.indexOf('·') < 0) {
 			ResInfo info = new ResInfo(this,name,ResInfo.noForwards).match(JavaAnnotation.class);
 			if (!PassInfo.resolveNameR(this,info)) {

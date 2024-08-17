@@ -8,8 +8,6 @@ import kiev.dump.UnMarshallingContext;
 import kiev.vdom.XMLElement;
 import kiev.vlang.Env;
 
-import static kiev.stdlib.Asserts.*;
-
 public class XMLUnMarshallingContext implements XMLDumpReader, UnMarshallingContext {
 
 	final Env env;
