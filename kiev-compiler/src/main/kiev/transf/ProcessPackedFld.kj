@@ -149,7 +149,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 			f.setVirtual(true);
 			// setter
 			if (!f.isFinal() && MetaAccess.writeable(f)) {
-				Method set_var = new MethodSetter(f);
+				Method set_var = new MethodSetter(getContext(), f);
 				set_var.setFinal(true);
 				set_var.setAbstract(false);
 				if (s.isInterface())
@@ -195,7 +195,7 @@ public final class PackedFldME_PreGenerate extends BackendProcessor {
 			}
 			// getter
 			if(MetaAccess.readable(f)) {
-				Method get_var = new MethodGetter(f);
+				Method get_var = new MethodGetter(getContext(), f);
 				get_var.setFinal(true);
 				get_var.setAbstract(false);
 				if (s.isInterface())

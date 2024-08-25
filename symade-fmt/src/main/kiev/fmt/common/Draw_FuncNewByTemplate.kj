@@ -42,16 +42,16 @@ public final class Draw_FuncNewByTemplate extends Draw_SyntaxFunc implements Dra
 		private void makeNewInstance(AttrSlot a) {
 			INode obj = null;
 			if (template != null)
-				obj = new Copier().copyFull(template);
+				obj = new Copier(node.getContext()).copyFull(template);
 			else
 				obj = (INode)typeinfo.newInstance();
 			if (a instanceof ASpaceAttrSlot) {
 				int idx = index;
-				if (idx < 0) idx = 0; 
+				if (idx < 0) idx = 0;
 				else if (idx > ((ASpaceAttrSlot)a).length(node))
 					idx = ((ASpaceAttrSlot)a).length(node);
 				node.insVal(a,idx,obj);
-			} 
+			}
 			else
 				node.setVal(a, obj);
 		}
@@ -59,10 +59,10 @@ public final class Draw_FuncNewByTemplate extends Draw_SyntaxFunc implements Dra
 	private void collectTemplates(Draw_ATextSyntax tstx, String cname, Vector<Draw_SyntaxNodeTemplate> templates) {
 		try {
 			if (tstx != null) {
-				if (tstx.node_templates != null) 
+				if (tstx.node_templates != null)
 					for (Draw_SyntaxNodeTemplate templ : tstx.node_templates) {
 						INode tnode = templ.getTemplateNode();
-						if (tnode != null && cname.equals(tnode.getClass().getName())) 
+						if (tnode != null && cname.equals(tnode.getClass().getName()))
 							templates.add(templ);
 					}
 				collectTemplates(tstx.parent_syntax, cname, templates);
@@ -89,7 +89,7 @@ public final class Draw_FuncNewByTemplate extends Draw_SyntaxFunc implements Dra
 					menu.append(new NewElemAction(title, eti.getTypeInfo(), n, attr, index, null));
 				}
 			}
-			else if (eti.subtypes != null && eti.subtypes.length > 0) { 
+			else if (eti.subtypes != null && eti.subtypes.length > 0) {
 				if (eti.title == null || eti.title.length() == 0) {
 					addItems(menu, eti.subtypes, n, index, tstx);
 				} else {
@@ -119,6 +119,6 @@ public final class Draw_FuncNewByTemplate extends Draw_SyntaxFunc implements Dra
 			return false;
 		return true;
 	}
-		
+
 }
 

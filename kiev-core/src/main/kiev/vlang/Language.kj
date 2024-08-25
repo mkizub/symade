@@ -26,7 +26,7 @@ public interface Language {
 	public String getDefaultInfoSyntax();
 	public String getClassByNodeName(String name);
 	public AttrSlot getExtAttrByName(String name);
-	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid);
+	public ANode makeNode(ANodeContext context, String name, String ti_sign, String uuid);
 	public ANode makeNode(String name, ANodeContext context);
 	public ANode makeNode(Class clazz, ANodeContext context);
 }
@@ -149,13 +149,13 @@ public abstract class LangBase implements Language {
 		//throw new RuntimeException("Language "+this.getName()+" cannot instantiona node "+clazz);
 	}
 
-	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid) {
+	public ANode makeNode(ANodeContext context, String name, String ti_sign, String uuid) {
 		Class c = allNodesMap.get(name);
 		if (c == null)
 			throw new RuntimeException("Language '"+this.getName()+"' has no node '"+name+"'");
 		Symbol symbol = null;
 		if (uuid != null)
-			symbol = env.getSymbolByUUID(uuid);
+			symbol = context.theEnv.getSymbolByUUID(uuid);
 		ANode node;
 		if (ti_sign != null)
 			node = (ANode)TypeInfo.newTypeInfo(ti_sign).newInstance();
@@ -166,7 +166,7 @@ public abstract class LangBase implements Language {
 				node = symbol;
 			else if (node instanceof DNode) {
 				node.symbol = symbol;
-				env.tenv.callbackTypeVersionChanged(symbol);
+				context.typeEnv.callbackTypeVersionChanged(symbol);
 			}
 		}
 		return node;
@@ -194,21 +194,21 @@ public final class CoreLang extends LangBase {
 	public Class[] getSuperLanguages() { superLanguages }
 	public Class[] getNodeClasses() { nodeClasses }
 
-	public ANode makeNode(Env env, ANodeContext context, String name, String ti_sign, String uuid) {
+	public ANode makeNode(ANodeContext context, String name, String ti_sign, String uuid) {
 		if (ti_sign == null && name.equals("SymbolRef"))
 			return new SymbolRef();
 		if (uuid != null) {
-			Symbol symbol = env.getSymbolByUUID(uuid);
-			if (symbol != null && symbol.dnode != null) {
-				DNode dn = symbol.dnode;
-				env.tenv.callbackTypeVersionChanged(symbol);
+			Symbol symbol = context.theEnv.getSymbolByUUID(uuid);
+			if (symbol != null && symbol.deref<DNode>(context) != null) {
+				DNode dn = symbol.deref<DNode>(context);
+				context.typeEnv.callbackTypeVersionChanged(symbol);
 				if (dn.isTypeDeclNotLoaded()) {
 					dn.cleanupOnReload();
 					return dn;
 				}
 			}
 		}
-		return super.makeNode(env, context, name, ti_sign, uuid);
+		return super.makeNode(context, name, ti_sign, uuid);
 	}
 
 	public AttrSlot getExtAttrByName(String name) {

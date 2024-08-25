@@ -32,7 +32,7 @@ public class JNode extends ANode.UnVersionedData implements JConstants {
 	private final ASTNode impl_;
 
 	protected JNode(ASTNode impl) {
-		this.jcontext_ = (JNodeContext)((WorkerThread)Thread.currentThread()).bend_context;
+		this.jcontext_ = (JNodeContext)((WorkerThreadGroup)Thread.currentThread().getThreadGroup()).bend_context;
 		impl_ = impl;
 		impl.setUnVersionedData(this);
 	}

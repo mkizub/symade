@@ -623,7 +623,7 @@ void TopLevelDeclarations(SyntaxScope ss) :
 		(
 			ss.members += Import(modifiers)
 		|	ss.members += Typedef(modifiers)
-		|	ss.members += TypeDeclaration(modifiers, ss) [ ";" ]
+		|	TypeDeclaration(modifiers, ss) [ ";" ]
 		|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
 			NameSpaceDeclaration(modifiers, ss) [ ";" ]
 		)
@@ -724,26 +724,24 @@ TypeAssign Typedef(ASTModifiers modifiers) :
 	("typedef"|"type")
 	tr = Type()
 	id = Name()
-	{ ta = mkTypeAssign(id.pos, id.sname, modifiers, null); ta.super_types += tr; }
+	{ ta = mkTypeAssign(id.pos, id.sname, modifiers); ta.super_types += tr; }
 	";"
 	{ return ta; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; Symbol name; TypeConstr[] args; }
+{ Struct clazz; Symbol name; TypeConstr[] args = null; }
 {
 	(
 		"class"
 		name = Name()
+		[ args = ClazzArguments() ]
 		{
 			if (modifiers.isSymadeNode())
-				clazz = mkStruct(name, new SymadeNode(), 0, modifiers, parent);
+				clazz = mkStruct(name, new SymadeNode(), args, 0, modifiers, parent);
 			else
-				clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
+				clazz = mkStruct(name, new JavaClass(), args, 0, modifiers, parent);
 		}
-		[
-			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
-		]
 		[
 			"extends"
 			clazz.super_types += Type()
@@ -756,15 +754,13 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		]
 	|	"interface"
 		name = Name()
+		[ args = ClazzArguments() ]
 		{
 			if (modifiers.isSymadeNode())
-				clazz = mkStruct(name, new SymadeNode(), AccessFlags.ACC_INTERFACE, modifiers, parent);
+				clazz = mkStruct(name, new SymadeNode(), args, AccessFlags.ACC_INTERFACE, modifiers, parent);
 			else
-				clazz = mkStruct(name, new JavaClass(), AccessFlags.ACC_INTERFACE, modifiers, parent);
+				clazz = mkStruct(name, new JavaClass(), args, AccessFlags.ACC_INTERFACE, modifiers, parent);
 		}
-		[
-			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
-		]
 		[
 			"extends"
 			clazz.super_types += Type()
@@ -773,23 +769,21 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	|	"@interface"
 		name = Name()
 		{
-			clazz = mkStruct(name, new JavaAnnotation(), AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
+			clazz = mkStruct(name, new JavaAnnotation(), null, AccessFlags.ACC_INTERFACE|AccessFlags.ACC_ANNOTATION, modifiers, parent);
 		}
 	|	"enum"
 		name = Name()
 		{
-			clazz = mkStruct(name, new JavaEnum(), AccessFlags.ACC_ENUM|AccessFlags.ACC_STATIC, modifiers, parent);
+			clazz = mkStruct(name, new JavaEnum(), null, AccessFlags.ACC_ENUM|AccessFlags.ACC_STATIC, modifiers, parent);
 		}
 	|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("view") })
 		<IDENTIFIER> // "view"
 		name = Name()
+		[ args = ClazzArguments() ]
 		{
-			clazz = mkStruct(name, new KievView(), AccessFlags.ACC_VIRTUAL, modifiers, parent);
+			clazz = mkStruct(name, new KievView(), args, AccessFlags.ACC_VIRTUAL, modifiers, parent);
 			KievView kview = (KievView)clazz;
 		}
-		[
-			args = ClazzArguments(clazz) { clazz.args.addAll(args); }
-		]
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
 		kview.view_of = NArrType()
@@ -837,7 +831,7 @@ void TypeBodyDeclaration(ComplexTypeDecl clazz) :
 			{ if (!sub_struct.isAttached()) clazz.members += sub_struct; else assert(clazz.members.indexOf(sub_struct) >= 0); }
 			[ ";" ]
 		|	LOOKAHEAD(1)
-			clazz.members += MemberArgDecl(modifiers,clazz)
+			clazz.members += MemberArgDecl(modifiers)
 		|	LOOKAHEAD(1)
 			sub_struct     = CaseTypeDeclaration(modifiers, clazz)
 			{ if (!sub_struct.isAttached()) clazz.members += sub_struct; else assert(clazz.members.indexOf(sub_struct) >= 0); }
@@ -858,7 +852,7 @@ DNode FieldOrMethodDecl(ASTModifiers modifiers, ComplexTypeDecl clazz) :
 { TypeConstr[] args; TypeRef dtype; DNode res = null; }
 {
 	(
-		args = ClazzArguments(null)
+		args = ClazzArguments()
 		(
 			LOOKAHEAD({ getToken(1).kind == IDENTIFIER && getToken(2).kind == OP_LPAREN }) // LOOKAHEAD (<IDENTIFIER> "(")
 			res = ConstructorDeclaration(modifiers, args, clazz)
@@ -907,16 +901,14 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
-{ Symbol name; PizzaCase clazz; TypeConstr[] args; }
+{ Symbol name; PizzaCase clazz; TypeConstr[] args = null; }
 {
 	"case"
 	name = Name()
+	[ args = ClazzArguments() ]
 	{
-		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), AccessFlags.ACC_STATIC|AccessFlags.ACC_FINAL, modifiers, parent);
+		clazz = (PizzaCase)mkStruct(name, new PizzaCase(), args, AccessFlags.ACC_STATIC|AccessFlags.ACC_FINAL, modifiers, parent);
 	}
-	[
-		args = ClazzArguments(clazz) { clazz.args.addAll(args); }
-	]
 	(
 		"("
 			(
@@ -939,21 +931,21 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, ComplexTypeDecl parent) :
 }
 
 
-TypeConstr[] ClazzArguments(DNode dn) :
+TypeConstr[] ClazzArguments() :
 { TypeConstr[] args = new TypeConstr[0]; TypeConstr arg; }
 {
 	("<" | <LANGLE>)
-		arg = ArgumentDeclaration(dn)
+		arg = ArgumentDeclaration()
 		{ args = (TypeConstr[])Arrays.append(args,arg); }
 		(	","
-			arg = ArgumentDeclaration(dn)
+			arg = ArgumentDeclaration()
 			{ args = (TypeConstr[])Arrays.append(args,arg); }
 		)*
 	(">" | <RANGLE>)
 	{ return args; }
 }
 
-TypeDef MemberArgDecl(ASTModifiers modifiers, DNode dn) :
+TypeDef MemberArgDecl(ASTModifiers modifiers) :
 { Symbol name; TypeDef arg; TypeRef t; }
 {
 	("typedef"|"type")
@@ -961,11 +953,11 @@ TypeDef MemberArgDecl(ASTModifiers modifiers, DNode dn) :
 		name      = Name()
 		(
 			"="
-			{ arg = mkTypeAssign(name.pos,name.sname,modifiers,dn); }
+			{ arg = mkTypeAssign(name.pos,name.sname,modifiers); }
 			t = Type() { arg.super_types += t; }
 			";"
 		|
-			{ arg = mkTypeConstr(name.pos,name.sname,modifiers,dn); }
+			{ arg = mkTypeConstr(name.pos,name.sname,modifiers); }
 			(
 				<OP_UPPER_BOUND> t = Type() { arg.super_types.add(t);}
 			|	<OP_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
@@ -976,7 +968,7 @@ TypeDef MemberArgDecl(ASTModifiers modifiers, DNode dn) :
 	{ return arg; }
 }
 
-TypeConstr ArgumentDeclaration(DNode dn) :
+TypeConstr ArgumentDeclaration() :
 { ASTModifiers modifiers; Symbol name; TypeConstr arg; TypeRef tr; TypeVariance variance = null; }
 {
 	modifiers = Modifiers()
@@ -996,7 +988,7 @@ TypeConstr ArgumentDeclaration(DNode dn) :
 	)?
 	name      = Name()
 	{
-		arg = mkTypeConstr(name.pos,name.sname,modifiers,dn); arg.setAbstract(true);
+		arg = mkTypeConstr(name.pos,name.sname,modifiers); arg.setAbstract(true);
 		if (variance != null)
 			arg.variance = variance;
 	}
@@ -1303,7 +1295,7 @@ void VarDecls(ASTModifiers modifiers, SpacePtr stats) :
 			id = Name()
 			[	"="	init = VariableInitializer()	]
 			{
-				var = mkVar(id, new ASTModifiers(), new Copier().copyFull(dtype));
+				var = mkVar(id, new ASTModifiers(), new Copier(syntaxContext).copyFull(dtype));
 				modifiers.copyToNode(var);
 				var.init = init;
 				stats += var;
@@ -2240,7 +2232,7 @@ void NewAny(ASTExpression e) :
 		[
 			LOOKAHEAD({ oneOfLA(OP_LBRACE) })
 			{
-				clazz = mkStruct(null, new JavaAnonymouseClass(), AccessFlags.ACC_FINAL, new ASTModifiers(), e);
+				clazz = mkStruct(null, new JavaAnonymouseClass(), null, AccessFlags.ACC_FINAL, new ASTModifiers(), e);
 				e.nodes += clazz;
 			}
 			TypeBodyDeclaration(clazz)

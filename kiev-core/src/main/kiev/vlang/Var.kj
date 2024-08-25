@@ -341,7 +341,7 @@ public class Field extends Var implements GlobalDNode {
 		assert(isPrivate());
 		if (getter_from_inner != null && getter_from_inner.dnode != null)
 			return getter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(getContext(), Env.ctxTDecl(this).allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		if (isStatic()) {
 			m.block.stats += new SFldExpr(pos,this);
@@ -360,7 +360,7 @@ public class Field extends Var implements GlobalDNode {
 		assert(isPrivate());
 		if (setter_from_inner != null && setter_from_inner.dnode != null)
 			return setter_from_inner.dnode;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), getEnv().tenv.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(getContext(), Env.ctxTDecl(this).allocateAccessName(), getTypeEnv().tpVoid, ACC_STATIC | ACC_SYNTHETIC);
 		Var val = new LVar(pos,"value",this.getType(),Var.VAR_LOCAL,0);
 		m.params += val;
 		m.body = new Block();

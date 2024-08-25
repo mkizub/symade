@@ -6,11 +6,11 @@ import kiev.vtree.AttrSlot;
 import kiev.vlang.Env;
 
 public class AttrElem extends Elem {
-	
+
 	public static final int IS_CHILD		= 1 << 0;		// otherwice it's a primitive value of cross-ref to another node
 	public static final int IS_OPTIONAL		= 1 << 1;		// otherwice it's a required value
 	public static final int IS_SPACE		= 1 << 2;		// otherwice it's a scalar attribute
-	public static final int IS_EXTERNAL		= 1 << 3;		// global, otherwice it's declared withing a type
+	public static final int IS_SYMBOL		= 1 << 3;		// symbol slot
 	public static final int IS_NO_COPY		= 1 << 4;		// don't copy when cloning a node
 	public static final int IS_LEADING		= 1 << 5;		// required to be read before new node creation
 
@@ -20,7 +20,7 @@ public class AttrElem extends Elem {
 	public String				name;
 	// declaration type (in which the attribute was declared), if not external
 	public TypeElem				intype;
-	
+
 	private AttrSlot			attr_slot;
 	private Enum				enum_value;
 
@@ -30,7 +30,7 @@ public class AttrElem extends Elem {
 		this.flags = flags;
 		this.name = name;
 	}
-	
+
 	public AttrElem(int id, TypeElem vtype, int flags, AttrSlot attr_slot) {
 		super(id);
 		this.vtype = vtype;
@@ -38,11 +38,11 @@ public class AttrElem extends Elem {
 		this.name = attr_slot.name;
 		this.attr_slot = attr_slot;
 	}
-	
+
 	public AttrElem(int id, int addr) {
 		super(id, addr);
 	}
-	
+
 	public AttrSlot getAttrSlot() {
 		return attr_slot;
 	}
@@ -53,7 +53,7 @@ public class AttrElem extends Elem {
 	public boolean isChild()	{ return (flags & IS_CHILD) != 0; }
 	public boolean isOptional()	{ return (flags & IS_OPTIONAL) != 0; }
 	public boolean isSpace()	{ return (flags & IS_SPACE) != 0; }
-	//public boolean isExternal()	{ return (flags & IS_EXTERNAL) != 0; }
+	public boolean isSymbol()	{ return (flags & IS_SYMBOL) != 0; }
 	public boolean isNoCopy()	{ return (flags & IS_NO_COPY) != 0; }
 	public boolean isLeading()	{ return (flags & IS_LEADING) != 0; }
 

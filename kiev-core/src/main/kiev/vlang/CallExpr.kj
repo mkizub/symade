@@ -68,7 +68,7 @@ public class CallExpr extends ENode {
 		this(pos, obj, func, null, args);
 	}
 
-	public CallExpr(long pos, ENode obj, ISymbolHost func, TypeRef[] targs, ENode[] args) {
+	public CallExpr(long pos, ENode obj, IDecl func, TypeRef[] targs, ENode[] args) {
 		this.pos = pos;
 		this.symbol = func.symbol;
 		this.obj = obj;
@@ -76,7 +76,7 @@ public class CallExpr extends ENode {
 		this.args.addAll(args);
 	}
 
-	public CallExpr(long pos, ENode obj, ISymbolHost func, ENode[] args) {
+	public CallExpr(long pos, ENode obj, IDecl func, ENode[] args) {
 		this(pos, obj, func.symbol, null, args);
 	}
 
@@ -95,7 +95,7 @@ public class CallExpr extends ENode {
 	public Type getType() {
 		Method m = this.func;
 		if (m == null)
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return getCallType().ret();
@@ -104,7 +104,7 @@ public class CallExpr extends ENode {
 	public CallType getCallType() {
 		Method m = this.func;
 		if (m == null)
-			return new CallType(null,null,null,getEnv().tenv.tpVoid,false);
+			return new CallType(null,null,null,getTypeEnv().tpVoid,false);
 		return this.func.makeType(this.targs, this.getEArgs());
 	}
 
@@ -149,7 +149,7 @@ public class CallExpr extends ENode {
 			return;
 		}
 
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		Type tp = Env.ctxTDecl(this).getType();
 		CallType mt = null;
 
@@ -301,7 +301,7 @@ public class CallExpr extends ENode {
 			if (res[i] == null) continue;
 			for(int j=i+1; j < res.length; j++) {
 				if (res[j] == null) continue;
-				if (res[i].func.dnode == res[j].func.dnode) {
+				if (res[i].func.deref<DNode>(getContext()) == res[j].func.deref<DNode>(getContext())) {
 					res[j] = null;
 					cnt -= 1;
 					continue;
@@ -335,7 +335,7 @@ public class CallExpr extends ENode {
 			ENode e = res[si];
 			if (e != null) {
 				if (e instanceof UnresCallExpr && e.obj == this.obj /*&& !e.func.dnode.isMacro()*/) {
-					this.symbol = e.func.symbol;
+					this.symbol = e.func;
 					return;
 				}
 				e = e.closeBuild();
@@ -415,7 +415,7 @@ public class CallExpr extends ENode {
 		ASTNode rewriter = func.body;
 		if (rewriter instanceof RewriteMatch)
 			rewriter = rewriter.matchCase(this);
-		return rewriter.doRewrite(new RewriteContext(ctx.env, this, args));
+		return rewriter.doRewrite(new RewriteContext(ctx.context, this, args));
 	}
 }
 
@@ -484,14 +484,14 @@ public class CtorCallExpr extends ENode {
 	public int getPriority() { return Constants.opCallPriority; }
 
 	public Type getType() {
-		return getEnv().tenv.tpVoid;
+		return getTypeEnv().tpVoid;
 	}
 
 	public CallType getCallType() {
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
-		return new CallType(Env.ctxTDecl(this).getType(),null,ta,getEnv().tenv.tpVoid,false);
+		return new CallType(Env.ctxTDecl(this).getType(),null,ta,getTypeEnv().tpVoid,false);
 	}
 
 	public void mainResolveOut(INode parent, AttrSlot slot) {

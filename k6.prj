@@ -11,7 +11,7 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 
-<sop:kiev.vlang.Project xmlns:sop="sop://sop/" xmlns:core="sop://languages/core?class=kiev.vlang.CoreLang" xmlns:macro="sop://languages/macro?class=kiev.vlang.MacroLang" xmlns:logic="sop://languages/logic?class=kiev.vlang.LogicLang" xmlns:syntax="sop://languages/syntax?class=kiev.fmt.SyntaxLang">
+<sop:kiev.vlang.Project xmlns:sop="sop://sop/" xmlns:core="sop://languages/core?class=kiev.vlang.CoreLang">
  <root_dir>
   <sop:kiev.vlang.DirUnit name=".">
    <members>
@@ -303,6 +303,7 @@
                   <core:FileUnit name="NodeElem.java"/>
                   <core:FileUnit name="NodeElemDecoder.java"/>
                   <core:FileUnit name="NodeElemPrinter.java"/>
+                  <core:FileUnit name="NodeRef.java"/>
                   <core:FileUnit name="PrintDecoderFactory.java"/>
                   <core:FileUnit name="Signature.java"/>
                   <core:FileUnit name="SymbElem.java"/>

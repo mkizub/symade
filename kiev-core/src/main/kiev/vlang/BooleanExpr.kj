@@ -22,7 +22,7 @@ public abstract class BoolExpr extends ENode {
 
 	public BoolExpr() {}
 
-	public Type getType() { return getEnv().tenv.tpBoolean; }
+	public Type getType() { return getTypeEnv().tpBoolean; }
 
 	public boolean preResolveIn(INode parent, AttrSlot slot) {
 		if (getOperation() == null)
@@ -227,7 +227,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			Symbol sym = opd.resolveMethod(this);
 			if (sym != null) {
 				this.symbol = sym;
-				m = sym.dnode;
+				m = sym.deref<Method>(getContext());
 			}
 		}
 		if (m instanceof CoreOperation)
@@ -239,7 +239,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		if (m == null) {
 			Symbol sym = resolveOpdef().resolveMethod(this);
 			if (sym != null)
-				m = (Method)sym.dnode;
+				m = sym.deref<Method>(getContext());
 		}
 		return ((CoreOperation)m).calc(this).getConstValue();
 	}

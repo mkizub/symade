@@ -43,7 +43,7 @@ public final class SyntaxManager {
 
 	public static Draw_ATextSyntax getLanguageSyntax(String name, Env env) {
 		if (env != null) {
-			DNode ts = env.resolveGlobalDNode(name);
+			DNode ts = env.resolveGlobalDNode(name, env.getEnvContext());
 			if (ts instanceof ATextSyntax){
 				env.reportInfo().log("getLanguageSyntax ts={}", ts);
 				return ts.getCompiled().init();
@@ -76,7 +76,7 @@ public final class SyntaxManager {
 
 	public static Draw_StyleSheet getStyleSheet(String name, Env env) {
 		if (env != null) {
-			DNode ss = env.resolveGlobalDNode(name);
+			DNode ss = env.resolveGlobalDNode(name, env.getEnvContext());
 			if (ss instanceof StyleSheet){
 				env.reportInfo().log("getStyleSheet ts={}", ss);
 				return ss.getCompiled().init();

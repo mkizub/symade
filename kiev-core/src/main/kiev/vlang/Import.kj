@@ -137,7 +137,7 @@ public class ImportMethod extends Import implements Constants, ScopeOfMethods {
 
 		int i = 0;
 		Type[] types;
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		if( args.length > 0 && args[0].getType() ≡ tenv.tpRule) {
 			types = new Type[args.length-1];
 			i++;

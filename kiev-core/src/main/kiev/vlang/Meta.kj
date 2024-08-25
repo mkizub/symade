@@ -164,7 +164,7 @@ public class UserMeta extends ASTNode implements MNode {
 	public Type getType() {
 		JavaAnnotation td = getAnnotationDecl();
 		if (td == null)
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		return td.getType();
 	}
 
@@ -469,7 +469,7 @@ public abstract class MetaValue extends ENode {
 
 	boolean checkValue(Type reqType, ASTNode value, AttrSlot slot) {
 		if (value instanceof TypeRef) {
-			if (reqType ≈ getEnv().tenv.tpClass) {
+			if (reqType ≈ getTypeEnv().tpClass) {
 				((TypeRef)value).getType();
 				return false;
 			} else {

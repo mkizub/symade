@@ -13,20 +13,13 @@ package kiev.vtree;
 import syntax kiev.Syntax;
 
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Maxim Kizub
  * @version $Revision: 271 $
  *
  */
-
-@ThisIsANode(lang=void)
-public interface ISymbolHost extends INode {
-	@virtual @abstract
-	public:ro Symbol		symbol;
-
-	@getter public Symbol	get$symbol();
-}
 
 // Symbol or qualified name+uuid
 public interface ISymbolInfo {
@@ -62,26 +55,127 @@ public interface ISymbolInfo {
 @ThisIsANode(lang=CoreLang)
 public final class Symbol extends ANode {
 
-	public static final ParentAttrSlot nodeattr$namespace_parent =
-			new ParentAttrSlot("namespace_parent", true, TypeInfo.newTypeInfo(Symbol.class,null));
-
 	// source code name, may be null for anonymouse symbols
 	@AttrXMLDumpInfo(attr=true, name="name")
 	@nodeAttr
 	public String					sname;
 
 	// Sub-symbols of this namespace
-	@nodeAttr(parent="nodeattr$namespace_parent", copyable=false)
+	@nodeAttr(copyable=false)
 	public Symbol∅				sub_symbols;
 
-	public DNode getTargetDNode() { return dnode; }
+	private Object attached;
+
+	// for java code
+	public DNode derefDNode(ANodeContext context) {
+		return deref<DNode>(context);
+	}
+
+	public <D extends DNode> D deref(ANodeContext context)
+		require context != null;
+	{
+		assert (context != null);
+		final Object att = attached;
+		if (att == null)
+			return null;
+		if (att instanceof Object[]) {
+			Object[] arr = (Object[])att;
+			foreach (D data; arr) {
+				if (data instanceof ANode && context.inherits(data.getContext())) {
+					if (data != arr[0])
+						reportWarning().log("Symbol deref maybe wrong");
+					return data;
+				}
+			}
+			//reportWarning().log("Symbol deref maybe fail");
+			return (D)arr[0];
+		}
+		if (att instanceof D) {
+			if (att instanceof ANode && context.inherits(att.getContext()))
+				return (D)att;
+			//reportWarning().log("Symbol deref maybe fail");
+			return (D)att;
+		}
+		return null;
+	}
+
+	public synchronized void attachNode(ANode data) {
+		if (data == null)
+			return;
+		if (attached == null) {
+			attached = data;
+			return;
+		}
+		if (attached instanceof Object[]) {
+			Object[] narr = (Object[])attached;
+			int sz = narr.length;
+			Object[] tmp = new Object[sz+1];
+			tmp[0] = data;
+			for (int i=0; i < sz; i++) {
+				Object d = narr[i];
+				if (d == data)
+					return;
+				tmp[i+1] = d;
+			}
+			attached = tmp;
+			return;
+		}
+		if (attached == data)
+			return;
+		Object[] tmp = new Object[2];
+		tmp[0] = data;
+		tmp[1] = attached;
+		attached = tmp;
+	}
+
+	public synchronized void detachNode(ANode data) {
+		if (data == null)
+			return;
+		if (attached == data) {
+			attached = null;
+			return;
+		}
+		if (attached instanceof Object[]) {
+			Object[] narr = (Object[])attached;
+			int sz = narr.length;
+			if (sz == 1) {
+				if (narr[0] == data)
+					attached = null;
+				return;
+			}
+			if (sz == 2) {
+				if (narr[0] == data)
+					attached = narr[1];
+				else if (narr[1] == data)
+					attached = narr[0];
+				return;
+			}
+			int idx = -1;
+			for (int i=0; i < sz; i++) {
+				if (narr[i] == data) {
+					idx = i;
+					break;
+				}
+			}
+			if (idx < 0)
+				return;
+			int i = 0;
+			Object[] tmp = new Object[sz- 1];
+			for (; i < idx; i++)
+				tmp[i] = narr[i];
+			for (; i < tmp.length; i++)
+				tmp[i] = narr[i+1];
+			attached = tmp;
+			return;
+		}
+	}
 
 	public Symbol getNameSpaceSymbol() {
-		return (Symbol)Symbol.nodeattr$namespace_parent.get(this);
+		return (Symbol)parent();
 	}
 
 	public boolean isGlobalSymbol() {
-		if (parent() instanceof KievRoot)
+		if (attached instanceof KievRoot)
 			return true;
 		Symbol ns = getNameSpaceSymbol();
 		return ns != null && ns.isGlobalSymbol();
@@ -103,18 +197,14 @@ public final class Symbol extends ANode {
 		return sym;
 	}
 
-	@getter public DNode get$dnode() {
-		ANode p = parent();
-		if (p instanceof DNode)
-			return (DNode)p;
-		if (p instanceof Alias)
-			return p.symref.dnode;
-		return null;
-	}
-
-	@getter public Symbol get$symbol() {
-		return this;
-	}
+//	@getter public DNode get$dnode() {
+//		ANode p = parent();
+//		if (p instanceof DNode)
+//			return (DNode)p;
+//		if (p instanceof Alias)
+//			return p.symref.dnode;
+//		return null;
+//	}
 
 	public SymUUID suuid() {
 		return (SymUUID)getUnVersionedData(SymUUID.DATA_ID);
@@ -123,8 +213,14 @@ public final class Symbol extends ANode {
 	final public SymUUID getUUID() {
 		if (this.suuid() != null)
 			return this.suuid();
-		java.util.UUID uuid = java.util.UUID.randomUUID();
-		this.setUUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+		String globalQName = getGlobalQName();
+		if (globalQName != null) {
+			java.util.UUID uuid = java.util.UUID.nameUUIDFromBytes(globalQName.getBytes(StandardCharsets.UTF_8));
+			this.setUUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+		} else {
+			java.util.UUID uuid = java.util.UUID.randomUUID();
+			this.setUUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+		}
 		return this.suuid();
 	}
 	final public void setUUID(long high, long low) {
@@ -140,7 +236,7 @@ public final class Symbol extends ANode {
 		SymUUID suuid = this.suuid();
 		if (suuid != null && suuid.toString().equals(value))
 			return;
-		assert (suuid == null || (suuid == SymUUID.Empty && this.parent() == getEnv().root));
+		assert (suuid == null || (suuid == SymUUID.Empty && this.attached == getEnv().root));
 		if (value.length() == 0) {
 			setUnVersionedData(SymUUID.Empty);
 		} else {
@@ -148,6 +244,23 @@ public final class Symbol extends ANode {
 			getEnv().registerSymbol(suuid);
 			setUnVersionedData(suuid);
 		}
+	}
+
+	public String getGlobalQName() {
+		if (sname == null || sname.isEmpty())
+			return null;
+		Symbol p = (Symbol)parent();
+		if (p == null)
+			return null;
+		DNode dn = derefDNode(getContext());
+		if (dn instanceof KievPackage)
+			return qname();
+		if !(dn instanceof TypeDecl)
+			return null;
+		String parentGlobalQName = p.getGlobalQName();
+		if (parentGlobalQName == null)
+			return null;
+		return (parentGlobalQName + '·' + sname).intern();
 	}
 
 	public String qname() {
@@ -164,19 +277,20 @@ public final class Symbol extends ANode {
 
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.ct == ChangeType.THIS_DETACHED && info.slot.isSemantic()) {
-			Symbol ns = getNameSpaceSymbol();
-			if (ns != null)
-				ns.sub_symbols.detach(this);
+			//Symbol ns = getNameSpaceSymbol();
+			//if (ns != null)
+			//	ns.sub_symbols.detach(this);
 		}
 		else if (info.ct == ChangeType.THIS_ATTACHED && info.slot.isSemantic()) {
-			if (info.parent instanceof DNode && getNameSpaceSymbol() == null) {
-				DNode dn = (DNode)info.parent;
-				ANode p = dn.parent();
-				if (p instanceof GlobalDNode) {
-					dn = (DNode)p;
-					dn.symbol.sub_symbols += this;
-				}
-			}
+			assert (info.parent instanceof Symbol);
+			//if (info.parent instanceof DNode && getNameSpaceSymbol() == null) {
+			//	DNode dn = (DNode)info.parent;
+			//	ANode p = dn.parent();
+			//	if (p instanceof GlobalDNode) {
+			//		dn = (DNode)p;
+			//		dn.symbol.sub_symbols += this;
+			//	}
+			//}
 		}
 		super.callbackChanged(info);
 	}
@@ -192,6 +306,11 @@ public final class Symbol extends ANode {
 		super(Env.getSemanticContext());
 		this.pos = pos;
 		this.sname = sname;
+	}
+	public Symbol(Symbol s) {
+		super(s.getContext());
+		this.pos = s.pos;
+		this.sname = s.sname;
 	}
 
 	@getter public final String get$sname() {
@@ -238,7 +357,7 @@ public final class Symbol extends ANode {
 public class Alias extends ANode {
 
 	@AttrXMLDumpInfo(ignore=true)
-	@nodeAttr
+	@nodeData @nodeSymb
 	public Symbol                   symbol;
 
 	@AttrBinDumpInfo(ignore=true)
@@ -267,8 +386,10 @@ public class Alias extends ANode {
 
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.ct == ChangeType.THIS_ATTACHED) {
-			if (info.parent instanceof Method)
+			if (info.parent instanceof Method) {
 				this.symref.symbol = ((Method)info.parent).symbol;
+				this.symbol.attachNode((ANode)info.parent);
+			}
 		}
 		super.callbackChanged(info);
 	}
@@ -322,7 +443,7 @@ public final class NameAndUUID {
 
 @unerasable
 @ThisIsANode(lang=CoreLang)
-public final class SymbolRef<D extends ISymbolHost> extends ANode {
+public final class SymbolRef<D extends IDecl> extends ANode {
 
 	@AttrXMLDumpInfo(attr=true, name="full")
 	@nodeAttr
@@ -419,7 +540,7 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 		if (id instanceof Symbol)
 			return (Symbol)id;
 		if (id instanceof Type)
-			return ((Type)id).meta_type.tdecl.symbol;
+			return ((Type)id).meta_type.tdecl_symbol;
 		if (id instanceof NameAndUUID) {
 			NameAndUUID nid = (NameAndUUID)id;
 			Symbol sym = nid.env.getSymbolByUUID(nid.uuid_high, nid.uuid_low);
@@ -433,8 +554,13 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 
 	@getter public final D get$dnode() {
 		Object id = ident_or_symbol_or_type;
-		if (id instanceof Symbol)
-			return ((Symbol)id).dnode;
+		ANodeContext context = parent() == null ? getContext() : parent().getContext();
+		if (id instanceof Symbol) {
+			DNode d = ((Symbol)id).derefDNode(context);
+			if (d instanceof D)
+				return d;
+			return null;
+		}
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
 		if (id instanceof NameAndUUID) {
@@ -442,7 +568,10 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 			Symbol sym = nid.env.getSymbolByUUID(nid.uuid_high, nid.uuid_low);
 			if (sym != null) {
 				this.symbol = sym;
-				return sym.dnode;
+				DNode d = sym.derefDNode(context);
+				if (d instanceof D)
+					return d;
+				return null;
 			}
 		}
 		return null;
@@ -567,7 +696,7 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 				if (result.containsData(sym))
 					continue;
 				// check if this node match
-				if (check(sym.dnode)) {
+				if (check(sym.deref<DNode>(resolve_in.getContext()))) {
 					result.append(sym);
 					continue;
 				}
@@ -578,12 +707,12 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 				if (result.containsData(sym))
 					continue;
 				// check if this node match
-				if (check(sym.dnode)) {
+				if (check(sym.deref<DNode>(resolve_in.getContext()))) {
 					result.append(sym);
 					continue;
 				}
 				// check if it's a node from path prefix
-				DNode dn = sym.dnode;
+				DNode dn = sym.deref<DNode>(resolve_in.getContext());
 				foreach (Class c; scopesForAutoResolve(for_slot); dn != null && c.isAssignableFrom(dn.getClass())) {
 					result.append(sym);
 					break;
@@ -638,12 +767,12 @@ public final class SymbolRef<D extends ISymbolHost> extends ANode {
 			if (result.containsData(sym))
 				continue;
 			// check if this node match
-			if (check(sym.dnode)) {
+			if (check(sym.deref<DNode>(resolve_in.getContext()))) {
 				result.append(sym);
 				continue;
 			}
 			// check if it's a node from path prefix
-			DNode dn = sym.dnode;
+			DNode dn = sym.deref<DNode>(resolve_in.getContext());
 			foreach (Class c; scopesForAutoResolve(for_slot); dn != null && c.isAssignableFrom(dn.getClass())) {
 				result.append(sym);
 				break;
@@ -761,9 +890,9 @@ public interface DNodeMatcher<D extends DNode> {
 
 	D matchNode(INode node);
 
-	D matchOwner(Symbol symbol) {
+	D matchOwner(Symbol symbol, ANodeContext context) {
 		if (symbol == null) return null;
-		return matchNode(symbol.getTargetDNode());
+		return matchNode(symbol.deref<DNode>(context));
 	}
 }
 

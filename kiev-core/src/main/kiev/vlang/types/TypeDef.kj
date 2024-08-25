@@ -71,7 +71,7 @@ public abstract class TypeDef extends TypeDecl {
 		return getAType();
 	}
 	public ArgType getAType() {
-		ArgMetaType mt = (ArgMetaType)getEnv().tenv.getExistingMetaType(this.symbol);
+		ArgMetaType mt = (ArgMetaType)getTypeEnv().getExistingMetaType(this.symbol);
 		if (mt != null)
 			return mt.atype;
 		this.verifyMetas();
@@ -79,10 +79,10 @@ public abstract class TypeDef extends TypeDecl {
 	}
 
 	public ArgMetaType getMetaType() {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		synchronized (tenv) {
 			MetaType mt = tenv.getExistingMetaType(this.symbol);
-			if (mt != null)
+			if (mt != null && mt.tdecl == this)
 				return (ArgMetaType)mt;
 			return new ArgMetaType(tenv,this);
 		}

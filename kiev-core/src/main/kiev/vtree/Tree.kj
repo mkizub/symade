@@ -75,8 +75,8 @@ public abstract class AttrSlot {
 	private static final int IS_ATTR  = 1;
 	private static final int IS_CHILD = 2;
 	private static final int IS_SYMREF = 4;
-	private static final int IS_EXT_DATA = 8;
-	//private static final int IS_EXTERNAL = 16;
+	private static final int IS_SYMBOL = 8;
+	private static final int IS_EXT_DATA = 16;
 	private static final int IS_NOT_COPYABLE = 32;
 	private static final int IS_AUTO_COMPLETE = 64;
 	private static final int IS_AUTO_RESOLVE = 128;
@@ -134,13 +134,24 @@ public abstract class AttrSlot {
 			nodeAttr att = this.getClass().getAnnotation(nodeAttr.class);
 			if (att != null && !att.copyable())
 				this.flags |= IS_NOT_COPYABLE;
+		}
+		{
 			nodeData dat = this.getClass().getAnnotation(nodeData.class);
 			if (dat != null && !dat.copyable())
 				this.flags |= IS_NOT_COPYABLE;
+		}
+		{
 			nodeSRef ref = this.getClass().getAnnotation(nodeSRef.class);
 			if (ref != null)
 				this.flags |= IS_SYMREF;
 			if (ref != null && !ref.copyable())
+				this.flags |= IS_NOT_COPYABLE;
+		}
+		{
+			nodeSymb sym = this.getClass().getAnnotation(nodeSymb.class);
+			if (sym != null)
+				this.flags |= IS_SYMBOL;
+			if (sym != null && !sym.copyable())
 				this.flags |= IS_NOT_COPYABLE;
 		}
 
@@ -206,8 +217,9 @@ public abstract class AttrSlot {
 	public final boolean isAttr() { return (flags & IS_ATTR) != 0; }
 	public final boolean isChild() { return (flags & IS_CHILD) != 0; }
 	public final boolean isSymRef() { return (flags & IS_SYMREF) != 0; }
+	public final boolean isSymbol() { return (flags & IS_SYMBOL) != 0; }
+	public final boolean isChildOrSymbol() { return (flags & (IS_CHILD|IS_SYMBOL)) != 0; }
 	public final boolean isExtData() { return (flags & IS_EXT_DATA) != 0; }
-	//public final boolean isExternal() { return (flags & IS_EXTERNAL) != 0; }
 	public final boolean isNotCopyable() { return (flags & IS_NOT_COPYABLE) != 0; }
 	public final boolean isAutoComplete() { return (flags & IS_AUTO_COMPLETE) != 0; }
 	public final boolean isAutoResolve() { return (flags & IS_AUTO_RESOLVE) != 0; }

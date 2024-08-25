@@ -61,7 +61,7 @@ public class TypeClassExpr extends ENode {
 	public CoreOperation getOperation() { getEnv().coreFuncs.fClassAccess.operation }
 
 	public Type getType() {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		if (this.ttype == null || tenv.tpClass.getArgsLength() == 0)
 			return tenv.tpClass;
 		return tenv.tpClass.make(new TVarBld(tenv.tpClass.getArg(0), this.ttype.getType()));
@@ -95,7 +95,7 @@ public class TypeInfoExpr extends ENode {
 	public CoreOperation getOperation() { getEnv().coreFuncs.fTypeinfoAccess.operation }
 
 	public Type getType() {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		Type t = ttype.getType().getErasedType();
 		if (t.isUnerasable()) {
 			Struct s = t.getStruct();
@@ -122,7 +122,7 @@ public class AssertEnabledExpr extends ENode {
 	public AssertEnabledExpr() {}
 
 	public Type getType() {
-		return getEnv().tenv.tpBoolean;
+		return getTypeEnv().tpBoolean;
 	}
 
 	public boolean	isConstantExpr() { return false /*!Kiev.debugOutputA*/; }
@@ -390,12 +390,12 @@ public class BinaryExpr extends ENode {
 		} else {
 			Opdef opd = resolveOpdef();
 			if (opd == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			Symbol sym = opd.resolveMethod(this);
 			if (sym == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			this.symbol = sym;
-			m = (Method)sym.dnode;
+			m = sym.deref<Method>(getContext());
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -424,7 +424,7 @@ public class BinaryExpr extends ENode {
 			Symbol sym = opd.resolveMethod(this);
 			if (sym != null) {
 				this.symbol = sym;
-				m = sym.dnode;
+				m = sym.deref<CoreOperation>(getContext());
 			}
 		}
 		if (m instanceof CoreOperation)
@@ -434,7 +434,7 @@ public class BinaryExpr extends ENode {
 	public Object	getConstValue() {
 		Method m = (Method)this.dnode;
 		if (m == null)
-			m = (Method)resolveOpdef().resolveMethod(this).dnode;
+			m = resolveOpdef().resolveMethod(this).deref<Method>(getContext());
 		return ((CoreOperation)m).calc(this).getConstValue();
 	}
 }
@@ -468,12 +468,12 @@ public class UnaryExpr extends ENode {
 		} else {
 			Opdef opd = resolveOpdef();
 			if (opd == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			Symbol sym = opd.resolveMethod(this);
 			if (sym == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			this.symbol = sym;
-			m = (Method)sym.dnode;
+			m = sym.deref<Method>(getContext());
 		}
 		Type ret = m.mtype.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -506,7 +506,7 @@ public class UnaryExpr extends ENode {
 			Symbol sym = opd.resolveMethod(this);
 			if (sym != null) {
 				this.symbol = sym;
-				m = sym.dnode;
+				m = sym.deref<CoreOperation>(getContext());
 			}
 		}
 		if (m instanceof CoreOperation)
@@ -550,7 +550,7 @@ public class StringConcatExpr extends ENode {
 
 	public CoreOperation getOperation() { getEnv().coreFuncs.fStringConcatSS.operation }
 
-	public Type getType() { return getEnv().tenv.tpString; }
+	public Type getType() { return getTypeEnv().tpString; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -686,8 +686,8 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public int getPriority() { return 255; }
 
 	public Type getType() {
-		if (isGenVoidExpr()) return getEnv().tenv.tpVoid;
-		if (stats.length == 0) return getEnv().tenv.tpVoid;
+		if (isGenVoidExpr()) return getTypeEnv().tpVoid;
+		if (stats.length == 0) return getTypeEnv().tpVoid;
 		return stats[stats.length-1].getType();
 	}
 
@@ -800,7 +800,7 @@ public class ConditionalExpr extends ENode {
 		Type t1 = expr1.getType();
 		Type t2 = expr2.getType();
 		if( t1.isReference() && t2.isReference() ) {
-			StdTypes tenv = getEnv().tenv;
+			StdTypes tenv = getTypeEnv();
 			if( t1 ≡ t2 ) return t1;
 			if( t1 ≡ tenv.tpNull ) return t2;
 			if( t2 ≡ tenv.tpNull ) return t1;

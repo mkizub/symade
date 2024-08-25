@@ -48,11 +48,12 @@ public final class KievME_RuleGenartion extends BackendProcessor {
 
 		tr = Transaction.enter(tr,"KievME_RuleGenartion");
 		try {
+			Rewriter rewriter = new Rewriter(getContext(), "kiev·ir·RuleTemplates");
 			node.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) {
 					if (n instanceof RuleMethod) {
 						RuleMethod rm = (RuleMethod)n;
-						((RRuleMethod)rm).ruleGenerate();
+						((RRuleMethod)rm).ruleGenerate(rewriter);
 					}
 					return true;
 				}

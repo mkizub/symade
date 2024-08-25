@@ -229,7 +229,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,
 					new LVarExpr(container.pos,iter_array),
-					new Copier().copyFull(container)
+					new Copier(getContext()).copyFull(container)
 				));
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,
@@ -242,7 +242,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos,
-				new LVarExpr(iter.pos,iter), new Copier().copyFull(container)
+				new LVarExpr(iter.pos,iter), new Copier(getContext()).copyFull(container)
 				);
 			getEnv().runProcessorsOn(iter_init);
 			resolveENode(iter_init,iter.getType());
@@ -250,7 +250,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JITERATOR:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos,
-				new LVarExpr(iter.pos,iter), new Copier().copyFull(container)
+				new LVarExpr(iter.pos,iter), new Copier(getContext()).copyFull(container)
 				);
 			getEnv().runProcessorsOn(iter_init);
 			resolveENode(iter_init,iter.getType());
@@ -259,7 +259,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* iter = container.iterate(); */
 			iter_init = new AssignExpr(iter.pos,
 				new LVarExpr(iter.pos,iter),
-				new CallExpr(container.pos,new Copier().copyFull(container),elems.resolvedSymbol(),ENode.emptyArray)
+				new CallExpr(container.pos,new Copier(getContext()).copyFull(container),elems.resolvedSymbol(),ENode.emptyArray)
 				);
 			getEnv().runProcessorsOn(iter_init);
 			resolveENode(iter_init,iter.getType());
@@ -268,7 +268,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* iter = container.elements(); */
 			iter_init = new AssignExpr(iter.pos,
 				new LVarExpr(iter.pos,iter),
-				new CallExpr(container.pos,new Copier().copyFull(container),elems.resolvedSymbol(),ENode.emptyArray)
+				new CallExpr(container.pos,new Copier(getContext()).copyFull(container),elems.resolvedSymbol(),ENode.emptyArray)
 				);
 			getEnv().runProcessorsOn(iter_init);
 			resolveENode(iter_init,iter.getType());
@@ -331,7 +331,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				coreFuncs.fObjectBoolNE,
 				new AssignExpr(container.pos,
 					new LVarExpr(container.pos,iter),
-					new Copier().copyFull(container)),
+					new Copier(getContext()).copyFull(container)),
 				new ConstNullExpr()
 				);
 			break;

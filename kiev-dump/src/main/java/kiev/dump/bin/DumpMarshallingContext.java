@@ -17,6 +17,7 @@ import kiev.vlang.KievPackage;
 import kiev.vlang.MetaFlag;
 import kiev.vlang.TypeDecl;
 import kiev.vtree.INode;
+import kiev.vtree.IDecl;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ASpaceAttrSlot;
 import kiev.vtree.ExtSpaceIterator;
@@ -27,6 +28,7 @@ import kiev.vtree.Symbol;
 import kiev.vtree.SymbolRef;
 import kiev.vtree.SymUUID;
 import kiev.vtree.ITreeWalker;
+import kiev.vtree.EnvContext;
 
 public class DumpMarshallingContext implements MarshallingContext {
 
@@ -192,9 +194,12 @@ public class DumpMarshallingContext implements MarshallingContext {
     	for (INode root : roots) {
 	    	root.walkTree(null, null, new ITreeWalker() {
 	    		public boolean pre_exec(INode node, INode parent, AttrSlot slot) {
-	    	    	if (node instanceof Symbol)
-	    	    		makeSymbolElem((Symbol)node);
-	    	    	else if (node instanceof SymbolRef) {
+					if (slot != null && slot.isBinIgnore())
+						return false;
+
+					if (node instanceof Symbol)
+						makeSymbolElem((Symbol)node);
+					else if (node instanceof SymbolRef) {
 	    	    		Object name = node.getVal(node.getAttrSlot("ident_or_symbol_or_type"));
 	    	    		if (name instanceof Symbol)
 	        	    		makeSymbolElem((Symbol)name);
@@ -205,7 +210,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 	    	    		makeFlagElem(node.getClass());
 	    	    	}
 	    	    	else
-	    	    		makeNodeElem(node);
+						makeNodeElem(node);
 	    			//ExtSpaceIterator en = node.asANode().getExtSpaceIterator(null);
 	    			//while (en.hasMoreElements()) {
 	    			//	AttrSlot attr = en.nextAttrSlot();
@@ -228,20 +233,6 @@ public class DumpMarshallingContext implements MarshallingContext {
 	    	if (ne.id == 0)
 	    		ne.id = ++node_id_counter;
     	}
-    	for (SymbElem se : symbTable.values()) {
-    		Symbol sym = se.symbol;
-    		if (sym == null || se.target != null)
-    			continue;
-			INode p = sym.parent();
-			if (p instanceof DNode) {
-				NodeElem ne = nodeTable.get(p);
-				if (ne != null) {
-					se.target = ne;
-					if (ne.id == 0)
-						ne.id = ++node_id_counter;
-				}
-			}
-    	}
     }
 
     private SymbElem makeSymbolElem(Symbol sym) {
@@ -250,7 +241,7 @@ public class DumpMarshallingContext implements MarshallingContext {
 			return se;
 		if (sym.parent() instanceof TypeDecl)
 			sym.getUUID();
-		SymUUID suuid = sym.suuid();
+		SymUUID suuid = sym.getUUID();
 		if (suuid == SymUUID.Empty)
 			suuid = null;
 		SymbElem nse = null;
@@ -260,12 +251,9 @@ public class DumpMarshallingContext implements MarshallingContext {
 		String name = (String)sym.getVal(sym.getAttrSlot("sname"));
 		int symbol_id = ++symbol_id_counter;
 		se = new SymbElem(symbol_id, suuid, name, nse, sym);
-		if (sym.parent() instanceof KievPackage)
+		if (sym.derefDNode(env.getEnvContext()) instanceof KievPackage)
 			se.flags |= SymbElem.IS_NAMESPACE;
 		symbTable.put(sym, se);
-		//Symbol tgt = (Symbol)sym.getVal("target");
-		//if (tgt != null)
-		//	se.target = makeSymbolElem(tgt);
 		return se;
     }
     private SymbElem makeSymbolElem(NameAndUUID nid) {
@@ -381,8 +369,8 @@ public class DumpMarshallingContext implements MarshallingContext {
 			flags |= AttrElem.IS_OPTIONAL;
 		if (slot instanceof ASpaceAttrSlot)
 			flags |= AttrElem.IS_SPACE;
-		//if (slot.isExternal())
-		//	flags |= AttrElem.IS_EXTERNAL;
+		if (slot.isSymbol())
+			flags |= AttrElem.IS_SYMBOL | AttrElem.IS_LEADING;
 		if (slot.isNotCopyable())
 			flags |= AttrElem.IS_NO_COPY;
 
@@ -494,12 +482,12 @@ public class DumpMarshallingContext implements MarshallingContext {
 			writer.writeSymbolRef(se.namesp, false);
 		if (se.name != null)
 			writer.writeString(se.name);
-		if (se.target != null) {
-			if (se.target instanceof SymbElem)
-				writer.writeSymbolRef((SymbElem)se.target, true);
-			else if (se.target instanceof NodeElem)
-				writer.writeNodeRef((NodeElem)se.target, true);
-		}
+		if (se.target instanceof SymbElem)
+			writer.writeSymbolRef((SymbElem)se.target, true);
+		else if (se.target instanceof NodeElem)
+			writer.writeNodeRef((NodeElem)se.target, true);
+		else
+			writer.writeNull();
 		if (se.comment != null)
 			writer.writeComment(se.comment.text);
 		writer.endBlock(Signature.TAG_SYMB_SIGN);

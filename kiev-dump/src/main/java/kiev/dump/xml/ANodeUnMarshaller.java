@@ -134,7 +134,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 					q_name = context.tdname;
 				else
 					q_name = ((GlobalDNode)context.pkg).qname() + '·' + context.tdname;
-				DNode dn = context.getEnv().resolveGlobalDNode(q_name);
+				DNode dn = context.getEnv().resolveGlobalDNode(q_name , context.nodeContext);
 				Symbol sym = null;
 				if (dn != null)
 					sym = (Symbol)dn.getVal(dn.getAttrSlot("symbol"));
@@ -143,14 +143,14 @@ public class ANodeUnMarshaller implements UnMarshaller {
 				if (cl_name.equals("kiev.vlang.KievPackage"))
 					dn = context.getEnv().newPackage(context.tdname, (KievPackage)context.pkg);
 				else if (lng != null)
-					dn = (DNode)lng.makeNode(context.getEnv(), context.nodeContext, name, ti_sign, dn_uuid);
+					dn = (DNode)lng.makeNode(context.nodeContext, name, ti_sign, dn_uuid);
 				else if (ti_sign != null)
 					dn = (DNode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 				else
 					dn = (DNode)Class.forName(cl_name).newInstance();
 				if (dn_uuid != null) {
 					if (sym.suuid() != null && !sym.suuid().toString().equals(dn_uuid))
-						System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
+						context.env.reportWarning().log("Different UUIDs of global symbol {}", sym.qname());
 					else
 						sym.setUUID(dn_uuid);
 				}
@@ -180,7 +180,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 			}
 			else {
 				if (lng != null)
-					root = lng.makeNode(context.getEnv(), context.nodeContext, name, ti_sign, dn_uuid);
+					root = lng.makeNode(context.nodeContext, name, ti_sign, dn_uuid);
 				else if (ti_sign != null)
 					root = (INode)TypeInfo.newTypeInfo(ti_sign).newInstance();
 				else
@@ -211,7 +211,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 				addAttributes(context, n, attributes);
 			}
 			else if (lng != null) {
-				n = lng.makeNode(context.getEnv(), context.nodeContext, name, ti_sign, dn_uuid);
+				n = lng.makeNode(context.nodeContext, name, ti_sign, dn_uuid);
 				addAttributes(context, n, attributes);
 			}
 			else {
@@ -309,7 +309,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 					Symbol sym = (Symbol)node;
 					String dn_uuid = attributes.getValue(i);
 					if (sym.suuid() != null && !sym.suuid().toString().equals(dn_uuid))
-						System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
+						context.env.reportWarning().log("Different UUIDs of global symbol {}", sym.qname());
 					else
 						sym.setUUID(dn_uuid);
 				}
@@ -317,7 +317,7 @@ public class ANodeUnMarshaller implements UnMarshaller {
 					Symbol sym = (Symbol)node.getVal(node.getAttrSlot("symbol"));
 					String dn_uuid = attributes.getValue(i);
 					if (sym.suuid() != null && !sym.suuid().toString().equals(dn_uuid))
-						System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
+						context.env.reportWarning().log("Different UUIDs of global symbol {}", sym.qname());
 					else
 						sym.setUUID(dn_uuid);
 				}

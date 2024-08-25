@@ -221,7 +221,7 @@ public final class IFldExpr extends LvalueExpr {
 	public Type getType() {
 		Type ot = obj.getType();
 		if (var == null)
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		if (ot.getErasedType() instanceof ASTNodeType) {
 			String name = ("attr$"+var.sname+"$type").intern();
 			int n = ot.getArgsLength();
@@ -404,12 +404,12 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			CallType mt = new CallType(t,null,new Type[]{index.getType()},t.tenv.tpAny,false);
 			ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Method.class);
 			if( !PassInfo.resolveBestMethodR(t,info,mt) )
-				return getEnv().tenv.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
+				return getTypeEnv().tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 			Method method = (Method)info.resolvedDNode();
 			return Type.getRealType(t,method.mtype.ret());
 		} catch(Exception e) {
 			reportError().log(e);
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		}
 	}
 
@@ -449,13 +449,13 @@ public final class ThisExpr extends LvalueExpr {
 		try {
 			ComplexTypeDecl td = Env.ctxTDecl(this);
 			if (td == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			if (td.sname == nameIFaceImpl)
 				return Env.ctxTDecl(td).getType();
 			return td.getType();
 		} catch(Exception e) {
 			reportError().log(e);
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		}
 	}
 
@@ -478,11 +478,11 @@ public final class SuperExpr extends ENode {
 	public Type getType() {
 		try {
 			if (Env.ctxTDecl(this) == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			return Env.ctxTDecl(this).super_types[0].getType();
 		} catch(Exception e) {
 			reportError().log(e);
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		}
 	}
 
@@ -524,7 +524,7 @@ public final class LVarExpr extends LvalueExpr {
 			return var.getType();
 		} catch(Exception e) {
 			reportError().log(e);
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		}
 	}
 
@@ -629,7 +629,7 @@ public final class SFldExpr extends LvalueExpr {
 			return var.getType();
 		} catch(Exception e) {
 			reportError().log(e);
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		}
 	}
 
@@ -673,7 +673,7 @@ public final class SFldExpr extends LvalueExpr {
 	}
 
 	public void mainResolveOut(INode parent, AttrSlot slot) {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		if (var != null) {
 			if (!var.isStatic())
 				throw new CompilerException(this, "Field "+var+" is not static");

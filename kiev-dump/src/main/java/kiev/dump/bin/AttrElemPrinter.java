@@ -21,7 +21,7 @@ public class AttrElemPrinter extends ElemPrinter<AttrElem> {
 		AttrElem ae = (AttrElem)el;
 		if (tav.tag == Signature.TAG_TYPE_SIGN) {
 			ae.vtype = (TypeElem)tav.val;
-			out.printf("%sVTYPE : %4x (%s)\n", ind(), ae.vtype.id, ae.vtype.name);
+			out.printf("%sVTYPE : #%4x (%s)\n", ind(), ae.vtype.id, ae.vtype.name);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_TABLE_SIGN) {
@@ -29,7 +29,7 @@ public class AttrElemPrinter extends ElemPrinter<AttrElem> {
 			if (sig.tag != Signature.TAG_TYPE_SIGN)
 				throw new DumpException("Corrupted dump file: expected type signature at "+tav.pos);
 			ae.intype = (TypeElem)sig.val;
-			out.printf("%sINTYPE: %4x (%s)\n", ind(), ae.intype.id, ae.intype.name);
+			out.printf("%sINTYPE: #%4x (%s)\n", ind(), ae.intype.id, ae.intype.name);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_STRZ_8 || tav.tag == Signature.TAG_STRZ_16) {

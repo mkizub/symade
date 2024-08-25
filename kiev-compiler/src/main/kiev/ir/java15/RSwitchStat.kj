@@ -82,7 +82,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						if (et.getStruct() != null && et.getStruct().isEnum())
 							val = new ConstIntExpr(((JavaEnum)et.getStruct()).getIndexOfEnumField((Field)f.var));
 						else
-							val = new Copier().copyFull(f.var.init);
+							val = new Copier(getContext()).copyFull(f.var.init);
 					}
 					else if (sw.getClass() != SwitchStat.class)
 						throw new CompilerException(this,"Wrong case in normal switch");
@@ -248,7 +248,7 @@ public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 		Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();
 		clinit.block.stats.add(
 			new ExprStat(typehash.init.pos,
-				new AssignExpr(typehash.init.pos,new SFldExpr(typehash.pos,typehash),new Copier().copyFull(typehash.init))
+				new AssignExpr(typehash.init.pos,new SFldExpr(typehash.pos,typehash),new Copier(getContext()).copyFull(typehash.init))
 			)
 		);
 		for(int i=0; i < cases.length; i++) {

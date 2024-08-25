@@ -34,9 +34,8 @@ public class FrontendThreadGroup extends WorkerThreadGroup {
 
 	public PluginNodeProcessor getProcessor() { (PluginNodeProcessor)theEnv.getNodeProcessor() }
 
-	public FrontendThreadGroup(Env theEnv) {
-		super(null, "frontend", 1);
-		this.theEnv = theEnv;
+	public FrontendThreadGroup(Env env) {
+		super(env, null, "frontend", 1);
 		this.semantic_context = theEnv.getEnvContext();
 		this.syntax_context = theEnv.getEnvContext();
 	}

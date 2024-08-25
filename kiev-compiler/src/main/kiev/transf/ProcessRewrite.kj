@@ -130,7 +130,7 @@ public final class RewriteME_Rewrite extends BackendProcessor {
 		try {
 			if (rewriter instanceof RewriteMatch)
 				rewriter = rewriter.matchCase(self);
-			RewriteContext rctx = new RewriteContext(env, self, args);
+			RewriteContext rctx = new RewriteContext(getContext(), self, args);
 			ASTNode rn = (ASTNode)rewriter.doRewrite(rctx);
 			rn = self.replaceWithNode(~rn, parent, slot);
 			env.runProcessorsOn(rn);

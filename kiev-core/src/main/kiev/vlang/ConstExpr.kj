@@ -34,7 +34,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	public ConstBoolExpr() {}
 	public ConstBoolExpr(boolean value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpBoolean; }
+	public Type		getType()			{ return getTypeEnv().tpBoolean; }
 
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
 
@@ -54,7 +54,7 @@ public final class ConstNullExpr extends ConstExpr {
 
 	public ConstNullExpr() {}
 
-	public Type		getType()			{ return getEnv().tenv.tpNull; }
+	public Type		getType()			{ return getTypeEnv().tpNull; }
 
 	public Object	getConstValue()		{ return null; }
 
@@ -91,7 +91,7 @@ public final class ConstByteExpr extends ConstRadixExpr {
 	public ConstByteExpr() {}
 	public ConstByteExpr(byte value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpByte; }
+	public Type		getType()			{ return getTypeEnv().tpByte; }
 
 	public Object	getConstValue()		{ return Byte.valueOf(value); }
 
@@ -121,7 +121,7 @@ public final class ConstShortExpr extends ConstRadixExpr {
 	public ConstShortExpr() {}
 	public ConstShortExpr(short value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpShort; }
+	public Type		getType()			{ return getTypeEnv().tpShort; }
 
 	public Object	getConstValue()		{ return Short.valueOf(value); }
 
@@ -151,7 +151,7 @@ public final class ConstIntExpr extends ConstRadixExpr {
 	public ConstIntExpr() {}
 	public ConstIntExpr(int value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpInt; }
+	public Type		getType()			{ return getTypeEnv().tpInt; }
 
 	public Object	getConstValue()		{ return Integer.valueOf(value); }
 
@@ -181,7 +181,7 @@ public final class ConstLongExpr extends ConstRadixExpr {
 	public ConstLongExpr() {}
 	public ConstLongExpr(long value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpLong; }
+	public Type		getType()			{ return getTypeEnv().tpLong; }
 
 	public Object	getConstValue()		{ return Long.valueOf(value); }
 
@@ -211,7 +211,7 @@ public final class ConstCharExpr extends ConstExpr {
 	public ConstCharExpr() {}
 	public ConstCharExpr(char value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpChar; }
+	public Type		getType()			{ return getTypeEnv().tpChar; }
 
 	public Object	getConstValue()		{ return Character.valueOf(value); }
 
@@ -236,7 +236,7 @@ public final class ConstFloatExpr extends ConstExpr {
 	public ConstFloatExpr() {}
 	public ConstFloatExpr(float value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpFloat; }
+	public Type		getType()			{ return getTypeEnv().tpFloat; }
 
 	public Object	getConstValue()		{ return Float.valueOf(value); }
 
@@ -261,7 +261,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public ConstDoubleExpr() {}
 	public ConstDoubleExpr(double value) { this.value = value; }
 
-	public Type		getType()			{ return getEnv().tenv.tpDouble; }
+	public Type		getType()			{ return getTypeEnv().tpDouble; }
 
 	public Object	getConstValue()		{ return Double.valueOf(value); }
 
@@ -293,7 +293,7 @@ public final class ConstStringExpr extends ConstExpr {
 			this.value = value;
 	}
 
-	public Type		getType()			{ return getEnv().tenv.tpString; }
+	public Type		getType()			{ return getTypeEnv().tpString; }
 
 	public Object	getConstValue()		{ return value; }
 

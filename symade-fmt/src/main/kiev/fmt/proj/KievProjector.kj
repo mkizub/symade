@@ -50,7 +50,7 @@ public class KievProjectorFactory extends DefaultNodeProjectorFactory {
 	public KievProjectorFactory(Env env) {
 		super(new ProjectionContext(env));
 		this.env = env;
-		this.kiev_stx = (KievSyntax) env.resolveGlobalDNode("kiev·Syntax");
+		this.kiev_stx = (KievSyntax) env.resolveGlobalDNode("kiev·Syntax", env.getEnvContext());
 	}
 
 	public NodeProjector getProjector(INode src, INode dst0) {
@@ -320,7 +320,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 				continue;
 			}
 			if (arg instanceof OpArgOPER) {
-				dst_node.add(new KievETokenNode(arg.symbol.sname));
+				dst_node.add(new KievETokenNode(arg.text));
 				continue;
 			}
 			if (arg instanceof OpArgLIST) {
@@ -329,7 +329,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 				if (arr instanceof ENode[]) {
 					foreach (ENode a; (ENode[])arr) {
 						if (separator)
-							dst_node.add(new KievETokenNode(arg.sep.symbol.sname));
+							dst_node.add(new KievETokenNode(arg.sep.text));
 						addExpr(a);
 						separator = true;
 					}
@@ -337,7 +337,7 @@ public class KievExprProjector implements NodeProjector, ChangeListener {
 				else if (arr instanceof ExtSpaceIterator) {
 					foreach (ENode a; (ExtSpaceIterator)arr) {
 						if (separator)
-							dst_node.add(new KievETokenNode(arg.sep.symbol.sname));
+							dst_node.add(new KievETokenNode(arg.sep.text));
 						addExpr(a);
 						separator = true;
 					}
@@ -417,7 +417,7 @@ public class KievExprNode extends ANode {
 	public void parseExpr(boolean save) {
 		unsaved = true;
 		try {
-			KievExprNode expr = new Copier().copyFull(this);
+			KievExprNode expr = new Copier(getContext()).copyFull(this);
 			ASTExprParser pst = new ASTExprParser(getEnv(), Env.ctxSyntaxScope(projector.src_node).getAllOpdefs(), expr.nodes);
 			List<ENode> results = pst.parseExpr();
 			if (results.length() == 0) {

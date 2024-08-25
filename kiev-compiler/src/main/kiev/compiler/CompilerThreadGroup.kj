@@ -26,8 +26,8 @@ public class CompilerThreadGroup extends WorkerThreadGroup {
 		this(bthr, bthr.jobThreads);
 	}
 	public CompilerThreadGroup(WorkerThreadGroup bthr, int jobThreads) {
-		super(bthr, "compiler", jobThreads);
-		semantic_context = new SemanticContext(bthr.semantic_context);
+		super(bthr.theEnv, bthr, "compiler", jobThreads);
+		semantic_context = bthr.semantic_context; //new SemanticContext(bthr.semantic_context);
 		bend_context = new kiev.be.java15.JNodeContext(semantic_context);
 	}
 

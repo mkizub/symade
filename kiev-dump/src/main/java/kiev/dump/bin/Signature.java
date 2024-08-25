@@ -1,7 +1,7 @@
 package kiev.dump.bin;
 
 public enum Signature {
-	TAG_NULL					('@', true),			// NULL value
+	TAG_NULL					('@', true),				// NULL value
 	TAG_VOID					('v', true),				// VOID - unspecified value, omit the field
 	TAG_INT8					('b', true),				// Integer (byte)
 	TAG_INT16					('h', true),				// Integer (short, half)

@@ -43,14 +43,20 @@ public class SymbElem extends Elem {
 		}
 		if (namesp != null) {
 			Symbol ns = namesp.makeSymbol(env);
-			if (isNameSpace())
-				env.newPackage(name, (KievPackage)ns.parent());
+			if (isNameSpace()) {
+				String qname = ns.qname();
+				if (qname != null && !qname.isEmpty())
+					qname = qname + "·" + name;
+				else
+					qname = name;
+				env.newPackage(qname);
+			}
 			Symbol sym = ns.makeSubSymbol(name);
 			if (uuid != null) {
 				if (sym.suuid() == null)
 					sym.setUUID(uuid.high, uuid.low);
 				else if (!sym.suuid().equals(uuid))
-					System.out.println("Warning: Different UUIDs of global symbol "+sym.qname());
+					env.reportWarning().log("Different UUIDs of global symbol {}", sym.qname());
 			}
 			this.symbol = sym;
 			return sym;

@@ -21,19 +21,19 @@ public class TypeElemPrinter extends ElemPrinter<TypeElem> {
 		TypeElem te = (TypeElem)el;
 		if (tav.tag == Signature.TAG_TYPE_SIGN) {
 			TypeElem sup = (TypeElem)tav.val;
-			out.printf("%sSUPER : %4x (%s)\n", ind(), sup.id, sup.name);
+			out.printf("%sSUPER : #%4x (%s)\n", ind(), sup.id, sup.name);
 			te.super_types = (TypeElem[])kiev.stdlib.Arrays.append(te.super_types, sup);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_ATTR_SIGN) {
 			AttrElem ae = (AttrElem)tav.val;
-			out.printf("%sATTR  : %4x (%s)\n", ind(), ae.id, ae.name);
+			out.printf("%sATTR  : #%4x (%s)\n", ind(), ae.id, ae.name);
 			te.attrs = (AttrElem[])kiev.stdlib.Arrays.append(te.attrs, ae);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_CONST_SIGN) {
 			ConstElem ce = (ConstElem)tav.val;
-			out.printf("%sCONST : %4x (%s)\n", ind(), ce.id, ce.value);
+			out.printf("%sCONST : #%4x (%s)\n", ind(), ce.id, ce.value);
 			te.consts = (ConstElem[])kiev.stdlib.Arrays.append(te.consts, ce);
 			return true;
 		}

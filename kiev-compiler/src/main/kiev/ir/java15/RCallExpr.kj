@@ -38,7 +38,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			ENode env_arg = new ConstNullExpr();
 			ANode p = this.parent();
 			if (p instanceof AssignExpr && p.lval.getType() ≡ tenv.tpRule)
-				env_arg = new Copier().copyFull(p.lval);
+				env_arg = new Copier(getContext()).copyFull(p.lval);
 			((CallExpr)this).setHiddenArg(new ArgExpr(func.getHiddenParam(Var.PARAM_RULE_ENV),env_arg));
 		}
 		if (func.isVarArgs()) {

@@ -28,16 +28,16 @@ public class NodeElemPrinter extends ElemPrinter<NodeElem> {
 				throw new DumpException("Corrupted dump file: duplicated node type at "+tav.pos);
 			te = (TypeElem)tav.val;
 			ne.tp = te;
-			out.printf("%sTYPE: %4x (%s)\n", ind(), te.id, te.name);
+			out.printf("%sTYPE: #%4x (%s)\n", ind(), te.id, te.name);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_LINENO) {
-			out.printf("%sLINE: %4x (%d)\n", ind(), tav.intVal(), tav.intVal());
+			out.printf("%sLINE: #%4x (%d)\n", ind(), tav.intVal(), tav.intVal());
 			return true;
 		}
 		if (tav.tag == Signature.TAG_VOID) {
 			AttrElem ae = te.attrs[attr_pos];
-			out.printf("%s%s: void\n", ind(), ae.name, ae.id);
+			out.printf("%s%s: void #%4x\n", ind(), ae.name, ae.id);
 			attr_pos++;
 			return true;
 		}
@@ -49,16 +49,21 @@ public class NodeElemPrinter extends ElemPrinter<NodeElem> {
 				if (tav.tag == Signature.TAG_NODE_SIGN) {
 				}
 				else if (tav.tag == Signature.TAG_NODE_REF) {
-					NodeElem nr = (NodeElem)tav.val;
-					out.printf("%snref %4x\n", ind(), nr.id);
+					if (tav.val instanceof NodeRef) {
+						NodeRef nr = (NodeRef)tav.val;
+						out.printf("%snref #%4x (forw)\n", ind(), nr.id);
+					} else {
+						NodeElem nr = (NodeElem)tav.val;
+						out.printf("%snref #%4x (back)\n", ind(), nr.id);
+					}
 				}
 				else if (tav.tag == Signature.TAG_SYMB_SIGN) {
 					SymbElem se = (SymbElem)tav.val;
-					out.printf("%ssymb %4x (%s)\n", ind(), se.id, se.name);
+					out.printf("%ssymb #%4x (%s)\n", ind(), se.id, se.name);
 				}
 				else if (tav.tag == Signature.TAG_SYMB_REF) {
 					SymbElem se = (SymbElem)tav.val;
-					out.printf("%ssref %4x (%s)\n", ind(), se.id, se.name);
+					out.printf("%ssref #%4x (%s)\n", ind(), se.id, se.name);
 				}
 				else if (tav.tag == Signature.TAG_VOID) {
 					out.printf("%svoid\n", ind());
@@ -93,7 +98,7 @@ public class NodeElemPrinter extends ElemPrinter<NodeElem> {
 		attr_pos += 1;
 		return true;
 	}
-	
+
 	private void printValue(NodeElem ne, INode node, AttrElem ae, TagAndVal tav) throws DumpException {
 		if (tav.tag == Signature.TAG_NULL) {
 			out.printf("%s%s: null\n", ind(), ae.name);
@@ -104,18 +109,23 @@ public class NodeElemPrinter extends ElemPrinter<NodeElem> {
 			return;
 		}
 		if (tav.tag == Signature.TAG_NODE_REF) {
-			NodeElem nr = (NodeElem)tav.val;
-			out.printf("%s%s: nref %4x\n", ind(), ae.name, nr.id);
+			if (tav.val instanceof NodeRef) {
+				NodeRef nr = (NodeRef)tav.val;
+				out.printf("%snref #%4x (forw)\n", ind(), nr.id);
+			} else {
+				NodeElem nr = (NodeElem)tav.val;
+				out.printf("%snref #%4x (back)\n", ind(), nr.id);
+			}
 			return;
 		}
 		if (tav.tag == Signature.TAG_SYMB_SIGN) {
 			SymbElem se = (SymbElem)tav.val;
-			out.printf("%s%s: symb %4x (%s)\n", ind(), ae.name, se.id, se.name);
+			out.printf("%s%s: symb #%4x (%s)\n", ind(), ae.name, se.id, se.name);
 			return;
 		}
 		if (tav.tag == Signature.TAG_SYMB_REF) {
 			SymbElem se = (SymbElem)tav.val;
-			out.printf("%s%s: sref %4x (%s)\n", ind(), ae.name, se.id, se.name);
+			out.printf("%s%s: sref #%4x (%s)\n", ind(), ae.name, se.id, se.name);
 			return;
 		}
 		if (tav.tag.is_value) {
@@ -124,10 +134,10 @@ public class NodeElemPrinter extends ElemPrinter<NodeElem> {
 		}
 		if (tav.tag == Signature.TAG_CONST_SIGN) {
 			ConstElem ce = (ConstElem)tav.val;
-			out.printf("%s%s: const %4x (%s)\n", ind(), ae.name, ce.id, ce.value);
+			out.printf("%s%s: const #%4x (%s)\n", ind(), ae.name, ce.id, ce.value);
 			return;
 		}
 		throw new DumpException("Corrupted dump file: unexpected signature '"+tav.tag.sign+"' at "+tav.pos);
 	}
-	
+
 }

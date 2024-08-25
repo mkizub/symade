@@ -52,7 +52,7 @@ public final class CoreOperation extends Method {
 	}
 
 	public void normilizeExpr(ENode expr, Symbol sym, INode parent, AttrSlot slot) {
-		assert (sym.dnode == this);
+		assert (sym.deref<CoreOperation>(getContext()) == this);
 		this.core_func.normilizeExpr(expr,parent,slot);
 	}
 
@@ -441,7 +441,7 @@ public static abstract class BinaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, INode parent, AttrSlot slot) {
 		Symbol symbol = this.operation.symbol;
 		if (expr.getClass() == this.node_clazz) {
-			if (expr.dnode != symbol.dnode)
+			if (expr.dnode != symbol.deref<CoreOperation>(expr.getEnv().getEnvContext()))
 				expr.symbol = symbol;
 			return;
 		}
@@ -473,7 +473,7 @@ public static abstract class UnaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, INode parent, AttrSlot slot) {
 		Symbol symbol = this.operation.symbol;
 		if (expr.getClass() == this.node_clazz) {
-			if (expr.dnode != symbol.dnode)
+			if (expr.dnode != symbol.deref<CoreOperation>(expr.getEnv().getEnvContext()))
 				expr.symbol = symbol;
 			return;
 		}
@@ -1376,7 +1376,7 @@ public static class StringAssignADD extends BinaryFunc {
 		ENode value = args[1];
 		ENode en = new AssignExpr(expr.pos,
 			~lval,
-			new BinaryExpr(expr.pos,Operator.Add,new Copier().copyFull(lval),~value)
+			new BinaryExpr(expr.pos,Operator.Add,new Copier(expr.getContext()).copyFull(lval),~value)
 			);
 		expr.replaceWithNodeReWalk(en,parent,slot);
 	}

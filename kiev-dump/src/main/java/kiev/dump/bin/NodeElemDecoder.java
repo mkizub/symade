@@ -7,19 +7,24 @@ import kiev.stdlib.TypeInfo;
 import kiev.vlang.ConstEnumExpr;
 import kiev.vlang.DNode;
 import kiev.vlang.ENode;
+import kiev.vlang.Env;
 import kiev.vlang.FileUnit;
 import kiev.vlang.KievPackage;
 import kiev.vlang.MetaFlag;
+import kiev.vlang.MetaTypeDecl;
+import kiev.vlang.Struct;
 import kiev.vlang.Operator;
 import kiev.vlang.Project;
 import kiev.vlang.types.Type;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ASpaceAttrSlot;
 import kiev.vtree.INode;
+import kiev.vtree.IDecl;
 import kiev.vtree.ScalarAttrSlot;
 import kiev.vtree.Symbol;
 import kiev.vtree.SymbolRef;
 import kiev.vtree.Copier;
+import kiev.vtree.EnvContext;
 
 public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 
@@ -74,7 +79,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 				if (tav.tag == Signature.TAG_NODE_SIGN) {
 					INode n = ((NodeElem)tav.val).node;
 					if (n instanceof MetaFlag) {
-						n = new Copier().copyFull(n);
+						n = new Copier(reader.env.getEnvContext()).copyFull(n);
 						AttrSlot slot = getAttrSlot();
 						((ASpaceAttrSlot)slot).add(ne.node, n);
 					} else {
@@ -87,7 +92,7 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 						nr = (NodeElem)reader.dfactory.makeDecoder(tav.tag, reader).readElem(nr.id, nr.saddr);
 					INode n = nr.node;
 					if (n instanceof MetaFlag) {
-						n = new Copier().copyFull(n);
+						n = new Copier(reader.env.getEnvContext()).copyFull(n);
 						AttrSlot slot = getAttrSlot();
 						((ASpaceAttrSlot)slot).add(ne.node, n);
 					} else {
@@ -165,17 +170,8 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 				for (int a=0; a < te.leading_attrs; a++) {
 					setValue(ne, ne.node, te.attrs[a], leading_tav[a]);
 				}
-				if (!ne.node.isAttached() && ne.node instanceof DNode) {
-					DNode dn = (DNode)ne.node;
-					Symbol sym = (Symbol)dn.getVal(dn.getAttrSlot("symbol"));
-					if (sym != null && sym.getNameSpaceSymbol() != null) {
-						Symbol ns = sym.getNameSpaceSymbol();
-						INode p = ns.parent();
-						if (p instanceof KievPackage)
-							p.addVal(p.getAttrSlot("pkg_members"), dn);
-					}
-					if (reader.api)
-						dn.setInterfaceOnly();
+				if (reader.api && ne.node instanceof DNode) {
+					((DNode)ne.node).setInterfaceOnly();
 				}
 			}
 			return true;
@@ -210,34 +206,24 @@ public class NodeElemDecoder extends ElemDecoder<NodeElem> {
 			return;
 		}
 		if (tav.tag == Signature.TAG_NODE_REF) {
-			NodeElem nr = (NodeElem)tav.val;
-			if (!nr.isRead())
-				nr = (NodeElem)reader.dfactory.makeDecoder(tav.tag, reader).readElem(nr.id, nr.saddr);
-			INode n = nr.node;
-			node.setVal(ae.getAttrSlot(), n);
+			if (tav.val instanceof NodeRef) {
+				NodeRef nr = (NodeRef)tav.val;
+				nr.parent = node;
+				nr.slot = ae.getAttrSlot();
+				reader.delayed_nrefs.add(nr);
+			} else {
+				NodeElem nr = (NodeElem) tav.val;
+				if (!nr.isRead())
+					nr = (NodeElem) reader.dfactory.makeDecoder(tav.tag, reader).readElem(nr.id, nr.saddr);
+				INode n = nr.node;
+				node.setVal(ae.getAttrSlot(), n);
+			}
 			return;
 		}
 		if (tav.tag == Signature.TAG_SYMB_SIGN) {
 			SymbElem se = (SymbElem)tav.val;
 			Symbol sym = se.makeSymbol(reader.env);
-			AttrSlot slot = ae.getAttrSlot();
-			if (node.getVal(slot) != sym) {
-				if (sym.isAttached() && slot.isChild()) {
-					if (node instanceof DNode && slot.name == "symbol") {
-						INode p = sym.parent();
-						INode pp = p.parent();
-						p.detach();
-						if (pp instanceof KievPackage && !node.isAttached()) {
-							sym.detach();
-							node.setVal(ae.getAttrSlot(), sym);
-							pp.addVal(pp.getAttrSlot("pkg_members"), node);
-							return;
-						}
-					}
-					sym.detach();
-				}
-				node.setVal(ae.getAttrSlot(), sym);
-			}
+			node.setVal(ae.getAttrSlot(), sym);
 			return;
 		}
 		if (tav.tag == Signature.TAG_SYMB_REF) {

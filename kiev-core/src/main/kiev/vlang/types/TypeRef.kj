@@ -144,7 +144,7 @@ public class TypeDeclRef extends TypeRef {
 		ANode p = parent();
 		while (p != null && !(p instanceof Var))
 			p = p.parent();
-		return getEnv().tenv.tpVoid;
+		return getTypeEnv().tpVoid;
 	}
 
 	public String toString() {
@@ -198,7 +198,7 @@ public class TypeASTNodeRef extends TypeRef {
 		return null;
 	}
 	public TypeDecl getTypeDecl() {
-		return (TypeDecl)getEnv().tenv.symbolTDeclASTNodeType.dnode;
+		return getTypeEnv().symbolTDeclASTNodeType.deref<TypeDecl>(getContext());
 	}
 
 	public String toString() {

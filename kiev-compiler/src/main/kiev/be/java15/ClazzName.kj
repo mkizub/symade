@@ -38,7 +38,6 @@ class ClazzName implements Constants {
 		return name;
 	}
 
-	public ClazzName() {}
 	public ClazzName(String qualified_name, String src_name, String bytecode_name, String uniq_name) {
 		this.name = qualified_name;
 		this.src_name = src_name;
@@ -47,19 +46,26 @@ class ClazzName implements Constants {
 	}
 
 	public String package_name() {
-		int i;
-		if( (i=name.lastIndexOf('.')) >= 0 )
+		int i = bytecode_name.lastIndexOf('/');
+		if (i >= 0)
 			return name.substring(0,i);
 		else
 			return "";
 	}
 
 	public String package_bytecode_name() {
-		int i;
-		if( (i=name.lastIndexOf('.')) >= 0 )
+		int i = bytecode_name.lastIndexOf('/');
+		if (i >= 0)
 			return bytecode_name.substring(0,i);
 		else
 			return "";
+	}
+
+	public String outer_name() {
+		int i = name.lastIndexOf('.');
+		if (i > 0)
+			return name.substring(0,i);
+		return "";
 	}
 
 	public static ClazzName fromSignature(JEnv jenv, String signature) {
@@ -102,8 +108,10 @@ class ClazzName implements Constants {
 			}
 		} else {
 			outer = (ComplexTypeDecl)outer;
-			if (outer.bytecode_name == null)
-				bytecode_name = outer.qname().replace('·','/')+delim+short_name;
+			if (outer.bytecode_name == null) {
+				ClazzName outer_cl_name = fromOuterAndName((DNode)outer.parent(), outer.sname);
+				bytecode_name = outer_cl_name.bytecode_name+delim+short_name;
+			}
 			else
 				bytecode_name = outer.bytecode_name+delim+short_name;
 			name = outer.qname().replace('·','.')+"."+short_name;
@@ -123,7 +131,7 @@ class ClazzName implements Constants {
 			char ch = str.charAt(i);
 			if( ch == '$' ) {
 				String tmp = str.substring(0,i).replace('.','·');
-				ch = (jenv.env.existsTypeDecl(tmp)?'.':'$');
+				ch = (jenv.env.existsTypeDecl(tmp, null)?'.':'$');
 			}
 			sb.append(ch);
 		}

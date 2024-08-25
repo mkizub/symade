@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
  * type reference, and expressions themselves
  */
 @ThisIsANode(lang=CoreLang)
-public abstract class ENode extends ASTNode {
+public abstract class ENode extends ASTNode implements IExpr {
 
 	@DataFlowDefinition(out="this:in") private static class DFI {}
 
@@ -67,7 +67,7 @@ public abstract class ENode extends ASTNode {
 		if (id instanceof Type) {
 			//if (qualified)
 			//	return ((Type)id).meta_type.qname();
-			return ((Type)id).meta_type.tdecl.sname;
+			return ((Type)id).meta_type.tdecl_symbol.sname;
 		}
 		if (id instanceof NameAndUUID) {
 			return ((NameAndUUID)id).name;
@@ -85,7 +85,7 @@ public abstract class ENode extends ASTNode {
 		if (id instanceof Symbol)
 			return (Symbol)id;
 		if (id instanceof Type)
-			return ((Type)id).meta_type.tdecl.symbol;
+			return ((Type)id).meta_type.tdecl_symbol;
 		if (id instanceof NameAndUUID) {
 			NameAndUUID nid = (NameAndUUID)id;
 			Symbol sym = getEnv().getSymbolByUUID(nid.uuid_high, nid.uuid_low);
@@ -95,9 +95,9 @@ public abstract class ENode extends ASTNode {
 			}
 		}
 		if (id instanceof TypeSignature) {
-			Type tp = AType.fromSignature(getEnv(),id.sign,true);
+			Type tp = AType.fromSignature(getContext(),id.sign,true);
 			this.type_lnk = tp;
-			return tp.meta_type.tdecl.symbol;
+			return tp.meta_type.tdecl_symbol;
 		}
 		return null;
 	}
@@ -107,7 +107,7 @@ public abstract class ENode extends ASTNode {
 		if (id == null)
 			return null;
 		if (id instanceof Symbol)
-			return ((Symbol)id).dnode;
+			return ((Symbol)id).deref<DNode>(getContext());
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
 		if (id instanceof NameAndUUID) {
@@ -115,13 +115,13 @@ public abstract class ENode extends ASTNode {
 			Symbol sym = getEnv().getSymbolByUUID(nid.uuid_high, nid.uuid_low);
 			if (sym != null) {
 				this.symbol = sym;
-				return sym.dnode;
+				return sym.deref<DNode>(getContext());
 			}
 		}
 		if (id instanceof TypeSignature) {
-			Type tp = AType.fromSignature(getEnv(),id.sign,true);
+			Type tp = AType.fromSignature(getContext(),id.sign,true);
 			this.type_lnk = tp;
-			return tp.meta_type.tdecl;;
+			return tp.meta_type.tdecl;
 		}
 		return null;
 	}
@@ -136,7 +136,7 @@ public abstract class ENode extends ASTNode {
 			return tp;
 		}
 		if (id instanceof TypeSignature) {
-			Type tp = AType.fromSignature(getEnv(),id.sign,true);
+			Type tp = AType.fromSignature(getContext(),id.sign,true);
 			this.type_lnk = tp;
 			return tp;
 		}
@@ -295,8 +295,8 @@ public abstract class ENode extends ASTNode {
 				this.symbol = info.resolvedSymbol();
 			}
 		}
-		else if (sym.dnode instanceof Opdef)
-			return (Opdef)sym.dnode;
+		else if (sym.deref<DNode>(getContext()) instanceof Opdef)
+			return sym.deref<Opdef>(getContext());
 		return null;
 	}
 
@@ -340,7 +340,7 @@ public abstract class ENode extends ASTNode {
 						}
 					}
 				}
-				KievSyntax kiev_stx = (KievSyntax) getEnv().loadAnyDecl("kiev·Syntax");
+				KievSyntax kiev_stx = (KievSyntax) getEnv().loadAnyDecl("kiev·Syntax", getContext());
 				opd = kiev_stx.getOpdefForMethod(m);
 				if (opd != null)
 					return opd;
@@ -365,7 +365,7 @@ public abstract class ENode extends ASTNode {
 					reportError().log("Unresolved method for operator {}", opd);
 				return null;
 			}
-			m = (Method)sym.dnode;
+			m = sym.deref<Method>(getContext());
 			this.symbol = sym;
 		}
 		else if (dn instanceof Method) {
@@ -425,7 +425,7 @@ public abstract class ENode extends ASTNode {
 			else if (id instanceof TypeSignature)
 				en.ident_or_symbol_or_type = id;
 			else if (id instanceof Symbol) {
-				DNode dn = id.dnode;
+				DNode dn = id.deref<DNode>(getContext());
 				if (dn instanceof Opdef)
 					en.ident_or_symbol_or_type = id;
 				else if (dn instanceof Method)
@@ -469,7 +469,7 @@ public final class NopExpr extends ENode {
 	public String toString() { return ""; }
 
 	public Type getType() {
-		return getEnv().tenv.tpVoid;
+		return getTypeEnv().tpVoid;
 	}
 }
 

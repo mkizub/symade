@@ -124,12 +124,12 @@ public class Draw_ATextSyntax implements Serializable {
 				sa.element = new Draw_SyntaxNode(elem_decl);
 				OpArgOPER sep = ((OpArgLIST)arg).getSeparator();
 				if (sep != null)
-					((Draw_SyntaxNode)sa.element).sufix = new Draw_SyntaxToken(elem_decl,sep.getText());
+					((Draw_SyntaxNode)sa.element).sufix = new Draw_SyntaxToken(elem_decl,sep.text);
 				elems.add( sa );
 				continue;
 			}
 			if (arg instanceof OpArgOPER) {
-				String text = ((OpArgOPER)arg).getText();
+				String text = arg.text;
 				if (sexpr.template != null) {
 					for (Draw_SyntaxToken t : sexpr.template.operators) {
 						if (t.text != text) continue;

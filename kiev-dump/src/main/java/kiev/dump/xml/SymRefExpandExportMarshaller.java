@@ -8,9 +8,9 @@ import kiev.vtree.Symbol;
 import kiev.vtree.SymbolRef;
 
 public class SymRefExpandExportMarshaller implements Marshaller {
-	
+
 	public SymRefExpandExportMarshaller() {}
-	
+
     public boolean canMarshal(Object data, MarshallingContext context) {
 		return data instanceof SymbolRef;
 	}
@@ -19,7 +19,7 @@ public class SymRefExpandExportMarshaller implements Marshaller {
 		SymbolRef node = (SymbolRef)data;
 		Symbol symbol = node.getTargetSymbol();
 		if (symbol != null) {
-			DNode dnode =symbol.getTargetDNode();
+			DNode dnode = symbol.derefDNode(node.getContext());
 			if (dnode != null)
 				context.marshalData(dnode);
 		}

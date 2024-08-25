@@ -25,21 +25,21 @@ public abstract class ElemPrinter<E extends Elem> implements Decoder<E>{
 	}
 	public final BinDumpReader reader;
 	public E el;
-	
+
 	ElemPrinter(BinDumpReader reader) {
 		this.reader = reader;
 	}
-	
+
 	public final String ind() {
-		return indentBuffer.substring(0, reader.indent); 
+		return indentBuffer.substring(0, reader.indent);
 	}
-	
+
 	abstract String elName();
 	abstract Signature elSignature();
 	abstract E makeInstance(int id, int addr) throws DumpException;
 	abstract Map<Integer,E> getTable();
 	abstract boolean readValue(TagAndVal tav) throws DumpException;
-	
+
 	public E readElem(int id, int addr) throws DumpException {
 		if (id == 0 && addr == 0)
 			throw new DumpException("Corrupted dump file: read "+elName()+" ID 0x0 from address 0x0");
@@ -84,10 +84,10 @@ public abstract class ElemPrinter<E extends Elem> implements Decoder<E>{
 			else if (tmp != el)
 				throw new DumpException("Corrupted dump file: duplicated "+elName()+" ID 0x"+Integer.toHexString(id)+" at addr 0x"+Integer.toHexString(addr));
 		}
-		
+
 		if (el.eaddr != 0)
 			return el;
-		
+
 		el.eaddr = el.saddr;
 		int old_addr = reader.pushBufPos(el.saddr);
 		try {
@@ -108,7 +108,7 @@ public abstract class ElemPrinter<E extends Elem> implements Decoder<E>{
 				}
 				if (tav.tag == Signature.TAG_ID) {
 					int el_id = tav.intVal();
-					out.printf("%sID    : %4x\n", ind(), el_id);
+					out.printf("%sID    : #%4x\n", ind(), el_id);
 					if (el.id == 0)
 						el.id = el_id;
 					if (el.id != el_id)
@@ -117,7 +117,7 @@ public abstract class ElemPrinter<E extends Elem> implements Decoder<E>{
 				}
 				if (tav.tag == Signature.TAG_FLAG) {
 					el.flags = tav.intVal();
-					out.printf("%sFLAGS : %4x\n", ind(), el.flags);
+					out.printf("%sFLAGS : #%4x\n", ind(), el.flags);
 					continue;
 				}
 				if (!readValue(tav))

@@ -57,11 +57,12 @@ public abstract class ParserBase {
 		from.reportError().log(message);
 	}
 
-	final Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ANode parent) {
+	final Struct mkStruct(Symbol name, Struct variant, TypeConstr[] args, int flags, ASTModifiers modifiers, ANode parent) {
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		Struct clazz;
 		if (parent instanceof SyntaxScope) {
 			clazz = curEnv.newStruct(name.sname,parent.getPackage(),flags,variant,uuid);
+			parent.members += clazz;
 		}
 		else if (parent instanceof Struct) {
 			clazz = curEnv.newStruct(name.sname,(Struct)parent,flags,variant,uuid);
@@ -77,21 +78,20 @@ public abstract class ParserBase {
 		else
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
+		if (args != null)
+			clazz.args.addAll(args);
 		if (modifiers != null)
 			modifiers.moveToNode(clazz);
+		clazz.getMetaType();
 
 		return clazz;
 	}
 
-	final TypeAssign mkTypeAssign(long pos, String name, ASTModifiers modifiers, DNode parent) {
+	final TypeAssign mkTypeAssign(long pos, String name, ASTModifiers modifiers) {
 		Symbol sym = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null)
 			sym = curEnv.getSymbolByUUID(uuid);
-		if (sym == null && parent instanceof TypeDecl) {
-			if (parent.symbol.isGlobalSymbol())
-				sym = parent.symbol.makeGlobalSubSymbol(name);
-		}
 		if (sym == null)
 			sym = new Symbol(name);
 		TypeAssign arg = new TypeAssign(sym);
@@ -101,15 +101,11 @@ public abstract class ParserBase {
 		return arg;
 	}
 
-	final TypeConstr mkTypeConstr(long pos, String name, ASTModifiers modifiers, DNode parent) {
+	final TypeConstr mkTypeConstr(long pos, String name, ASTModifiers modifiers) {
 		Symbol sym = null;
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		if (uuid != null)
 			sym = curEnv.getSymbolByUUID(uuid);
-		//if (sym == null && parent instanceof TypeDecl) {
-		//	if (parent.symbol.isGlobalSymbol())
-		//		sym = parent.symbol.makeGlobalSubSymbol(name);
-		//}
 		if (sym == null)
 			sym = new Symbol(name);
 		TypeConstr arg = new TypeConstr(sym);
@@ -120,7 +116,7 @@ public abstract class ParserBase {
 	}
 
 	final Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
-		Constructor meth = new Constructor(0);
+		Constructor meth = new Constructor(syntaxContext,0);
 		meth.pos = id.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(meth);
@@ -130,17 +126,17 @@ public abstract class ParserBase {
 	final Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		Method meth;
 		if (modifiers != null && modifiers.isGetter()) {
-			meth = new MethodGetter();
+			meth = new MethodGetter(syntaxContext);
 			meth.sname = id.sname;
 			meth.type_ret = ret;
 		}
 		else if (modifiers != null && modifiers.isSetter()) {
-			meth = new MethodSetter();
+			meth = new MethodSetter(syntaxContext);
 			meth.sname = id.sname;
 			meth.type_ret = ret;
 		}
 		else {
-			meth = new MethodImpl(id.sname, ret, 0);
+			meth = new MethodImpl(syntaxContext,id.sname, ret, 0);
 		}
 		meth.pos = id.pos;
 		if (modifiers != null)
@@ -149,7 +145,7 @@ public abstract class ParserBase {
 	}
 
 	final RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		RuleMethod meth = new RuleMethod(id.sname, 0);
+		RuleMethod meth = new RuleMethod(syntaxContext,id.sname, 0);
 		meth.pos = id.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(meth);
@@ -198,7 +194,7 @@ public abstract class ParserBase {
 
 	final LVar mkRuleVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
-			tp = new Copier().copyFull(tp);
+			tp = new Copier(syntaxContext).copyFull(tp);
 		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
 		if (modifiers != null)
 			modifiers.copyToNode(v);

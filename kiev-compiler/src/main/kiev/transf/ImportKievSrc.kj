@@ -198,27 +198,30 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	public void processSyntax(KievSyntax:ANode astn) {
 	next_super_syntax:
 		foreach(SymbolRef sr; astn.super_syntax; Env.needResolving(sr)) {
-			String name = sr.name;
-			KievPackage scope = this.env.root;
-			int dot = name.indexOf('·');
-			while (dot > 0) {
-				String head;
-				head = name.substring(0,dot).intern();
-				name = name.substring(dot+1).intern();
-				ResInfo info = new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
+			Object sym = sr.ident_or_symbol_or_type;
+			if (!(sym instanceof Symbol) || !(sym.derefDNode(getContext()) instanceof KievSyntax)) {
+				String name = sr.name;
+				KievPackage scope = this.env.root;
+				int dot = name.indexOf('·');
+				while (dot > 0) {
+					String head;
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1).intern();
+					ResInfo info = new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievPackage.class);
+					if!(scope.resolveNameR(info)) {
+						sr.reportError().log("Unresolved package {} in {}", head, scope);
+						continue next_super_syntax;
+					}
+					scope = (KievPackage)info.resolvedDNode();
+					dot = name.indexOf('·');
+				}
+				ResInfo info = new ResInfo(astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievSyntax.class);
 				if!(scope.resolveNameR(info)) {
-					sr.reportError().log("Unresolved package {} in {}", head, scope);
+					sr.reportError().log("Unresolved syntax {} in {}", name, scope);
 					continue next_super_syntax;
 				}
-				scope = (KievPackage)info.resolvedDNode();
-				dot = name.indexOf('·');
+				sr.symbol = info.resolvedSymbol();
 			}
-			ResInfo info = new ResInfo(astn,name,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext).match(KievSyntax.class);
-			if!(scope.resolveNameR(info)) {
-				sr.reportError().log("Unresolved syntax {} in {}", name, scope);
-				continue next_super_syntax;
-			}
-			sr.symbol = info.resolvedSymbol();
 		}
 		foreach (ASTNode n; astn.members) {
 			try {
@@ -264,6 +267,19 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					Field f = new Field(fldName,td.getAType(),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
 					f.pos = me.pos;
 					me.members.append(f);
+				}
+				else if (me.ometa_tdef == null) {
+					String taName = ("outer$"+n+"$type").intern();
+					foreach (TypeAssign ta; me.members; ta.sname == taName) {
+						me.ometa_tdef = ta;
+						break;
+					}
+					if (me.ometa_tdef == null) {
+						TypeAssign td = new TypeAssign(new Symbol("outer$"+n+"$type"), new TypeRef(pkg.getType()));
+						td.setSynthetic(true);
+						me.members.append(td);
+						me.ometa_tdef = td;
+					}
 				}
 			}
 		}
@@ -690,7 +706,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				WBCCondition inv = (WBCCondition)me.members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new MethodImpl(inv.sname,this.env.getTypeEnv().tpVoid,inv.getFlags());
+				Method m = new MethodImpl(getContext(),inv.sname,this.env.getTypeEnv().tpVoid,inv.getFlags());
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m,me,Struct.nodeattr$members);
@@ -707,7 +723,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				inst.init = new NewExpr(me.pos, me.getType(), ENode.emptyArray);
 				me.members += inst;
 
-				Method get = new MethodImpl("getInstance", me.getType(), ACC_STATIC|ACC_PUBLIC /*|ACC_SYNTHETIC*/);
+				Method get = new MethodImpl(getContext(),"getInstance", me.getType(), ACC_STATIC|ACC_PUBLIC /*|ACC_SYNTHETIC*/);
 				get.pos = me.pos;
 				get.body = new Block(me.pos, new ENode[]{
 					new ReturnStat(me.pos, new SFldExpr(me.pos,inst))

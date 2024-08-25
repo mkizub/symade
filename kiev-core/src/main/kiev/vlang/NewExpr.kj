@@ -98,7 +98,7 @@ public final class NewExpr extends ENode {
 		CompaundType sup  = (CompaundType)tp;
 		clazz.setStatic(Env.ctxMethod(this)==null || Env.ctxMethod(this).isStatic());
 		clazz.super_types.delAll();
-		TypeRef sup_tr = new Copier().copyFull(this.ntype);
+		TypeRef sup_tr = new Copier(getContext()).copyFull(this.ntype);
 		if( sup.tdecl.isInterface() ) {
 			clazz.super_types.insert(0, new TypeRef(tp.tenv.tpObject));
 			clazz.super_types.add(sup_tr);
@@ -163,7 +163,7 @@ public final class NewExpr extends ENode {
 		}
 		// try to find a constructor
 		{
-			CallType mt = (CallType)new CallType(ntype,null,ta,getEnv().tenv.tpVoid,false);
+			CallType mt = (CallType)new CallType(ntype,null,ta,getTypeEnv().tpVoid,false);
 			ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noSyntaxContext|ResInfo.noStatic).match(Constructor.class);
 			if( PassInfo.resolveBestMethodR(ntype,info,mt) ) {
 				this.symbol = info.resolvedSymbol();
@@ -179,7 +179,7 @@ public final class NewExpr extends ENode {
 				return;
 		}
 		reportWarning().log("Can't find apropriative initializer for {} in {}",
-				Method.toString("<constructor>",args,getEnv().tenv.tpVoid), ntype);
+				Method.toString("<constructor>",args,getTypeEnv().tpVoid), ntype);
 	}
 
 	public String toString() {

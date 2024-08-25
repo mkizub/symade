@@ -54,6 +54,6 @@ public class TypeClosureRef extends TypeRef {
 		return null;
 	}
 	public TypeDecl getTypeDecl() {
-		return (TypeDecl)getTypeEnv().symbolCallTDecl.dnode;
+		return getTypeEnv().symbolCallTDecl.deref<TypeDecl>(getEnv().getEnvContext());
 	}
 }

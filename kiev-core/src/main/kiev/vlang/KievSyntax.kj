@@ -88,7 +88,7 @@ public final class KievSyntax extends DNode implements GlobalDNodeContainer, Sco
 	protected Hash<String> addOperators(Hash<String> tbl) {
 		foreach (Opdef opd; members; opd.resolved != null) {
 			foreach (OpArgOPER arg; opd.args)
-				tbl.put(arg.symbol.sname);
+				tbl.put(arg.text);
 		}
 		foreach (SymbolRef<KievSyntax> stx; super_syntax; stx.dnode != null)
 			stx.dnode.addOperators(tbl);

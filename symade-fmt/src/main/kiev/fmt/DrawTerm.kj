@@ -459,7 +459,7 @@ public class DrawTokenTerm extends DrawValueTerm {
 	}
 
 	private INode addEmptyToken(int incr) {
-		INode tok = new Copier().copyFull(drnode);
+		INode tok = new Copier(drnode.getContext()).copyFull(drnode);
 		attr_slot.set(tok, "");
 		INode parent = drnode.parent();
 		SpaceAttrSlot drslot = (SpaceAttrSlot)drnode.pslot();

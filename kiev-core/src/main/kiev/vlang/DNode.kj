@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
 @ThisIsANode(lang=CoreLang)
-public abstract class DNode extends ASTNode implements ISymbolHost {
+public abstract class DNode extends ASTNode implements IDecl {
 
 	public static final DNode[] emptyArray = new DNode[0];
 
@@ -78,7 +78,7 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 
 	@AttrBinDumpInfo(leading=true)
 	@AttrXMLDumpInfo(ignore=true)
-	@nodeAttr
+	@nodeData @nodeSymb
 	public Symbol		symbol;
 
 	@abstract
@@ -152,7 +152,19 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 	}
 
 	@getter final public DNode get$dnode() { return this; }
+
+	public final Symbol getDeclSymbol() { return this.symbol; }
 	@getter final public Symbol get$symbol() { return this.symbol; }
+	@setter final public void set$symbol(Symbol snew) {
+		Symbol sold = this.symbol;
+		if (sold == snew)
+			return;
+		if (sold != null)
+			sold.detachNode(this);
+		this.symbol = snew;
+		if (snew != null)
+			snew.attachNode(this);
+	}
 
 	@getter final public String get$sname() {
 		Symbol symbol = this.symbol;
@@ -324,6 +336,13 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 		this.symbol = symbol;
 	}
 
+	public Object copyTo(Object to$node, CopyContext in$context) {
+		DNode node = (DNode)super.copyTo(to$node, in$context);
+		node.symbol = in$context.copySymbol(this.symbol);
+		node.nodeflags = this.nodeflags;
+		return node;
+	}
+
 	public void cleanupOnReload() {
 		this.metas.delAll();
 		this.nodeflags = 0;
@@ -350,12 +369,6 @@ public abstract class DNode extends ASTNode implements ISymbolHost {
 							ns.sub_symbols += symbol;
 					}
 				}
-			}
-		}
-		else if (info.content_change) {
-			if (info.slot == DNode.nodeattr$symbol && info.new_value == null) {
-				if (isAttached())
-					System.out.println("Replacing unattached node "+info.old_value);
 			}
 		}
 		super.callbackChanged(info);
@@ -540,15 +553,15 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
 	public final boolean isTypeVirtual()		{ return this.isVirtual(); }
 	public final boolean isTypeFinal()			{ return this.isFinal(); }
-	public final boolean isTypeStatic()		{ return !this.isStructInner() || this.isStatic(); }
+	public final boolean isTypeStatic()			{ return !this.isStructInner() || this.isStatic(); }
 	public final boolean isTypeForward()		{ return this.isForward(); }
 
 	public String toString() { return sname; }
 
 	public this.type checkResolved() {
-		if( isTypeDeclNotLoaded() ) {
-			TypeDecl td = getEnv().loadTypeDecl(this);
-			if (td.isTypeDeclNotLoaded())
+		if (isTypeDeclNotLoaded()) {
+			TypeDecl td = getEnv().loadTypeDecl(this, getContext());
+			if (td == null || td.isTypeDeclNotLoaded())
 				throw new RuntimeException("TypeDecl "+this+" unresolved");
 			return td;
 		}
@@ -673,7 +686,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 		//	if (info.slot.name == "sname")
 		//		resetNames();
 		if (info.slot.name == "super_types" || info.slot.name == "args" || info.slot.name == "symbol")
-			Env.getEnv().tenv.callbackTypeVersionChanged(this);
+			getTypeEnv().callbackTypeVersionChanged(this);
 		if (info.tree_change) {
 			if (info.slot.isSemantic())
 				resetNames();
@@ -804,7 +817,7 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 			return null;
 		trace(getEnv().debugResolve,"Package: trying to load in "+this);
 		String qn = qname+"·"+name;
-		DNode dn = getEnv().loadAnyDecl(qn);
+		DNode dn = getEnv().loadAnyDecl(qn, getContext());
 		trace(getEnv().debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;
 	}
@@ -825,12 +838,12 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 	}
 
 	public MetaType getMetaType() {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		synchronized (tenv) {
 			MetaType mt = tenv.getExistingMetaType(this.symbol);
-			if (mt != null)
+			if (mt != null && mt.tdecl == this)
 				return mt;
-			return new XMetaType(tenv, this, 0);
+			return XMetaType.makeMetaType(tenv, this);
 		}
 	}
 
@@ -902,9 +915,9 @@ public class KievPackage extends DNode implements GlobalDNodeContainer {
 		DNode dn = null;
 		String qn = name;
 		if (this instanceof KievRoot) {
-			dn = getEnv().loadAnyDecl(qn);
+			dn = getEnv().loadAnyDecl(qn, getContext());
 		} else {
-			dn = getEnv().loadAnyDecl(qn=(this.qname()+"·"+name));
+			dn = getEnv().loadAnyDecl(qn=(this.qname()+"·"+name), getContext());
 		}
 		trace(getEnv().debugResolve,"DNode "+(dn != null ? dn+" found " : qn+" not found")+" in "+this);
 		return dn;

@@ -75,7 +75,7 @@ public class TypeExpr extends TypeRef {
 						return (Opdef)info.resolvedDNode();
 				}
 			}
-			KievSyntax kiev_stx = (KievSyntax) getEnv().loadAnyDecl("kiev·Syntax");
+			KievSyntax kiev_stx = (KievSyntax) getEnv().loadAnyDecl("kiev·Syntax", getContext());
 			if (kiev_stx != null && kiev_stx.resolveNameR(info))
 				return (Opdef)info.resolvedDNode();
 		} catch (Throwable t) {}
@@ -131,7 +131,7 @@ public class TypeExpr extends TypeRef {
 		ResInfo info = new ResInfo(this,this.op_name);
 		if (!PassInfo.resolveNameR(this,info)) {
 			if (op_name == "T #")
-				return (TypeDecl)getEnv().tenv.symbolTDeclASTNodeType.dnode;
+				return getTypeEnv().symbolTDeclASTNodeType.deref<TypeDecl>(getContext());
 			else
 				throw new CompilerException(this,"Typedef for type operator "+op_name+" not found");
 		}

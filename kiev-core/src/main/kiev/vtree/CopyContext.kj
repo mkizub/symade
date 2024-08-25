@@ -4,30 +4,35 @@ import syntax kiev.Syntax;
 
 import java.util.IdentityHashMap;
 
-public interface CopyContext {
-	public ANodeContext toNodeContext();
-	public <N extends INode> N copyRoot(N node);
-	public <N extends INode> N copyFull(N node);
-	public void addCopyInfo(INode nold, INode nnew);
-	public INode getCopyOf(INode nold);
-	public void updateLinks();
+public abstract class CopyContext {
+	public final ANodeContext toNodeContext;
+	public final boolean copyOnlyAPI;
+	public final boolean copyGlobalSymbols;
+
+	public CopyContext(ANodeContext nodeContext, boolean copyOnlyAPI, boolean copyGlobalSymbols) {
+		this.toNodeContext = nodeContext;
+		this.copyGlobalSymbols = copyGlobalSymbols;
+		this.copyGlobalSymbols = copyGlobalSymbols;
+	}
+
+	public abstract <N extends INode> N copyRoot(N node);
+	public abstract <N extends INode> N copyFull(N node);
+	public abstract Symbol copySymbol(Symbol node);
+	public abstract void addCopyInfo(INode nold, INode nnew);
+	public abstract INode getCopyOf(INode nold);
+	public abstract void updateLinks();
 }
 
 public class Copier implements CopyContext {
 
-	private final ANodeContext nodeContext;
 	private final IdentityHashMap<INode,INode> map = new IdentityHashMap<INode,INode>();
 
-	public Copier() {
-		this.nodeContext = Env.getSemanticContext();
-	}
-
 	public Copier(ANodeContext nodeContext) {
-		this.nodeContext = nodeContext;
+		super(nodeContext, false, true);
 	}
 
-	public ANodeContext toNodeContext() {
-		return this.nodeContext;
+	public Copier(ANodeContext nodeContext, boolean copyOnlyAPI, boolean copyGlobalSymbols) {
+		super(nodeContext, copyOnlyAPI, copyGlobalSymbols);
 	}
 
 	public <N extends INode> N copyRoot(N node) {
@@ -39,6 +44,16 @@ public class Copier implements CopyContext {
 		N t = copyRoot(node);
 		updateLinks();
 		return t;
+	}
+
+	public Symbol copySymbol(Symbol nold) {
+		if (nold == null)
+			return null;
+		//if (!copyGlobalSymbols && nold.isGlobalSymbol())
+		//	return nold;
+		Symbol nnew = new Symbol(nold);
+		addCopyInfo(nold, nnew);
+		return nnew;
 	}
 
 	public void addCopyInfo(INode nold, INode nnew) {

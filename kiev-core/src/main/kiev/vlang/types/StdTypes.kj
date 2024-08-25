@@ -22,7 +22,7 @@ import java.util.IdentityHashMap;
  *
  */
 
-public class StdTypes {
+public final class StdTypes {
 
 	public static final int flAbstract			= 1 <<  0;
 	public static final int flUnerasable		= 1 <<  1;
@@ -133,10 +133,11 @@ public class StdTypes {
 	public final ArgType[]				tpUnattachedArgs;
 
 	public final Symbol					symbolTDeclASTNodeType;
+	public final MetaTypeDecl			tdASTNodeType;
 
-	public StdTypes(Env env) {
+	public StdTypes(Env env, (StdTypes)->void callbackSetTypeEnv) {
 		this.env = env;
-		env.tenv = this;
+		callbackSetTypeEnv(this);
 
 		allMetaTypes = new IdentityHashMap<Symbol,MetaType>();
 
@@ -161,7 +162,9 @@ public class StdTypes {
 		env.newPackage("kiev·vlang");
 		env.newPackage("kiev·vlang·types");
 		env.newPackage("kiev·ir");
+		env.newPackage("kiev·ir·java15");
 		env.newPackage("kiev·transf");
+		env.newPackage("kiev·parser");
 
 		Struct tpObjectClazz = env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass(),null);
 		tpObjectClazz.setTypeDeclNotLoaded(true);
@@ -200,7 +203,7 @@ public class StdTypes {
 			tpWildcardCoArg = tdWildcardCoArg.getAType();
 			tpWildcardCoArg.flags |= flArgAppliable | flValAppliable;
 			wildcardCoTemplBindings = new TemplateTVarSet(-1, new TVarBld(tpWildcardCoArg, null));
-			MetaTypeDecl tdWildcardCo = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_wildcard_co_variant_");
+			MetaTypeDecl tdWildcardCo = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_wildcard_co_variant_", env.getEnvContext());
 			assert (tdWildcardCo == null);
 			symbolWildcardCoTDecl = env.makeGlobalSymbol("kiev·stdlib·_wildcard_co_variant_");
 			symbolWildcardCoTDecl.setUUID("6c99b10d-3003-3176-8086-71be6cee5c51");
@@ -220,7 +223,7 @@ public class StdTypes {
 			tpWildcardContraArg = tdWildcardContraArg.getAType();
 			tpWildcardContraArg.flags |= flArgAppliable | flValAppliable;
 			wildcardContraTemplBindings = new TemplateTVarSet(-1, new TVarBld(tpWildcardContraArg, null));
-			MetaTypeDecl tdWildcardContra = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_wildcard_contra_variant_");
+			MetaTypeDecl tdWildcardContra = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_wildcard_contra_variant_", env.getEnvContext());
 			assert (tdWildcardContra == null);
 			symbolWildcardContraTDecl = env.makeGlobalSymbol("kiev·stdlib·_wildcard_contra_variant_");
 			symbolWildcardContraTDecl.setUUID("933ac6b8-4d03-3799-9bb3-3c9bc1883707");
@@ -240,7 +243,7 @@ public class StdTypes {
 			tpWrapperArg = tdWrapperArg.getAType();
 			tpWrapperArg.flags |= flArgAppliable | flValAppliable;
 			wrapperTemplBindings = new TemplateTVarSet(-1, new TVarBld(tpWrapperArg, null));
-			MetaTypeDecl tdWrapper = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_wrapper_");
+			MetaTypeDecl tdWrapper = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_wrapper_", env.getEnvContext());
 			assert (tdWrapper == null);
 			symbolWrapperTDecl = env.makeGlobalSymbol("kiev·stdlib·_wrapper_");
 			symbolWrapperTDecl.setUUID("67544053-836d-3bac-b94d-0c4b14ae9c55");
@@ -262,7 +265,7 @@ public class StdTypes {
 			arrayTemplBindings = new TemplateTVarSet(-1, new TVarBld(tpArrayArg, null));
 			symbolArrayTDecl = env.makeGlobalSymbol("kiev·stdlib·_array_");
 			symbolArrayTDecl.setUUID("bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04");
-			MetaTypeDecl tdArray = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_array_");
+			MetaTypeDecl tdArray = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_array_", env.getEnvContext());
 			assert  (tdArray == null);
 			tdArray = new MetaTypeDecl(symbolArrayTDecl);
 			tdArray.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
@@ -275,7 +278,7 @@ public class StdTypes {
 			Field length = new Field("length", tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
 			tdArray.members.add(length);
-			Method get = new MethodImpl("get", tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
+			Method get = new MethodImpl(env.getEnvContext(),"get", tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
 			get.params.add(new LVar(0,"idx",tpInt,Var.VAR_LOCAL,0));
 			get.aliases += new OperatorAlias(Constants.nameArrayGetOp, get);
 			//CoreExpr ce = new CoreExpr();
@@ -297,7 +300,7 @@ public class StdTypes {
 				set.append(tpArrayArg, tpVarargArg);
 				varargTemplBindings = new TemplateTVarSet(-1, set);
 			}
-			MetaTypeDecl tdVararg = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_vararg_");
+			MetaTypeDecl tdVararg = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_vararg_", env.getEnvContext());
 			assert  (tdVararg == null);
 			symbolVarargTDecl = env.makeGlobalSymbol("kiev·stdlib·_vararg_");
 			symbolVarargTDecl.setUUID("8aa32751-ac53-343e-b456-6f8521b01647");
@@ -314,7 +317,7 @@ public class StdTypes {
 
 		ASTNodeMetaType.init();
 		symbolTDeclASTNodeType = env.makeGlobalSymbol("kiev·stdlib·_astnode_");
-		MetaTypeDecl tdASTNodeType = new MetaTypeDecl(symbolTDeclASTNodeType);
+		tdASTNodeType = new MetaTypeDecl(symbolTDeclASTNodeType);
 		tdASTNodeType.nodeflags |= ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdASTNodeType.symbol.setUUID("3e32f9c7-9846-393e-8c6e-11512191ec94");
 		tdASTNodeType.setTypeDeclNotLoaded(true);
@@ -489,7 +492,7 @@ public class StdTypes {
 		}
 
 		{
-			MetaTypeDecl tdTuple = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_tuple_");
+			MetaTypeDecl tdTuple = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_tuple_", env.getEnvContext());
 			assert (tdTuple == null);
 			symbolTupleTDecl = env.makeGlobalSymbol("kiev·stdlib·_tuple_");
 			tdTuple = new MetaTypeDecl(symbolTupleTDecl);
@@ -499,8 +502,7 @@ public class StdTypes {
 
 			tupleMetaTypes = new TupleMetaType[32];
 			for (int i=0; i < tupleMetaTypes.length; i++) {
-				Symbol sym = symbolTupleTDecl.makeGlobalSubSymbol("("+i+")");
-				tupleMetaTypes[i] = new TupleMetaType(this,sym,i);
+				tupleMetaTypes[i] = new TupleMetaType(this,i);
 			}
 		}
 
@@ -516,7 +518,7 @@ public class StdTypes {
 			set.append(tpSelfTypeArg, null);
 			callTemplBindingsThis = new TemplateTVarSet(-1, set);
 
-			MetaTypeDecl tdCall = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_call_type_");
+			MetaTypeDecl tdCall = (MetaTypeDecl)env.resolveGlobalDNode("kiev·stdlib·_call_type_", env.getEnvContext());
 			assert (tdCall == null);
 			symbolCallTDecl = env.makeGlobalSymbol("kiev·stdlib·_call_type_");
 			symbolCallTDecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");
@@ -558,14 +560,17 @@ public class StdTypes {
 	}
 
 	public void callbackTypeVersionChanged(TypeDecl td) {
-		if (td != null)
-			callbackTypeVersionChanged(td.symbol);
+		if (td != null) {
+			MetaType mt = allMetaTypes.get(td.symbol);
+			if (mt != null)
+				mt.callbackTypeVersionChanged(td);
+		}
 	}
 
 	public void callbackTypeVersionChanged(Symbol sym) {
 		MetaType mt = allMetaTypes.get(sym);
 		if (mt != null)
-			mt.callbackTypeVersionChanged();
+			mt.callbackTypeVersionChanged(null);
 	}
 
 

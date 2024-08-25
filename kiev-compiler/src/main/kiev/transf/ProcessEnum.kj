@@ -93,7 +93,7 @@ public final class EnumFE_GenMembers extends TransfProcessor {
 
 		// values()[]
 		{
-			Method mvals = new MethodImpl(nameEnumValues,new ArrayType(clazz.getType()),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method mvals = new MethodImpl(getContext(),nameEnumValues,new ArrayType(clazz.getType()),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			mvals.pos = pos;
 			mvals.body = new Block(pos);
 			mvals.block.stats.add(
@@ -109,7 +109,7 @@ public final class EnumFE_GenMembers extends TransfProcessor {
 
 		// Cast from int
 		{
-			Method tome = new MethodImpl("fromInt",clazz.getType(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method tome = new MethodImpl(getContext(),"fromInt",clazz.getType(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			tome.aliases += new OperatorAlias(nameCastOp, tome);
 			tome.pos = pos;
 			tome.params.append(new LVar(pos,nameEnumOrdinal,tenv.tpInt, Var.VAR_LOCAL,0));
@@ -135,7 +135,7 @@ public final class EnumFE_GenMembers extends TransfProcessor {
 
 		// toString
 		{
-			Method tostr = new MethodImpl("toString",tenv.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method tostr = new MethodImpl(getContext(),"toString",tenv.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
 			tostr.aliases += new OperatorAlias(nameCastOp, tostr);
 			tostr.pos = pos;
 			tostr.body = new Block(pos);
@@ -163,7 +163,7 @@ public final class EnumFE_GenMembers extends TransfProcessor {
 
 		// fromString
 		{
-			Method fromstr = new MethodImpl("valueOf",clazz.getType(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method fromstr = new MethodImpl(getContext(),"valueOf",clazz.getType(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			fromstr.aliases += new OperatorAlias(nameCastOp, fromstr);
 			fromstr.aliases += new Alias("fromString", fromstr);
 			fromstr.pos = pos;

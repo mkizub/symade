@@ -119,7 +119,7 @@ public class ANodeDumpMarshaller implements Marshaller {
 			if (se == null)
 				out.writeVoid();
 			else
-				out.writeSymbolRef(se, !ae.isChild());
+				out.writeSymbolRef(se, !(ae.isChild()||ae.isSymbol()));
 			return;
 		}
     	if (obj instanceof SymbolRef) {

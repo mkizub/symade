@@ -189,7 +189,7 @@ public class IfElseStat extends ENode {
 	}
 
 	public Type getType() {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		if (thenSt == null || elseSt == null)
 			return tenv.tpVoid;
 		Type t1 = thenSt.getType();

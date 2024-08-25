@@ -19,30 +19,48 @@ import java.util.StringTokenizer;
  *
  */
 
-public final class RewriteContext {
-	public final Env env;
+public final class Rewriter {
 	public final ANodeContext context;
-	public final ASTNode root;
-	public final Hashtable<String,Object> args;
+	public final TypeDecl macroTypeDecl;
 
-	private static Type getMacroParamType(Env env, Class arg) {
-		if      (((Class)ASTNode.class).isAssignableFrom(arg))
-			return new ASTNodeType(arg);
-		else if (arg.isArray())
-			return new ArrayType(getMacroParamType(env, arg.getComponentType()));
-		else if (arg == Boolean.class)			return env.tenv.tpBoolean;
-		else if (arg == Character.class)		return env.tenv.tpChar;
-		else if (arg == Byte.class)				return env.tenv.tpByte;
-		else if (arg == Short.class)			return env.tenv.tpShort;
-		else if (arg == Integer.class)			return env.tenv.tpInt;
-		else if (arg == Long.class)				return env.tenv.tpLong;
-		else if (arg == Float.class)			return env.tenv.tpFloat;
-		else if (arg == Double.class)			return env.tenv.tpDouble;
-		return new ASTNodeType(arg);
+	public Rewriter(ANodeContext context, String tdecl_name) {
+		this.context = context;
+		final Env env = context.theEnv;
+		TypeDecl tdecl = (TypeDecl)env.loadAnyDecl(tdecl_name, context);
+		if (tdecl == null)
+			env.reportError().log("Macro type decl '{}' not found", tdecl_name);
+		this.macroTypeDecl = tdecl;
 	}
 
-	public static INode rewriteByMacro(Env env, SpacePtr space, String tdecl_name, String macro_name, Object... args) {
-		INode res = rewriteByMacro(env, tdecl_name, macro_name, args);
+	public Rewriter(ANodeContext context, TypeDecl macroTypeDecl) {
+		this.context = context;
+		this.macroTypeDecl = macroTypeDecl;
+	}
+
+	public INode rewrite(String macro_name, Object... args) {
+		if (macroTypeDecl == null)
+			return null;
+		final Env env = context.theEnv;
+		Type[] types = new Type[args.length];
+		for (int i=0; i < args.length; i++)
+			types[i] = RewriteContext.getMacroParamType(context, args[i].getClass());
+		Method m = macroTypeDecl.resolveMethod(macro_name, env.tenv.tpVoid, types);
+		if (m == null || m.body == null) {
+			env.reportError().log("Macro '{}' in type decl '{}' not found", macro_name, macroTypeDecl);
+			return null;
+		}
+		Hashtable<String,Object> params = new Hashtable<String,Object>();
+		Var[] mparams = m.params;
+		for (int i=0; i < mparams.length; i++)
+			params.put(mparams[i].sname, args[i]);
+		RewriteContext rctx = new RewriteContext(context, m.body, params);
+		return m.body.doRewrite(rctx);
+	}
+
+	public INode rewrite(SpacePtr space, String macro_name, Object... args) {
+		if (macroTypeDecl == null)
+			return null;
+		INode res = rewrite(macro_name, args);
 		if (res instanceof BlockRewr) {
 			BlockRewr bl = (BlockRewr)res;
 			foreach (ASTNode n; bl.stats.delToArray())
@@ -53,32 +71,34 @@ public final class RewriteContext {
 		}
 		return res;
 	}
+}
 
-	public static INode rewriteByMacro(Env env, String tdecl_name, String macro_name, Object... args) {
-		TypeDecl tdecl = (TypeDecl)env.loadAnyDecl(tdecl_name);
-		if (tdecl == null) {
-			env.reportError().log("Macro type decl '{}' not found", tdecl_name);
-			return null;
-		}
-		Type[] types = new Type[args.length];
-		for (int i=0; i < args.length; i++)
-			types[i] = getMacroParamType(env, args[i].getClass());
-		Method m = tdecl.resolveMethod(macro_name, env.tenv.tpVoid, types);
-		if (m == null || m.body == null) {
-			env.reportError().log("Macro '{}' in type decl '{}' not found", macro_name, tdecl_name);
-			return null;
-		}
-		Hashtable<String,Object> params = new Hashtable<String,Object>();
-		Var[] mparams = m.params;
-		for (int i=0; i < mparams.length; i++)
-			params.put(mparams[i].sname, args[i]);
-		RewriteContext rctx = new RewriteContext(env, m.body, params);
-		return m.body.doRewrite(rctx);
+public final class RewriteContext {
+	public final Env env;
+	public final ANodeContext context;
+	public final ASTNode root;
+	public final Hashtable<String,Object> args;
+
+	static Type getMacroParamType(ANodeContext context, Class arg) {
+		StdTypes tenv = context.typeEnv;
+		if      (((Class)ASTNode.class).isAssignableFrom(arg))
+			return new ASTNodeType(arg);
+		else if (arg.isArray())
+			return new ArrayType(getMacroParamType(context, arg.getComponentType()));
+		else if (arg == Boolean.class)			return tenv.tpBoolean;
+		else if (arg == Character.class)		return tenv.tpChar;
+		else if (arg == Byte.class)				return tenv.tpByte;
+		else if (arg == Short.class)			return tenv.tpShort;
+		else if (arg == Integer.class)			return tenv.tpInt;
+		else if (arg == Long.class)				return tenv.tpLong;
+		else if (arg == Float.class)			return tenv.tpFloat;
+		else if (arg == Double.class)			return tenv.tpDouble;
+		return new ASTNodeType(arg);
 	}
 
-	public RewriteContext(Env env, ASTNode root, Hashtable<String,Object> args) {
-		this.env = env;
-		this.context = Env.getSemanticContext();
+	public RewriteContext(ANodeContext context, ASTNode root, Hashtable<String,Object> args) {
+		this.env = context.theEnv;
+		this.context = context;
 		this.root = root;
 		this.args = args;
 	}
@@ -134,7 +154,7 @@ public final class RewriteContext {
 		if (o.getClass().isEnum())	return new ConstEnumExpr((Enum)o);
 		if (o instanceof ASTNode[]) {
 			BlockRewr bl = new BlockRewr();
-			CopyContext cc = new Copier();
+			CopyContext cc = new Copier(context);
 			foreach (ASTNode n; (ASTNode[])o) {
 				if (n.isAttached())
 					bl.stats += cc.copyRoot(n);
@@ -169,8 +189,8 @@ public final class RewriteContext {
 		else if (o instanceof Symbol && attr.typeinfo.clazz == Symbol.class) {
 			o = (Symbol)o;
 		}
-		else if (o instanceof ISymbolHost && attr.typeinfo.clazz == Symbol.class) {
-			o = ((ISymbolHost)o).symbol;
+		else if (o instanceof IDecl && attr.typeinfo.clazz == Symbol.class) {
+			o = ((IDecl)o).symbol;
 		}
 		else if (o instanceof TypeDecl) {
 			if (attr.typeinfo.clazz == TypeRef.class)
@@ -180,7 +200,7 @@ public final class RewriteContext {
 		}
 		else if (o instanceof ASTNode[]) {
 			BlockRewr bl = new BlockRewr();
-			CopyContext cc = new Copier();
+			CopyContext cc = new Copier(context);
 			foreach (ASTNode n; (ASTNode[])o) {
 				if (n.isAttached())
 					bl.stats += cc.copyRoot(n);
@@ -191,7 +211,7 @@ public final class RewriteContext {
 			o = bl;
 		}
 		if (o instanceof INode && attr.isAttr())
-			o = new Copier().copyFull((INode)o);
+			o = new Copier(context).copyFull((INode)o);
 		return o;
 	}
 }
@@ -565,7 +585,7 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 				if (!((ASTNodeMetaType)tp.meta_type).clazz.isAssignableFrom(n.getClass()))
 					continue;
 			}
-			RewriteContext rc = new RewriteContext(ctx.env, this, (Hashtable<String,Object>)ctx.args.clone());
+			RewriteContext rc = new RewriteContext(ctx.context, this, (Hashtable<String,Object>)ctx.args.clone());
 			rc.args.put(var.sname, n);
 			if (this.cond != null) {
 				INode c = this.cond.doRewrite(rc);
@@ -648,13 +668,13 @@ public final class MacroSelfExpr extends ENode {
 		try {
 			ComplexTypeDecl td = Env.ctxTDecl(this);
 			if (td == null)
-				return getEnv().tenv.tpVoid;
+				return getTypeEnv().tpVoid;
 			if (td.sname == nameIFaceImpl)
 				return Env.ctxTDecl(td).getType();
 			return td.getType();
 		} catch(Exception e) {
 			reportError().log(e);
-			return getEnv().tenv.tpVoid;
+			return getTypeEnv().tpVoid;
 		}
 	}
 
@@ -679,7 +699,7 @@ public final class MacroAccessExpr extends ENode {
 	public CoreOperation getOperation() { getEnv().coreFuncs.fMacroAccess.operation }
 
 	public Type getType() {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		ENode obj = this.obj;
 		Type ot;
 		if (obj instanceof LVarExpr && obj.getVarSafe().parent() instanceof RewritePattern)
@@ -798,7 +818,7 @@ public class MacroSubstTypeRef extends TypeRef {
 	public Type getType() {
 		if (req_type != null)
 			return req_type.getType();
-		return getEnv().tenv.tpAny;
+		return getTypeEnv().tpAny;
 	}
 
 	public boolean preResolveIn(INode parent, AttrSlot slot) {
@@ -835,7 +855,7 @@ public class MacroBinaryBoolExpr extends ENode {
 
 	public String toString() { toStringByOpdef() }
 
-	public Type getType() { return getEnv().tenv.tpBoolean; }
+	public Type getType() { return getTypeEnv().tpBoolean; }
 
 	public INode doRewrite(RewriteContext ctx) {
 		INode e1 = expr1.doRewrite(ctx);
@@ -873,7 +893,7 @@ public class MacroBinaryBoolExpr extends ENode {
 			Symbol sym = opd.resolveMethod(this);
 			if (sym != null) {
 				this.symbol = sym;
-				m = sym.dnode;
+				m = sym.deref<CoreOperation>(getContext());
 			}
 		}
 		if (m instanceof CoreOperation)
@@ -899,7 +919,7 @@ public class MacroHasMetaExpr extends ENode {
 
 	public MacroHasMetaExpr() {}
 
-	public Type getType() { return getEnv().tenv.tpBoolean; }
+	public Type getType() { return getTypeEnv().tpBoolean; }
 
 	public int getPriority() { return opInstanceOfPriority; }
 

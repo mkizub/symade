@@ -17,7 +17,7 @@ public class EditorThreadGroup extends WorkerThreadGroup {
 		this(bthr, bthr.jobThreads);
 	}
 	public EditorThreadGroup(WorkerThreadGroup bthr, int jobThreads) {
-		super(bthr, "editor", jobThreads);
+		super(bthr.theEnv, bthr, "editor", jobThreads);
 		semantic_context = new SemanticContext(bthr.semantic_context);
 	}
 }

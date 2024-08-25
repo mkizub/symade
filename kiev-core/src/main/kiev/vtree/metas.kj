@@ -43,7 +43,11 @@ public @interface nodeData {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface nodeSRef {
 	boolean copyable() default true;
-	boolean ext_data() default false;
+}
+// syntax-tree symbol field
+@Retention(RetentionPolicy.RUNTIME)
+public @interface nodeSymb {
+	boolean copyable() default true;
 }
 // the field of a node is not versioned and is present in compiler version only
 @Retention(RetentionPolicy.RUNTIME)

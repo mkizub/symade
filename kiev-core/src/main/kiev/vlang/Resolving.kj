@@ -27,6 +27,7 @@ public final class ResInfo implements Cloneable {
 	public static final int doImportStar    = 0x0020; // to lookup in specific imports, then in the package, then in import with star
 
 	public final Env	env;
+	public final ANodeContext context;
 	public final boolean debugResolve;
 
 	private Symbol		resolved_symbol;
@@ -67,7 +68,7 @@ public final class ResInfo implements Cloneable {
 			return resolved_dnode;
 		if (resolved_symbol == null)
 			return null;
-		return resolved_symbol.dnode;
+		return resolved_symbol.deref<DNode>(from.getContext());
 	}
 
 	public Object clone() {
@@ -85,6 +86,7 @@ public final class ResInfo implements Cloneable {
 	}
 	public ResInfo(ANode from, String nm, int fl) {
 		this.env = from.getEnv();
+		this.context = from.getContext();
 		this.debugResolve = env.debugResolve;
 		if (nm != null) {
 			assert (nm.intern() == nm);
@@ -252,9 +254,9 @@ public final class ResInfo implements Cloneable {
 			return false;
 		DNode dnode = null;
 		if (dnode_matcher != null)
-			dnode = dnode_matcher.matchOwner(symbol);
+			dnode = dnode_matcher.matchOwner(symbol, context);
 		else
-			dnode = symbol.getTargetDNode();
+			dnode = symbol.deref<DNode>(from.getContext());
 		if (dnode == null)
 			return false;
 		if !(checkNodeName(symbol))
@@ -361,7 +363,7 @@ public final class ResInfo implements Cloneable {
 	private ENode buildAccess(ASTNode at, ASTNode from, Object node, boolean node_is_generated) {
 		trace(this.debugResolve,"Building access from "+from+" to "+node+" via "+this);
 		if (node instanceof Symbol)
-			node = node.dnode;
+			node = node.deref<DNode>(this.from.getContext());
 		if (from == null && isEmpty()) {
 			// var or static field
 			if (node instanceof Field) {

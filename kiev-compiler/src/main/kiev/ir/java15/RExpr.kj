@@ -175,10 +175,10 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 			i++;
 		}
 		Field f = new Field(nameTypeInfo+"$"+i,tie.getType(),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
-		f.init = new Copier().copyFull(tie);
+		f.init = new Copier(clz.getContext()).copyFull(tie);
 		clz.addField(f);
 		resolveDNode(f);
-		TypeInfoExpr finit = (TypeInfoExpr)new Copier().copyFull(f.init);
+		TypeInfoExpr finit = (TypeInfoExpr)new Copier(clz.getContext()).copyFull(f.init);
 		finit.setResolved(true);
 		// Add initialization in <clinit>
 		Constructor class_init = clz.getClazzInitMethod();
@@ -233,7 +233,7 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 			Constructor class_init = ((Struct)clazz).getClazzInitMethod();
 			class_init.addstats.insert(0,
 				new ExprStat(f.init.pos,
-					new AssignExpr(f.init.pos,new SFldExpr(f.pos,f),new Copier().copyFull(f.init))
+					new AssignExpr(f.init.pos,new SFldExpr(f.pos,f),new Copier(getContext()).copyFull(f.init))
 				)
 			);
 			f.setAddedToInit(true);

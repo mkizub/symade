@@ -58,7 +58,7 @@ public class PathTypeRef extends TypeRef {
 		//	return this.type_lnk;
 		Type tp;
 		if (path instanceof ThisExpr)
-			tp = getEnv().tenv.tpSelfTypeArg;
+			tp = getTypeEnv().tpSelfTypeArg;
 		else
 			tp = path.getType();
 		//this.type_lnk = tp;

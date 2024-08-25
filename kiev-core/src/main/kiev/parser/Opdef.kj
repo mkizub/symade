@@ -37,11 +37,11 @@ public class Opdef extends DNode {
 	public Operator makeOperator() {
 		if (args.length == 0)
 			return null;
+		if (resolved != null)
+			return resolved;
 		String name = "";
 		foreach (OpArgument arg; args)
 			name = name + arg.toOpName() + ' ';
-		if (resolved != null)
-			return resolved;
 		this.resolved = new Operator(name.trim().intern());
 		return this.resolved;
 	}
@@ -130,7 +130,7 @@ public class Opdef extends DNode {
 				continue;
 			}
 			else if (arg instanceof OpArgOPER) {
-				sb.append(' ').append(arg.symbol.sname).append(' ');
+				sb.append(' ').append(arg.text).append(' ');
 				continue;
 			}
 		}
@@ -146,7 +146,7 @@ public class Opdef extends DNode {
 	}
 
 	public Symbol resolveMethod(ENode expr) {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		ENode[] args = expr.getEArgs();
 		ResInfo info = new ResInfo(expr, this.sname, ResInfo.noStatic).match(Method.class);
 		Type[] tps = new Type[args.length-1];
@@ -295,27 +295,30 @@ public final class OpArgNODE extends OpArgument {
 public final class OpArgOPER extends OpArgument {
 
 	@AttrXMLDumpInfo(attr=true, name="symbol")
-	@nodeAttr public Symbol			symbol;
+	@nodeAttr public String				text;
 
 	@AttrXMLDumpInfo(attr=true, name="as-node")
 	@nodeAttr public String				as_node;
 
-	public String getText() { return symbol.sname; }
-
 	public OpArgOPER() {
-		this.symbol = new Symbol();
-		this.symbol.setUUID("");
 	}
 
-	public String toString() { "OPER "+symbol.sname }
+	public String toString() { "OPER "+text }
 
-	public String toOpName() { this.symbol.sname }
+	public String toOpName() { text }
 
 	public final COpArgOPER compile() {
 		Class clazz = null;
 		if (as_node != null && as_node.length() > 0)
 			clazz = Class.forName(as_node);
-		return new COpArgOPER(this, symbol.sname, clazz);
+		return new COpArgOPER(this, text, clazz);
+	}
+
+	@getter public String get$text() {
+		return text;
+	}
+	@setter public void set$text(String op) {
+		this.text = op.intern();
 	}
 }
 

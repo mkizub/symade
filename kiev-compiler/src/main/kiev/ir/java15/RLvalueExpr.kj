@@ -132,7 +132,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 					vf = new Field(this.ident,var.getType(),ACC_PUBLIC);
 					ctx_tdecl.members.add(vf);
 					vf.setNeedProxy(true);
-					vf.init = new Copier().copyFull((ENode)this);
+					vf.init = new Copier(getContext()).copyFull((ENode)this);
 				}
 			}
 		}

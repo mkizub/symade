@@ -3,6 +3,7 @@ package kiev.dump.xml;
 import kiev.vlang.Env;
 import kiev.vlang.ENode;
 import kiev.vlang.types.AType;
+import kiev.vtree.ANodeContext;
 import kiev.vtree.INode;
 import kiev.vtree.ScalarAttrSlot;
 
@@ -15,8 +16,8 @@ final class DelayedTypeInfo {
 		this.attr = attr;
 		this.signature = signature;
 	}
-	public void applay(Env env) {
-		AType tp = AType.fromSignature(env,signature,false);
+	public void applay(ANodeContext context) {
+		AType tp = AType.fromSignature(context,signature,false);
 		if (tp != null) {
 			attr.set(node,tp);
 		} else {

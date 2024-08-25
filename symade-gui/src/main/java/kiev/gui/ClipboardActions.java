@@ -13,6 +13,7 @@ package kiev.gui;
 
 import java.util.Enumeration;
 
+import kiev.vtree.ANodeContext;
 import kiev.vtree.AttrSlot;
 import kiev.vtree.ASpaceAttrSlot;
 import kiev.vtree.Copier;
@@ -23,10 +24,10 @@ import kiev.vtree.ScalarAttrSlot;
  * The Clipboard Actions and Action Factories.
  */
 public class ClipboardActions {
-	
+
 	/** Disable instance creation. */
 	private ClipboardActions(){}
-	
+
 	/**
 	 * Paste Here Factory. Paste before selected element.
 	 */
@@ -49,10 +50,10 @@ public class ClipboardActions {
 	}
 
 	/**
-	 * Paste Prev Factory. Paste before the selected element. 
+	 * Paste Prev Factory. Paste before the selected element.
 	 */
 	public static final class PastePrevFactory implements UIActionFactory {
-		
+
 		public String getDescr() { return "Paste an element at previous position"; }
 		public boolean isForPopupMenu() { return true; }
 		public UIAction getAction(UIActionViewContext context) {
@@ -71,7 +72,7 @@ public class ClipboardActions {
 	}
 
 	/**
-	 * Paste Next Factory. Paste after the selected element. 
+	 * Paste Next Factory. Paste after the selected element.
 	 */
 	public static final class PasteNextFactory implements UIActionFactory {
 		public String getDescr() { return "Paste an element at next position"; }
@@ -95,22 +96,22 @@ public class ClipboardActions {
 	 * Paste Element Here action.
 	 */
 	public static final class PasteElemHere implements UIAction {
-		
+
 		/** Paste node. */
 		private final INode paste_node;
-		
+
 		/** The editor. */
 		private final Editor editor;
-		
+
 		/** Into node. */
 		private final INode into_node;
-		
+
 		/** The attributes slot. */
 		private final AttrSlot attr_slot;
-		
+
 		/** The index in the space slot. */
 		private final int index;
-		
+
 		/**
 		 * The constructor.
 		 * @param paste_node the paste node
@@ -125,18 +126,20 @@ public class ClipboardActions {
 			this.attr_slot = attr_slot;
 			this.index = idx;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIAction#run()
 		 */
 		public void exec() {
 			INode paste_node = this.paste_node;
-			editor.getWindow().startTransaction(editor, "Action:PasteElemHere");
+			IWindow wnd = editor.getWindow();
+			ANodeContext context = wnd.getEditorThreadGroup().semantic_context;
+			wnd.startTransaction(editor, "Action:PasteElemHere");
 			try {
 				if (attr_slot != null) {
 					// insert
 					if (paste_node.isAttachedBy(attr_slot))
-						paste_node = new Copier().copyFull(paste_node);
+						paste_node = new Copier(context).copyFull(paste_node);
 					if (attr_slot instanceof ASpaceAttrSlot) {
 						into_node.insVal(attr_slot, index, paste_node);
 					}
@@ -147,7 +150,7 @@ public class ClipboardActions {
 				else if (into_node != null) {
 					// replace
 					if (paste_node.isAttached())
-						paste_node = new Copier().copyFull(paste_node);
+						paste_node = new Copier(context).copyFull(paste_node);
 					INode parent = into_node.parent();
 					AttrSlot pslot = into_node.pslot();
 					if (pslot instanceof ASpaceAttrSlot) {
@@ -164,7 +167,7 @@ public class ClipboardActions {
 					}
 				}
 			} finally {
-				editor.getWindow().stopTransaction(false);
+				wnd.stopTransaction(false);
 			}
 			editor.formatAndPaint(true);
 		}
@@ -174,32 +177,32 @@ public class ClipboardActions {
 	 * Paste element next. Paste after the selected element action.
 	 */
 	public static final class PasteElemNext implements UIAction {
-		
+
 		/**
 		 * The paste node.
 		 */
 		private final INode paste_node;
-		
+
 		/**
 		 * The editor.
 		 */
 		private final Editor editor;
-		
+
 		/**
 		 * The parent node into which to paste.
 		 */
 		private final INode parent;
-		
+
 		/**
 		 * The slot to paste.
 		 */
 		private final AttrSlot attr_slot;
-		
+
 		/**
 		 * The index to paste at.
 		 */
 		private final int index;
-		
+
 		/**
 		 * The constructor.
 		 * @param paste_node the paste node
@@ -212,16 +215,18 @@ public class ClipboardActions {
 			this.attr_slot = attr_slot;
 			this.index = index;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see kiev.gui.UIAction#exec()
 		 */
 		public void exec() {
 			INode paste_node = this.paste_node;
-			editor.getWindow().startTransaction(editor, "Action:PasteElemNext");
+			IWindow wnd = editor.getWindow();
+			ANodeContext context = wnd.getEditorThreadGroup().semantic_context;
+			wnd.startTransaction(editor, "Action:PasteElemNext");
 			try {
 				if (paste_node.isAttachedBy(attr_slot))
-					paste_node = new Copier().copyFull(paste_node);
+					paste_node = new Copier(context).copyFull(paste_node);
 				if (attr_slot instanceof ASpaceAttrSlot) {
 					int idx = index;
 					int length = 0;
@@ -235,7 +240,7 @@ public class ClipboardActions {
 					parent.insVal(attr_slot, idx, paste_node);
 				}
 			} finally {
-				editor.getWindow().stopTransaction(false);
+				wnd.stopTransaction(false);
 			}
 			editor.formatAndPaint(true);
 		}

@@ -95,7 +95,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				break;
 			}
 			if (!ctor_found) {
-				Constructor ctor = new Constructor(ACC_PUBLIC);
+				Constructor ctor = new Constructor(getContext(), ACC_PUBLIC);
 				ctor.params.append(new LVar(clazz.pos,nameImpl,view_of.getType(),Var.VAR_LOCAL,ACC_FINAL|ACC_SYNTHETIC));
 				ctor.body = new Block(clazz.pos);
 				clazz.members.add(ctor);
@@ -112,7 +112,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", clazz.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl(getContext(),"$cast", clazz.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				if (clazz.isAbstract()) {
 					cast.setAbstract(true);
@@ -132,7 +132,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("$cast", view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+				Method cast = new MethodImpl(getContext(),"$cast", view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				clazz.addMethod(cast);
 				if (!clazz.isInterface()) {
@@ -148,7 +148,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl("makeView", clazz.getType(), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl(getContext(),"makeView", clazz.getType(), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				cast.params.add(new LVar(0,"obj",view_of.getType(),Var.VAR_LOCAL,ACC_FINAL));
 				cast.body = new Block();
@@ -251,7 +251,7 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 				clazz.super_types.insert(0, new TypeRef(this.env.getTypeEnv().tpObject));
 			clazz.members.append(~impl);
 
-			CopyContext cc = new Copier();
+			CopyContext cc = new Copier(getContext());
 			foreach (ASTNode dn; clazz.members) {
 				if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 					Method cm = (Method)dn;

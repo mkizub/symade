@@ -102,7 +102,7 @@ public final class JEnv implements BEndEnv {
 	}
 	public Struct getClsStringBuffer() {
 		if (this.clazzStringBuffer == null)
-			this.clazzStringBuffer = (Struct)this.env.loadTypeDecl("java·lang·StringBuilder", true);
+			this.clazzStringBuffer = (Struct)this.env.loadTypeDecl("java·lang·StringBuilder", true, this.env.getEnvContext());
 		return this.clazzStringBuffer;
 	}
 	public Method getMthStringBufferToString() {
@@ -117,11 +117,11 @@ public final class JEnv implements BEndEnv {
 	}
 
 
-	public boolean existsTypeDecl(String qname) {
-		if (qname == "") return true;
+	public boolean existsTypeDecl(String qname, ANodeContext context) {
+		if (qname.isEmpty()) return true;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return false;
-		DNode dn = env.resolveGlobalDNode(qname);
+		DNode dn = env.resolveGlobalDNode(qname, context);
 		if (dn instanceof TypeDecl)
 			return true;
 		// Check if not loaded
@@ -141,35 +141,35 @@ public final class JEnv implements BEndEnv {
 		return data;
 	}
 
-	public DNode loadDecl(ClazzName name) {
+	public DNode loadDecl(ClazzName name, ANodeContext context) {
 		if (name.name.length() == 0) return this.env.root;
 		// Check class is already loaded
 		String qname = name.name.toString().replace('.','·');
 		if (classHashOfFails.get(qname) != null) return null;
-		DNode cl = this.env.resolveGlobalDNode(qname);
+		DNode cl = this.env.resolveGlobalDNode(qname, context);
 		// Load if not loaded or not resolved
 		if (cl == null)
-			cl = actuallyLoadDecl(name);
+			cl = actuallyLoadDecl(name, context);
 		else if (cl instanceof TypeDecl && cl.isTypeDeclNotLoaded())
-			cl = actuallyLoadDecl(name);
+			cl = actuallyLoadDecl(name, context);
 		if (cl == null)
 			classHashOfFails.put(qname);
 		return cl;
 	}
 
-	public DNode loadAnyDecl(String qname) {
+	public DNode loadAnyDecl(String qname, ANodeContext context) {
 		if (qname.length() == 0)
 			return env.root;
 		// Check class is already loaded
-		DNode dn = env.resolveGlobalDNode(qname);
+		DNode dn = env.resolveGlobalDNode(qname, context);
 		// Load if not loaded or not resolved
 		if (dn == null)
-			dn = actuallyLoadDecl(qname);
+			dn = actuallyLoadDecl(qname, context);
 		else if (dn instanceof TypeDecl && dn.isTypeDeclNotLoaded()) {
 			if (dn instanceof Struct)
-				dn = actuallyLoadDecl((Struct)dn);
+				dn = actuallyLoadDecl((Struct)dn, context);
 			else
-				dn = actuallyLoadDecl(dn.qname());
+				dn = actuallyLoadDecl(dn.qname(), context);
 		}
 		if (dn == null)
 			classHashOfFails.put(qname);
@@ -177,47 +177,57 @@ public final class JEnv implements BEndEnv {
 	}
 
 	/** Actually load class from specified file and dir */
-	public DNode actuallyLoadDecl(String qname) {
+	public DNode actuallyLoadDecl(String qname, ANodeContext context) {
 		if (classHashOfFails.get(qname) != null)
 			return null;
 		int p = qname.lastIndexOf('·');
 		if (p < 0)
-			return actuallyLoadDecl(ClazzName.fromToplevelName(this,qname));
+			return actuallyLoadDecl(ClazzName.fromToplevelName(this,qname), context);
 		String pname = qname.substring(0,p);
-		DNode dn = this.loadAnyDecl(pname);
+		DNode dn = this.loadAnyDecl(pname, context);
 		if (dn == null)
 			throw new RuntimeException("Cannot find class/package "+pname.replace('·','.'));
 		// maybe an inner class is already loaded by outer class
-		DNode cl = this.env.resolveGlobalDNode(qname);
+		DNode cl = this.env.resolveGlobalDNode(qname, context);
 		if (cl != null && !cl.isTypeDeclNotLoaded())
 			return cl;
-		dn = actuallyLoadDecl(ClazzName.fromOuterAndName(dn, qname.substring(p+1)));
+		dn = actuallyLoadDecl(ClazzName.fromOuterAndName(dn, qname.substring(p+1)), context);
 		if (dn == null)
 			classHashOfFails.put(qname);
 		return dn;
 	}
 
 	/** Actually load class from specified file and dir */
-	public Struct actuallyLoadDecl(Struct cl) {
+	public Struct actuallyLoadDecl(Struct cl, ANodeContext context) {
 		String bc_name = cl.bytecode_name;
 		if (bc_name != null)
-			return (Struct)actuallyLoadDecl(ClazzName.fromBytecodeName(this,bc_name));
+			return (Struct)actuallyLoadDecl(ClazzName.fromBytecodeName(this,bc_name), context);
 		if (cl.sname == null)
 			throw new RuntimeException("Anonymouse class cannot be loaded from bytecode");
 		if (cl.parent() instanceof KievPackage)
-			return (Struct)actuallyLoadDecl(ClazzName.fromOuterAndName((KievPackage)cl.parent(), cl.sname));
+			return (Struct)actuallyLoadDecl(ClazzName.fromOuterAndName((KievPackage)cl.parent(), cl.sname), context);
 		else
-			return (Struct)actuallyLoadDecl(ClazzName.fromOuterAndName(Env.ctxTDecl(cl), cl.sname));
+			return (Struct)actuallyLoadDecl(ClazzName.fromOuterAndName(Env.ctxTDecl(cl), cl.sname), context);
 	}
 
 	/** Actually load class from specified file and dir */
-	public DNode actuallyLoadDecl(ClazzName name) {
+	public DNode actuallyLoadDecl(ClazzName name, ANodeContext context) {
 		// Ensure the parent package/outer class is loaded
-		DNode pkg = loadDecl(ClazzName.fromBytecodeName(this,name.package_bytecode_name()));
+		DNode pkg = loadDecl(ClazzName.fromBytecodeName(this,name.package_bytecode_name()), context);
 		if (pkg == null)
 			pkg = this.env.newPackage(name.package_name().toString().replace('.','·'));
 		if (pkg.isTypeDeclNotLoaded())
-			pkg = loadDecl(ClazzName.fromBytecodeName(this,((JStruct)pkg).bname()));
+			pkg = loadDecl(ClazzName.fromBytecodeName(this,name.package_bytecode_name()), context);
+
+		{
+			int p = name.name.lastIndexOf('.');
+			if (p > 0) {
+				String outer_name = name.name.substring(0,p);
+				DNode dn = env.resolveGlobalDNode(outer_name.replace('.','·'), context);
+				if (dn != null)
+					pkg = dn;
+			}
+		}
 
 		long curr_time = 0L, diff_time = 0L;
 		diff_time = curr_time = System.currentTimeMillis();
@@ -228,7 +238,15 @@ public final class JEnv implements BEndEnv {
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,0,7).equals("<btree>")) {
 			env.reportDebug().log("Parsing BTD data for clazz {}", name);
-			INode[] roots = DumpFactory.getBinDumper().loadFromBinFile(env, null, null, true, data);
+			INode[] roots = null;
+			EnvThreadGroup thrg = (EnvThreadGroup)Thread.currentThread().getThreadGroup();
+			ANodeContext savedContext = thrg.semantic_context;
+			thrg.semantic_context = this.env.getEnvContext();
+			try {
+				roots = DumpFactory.getBinDumper().loadFromBinFile(env, null, null, true, data);
+			} finally {
+				thrg.semantic_context = savedContext;
+			}
 			if (roots != null) {
 				foreach (INode root; roots) {
 					if (root instanceof CompilationUnit) {
@@ -240,7 +258,7 @@ public final class JEnv implements BEndEnv {
 					env.runProcessorsOn((ASTNode)root.asANode());
 				}
 			}
-			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
+			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'), context);
 		}
 		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
 			env.reportDebug().log("Parsing .class data for clazz {}", name);
@@ -261,11 +279,11 @@ public final class JEnv implements BEndEnv {
 					env.runProcessorsOn((ASTNode)root.asANode());
 				}
 			}
-			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
+			td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'), context);
 		}
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)
-				td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'));
+				td = this.env.resolveGlobalDNode(name.name.toString().replace('.','·'), context);
 			if (td == null || td.isTypeDeclNotLoaded())
 				td = new Bytecoder(this,(Struct)td,clazz,null).readClazz(name, pkg);
 		}

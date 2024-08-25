@@ -48,12 +48,17 @@ public class SymbElemPrinter extends ElemPrinter<SymbElem> {
 		}
 		if (tav.tag == Signature.TAG_SYMB_REF) {
 			se.target = (SymbElem)tav.val;
-			out.printf("%sTARGET: %4x\n", ind(), se.target.id);
+			out.printf("%sTARGET: #%4x\n", ind(), se.target.id);
 			return true;
 		}
 		if (tav.tag == Signature.TAG_NODE_REF) {
 			se.target = (NodeElem)tav.val;
-			out.printf("%sOWNER : %4x\n", ind(), se.target.id);
+			out.printf("%sOWNER : #%4x\n", ind(), se.target.id);
+			return true;
+		}
+		if (tav.tag == Signature.TAG_NULL) {
+			se.target = null;
+			out.printf("%sOWNER : none\n", ind());
 			return true;
 		}
 		return false;

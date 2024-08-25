@@ -34,7 +34,7 @@ final class InitEnvironmentTask implements Runnable {
 			env.InitializeEnv(processor, benv_factory);
 			loadProject(env);
 			processor.initializeCompilerPlugins(env);
-			fe_thrg.semantic_context = new SemanticContext(env.getEnvContext());
+			fe_thrg.semantic_context = env.getEnvContext(); //new SemanticContext(env.getEnvContext());
 			fe_thrg.syntax_context = fe_thrg.semantic_context;
 
 		} catch (Throwable t) {
@@ -130,7 +130,9 @@ final class DumpProjectTask extends XMLDumpFilter implements Runnable {
 			return !node.is_project_file;
 		if (node instanceof DirUnit)
 			return !node.hasProjectFiles();
-		return super.ignoreNode(parent, attr, node);
+		if (node instanceof Project)
+			return false;
+		return true;
 	}
 }
 
@@ -263,7 +265,7 @@ final class ParseSourceFileTask implements Callable<String> {
 			Compiler.reportProgress(theEnv, "Parsed  file  ", cpi.fname, diff_time);
 			System.out.flush();
 		} catch (Exception e) {
-			cpi.fu.reportError().cause(e).log();
+			theEnv.reportError().at(cpi.fu).cause(e).log();
 		} finally {
 			wth.current_file = null;
 		}

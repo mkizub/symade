@@ -39,3 +39,21 @@
 - fix java primitive values boxing/unboxing
 - implement pragmas and automatic extensions enabling if used in code and not disabled
 - cast of Foo[] to Foo... (varargs) not always works (Collections.addAll(HashSet<String>, String[]))
+- KievPackage must keep only symbols, not DNode-s
+- think about multiple tdecl in MetaType (when Struct is copied by API copy)
+- new ITreeWalker(true) {} does not generate super(true)
+- make getter/setter for field 'int foo' to be 'int foo()' and 'void foo(int)'
+  - this will allow to use getters and setters from java code
+  - add platform-specific getter/setter methods detection and generation (for java, generate 'final int getFoo()' if not exists)
+- add operator ! instanceof, add java's decl 'foo() instanceof Y y'
+- improve type inference to avoid casts as much as possible
+  - implement Wildcard's in/out meta-types Type<? extends Foo> and/or Type<out Foo> and/or Type<Foo+>/Type<Foo->/Type<*>
+  - support diamond types new Foo<>() and/or new Foo<*>()
+  - also add null-pointer inference (using Type? for possible nulls, and Type& )
+  - case null for pizza-case, records in switch like pizza case classes 
+- tdecl in MetaType must be a field, not resolved each time, because MetaType is a 'compiled' version of TypeDecl
+- BTD (bin tree dump) does not store node references
+- XML dump must match BTD
+- unify @DumpInfo for nodes for XML and BTD, check includeInDump in BTD, etc. 
+- ANode copy/copyTo & CopyContext/Copier must be changed to tree projection from one language to another (or the same for copy)
+  - remove RNode views, use copy of API nodes

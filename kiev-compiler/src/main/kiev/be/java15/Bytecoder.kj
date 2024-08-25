@@ -24,12 +24,14 @@ import static kiev.be.java15.Instr.*;
 public class Bytecoder implements JConstants {
 	public final JEnv							jenv;
 	public final boolean						traceRead;
+	public final EnvContext						envContext;
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
 
 	public Bytecoder(JEnv jenv, Struct cl, kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		this.jenv = jenv;
+		this.envContext = jenv.env.getEnvContext();
 		this.cl = cl;
 		this.bcclazz = bcclazz;
 		this.constPool = constPool;
@@ -37,16 +39,26 @@ public class Bytecoder implements JConstants {
 		this.traceRead = processor.traceBytecodeRead;
 	}
 
+	public Struct readClazz(ClazzName clname, DNode outer) {
+		EnvThreadGroup thrg = (EnvThreadGroup)Thread.currentThread().getThreadGroup();
+		ANodeContext savedContext = thrg.semantic_context;
+		thrg.semantic_context = this.envContext;
+		try {
+			return readClazzInner(clname, outer);
+		} finally {
+			thrg.semantic_context = savedContext;
+		}
+	}
 	/** Reads class from DataInputStream
 	 */
-	public Struct readClazz(ClazzName clname, DNode outer) {
+	private Struct readClazzInner(ClazzName clname, DNode outer) {
 		jenv.env.reportDebug().log("Loading class {}", clname.name);
 		assert (outer instanceof KievPackage || outer instanceof Struct);
 
 		if (!bcclazz.getClazzName().toString().equals(clname.bytecode_name))
 			throw new RuntimeException("Expected to load class "+clname.bytecode_name+" but class "+bcclazz.getClazzName()+" found");
 
-		Struct variant = new JavaClass();
+		Struct variant;
 		if ((bcclazz.flags & ACC_ANNOTATION) == ACC_ANNOTATION)
 			variant = new JavaAnnotation();
 		else if ((bcclazz.flags & ACC_ENUM) == ACC_ENUM)
@@ -58,7 +70,11 @@ public class Bytecoder implements JConstants {
 			String tail = clname.bytecode_name.substring(((ComplexTypeDecl)outer).qname().length());
 			if (tail.length() > 1 && tail.charAt(0) >= '0' && tail.charAt(0) >= '9')
 				variant = new JavaAnonymouseClass();
+			else
+				variant = new JavaClass();
 		}
+		else
+			variant = new JavaClass();
 		Symbol cl_sym;
 		if (outer.symbol.isGlobalSymbol())
 			cl_sym = outer.symbol.makeGlobalSubSymbol(clname.src_name.toString());
@@ -117,7 +133,7 @@ public class Bytecoder implements JConstants {
 				st = (CompaundType)Signature.getTypeOfClazzCP(this.jenv,new StringScanner(cl_super_name));
 			}
 			cl.super_types.append(new TypeRef(st));
-			if (this.jenv.env.loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
+			if (this.jenv.env.loadTypeDecl(st.meta_type.tdecl_symbol.qname(), true, this.jenv.env.getEnvContext()).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
 		}
 
@@ -131,7 +147,7 @@ public class Bytecoder implements JConstants {
 			} else {
 				interf = (CompaundType)Signature.getTypeOfClazzCP(this.jenv,new StringScanner(interfs[i].toString()));
 			}
-			if (this.jenv.env.loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
+			if (this.jenv.env.loadTypeDecl(interf.meta_type.tdecl_symbol.qname(), true, this.jenv.env.getEnvContext()).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.tdecl.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");
@@ -221,19 +237,19 @@ public class Bytecoder implements JConstants {
 		{
 			int m_flags = bcm.flags;
 			String m_name = bcm.getName(bcclazz).toString();
-			String m_type_java = bcm.getSignature(bcclazz).toString();
-			String m_type = m_type_java;
+			String m_type = bcm.getSignature(bcclazz).toString();
 			boolean isEnumCtor = false;
 
 			if (m_name.equals(nameInit) || m_name.equals(nameClassInit)) {
-				m = new Constructor(m_flags);
+				m = new Constructor(envContext,m_flags);
 				if (cl.isEnum())
 					isEnumCtor = true;
 			}
 			else
-				m = new MethodImpl(m_name.toString(),this.jenv.vtypes.tpVoid,m_flags);
+				m = new MethodImpl(envContext,m_name.toString(),this.jenv.vtypes.tpVoid,m_flags);
 			m.is_interface_only = true;
 			cl.members.append(m);
+			jenv.env.reportDebug().log("read method "+m_name+m_type+" with flags 0x"+Integer.toHexString(m_flags));
 
 			CallType mtype;
 			if (bcm.getMethodSignature(bcclazz) != null) {
@@ -281,7 +297,6 @@ public class Bytecoder implements JConstants {
 					m.conditions.add(wbc);
 			}
 		}
-		jenv.env.reportDebug().log("read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 
 		UserMeta aliases = (UserMeta)m.getMeta("kiev·stdlib·meta·alias");
 		if (aliases != null) {
@@ -614,7 +629,7 @@ public class Bytecoder implements JConstants {
 			return mv;
 		case 'e': {
 			Type tp = Signature.getType(this.jenv,((kiev.bytecode.Annotation.element_value_enum_const)eval).getSignature(clazz).toString());
-			tp.meta_type.tdecl.checkResolved();
+			tp.meta_type.checkResolved();
 			String fname = ((kiev.bytecode.Annotation.element_value_enum_const)eval).getFieldName(clazz).toString();
 			Field f = tp.meta_type.tdecl.resolveField(fname.toString().intern());
 			mv = new MetaValueScalar(nm, new SFldExpr(0,f));

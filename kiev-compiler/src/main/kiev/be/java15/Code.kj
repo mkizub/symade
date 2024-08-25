@@ -196,6 +196,12 @@ public final class Code implements JConstants {
 		return;
 	};
 
+	private String printStackState(String hdr) {
+		StringBuffer sb = new StringBuffer(hdr);
+		for(int i=0; i < top; i++) sb.append(' ').append(stack[i]);
+		return sb.toString();
+	}
+
 	/** Push value into stack.
 		Automatically calculates max_stack value
 		Automatically expand stack array if needed
@@ -206,11 +212,7 @@ public final class Code implements JConstants {
 		else max_stack_top++;
 		stack[top++] = jtype;
 		if( max_stack < max_stack_top ) max_stack = max_stack_top;
-		if (traceInstrGen) {
-			StringBuffer sb = new StringBuffer(); sb.append("stack is:");
-			for(int i=0; i < top; i++) sb.append(' ').append(stack[i]);
-			System.out.println(sb.toString());
-		}
+		trace(traceInstrGen,printStackState("\t\tpushed stk:"));
 	}
 
 	/** Pop value from stack.
@@ -221,11 +223,7 @@ public final class Code implements JConstants {
 		else max_stack_top--;
 		stack[top+1] = null;
 		if( top < 0 ) throw new RuntimeException("Top of stack is < 0 for pc="+pc);
-		if (traceInstrGen) {
-			StringBuffer sb = new StringBuffer(); sb.append("stack is:");
-			for(int i=0; i < top; i++) sb.append(' ').append(stack[i]);
-			System.out.println(sb.toString());
-		}
+		trace(traceInstrGen,printStackState("\t\tpopped stk:"));
 	}
 
 	public JType stack_at(int i) {

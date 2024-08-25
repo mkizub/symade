@@ -66,7 +66,7 @@ public final class PizzaFE_Pass3 extends TransfProcessor {
 			return;
 		PizzaCase pcase = (PizzaCase)clazz;
 		// Create constructor for pizza case
-		Constructor init = new Constructor(ACC_PUBLIC|ACC_SYNTHETIC);
+		Constructor init = new Constructor(getContext(), ACC_PUBLIC|ACC_SYNTHETIC);
 		foreach (Field f; pcase.case_fields)
 			init.params.add(new LVar(f.pos,f.sname,f.getType(),Var.VAR_LOCAL,0));
 		init.body = new Block(clazz.pos);
@@ -131,7 +131,7 @@ public final class PizzaME_PreGenerate extends BackendProcessor {
 				nameCaseTag,tenv.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
 			ftag.init = new ConstIntExpr(pcase.tag);
 
-			Method gettag = new MethodImpl(nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method gettag = new MethodImpl(getContext(),nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);
 			gettag.block.stats.add(
 				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
@@ -140,7 +140,7 @@ public final class PizzaME_PreGenerate extends BackendProcessor {
 		}
 		else if( clazz.isHasCases() ) {
 			// Add get$case$tag() method to itself
-			Method gettag = new MethodImpl(Constants.nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method gettag = new MethodImpl(getContext(),Constants.nameGetCaseTag,tenv.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);
 			gettag.block.stats.add(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))

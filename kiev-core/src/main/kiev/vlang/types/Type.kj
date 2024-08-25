@@ -318,6 +318,8 @@ public final class XType extends Type {
 
 	public String toString() {
 		TypeDecl tdecl = this.tdecl;
+		if (tdecl == null)
+			return meta_type.tdecl_symbol.qname().replace('·','.');
 		StringBuffer str = new StringBuffer();
 		str.append(tdecl.qname().replace('·','.'));
 		int n = tdecl.args.length;
@@ -480,7 +482,7 @@ public final class ASTNodeType extends Type {
 		else if (tp == tenv.tpLong)      clazz = Long.TYPE;
 		else if (tp == tenv.tpFloat)     clazz = Float.TYPE;
 		else if (tp == tenv.tpDouble)    clazz = Double.TYPE;
-		else if (tp instanceof CompaundType) clazz = Class.forName(tp.tdecl.qname().replace('·','.'));
+		else if (tp instanceof CompaundType) clazz = Class.forName(tp.meta_type.tdecl_symbol.qname().replace('·','.'));
 		else
 			throw new RuntimeException("Can't make ASTNodeType for type "+tp);
 		return new ASTNodeType(ASTNodeMetaType.instance(tenv,clazz));
@@ -559,7 +561,7 @@ public final class ArgType extends Type {
 
 	public ArgType(ArgMetaType meta_type) {
 		super(meta_type, TemplateTVarSet.emptySet, makeFlags(meta_type));
-		this.name = meta_type.tdecl.sname;
+		this.name = meta_type.tdecl_symbol.sname;
 	}
 
 	public MNode getMeta(String name)				{ return definer.getMeta(name); }
@@ -660,6 +662,9 @@ public final class CompaundType extends Type {
 	public Type getErasedType()					{ return tdecl.getType(); }
 
 	public String toString() {
+		TypeDecl tdecl = this.tdecl;
+		if (tdecl == null)
+			return meta_type.tdecl_symbol.qname().replace('·','.');
 		StringBuffer str = new StringBuffer();
 		str.append(tdecl.toString());
 		int n = tdecl.args.length;

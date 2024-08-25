@@ -22,7 +22,7 @@ public class ConstElemPrinter extends ElemPrinter<ConstElem> {
 		ConstElem ce = (ConstElem)el;
 		if (tav.tag == Signature.TAG_TYPE_SIGN) {
 			TypeElem te = (TypeElem)tav.val;
-			out.printf("%sVTYPE: %4x (%s)\n", ind(), te.id, te.name);
+			out.printf("%sVTYPE: #%4x (%s)\n", ind(), te.id, te.name);
 			ce.vtype = te;
 			return true;
 		}

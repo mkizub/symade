@@ -32,7 +32,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		// Create default initializer, if not exists
 		foreach (Constructor ctor; this.clazz.members; !ctor.isStatic())
 			return true;
-		Constructor init = new Constructor(ACC_PUBLIC);
+		Constructor init = new Constructor(getContext(), ACC_PUBLIC);
 		for(int i=0; i < args.length; i++) {
 			resolveENode(args[i],null);
 			init.params.append(new LVar(pos,"arg$"+i,args[i].getType(),Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
@@ -255,7 +255,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		clazz = getEnv().newStruct(null,null,0,new JavaAnonymouseClass(),null);
 		if (ctx_method==null || ctx_method.isStatic())
 			clazz.setStatic(true);
-		if (getEnv().loadTypeDecl(tenv.tpClosure.getStruct()).isTypeDeclNotLoaded())
+		if (getEnv().loadTypeDecl(tenv.tpClosure.getStruct(), getContext()).isTypeDeclNotLoaded())
 			throw new RuntimeException("Core class "+tenv.tpClosure.getStruct()+" not found");
 		clazz.super_types.insert(0, new TypeRef(tenv.tpClosure));
 		getEnv().runProcessorsOn(clazz);
@@ -280,13 +280,13 @@ public final view RNewClosure of NewClosure extends RENode {
 			} else {
 				call_name = ("call_"+ret).intern();
 			}
-			Method md = new MethodImpl(call_name, ret, ACC_PUBLIC);
+			Method md = new MethodImpl(getContext(), call_name, ret, ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
 			clazz.members.add(md);
 		} else {
 			String call_name = "call_rule";
-			RuleMethod md = new RuleMethod(call_name,ACC_PUBLIC);
+			RuleMethod md = new RuleMethod(getContext(), call_name, ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
 			clazz.members.add(md);
@@ -295,7 +295,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		Var[] params = ((NewClosure)this).params.delToArray();
 		for(int i=0; i < params.length; i++) {
 			Var v = params[i];
-			((NewClosure)this).params += new Copier().copyFull(v);
+			((NewClosure)this).params += new Copier(getContext()).copyFull(v);
 			ENode val = new ContainerAccessExpr(pos,
 				new IFldExpr(pos,new ThisExpr(pos),tenv.tpClosure.getStruct().resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));

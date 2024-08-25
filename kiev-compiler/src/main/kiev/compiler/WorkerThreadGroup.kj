@@ -48,8 +48,8 @@ public abstract class WorkerThreadGroup extends EnvThreadGroup implements Thread
 	public INode[]						roots;
 	public ArrayList<Callable<String>>	tasks;
 
-	public WorkerThreadGroup(WorkerThreadGroup parent, String name, int jobThreads) {
-		super(parent, name);
+	public WorkerThreadGroup(Env env, WorkerThreadGroup parent, String name, int jobThreads) {
+		super(env, parent, name);
 		try {
 			setDaemon(true);
 			setMaxPriority((Thread.NORM_PRIORITY+Thread.MIN_PRIORITY)/2);

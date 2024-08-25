@@ -578,7 +578,7 @@ public abstract class AbstractNodeProjector implements NodeProjector, ChangeList
 					else
 						dst_proj.project(ProjectAction.SET_SCALAR,new ProjectionValue(src_slot.name,roval),-1);
 					if (src_slot.isChild() && value.value != null) {
-						CopyContext cc = new Copier();
+						CopyContext cc = new Copier(npfactory.getProjectionContext());
 						INode node = npfactory.putbackNode((INode)value.value);
 						node.asANode().copyTo(roval, cc);
 						cc.updateLinks();

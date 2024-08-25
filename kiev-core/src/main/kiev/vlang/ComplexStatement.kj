@@ -185,7 +185,7 @@ public class SwitchStat extends Block {
 				sw.stats += st;
 			this.replaceWithNodeReWalk(sw,parent,slot);
 		}
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		if (tp.getAutoCastTo(tenv.tpInt) ≢ tenv.tpInt)
 			reportError().log("Type of switch selector must be int");
 	}

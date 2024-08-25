@@ -218,7 +218,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 
 		// create constructor method
 		{
-			Constructor init = new Constructor(ACC_PROTECTED);
+			Constructor init = new Constructor(getContext(), ACC_PROTECTED);
 			init.body = new Block(pos);
 			init.params.add(new LVar(pos,"hash",tenv.tpInt,Var.VAR_LOCAL,ACC_FINAL));
 			init.params.add(new LVar(pos,"clazz",tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
@@ -258,7 +258,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 
 			// create method to get typeinfo field
 			if (getTypeInfoArgs().length == 0) {
-				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,tenv.tpTypeInfo,ACC_PUBLIC));
+				Method tim = getStruct().addMethod(new MethodImpl(getContext(),nameGetTypeInfo,tenv.tpTypeInfo,ACC_PUBLIC));
 				// add a static field and return it
 				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.getType(),ACC_PUBLIC|ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC));
 				tif.init = new TypeInfoExpr(0, new TypeRef(getStruct().getType()));
@@ -270,7 +270,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				// already have a super-type which has getTypeInfo()
 			}
 			else {
-				Method tim = getStruct().addMethod(new MethodImpl(nameGetTypeInfo,tenv.tpTypeInfo,ACC_PUBLIC));
+				Method tim = getStruct().addMethod(new MethodImpl(getContext(),nameGetTypeInfo,tenv.tpTypeInfo,ACC_PUBLIC));
 				// add a members field and return it
 				Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.getType(),ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 				tim.body = new Block(pos,new ENode[]{
@@ -289,7 +289,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// }
 		Method mNewTypeInfo = null;
 		{
-			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.getType(), ACC_STATIC|ACC_PUBLIC);
+			Method init = new MethodImpl(getContext(),"newTypeInfo", typeinfo_clazz.getType(), ACC_STATIC|ACC_PUBLIC);
 			init.params.add(new LVar(pos,"clazz",tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
 			init.params.add(new LVar(pos,"args",new ArrayType(tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
 			init.body = new Block(pos);
@@ -332,7 +332,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return newTypeInfo(<clazz>, <args>);
 		// }
 		{
-			Method init = new MethodImpl("newTypeInfo", typeinfo_clazz.getType(), ACC_STATIC|ACC_PUBLIC);
+			Method init = new MethodImpl(getContext(),"newTypeInfo", typeinfo_clazz.getType(), ACC_STATIC|ACC_PUBLIC);
 			init.body = new Block(pos);
 			CallExpr ce = new CallExpr(pos, null, mNewTypeInfo, ENode.emptyArray);
 			ce.args += new TypeClassExpr(pos, new TypeRef(getStruct().getType()));
@@ -351,7 +351,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		//  return new TypeInfo[]{typeinfo$A,typeinfo$B,...);
 		// }
 		{
-			Method mrr = new MethodImpl("getTopArgs", new ArrayType(tenv.tpTypeInfo), ACC_PUBLIC);
+			Method mrr = new MethodImpl(getContext(),"getTopArgs", new ArrayType(tenv.tpTypeInfo), ACC_PUBLIC);
 			typeinfo_clazz.addMethod(mrr);
 			mrr.body = new Block(pos);
 			Vector<ENode> targs = new Vector<ENode>();
@@ -372,7 +372,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method meq = new MethodImpl("eq", tenv.tpBoolean, ACC_PUBLIC);
+			Method meq = new MethodImpl(getContext(),"eq", tenv.tpBoolean, ACC_PUBLIC);
 			meq.params.add(new LVar(pos,"clazz",tenv.tpClass,Var.VAR_LOCAL,ACC_FINAL));
 			meq.params.add(new LVar(pos,"args",new VarargType(tenv.tpTypeInfo),Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(meq);
@@ -410,7 +410,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method misa = new MethodImpl("$assignableFrom", tenv.tpBoolean, ACC_PUBLIC);
+			Method misa = new MethodImpl(getContext(),"$assignableFrom", tenv.tpBoolean, ACC_PUBLIC);
 			misa.params.add(new LVar(pos,"ti",tenv.tpTypeInfo,Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
@@ -458,7 +458,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 		// 	return this.$assignableFrom(((Outer)obj).$typeinfo));
 		// }
 		{
-			Method misa = new MethodImpl("$instanceof", tenv.tpBoolean, ACC_PUBLIC);
+			Method misa = new MethodImpl(getContext(),"$instanceof", tenv.tpBoolean, ACC_PUBLIC);
 			misa.params.add(new LVar(pos,"obj",tenv.tpObject,Var.VAR_LOCAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
@@ -506,7 +506,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				break;
 			}
 			if (ctor_exists) {
-				Method mni = new MethodImpl("newInstance", tenv.tpObject, ACC_PUBLIC);
+				Method mni = new MethodImpl(getContext(),"newInstance", tenv.tpObject, ACC_PUBLIC);
 				typeinfo_clazz.addMethod(mni);
 				mni.body = new Block(pos);
 				NewExpr ne = new NewExpr(pos,new TypeRef(this.getType()),ENode.emptyArray);
@@ -537,7 +537,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			}
 			if( !init_found ) {
 				trace(getEnv().debugResolve,"Constructor not found in class "+this);
-				Constructor init = new Constructor(ACC_PUBLIC);
+				Constructor init = new Constructor(getContext(), ACC_PUBLIC);
 				init.setAutoGenerated(true);
 				if (this.getStruct() != tenv.tpClosure.getStruct() && this.instanceOf(tenv.tpClosure.getStruct())) {
 					if (isStructInner() && !isStatic()) {
@@ -725,7 +725,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 
 	private static void autoCopyMixinMembers(@forward RStruct self, Vector<VTableEntry> vtable) {
 		// make master-copy context
-		CopyContext cc = new Copier();
+		CopyContext cc = new Copier(self.getContext());
 		Struct me = (Struct)self;
 		Vector<DNode> to_copy = new Vector<DNode>();
 		// copy non-abstract fields
@@ -817,8 +817,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = new Copier().copyFull(mo);
+			Method bridge = (Method)mo.getClass().newInstance();
+			bridge.symbol.sname = mo.sname;
 			bridge.type_ret = new TypeRef(vte.etype.ret());
+			bridge.nodeflags = mo.nodeflags;
+			for (Var p : mo.params)
+				bridge.params += new LVar(0,p.sname,p.getType(),Var.VAR_LOCAL,p.nodeflags);
 			if (!bridge.isMethodBridge())
 				bridge.setMeta(new MetaBridge());
 			if (!bridge.isSynthetic())
@@ -1006,7 +1010,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			defaults = makeImpl(self);
 		if (defaults == null)
 			return;
-		CopyContext cc = new Copier();
+		CopyContext cc = new Copier(self.getContext());
 		foreach (DNode dn; to_copy) {
 			if (dn instanceof Constructor) {
 				if (dn.isStatic())
@@ -1050,12 +1054,12 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 			{
 				// create dispatch method
 				if (m.isRuleMethod())
-					mmm = new RuleMethod(m.sname, m.getFlags() | ACC_SYNTHETIC);
+					mmm = new RuleMethod(getContext(), m.sname, m.getFlags() | ACC_SYNTHETIC);
 				else
-					mmm = new MethodImpl(m.sname, m.mtype.ret(), m.getFlags() | ACC_SYNTHETIC);
+					mmm = new MethodImpl(getContext(), m.sname, m.mtype.ret(), m.getFlags() | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				{
-					CopyContext cc = new Copier();
+					CopyContext cc = new Copier(self.getContext());
 					mmm.targs.copyFrom(m.targs, cc);
 					cc.updateLinks();
 				}
@@ -1398,7 +1402,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					}
 				}
 				ENode init_stat = new ExprStat(f.init.pos,
-						new AssignExpr(f.init.pos, new SFldExpr(f.pos,f),new Copier().copyFull(f.init))
+						new AssignExpr(f.init.pos, new SFldExpr(f.pos,f),new Copier(getContext()).copyFull(f.init))
 					);
 				agi.class_init.block.stats.insert(agi.static_pos++,init_stat);
 				getEnv().runProcessorsOn(init_stat);
@@ -1412,7 +1416,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 				}
 				ENode init_stat;
 				init_stat = new ExprStat(f.init.pos,
-						new AssignExpr(f.init.pos, new IFldExpr(f.pos,new ThisExpr(0),f), new Copier().copyFull(f.init))
+						new AssignExpr(f.init.pos, new IFldExpr(f.pos,new ThisExpr(0),f), new Copier(getContext()).copyFull(f.init))
 					);
 				agi.instance_init.block.stats.add(init_stat);
 				init_stat.setAutoGenerated(true);
@@ -1581,7 +1585,7 @@ public final view RStruct of Struct extends RComplexTypeDecl {
 					break;
 				}
 				if( agi.instance_init != null && m.isNeedFieldInits() ) {
-					initbody.stats.insert(p,new Copier().copyFull(agi.instance_init.body));
+					initbody.stats.insert(p,new Copier(getContext()).copyFull(agi.instance_init.body));
 					getEnv().runProcessorsOn(initbody.stats[p]);
 					RStruct.runResolveOn(initbody.stats[p]);
 					p++;

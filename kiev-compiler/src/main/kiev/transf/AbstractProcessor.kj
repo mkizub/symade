@@ -35,7 +35,7 @@ public abstract class AbstractProcessor implements Constants {
 
 	public PluginNodeProcessor getProcessor() { (PluginNodeProcessor)env.getNodeProcessor() }
 
-	public ANodeContext getContext() { ((WorkerThread)Thread.currentThread()).semantic_context }
+	public ANodeContext getContext() { ((WorkerThreadGroup)Thread.currentThread().getThreadGroup()).semantic_context }
 
 	public static String getPropS(String base, String name, String dflt) {
 		String fname = base+"."+name;

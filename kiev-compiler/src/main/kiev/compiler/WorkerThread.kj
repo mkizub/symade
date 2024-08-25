@@ -34,12 +34,7 @@ public final class WorkerThread extends EnvThread {
 
 	public void run() {
 		WorkerThreadGroup wthg = (WorkerThreadGroup)getThreadGroup();
-		if (this.theEnv != wthg.theEnv)
-			this.theEnv = wthg.theEnv;
-		if (this.semantic_context != wthg.semantic_context)
-			this.semantic_context = wthg.semantic_context;
-		if (this.bend_context != wthg.bend_context)
-			this.bend_context = wthg.bend_context;
+		assert (this.theEnv == wthg.theEnv);
 		Transaction tr = wthg.transaction;
 		try {
 			super.run();

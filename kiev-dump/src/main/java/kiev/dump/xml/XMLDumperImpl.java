@@ -49,12 +49,12 @@ public final class XMLDumperImpl implements XMLDumper {
 	public XMLNamespaceMap collectNamespaces(XMLDumpFilter filter, INode[] nodes) {
 		final Vector<Language> langs = new Vector<Language>();
 		for (INode node : nodes) {
-			node.walkTree(null, null, new ITreeWalker() {
+			node.walkTree(node.parent(), node.pslot(), new ITreeWalker() {
 				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
-					//if (!checkIncludeNodeInDump(String dump, INode node))
-					//	return false;
-					//if (!checkIncludeAttrInDump(String dump, INode node, AttrSlot attr)
-					//	return false;
+					if (filter.ignoreAttr(parent, slot))
+						return false;
+					if (filter.ignoreNode(parent, slot, n))
+						return false;
 					Language lng = n.asANode().getCompilerLang();
 					if (lng != null && !langs.contains(lng))
 						langs.add(lng);
@@ -150,7 +150,7 @@ public final class XMLDumperImpl implements XMLDumper {
 		else
 			XMLDumpFactory.parse(new BufferedInputStream(new FileInputStream(f)), deserializer);
 		for (DelayedTypeInfo dti : deserializer.delayed_types)
-			dti.applay(env);
+			dti.applay(nodeContext);
 		return new INode[]{(INode)deserializer.result};
 	}
 
@@ -161,7 +161,7 @@ public final class XMLDumperImpl implements XMLDumper {
 			deserializer.is_import = true;
 		XMLDumpFactory.parse(reader, deserializer);
 		for (DelayedTypeInfo dti : deserializer.delayed_types)
-			dti.applay(env);
+			dti.applay(nodeContext);
 		return new INode[]{(INode)deserializer.result};
 	}
 
@@ -180,7 +180,7 @@ public final class XMLDumperImpl implements XMLDumper {
 		deserializer.is_interface_only = true;
 		XMLDumpFactory.parse(new ByteArrayInputStream(data), deserializer);
 		for (DelayedTypeInfo dti : deserializer.delayed_types)
-			dti.applay(env);
+			dti.applay(nodeContext);
 		return new INode[]{(INode)deserializer.result};
 	}
 
@@ -190,7 +190,7 @@ public final class XMLDumperImpl implements XMLDumper {
 		deserializer.is_import = true;
 		XMLDumpFactory.parse(new BufferedInputStream(new FileInputStream(f)), deserializer);
 		for (DelayedTypeInfo dti : deserializer.delayed_types)
-			dti.applay(env);
+			dti.applay(nodeContext);
 		return new INode[]{(INode)deserializer.result};
 	}
 	public INode[] deserializeFromXmlData(Env env, ANodeContext nodeContext, byte[] data) throws Exception {
@@ -199,7 +199,7 @@ public final class XMLDumperImpl implements XMLDumper {
 		deserializer.is_import = true;
 		XMLDumpFactory.parse(new ByteArrayInputStream(data), deserializer);
 		for (DelayedTypeInfo dti : deserializer.delayed_types)
-			dti.applay(env);
+			dti.applay(nodeContext);
 		return new INode[]{(INode)deserializer.result};
 	}
 

@@ -251,8 +251,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public Method(ANodeContext context) {
 		super(context);
 	}
-	public Method(String name, TypeRef type_ret, int flags) {
-		this.sname = name;
+	public Method(ANodeContext context, String name, TypeRef type_ret, int flags) {
+		super(context, new Symbol(name));
 		this.type_ret = type_ret;
 		this.nodeflags |= flags;
 	}
@@ -405,7 +405,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public void normilizeExpr(ENode expr, Symbol sym, INode parent, AttrSlot slot) {
-		assert (sym.dnode == this);
+		assert (sym.deref<Method>(getContext()) == this);
 		if (body instanceof CoreExpr) {
 			CoreOperation cop = ((CoreExpr)body).getCoreOperation();
 			if (cop != null)
@@ -726,7 +726,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, getEnv().tenv.tpTypeInfo, Var.PARAM_METHOD_TYPEINFO, ACC_FINAL|ACC_SYNTHETIC);
+				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, getTypeEnv().tpTypeInfo, Var.PARAM_METHOD_TYPEINFO, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}
@@ -804,7 +804,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), type_ret.getType(), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(getContext(), Env.ctxTDecl(this).allocateAccessName(), type_ret.getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		CallExpr ce;
 		if (isStatic()) {
@@ -815,7 +815,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			ce = new CallExpr(pos, new LVarExpr(pos,self), this, ENode.emptyArray);
 		}
 		foreach (Var v; this.params) {
-			v = new Copier().copyFull(v);
+			v = new Copier(getContext()).copyFull(v);
 			m.params += v;
 			ce.args += new LVarExpr(pos,v);
 		}
@@ -854,14 +854,14 @@ public final class MethodImpl extends Method {
 
 	public MethodImpl() {}
 
-	public MethodImpl(String name, Type ret) {
-		this(name, new TypeRef(ret),0);
+	public MethodImpl(ANodeContext context, String name, Type ret) {
+		this(context, name, new TypeRef(ret),0);
 	}
-	public MethodImpl(String name, Type ret, int fl) {
-		this(name, new TypeRef(ret),fl);
+	public MethodImpl(ANodeContext context, String name, Type ret, int fl) {
+		this(context, name, new TypeRef(ret),fl);
 	}
-	public MethodImpl(String name, TypeRef type_ret, int fl) {
-		super(name, type_ret, fl);
+	public MethodImpl(ANodeContext context, String name, TypeRef type_ret, int fl) {
+		super(context, name, type_ret, fl);
 	}
 }
 
@@ -874,8 +874,12 @@ public final class MethodGetter extends Method {
 
 	public MethodGetter() {}
 
-	public MethodGetter(Field f) {
-		super(nameGet+f.sname, new TypeRef(f.getType()), f.getJavaFlags());
+	public MethodGetter(ANodeContext context) {
+		super(context);
+	}
+
+	public MethodGetter(ANodeContext context, Field f) {
+		super(context, nameGet+f.sname, new TypeRef(f.getType()), f.getJavaFlags());
 		this.pos = f.pos;
 	}
 }
@@ -889,8 +893,12 @@ public final class MethodSetter extends Method {
 
 	public MethodSetter() {}
 
-	public MethodSetter(Field f) {
-		super(nameSet+f.sname, new TypeRef(f.getTypeEnv().tpVoid), f.getJavaFlags());
+	public MethodSetter(ANodeContext context) {
+		super(context);
+	}
+
+	public MethodSetter(ANodeContext context, Field f) {
+		super(context, nameSet+f.sname, new TypeRef(f.getTypeEnv().tpVoid), f.getJavaFlags());
 		this.pos = f.pos;
 		this.params += new LVar(f.pos,"value",f.getType(),Var.VAR_LOCAL,0);
 	}
@@ -909,8 +917,8 @@ public final class Constructor extends Method {
 
 	public Constructor() {}
 
-	public Constructor(int fl) {
-		super(null, new TypeRef(Env.getEnv().tenv.tpVoid), fl);
+	public Constructor(ANodeContext context, int fl) {
+		super(context, null, new TypeRef(context.typeEnv.tpVoid), fl);
 	}
 
 	public void callbackChanged(NodeChangeInfo info) {
@@ -926,11 +934,11 @@ public final class Constructor extends Method {
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		MethodImpl m = new MethodImpl(Env.ctxTDecl(this).allocateAccessName(), Env.ctxTDecl(this).getType(), ACC_STATIC | ACC_SYNTHETIC);
+		MethodImpl m = new MethodImpl(getContext(), Env.ctxTDecl(this).allocateAccessName(), Env.ctxTDecl(this).getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		NewExpr ne = new NewExpr(pos, new TypeRef(Env.ctxTDecl(this).getType()), ENode.emptyArray);
 		foreach (Var v; this.params) {
-			v = new Copier().copyFull(v);
+			v = new Copier(getContext()).copyFull(v);
 			m.params += v;
 			ne.args += new LVarExpr(pos,v);
 		}

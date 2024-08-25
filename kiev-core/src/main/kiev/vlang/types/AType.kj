@@ -154,7 +154,7 @@ public abstract class AType extends TVSet {
 	}
 
 	public final void checkResolved() {
-		meta_type.tdecl.checkResolved();
+		meta_type.checkResolved();
 		this.bindings();
 	}
 
@@ -418,12 +418,13 @@ public abstract class AType extends TVSet {
 			return sign.substring(0, p);
 		return sign;
 	}
-	public static Type fromSignature(Env env, String sign, boolean full) {
+	public static Type fromSignature(ANodeContext context, String sign, boolean full) {
 		StringTokenizer st = new StringTokenizer(sign,"=,()",true);
 		String[] sep = {""};
-		return fromSignature(env,st,sep,full);
+		return fromSignature(context,st,sep,full);
 	}
-	private static Type fromSignature(Env env, StringTokenizer st, String[] sep, boolean full) {
+	private static Type fromSignature(ANodeContext context, StringTokenizer st, String[] sep, boolean full) {
+		final Env env = context.theEnv;
 		String name = st.nextToken();
 		String uuid = null;
 		int p = name.indexOf('‣');
@@ -436,27 +437,27 @@ public abstract class AType extends TVSet {
 		TypeDecl tdecl = null;
 		if (uuid != null) {
 			Symbol sym = env.getSymbolByUUID(uuid);
-			if (sym != null && sym.dnode instanceof TypeDecl)
-				tdecl = (TypeDecl)sym.dnode;
+			if (sym != null && sym.deref<DNode>(context) instanceof TypeDecl)
+				tdecl = sym.deref<TypeDecl>(context);
 			//if (tdecl != null)
 			//	assert (tdecl.qname().equals(name));
 		}
 		if (tdecl == null) {
-			tdecl = (TypeDecl)env.resolveGlobalDNode(name);
+			tdecl = (TypeDecl)env.resolveGlobalDNode(name, context);
 		}
 		if (tdecl == null) {
 			// pre-load all top-level classes, to find an inner class
 			int p = name.indexOf('·');
 			while (p > 0) {
 				String pnm = name.substring(0,p);
-				if (env.existsTypeDecl(pnm))
-					env.loadAnyDecl(pnm);
+				if (env.existsTypeDecl(pnm, context))
+					env.loadAnyDecl(pnm, context);
 				p = name.indexOf('·', p+1);
 			}
-			if (env.existsTypeDecl(name))
-				tdecl = env.loadTypeDecl(name,false);
+			if (env.existsTypeDecl(name, context))
+				tdecl = env.loadTypeDecl(name,false,context);
 			if (tdecl == null) {
-				System.out.println("Warning: Cannot find TypeDecl "+name);
+				context.theEnv.reportWarning().log("Cannot find TypeDecl {}", name);
 				tdecl = env.tenv.tpVoid.meta_type.tdecl;
 			}
 		}
@@ -475,7 +476,7 @@ public abstract class AType extends TVSet {
 			String aname = st.nextToken();
 			sep[0] = st.nextToken();
 			assert (sep[0].equals("="));
-			Type tp = fromSignature(env,st,sep,full);
+			Type tp = fromSignature(context,st,sep,full);
 			ArgType a = null;
 			foreach (TVar t; template_vars; t.var.name.equals(aname)) {
 				a = t.var;
@@ -484,7 +485,7 @@ public abstract class AType extends TVSet {
 			if (a != null)
 				set.append(a, tp);
 			else
-				System.out.println("Warning: Cannot find var "+aname+" in type "+tdecl);
+				context.theEnv.reportWarning().log("Cannot find var '{}' in type '{}'", aname, tdecl);
 			assert (sep[0].equals(",")||sep[0].equals(")"));
 		}
 		return tdecl.getMetaType().make(set);

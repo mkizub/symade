@@ -18,6 +18,9 @@ import syntax kiev.Syntax;
  *
  */
 
+/**
+ * A node interface, usually an ANode
+ */
 public interface INode {
 	public static final INode[] emptyArray = new INode[0];
 
@@ -50,6 +53,30 @@ public interface INode {
 	public boolean isAttachedBy(AttrSlot attr_slot);
 
 	public void walkTree(INode parent, AttrSlot slot, ITreeWalker walker);
+	public boolean includeInDump(String dump, AttrSlot attr, Object val);
+}
+
+/**
+ * A declaration node, usually an DNode.
+ *
+ * Declaration is linked to Symbol, and Symbol has links to declarations.
+ */
+public interface IDecl extends INode {
+	@virtual @abstract @access(ro)
+	public Symbol			symbol;
+
+	public Symbol getDeclSymbol();
+}
+
+/**
+ * An expression node, usually an ENode.
+ *
+ * Each expression has operation, arguments and result type.
+ * Operation may be unresolved (in this case 'ident' String is used),
+ * or resolved (in this case it has a 'symbol' Symbol). Resolved operation
+ * symbol has a linked method (maybe CoreMethod for predefined operators).
+ */
+public interface IExpr extends INode {
 }
 
 public enum ChangeType {
@@ -993,7 +1020,7 @@ public abstract class ANode implements INode {
 
 	public final void walkTree(INode parent, AttrSlot slot, ITreeWalker walker) {
 		if (walker.pre_exec(this, parent, slot)) {
-			foreach (AttrSlot attr; this.values(); attr.isChild()) {
+			foreach (AttrSlot attr; this.values(); attr.isChildOrSymbol()) {
 				if (attr instanceof ASpaceAttrSlot)
 					walker.visitINodeSpace(attr.getArray(this), this, attr);
 				else if (attr instanceof ScalarAttrSlot)
@@ -1037,7 +1064,7 @@ public abstract class ANode implements INode {
 		if (this instanceof TypeInfoInterface)
 			obj = (INode)((TypeInfoInterface)this).getTypeInfoField().newInstance();
 		else
-			obj = (INode)getEnv().newNode(this.getClass(), cc.toNodeContext());
+			obj = (INode)getEnv().newNode(this.getClass(), cc.toNodeContext);
 		cc.addCopyInfo(this,obj);
 		return this.copyTo(obj, cc);
 	}
@@ -1408,7 +1435,7 @@ public abstract class ASTNode extends ANode implements Constants {
 		return false;
 	}
 
-	public Type getType() { return getEnv().tenv.tpVoid; }
+	public Type getType() { return getTypeEnv().tpVoid; }
 
 	public ASTNode() {
 		super(Env.getSemanticContext());

@@ -34,6 +34,7 @@ public view RNode of ASTNode extends Object implements Constants {
 	public final ANode parent();
 	public final Env getEnv();
 	public final StdTypes getTypeEnv();
+	public final ANodeContext getContext();
 	public final LoggingEventBuilder reportError();
 	public final LoggingEventBuilder reportWarning();
 	public AttrSlot[] values();

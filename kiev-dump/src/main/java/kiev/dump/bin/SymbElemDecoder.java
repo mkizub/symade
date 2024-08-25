@@ -50,6 +50,10 @@ public class SymbElemDecoder extends ElemDecoder<SymbElem> {
 			se.target = (NodeElem)tav.val;
 			return true;
 		}
+		if (tav.tag == Signature.TAG_NULL) {
+			se.target = null;
+			return true;
+		}
 		return false;
 	}
 }

@@ -35,6 +35,7 @@ public final class BinDumpReader {
 	final HashMap<Integer,CommentElem> commentTable = new HashMap<Integer,CommentElem>();
 	final HashMap<Integer,Elem> addrTable = new HashMap<Integer,Elem>();
 	final ArrayList<DelayedTypeInfo> delayed_types = new ArrayList<DelayedTypeInfo>();
+	final ArrayList<NodeRef> delayed_nrefs = new ArrayList<NodeRef>();
 
 	public BinDumpReader(Env env, String dir, DecoderFactory dfactory, boolean api, InputStream inp) throws DumpException, IOException {
 		this.env = env;
@@ -86,7 +87,7 @@ public final class BinDumpReader {
 		checkHeader();
 		readDocument();
 		for (DelayedTypeInfo dti : delayed_types)
-			dti.applay(env);
+			dti.applay(env.getEnvContext());
 		return roots;
 	}
 
@@ -313,7 +314,11 @@ public final class BinDumpReader {
 			if (far)		id = buf.getInt();
 			else			id = buf.getShort() & 0xFFFF;
 			NodeElem ne = nodeTable.get(Integer.valueOf(id));
-			return new TagAndVal(pos, tag, ne);
+			if (ne == null) {
+				return new TagAndVal(pos, tag, new NodeRef(id));
+			} else {
+				return new TagAndVal(pos, tag, ne);
+			}
 		}
 		if (tag == Signature.TAG_ROOT_SIGN) {
 			int id;

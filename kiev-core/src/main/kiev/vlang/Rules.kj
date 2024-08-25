@@ -36,8 +36,8 @@ public class RuleMethod extends Method {
 
 	public RuleMethod() {}
 
-	public RuleMethod(String name, int fl) {
-		super(name, new TypeRef(Env.getEnv().tenv.tpRule), fl);
+	public RuleMethod(ANodeContext context, String name, int fl) {
+		super(context, name, new TypeRef(context.typeEnv.tpRule), fl);
 	}
 
 	public int allocNewBase(int n) {
@@ -216,7 +216,7 @@ public abstract class ASTRuleNode extends ENode {
 	public abstract void rnResolve(INode parent, AttrSlot pslot);
 	public abstract void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back);
 
-	public abstract void testGenerate(SpacePtr space, Struct frame);
+	public abstract void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame);
 }
 
 
@@ -241,9 +241,9 @@ public final class RuleBlock extends ENode {
 			rnode.rnResolve(this,nodeattr$rnode);
     }
 
-	public void generateRuleBlock(RuleMethod rule_method) {
+	public void generateRuleBlock(Rewriter rewriter, RuleMethod rule_method) {
 		try {
-			Block rn = (Block)RewriteContext.rewriteByMacro(getEnv(), "kiev·ir·RuleTemplates", "mkRuleBlock", rule_method.max_depth-1, rule_method.localvars);
+			Block rn = (Block)rewriter.rewrite("mkRuleBlock", rule_method.max_depth-1, rule_method.localvars);
 			SwitchStat sw = null;
 			Struct frame = null;
 			foreach (ASTNode n; rn.stats) {
@@ -252,7 +252,7 @@ public final class RuleBlock extends ENode {
 				else if (n instanceof SwitchStat)
 					sw = (SwitchStat)n;
 			}
-			rnode.testGenerate(Env.getSpacePtr(sw, "stats"), frame);
+			rnode.testGenerate(rewriter, Env.getSpacePtr(sw, "stats"), frame);
 			this.replaceWithNode(rn,rule_method,RuleMethod.nodeattr$body);
 		} catch (Throwable t) {
 			reportError().cause(t).log();
@@ -284,9 +284,9 @@ public final class RuleOrExpr extends ASTRuleNode {
 		this.rules.addAll(rules);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i].testGenerate(space, frame);
+    		rules[i].testGenerate(rewriter, space, frame);
     	}
 	}
 
@@ -344,9 +344,9 @@ public final class RuleAndExpr extends ASTRuleNode {
 		this.rules.addAll(rules);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i].testGenerate(space, frame);
+    		rules[i].testGenerate(rewriter, space, frame);
     	}
 	}
 
@@ -354,7 +354,7 @@ public final class RuleAndExpr extends ASTRuleNode {
     	for(int i=0; i < rules.length; i++) {
     		rules[i].rnResolve(this,nodeattr$rules);
     	}
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
     	// combine simple boolean expressions
     	for(int i=0; i < (rules.length-1); i++) {
     		ASTRuleNode r1 = rules[i];
@@ -444,8 +444,8 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		depth = rmeth.push();
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(getEnv(), space, "kiev·ir·RuleTemplates", "mkRuleIstheExpr", this);
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
+		rewriter.rewrite(space, "mkRuleIstheExpr", this);
 	}
 }
 
@@ -486,7 +486,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public void rnResolve(INode parent, AttrSlot pslot) {}
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -536,8 +536,8 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		assert(rb instanceof RuleBlock);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(getEnv(), space, "kiev·ir·RuleTemplates", "mkRuleIsoneofExpr", this);
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
+		rewriter.rewrite(space, "mkRuleIsoneofExpr", this);
 		frame.members += new Field("$iter$"+iter_var,itype.getType(),0);
 	}
 }
@@ -563,8 +563,8 @@ public final class RuleCutExpr extends ASTRuleNode {
 		idx = ++rmeth.index;
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(getEnv(), space, "kiev·ir·RuleTemplates", "mkRuleCutExpr", this);
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
+		rewriter.rewrite(space, "mkRuleCutExpr", this);
 	}
 }
 
@@ -624,10 +624,10 @@ public final class RuleCallExpr extends ASTRuleNode {
 		assert(rb instanceof RuleBlock);
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
 		boolean is_super = (this.obj instanceof SuperExpr);
-		Block rn = (Block)RewriteContext.rewriteByMacro(getEnv(), space, "kiev·ir·RuleTemplates", "mkRuleCallExpr", this, is_super);
-		frame.members += new Field("$rc$frame$"+env_var,getEnv().tenv.tpRule,0);
+		Block rn = (Block)rewriter.rewrite(space, "mkRuleCallExpr", this, is_super);
+		frame.members += new Field("$rc$frame$"+env_var,getTypeEnv().tpRule,0);
 	}
 }
 
@@ -644,7 +644,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	}
 
 	public void rnResolve(INode parent, AttrSlot pslot) {
-		StdTypes tenv = getEnv().tenv;
+		StdTypes tenv = getTypeEnv();
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
 			if( e.func.mtype.ret() ≡ tenv.tpRule ) {
@@ -684,7 +684,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	public void rnResolve(INode parent, AttrSlot pslot) {
 		super.rnResolve(parent,pslot);
 		if (!isAttached()) return; // check we were replaced
-		if (!expr.getType().equals(getEnv().tenv.tpBoolean))
+		if (!expr.getType().equals(getTypeEnv().tpBoolean))
 			throw new CompilerException(expr,"Boolean expression is requared");
 	}
 
@@ -698,8 +698,8 @@ public final class RuleWhileExpr extends RuleExprBase {
 		depth = rmeth.push();
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(getEnv(), space, "kiev·ir·RuleTemplates", "mkRuleWhile", this, bt_expr != null);
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
+		rewriter.rewrite(space, "mkRuleWhile", this, bt_expr != null);
 	}
 }
 
@@ -728,7 +728,7 @@ public final class RuleExpr extends RuleExprBase {
 				throw new CompilerException(bt_expr,"Backtrace expression ignored for rule-call");
 			return;
 		}
-		if (bt_expr != null && expr.getType().equals(getEnv().tenv.tpBoolean))
+		if (bt_expr != null && expr.getType().equals(getTypeEnv().tpBoolean))
 			throw new CompilerException(bt_expr,"Backtrace expression in boolean rule");
 	}
 
@@ -744,8 +744,8 @@ public final class RuleExpr extends RuleExprBase {
 		}
 	}
 
-	public void testGenerate(SpacePtr space, Struct frame) {
-		RewriteContext.rewriteByMacro(getEnv(), space, "kiev·ir·RuleTemplates", "mkRuleExpr", this, bt_expr != null, expr.getType() ≡ getEnv().tenv.tpBoolean);
+	public void testGenerate(Rewriter rewriter, SpacePtr space, Struct frame) {
+		rewriter.rewrite(space, "mkRuleExpr", this, bt_expr != null, expr.getType() ≡ getTypeEnv().tpBoolean);
 	}
 }
 

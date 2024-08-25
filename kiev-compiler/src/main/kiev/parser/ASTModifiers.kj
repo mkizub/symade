@@ -19,31 +19,31 @@ import syntax kiev.Syntax;
 
 @unerasable
 public final class ASTModifiers extends Vector<MNode> {
-	
+
 	public ASTModifiers() {}
-	
+
 	public MNode add(MNode m)
 		operator "V += V"
 	{
 		super.append(m);
 		return m;
 	}
-	
+
 	public void moveToNode(DNode dn) {
 		foreach (MNode m; this)
 			dn.setMeta(m);
 	}
 	public void copyToNode(DNode dn) {
 		foreach (MNode m; this)
-			dn.setMeta(new Copier().copyFull(m));
+			dn.setMeta(new Copier(dn.getContext()).copyFull(m));
 	}
-	
+
 	public String getUUID() {
 		foreach (MetaUUID m; this)
 			return m.value;
 		return null;
 	}
-	
+
 	public boolean isGetter() {
 		foreach (MetaGetter m; this)
 			return true;

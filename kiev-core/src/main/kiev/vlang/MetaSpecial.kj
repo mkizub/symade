@@ -190,7 +190,7 @@ public final class MetaAccess extends ASTNode implements MNode {
 
 	public String qname() { return "kiev·stdlib·meta·access"; }
 
-	public JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)getEnv().resolveGlobalDNode(this.qname()); }
+	public JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)getEnv().resolveGlobalDNode(this.qname(), getContext()); }
 
 	public void resolve(Type reqType) {}
 	public void verify(INode parent, AttrSlot slot) {}
@@ -533,7 +533,7 @@ public abstract class MetaFlag extends ANode implements MNode {
 	public Language getCompilerLang() { return CoreLang; }
 	public String getCompilerNodeName() { return getClass().getSimpleName().intern(); }
 
-	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)getEnv().resolveGlobalDNode(this.qname()); }
+	public final JavaAnnotation getAnnotationDecl() { return (JavaAnnotation)getEnv().resolveGlobalDNode(this.qname(), getContext()); }
 
 	public void callbackChanged(NodeChangeInfo info) {
 		if (info.tree_change && info.slot.isSemantic()) {
