@@ -296,14 +296,14 @@ public final class Symbol extends ANode {
 	}
 
 	public Symbol() {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 	}
 	public Symbol(String sname) {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 		this.sname = sname;
 	}
 	public Symbol(long pos, String sname) {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 		this.pos = pos;
 		this.sname = sname;
 	}
@@ -371,11 +371,11 @@ public class Alias extends ANode {
 	public final Method⇑            symref;
 
 	public Alias() {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 		this.symbol = new Symbol();
 	}
 	public Alias(String sname, Method m) {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 		this.symbol = new Symbol(sname);
 		if (m != null)
 			this.symref.symbol = m.symbol;
@@ -463,7 +463,7 @@ public final class SymbolRef<D extends IDecl> extends ANode {
 	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
 
 	public SymbolRef() {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 	}
 
 	public SymbolRef(ANodeContext context) {

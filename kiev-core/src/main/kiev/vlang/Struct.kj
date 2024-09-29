@@ -27,6 +27,9 @@ public final class SymadeNode extends Struct {
 	@nodeAttr public NodeDecl		node_decl;
 
 	public SymadeNode() {}
+	public SymadeNode(ANodeContext context) {
+		super(context);
+	}
 
 	@getter public JavaClassMode get$class_mode() {
 		if (this.mflags_is_struct_interface)
@@ -64,6 +67,10 @@ public class JavaClass extends Struct {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
 
+	public JavaClass() {}
+	public JavaClass(ANodeContext context) {
+		super(context);
+	}
 	@getter public JavaClassMode get$class_mode() {
 		if (this.mflags_is_struct_interface)
 			return JavaClassMode.INTERFACE;
@@ -87,6 +94,13 @@ public final class JavaAnonymouseClass extends JavaClass {
 	@DataFlowDefinition(in="root()") private static class DFI {
 	@DataFlowDefinition(in="this:in", seq="false")	DNode[]		members;
 	}
+
+	public JavaAnonymouseClass() {}
+
+	public JavaAnonymouseClass(ANodeContext context) {
+		super(context);
+	}
+
 	@getter public JavaClassMode get$class_mode() {
 		return JavaClassMode.ANONYMOUSE;
 	}
@@ -108,6 +122,10 @@ public final class KievView extends Struct {
 	public KievView() {
 		this.mflags_is_virtual = true;
 	}
+	public KievView(ANodeContext context) {
+		super(context);
+		this.mflags_is_virtual = true;
+	}
 	public void cleanupOnReload() {
 		super.cleanupOnReload();
 		this.mflags_is_virtual = true;
@@ -127,6 +145,12 @@ public final class JavaAnnotation extends JavaClass {
 		this.mflags_is_struct_interface = true;
 		this.mflags_is_struct_annotation = true;
 	}
+	public JavaAnnotation(ANodeContext context) {
+		super(context);
+		this.mflags_is_struct_interface = true;
+		this.mflags_is_struct_annotation = true;
+	}
+
 	@getter public JavaClassMode get$class_mode() {
 		return JavaClassMode.ANNOTATION;
 	}
@@ -164,6 +188,10 @@ public final class PizzaCase extends Struct {
 	public int tag;
 
 	public PizzaCase() {}
+
+	public PizzaCase(ANodeContext context) {
+		super(context);
+	}
 
 	public Field[] getCaseFields() {
 		return this.case_fields;
@@ -206,6 +234,11 @@ public final class JavaEnum extends JavaClass {
 	@nodeAttr public		Field∅			enum_fields;
 
 	public JavaEnum() {
+		this.mflags_is_enum = true;
+	}
+
+	public JavaEnum(ANodeContext context) {
+		super(context);
 		this.mflags_is_enum = true;
 	}
 
@@ -395,8 +428,15 @@ public abstract class Struct extends ComplexTypeDecl {
 	public Struct() {
 		super(new Symbol());
 	}
+	public Struct(ANodeContext context) {
+		super(context, new Symbol());
+	}
 	public Struct(Symbol symbol, int flags) {
 		super(symbol);
+		this.nodeflags |= flags;
+	}
+	public Struct(ANodeContext context, Symbol symbol, int flags) {
+		super(context, symbol);
 		this.nodeflags |= flags;
 	}
 

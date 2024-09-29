@@ -109,8 +109,9 @@ public final class TypeNameRef extends TypeRef {
 		}
 		if !(scope instanceof TypeDecl)
 			throw new CompilerException(this,"Unresolved type "+this.ident);
-		this.symbol = scope.symbol;
-		return (TypeDecl)scope;
+		TypeDecl td = (TypeDecl) scope;
+		this.type_lnk = td.getType();
+		return td;
 	}
 
 	public AutoCompleteResult resolveAutoComplete(String name, AttrSlot slot) {

@@ -64,6 +64,10 @@ public abstract class WorkerThreadGroup extends EnvThreadGroup implements Thread
 		this.tasks = new ArrayList<Callable<String>>();
 	}
 
+	public void cleanRunInfo() {
+		processorRunInfoMap.clear();
+	}
+
 	public Thread newThread(Runnable r) {
 		String name = getName();
 		int cnt = ++threadCounter;

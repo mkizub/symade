@@ -199,8 +199,8 @@ public abstract class Configuration {
 		UIActionFactory af = null;
 		try {
 			Class<?> clazz = Class.forName(action.actionClass, false, getClass().getClassLoader());
-			for (Constructor<?> cr: clazz.getConstructors()){
-				Class<?>[] pt = cr.getParameterTypes();
+			for (Constructor cr: clazz.getConstructors()){
+				Class[] pt = cr.getParameterTypes();
 				if (pt.length == 2){
 					Object[] initargs = new Object[2];
 					initargs[0] = action.description;

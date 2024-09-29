@@ -536,6 +536,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.is_struct_fe_passed = true;
 	}
 
+	public TypeDecl(ANodeContext context, Symbol symbol) {
+		super(context, symbol);
+	}
+
 	public TypeDecl(Symbol symbol) {
 		super(symbol);
 	}
@@ -676,6 +680,10 @@ public abstract class ComplexTypeDecl extends TypeDecl implements GlobalDNodeCon
 
 
 	public ASTNode[] getContainerMembers() { this.members }
+
+	public ComplexTypeDecl(ANodeContext context, Symbol symbol) {
+		super(context, symbol);
+	}
 
 	public ComplexTypeDecl(Symbol symbol) {
 		super(symbol);
@@ -835,6 +843,9 @@ public final class MetaTypeDecl extends ComplexTypeDecl {
 	}
 	public MetaTypeDecl(Symbol symbol) {
 		super(symbol);
+	}
+	public MetaTypeDecl(ANodeContext context, Symbol symbol) {
+		super(context, symbol);
 	}
 
 	public MetaType getMetaType() {

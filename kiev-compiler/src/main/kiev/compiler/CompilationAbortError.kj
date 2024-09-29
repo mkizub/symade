@@ -11,7 +11,7 @@
 package kiev.compiler;
 import syntax kiev.Syntax;
 
-static class CompilationAbortError extends java.lang.Error {
-	CompilationAbortError() { super("Compilation terminated"); }
+public static class CompilationAbortError extends java.lang.Error {
+	public CompilationAbortError() { super("Compilation terminated"); }
 }
 

@@ -28,6 +28,11 @@ public abstract class Import extends SNode implements Constants {
 		this.name.qualified = true;
 	}
 
+	public Import(ANodeContext context) {
+		super(context);
+		this.name.qualified = true;
+	}
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "this") {
 			ANode p = parent();
@@ -79,6 +84,12 @@ public class ImportImpl extends Import implements ScopeOfNames {
 	@AttrXMLDumpInfo(attr=true, name="all")
 	@nodeAttr public boolean			star;
 
+	public ImportImpl() {}
+
+	public ImportImpl(ANodeContext context) {
+		super(context);
+	}
+
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
 		str.append(name);
@@ -115,6 +126,12 @@ public class ImportMethod extends Import implements Constants, ScopeOfMethods {
 
 	@nodeAttr public final Method⇑		method;
 	@nodeAttr public TypeRef∅			args;
+
+	public ImportMethod() {}
+
+	public ImportMethod(ANodeContext context) {
+		super(context);
+	}
 
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
@@ -169,6 +186,12 @@ public class ImportStatic extends Import implements ScopeOfNames, ScopeOfMethods
 	@AttrXMLDumpInfo(attr=true, name="all")
 	@nodeAttr public boolean			star;
 
+	public ImportStatic() {}
+
+	public ImportStatic(ANodeContext context) {
+		super(context);
+	}
+
 	public String toString() {
 		StringBuffer str = new StringBuffer("import static ");
 		str.append(name);
@@ -208,6 +231,12 @@ public class ImportStatic extends Import implements ScopeOfNames, ScopeOfMethods
 @ThisIsANode(lang=CoreLang)
 public class ImportOperators extends Import {
 
+	public ImportOperators() {}
+
+	public ImportOperators(ANodeContext context) {
+		super(context);
+	}
+
 	public String toString() {
 		StringBuffer str = new StringBuffer("import operators ");
 		str.append(name);
@@ -224,6 +253,11 @@ public class ImportSyntax extends SNode implements Constants, ScopeOfNames, Scop
 	@nodeAttr public final KievSyntax⇑		name;
 
 	public ImportSyntax() {
+		this.name.qualified = true;
+	}
+
+	public ImportSyntax(ANodeContext context) {
+		super(context);
 		this.name.qualified = true;
 	}
 
@@ -291,6 +325,12 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 	@abstract
 	@nodeData public String				op;
 
+	public TypeOpDef() {}
+
+	public TypeOpDef(ANodeContext context) {
+		super(context);
+	}
+
 	@getter public String get$op() {
 		String sname = this.sname;
 		if (sname == null || !sname.startsWith("T "))
@@ -303,8 +343,6 @@ public final class TypeOpDef extends DNode implements ScopeOfNames {
 		else
 			this.sname = "T "+val;
 	}
-
-	public TypeOpDef() {}
 
 	public Type getType() { return dtype.getType(); }
 

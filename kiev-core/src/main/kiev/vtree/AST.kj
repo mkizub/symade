@@ -1438,7 +1438,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public Type getType() { return getTypeEnv().tpVoid; }
 
 	public ASTNode() {
-		super(Env.getSemanticContext());
+		super(Env.getCurrentContext());
 	}
 	public ASTNode(ANodeContext context) {
 		super(context);
