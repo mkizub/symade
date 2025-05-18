@@ -1,0 +1,120 @@
+﻿/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.ir.java15;
+
+import syntax kiev.Syntax;
+
+import kiev.transf.PluginNodeProcessor;
+
+/**
+ * @author Maxim Kizub
+ *
+ */
+
+public class RFactory {
+
+	static RDispatcher makeViewDispatcher = new RDispatcher();
+
+	static class RDispatcher extends LogicLang.DispatcherC {
+		public Object applyToASTNode(ASTNode node, Object arg) { new RNode(node) }
+
+		public Object applyToENode(ENode node, Object arg) { new RENode(node) }
+		public Object applyToNopExpr(NopExpr node, Object arg) { new RNopExpr(node) }
+		public Object applyToArgExpr(ArgExpr node, Object arg) { new RArgExpr(node) }
+		public Object applyToTypeRef(TypeRef node, Object arg) { new RTypeRef(node) }
+		public Object applyToCoreExpr(CoreExpr node, Object arg) { new RCoreExpr(node) }
+		public Object applyToShadow(Shadow node, Object arg) { new RShadow(node) }
+		public Object applyToTypeClassExpr(TypeClassExpr node, Object arg) { new RTypeClassExpr(node) }
+		public Object applyToTypeInfoExpr(TypeInfoExpr node, Object arg) { new RTypeInfoExpr(node) }
+		public Object applyToAssertEnabledExpr(AssertEnabledExpr node, Object arg) { new RAssertEnabledExpr(node) }
+		public Object applyToAssignExpr(AssignExpr node, Object arg) { new RAssignExpr(node) }
+		public Object applyToModifyExpr(ModifyExpr node, Object arg) { new RModifyExpr(node) }
+		public Object applyToBinaryExpr(BinaryExpr node, Object arg) { new RBinaryExpr(node) }
+		public Object applyToUnaryExpr(UnaryExpr node, Object arg) { new RUnaryExpr(node) }
+		public Object applyToStringConcatExpr(StringConcatExpr node, Object arg) { new RStringConcatExpr(node) }
+		public Object applyToCommaExpr(CommaExpr node, Object arg) { new RCommaExpr(node) }
+		public Object applyToBlock(Block node, Object arg) { new RBlock(node) }
+		public Object applyToIncrementExpr(IncrementExpr node, Object arg) { new RIncrementExpr(node) }
+		public Object applyToConditionalExpr(ConditionalExpr node, Object arg) { new RConditionalExpr(node) }
+		public Object applyToCastExpr(CastExpr node, Object arg) { new RCastExpr(node) }
+		public Object applyToConstExpr(ConstExpr node, Object arg) { new RConstExpr(node) }
+		public Object applyToBoolExpr(BoolExpr node, Object arg) { new RBoolExpr(node) }
+		public Object applyToBinaryBooleanOrExpr(BinaryBooleanOrExpr node, Object arg) { new RBinaryBooleanOrExpr(node) }
+		public Object applyToBinaryBooleanAndExpr(BinaryBooleanAndExpr node, Object arg) { new RBinaryBooleanAndExpr(node) }
+		public Object applyToBinaryBoolExpr(BinaryBoolExpr node, Object arg) { new RBinaryBoolExpr(node) }
+		public Object applyToInstanceofExpr(InstanceofExpr node, Object arg) { new RInstanceofExpr(node) }
+		public Object applyToBooleanNotExpr(BooleanNotExpr node, Object arg) { new RBooleanNotExpr(node) }
+		public Object applyToCallExpr(CallExpr node, Object arg) { new RCallExpr(node) }
+		public Object applyToCtorCallExpr(CtorCallExpr node, Object arg) { new RCtorCallExpr(node) }
+		public Object applyToClosureCallExpr(ClosureCallExpr node, Object arg) { new RClosureCallExpr(node) }
+		public Object applyToLvalueExpr(LvalueExpr node, Object arg) { new RLvalueExpr(node) }
+		public Object applyToAccessExpr(AccessExpr node, Object arg) { new RAccessExpr(node) }
+		public Object applyToIFldExpr(IFldExpr node, Object arg) { new RIFldExpr(node) }
+		public Object applyToContainerAccessExpr(ContainerAccessExpr node, Object arg) { new RContainerAccessExpr(node) }
+		public Object applyToThisExpr(ThisExpr node, Object arg) { new RThisExpr(node) }
+		public Object applyToSuperExpr(SuperExpr node, Object arg) { new RSuperExpr(node) }
+		public Object applyToLVarExpr(LVarExpr node, Object arg) { new RLVarExpr(node) }
+		public Object applyToSFldExpr(SFldExpr node, Object arg) { new RSFldExpr(node) }
+		public Object applyToOuterThisAccessExpr(OuterThisAccessExpr node, Object arg) { new ROuterThisAccessExpr(node) }
+		public Object applyToReinterpExpr(ReinterpExpr node, Object arg) { new RReinterpExpr(node) }
+		public Object applyToNewExpr(NewExpr node, Object arg) { new RNewExpr(node) }
+		public Object applyToNewEnumExpr(NewEnumExpr node, Object arg) { new RNewEnumExpr(node) }
+		public Object applyToNewArrayExpr(NewArrayExpr node, Object arg) { new RNewArrayExpr(node) }
+		public Object applyToNewInitializedArrayExpr(NewInitializedArrayExpr node, Object arg) { new RNewInitializedArrayExpr(node) }
+		public Object applyToNewClosure(NewClosure node, Object arg) { new RNewClosure(node) }
+		public Object applyToSynchronizedStat(SynchronizedStat node, Object arg) { new RSynchronizedStat(node) }
+		public Object applyToWithStat(WithStat node, Object arg) { new RWithStat(node) }
+		public Object applyToLoopStat(LoopStat node, Object arg) { new RLoopStat(node) }
+		public Object applyToLabel(Label node, Object arg) { new RLabel(node) }
+		public Object applyToWhileStat(WhileStat node, Object arg) { new RWhileStat(node) }
+		public Object applyToDoWhileStat(DoWhileStat node, Object arg) { new RDoWhileStat(node) }
+		public Object applyToForStat(ForStat node, Object arg) { new RForStat(node) }
+		public Object applyToForEachStat(ForEachStat node, Object arg) { new RForEachStat(node) }
+		public Object applyToInlineMethodStat(InlineMethodStat node, Object arg) { new RInlineMethodStat(node) }
+		public Object applyToExprStat(ExprStat node, Object arg) { new RExprStat(node) }
+		public Object applyToReturnStat(ReturnStat node, Object arg) { new RReturnStat(node) }
+		public Object applyToThrowStat(ThrowStat node, Object arg) { new RThrowStat(node) }
+		public Object applyToIfElseStat(IfElseStat node, Object arg) { new RIfElseStat(node) }
+		public Object applyToCondStat(CondStat node, Object arg) { new RCondStat(node) }
+		public Object applyToLabeledStat(LabeledStat node, Object arg) { new RLabeledStat(node) }
+		public Object applyToBreakStat(BreakStat node, Object arg) { new RBreakStat(node) }
+		public Object applyToContinueStat(ContinueStat node, Object arg) { new RContinueStat(node) }
+		public Object applyToGotoStat(GotoStat node, Object arg) { new RGotoStat(node) }
+		public Object applyToGotoCaseStat(GotoCaseStat node, Object arg) { new RGotoCaseStat(node) }
+		public Object applyToCaseLabel(CaseLabel node, Object arg) { new RCaseLabel(node) }
+		public Object applyToSwitchStat(SwitchStat node, Object arg) { new RSwitchStat(node) }
+		public Object applyToSwitchEnumStat(SwitchEnumStat node, Object arg) { new RSwitchEnumStat(node) }
+		public Object applyToSwitchTypeStat(SwitchTypeStat node, Object arg) { new RSwitchTypeStat(node) }
+		public Object applyToMatchStat(MatchStat node, Object arg) { new RMatchStat(node) }
+		public Object applyToCatchInfo(CatchInfo node, Object arg) { new RCatchInfo(node) }
+		public Object applyToFinallyInfo(FinallyInfo node, Object arg) { new RFinallyInfo(node) }
+		public Object applyToTryStat(TryStat node, Object arg) { new RTryStat(node) }
+
+		public Object applyToDNode(DNode node, Object arg) { new RDNode(node) }
+		public Object applyToVar(Var node, Object arg) { new RVar(node) }
+		public Object applyToField(Field node, Object arg) { new RField(node) }
+		public Object applyToTypeDecl(TypeDecl node, Object arg) { new RTypeDecl(node) }
+		public Object applyToComplexTypeDecl(ComplexTypeDecl node, Object arg) { new RComplexTypeDecl(node) }
+		public Object applyToStruct(Struct node, Object arg) { new RStruct(node) }
+		public Object applyToMethod(Method node, Object arg) { new RMethod(node) }
+		public Object applyToConstructor(Constructor node, Object arg) { new RConstructor(node) }
+		public Object applyToInitializer(Initializer node, Object arg) { new RInitializer(node) }
+		public Object applyToWBCCondition(WBCCondition node, Object arg) { new RWBCCondition(node) }
+
+		public Object applyToRuleMethod(RuleMethod node, Object arg) { new RRuleMethod(node) }
+		public Object applyToRuleBlock(RuleBlock node, Object arg) { new RRuleBlock(node) }
+
+		public Object applyToSNode(SNode node, Object arg) { new RSNode(node) }
+		public Object applyToSyntaxScope(SyntaxScope node, Object arg) { new RSyntaxScope(node) }
+		public Object applyToFileUnit(FileUnit node, Object arg) { new RFileUnit(node) }
+		public Object applyToNameSpace(NameSpace node, Object arg) { new RNameSpace(node) }
+	}
+}

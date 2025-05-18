@@ -58,6 +58,11 @@ public class TypeClassExpr extends ENode {
 		this.ttype = ttype;
 	}
 
+	public TypeClassExpr(long pos, Type ttype) {
+		this.pos = pos;
+		this.ttype = new TypeRef(ttype);
+	}
+
 	public CoreOperation getOperation() { getEnv().coreFuncs.fClassAccess.operation }
 
 	public Type getType() {

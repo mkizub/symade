@@ -14,10 +14,7 @@ import syntax kiev.Syntax;
 
 import kiev.compiler.WorkerThreadGroup;
 
-import static kiev.transf.VNodeUtils.mnNode;
-import static kiev.transf.VNodeUtils.mnAtt;
-import static kiev.transf.VNodeUtils.mnRef;
-import static kiev.transf.VNodeUtils.mnSym;
+import static kiev.transf.VNodeUtils.*;
 
 /**
  * @author Maxim Kizub
@@ -31,6 +28,7 @@ public final class VNodePlugin implements PluginFactory {
 			pd = new PluginDescr("vnode").depends("kiev");
 			pd.proc(new ProcessorDescr("pass3", "fe", 100, VNodeFE_Pass3.class).after("kiev:fe:pass3"));
 			pd.proc(new ProcessorDescr("gen-members", "fe", 0, VNodeFE_GenMembers.class).after("vnode:fe:pass3").before("kiev:fe:pre-resolve"));
+			pd.proc(new ProcessorDescr("gen-dispatch", "fe", 0, VNodeFE_GenDispatch.class).after("kiev:fe:pre-resolve").before("kiev:fe:main-resolve"));
 			pd.proc(new ProcessorDescr("verify", "fv", 0, VNodeFE_Verify.class));
 			pd.proc(new ProcessorDescr("pre-generate", "me", 0, VNodeME_PreGenerate.class).after("view:me:pre-generate").after("virt-fld:me:pre-generate"));
 			pd.proc(new ProcessorDescr("fix-resolve", "be", 0, VNodeBE_FixResolve.class).after("kiev:be:resolve").before("kiev:be:generate").before("virt-fld:be:rewrite"));
@@ -40,38 +38,40 @@ public final class VNodePlugin implements PluginFactory {
 }
 
 public final class VNodeUtils {
-	private static final String PROP_BASE		= "symade.transf.vnode";
-	public static final boolean GEN_VERSIONED	= TransfProcessor.getPropS(PROP_BASE,"genUnversioned","false") != "true";
-	public static final String mnNode			= TransfProcessor.getPropS(PROP_BASE,"mnNode","kiev·vtree·ThisIsANode");
-	public static final String mnAtt			= TransfProcessor.getPropS(PROP_BASE,"mnAtt","kiev·vtree·nodeAttr");
-	public static final String mnRef			= TransfProcessor.getPropS(PROP_BASE,"mnRef","kiev·vtree·nodeData");
-	public static final String mnSym			= TransfProcessor.getPropS(PROP_BASE,"mnSym","kiev·vtree·nodeSymb");
-	public final String mnUnVersioned			= TransfProcessor.getPropS(PROP_BASE,"mnUnVersioned","kiev·vtree·UnVersioned");
-	public final String nameINode				= TransfProcessor.getPropS(PROP_BASE,"nameINode","kiev·vtree·INode");
-	public final String nameANode				= TransfProcessor.getPropS(PROP_BASE,"nameANode","kiev·vtree·ANode");
-	public final String nameNode				= TransfProcessor.getPropS(PROP_BASE,"nameNode","kiev·vtree·ASTNode");
-	public final String nameNodeTypeInfo		= TransfProcessor.getPropS(PROP_BASE,"nameNodeTypeInfo","kiev·vtree·NodeTypeInfo");
-	public final String nameNodeSpace			= TransfProcessor.getPropS(PROP_BASE,"nameNodeSpace","kiev·vtree·NodeSpace");
-	public final String nameNodeExtSpace		= TransfProcessor.getPropS(PROP_BASE,"nameNodeExtSpace","kiev·vtree·NodeExtSpace");
-	public final String nameNodeSymbolRef		= TransfProcessor.getPropS(PROP_BASE,"nameNodeSymbolRef","kiev·vtree·NodeSymbolRef");
-	public final String nameTreeWalker			= TransfProcessor.getPropS(PROP_BASE,"TreeWalker","kiev·vtree·TreeWalker");
-	public final String nameAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameAttrSlot","kiev·vtree·AttrSlot");
-	public final String nameScalarAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameScalarAttrSlot","kiev·vtree·ScalarAttrSlot");
-	public final String nameExtAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameExtAttrSlot","kiev·vtree·ExtAttrSlot");
-	public final String nameSpaceAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev·vtree·SpaceAttrSlot");
-	public final String nameExtSpaceAttrSlot	= TransfProcessor.getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev·vtree·ExtSpaceAttrSlot");
-	public final String nameParentAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameParentAttrSlot","kiev·vtree·ParentAttrSlot");
-	public final String nameLanguageIface		= TransfProcessor.getPropS(PROP_BASE,"nameLanguageIface","kiev·vlang·Language");
-	public final String nameCopyContext			= TransfProcessor.getPropS(PROP_BASE,"nameCopyContext","kiev·vtree·CopyContext");
-	public final String nameCopyable			= TransfProcessor.getPropS(PROP_BASE,"nameCopyable","copyable");
-	public final String nameExtData				= TransfProcessor.getPropS(PROP_BASE,"nameExtData","ext_data");
-	public final String nameNodeName			= TransfProcessor.getPropS(PROP_BASE,"nameNodeName","name");
-	public final String nameLangName			= TransfProcessor.getPropS(PROP_BASE,"nameLangName","lang");
-	public final String nameCallbackDataSet		= TransfProcessor.getPropS(PROP_BASE,"nameCallbackDataSet","callbackDataSet");
+	private static final String PROP_BASE				= "symade.transf.vnode";
+	public static final String mnNode					= TransfProcessor.getPropS(PROP_BASE,"mnNode","kiev·vtree·ThisIsANode");
+	public static final String mnAtt					= TransfProcessor.getPropS(PROP_BASE,"mnAtt","kiev·vtree·nodeAttr");
+	public static final String mnRef					= TransfProcessor.getPropS(PROP_BASE,"mnRef","kiev·vtree·nodeData");
+	public static final String mnSym					= TransfProcessor.getPropS(PROP_BASE,"mnSym","kiev·vtree·nodeSymb");
+	public static final String mnLanguage				= TransfProcessor.getPropS(PROP_BASE,"mnLanguage","kiev·vtree·ThisIsALanguage");
+	public static final String mnUnVersioned			= TransfProcessor.getPropS(PROP_BASE,"mnUnVersioned","kiev·vtree·UnVersioned");
+	public static final String nameINode				= TransfProcessor.getPropS(PROP_BASE,"nameINode","kiev·vtree·INode");
+	public static final String nameANode				= TransfProcessor.getPropS(PROP_BASE,"nameANode","kiev·vtree·ANode");
+	public static final String nameNode					= TransfProcessor.getPropS(PROP_BASE,"nameNode","kiev·vtree·ANode");
+	public static final String nameNodeTypeInfo			= TransfProcessor.getPropS(PROP_BASE,"nameNodeTypeInfo","kiev·vtree·NodeTypeInfo");
+	public static final String nameNodeSpace			= TransfProcessor.getPropS(PROP_BASE,"nameNodeSpace","kiev·vtree·NodeSpace");
+	public static final String nameNodeExtSpace			= TransfProcessor.getPropS(PROP_BASE,"nameNodeExtSpace","kiev·vtree·NodeExtSpace");
+	public static final String nameNodeSymbolRef		= TransfProcessor.getPropS(PROP_BASE,"nameNodeSymbolRef","kiev·vtree·NodeSymbolRef");
+	public static final String nameTreeWalker			= TransfProcessor.getPropS(PROP_BASE,"TreeWalker","kiev·vtree·TreeWalker");
+	public static final String nameAttrSlot				= TransfProcessor.getPropS(PROP_BASE,"nameAttrSlot","kiev·vtree·AttrSlot");
+	public static final String nameScalarAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameScalarAttrSlot","kiev·vtree·ScalarAttrSlot");
+	public static final String nameExtAttrSlot			= TransfProcessor.getPropS(PROP_BASE,"nameExtAttrSlot","kiev·vtree·ExtAttrSlot");
+	public static final String nameSpaceAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev·vtree·SpaceAttrSlot");
+	public static final String nameExtSpaceAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameExtSpaceAttrSlot","kiev·vtree·ExtSpaceAttrSlot");
+	public static final String nameParentAttrSlot		= TransfProcessor.getPropS(PROP_BASE,"nameParentAttrSlot","kiev·vtree·ParentAttrSlot");
+	public static final String nameLanguageIface		= TransfProcessor.getPropS(PROP_BASE,"nameLanguageIface","kiev·vlang·Language");
+	public static final String nameLanguageDispatcherI	= TransfProcessor.getPropS(PROP_BASE,"nameLanguageDispatcher","kiev·vlang·Language·DispatcherI");
+	public static final String nameLanguageDispatcherC	= TransfProcessor.getPropS(PROP_BASE,"nameLanguageDispatcher","kiev·vlang·Language·DispatcherC");
+	public static final String nameCopyContext			= TransfProcessor.getPropS(PROP_BASE,"nameCopyContext","kiev·vtree·CopyContext");
+	public static final String nameCopyable				= TransfProcessor.getPropS(PROP_BASE,"nameCopyable","copyable");
+	public static final String nameExtData				= TransfProcessor.getPropS(PROP_BASE,"nameExtData","ext_data");
+	public static final String nameNodeName				= TransfProcessor.getPropS(PROP_BASE,"nameNodeName","name");
+	public static final String nameLangName				= TransfProcessor.getPropS(PROP_BASE,"nameLangName","lang");
+	public static final String nameCallbackDataSet		= TransfProcessor.getPropS(PROP_BASE,"nameCallbackDataSet","callbackDataSet");
 
-	public final String operatorPostTypeSpace		= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeSpace","T ∅");		// \u2205
-	public final String operatorPostTypeExtSpace	= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeExtSpace","T ⋈");		// \u22c8
-	public final String operatorPostTypeSymbolRef	= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeSymbolRef","T ⇑");	// \u21d1
+	public static final String operatorPostTypeSpace	= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeSpace","T ∅");		// \u2205
+	public static final String operatorPostTypeExtSpace	= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeExtSpace","T ⋈");		// \u22c8
+	public static final String operatorPostTypeSymbolRef= TransfProcessor.getPropS(PROP_BASE,"operatorPostTypeSymbolRef","T ⇑");	// \u21d1
 
 	Type tpINode;
 	Type tpANode;
@@ -96,7 +96,7 @@ public final class VNodeUtils {
 	Operator PostTypeSymbolRef;
 
 	public static boolean isNodeImpl(Struct s) {
-		return s.getMeta(mnNode) != null;
+		return s.isClazz() && s.getMeta(mnNode) != null;
 	}
 	public static boolean isNodeKind(Struct s) {
 		return s.getMeta(mnNode) != null;
@@ -105,6 +105,9 @@ public final class VNodeUtils {
 		if (t != null && t.getStruct() != null)
 			return isNodeKind(t.getStruct());
 		return false;
+	}
+	public static boolean isLanguageImpl(Struct s) {
+		return s.getMeta(mnLanguage) != null;
 	}
 
 	VNodeUtils(ANodeContext context) {
@@ -512,7 +515,13 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			if (sn.node_decl == null)
 				makeNodeDecl(sn);
 		}
-		if (!VNodeUtils.isNodeImpl(s) || (s.isInterface() && !s.isMixin()))
+		if (VNodeUtils.isNodeImpl(s))
+			generateNodeValues(s)
+		return;
+	}
+
+	private void generateNodeValues(Struct s) {
+		if (s.isInterface() && !s.isMixin())
 			return;
 		foreach (Field f; s.members; f.sname == nameEnumValuesFld)
 			return; // already generated
@@ -577,8 +586,227 @@ public final class VNodeFE_GenMembers extends TransfProcessor {
 			node_defined_slots
 		});
 		s.addField(fld_nti);
+	}
+}
 
+//////////////////////////////////////////////////////
+//   Generate class members (enumerate sub-nodes)   //
+//////////////////////////////////////////////////////
 
+public final class VNodeFE_GenDispatch extends TransfProcessor {
+	public VNodeFE_GenDispatch(Env env, int id) { super(env,id,KievExt.VNode); }
+	public String getDescr() { "VNode dispatch generation" }
+
+	@forward
+	private VNodeUtils utils;
+	private Vector<Struct> processed;
+
+	public void process(ANode node, Transaction tr) {
+		if (node instanceof CompilationUnit) {
+			CompilationUnit cu = (CompilationUnit)node;
+			WorkerThreadGroup wthg = (WorkerThreadGroup)Thread.currentThread().getThreadGroup();
+			if (wthg.setProcessorRun(cu,this))
+				return;
+			if (utils == null)
+				utils = new VNodeUtils(getContext());
+			processed = null;
+			tr = Transaction.enter(tr,"VNodeFE_GenDispatch");
+			try {
+				doProcess(node);
+			} finally { tr.leave(); }
+			processed = null;
+		}
+	}
+
+	public void doProcess(ANode:ANode node) {
+		return;
+	}
+
+	public void doProcess(SyntaxScope:ANode ss) {
+		foreach (ANode dn; ss.members)
+			this.doProcess(dn);
+	}
+
+	private void doProcess(Struct:ANode s) {
+		if (processed == null)
+			processed = new Vector<Struct>();
+		processed.append(s);
+		foreach (Struct dn; s.members)
+			this.doProcess(dn);
+		if (VNodeUtils.isLanguageImpl(s)) {
+			generateLangDispatcherI(s);
+			generateLangDispatcherC(s);
+		}
+		return;
+	}
+
+	private Vector<Struct> getSuperLanguages(Struct slang) {
+		Vector<Struct> out = new Vector<Struct>();
+		Field superLanguages = slang.resolveField("superLanguages", false);
+		if (superLanguages == null)
+			return out;
+		if!(superLanguages.init instanceof NewInitializedArrayExpr)
+			return out;
+		NewInitializedArrayExpr init = (NewInitializedArrayExpr)superLanguages.init;
+		foreach (TypeClassExpr tce; init.args) {
+			out.append(tce.ttype.getStruct());
+		}
+		return out;
+	}
+
+	private Vector<Struct> getLanguagesNodes(Struct slang) {
+		Vector<Struct> out = new Vector<Struct>();
+		Field nodesField = slang.resolveField("nodeClasses", false);
+		if (nodesField == null)
+			return out;
+		if!(nodesField.init instanceof NewInitializedArrayExpr)
+			return out;
+		NewInitializedArrayExpr init = (NewInitializedArrayExpr)nodesField.init;
+		foreach (TypeClassExpr tce; init.args) {
+			out.append(tce.ttype.getStruct());
+		}
+		return out;
+	}
+
+	private Method getMethod(Struct s, String name, boolean iface) {
+		s = s.checkResolved();
+		foreach (Method m; s.members; m.hasName(name)) return m;
+		foreach (TypeRef st; s.super_types) {
+			Struct sups = st.getStruct();
+			if (!iface && sups.isInterface())
+				continue;
+			Method m = getMethod(sups, name, iface);
+			if (m != null)
+				return m;
+		}
+		return null;
+	}
+
+	private Struct generateLangDispatcherI(Struct slang) {
+		Struct i_dispatcher = null;
+		foreach (Struct s; slang.members) {
+			if (s.sname == "DispatcherI") {
+				i_dispatcher = s;
+				break;
+			}
+		}
+		if (i_dispatcher != null && i_dispatcher.is_struct_node_generated)
+			return i_dispatcher;
+		if (i_dispatcher == null) {
+			if (slang.isInterfaceOnly()) {
+				slang.reportError().log("DispatcherI for language class "+slang+" not found");
+				return null;
+			}
+			i_dispatcher = this.env.newStruct("DispatcherI",slang,ACC_PUBLIC|ACC_STATIC|ACC_INTERFACE/*|ACC_SYNTHETIC*/,new JavaClass(),null);
+			if (!i_dispatcher.isAttached())
+				slang.members += i_dispatcher;
+			Struct disp_base = (Struct)this.env.resolveGlobalDNode(VNodeUtils.nameLanguageDispatcherI, getContext());
+			i_dispatcher.super_types += new TypeRef(disp_base.getType());
+			foreach (Struct sl; getSuperLanguages(slang)) {
+				disp_base = generateLangDispatcherI(sl.getStruct());
+				i_dispatcher.super_types += new TypeRef(disp_base.getType());
+			}
+		}
+		i_dispatcher.is_struct_node_generated = true;
+
+		StdTypes tenv = this.env.getTypeEnv();
+		// generate methods
+		foreach (Struct s_node; getLanguagesNodes(slang)) {
+			if (s_node.isInterface())
+				continue;
+			// Object applyToNodeName(NodeType node, Object arg)
+			String applyToNodeName = ("applyTo"+s_node.sname).intern();
+			Method applyTo = getMethod(i_dispatcher, applyToNodeName, true);
+			if (applyTo != null) {
+				env.reportInfo().at(s_node).log("Method "+i_dispatcher+"."+applyToNodeName+" already exists, dispatcher method is not generated");
+			} else {
+				applyTo = new MethodImpl(getContext(), applyToNodeName, tenv.tpObject, ACC_PUBLIC|ACC_ABSTRACT /*| ACC_SYNTHETIC*/);
+				applyTo.params.append(new LVar(0,"node", s_node.getType(), Var.VAR_LOCAL, 0));
+				applyTo.params.append(new LVar(0,"arg", tenv.tpObject, Var.VAR_LOCAL, 0));
+				i_dispatcher.addMethod(applyTo);
+			}
+		}
+		return i_dispatcher;
+	}
+
+	private Struct generateLangDispatcherC(Struct slang) {
+		Struct c_dispatcher = null;
+		foreach (Struct s; slang.members) {
+			if (s.sname == "DispatcherC") {
+				c_dispatcher = s;
+				break;
+			}
+		}
+		if (c_dispatcher != null && c_dispatcher.is_struct_node_generated)
+			return c_dispatcher;
+		if (c_dispatcher == null) {
+			if (slang.isInterfaceOnly()) {
+				slang.reportError().log("DispatcherC for language class "+slang+" not found");
+				return null;
+			}
+			c_dispatcher = this.env.newStruct("DispatcherC",slang,ACC_PUBLIC|ACC_STATIC/*|ACC_SYNTHETIC*/,new JavaClass(),null);
+			if (!c_dispatcher.isAttached())
+				slang.members += c_dispatcher;
+			Struct disp_base = (Struct)this.env.resolveGlobalDNode(VNodeUtils.nameLanguageDispatcherC, getContext());
+			c_dispatcher.super_types += new TypeRef(disp_base.getType());
+			Struct i_dispatcher = generateLangDispatcherI(slang);
+			if (i_dispatcher != null)
+				c_dispatcher.super_types += new TypeRef(i_dispatcher.getType());
+		} else {
+			foreach (TypeRef st; c_dispatcher.super_types) {
+				Struct sups = st.getStruct();
+				if (sups.sname == "DispatcherC" || sups.sname == "DispatcherI") {
+					ANode p = sups.parent;
+					if (p instanceof Struct && p != slang && VNodeUtils.isLanguageImpl((Struct)p)) {
+						generateLangDispatcherI((Struct)p);
+						generateLangDispatcherC((Struct)p);
+					}
+				}
+			}
+		}
+		c_dispatcher.is_struct_node_generated = true;
+
+		StdTypes tenv = this.env.getTypeEnv();
+		// generate methods
+		foreach (Struct s_node; getLanguagesNodes(slang)) {
+			if (s_node.isInterface())
+				continue;
+			// public Object applyToNodeName(NodeType node, Object arg) { return this.applyToSuperName(node, arg); }
+			String applyToNodeName = ("applyTo"+s_node.sname).intern();
+			Method applyTo = getMethod(c_dispatcher, applyToNodeName, false);
+			if (applyTo != null) {
+				env.reportInfo().at(s_node).log("Method "+c_dispatcher+"."+applyToNodeName+" already exists, dispatcher method is not generated");
+			} else {
+				applyTo = new MethodImpl(getContext(), applyToNodeName, tenv.tpObject, ACC_PUBLIC /*| ACC_SYNTHETIC*/);
+				applyTo.params.append(new LVar(0,"node", s_node.getType(), Var.VAR_LOCAL, 0));
+				applyTo.params.append(new LVar(0,"arg", tenv.tpObject, Var.VAR_LOCAL, 0));
+				c_dispatcher.addMethod(applyTo);
+			}
+		}
+		// generate bodies
+		foreach (Method applyTo; c_dispatcher.members) {
+			if (applyTo.sname == null || !applyTo.sname.startsWith("applyTo") || applyTo.body != null)
+				continue;
+			Struct s_node = applyTo.params[0].getType().getStruct();
+			String applyToSuperName = "applyToANode";
+			foreach (TypeRef st; s_node.super_types; isNodeImpl(st.getStruct())) {
+				Struct sup = st.getStruct();
+				applyToSuperName = ("applyTo"+sup.sname).intern();
+			}
+			Method applyToSuper = getMethod(c_dispatcher, applyToSuperName, false);
+			if (applyToSuper == null) {
+				c_dispatcher.reportWarning().log("Dispatcher method "+c_dispatcher+"."+applyToSuperName+"(...) is not found for method "+applyTo);
+				//throw new CompilerException(s,"Dispatcher method "+s_dispatcher+"."+applyToSuperName+"(...) is not found");
+				applyToSuper = getMethod(c_dispatcher, "applyToANode", false);
+			}
+			applyTo.setAbstract(false);
+			applyTo.body = new Block(0);
+			applyTo.block.stats.add(new ReturnStat(0,
+					new CallExpr(0,new ThisExpr(0), applyToSuper,
+							new ENode[]{new LVarExpr(0,applyTo.params[0]), new LVarExpr(0,applyTo.params[1])})));
+			env.runProcessorsOn(applyTo.body);
+		}
+		return c_dispatcher;
 	}
 }
 
@@ -629,7 +857,7 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 			if (node instanceof Struct && VNodeUtils.isNodeKind((Struct)node)) {
 				tr = Transaction.enter(tr,"VNodeFE_Verify");
 				try {
-					verifyStruct((Struct)node);
+					verifyNodeStruct((Struct)node);
 				} finally { tr.leave(); }
 			}
 			/*
@@ -648,7 +876,10 @@ public final class VNodeFE_Verify extends VerifyProcessor {
 		}
 	}
 
-	private void verifyStruct(Struct s) {
+	private void verifyLangStruct(Struct s) {
+
+	}
+	private void verifyNodeStruct(Struct s) {
 		UserMeta m = (UserMeta)s.getMeta(mnNode);
 		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
 		TypeDecl td;
@@ -794,6 +1025,12 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		return false;
 	}
 
+	final boolean isLangImpl(Struct s) {
+		if (s.isClazz() && s.getMeta(mnLanguage) != null)
+			return true;
+		return false;
+	}
+
 	public Method getCodeSet() {
 		if (_codeSet == null) {
 			TypeDecl td = (TypeDecl)this.env.loadTypeDecl("kiev·transf·TemplateVNode", true, getContext());
@@ -912,6 +1149,7 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		StdTypes tenv = this.env.getTypeEnv();
 
 		// Language getCompilerLang()
+		Struct s_language = null;
 		if (!iface.getType().isInstanceOf(tpNode) || hasMethod(impl, "getCompilerLang")) {
 			//if (!s.isInterfaceOnly())
 			//	Kiev.reportWarning(s,"Method "+s+"."+"getCompilerLang already exists, @node member is not generated");
@@ -932,14 +1170,17 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 					res = new ConstNullExpr();
 				else if (!td.isSingleton())
 					res = new ConstNullExpr();
-				else
+				else {
+					s_language = td.getStruct();
 					res = new TypeRef(td.getType());
+				}
 				lng.block.stats.append(new ReturnStat(0,res));
 				env.runProcessorsOn(lng);
 			}
 		}
 
 		// String getCompilerNodeName()
+		String node_name = iface.sname;
 		if (!iface.getType().isInstanceOf(tpNode) || hasMethod(impl, "getCompilerNodeName")) {
 			//if (!s.isInterfaceOnly())
 			//	Kiev.reportWarning(s,"Method "+s+"."+"getCompilerNodeName already exists, @node member is not generated");
@@ -950,10 +1191,132 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 				nname.body = new Block();
 				UserMeta m = (UserMeta)iface.getMeta(mnNode);
 				String nm = m.getS(nameNodeName);
-				if (nm == null || nm.length() == 0)
-					nm = iface.sname;
-				nname.block.stats.append(new ReturnStat(0,new ConstStringExpr(nm)));
+				if (nm != null && nm.length() > 0)
+					node_name = nm;
+				nname.block.stats.append(new ReturnStat(0,new ConstStringExpr(node_name)));
 				env.runProcessorsOn(nname);
+			}
+		}
+
+		if (s_language != null) {
+			Struct i_dispatcher = null;
+			Struct c_dispatcher = null;
+			foreach (Struct s; s_language.members) {
+				if (s.sname == "DispatcherI")
+					i_dispatcher = s;
+				if (s.sname == "DispatcherC")
+					c_dispatcher = s;
+			}
+			if (hasMethod(iface, "dispatch")) {
+				if (!s.isInterfaceOnly())
+					iface.reportWarning().log("Method "+iface+".dispatch() already exists, @node member is not generated");
+			} else {
+				Method disp;
+				Var disp_var;
+				Var arg_var;
+				// public Object dispatch(MyLanguage.DispatcherC dispatcher, Object arg) {
+				//    return dispatcher.applyToNodeName(this, arg);
+				// }
+				disp = new MethodImpl(getContext(),"dispatch", tenv.tpObject, ACC_PUBLIC /*| ACC_SYNTHETIC*/);
+				disp.params.append(disp_var=new LVar(0,"dispatcher", c_dispatcher.getType(), Var.VAR_LOCAL, 0));
+				disp.params.append(arg_var=new LVar(0,"arg", tenv.tpObject, Var.VAR_LOCAL, 0));
+				iface.addMethod(disp);
+				if (!s_language.isInterfaceOnly()) {
+					String applyToNodeName = ("applyTo"+iface.sname).intern();
+					Method applyTo = getMethod(c_dispatcher, applyToNodeName);
+					if (applyTo == null) {
+						iface.reportWarning().log("Method "+c_dispatcher+"."+applyToNodeName+"() not found");
+					} else {
+						disp.body = new Block(0);
+						disp.block.stats.add(new ReturnStat(0,
+								new CallExpr(0,new LVarExpr(0,disp_var),applyTo,new ENode[]{new ThisExpr(0), new LVarExpr(0,arg_var)})));
+						env.runProcessorsOn(disp);
+					}
+				}
+				// public Object dispatch(MyLanguage.DispatcherI dispatcher, Object arg) {
+				//    return dispatcher.applyToNodeName(this, arg);
+				// }
+				disp = new MethodImpl(getContext(),"dispatch", tenv.tpObject, ACC_PUBLIC /*| ACC_SYNTHETIC*/);
+				disp.params.append(disp_var=new LVar(0,"dispatcher", i_dispatcher.getType(), Var.VAR_LOCAL, 0));
+				disp.params.append(arg_var=new LVar(0,"arg", tenv.tpObject, Var.VAR_LOCAL, 0));
+				iface.addMethod(disp);
+				if (!s_language.isInterfaceOnly()) {
+					String applyToNodeName = ("applyTo"+iface.sname).intern();
+					Method applyTo = getMethod(i_dispatcher, applyToNodeName);
+					if (applyTo == null) {
+						iface.reportWarning().log("Method "+i_dispatcher+"."+applyToNodeName+"() not found");
+					} else {
+						disp.body = new Block(0);
+						disp.block.stats.add(new ReturnStat(0,
+								new CallExpr(0,new LVarExpr(0,disp_var),applyTo,new ENode[]{new ThisExpr(0), new LVarExpr(0,arg_var)})));
+						env.runProcessorsOn(disp);
+					}
+				}
+				// public Object dispatch(Language.DispatcherC dispatcher, Object arg) {
+				//    if (dispatcher instanceof MyLanguage.DispatcherC)
+				//        return ((MyLanguage.DispatcherC)dispatcher).applyToNodeName(this, arg);
+				//    return super.dispatch(dispatcher, arg);
+				// }
+				Struct disp_base;
+				disp_base = (Struct)this.env.resolveGlobalDNode(VNodeUtils.nameLanguageDispatcherC, getContext());
+				disp = new MethodImpl(getContext(),"dispatch", tenv.tpObject, ACC_PUBLIC /*| ACC_SYNTHETIC*/);
+				disp.params.append(disp_var=new LVar(0,"dispatcher", disp_base.getType(), Var.VAR_LOCAL, 0));
+				disp.params.append(arg_var=new LVar(0,"arg", tenv.tpObject, Var.VAR_LOCAL, 0));
+				iface.addMethod(disp);
+				if (!s_language.isInterfaceOnly()) {
+					String applyToNodeName = ("applyTo"+iface.sname).intern();
+					disp.body = new Block(0);
+					disp.block.stats.add(new IfElseStat(0,
+							new InstanceofExpr(0,new LVarExpr(0,disp_var),c_dispatcher.getType()),
+							new ReturnStat(0, new CallExpr(0,
+									new CastExpr(0, c_dispatcher.getType(), new LVarExpr(0,disp_var)),
+									new SymbolRef<Method>(applyToNodeName),null,
+									new ENode[]{new ThisExpr(0), new LVarExpr(0,arg_var)})),
+							null
+							));
+					disp.block.stats.add(new ReturnStat(0,
+							new CallExpr(0,new SuperExpr(0), new SymbolRef<Method>("dispatch"), null,
+									new ENode[]{new LVarExpr(0,disp_var), new LVarExpr(0,arg_var)}))
+							);
+					env.runProcessorsOn(disp);
+				}
+				// public Object dispatch(Language.DispatcherI dispatcher, Object arg) {
+				//    if (dispatcher instanceof MyLanguage.DispatcherC)
+				//        return ((MyLanguage.DispatcherC)dispatcher).applyToNodeName(this, arg);
+				//    if (dispatcher instanceof MyLanguage.DispatcherI)
+				//        return ((MyLanguage.DispatcherI)dispatcher).applyToNodeName(this, arg);
+				//    return super.dispatch(dispatcher, arg);
+				// }
+				disp_base = (Struct)this.env.resolveGlobalDNode(VNodeUtils.nameLanguageDispatcherI, getContext());
+				disp = new MethodImpl(getContext(),"dispatch", tenv.tpObject, ACC_PUBLIC /*| ACC_SYNTHETIC*/);
+				disp.params.append(disp_var=new LVar(0,"dispatcher", disp_base.getType(), Var.VAR_LOCAL, 0));
+				disp.params.append(arg_var=new LVar(0,"arg", tenv.tpObject, Var.VAR_LOCAL, 0));
+				iface.addMethod(disp);
+				if (!s_language.isInterfaceOnly()) {
+					String applyToNodeName = ("applyTo"+iface.sname).intern();
+					disp.body = new Block(0);
+					disp.block.stats.add(new IfElseStat(0,
+							new InstanceofExpr(0,new LVarExpr(0,disp_var),c_dispatcher.getType()),
+							new ReturnStat(0, new CallExpr(0,
+									new CastExpr(0, c_dispatcher.getType(), new LVarExpr(0,disp_var)),
+									new SymbolRef<Method>(applyToNodeName),null,
+									new ENode[]{new ThisExpr(0), new LVarExpr(0,arg_var)})),
+							null
+							));
+					disp.block.stats.add(new IfElseStat(0,
+							new InstanceofExpr(0,new LVarExpr(0,disp_var),i_dispatcher.getType()),
+							new ReturnStat(0, new CallExpr(0,
+									new CastExpr(0, i_dispatcher.getType(), new LVarExpr(0,disp_var)),
+									new SymbolRef<Method>(applyToNodeName),null,
+									new ENode[]{new ThisExpr(0), new LVarExpr(0,arg_var)})),
+							null
+							));
+					disp.block.stats.add(new ReturnStat(0,
+							new CallExpr(0,new SuperExpr(0), new SymbolRef<Method>("dispatch"), null,
+									new ENode[]{new LVarExpr(0,disp_var), new LVarExpr(0,arg_var)}))
+							);
+					env.runProcessorsOn(disp);
+				}
 			}
 		}
 
@@ -1151,6 +1514,18 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		return false;
 	}
 
+	private Method getMethod(Struct s, String name) {
+		s = s.checkResolved();
+		foreach (Method m; s.members; m.hasName(name)) return m;
+		foreach (TypeRef st; s.super_types) {
+			Struct sups = st.getStruct();
+			Method m = getMethod(sups, name);
+			if (m != null)
+				return m;
+		}
+		return null;
+	}
+
 	private void fixGetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref, UserMeta fmsym) {
 		boolean isAtt = (fmatt != null);
 		boolean isSet = f.getType().isInstanceOf(tpNodeExtSpace);
@@ -1181,16 +1556,6 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		}
 		if (get_var.isSynthetic())
 			get_var.setFinal(true);
-
-		if (s.getType().isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
-			get_var.body.walkTree(null, null, new ITreeWalker() {
-				public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
-					if (n instanceof IFldExpr && n.obj instanceof ThisExpr)
-						return VNodeME_PreGenerate.this.fixAccessInGetter(f,(IFldExpr)n, parent, slot);
-					return true;
-				}
-			});
-		}
 
 		if (isAtt)
 			get_var.setMeta(new UserMeta(mnAtt)).resolve(null);
@@ -1244,15 +1609,6 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		if (set_var.isSynthetic())
 			set_var.setFinal(true);
 		Block body = set_var.block;
-		//if (s.getType().isInstanceOf(tpNode) && f.getMeta(mnUnVersioned) == null && VNodeUtils.GEN_VERSIONED) {
-		//	body.walkTree(null, null, new ITreeWalker() {
-		//		public boolean pre_exec(INode n, INode parent, AttrSlot slot) {
-		//			if (n instanceof AssignExpr)
-		//				return VNodeME_PreGenerate.this.fixAssignInSetter(f,(AssignExpr)n,parent,slot);
-		//			return true;
-		//		}
-		//	});
-		//}
 		if (!isArr && isAtt) {
 			Var old = new LVar(body.pos,"$old",f.getType(),Var.VAR_LOCAL,ACC_FINAL);
 			old.init = new IFldExpr(0,new ThisExpr(),f);
@@ -1312,7 +1668,6 @@ public final class VNodeME_PreGenerate extends BackendProcessor {
 		env.runProcessorsOn(rn);
 		return false;
 	}
-
 }
 
 public final class VNodeBE_FixResolve extends BackendProcessor {

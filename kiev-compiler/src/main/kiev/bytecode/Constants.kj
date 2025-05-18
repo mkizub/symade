@@ -24,7 +24,8 @@ public interface BytecodeFileConstants {
 	public static final int JAVA_MAGIC = 0xCAFEBABE;
 
 	/** JAVA_VERSION - current magor version of JVM classes */
-	public static final short JAVA_VERSION = (short)49;
+	public static final short JAVA_VERSION_5 = (short)49;
+	public static final short JAVA_VERSION_8 = (short)52;
 
 	/** JAVA_MINOR_VERSION - current minor version of JVM classes */
 	public static final short JAVA_MINOR_VERSION = (short)0;

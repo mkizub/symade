@@ -9,7 +9,7 @@
 @if exist %OUT_ROOT%\classes2 rmdir /Q /S %OUT_ROOT%\classes2
 @mkdir %OUT_ROOT%\classes2\stx-fmt
 
-"%JAVA_HOME%\bin\java.exe" -ea -verify -Xms512M -Xmx512M -Xfuture -Xnoclassgc -classpath %OUT_ROOT%\classes1 kiev.Main -classpath %OUT_ROOT%\classes2;bin\swt-win.jar -d %OUT_ROOT%\classes2 -verify -enable vnode -enable view -p k6.prj -prop k6.props -g -target 8 %*
+"%JAVA_HOME%\bin\java.exe" -ea -verify -Xms512M -Xmx512M -Xfuture -Xnoclassgc -classpath %OUT_ROOT%\classes1 kiev.Main -classpath %OUT_ROOT%\classes2;bin\swt-win.jar -d %OUT_ROOT%\classes2 -verify -enable vnode -enable view -p k6.prj -g -target 8 %*
 @if %errorlevel% NEQ 0 (exit /b %errorlevel%)
 @echo Kiev Compiler Exit code: %errorlevel%
 @rem  javac kiev\dump\*.java kiev\dump\xml\*.java

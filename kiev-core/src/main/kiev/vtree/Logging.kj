@@ -239,6 +239,8 @@ public final class DefaultLoggingEventBuilder implements LoggingEventBuilder {
 		if (rootDir == null || lineNo <= 0 || fileName == null || severity <= DEBUG) {
 			if (throwable != null && printStackTrace)
 				throwable.printStackTrace(out);
+			else if (printStackTrace && severity >= ERROR)
+				new Throwable().printStackTrace(out);
 			return;
 		}
 
@@ -291,6 +293,8 @@ public final class DefaultLoggingEventBuilder implements LoggingEventBuilder {
 
 		if (throwable != null && printStackTrace)
 			throwable.printStackTrace(out);
+		else if (printStackTrace && severity >= ERROR)
+			new Throwable().printStackTrace(out);
 	}
 
 	private void checkNode(ANode node) {

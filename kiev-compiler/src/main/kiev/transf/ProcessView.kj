@@ -103,25 +103,25 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 		}
 
 		// add a cast from clazz.view_of to this view
-		if (view_meta != null && view_meta.getZ("vcast")) {
-			boolean cast_found = false;
-			foreach (Method dn; view_of.getStruct().members) {
-				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType()) {
-					cast_found = true;
-					break;
-				}
-			}
-			if (!cast_found) {
-				Method cast = new MethodImpl(getContext(),"$cast", clazz.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
-				cast.aliases += new OperatorAlias(nameCastOp, cast);
-				if (clazz.isAbstract()) {
-					cast.setAbstract(true);
-				} else {
-					cast.body = new Block();
-				}
-				view_of.getStruct().addMethod(cast);
-			}
-		}
+//		if (view_meta != null && view_meta.getZ("vcast")) {
+//			boolean cast_found = false;
+//			foreach (Method dn; view_of.getStruct().members) {
+//				if (dn.hasName(nameCastOp) && dn.mtype.ret() ≈ clazz.getType()) {
+//					cast_found = true;
+//					break;
+//				}
+//			}
+//			if (!cast_found) {
+//				Method cast = new MethodImpl(getContext(),"$cast", clazz.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
+//				cast.aliases += new OperatorAlias(nameCastOp, cast);
+//				if (clazz.isAbstract()) {
+//					cast.setAbstract(true);
+//				} else {
+//					cast.body = new Block();
+//				}
+//				view_of.getStruct().addMethod(cast);
+//			}
+//		}
 		// add casts from this view to the clazz and a view instantiation cast
 		{
 			boolean cast_found = false;
@@ -148,7 +148,7 @@ public final class ViewFE_GenMembers extends TransfProcessor {
 				}
 			}
 			if (!cast_found) {
-				Method cast = new MethodImpl(getContext(),"makeView", clazz.getType(), ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC);
+				Method cast = new MethodImpl(getContext(),"makeView", clazz.getType(), ACC_PUBLIC|ACC_STATIC/*|ACC_SYNTHETIC*/);
 				cast.aliases += new OperatorAlias(nameCastOp, cast);
 				cast.params.add(new LVar(0,"obj",view_of.getType(),Var.VAR_LOCAL,ACC_FINAL));
 				cast.body = new Block();
@@ -439,12 +439,23 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 		// implement the view instantiation
 		foreach (Method dn; impl.members; dn.isStatic()) {
 			if (dn.hasName(nameCastOp) && dn.params.length == 1 && dn.mtype.ret() ≈ clazz.getType()) {
-				if (dn.isSynthetic() && !dn.isInterfaceOnly()) {
-					ENode stat = new IfElseStat(0,
-						new BinaryBoolExpr(0, env.coreFuncs.fObjectBoolEQ,new LVarExpr(0, dn.params[0]),new ConstNullExpr()),
-						new ReturnStat(0, new ConstNullExpr()),
-						new ReturnStat(0, new NewExpr(0, impl.getType(), new ENode[]{new LVarExpr(0, dn.params[0])}))
-						);
+				if (/*dn.isSynthetic()*/dn.block.stats.length == 0 && !dn.isInterfaceOnly()) {
+					Method factory = findViewFactory(clazz);
+					ENode stat;
+					if (factory != null) {
+						if (factory.params.length > 1)
+							stat = new ReturnStat(0, new CastExpr(0, clazz.getType(), new CallExpr(0, null, factory,
+									new ENode[]{new LVarExpr(0, dn.params[0]), new TypeClassExpr(0, clazz.getType())})));
+						else
+							stat = new ReturnStat(0, new CastExpr(0, clazz.getType(),
+									new CallExpr(0, null, factory, new ENode[]{new LVarExpr(0, dn.params[0])})));
+					} else {
+						stat = new IfElseStat(0,
+								new BinaryBoolExpr(0, env.coreFuncs.fObjectBoolEQ,new LVarExpr(0, dn.params[0]),new ConstNullExpr()),
+								new ReturnStat(0, new ConstNullExpr()),
+								new ReturnStat(0, new NewExpr(0, impl.getType(), new ENode[]{new LVarExpr(0, dn.params[0])}))
+								);
+					}
 					dn.block.stats.add(stat);
 					env.runProcessorsOn(stat);
 				}
@@ -453,6 +464,19 @@ public final class ViewME_PreGenerate extends BackendProcessor implements Consta
 		}
 
 		env.runProcessorsOn(impl);
+	}
+
+	private static Method findViewFactory(Struct clazz) {
+		foreach (Method m; clazz.members; m.sname == "makeViewFactory") {
+			if (m.params.length == 1 && m.isStatic())
+				return m;
+		}
+		foreach (TypeRef st; clazz.super_types) {
+			Method m = findViewFactory(st.getStruct());
+			if (m != null)
+				return m;
+		}
+		return null;
 	}
 
 }

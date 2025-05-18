@@ -368,7 +368,7 @@ public abstract class Configuration {
 		} catch (Exception e) {
 			System.out.println("Read error while bindings deserialization: "+e);
 		} finally {
-			try { inp.close(); } catch (Exception e) {}
+			if (inp != null) try { inp.close(); } catch (Exception e) {}
 		}
 		return null;
 	}

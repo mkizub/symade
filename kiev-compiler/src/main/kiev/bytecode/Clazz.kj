@@ -198,8 +198,14 @@ public final class Clazz implements BytecodeElement,BytecodeFileConstants {
 		cont.writeInt(JAVA_MAGIC);
 		trace(cont.traceWrite,cont.offset+": JAVA_MINOR_VERSION = "+JAVA_MINOR_VERSION);
 		cont.writeShort(JAVA_MINOR_VERSION);
-		trace(cont.traceWrite,cont.offset+": JAVA_VERSION = "+JAVA_VERSION);
-		cont.writeShort(JAVA_VERSION);
+		// TODO: to use Java8 bytecode we have to remove jsr instructions in finally blocks
+		//if (cont.genTargetJVM >= 8) {
+		//	trace(cont.traceWrite,cont.offset+": JAVA_VERSION = "+JAVA_VERSION_8);
+		//	cont.writeShort(JAVA_VERSION_8);
+		//} else {
+			trace(cont.traceWrite,cont.offset+": JAVA_VERSION = "+JAVA_VERSION_5);
+			cont.writeShort(JAVA_VERSION_5);
+		//}
 
 		writeConstantPool(cont);
 
@@ -276,6 +282,7 @@ public final class ReadContext {
 	public final Env		env;
 	public final boolean	traceRead;
 	public final boolean	traceWrite;
+	public final int		genTargetJVM;
 
 	public Clazz			clazz;
 	public byte[]			data;
@@ -286,6 +293,7 @@ public final class ReadContext {
 		PluginNodeProcessor processor = (PluginNodeProcessor)env.getNodeProcessor();
 		this.traceRead = processor.traceBytecodeRead;
 		this.traceWrite = processor.traceBytecodeWrite;
+		this.genTargetJVM = processor.genTargetJVM;
 	}
 
 	public static int utf8Length(String str) {

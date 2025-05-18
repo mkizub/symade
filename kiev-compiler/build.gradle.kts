@@ -20,12 +20,9 @@ tasks.compileKiev {
 }
 
 dependencies {
-//    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-//    testImplementation("org.junit.jupiter:junit-jupiter")
     implementation(project(":kiev-stdlib"))
     implementation(project(":kiev-core"))
     implementation(project(":kiev-dump"))
-//    implementation(files("${project.rootDir}/symade-core.jar"))
 }
 
 //tasks.test {

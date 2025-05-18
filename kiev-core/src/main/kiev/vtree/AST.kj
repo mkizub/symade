@@ -431,6 +431,8 @@ public abstract class ANode implements INode {
 
 	public Language getCompilerLang() { return null; }
 	public String getCompilerNodeName() { return null; }
+	public Object dispatch(Language.DispatcherC dispatcher, Object arg) { return dispatcher.applyToANode(this, arg); }
+	public Object dispatch(Language.DispatcherI dispatcher, Object arg) { return dispatcher.applyToANode(this, arg); }
 
 	public NodeTypeInfo getNodeTypeInfo() {
 		return ANode.$node_type_info;
@@ -1336,6 +1338,7 @@ public abstract class ASTNode extends ANode implements Constants {
 	public @packed(1,compileflags,7)  boolean is_struct_args_resolved; // KievFE_Pass2
 	public @packed(1,compileflags,8)  boolean is_struct_members_generated; // KievFE_Pass2
 	public @packed(1,compileflags,9)  boolean is_struct_pre_generated; // KievME_PreGenartion
+	public @packed(1,compileflags,10) boolean is_struct_node_generated; // VNodeFE_GenDispatch
 
 	// Expression/statement flags
 	public @packed(1,compileflags,6)  boolean is_expr_gen_void;
@@ -1382,14 +1385,14 @@ public abstract class ASTNode extends ANode implements Constants {
 		getEnv().runProcessorsOn(node);
 		throw new ReWalkNodeException(node);
 	}
-	public final ASTNode replaceWith(()->ASTNode fnode, INode parent, AttrSlot pslot) {
+	public final <N extends ASTNode> N replaceWith(()->N fnode, INode parent, AttrSlot pslot) {
 		//assert(isAttached());
 		//assert(parent == parent());
 		//assert(pslot == pslot());
 		if (pslot instanceof ASpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
 			assert(idx >= 0);
-			ASTNode n = fnode();
+			N n = fnode();
 			assert(n != null);
 			if (n.pos == 0) n.pos = this.pos;
 			pslot.insert(parent, idx, n);
@@ -1399,7 +1402,7 @@ public abstract class ASTNode extends ANode implements Constants {
 		else if (pslot instanceof ScalarAttrSlot) {
 			//assert(pslot.get(parent) == this);
 			pslot.set(parent, null);
-			ASTNode n = fnode();
+			N n = fnode();
 			if (n != null && n.pos == 0) n.pos = this.pos;
 			pslot.set(parent, n);
 			//assert(n == null || n.isAttached());
@@ -1487,6 +1490,13 @@ public abstract class ASTNode extends ANode implements Constants {
 	public boolean preVerify(INode parent, AttrSlot slot) { return true; }
 	public void postVerify(INode parent, AttrSlot slot) {}
 
+	public Object dispatch(Language.DispatcherC dispatcher, Object arg) {
+		return dispatcher.applyToASTNode(this, arg);
+	}
+
+	public Object dispatch(Language.DispatcherI dispatcher, Object arg) {
+		return dispatcher.applyToASTNode(this, arg);
+	}
 }
 
 

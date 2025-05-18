@@ -166,7 +166,8 @@ public final class ProjectSyntaxFactoryAny extends ProjectSyntaxFactory {
 	@nodeAttr public String					factory;
 
 	public TextProcessor makeTextProcessor() {
-		TextProcessor tp = (TextProcessor)Class.forName(factory.replace('·','.')).newInstance();
+		TextProcessor tp = (TextProcessor)Class.forName(factory.replace('·','.'))
+				.getConstructor(ANodeContext.class).newInstance(getEnv().getEnvContext());
 		foreach (ProjectSyntaxParam p; params)
 			tp.setProperty(p.name, p.value);
 		return tp;

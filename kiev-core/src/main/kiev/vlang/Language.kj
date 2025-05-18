@@ -29,6 +29,21 @@ public interface Language {
 	public ANode makeNode(ANodeContext context, String name, String ti_sign, String uuid);
 	public ANode makeNode(String name, ANodeContext context);
 	public ANode makeNode(Class clazz, ANodeContext context);
+
+	public static interface DispatcherI {
+		public Object applyToANode(ANode node, Object arg) { return null; }
+		public Object applyToASTNode(ASTNode node, Object arg) { return applyToANode(node, arg); }
+		public Object applyToDNode(DNode node, Object arg) { return applyToASTNode(node, arg); }
+		public Object applyToENode(ENode node, Object arg) { return applyToASTNode(node, arg); }
+		public Object applyToSNode(SNode node, Object arg) { return applyToASTNode(node, arg); }
+	}
+	public static class DispatcherC implements DispatcherI {
+		public Object applyToANode(ANode node, Object arg) { return null; }
+		public Object applyToASTNode(ASTNode node, Object arg) { return applyToANode(node, arg); }
+		public Object applyToDNode(DNode node, Object arg) { return applyToASTNode(node, arg); }
+		public Object applyToENode(ENode node, Object arg) { return applyToASTNode(node, arg); }
+		public Object applyToSNode(SNode node, Object arg) { return applyToASTNode(node, arg); }
+	}
 }
 
 @ThisIsANode(lang=CoreLang)
@@ -276,7 +291,6 @@ public final class CoreLang extends LangBase {
 			Var.class,				// variables:
 				LVar.class,				// local
 				Field.class,			// fields
-				RewritePattern.class,	// pattern
 		ENode.class,	// expression nodes
 			NopExpr.class,
 			ArgExpr.class,
@@ -420,6 +434,11 @@ public final class CoreLang extends LangBase {
 		ASTExpression.class,
 		EToken.class
 	};
+
+	public static interface DispatcherI extends Language.DispatcherI {
+	}
+	public static class DispatcherC extends Language.DispatcherC implements DispatcherI {
+	}
 }
 
 @ThisIsALanguage(name="logic")
@@ -448,6 +467,11 @@ public final class LogicLang extends LangBase {
 				RuleWhileExpr.class,	// check while external expression is true
 				RuleExpr.class			// check if external expression is true
 	};
+
+	public static interface DispatcherI extends CoreLang.DispatcherI {
+	}
+	public static class DispatcherC extends CoreLang.DispatcherC implements LogicLang.DispatcherI {
+	}
 }
 
 @ThisIsALanguage(name="macro")
@@ -481,5 +505,10 @@ public final class MacroLang extends LangBase {
 		MacroBinaryBoolExpr.class,
 		MacroHasMetaExpr.class
 	};
+
+	public static interface DispatcherI extends CoreLang.DispatcherI {
+	}
+	public static class DispatcherC extends CoreLang.DispatcherC implements MacroLang.DispatcherI {
+	}
 }
 

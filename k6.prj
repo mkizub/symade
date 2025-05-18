@@ -91,6 +91,7 @@
                 <core:FileUnit name="RCallExpr.kj"/>
                 <core:FileUnit name="RConstExpr.kj"/>
                 <core:FileUnit name="RExpr.kj"/>
+                <core:FileUnit name="RFactory.kj"/>
                 <core:FileUnit name="RField.kj"/>
                 <core:FileUnit name="RFileUnit.kj"/>
                 <core:FileUnit name="RLoopStat.kj"/>
@@ -602,6 +603,40 @@
             <core:FileUnit name="syntax-for-project-tree.xml" type="text/xml/tree-dump"/>
             <core:FileUnit name="syntax-for-syntax.xml" type="text/xml/tree-dump"/>
             <core:FileUnit name="syntax-for-xml.xml" type="text/xml/tree-dump"/>
+           </members>
+          </sop:kiev.vlang.DirUnit>
+         </members>
+        </sop:kiev.vlang.DirUnit>
+       </members>
+      </sop:kiev.vlang.DirUnit>
+     </members>
+    </sop:kiev.vlang.DirUnit>
+    <sop:kiev.vlang.DirUnit name="symade-gui">
+     <members>
+      <sop:kiev.vlang.DirUnit name="src">
+       <members>
+        <sop:kiev.vlang.DirUnit name="main">
+         <members>
+          <sop:kiev.vlang.DirUnit name="java">
+           <members>
+            <sop:kiev.vlang.DirUnit name="kiev">
+             <members>
+              <sop:kiev.vlang.DirUnit name="gui">
+               <members>
+                <sop:kiev.vlang.DirUnit name="swing">
+                 <members>
+                  <core:FileUnit name="bindings.xml" type="text/xml/tree-dump"/>
+                 </members>
+                </sop:kiev.vlang.DirUnit>
+                <sop:kiev.vlang.DirUnit name="swt">
+                 <members>
+                  <core:FileUnit name="bindings.xml" type="text/xml/tree-dump"/>
+                 </members>
+                </sop:kiev.vlang.DirUnit>
+               </members>
+              </sop:kiev.vlang.DirUnit>
+             </members>
+            </sop:kiev.vlang.DirUnit>
            </members>
           </sop:kiev.vlang.DirUnit>
          </members>

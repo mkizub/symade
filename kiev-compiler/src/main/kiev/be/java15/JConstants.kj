@@ -30,9 +30,9 @@ public interface JConstants extends Constants {
 	/** Java bytecode constants */
 
     // top-level constants
-    public static final int JAVA_MAGIC = 0xCAFEBABE;
-    public static final short JAVA_VERSION = (short)45;
-    public static final short JAVA_MINOR_VERSION = (short)3;
+    //public static final int JAVA_MAGIC = 0xCAFEBABE;
+    //public static final short JAVA_VERSION = (short)45;
+    //public static final short JAVA_MINOR_VERSION = (short)3;
 
     // constant pool entry types
     public static final int CONSTANT_UTF8				= 1;
